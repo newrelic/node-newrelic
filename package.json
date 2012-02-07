@@ -1,0 +1,19 @@
+{
+  "name": "newrelic_agent",
+  "version": "0.0.1",
+  "author": "Saxon D'Aubin",
+  "description": "New Relic node.js agent",
+  "homepage": "http://github.com/fixme",
+  "engines": [
+    "node >= 0.2.2"
+  ],
+  "directories": {
+    "lib": "./lib"
+  },
+  "main": "lib/newrelic_agent.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "url": ""
+  }
+}
