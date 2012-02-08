@@ -2475,3 +2475,1869 @@ debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&prot
 debug: Headers:  CONTENT-ENCODING=identity, Content-Length=487, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
 debug: Data:  [1801400,1328644740.287,1328644800.152,[[{"name":"WebTransaction/Uri/Users/sdaubin/Music"},[1,0.33,0.33,0.33,0.33,0.10890000000000001]],[{"name":"Apdex/Uri/Users/sdaubin/Music"},[1,0,0,0,0,0]],[{"name":"Apdex"},[1,0,0,0,0,0]],[{"name":"WebTransaction"},[1,0.33,0.33,0.33,0.33,0.10890000000000001]],[{"name":"HttpDispatcher"},[1,0.33,0.33,0.33,0.33,0.10890000000000001]],[{"name":"Filesystem/ReadDir//Users/sdaubin/Music","scope":"WebTransaction/Uri/Users/sdaubin/Music"},[1,0,0,0,0,0]]]]
 debug: metric_data return value 0=[scope=, name=WebTransaction/Uri/Users/sdaubin/Music, 4513522], 1=[scope=, name=Apdex/Uri/Users/sdaubin/Music, 4513520], 2=[scope=, name=Apdex, 18733], 3=[scope=, name=WebTransaction, 39446], 4=[scope=, name=HttpDispatcher, 6155], 5=[scope=WebTransaction/Uri/Users/sdaubin/Music, name=Filesystem/ReadDir//Users/sdaubin/Music, 4513519]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10103,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801401, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10125,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801402, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801402,1328647921.38,1328647981.207,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10298,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801403, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648061.009,1328648120.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648122.033,1328648180.853,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648181.031,1328648240.853,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648241.366,1328648300.852,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648301.032,1328648360.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648361.033,1328648420.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648421.081,1328648480.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648481.503,1328648540.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648541.035,1328648600.853,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648601.053,1328648660.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648661.032,1328648720.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648722.079,1328648780.853,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648781.028,1328648840.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648841.366,1328648900.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648901.183,1328648960.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328648961.376,1328649020.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328649021.04,1328649080.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328649081.029,1328649140.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328649141.053,1328649200.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328649201.038,1328649260.854,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801403,1328649261.07,1328649320.854,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10512,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801408, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10541,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801409, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=511, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801409,1328649592.347,1328649652.164,[[{"name":"WebTransaction/Uri/Users/sdaubin/Music"},[2,0.922,0.922,0.46,0.462,0.42504400000000003]],[{"name":"Apdex/Uri/Users/sdaubin/Music"},[2,0,0,0,0,0]],[{"name":"Apdex"},[2,0,0,0,0,0]],[{"name":"WebTransaction"},[2,0.922,0.922,0.46,0.462,0.42504400000000003]],[{"name":"HttpDispatcher"},[2,0.922,0.922,0.46,0.462,0.42504400000000003]],[{"name":"Filesystem/ReadDir//Users/sdaubin/Music","scope":"WebTransaction/Uri/Users/sdaubin/Music"},[2,0.001,0,0,0.001,0.000001]]]]
+debug: metric_data return value 0=[scope=, name=WebTransaction/Uri/Users/sdaubin/Music, 4513522], 1=[scope=, name=Apdex/Uri/Users/sdaubin/Music, 4513520], 2=[scope=, name=Apdex, 18733], 3=[scope=, name=WebTransaction, 39446], 4=[scope=, name=HttpDispatcher, 6155], 5=[scope=WebTransaction/Uri/Users/sdaubin/Music, name=Filesystem/ReadDir//Users/sdaubin/Music, 4513519]
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801409,1328649652.706,1328649712.163,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10602,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801410, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=2, , , url=/Users/sdaubin/Music, statusCode=200
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=511, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801410,1328649753.713,1328649813.507,[[{"name":"WebTransaction/Uri/Users/sdaubin/Music"},[3,1.284,1.284,0.315,0.536,0.5740100000000001]],[{"name":"Apdex/Uri/Users/sdaubin/Music"},[2,1,0,0,0,0]],[{"name":"Apdex"},[2,1,0,0,0,0]],[{"name":"WebTransaction"},[3,1.284,1.284,0.315,0.536,0.5740100000000001]],[{"name":"HttpDispatcher"},[3,1.284,1.284,0.315,0.536,0.5740100000000001]],[{"name":"Filesystem/ReadDir//Users/sdaubin/Music","scope":"WebTransaction/Uri/Users/sdaubin/Music"},[3,0.001,0,0,0.001,0.000001]]]]
+debug: metric_data return value 0=[scope=, name=WebTransaction/Uri/Users/sdaubin/Music, 4513522], 1=[scope=, name=Apdex/Uri/Users/sdaubin/Music, 4513520], 2=[scope=, name=Apdex, 18733], 3=[scope=, name=WebTransaction, 39446], 4=[scope=, name=HttpDispatcher, 6155], 5=[scope=WebTransaction/Uri/Users/sdaubin/Music, name=Filesystem/ReadDir//Users/sdaubin/Music, 4513519]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10664,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801411, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx push
+debug: tx pop
+debug: tx push
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx pop
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: transaction finished id=2, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx pop
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=3, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx pop
+debug: transaction finished id=4, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=5, , , url=/Users/sdaubin/Music, statusCode=200
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=481, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328649869.943,1328649929.785,[[{"name":"WebTransaction/Uri/Users/sdaubin/Music"},[6,2.825,2.825,0.346,0.594,1.386865]],[{"name":"Apdex/Uri/Users/sdaubin/Music"},[4,2,0,0,0,0]],[{"name":"Apdex"},[4,2,0,0,0,0]],[{"name":"WebTransaction"},[6,2.825,2.825,0.346,0.594,1.386865]],[{"name":"HttpDispatcher"},[6,2.825,2.825,0.346,0.594,1.386865]],[{"name":"Filesystem/ReadDir//Users/sdaubin/Music","scope":"WebTransaction/Uri/Users/sdaubin/Music"},[6,0.003,0,0,0.001,0.000003]]]]
+debug: metric_data return value 0=[scope=, name=WebTransaction/Uri/Users/sdaubin/Music, 4513522], 1=[scope=, name=Apdex/Uri/Users/sdaubin/Music, 4513520], 2=[scope=, name=Apdex, 18733], 3=[scope=, name=WebTransaction, 39446], 4=[scope=, name=HttpDispatcher, 6155], 5=[scope=WebTransaction/Uri/Users/sdaubin/Music, name=Filesystem/ReadDir//Users/sdaubin/Music, 4513519]
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328649930.344,1328649989.785,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328649989.964,1328650049.785,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650050.069,1328650109.784,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650109.992,1328650169.785,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650170.343,1328650229.784,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650229.983,1328650289.784,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650290.334,1328650349.785,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650349.964,1328650409.785,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650409.961,1328650469.784,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650469.961,1328650529.784,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650529.961,1328650589.785,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801411,1328650589.967,1328650649.784,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":10752,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: connect return value apdex_t=0.5, agent_run_id=1801413, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=2, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=3, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=4, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=5, , , url=/Users/sdaubin/Music, statusCode=200
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to undefined:undefined - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to undefined:undefined - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to undefined:undefined - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Harvest
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Harvest
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Harvest
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Harvest
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+debug: Harvest
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+error: An error occurred connecting to collector.newrelic.com:80 - [object Object]
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: [object Object]
+info: An error occurred invoking method: get_redirect_host
+debug: [object Object]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: {"message":"Invalid license key, please contact support@newrelic.com","error_type":"NewRelic::Agent::LicenseException"}
+info: An error occurred invoking method: get_redirect_host
+debug: Error: Invalid license key, please contact support@newrelic.com
+error: An error occurred connecting to collector.newrelic.com:80 - Error: Invalid license key, please contact support@newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: {"message":"Invalid license key, please contact support@newrelic.com","error_type":"NewRelic::Agent::LicenseException"}
+info: An error occurred invoking method: get_redirect_host
+debug: Error: Invalid license key, please contact support@newrelic.com
+error: An error occurred connecting to collector.newrelic.com:80 - Error: Invalid license key, please contact support@newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: {"message":"Invalid license key, please contact support@newrelic.com","error_type":"NewRelic::Agent::LicenseException"}
+info: An error occurred invoking method: get_redirect_host
+debug: Error: Invalid license key, please contact support@newrelic.com
+error: An error occurred connecting to collector.newrelic.com:80 - Error: Invalid license key, please contact support@newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: {"message":"Invalid license key, please contact support@newrelic.com","error_type":"NewRelic::Agent::LicenseException"}
+info: An error occurred invoking method: get_redirect_host
+debug: Error: Invalid license key, please contact support@newrelic.com
+debug: Harvest
+error: An error occurred connecting to collector.newrelic.com:80 - Error: Invalid license key, please contact support@newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: {"message":"Invalid license key, please contact support@newrelic.com","error_type":"NewRelic::Agent::LicenseException"}
+info: An error occurred invoking method: get_redirect_host
+debug: Error: Invalid license key, please contact support@newrelic.com
+error: An error occurred connecting to collector.newrelic.com:80 - Error: Invalid license key, please contact support@newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: Received Exception from server
+debug: {"message":"Invalid license key, please contact support@newrelic.com","error_type":"NewRelic::Agent::LicenseException"}
+info: An error occurred invoking method: get_redirect_host
+debug: Error: Invalid license key, please contact support@newrelic.com
+error: An error occurred connecting to collector.newrelic.com:80 - Error: Invalid license key, please contact support@newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=yourlicensekey&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11264,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801418, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11304,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801419, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11330,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801420, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=502, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801420,1328652031.734,1328652091.577,[[{"name":"WebTransaction/Uri/Users/sdaubin/Music"},[1,0.147,0.147,0.147,0.147,0.021608999999999996]],[{"name":"Apdex/Uri/Users/sdaubin/Music"},[1,0,0,0,0,0]],[{"name":"Apdex"},[1,0,0,0,0,0]],[{"name":"WebTransaction"},[1,0.147,0.147,0.147,0.147,0.021608999999999996]],[{"name":"HttpDispatcher"},[1,0.147,0.147,0.147,0.147,0.021608999999999996]],[{"name":"Filesystem/ReadDir//Users/sdaubin/Music","scope":"WebTransaction/Uri/Users/sdaubin/Music"},[1,0,0,0,0,0]]]]
+debug: metric_data return value 0=[scope=, name=WebTransaction/Uri/Users/sdaubin/Music, 4513522], 1=[scope=, name=Apdex/Uri/Users/sdaubin/Music, 4513520], 2=[scope=, name=Apdex, 18733], 3=[scope=, name=WebTransaction, 39446], 4=[scope=, name=HttpDispatcher, 6155], 5=[scope=WebTransaction/Uri/Users/sdaubin/Music, name=Filesystem/ReadDir//Users/sdaubin/Music, 4513519]
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11362,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801421, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11386,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801422, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=502, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801422,1328652116.055,1328652175.927,[[{"name":"WebTransaction/Uri/Users/sdaubin/Music"},[1,0.177,0.177,0.177,0.177,0.031328999999999996]],[{"name":"Apdex/Uri/Users/sdaubin/Music"},[1,0,0,0,0,0]],[{"name":"Apdex"},[1,0,0,0,0,0]],[{"name":"WebTransaction"},[1,0.177,0.177,0.177,0.177,0.031328999999999996]],[{"name":"HttpDispatcher"},[1,0.177,0.177,0.177,0.177,0.031328999999999996]],[{"name":"Filesystem/ReadDir//Users/sdaubin/Music","scope":"WebTransaction/Uri/Users/sdaubin/Music"},[1,0,0,0,0,0]]]]
+debug: metric_data return value 0=[scope=, name=WebTransaction/Uri/Users/sdaubin/Music, 4513522], 1=[scope=, name=Apdex/Uri/Users/sdaubin/Music, 4513520], 2=[scope=, name=Apdex, 18733], 3=[scope=, name=WebTransaction, 39446], 4=[scope=, name=HttpDispatcher, 6155], 5=[scope=WebTransaction/Uri/Users/sdaubin/Music, name=Filesystem/ReadDir//Users/sdaubin/Music, 4513519]
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801422,1328652176.603,1328652235.927,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801422,1328652236.106,1328652295.928,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801422,1328652296.506,1328652355.927,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801422,1328652356.246,1328652415.928,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801422,1328652416.664,1328652475.927,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11466,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801423, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11491,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801424, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11540,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801425, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11576,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801426, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11618,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801427, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=2, , , url=/Users/sdaubin/Music, statusCode=200
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11643,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801438, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801438,1328652651.357,1328652711.189,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11669,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801443, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11691,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801446, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11716,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801447, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801447,1328652778.386,1328652838.251,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11742,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801448, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11766,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801449, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801449,1328652873.771,1328652933.651,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11805,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801450, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801450,1328652935.79,1328652995.625,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801450,1328652995.963,1328653055.625,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11837,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801451, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":11990,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801453, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=2, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=3, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=4, , , url=/Users/sdaubin/Music, statusCode=200
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12032,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801454, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=0, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=1, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=2, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=3, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=4, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=5, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=6, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=7, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=8, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=9, , , url=/Users/sdaubin/Music, statusCode=200
+debug: tx push
+debug: tx push
+debug: tx pop
+debug: tx pop
+debug: transaction finished id=10, , , url=/Users/sdaubin/Music, statusCode=200
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12072,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801455, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12095,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801456, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801456,1328653375.937,1328653435.838,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801456,1328653436.354,1328653495.839,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801456,1328653496.013,1328653555.838,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12242,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801457, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12402,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801458, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801458,1328654058.565,1328654118.451,[]]
+debug: metric_data return value
+info: Starting the New Relic node.js agent
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=139, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12462,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801460, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+info: Starting the New Relic node.js agent
+debug: Noticed application running on port 8000
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=get_redirect_host
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=2, Connection=Keep-Alive, host=staging-collector.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  []
+debug: get_redirect_host return value staging-collector-1.newrelic.com
+debug: Redirected from staging-collector.newrelic.com to staging-collector-1.newrelic.com
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=connect
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=144, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [{"pid":12506,"host":"localhost","language":"nodejs","identifier":"My App:nodejs:localhost:8000","app_name":["My App"],"agent_version":"0.0.1"}]
+debug: connect return value apdex_t=0.5, agent_run_id=1801461, url_rules=[ignore=false, replacement=\1, each_segment=false, eval_order=0, replace_all=false, terminate_chain=true, match_expression=^(test_match_nothing)$, ignore=false, replacement=\1/.*\2, each_segment=false, eval_order=2, replace_all=false, terminate_chain=false, match_expression=^(.*)/[0-9][0-9a-f_,-]*\.([0-9a-z][0-9a-z]*)$], collect_errors=true, account_app_id=19066#3ed9cebafb, sampling_rate=0, collect_traces=true, data_report_period=60
+debug: Connected to staging-collector-1.newrelic.com
+info: ApdexT is 0.5
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654199.405,1328654259.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654259.439,1328654319.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654319.789,1328654379.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654379.446,1328654439.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654440.652,1328654499.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654499.44,1328654559.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654559.457,1328654619.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654619.779,1328654679.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654679.447,1328654739.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654739.775,1328654799.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654799.453,1328654859.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654859.442,1328654919.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654919.443,1328654979.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328654979.44,1328655039.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655039.477,1328655099.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655099.439,1328655159.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655159.497,1328655219.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655219.795,1328655279.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655279.453,1328655339.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655339.441,1328655399.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655399.44,1328655459.268,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655459.456,1328655519.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655519.474,1328655579.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655579.443,1328655639.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655639.447,1328655699.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655699.458,1328655759.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655759.446,1328655819.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655819.783,1328655879.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655879.45,1328655939.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655939.469,1328655999.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328655999.456,1328656059.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656059.779,1328656119.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656119.44,1328656179.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656179.45,1328656239.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656239.463,1328656299.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656299.798,1328656359.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656359.532,1328656419.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656419.442,1328656479.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656479.774,1328656539.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656539.442,1328656599.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656599.439,1328656659.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656659.445,1328656719.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656719.474,1328656779.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656779.783,1328656839.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656839.478,1328656899.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656899.457,1328656959.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328656959.491,1328657019.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657019.453,1328657079.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657079.456,1328657139.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657139.464,1328657199.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657199.843,1328657259.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=40, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657259.5,1328657319.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657319.523,1328657379.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657379.452,1328657439.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657439.475,1328657499.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657499.822,1328657559.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657559.487,1328657619.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657619.46,1328657679.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657679.784,1328657739.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657739.454,1328657799.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657799.489,1328657859.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657859.475,1328657919.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657919.58,1328657979.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328657979.439,1328658039.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658039.455,1328658099.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658099.463,1328658159.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658159.783,1328658219.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658219.448,1328658279.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658279.777,1328658339.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658339.471,1328658399.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658399.778,1328658459.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658459.476,1328658519.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658519.829,1328658579.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658579.458,1328658639.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658639.774,1328658699.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658699.543,1328658759.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658759.82,1328658819.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658819.519,1328658879.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658879.789,1328658939.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658939.436,1328658999.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328658999.786,1328659059.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659059.512,1328659119.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659119.781,1328659179.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659179.492,1328659239.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659239.812,1328659299.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659299.481,1328659359.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659359.479,1328659419.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659419.823,1328659479.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659479.469,1328659539.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659539.775,1328659599.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659599.494,1328659659.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659660.085,1328659719.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659719.443,1328659779.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659779.877,1328659839.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659839.466,1328659899.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659899.807,1328659959.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328659959.538,1328660019.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660019.775,1328660079.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660079.438,1328660139.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660139.443,1328660199.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660199.448,1328660259.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660259.507,1328660319.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660319.499,1328660379.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660379.438,1328660439.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660439.821,1328660499.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660499.45,1328660559.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660559.493,1328660619.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660619.455,1328660679.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660679.44,1328660739.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660739.442,1328660799.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660799.469,1328660859.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660859.474,1328660919.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660919.779,1328660979.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328660979.472,1328661039.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661039.456,1328661099.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661099.791,1328661159.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661159.439,1328661219.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661219.769,1328661279.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661279.446,1328661339.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661339.858,1328661399.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661399.456,1328661459.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661459.442,1328661519.266,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661519.438,1328661579.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661579.442,1328661639.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661639.447,1328661699.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661699.783,1328661759.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=41, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661759.442,1328661819.27,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661819.775,1328661879.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661879.442,1328661939.267,[]]
+debug: metric_data return value
+debug: Harvest
+debug: Send with uri: /agent_listener/invoke_raw_method?marshal_format=json&protocol_version=9&license_key=d67afc830dab717fd163bfcb0b8b88423e9a1a3b&method=metric_data
+debug: Headers:  CONTENT-ENCODING=identity, Content-Length=42, Connection=Keep-Alive, host=staging-collector-1.newrelic.com, Content-Type=application/json, User-Agent=NewRelic-NodeAgent/0.1
+debug: Data:  [1801461,1328661939.783,1328661999.267,[]]
+debug: metric_data return value
