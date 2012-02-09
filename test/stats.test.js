@@ -16,7 +16,7 @@ function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
 	assert.equal(max, data[4]);
 }
 
-exports['test stats'] = function() {
+exports['test stats'] = function(beforeExit, assert) {
 	var s = stats.createStats();
 	s.recordValueInMillis(51);
 	s.recordValueInMillis(120, 34);
@@ -25,7 +25,7 @@ exports['test stats'] = function() {
 	verifyStats(s, 3, 0.291, 0.119, 0.051, 0.120);
 };
 
-exports['test stats2'] = function() {
+exports['test stats2'] = function(beforeExit, assert) {
 	var s = stats.createStats();
 	s.recordValueInMillis(120, 0);
 	s.recordValueInMillis(120, 0);
@@ -34,7 +34,7 @@ exports['test stats2'] = function() {
 };
 
 
-exports['test stats merge'] = function() {
+exports['test stats merge'] = function(beforeExit, assert) {
 	var s = stats.createStats();
 	s.recordValueInMillis(51);
 	s.recordValueInMillis(120, 34);
@@ -52,32 +52,50 @@ exports['test stats merge'] = function() {
 	verifyStats(s, 6, 1.473, 1.244, 0.006, 1.120);
 };
 
-exports['test statsengine no apdex'] = function() {
+exports['test statsengine no apdex'] = function(beforeExit, assert) {
 	var s = stats.createStatsEngine(logger);
 	s.getUnscopedStats().getApdexStats('test').incrementFrustrating();
 	assert.equal(0, Object.keys(s.getUnscopedStats().toJSON()).length);
 }
 
-exports['test statsengine with apdex'] = function() {
+exports['test statsengine with apdex'] = function(beforeExit, assert) {
 	var s = stats.createStatsEngine(logger);
 	s.onConnect({'apdex_t' : 0.666 });	
 	s.getUnscopedStats().getApdexStats('test').incrementFrustrating();
 	assert.equal(1, Object.keys(s.getUnscopedStats().toJSON()).length);
 }
 
-exports['test statsengine parseMetricIds'] = function() {
+exports['test statsengine parseMetricIds'] = function(beforeExit, assert) {
 	var s = stats.createStatsEngine(logger);
 	s.onConnect({'apdex_t' : 0.666 });	
 	s.getUnscopedStats().getApdexStats('test').incrementFrustrating();
 	s.getUnscopedStats().getStats('Dispatcher').recordValue(5);
 	s.getScopedStats('Dispatcher').getStats('call').recordValue(5);
 	
-	var data = JSON.stringify(s.getMetricData());
+	var md = s.getMetricData();
+	var data = JSON.stringify(md);
 	assert.equal('[[{"name":"test"},[0,0,1,0,0,0]],[{"name":"Dispatcher"},[1,5,5,5,5,25]],[{"name":"call","scope":"Dispatcher"},[1,5,5,5,5,25]]]', data);
 	
 	s.parseMetricIds([[{'name' : 'test'}, 45], [{'name' : 'call', 'scope':'Dispatcher'}, 55]]);
+	s.mergeMetricData(md);
 	
 	var data = JSON.stringify(s.getMetricData());
 	assert.equal('[[45,[0,0,1,0,0,0]],[{"name":"Dispatcher"},[1,5,5,5,5,25]],[55,[1,5,5,5,5,25]]]', data);
 }
+
+exports['test statsengine mergeMetricData'] = function(beforeExit, assert) {
+	var s = stats.createStatsEngine(logger);
+	
+	s.getUnscopedStats().getStats('Dispatcher').recordValue(5);
+	s.getScopedStats('Dispatcher').getStats('call').recordValue(5);
+	
+	var md = s.getMetricData();
+	
+	s.getUnscopedStats().getStats('Dispatcher').recordValue(5);
+	s.mergeMetricData(md);
+	
+	var data = JSON.stringify(s.getMetricData());
+	assert.equal('[[{"name":"Dispatcher"},[2,10,10,5,5,50]],[{"name":"call","scope":"Dispatcher"},[1,5,5,5,5,25]]]', data);
+}
+
 
