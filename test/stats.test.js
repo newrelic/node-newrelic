@@ -3,9 +3,7 @@ var stats = require('../lib/stats.js');
 var winston = require('winston');
 
 var logger = new (winston.Logger)({
-        transports: [
-            new (winston.transports.Console)(),
-        ]
+        transports: [ new (winston.transports.Console)()]
       });
 
 
@@ -26,6 +24,15 @@ exports['test stats'] = function() {
 	
 	verifyStats(s, 3, 0.291, 0.119, 0.051, 0.120);
 };
+
+exports['test stats2'] = function() {
+	var s = stats.createStats();
+	s.recordValueInMillis(120, 0);
+	s.recordValueInMillis(120, 0);
+	
+	verifyStats(s, 2, 0.240, 0.0, 0.120, 0.120);
+};
+
 
 exports['test stats merge'] = function() {
 	var s = stats.createStats();

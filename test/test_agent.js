@@ -8,7 +8,7 @@ exports.createAgent = function() {
 			return logger;
 		}
 	
-		var config = require('../lib/config.js').initialize({'config':{'app_name':'node.js Tests'}});
+		var config = require('../lib/config.js').initialize(logger, {'config':{'app_name':'node.js Tests'}});
 		this.getConfig = function() {
 			return config;
 		}
