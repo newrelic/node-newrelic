@@ -11,8 +11,8 @@
     "lib": "./lib"
   },
   "main": "lib/newrelic_agent.js",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {"winston": ">= 0.5.9"},
+  "devDependencies": {"expresso": ">= 0.9.2"},
   "repository": {
     "url": ""
   }
