@@ -1,5 +1,5 @@
 var assert = require('assert');
-var stats = require('../lib/stats.js');
+var stats = require('../lib/stats');
 var winston = require('winston');
 
 var logger = new (winston.Logger)({
@@ -56,14 +56,14 @@ exports['test statsengine no apdex'] = function(beforeExit, assert) {
     var s = stats.createStatsEngine(logger);
     s.getUnscopedStats().getApdexStats('test').incrementFrustrating();
     assert.equal(0, Object.keys(s.getUnscopedStats().toJSON()).length);
-}
+};
 
 exports['test statsengine with apdex'] = function(beforeExit, assert) {
     var s = stats.createStatsEngine(logger);
     s.onConnect({'apdex_t' : 0.666 });    
     s.getUnscopedStats().getApdexStats('test').incrementFrustrating();
     assert.equal(1, Object.keys(s.getUnscopedStats().toJSON()).length);
-}
+};
 
 exports['test statsengine parseMetricIds'] = function(beforeExit, assert) {
     var s = stats.createStatsEngine(logger);
@@ -81,7 +81,7 @@ exports['test statsengine parseMetricIds'] = function(beforeExit, assert) {
     
     var data = JSON.stringify(s.getMetricData());
     assert.equal('[[45,[0,0,1,0,0,0]],[{"name":"Dispatcher"},[1,5,5,5,5,25]],[55,[1,5,5,5,5,25]]]', data);
-}
+};
 
 exports['test statsengine mergeMetricData'] = function(beforeExit, assert) {
     var s = stats.createStatsEngine(logger);
@@ -96,6 +96,6 @@ exports['test statsengine mergeMetricData'] = function(beforeExit, assert) {
     
     var data = JSON.stringify(s.getMetricData());
     assert.equal('[[{"name":"Dispatcher"},[2,10,10,5,5,50]],[{"name":"call","scope":"Dispatcher"},[1,5,5,5,5,25]]]', data);
-}
+};
 
 

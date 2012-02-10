@@ -1,7 +1,7 @@
-var trace = require('../lib/trace.js');
-var stats = require('../lib/stats.js');
+var trace = require('../lib/trace');
+var stats = require('../lib/stats');
 var util = require('util');
-var _agent = require('./test_agent.js');
+var _agent = require('./test_agent');
 
 
 var now = new Date();
@@ -21,7 +21,7 @@ exports.testMetricName = function(beforeExit, assert) {
     var stats = agent.transactions[0].getScopedStats().getStats('Custom/Test');
     var data = JSON.stringify(stats);
     assert.equal('[1,0,0,0,0,0]', data);
-}
+};
 
 
 exports.testAfterFinished = function(beforeExit, assert) {
@@ -42,4 +42,4 @@ exports.testAfterFinished = function(beforeExit, assert) {
     var stats = agent.transactions[0].getScopedStats();
     var data = JSON.stringify(stats.getMetricData());
     assert.equal('[[{"name":"Custom/Test2"},[1,0,0,0,0,0]]]', data);
-}
+};
