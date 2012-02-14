@@ -5,8 +5,12 @@ var logger = require('../lib/logger').getLogger();
 function createTransaction(code) {
 	return new function() {
 		this.statusCode = code;
-	}
-}
+	};
+};
+
+exports.bad = function(beforeExit, assert) {
+	assert.fail();
+};
 
 exports.testOnSendError = function(beforeExit, assert) {
 	var service = new error.ErrorService(logger, config['config']);
