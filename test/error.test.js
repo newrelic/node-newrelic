@@ -8,9 +8,6 @@ function createTransaction(code) {
 	};
 };
 
-exports.bad = function(beforeExit, assert) {
-	assert.fail();
-};
 
 exports.testOnSendError = function(beforeExit, assert) {
 	var service = new error.ErrorService(logger, config['config']);
