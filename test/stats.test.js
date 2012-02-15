@@ -1,6 +1,8 @@
 var assert = require('assert');
 var stats = require('../lib/stats');
 var winston = require('winston');
+var util = require('util');
+var events = require('events');
 
 var logger = new (winston.Logger)({
         transports: [ new (winston.transports.Console)()]
@@ -96,6 +98,43 @@ exports['test statsengine mergeMetricData'] = function(beforeExit, assert) {
     
     var data = JSON.stringify(s.getMetricData());
     assert.equal('[[{"name":"Dispatcher"},[2,10,10,5,5,50]],[{"name":"call","scope":"Dispatcher"},[1,5,5,5,5,25]]]', data);
+};
+
+function EventTest() {
+	events.EventEmitter.call(this);
+	
+	this.emitMerge = function(metricData) {
+		this.emit('merge', metricData);
+	};
+}
+util.inherits(EventTest, events.EventEmitter);
+
+function wrapCallback(obj, func)
+{
+	return function() {
+		func.apply(obj, arguments);
+	};
+}
+
+exports.testMergeDataEvent = function(beforeExit, assert) {
+    var s = stats.createStatsEngine(logger);
+    
+    s.getUnscopedStats().getStats('Dispatcher').recordValue(5);
+    s.getScopedStats('Dispatcher').getStats('call').recordValue(5);
+    
+    var md = s.getMetricData();
+    
+    s.getUnscopedStats().getStats('Dispatcher').recordValue(5);
+    
+    var et = new EventTest();
+    et.on('merge', wrapCallback(s, s.mergeMetricData));
+    
+    et.emitMerge(md);
+    
+    beforeExit(function() {
+    	var data = JSON.stringify(s.getMetricData());
+    	assert.equal('[[{"name":"Dispatcher"},[2,10,10,5,5,50]],[{"name":"call","scope":"Dispatcher"},[1,5,5,5,5,25]]]', data);
+    });
 };
 
 
