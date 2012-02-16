@@ -9,6 +9,10 @@ function FixedTime() {
     return now;
 }
 
+exports.testRawStack = function TEST(beforeExit, assert) {
+	var stack = trace.getRawStack();
+	assert.equal('TEST', stack[0].fun.name);
+};
     
 exports.testMetricName = function(beforeExit, assert) {
     var agent = _agent.createAgent();

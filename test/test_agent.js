@@ -32,6 +32,8 @@ exports.createAgent = function() {
         };
         
         this.clearTransaction = function() {};
+        
+        this.getEnvironment = function() { return []; };
     };
 };
 
