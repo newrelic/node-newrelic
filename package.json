@@ -1,19 +1,32 @@
 {
-  "name": "newrelic_agent",
-  "version": "0.0.1",
-  "author": "Saxon D'Aubin",
-  "description": "New Relic node.js agent",
-  "homepage": "http://github.com/fixme",
-  "engines": [
-    "node >= 0.2.2"
-  ],
-  "directories": {
-    "lib": "./lib"
-  },
-  "main": "lib/newrelic_agent.js",
-  "dependencies": {"winston": ">= 0.5.9"},
-  "devDependencies": {"expresso": ">= 0.9.2"},
-  "repository": {
-    "url": ""
+  "name"            : "newrelic_agent"
+, "version"         : "0.0.0"
+, "contributors"    : [
+    {
+      "name"  : "Saxon D'Aubin"
+    , "email" : "saxon@newrelic.com"
+    , "web"   : "http://newrelic.com"
+    }
+  , {
+      "name"  : "Forrest L Norvell"
+    , "email" : "forrest@newrelic.com"
+    , "web"   : "http://newrelic.com/"
+    }
+  ]
+, "description"     : "New Relic Node.js agent"
+, "homepage"        : "http://github.com/newrelic/nodejs_agent"
+, "directories"     : {
+    "lib" : "./lib"
+  }
+, "main"            : "lib/newrelic_agent.js"
+, "dependencies"    : {
+    "winston" : ">= 0.5.9"
+  }
+, "devDependencies" : {
+    "expresso" : ">= 0.9.2"
+  }
+, "repository"      : {
+    "type" : "git"
+  , "url" : "https://github.com/newrelic/nodejs_agent.git"
   }
 }
