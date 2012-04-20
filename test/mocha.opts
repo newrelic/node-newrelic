@@ -1,0 +1,3 @@
+--growl
+--no-colors
+--reporter spec
