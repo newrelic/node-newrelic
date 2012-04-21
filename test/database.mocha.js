@@ -1,5 +1,4 @@
-var mocha   = require('mocha')
-  , should  = require('should')
+var should  = require('should')
   , winston = require('winston')
   , db      = require('../lib/database')
   ;
