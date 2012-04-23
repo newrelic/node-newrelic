@@ -19,6 +19,9 @@
     "lib" : "./lib"
   }
 , "main"            : "lib/newrelic_agent.js"
+, "scripts"         : {
+    "test" : "make test"
+  }
 , "dependencies"    : {
     "winston" : ">= 0.5.9"
   }
