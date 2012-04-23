@@ -1,5 +1,4 @@
 var should  = require('should')
-  , winston = require('winston')
   , metric  = require('../lib/metric')
   , stats   = require('../lib/stats')
   ;
@@ -8,10 +7,6 @@ function Agent(apdexT) {
   this.getApdexT = function () {
     return apdexT;
   };
-}
-
-function mockAgent(apdexT) {
-  return { getApdexT : apdexT };
 }
 
 describe('web transaction metrics', function () {

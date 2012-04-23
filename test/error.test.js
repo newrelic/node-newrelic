@@ -1,8 +1,7 @@
 var should  = require('should')
-  , winston = require('winston')
+  , logger  = require('../lib/logger').getLogger()
   , config  = require('../lib/config.default')
   , error   = require('../lib/error')
-  , logger  = require('../lib/logger').getLogger()
   ;
 
 function createTransaction(code) {

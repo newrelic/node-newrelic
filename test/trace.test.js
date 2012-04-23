@@ -47,7 +47,7 @@ describe('execution tracing', function () {
       return done();
     });
 
-    it('should insert a trace into the stats traced by the agent', function (done) {
+    it('should only insert a single trace per transaction', function (done) {
       var tracer = new trace.Tracer(transaction, 'Custom/Test2');
       tracer.getStartTime = tracer.getEndTime = teststamper;
       tracer.finish();

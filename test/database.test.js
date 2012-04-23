@@ -1,17 +1,9 @@
-var should  = require('should')
-  , winston = require('winston')
-  , db      = require('../lib/database')
+var should = require('should')
+  , logger = require('../lib/logger').getLogger()
+  , db     = require('../lib/database')
   ;
 
 describe('database query parser', function () {
-  var logger;
-
-  before(function (done) {
-    logger = new (winston.Logger)({transports : [new (winston.transports.Console)()]});
-
-    return done();
-  });
-
   describe('SELECT DML', function () {
     it("should parse a simple query", function (done) {
       var ps = db.parseSql("Select * from dude");

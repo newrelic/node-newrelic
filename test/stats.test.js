@@ -1,5 +1,4 @@
 var should  = require('should')
-  , winston = require('winston')
   , stats   = require('../lib/stats')
   ;
 
@@ -15,9 +14,7 @@ function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
 }
 
 describe('statistics calculation', function () {
-  var statistics
-    , logger
-    ;
+  var statistics;
 
   beforeEach(function (done) {
     statistics = stats.createStats();
