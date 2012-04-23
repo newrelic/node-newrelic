@@ -52,10 +52,8 @@ describe('error delivery', function () {
     service.onTransactionFinished(createTransaction(404));
     service.onTransactionFinished(createTransaction(404));
     service.onTransactionFinished(createTransaction(404));
-    service.onTransactionFinished(createTransaction(500));
 
-    service.getErrorCount().should.equal(2, "error count returned by error service should match length of error array");
-    service.getErrors().length.should.equal(2, "error array length should match count returned by error service");
+    service.getErrorCount().should.equal(1, "transaction error count should ignore 404s");
 
     return done();
   });
