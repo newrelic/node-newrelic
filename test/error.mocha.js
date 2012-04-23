@@ -37,7 +37,20 @@ describe('error delivery', function () {
 
   it('should handle errors properly for transactions', function (done) {
     service.onTransactionFinished(createTransaction(400));
-    // this is ignored by default
+    service.onTransactionFinished(createTransaction(500));
+
+    service.getErrorCount().should.equal(2, "error count returned by error service should match length of error array");
+    service.getErrors().length.should.equal(2, "error array length should match count returned by error service");
+
+    return done();
+  });
+
+  it('should ignore 404 errors for transactions', function (done) {
+    service.onTransactionFinished(createTransaction(400));
+    // 404 errors are ignored by default
+    service.onTransactionFinished(createTransaction(404));
+    service.onTransactionFinished(createTransaction(404));
+    service.onTransactionFinished(createTransaction(404));
     service.onTransactionFinished(createTransaction(404));
     service.onTransactionFinished(createTransaction(500));
 
