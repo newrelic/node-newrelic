@@ -29,7 +29,7 @@ describe('execution tracing', function () {
     });
 
     beforeEach(function (done) {
-      agent = require('./test_agent').createAgent();
+      agent = require('./lib/test_agent').createAgent();
       transaction = trace.createTransaction(agent);
 
       return done();

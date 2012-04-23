@@ -13,7 +13,7 @@ describe('connecting to New Relic', function () {
     ;
 
   before(function (done) {
-    agent = require('./test_agent').createAgent();
+    agent = require('./lib/test_agent').createAgent();
     configuration = config.initialize(logger, {
       'config' : {
         'license_key' : testLicense,
