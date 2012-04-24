@@ -1,6 +1,6 @@
 {
   "name"            : "newrelic_agent"
-, "version"         : "0.0.0"
+, "version"         : "0.0.0-3"
 , "contributors"    : [
     {
       "name"  : "Saxon D'Aubin"
@@ -13,12 +13,19 @@
     , "web"   : "http://newrelic.com/"
     }
   ]
-, "description"     : "New Relic Node.js agent"
+, "description"     : "New Relic agent"
+, "keywords"        : [
+    "monitoring"
+  , "debugging"
+  , "instrumentation"
+  , "profiling"
+  , "performance"
+  ]
 , "homepage"        : "http://github.com/newrelic/nodejs_agent"
 , "directories"     : {
     "lib" : "./lib"
   }
-, "main"            : "lib/newrelic_agent.js"
+, "main"            : "lib/newrelic_agent"
 , "scripts"         : {
     "test" : "make test"
   }
@@ -33,4 +40,5 @@
     "type" : "git"
   , "url" : "https://github.com/newrelic/nodejs_agent.git"
   }
+, "private"         : true
 }
