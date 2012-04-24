@@ -1,4 +1,5 @@
 var should  = require('should')
+  , logger  = require('../lib/logger').getLogger()
   , metric  = require('../lib/metric')
   , stats   = require('../lib/stats')
   ;
@@ -15,6 +16,7 @@ describe('web transaction metrics', function () {
     , statsCollection;
 
   before(function (done) {
+    logger.logToConsole(false);
     normalizer = new metric.MetricNormalizer();
 
     return done();

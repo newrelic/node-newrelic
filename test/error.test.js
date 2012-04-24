@@ -11,6 +11,12 @@ function createTransaction(code) {
 describe('error delivery', function () {
   var service;
 
+  before(function (done) {
+    logger.logToConsole(false);
+
+    return done();
+  });
+
   beforeEach(function (done) {
     service = new error.ErrorService(logger, config.config);
 

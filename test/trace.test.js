@@ -1,9 +1,16 @@
 var should  = require('should')
+  , logger  = require('../lib/logger').getLogger()
   , trace   = require('../lib/trace')
   , util    = require('util')
   ;
 
 describe('execution tracing', function () {
+  before(function (done) {
+    logger.logToConsole(false);
+
+    return done();
+  });
+
   it('should accurately return a raw stacktrace', function (done) {
     var stack = trace.getRawStack();
     // nothing like a hardcoded assumption about how the test is being run. Mmmm.
@@ -31,6 +38,7 @@ describe('execution tracing', function () {
     beforeEach(function (done) {
       agent = require('./lib/test_agent').createAgent();
       transaction = trace.createTransaction(agent);
+      logger.logToConsole(false);
 
       return done();
     });
