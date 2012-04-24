@@ -1,4 +1,4 @@
-var logger = require('../../lib/logger').getLogger()
+var logger = require('../../lib/logger')
   , stats  = require('../../lib/stats')
   , trace  = require('../../lib/trace')
   ;

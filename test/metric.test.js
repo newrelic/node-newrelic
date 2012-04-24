@@ -1,5 +1,5 @@
 var should  = require('should')
-  , logger  = require('../lib/logger').getLogger()
+  , logger  = require('../lib/logger')
   , metric  = require('../lib/metric')
   , stats   = require('../lib/stats')
   ;
