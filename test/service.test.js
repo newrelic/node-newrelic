@@ -1,22 +1,36 @@
-var winston = require('winston');
-var service = require('../lib/service');
-var config = require('../lib/config');
-var logger = require('../lib/logger').getLogger();
+var should  = require('should')
+  , logger  = require('../lib/logger').getLogger()
+  , config  = require('../lib/config')
+  , service = require('../lib/service')
+  ;
 
-var agent = require('./test_agent').createAgent();
+describe('connecting to New Relic', function () {
+  var agent
+    , configuration
+    , newRelic
+    , testLicense   = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
+    , collectorHost = 'staging-collector.newrelic.com'
+    ;
 
-var testLicense = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b';
-
-exports['test conn'] = function(beforeExit, assert) {
-	var c = config.initialize(logger, { 'config': {'license_key': testLicense, 'host':'staging-collector.newrelic.com', 'port':80 }});
-    var nr = service.createNewRelicService(agent, c);
-    var connected = false;
-    nr.on('connect', function() {
-        connected = true;
+  before(function (done) {
+    agent = require('./lib/test_agent').createAgent();
+    configuration = config.initialize(logger, {
+      'config' : {
+        'license_key' : testLicense,
+        'host'        : collectorHost,
+        'port'        : 80
+      }
     });
-    nr.connect();
-    
-    beforeExit(function() {
-        assert.ok(connected);
+    newRelic = service.createNewRelicService(agent, configuration);
+
+    return done();
+  });
+
+  it('should establish a connection', function (done) {
+    newRelic.on('connect', function () {
+      // TODO: this should test more, and handle failure better.
+      return done();
     });
-};
+    newRelic.connect();
+  });
+});

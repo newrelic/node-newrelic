@@ -1,57 +1,79 @@
-var db = require('../lib/database');
-var winston = require('winston');
+var should = require('should')
+  , logger = require('../lib/logger').getLogger()
+  , db     = require('../lib/database')
+  ;
 
-var logger = new (winston.Logger)({
-        transports: [ new (winston.transports.Console)()]
-      });
+describe('database query parser', function () {
+  describe('SELECT DML', function () {
+    it("should parse a simple query", function (done) {
+      var ps = db.parseSql("Select * from dude");
+      should.exist(ps);
+      ps.operation.should.equal('select');
+      ps.model.should.equal('dude');
 
-exports['test select'] = function(beforeExit, assert) {
-    var ps = db.parseSql("Select * from dude");
-    assert.isNotNull(ps);
-    assert.equal('select', ps.operation);
-    assert.equal('dude', ps.model);
-};
+      return done();
+    });
 
-exports['test select2'] = function(beforeExit, assert) {
-    var ps = db.parseSql("Select * from transaction_traces_12");
-    assert.isNotNull(ps);
-    assert.equal('select', ps.operation);
-    assert.equal('transaction_traces_12', ps.model);
-};
+    it("should parse another simple query", function (done) {
+      var ps = db.parseSql("Select * from transaction_traces_12");
+      should.exist(ps);
+      ps.operation.should.equal('select');
+      ps.model.should.equal('transaction_traces_12');
 
-exports['test delete'] = function(beforeExit, assert) {
-    var ps = db.parseSql("DELETE\nfrom dude");
-    assert.isNotNull(ps);
-    assert.equal('delete', ps.operation);
-    assert.equal('dude', ps.model);
-};
+      return done();
+    });
+  });
 
-exports['test delete2'] = function(beforeExit, assert) {
-    var ps = db.parseSql("DELETE\nfrom dude where name = 'man'");
-    assert.isNotNull(ps);
-    assert.equal('delete', ps.operation);
-    assert.equal('dude', ps.model);
-};
+  describe('DELETE DML', function () {
+    it("should parse a simple command", function (done) {
+      var ps = db.parseSql("DELETE\nfrom dude");
+      should.exist(ps);
+      ps.operation.should.equal('delete');
+      ps.model.should.equal('dude');
 
+      return done();
+    });
 
-exports['test update'] = function(beforeExit, assert) {
-    var ps = db.parseSql("  update test set value = 1 where id = 12");
-    assert.isNotNull(ps);
-    assert.equal('update', ps.operation);
-    assert.equal('test', ps.model);
-};
+    it("should parse a command with conditions", function (done) {
+      var ps = db.parseSql("DELETE\nfrom dude where name = 'man'");
+      should.exist(ps);
+      ps.operation.should.equal('delete');
+      ps.model.should.equal('dude');
 
-exports['test insert'] = function(beforeExit, assert) {
-    var ps = db.parseSql("  insert into\ntest\nselect * from dude");
-    assert.isNotNull(ps);
-    assert.equal('insert', ps.operation);
-    assert.equal('test', ps.model);
-};
+      return done();
+    });
+  });
 
-exports['test bad'] = function(beforeExit, assert) {
-    var ps = db.parseSql("  bulge into\ndudes\nselect * from dude");
-    assert.isNotNull(ps);
-    assert.equal('unknown', ps.operation);
-    assert.equal('unknown', ps.model);
-};
+  describe('UPDATE DML', function () {
+    it("should parse a command with gratuitous white space and conditions", function (done) {
+      var ps = db.parseSql("  update test set value = 1 where id = 12");
+      should.exist(ps);
+      ps.operation.should.equal('update');
+      ps.model.should.equal('test');
 
+      return done();
+    });
+  });
+
+  describe('INSERT DML', function () {
+    it("should parse a command with a subquery", function (done) {
+      var ps = db.parseSql("  insert into\ntest\nselect * from dude");
+      should.exist(ps);
+      ps.operation.should.equal('insert');
+      ps.model.should.equal('test');
+
+      return done();
+    });
+  });
+
+  describe('invalid DML', function () {
+    it("should return 'unknown' for operation and model when handed garbage", function (done) {
+      var ps = db.parseSql("  bulge into\ndudes\nselect * from dude");
+      should.exist(ps);
+      ps.operation.should.equal('unknown');
+      ps.model.should.equal('unknown');
+
+      return done();
+    });
+  });
+});

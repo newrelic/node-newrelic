@@ -1,11 +1,13 @@
-var config = require('../lib/config');
-var winston = require('winston');
+var should  = require('should')
+  , logger  = require('../lib/logger').getLogger()
+  , config  = require('../lib/config')
+  ;
 
-var logger = new (winston.Logger)({
-        transports: [ new (winston.transports.Console)()]
-      });
-      
-exports['test agent disabled'] = function(beforeExit, assert) {
-    var c = config.initialize(logger, { 'config': {'agent_enabled': false}});    
-    assert.equal(false, c['agent_enabled']);
-};
+describe('disabled test agent', function () {
+  it('should handle a minimal configuration', function (done) {
+    var c = config.initialize(logger, {config : {'agent_enabled' : false}});
+    c.agent_enabled.should.equal(false);
+
+    return done();
+  });
+});

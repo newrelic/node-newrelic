@@ -1,49 +1,69 @@
-var trace = require('../lib/trace');
-var stats = require('../lib/stats');
-var util = require('util');
-var _agent = require('./test_agent');
+var should  = require('should')
+  , logger  = require('../lib/logger').getLogger()
+  , trace   = require('../lib/trace')
+  , util    = require('util')
+  ;
 
+describe('execution tracing', function () {
+  it('should accurately return a raw stacktrace', function (done) {
+    var stack = trace.getRawStack();
+    // nothing like a hardcoded assumption about how the test is being run. Mmmm.
+    stack[1].receiver.type.should.equal('test');
 
-var now = new Date();
-function FixedTime() {
-    return now;
-}
+    return done();
+  });
 
-exports.testRawStack = function TEST(beforeExit, assert) {
-	var stack = trace.getRawStack();
-	assert.equal('TEST', stack[0].fun.name);
-};
-    
-exports.testMetricName = function(beforeExit, assert) {
-    var agent = _agent.createAgent();
-    var tx = trace.createTransaction(agent);
-    var tracer = new trace.Tracer(tx, 'Custom/Test');
-    tracer.getStartTime = tracer.getEndTime = FixedTime;
-    tracer.finish();
-    assert.equal(1, agent.transactions.length);
+  describe('within the tracer', function () {
+    var agent
+      , transaction
+      , teststamp
+      ;
 
-    var stats = agent.transactions[0].getScopedStats().getStats('Custom/Test');
-    var data = JSON.stringify(stats);
-    assert.equal('[1,0,0,0,0,0]', data);
-};
+    function teststamper() {
+      return teststamp;
+    }
 
+    before(function (done) {
+      teststamp = Date.now();
 
-exports.testAfterFinished = function(beforeExit, assert) {
-    var agent = _agent.createAgent();
-    var tx = trace.createTransaction(agent);
+      return done();
+    });
 
-    var tracer = new trace.Tracer(tx, 'Custom/Test2');
-    tracer.getStartTime = tracer.getEndTime = FixedTime;
-    tracer.finish();
-    assert.equal(1, agent.transactions.length);
+    beforeEach(function (done) {
+      agent = require('./lib/test_agent').createAgent();
+      transaction = trace.createTransaction(agent);
 
-    var tracer = new trace.Tracer(tx, 'Custom/Test3');
-    tracer.getStartTime = tracer.getEndTime = FixedTime;
-    tracer.finish();
+      return done();
+    });
 
-    assert.equal(1, agent.transactions.length);
+    it('should insert a trace into the stats traced by the agent', function (done) {
+      var tracer = new trace.Tracer(transaction, 'Custom/Test');
+      tracer.getStartTime = tracer.getEndTime = teststamper;
+      tracer.finish();
+      agent.transactions.length.should.equal(1);
 
-    var stats = agent.transactions[0].getScopedStats();
-    var data = JSON.stringify(stats.getMetricData());
-    assert.equal('[[{"name":"Custom/Test2"},[1,0,0,0,0,0]]]', data);
-};
+      var stats = agent.transactions[0].getScopedStats().getStats('Custom/Test');
+      JSON.stringify(stats).should.equal('[1,0,0,0,0,0]', 'should only have one invocation of the test trace');
+
+      return done();
+    });
+
+    it('should only insert a single trace per transaction', function (done) {
+      var tracer = new trace.Tracer(transaction, 'Custom/Test2');
+      tracer.getStartTime = tracer.getEndTime = teststamper;
+      tracer.finish();
+      agent.transactions.length.should.equal(1);
+
+      tracer = new trace.Tracer(transaction, 'Custom/Test3');
+      tracer.getStartTime = tracer.getEndTime = teststamper;
+      tracer.finish();
+      agent.transactions.length.should.equal(1);
+
+      var stats = agent.transactions[0].getScopedStats();
+      var data = JSON.stringify(stats.getMetricData());
+      JSON.stringify(stats.getMetricData()).should.equal('[[{"name":"Custom/Test2"},[1,0,0,0,0,0]]]');
+
+      return done();
+    });
+  });
+});
