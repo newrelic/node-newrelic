@@ -4,7 +4,6 @@ var logger = require('../../lib/logger').getLogger()
   ;
 
 function StubAgent() {
-    logger.logToConsole();
     logger.setLevel('debug');
 
     this.transactions = [];

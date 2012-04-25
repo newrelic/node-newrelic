@@ -16,7 +16,6 @@ describe('web transaction metrics', function () {
     , statsCollection;
 
   before(function (done) {
-    logger.logToConsole(false);
     normalizer = new metric.MetricNormalizer();
 
     return done();
