@@ -17,12 +17,6 @@ function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
 describe('statistics calculation', function () {
   var statistics;
 
-  before(function (done) {
-    logger.logToConsole(false);
-
-    return done();
-  });
-
   beforeEach(function (done) {
     statistics = stats.createStats();
 

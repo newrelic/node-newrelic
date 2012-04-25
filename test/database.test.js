@@ -4,12 +4,6 @@ var should = require('should')
   ;
 
 describe('database query parser', function () {
-  before(function (done) {
-    logger.logToConsole(false);
-
-    return done();
-  });
-
   describe('SELECT DML', function () {
     it("should parse a simple query", function (done) {
       var ps = db.parseSql("Select * from dude");

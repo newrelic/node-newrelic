@@ -22,7 +22,6 @@ describe('connecting to New Relic', function () {
       }
     });
     newRelic = service.createNewRelicService(agent, configuration);
-    logger.logToConsole(false);
 
     return done();
   });
