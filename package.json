@@ -33,8 +33,9 @@
     "winston" : ">= 0.5.9"
   },
   "devDependencies" : {
-    "mocha"  : "",
-    "should" : ""
+    "mocha"      : "~1",
+    "should"     : "~0.6",
+    "cover"      : "~0.2"
   },
   "repository"      : {
     "type" : "git",

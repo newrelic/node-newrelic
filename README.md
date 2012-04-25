@@ -36,6 +36,14 @@ or
 make test
 ```
 
+If you'd like to check the test suite's code coverage, just run:
+
+```
+make test-cov
+```
+
+and then open `cover_html/index.html` in a browser.
+
 
 ## Continuous integration
 
