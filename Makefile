@@ -6,7 +6,7 @@ COVER = node_modules/cover/bin/cover
 all: build test
 
 node_modules: package.json
-	@rm -r node_modules
+	@rm -rf node_modules
 	npm install --dev
 
 .PHONY: build
