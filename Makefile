@@ -2,7 +2,11 @@ MOCHA = node_modules/mocha/bin/mocha
 MOCHA_NOBIN = node_modules/.bin/_mocha
 COVER = node_modules/cover/bin/cover
 
-all: test
+all: build test
+
+.PHONY: build
+build: clean
+	@npm install --dev
 
 .PHONY: test-cov
 test-cov:
