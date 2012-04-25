@@ -1,6 +1,6 @@
 {
   "name"            : "newrelic_agent",
-  "version"         : "0.0.0",
+  "version"         : "0.0.0-4",
   "contributors"    : [
     {
       "name"  : "Saxon D'Aubin",
