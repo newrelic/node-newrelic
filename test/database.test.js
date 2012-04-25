@@ -1,4 +1,4 @@
-var should = require('should')
+var should = require('should') // explicitly included so should.exist(foo) works
   , logger = require('../lib/logger')
   , db     = require('../lib/database')
   ;
