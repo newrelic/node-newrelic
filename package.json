@@ -1,36 +1,36 @@
 {
-  "name"            : "newrelic_agent"
-, "version"         : "0.0.0"
-, "contributors"    : [
+  "name"            : "newrelic_agent",
+  "version"         : "0.0.0",
+  "contributors"    : [
     {
-      "name"  : "Saxon D'Aubin"
-    , "email" : "saxon@newrelic.com"
-    , "web"   : "http://newrelic.com"
+      "name"  : "Saxon D'Aubin",
+      "email" : "saxon@newrelic.com",
+      "web"   : "http://newrelic.com"
+    },
+    {
+      "name"  : "Forrest L Norvell",
+      "email" : "forrest@newrelic.com",
+      "web"   : "http://newrelic.com/"
     }
-  , {
-      "name"  : "Forrest L Norvell"
-    , "email" : "forrest@newrelic.com"
-    , "web"   : "http://newrelic.com/"
-    }
-  ]
-, "description"     : "New Relic Node.js agent"
-, "homepage"        : "http://github.com/newrelic/nodejs_agent"
-, "directories"     : {
+  ],
+  "description"     : "New Relic Node.js agent",
+  "homepage"        : "http://github.com/newrelic/nodejs_agent",
+  "directories"     : {
     "lib" : "./lib"
-  }
-, "main"            : "lib/newrelic_agent.js"
-, "scripts"         : {
+  },
+  "main"            : "lib/newrelic_agent.js",
+  "scripts"         : {
     "test" : "make test"
-  }
-, "dependencies"    : {
+  },
+  "dependencies"    : {
     "winston" : ">= 0.5.9"
-  }
-, "devDependencies" : {
-    "mocha" : ""
-  , "should" : ""
-  }
-, "repository"      : {
-    "type" : "git"
-  , "url" : "https://github.com/newrelic/nodejs_agent.git"
+  },
+  "devDependencies" : {
+    "mocha"  : "",
+    "should" : ""
+  },
+  "repository"      : {
+    "type" : "git",
+    "url"  : "https://github.com/newrelic/nodejs_agent.git"
   }
 }
