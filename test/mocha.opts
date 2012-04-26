@@ -1,3 +1,4 @@
 --growl
 --no-colors
 --reporter spec
+--require should

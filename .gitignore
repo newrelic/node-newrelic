@@ -1,2 +1,5 @@
 node_modules
 newrelic_agent.log
+.coverage_data
+cover_html
+npm-debug.log

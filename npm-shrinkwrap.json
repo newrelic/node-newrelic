@@ -1,0 +1,87 @@
+{
+  "name": "newrelic_agent",
+  "version": "0.0.0-4",
+  "dependencies": {
+    "winston": {
+      "version": "0.5.11",
+      "dependencies": {
+        "async": {
+          "version": "0.1.18"
+        },
+        "colors": {
+          "version": "0.6.0-1"
+        },
+        "eyes": {
+          "version": "0.1.7"
+        },
+        "loggly": {
+          "version": "0.3.11",
+          "dependencies": {
+            "request": {
+              "version": "2.9.202"
+            },
+            "timespan": {
+              "version": "2.2.0"
+            }
+          }
+        },
+        "pkginfo": {
+          "version": "0.2.3"
+        },
+        "stack-trace": {
+          "version": "0.0.6"
+        }
+      }
+    },
+    "should": {
+      "version": "0.6.1"
+    },
+    "mocha": {
+      "version": "1.0.2",
+      "dependencies": {
+        "commander": {
+          "version": "0.5.2"
+        },
+        "growl": {
+          "version": "1.5.1"
+        },
+        "jade": {
+          "version": "0.20.3",
+          "dependencies": {
+            "mkdirp": {
+              "version": "0.3.1"
+            }
+          }
+        },
+        "diff": {
+          "version": "1.0.2"
+        },
+        "debug": {
+          "version": "0.6.0"
+        }
+      }
+    },
+    "cover": {
+      "version": "0.2.8",
+      "dependencies": {
+        "cli-table": {
+          "version": "0.0.1",
+          "dependencies": {
+            "colors": {
+              "version": "0.3.0"
+            }
+          }
+        },
+        "underscore": {
+          "version": "1.2.4"
+        },
+        "underscore.string": {
+          "version": "2.0.0"
+        },
+        "which": {
+          "version": "1.0.5"
+        }
+      }
+    }
+  }
+}

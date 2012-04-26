@@ -1,5 +1,4 @@
-var should  = require('should')
-  , logger  = require('../lib/logger')
+var logger  = require('../lib/logger')
   , config  = require('../lib/config')
   ;
 
