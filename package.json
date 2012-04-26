@@ -30,7 +30,8 @@
     "test" : "make test"
   },
   "dependencies"    : {
-    "winston" : ">= 0.5.9"
+    "winston" : ">= 0.5.9",
+    "pkginfo" : "~0.2"
   },
   "devDependencies" : {
     "mocha"      : "~1",
