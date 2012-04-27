@@ -11,28 +11,16 @@ function StubAgent() {
       this.transactions.push(transaction);
     };
 
-    var statsEngine = stats.createStatsEngine(logger);
+    this.statsEngine = stats.createStatsEngine(logger);
     trace.setTransactions(this);
-    this.getLogger = function () {
-      return logger;
-    };
 
-    var config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});
-    this.getConfig = function () {
-      return config;
-    };
+    this.config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});
 
-    this.getVersion = function () {
-      return '0.66.6';
-    };
-
-    this.getStatsEngine = function () {
-      return statsEngine;
-    };
+    this.version = '0.66.6';
 
     this.clearTransaction = function () {};
 
-    this.getEnvironment = function () { return []; };
+    this.environment = [];
 }
 
 exports.createAgent = function () {
