@@ -1,3 +1,4 @@
+/*global before:false beforeEach:false after:false afterEach:false describe:false it:false*/
 var logger  = require('../lib/logger')
   , config  = require('../lib/config')
   ;

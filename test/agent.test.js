@@ -1,3 +1,4 @@
+/*global before:false beforeEach:false after:false afterEach:false describe:false it:false*/
 var should = require('should')
   , path = require('path')
   , nr = require(path.join(__dirname, '..', 'lib', 'newrelic_agent.js'))
