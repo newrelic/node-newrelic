@@ -1,10 +1,18 @@
 {
-  "laxcomma" : true,
-  "eqeqeq"   : true,
-  "forin"    : true,
-  "immed"    : true,
-  "latedef"  : true,
-  "newcap"   : true,
-  "nonew"    : true,
-  "node"     : true
+  "laxcomma": true,
+  "eqeqeq": true,
+  "forin": true,
+  "immed": true,
+  "latedef": true,
+  "newcap": true,
+  "nonew": true,
+  "node": true,
+  "predef": [
+    "after",
+    "afterEach",
+    "before",
+    "beforeEach",
+    "describe",
+    "it"
+  ]
 }

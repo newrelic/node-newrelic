@@ -1,4 +1,3 @@
-/*global before:false beforeEach:false after:false afterEach:false describe:false it:false*/
 var should = require('should') // explicitly included so should.exist(foo) works
   , logger = require('../lib/logger')
   , db     = require('../lib/database')
