@@ -60,7 +60,6 @@ describe('execution tracing', function () {
       agent.transactions.length.should.equal(1);
 
       var stats = agent.transactions[0].getScopedStats();
-      var data = JSON.stringify(stats.getMetricData());
       JSON.stringify(stats.getMetricData()).should.equal('[[{"name":"Custom/Test2"},[1,0,0,0,0,0]]]');
 
       return done();
