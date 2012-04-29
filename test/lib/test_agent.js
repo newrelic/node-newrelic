@@ -4,23 +4,32 @@ var logger = require('../../lib/logger')
   ;
 
 function StubAgent() {
-    logger.setLevel('debug');
+  logger.setLevel('debug');
 
-    this.transactions = [];
-    this.transactionFinished = function (transaction) {
-      this.transactions.push(transaction);
-    };
+  this.transactions = [];
+  this.transactionFinished = function (transaction) {
+    this.transactions.push(transaction);
+  };
 
-    this.statsEngine = stats.createStatsEngine(logger);
-    trace.setTransactions(this);
+  this.statsEngine = stats.createStatsEngine(logger);
+  trace.setTransactions(this);
 
-    this.config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});
+  this.config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});
 
-    this.version = '0.66.6';
+  this.version = '0.66.6';
 
-    this.clearTransaction = function () {};
+  this.clearTransaction = function () {};
 
-    this.environment = [];
+  this.environment = {
+    toJSON : function () {
+      return {
+        "Processors" : 2,
+        "OS"         : 'BOGONUXX',
+        "OS version" : "1.15",
+        "Arch"       : "z80"
+      };
+    }
+  };
 }
 
 exports.createAgent = function () {
