@@ -20,15 +20,15 @@ describe('error delivery', function () {
     var errors = [1, 2, 3, 4, 5];
 
     service.onSendError(errors);
-    service.getErrors().length.should.equal(5, '5 errors on the queue after the first submission');
+    service.errors.length.should.equal(5, '5 errors on the queue after the first submission');
 
     service.onSendError(errors);
-    service.getErrors().length.should.equal(10, '10 errors on the queue after the second submission');
+    service.errors.length.should.equal(10, '10 errors on the queue after the second submission');
 
     service.onSendError(errors);
     service.onSendError(errors);
     service.onSendError([3,4,5,6,6,6,6,6]); // we're over the max here.
-    service.getErrors().length.should.equal(20, '20 errors on the queue after overflowing the submission queue');
+    service.errors.length.should.equal(20, '20 errors on the queue after overflowing the submission queue');
 
     return done();
   });
@@ -37,8 +37,8 @@ describe('error delivery', function () {
     service.onTransactionFinished(createTransaction(400));
     service.onTransactionFinished(createTransaction(500));
 
-    service.getErrorCount().should.equal(2, "error count returned by error service should match length of error array");
-    service.getErrors().length.should.equal(2, "error array length should match count returned by error service");
+    service.errorCount.should.equal(2, "error count returned by error service should match length of error array");
+    service.errors.length.should.equal(2, "error array length should match count returned by error service");
 
     return done();
   });
@@ -51,7 +51,7 @@ describe('error delivery', function () {
     service.onTransactionFinished(createTransaction(404));
     service.onTransactionFinished(createTransaction(404));
 
-    service.getErrorCount().should.equal(1, "transaction error count should ignore 404s");
+    service.errorCount.should.equal(1, "transaction error count should ignore 404s");
 
     return done();
   });
