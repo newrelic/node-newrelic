@@ -16,7 +16,7 @@ function StubAgent() {
     this.transactions.push(transaction);
   };
 
-  this.statsEngine = stats.createStatsEngine(logger);
+  this.statsEngine = new stats.StatsEngine(logger);
   trace.setTransactions(this);
 
   this.config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});
