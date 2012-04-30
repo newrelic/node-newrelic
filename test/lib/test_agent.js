@@ -1,9 +1,14 @@
-var logger = require('../../lib/logger')
-  , stats  = require('../../lib/stats')
-  , trace  = require('../../lib/trace')
+var path   = require('path')
+  , events = require('events')
+  , util   = require('util')
+  , logger = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
+  , stats  = require(path.join(__dirname, '..', '..', 'lib', 'stats'))
+  , trace  = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
   ;
 
 function StubAgent() {
+  events.EventEmitter.call(this);
+
   logger.setLevel('debug');
 
   this.transactions = [];
@@ -31,6 +36,7 @@ function StubAgent() {
     }
   };
 }
+util.inherits(StubAgent, events.EventEmitter);
 
 exports.createAgent = function () {
   return new StubAgent();
