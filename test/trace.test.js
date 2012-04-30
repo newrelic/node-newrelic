@@ -1,4 +1,5 @@
-var logger  = require('../lib/logger')
+var should  = require('should')
+  , logger  = require('../lib/logger')
   , trace   = require('../lib/trace')
   , util    = require('util')
   ;
@@ -12,14 +13,30 @@ describe('execution tracing', function () {
     return done();
   });
 
+  describe('working with raw timers', function () {
+    it('should have a start defined on instantiation', function (done) {
+      var timer = new trace.Timer();
+      should.exist(timer.start);
+
+      return done();
+    });
+
+    it('should not have a end defined on instantiation', function (done) {
+      var timer = new trace.Timer();
+      should.not.exist(timer.end);
+
+      return done();
+    });
+  });
+
   describe('within the tracer', function () {
     var agent
       , transaction
       , teststamp
       ;
 
-    function teststamper() {
-      return teststamp;
+    function stubDuration () {
+      return 0;
     }
 
     before(function (done) {
@@ -37,7 +54,7 @@ describe('execution tracing', function () {
 
     it('should insert a trace into the stats traced by the agent', function (done) {
       var tracer = new trace.Tracer(transaction, 'Custom/Test');
-      tracer.getStartTime = tracer.getEndTime = teststamper;
+      tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
@@ -49,12 +66,12 @@ describe('execution tracing', function () {
 
     it('should only insert a single trace per transaction', function (done) {
       var tracer = new trace.Tracer(transaction, 'Custom/Test2');
-      tracer.getStartTime = tracer.getEndTime = teststamper;
+      tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
       tracer = new trace.Tracer(transaction, 'Custom/Test3');
-      tracer.getStartTime = tracer.getEndTime = teststamper;
+      tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
