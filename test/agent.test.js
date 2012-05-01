@@ -36,7 +36,7 @@ describe('the New Relic agent', function () {
     return done();
   });
 
-  describe("when triggering events defined on the agent", function () {
+  describe("when dealing with its event handlers", function () {
     var connection;
 
     before(function (done) {
@@ -54,40 +54,93 @@ describe('the New Relic agent', function () {
       return done();
     });
 
-    it("should fire the statsEngine.onConnect handler when the config is changed", function (done) {
-      agent.config.listeners('change').length.should.equal(1);
+    describe("when setting up event subscriptions", function () {
+      it("should have one handler defined on the 'change' event on the agent's configuration", function (done) {
+        agent.config.listeners('change').length.should.equal(1);
 
-      return done();
+        return done();
+      });
+
+      it("should have two handlers defined on the 'connect' event on the agent", function (done) {
+        connection.listeners('connect').length.should.equal(2);
+
+        return done();
+      });
+
+      it("should have one handler defined on the 'metricDataError' event on the agent", function (done) {
+        connection.listeners('metricDataError').length.should.equal(1);
+
+        return done();
+      });
+
+      it("should have one handler defined on the 'metricDataResponse' event on the agent", function (done) {
+        connection.listeners('metricDataResponse').length.should.equal(1);
+
+        return done();
+      });
+
+      it("should have one handler defined on the 'errorDataError' event on the agent", function (done) {
+        connection.listeners('errorDataError').length.should.equal(1);
+
+        return done();
+      });
+
+      it("should have one handler defined on the 'connectError' event on the agent", function (done) {
+        connection.listeners('connectError').length.should.equal(1);
+
+        return done();
+      });
     });
 
-    it("should have two handlers defined on the 'connect' event on the agent", function (done) {
-      connection.listeners('connect').length.should.equal(2);
+    describe("when signaling events out of band", function () {
+      it("should reset the stats engine's ApdexT value when the configuration is changed", function (done) {
+        should.not.exist(agent.statsEngine.apdexT);
+        process.nextTick(function () {
+          should.exist(agent.statsEngine.apdexT);
+          agent.statsEngine.apdexT.should.equal(0.666);
 
-      return done();
-    });
+          return done();
+        });
 
-    it("should have one handler defined on the 'metricDataError' event on the agent", function (done) {
-      connection.listeners('metricDataError').length.should.equal(1);
+        agent.config.emit('change', {'apdex_t' : 0.666});
+      });
 
-      return done();
-    });
+      it("should reset the configuration and metrics normalizer when the agent connects", function (done) {
+        should.not.exist(agent.config.apdex_t);
+        process.nextTick(function () {
+          should.exist(agent.config.apdex_t);
+          agent.config.apdex_t.should.equal(0.742);
 
-    it("should have one handler defined on the 'metricDataResponse' event on the agent", function (done) {
-      connection.listeners('metricDataResponse').length.should.equal(1);
+          should.exist(agent.statsEngine.apdexT);
+          agent.statsEngine.apdexT.should.equal(0.742);
 
-      return done();
-    });
+          should.exist(agent.metricNormalizer.rules);
+          agent.metricNormalizer.rules.should.eql([0]);
 
-    it("should have one handler defined on the 'errorDataError' event on the agent", function (done) {
-      connection.listeners('errorDataError').length.should.equal(1);
+          return done();
+        });
 
-      return done();
-    });
+        connection.emit('connect', {'apdex_t' : 0.742, url_rules : [0]});
+      });
 
-    it("should have one handler defined on the 'connectError' event on the agent", function (done) {
-      connection.listeners('connectError').length.should.equal(1);
+      it("should parse metrics responses when metric data is received", function (done) {
+        var STATNAME = "Custom/Test/events";
+        var SCOPE    = "TEST";
+        var METRICID = "test000000001";
 
-      return done();
+        var testIDs = {};
+        testIDs[STATNAME + ',' + SCOPE] = METRICID;
+
+        agent.statsEngine.metricIds.should.eql([]);
+        process.nextTick(function () {
+          agent.statsEngine.metricIds.should.eql(testIDs);
+
+          return done();
+        });
+
+        var scopedStats = agent.statsEngine.getScopedStats();
+        connection.emit('metricDataResponse', [[{"name" : STATNAME, "scope" : SCOPE}, METRICID]]);
+      });
     });
   });
 });
