@@ -1,10 +1,12 @@
-var logger  = require('../lib/logger')
-  , stats   = require('../lib/stats')
+var path    = require('path')
+  , should  = require('should')
+  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , stats   = require(path.join(__dirname, '..', 'lib', 'stats'))
   ;
 
 function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
     var data = stats.toJSON();
-    data.should.exist;
+    should.exist(data);
 
     data[0].should.equal(callCount, "the call counts should match");
     data[1].should.equal(totalTime, "the total time tracked should match");
@@ -13,11 +15,49 @@ function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
     data[4].should.equal(max, "the maximum should match");
 }
 
-describe('statistics calculation', function () {
+describe("metric data sets", function () {
+  var engine
+    , unscoped
+    , SCOPE = "TEST"
+    , NAME = "Custom/Test/events"
+    ;
+
+  beforeEach(function (done) {
+    engine = new stats.StatsEngine(logger);
+    unscoped = new stats.StatsCollection(engine);
+
+    return done();
+  });
+
+  it("shouldn't complain when given an empty data set", function (done) {
+    var mds = new stats.MetricDataSet(unscoped, engine.scopedStats, {});
+    var result;
+    (function () { result = JSON.stringify(mds); }).should.not.throw();
+
+    result.should.eql('[]');
+
+    return done();
+  });
+
+  it("should produce correct data for serialization", function (done) {
+    engine.statsByScope(SCOPE).byName(NAME).recordValueInMillis(1200, 1000);
+
+    var mds = new stats.MetricDataSet(unscoped, engine.scopedStats, {});
+    var result;
+    (function () { result = JSON.stringify(mds); }).should.not.throw();
+
+    var expected = '[[{"name":"Custom/Test/events","scope":"TEST"},[1,1.2,1,1.2,1.2,1.44]]]';
+    result.should.equal(expected);
+
+    return done();
+  });
+});
+
+describe("statistics calculation", function () {
   var statistics;
 
   beforeEach(function (done) {
-    statistics = stats.createStats();
+    statistics = new stats.Stats();
 
     return done();
   });

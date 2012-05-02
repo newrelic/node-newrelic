@@ -58,7 +58,7 @@ describe('execution tracing', function () {
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
-      var stats = agent.transactions[0].getScopedStats().getStats('Custom/Test');
+      var stats = agent.transactions[0].scopedStats.byName('Custom/Test');
       JSON.stringify(stats).should.equal('[1,0,0,0,0,0]', 'should only have one invocation of the test trace');
 
       return done();
@@ -75,7 +75,7 @@ describe('execution tracing', function () {
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
-      var stats = agent.transactions[0].getScopedStats();
+      var stats = agent.transactions[0].scopedStats;
       JSON.stringify(stats.getMetricData()).should.equal('[[{"name":"Custom/Test2"},[1,0,0,0,0,0]]]');
 
       return done();
