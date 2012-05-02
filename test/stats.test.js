@@ -5,14 +5,14 @@ var path    = require('path')
   ;
 
 function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
-    var data = stats.toJSON();
-    should.exist(data);
+  var data = stats.toJSON();
+  should.exist(data);
 
-    data[0].should.equal(callCount, "the call counts should match");
-    data[1].should.equal(totalTime, "the total time tracked should match");
-    data[2].should.equal(totalExclusive, "the total exclusive should match");
-    data[3].should.equal(min, "the minimum should match");
-    data[4].should.equal(max, "the maximum should match");
+  data[0].should.equal(callCount, "the call counts should match");
+  data[1].should.equal(totalTime, "the total time tracked should match");
+  data[2].should.equal(totalExclusive, "the total exclusive should match");
+  data[3].should.equal(min, "the minimum should match");
+  data[4].should.equal(max, "the maximum should match");
 }
 
 describe("metric data sets", function () {
