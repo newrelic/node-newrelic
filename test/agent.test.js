@@ -138,7 +138,6 @@ describe('the New Relic agent', function () {
           return done();
         });
 
-        var scopedStats = agent.statsEngine.getScopedStats();
         connection.emit('metricDataResponse', [[{"name" : STATNAME, "scope" : SCOPE}, METRICID]]);
       });
     });
