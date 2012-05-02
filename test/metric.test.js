@@ -4,9 +4,7 @@ var logger  = require('../lib/logger')
   ;
 
 function Agent(apdexT) {
-  this.getApdexT = function () {
-    return apdexT;
-  };
+  this.apdexT = apdexT;
 }
 
 describe('web transaction metrics', function () {
