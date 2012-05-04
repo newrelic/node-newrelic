@@ -1,13 +1,27 @@
 var should = require('should')
-  , path = require('path')
-  , nr = require(path.join(__dirname, '..', 'lib', 'newrelic_agent.js'))
+  , path   = require('path')
+  , mocker = require(path.join(__dirname, 'lib', 'mock_connection'))
+  , NR     = require(path.join(__dirname, '..', 'lib', 'newrelic_agent.js'))
   ;
 
 describe('the New Relic agent', function () {
-  var agent;
+  var agent
+    , connection
+    ;
 
   before(function (done) {
-    agent = nr.agent;
+    agent = new NR({connection : new mocker.Connection()});
+
+    agent.on('connect', function () {
+      connection = agent.connection;
+      should.exist(connection);
+
+      return done();
+    });
+  });
+
+  after(function (done) {
+    agent.stop();
 
     return done();
   });
@@ -37,23 +51,6 @@ describe('the New Relic agent', function () {
   });
 
   describe("when dealing with its event handlers", function () {
-    var connection;
-
-    before(function (done) {
-      agent.on('connect', function () {
-        connection = agent.connection;
-        should.exist(connection);
-
-        return done();
-      });
-    });
-
-    after(function (done) {
-      agent.stop();
-
-      return done();
-    });
-
     describe("when setting up event subscriptions", function () {
       it("should have one handler defined on the 'change' event on the agent's configuration", function (done) {
         agent.config.listeners('change').length.should.equal(1);
