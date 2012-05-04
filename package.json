@@ -25,7 +25,6 @@
   "directories"     : {
     "lib" : "lib"
   },
-  "main"            : "lib/newrelic_agent.js",
   "scripts"         : {
     "test" : "make test"
   },
