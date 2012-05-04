@@ -36,7 +36,8 @@
   "devDependencies" : {
     "mocha"      : "~1",
     "should"     : "~0.6",
-    "cover"      : "~0.2"
+    "cover"      : "~0.2",
+    "request"    : "~2"
   },
   "repository"      : {
     "type" : "git",

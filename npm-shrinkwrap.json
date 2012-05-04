@@ -25,9 +25,6 @@
             }
           }
         },
-        "pkginfo": {
-          "version": "0.2.3"
-        },
         "stack-trace": {
           "version": "0.0.6"
         }
@@ -35,6 +32,9 @@
     },
     "pkginfo": {
       "version": "0.2.3"
+    },
+    "request": {
+      "version": "2.9.202"
     },
     "should": {
       "version": "0.6.1"
