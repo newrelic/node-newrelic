@@ -15,12 +15,14 @@ describe('connecting to New Relic', function () {
     agent = require('./lib/test_agent').createAgent();
     configuration = config.initialize(logger, {
       'config' : {
+        'app_name'    : 'node.js Tests',
         'license_key' : testLicense,
         'host'        : collectorHost,
         'port'        : 80
       }
     });
-    newRelic = service.createNewRelicService(agent, configuration);
+    agent.config = configuration;
+    newRelic = service.createNewRelicService(agent);
 
     return done();
   });
