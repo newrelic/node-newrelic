@@ -5,15 +5,15 @@ var path   = require('path')
   , config = require(path.join(__dirname, '..', 'lib', 'config'))
   ;
 
-describe('disabled test agent', function () {
-  it('should handle a minimal configuration', function (done) {
+describe("the agent configuration", function () {
+  it("should handle a directly passed minimal configuration", function (done) {
     var c = config.initialize(logger, {config : {'agent_enabled' : false}});
     c.agent_enabled.should.equal(false);
 
     return done();
   });
 
-  describe('when overriding the config file location via NR_HOME', function () {
+  describe("when overriding the config file location via NR_HOME", function () {
     var origHome
       , startDir
       , DESTDIR = path.join(__dirname, 'xXxNRHOMETESTxXx')
@@ -67,8 +67,33 @@ describe('disabled test agent', function () {
       });
     });
 
-    it('should load the configuration', function (done) {
+    it("should load the configuration", function (done) {
       (function () { config.initialize(logger); }).should.not.throw();
+
+      return done();
+    });
+
+    it("should expose the location of the overridden configuration on the resulting object", function (done) {
+      var configuration = config.initialize(logger);
+      configuration.newrelic_home.should.equal(DESTDIR);
+
+      return done();
+    });
+
+    it("should correctly expose all of the default properties", function (done) {
+      var configuration = config.initialize(logger);
+
+      delete configuration.newrelic_home;
+
+      configuration.app_name.should.eql(['MyApplication']);
+      configuration.host.should.equal('collector.newrelic.com');
+      configuration.port.should.equal(80);
+      configuration.log_level.should.equal('info');
+      configuration.agent_enabled.should.equal(true);
+      configuration.error_collector.enabled.should.equal(true);
+      configuration.error_collector.ignore_status_codes.should.eql([404]);
+      configuration.transaction_tracer.enabled.should.equal(true);
+      configuration.transaction_tracer.trace_threshold.should.equal('apdex_f');
 
       return done();
     });
