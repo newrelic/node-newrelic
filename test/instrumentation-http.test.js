@@ -46,7 +46,7 @@ describe('agent instrumentation of the http module', function () {
   it("should record unscoped path stats after a normal request", function (done) {
     var pathStats = JSON.stringify(agent.statsEngine.unscopedStats.byName('WebTransaction/Uri/path'));
     should.exist(pathStats);
-    pathStats.should.match(/^\[[0-9.,]+\]$/);
+    pathStats.should.match(/^\[1,[0-9.,]+\]$/);
 
     return done();
   });
@@ -60,7 +60,7 @@ describe('agent instrumentation of the http module', function () {
   it("should record unscoped HTTP dispatcher stats after a normal request", function (done) {
     var dispatchStats = JSON.stringify(agent.statsEngine.unscopedStats.byName('HttpDispatcher'));
     should.exist(dispatchStats);
-    dispatchStats.should.match(/^\[[0-9.,]+\]$/);
+    dispatchStats.should.match(/^\[1,[0-9.,]+\]$/);
 
     return done();
   });
