@@ -52,10 +52,9 @@ describe("agent instrumentation of the fs module", function () {
         files.should.include(filename);
       });
 
-      console.error(agent.statsEngine.unscopedStats);
       var readdirStats = JSON.stringify(agent.statsEngine.statsByScope('FIXME').byName('Filesystem/ReadDir/' + TESTDIR));
       should.exist(readdirStats);
-      readdirStats.should.match(/^\[1,[0-9.,]+\]$/);
+      readdirStats.should.match(/^\[[0-9.,]+\]$/);
 
       return done();
     });
