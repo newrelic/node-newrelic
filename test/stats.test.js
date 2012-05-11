@@ -1,7 +1,8 @@
-var path    = require('path')
-  , should  = require('should')
-  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , stats   = require(path.join(__dirname, '..', 'lib', 'stats'))
+var path        = require('path')
+  , should      = require('should')
+  , logger      = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , stats       = require(path.join(__dirname, '..', 'lib', 'stats'))
+  , statsEngine = require(path.join(__dirname, '..', 'lib', 'stats', 'engine'))
   ;
 
 function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
@@ -23,7 +24,7 @@ describe("metric data sets", function () {
     ;
 
   beforeEach(function (done) {
-    engine = new stats.StatsEngine(logger);
+    engine = statsEngine.reset();
     unscoped = new stats.Collection(engine);
 
     return done();

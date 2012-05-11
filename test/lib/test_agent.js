@@ -1,9 +1,9 @@
-var path   = require('path')
-  , events = require('events')
-  , util   = require('util')
-  , logger = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
-  , stats  = require(path.join(__dirname, '..', '..', 'lib', 'stats'))
-  , trace  = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+var path        = require('path')
+  , events      = require('events')
+  , util        = require('util')
+  , logger      = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
+  , statsEngine = require(path.join(__dirname, '..', '..', 'lib', 'stats', 'engine'))
+  , trace       = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
   ;
 
 function StubAgent() {
@@ -16,7 +16,7 @@ function StubAgent() {
     this.transactions.push(transaction);
   };
 
-  this.statsEngine = new stats.StatsEngine(logger);
+  this.statsEngine = statsEngine.engine;
   trace.setTransactions(this);
 
   this.config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});
