@@ -24,7 +24,7 @@ describe("metric data sets", function () {
 
   beforeEach(function (done) {
     engine = new stats.StatsEngine(logger);
-    unscoped = new stats.StatsCollection(engine);
+    unscoped = new stats.Collection(engine);
 
     return done();
   });
