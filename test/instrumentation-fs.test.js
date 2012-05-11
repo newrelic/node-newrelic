@@ -1,8 +1,7 @@
 var should  = require('should')
   , path    = require('path')
-  , mocker  = require(path.join(__dirname, 'lib', 'mock_connection'))
-  , NR      = require(path.join(__dirname, '..', 'lib', 'newrelic_agent.js'))
   , fs      = require('fs')
+  , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 describe("agent instrumentation of the fs module", function () {
@@ -14,8 +13,7 @@ describe("agent instrumentation of the fs module", function () {
     ;
 
   before(function (done) {
-    var connection = new mocker.Connection();
-    agent = new NR({connection : connection});
+    agent = helper.loadMockedAgent();
 
     fs.mkdir(TESTDIR, function (error) {
       if (error) return done(error);
@@ -35,6 +33,8 @@ describe("agent instrumentation of the fs module", function () {
 
     fs.rmdir(TESTDIR, function (error) {
       if (error) return done(error);
+
+      helper.unloadAgent(agent);
 
       return done();
     });

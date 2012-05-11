@@ -2,8 +2,7 @@ var should  = require('should')
   , path    = require('path')
   , http    = require('http')
   , request = require('request')
-  , mocker  = require(path.join(__dirname, 'lib', 'mock_connection'))
-  , NR      = require(path.join(__dirname, '..', 'lib', 'newrelic_agent.js'))
+  , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 describe('agent instrumentation of the http module', function () {
@@ -14,8 +13,7 @@ describe('agent instrumentation of the http module', function () {
   var PAGE = '<html><head><title>test response</title></head><body><p>I heard you like HTML.</p></body></html>';
 
   before(function (done) {
-    var connection = new mocker.Connection();
-    agent = new NR({connection : connection});
+    agent = helper.loadMockedAgent();
 
     var server = http.createServer(function (request, response) {
       response.writeHead(200, {'Content-Length' : PAGE.length, 'Content-Type' : 'text/html'});
@@ -32,6 +30,12 @@ describe('agent instrumentation of the http module', function () {
         return done();
       });
     });
+  });
+
+  after(function (done) {
+    helper.unloadAgent(agent);
+
+    return done();
   });
 
   it("should successfully fetch the page", function (done) {
