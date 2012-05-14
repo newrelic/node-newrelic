@@ -12,7 +12,7 @@ describe('connecting to New Relic', function () {
     ;
 
   before(function (done) {
-    agent = require('./lib/test_agent').createAgent();
+    agent = require('./lib/stub_agent').createAgent();
     configuration = config.initialize(logger, {
       'config' : {
         'app_name'    : 'node.js Tests',

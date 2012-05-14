@@ -46,7 +46,7 @@ describe('execution tracing', function () {
     });
 
     beforeEach(function (done) {
-      agent = require('./lib/test_agent').createAgent();
+      agent = require('./lib/stub_agent').createAgent();
       transaction = trace.createTransaction(agent);
 
       return done();
