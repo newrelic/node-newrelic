@@ -22,9 +22,7 @@ function getAgentPath() {
 }
 
 exports.loadAgent = function (options) {
-  var Agent = require(getAgentPath());
-
-  return new Agent(options);
+  return require(getAgentPath())(options);
 };
 
 exports.loadMockedAgent = function () {
