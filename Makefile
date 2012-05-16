@@ -7,7 +7,7 @@ all: build test
 
 node_modules: package.json
 	@rm -rf node_modules
-	npm install --dev
+	npm install
 
 build: clean node_modules
 
