@@ -1,6 +1,7 @@
-var logger  = require('../lib/logger')
-  , config  = require('../lib/config.default')
-  , error   = require('../lib/error')
+var path    = require('path')
+  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , config  = require(path.join(__dirname, '..', 'lib', 'config.default'))
+  , error   = require(path.join(__dirname, '..', 'lib', 'error'))
   ;
 
 function createTransaction(code) {
