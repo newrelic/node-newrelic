@@ -1,7 +1,6 @@
 var should  = require('should')
   , path    = require('path')
   , http    = require('http')
-  , request = require('request')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
@@ -21,14 +20,31 @@ describe('agent instrumentation of the http module', function () {
     });
 
     server.listen(8123, 'localhost', function () {
-      request.get('http://localhost:8123/path', function (error, response, body) {
-        if (error) return done(error);
+      fetchedBody = '';
+      var req = http.request({port   : 8123,
+                              host   : 'localhost',
+                              path   : '/path',
+                              method : 'GET'},
+                             function (response) {
+                               if (response.statusCode !== 200) return done(response.statusCode);
 
-        fetchedResponse = response;
-        fetchedBody = body;
+                               fetchedResponse = response;
 
-        return done();
+                               response.setEncoding('utf8');
+                               response.on('data', function (data) {
+                                 fetchedBody = fetchedBody + data;
+                               });
+
+                               response.on('end', function () {
+                                 return done();
+                               });
+                             });
+
+      req.on('error', function (error) {
+        return done(error);
       });
+
+      req.end();
     });
   });
 
@@ -48,23 +64,22 @@ describe('agent instrumentation of the http module', function () {
   });
 
   it("should record unscoped path stats after a normal request", function (done) {
-    var pathStats = JSON.stringify(agent.statsEngine.unscopedStats.byName('WebTransaction/Uri/path'));
-    should.exist(pathStats);
-    pathStats.should.match(/^\[1,[0-9.,]+\]$/);
+    var pathStats = agent.statsEngine.unscopedStats.byName('WebTransaction/Uri/path').toJSON();
+    pathStats[0].should.equal(1);
 
     return done();
   });
 
   it("should indicate that the http dispatcher is in play", function (done) {
     agent.environment.toJSON().should.includeEql(['Dispatcher', 'http']);
+    debugger;
 
     return done();
   });
 
   it("should record unscoped HTTP dispatcher stats after a normal request", function (done) {
-    var dispatchStats = JSON.stringify(agent.statsEngine.unscopedStats.byName('HttpDispatcher'));
-    should.exist(dispatchStats);
-    dispatchStats.should.match(/^\[1,[0-9.,]+\]$/);
+    var dispatchStats = agent.statsEngine.unscopedStats.byName('HttpDispatcher').toJSON();
+    dispatchStats[0].should.equal(1);
 
     return done();
   });
