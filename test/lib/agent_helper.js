@@ -1,5 +1,6 @@
 var path = require('path')
   , mocker = require(path.join(__dirname, 'mock_connection'))
+  , trace = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
   ;
 
 /*
@@ -22,6 +23,7 @@ function getAgentPath() {
 }
 
 exports.loadAgent = function (options) {
+  trace.resetTransactions();
   return require(getAgentPath())(options);
 };
 
