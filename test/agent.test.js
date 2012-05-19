@@ -5,18 +5,31 @@ var should = require('should')
 
 describe('the New Relic agent', function () {
   describe("when working with a live connection to the service, created in the traditional manner", function () {
+    var agent;
+
+    before(function (done) {
+      agent = helper.loadAgent();
+
+      return done();
+    });
+
+    after(function (done) {
+      var deaded = helper.unloadAgent(agent);
+      should.exist(deaded);
+
+      return done();
+    });
+
     it("should start up properly", function (done) {
-      var agent = helper.loadAgent();
-      should.exist(agent);
+      should.exist(agent, 'agent exists');
 
       agent.on('connect', function () {
-        agent.connection.isConnected.should.be.ok;
-
-        var deaded = helper.unloadAgent(agent);
-        should.exist(deaded);
+        should.exist(agent.connection, 'connection exists');
 
         return done();
       });
+
+      agent.noticeAppPort(6666);
     });
   });
 
@@ -34,6 +47,8 @@ describe('the New Relic agent', function () {
 
         return done();
       });
+
+      agent.noticeAppPort(6666);
     });
 
     after(function (done) {
