@@ -34,7 +34,7 @@
   },
   "devDependencies" : {
     "mocha"      : "~1",
-    "should"     : "~0.6",
+    "chai"       : "~1.0",
     "cover"      : "~0.2",
     "request"    : "~2",
     "express"    : "~2",

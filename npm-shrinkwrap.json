@@ -3,10 +3,10 @@
   "version": "0.0.0-9",
   "dependencies": {
     "winston": {
-      "version": "0.5.11",
+      "version": "0.6.1",
       "dependencies": {
         "async": {
-          "version": "0.1.18"
+          "version": "0.1.22"
         },
         "colors": {
           "version": "0.6.0-1"
@@ -14,30 +14,25 @@
         "eyes": {
           "version": "0.1.7"
         },
-        "loggly": {
-          "version": "0.3.11",
-          "dependencies": {
-            "timespan": {
-              "version": "2.2.0"
-            }
-          }
-        },
         "stack-trace": {
           "version": "0.0.6"
+        },
+        "cycle": {
+          "version": "1.0.0"
         }
       }
     },
     "pkginfo": {
       "version": "0.2.3"
     },
+    "chai": {
+      "version": "1.0.4"
+    },
     "request": {
       "version": "2.9.202"
     },
-    "should": {
-      "version": "0.6.3"
-    },
     "connect": {
-      "version": "2.2.2",
+      "version": "2.3.1",
       "dependencies": {
         "qs": {
           "version": "0.4.2"
@@ -49,7 +44,10 @@
           "version": "1.0.9"
         },
         "crc": {
-          "version": "0.1.0"
+          "version": "0.2.0"
+        },
+        "cookie": {
+          "version": "0.0.3"
         },
         "debug": {
           "version": "0.7.0"
@@ -78,31 +76,6 @@
         }
       }
     },
-    "mocha": {
-      "version": "1.0.3",
-      "dependencies": {
-        "commander": {
-          "version": "0.5.2"
-        },
-        "growl": {
-          "version": "1.5.1"
-        },
-        "jade": {
-          "version": "0.20.3",
-          "dependencies": {
-            "mkdirp": {
-              "version": "0.3.2"
-            }
-          }
-        },
-        "diff": {
-          "version": "1.0.2"
-        },
-        "debug": {
-          "version": "0.7.0"
-        }
-      }
-    },
     "express": {
       "version": "2.5.9",
       "dependencies": {
@@ -110,7 +83,7 @@
           "version": "1.8.7",
           "dependencies": {
             "formidable": {
-              "version": "1.0.9"
+              "version": "1.0.11"
             }
           }
         },
@@ -122,6 +95,31 @@
         },
         "mkdirp": {
           "version": "0.3.0"
+        }
+      }
+    },
+    "mocha": {
+      "version": "1.1.0",
+      "dependencies": {
+        "commander": {
+          "version": "0.5.2"
+        },
+        "growl": {
+          "version": "1.5.1"
+        },
+        "jade": {
+          "version": "0.20.3",
+          "dependencies": {
+            "mkdirp": {
+              "version": "0.3.3"
+            }
+          }
+        },
+        "diff": {
+          "version": "1.0.2"
+        },
+        "debug": {
+          "version": "0.7.0"
         }
       }
     }
