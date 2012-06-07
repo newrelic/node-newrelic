@@ -1,6 +1,9 @@
-var logger  = require('../lib/logger')
-  , metric  = require('../lib/metric')
-  , stats   = require('../lib/stats')
+var path    = require('path')
+  , chai    = require('chai')
+  , should  = chai.should()
+  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , metric  = require(path.join(__dirname, '..', 'lib', 'metric'))
+  , stats   = require(path.join(__dirname, '..', 'lib', 'stats'))
   ;
 
 function Engine(apdexT) {

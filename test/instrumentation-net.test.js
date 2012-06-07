@@ -1,5 +1,6 @@
-var should  = require('should')
-  , path    = require('path')
+var path    = require('path')
+  , chai    = require('chai')
+  , should  = chai.should()
   , net     = require('net')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;

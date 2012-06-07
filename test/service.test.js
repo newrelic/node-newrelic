@@ -1,6 +1,9 @@
-var logger  = require('../lib/logger')
-  , config  = require('../lib/config')
-  , service = require('../lib/service')
+var path    = require('path')
+  , chai    = require('chai')
+  , should  = chai.should()
+  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , config  = require(path.join(__dirname, '..', 'lib', 'config'))
+  , service = require(path.join(__dirname, '..', 'lib', 'service'))
   ;
 
 describe('connecting to New Relic', function () {

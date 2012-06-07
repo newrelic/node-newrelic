@@ -1,7 +1,8 @@
-var should  = require('should')
-  , logger  = require('../lib/logger')
-  , trace   = require('../lib/trace')
-  , util    = require('util')
+var path    = require('path')
+  , chai    = require('chai')
+  , should  = chai.should()
+  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , trace   = require(path.join(__dirname, '..', 'lib', 'trace'))
   ;
 
 describe('execution tracing', function () {

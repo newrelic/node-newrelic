@@ -1,6 +1,8 @@
-var should = require('should') // explicitly included so should.exist(foo) works
-  , logger = require('../lib/logger')
-  , db     = require('../lib/database')
+var path   = require('path')
+  , chai   = require('chai')
+  , should = chai.should()
+  , logger = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , db     = require(path.join(__dirname, '..', 'lib', 'database'))
   ;
 
 describe('database query parser', function () {

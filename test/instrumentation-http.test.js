@@ -1,5 +1,6 @@
-var should  = require('should')
-  , path    = require('path')
+var path    = require('path')
+  , chai    = require('chai')
+  , should  = chai.should()
   , http    = require('http')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
@@ -71,10 +72,13 @@ describe('agent instrumentation of the http module', function () {
   });
 
   it("should indicate that the http dispatcher is in play", function (done) {
-    agent.environment.toJSON().should.includeEql(['Dispatcher', 'http']);
-    debugger;
+    var found = false;
 
-    return done();
+    agent.environment.toJSON().forEach(function (pair) {
+      if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true;
+    });
+
+    return done(found ? null : 'failed to find Dispatcher configuration');
   });
 
   it("should record unscoped HTTP dispatcher stats after a normal request", function (done) {

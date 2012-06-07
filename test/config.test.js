@@ -1,4 +1,7 @@
 var path   = require('path')
+  , chai   = require('chai')
+  , should = chai.should()
+  , expect = chai.expect
   , util   = require('util')
   , fs     = require('fs')
   , logger = require(path.join(__dirname, '..', 'lib', 'logger'))
