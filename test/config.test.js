@@ -71,7 +71,7 @@ describe("the agent configuration", function () {
     });
 
     it("should load the configuration", function (done) {
-      (function () { config.initialize(logger); }).should.not.throw();
+      expect(function () { config.initialize(logger); }).not.throws();
 
       return done();
     });

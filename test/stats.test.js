@@ -35,7 +35,7 @@ describe("metric data sets", function () {
   it("shouldn't complain when given an empty data set", function (done) {
     var mds = new stats.MetricDataSet(unscoped, engine.scopedStats, {});
     var result;
-    (function () { result = JSON.stringify(mds); }).should.not.throw();
+    expect(function () { result = JSON.stringify(mds); }).not.throws();
 
     result.should.eql('[]');
 
@@ -47,7 +47,7 @@ describe("metric data sets", function () {
 
     var mds = new stats.MetricDataSet(unscoped, engine.scopedStats, {});
     var result;
-    (function () { result = JSON.stringify(mds); }).should.not.throw();
+    expect(function () { result = JSON.stringify(mds); }).not.throws();
 
     var expected = '[[{"name":"Custom/Test/events","scope":"TEST"},[1,1.2,1,1.2,1.2,1.44]]]';
     result.should.equal(expected);
