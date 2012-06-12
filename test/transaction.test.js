@@ -28,7 +28,7 @@ describe("new-school transaction tracing", function () {
     var second = transaction.create(agent);
 
     first.should.not.equal(second);
-    transaction.active(agent).length.should.equal(2);
+    transaction.getActiveByApplication(agent).length.should.equal(2);
   });
 
   it("should only show active transactions per application on the active list", function () {
@@ -36,10 +36,10 @@ describe("new-school transaction tracing", function () {
     var second = transaction.create(agent);
     var third  = transaction.create(agent);
 
-    transaction.active(agent).length.should.equal(3);
+    transaction.getActiveByApplication(agent).length.should.equal(3);
     first.end();
     second.end();
-    transaction.active(agent).length.should.equal(1);
+    transaction.getActiveByApplication(agent).length.should.equal(1);
   });
 
   it("should scope the transaction to the agent", function () {
@@ -63,8 +63,8 @@ describe("new-school transaction tracing", function () {
     firstFirst.end();
     secondFirst.end();
 
-    transaction.active(firstApp).length.should.equal(1);
-    transaction.byApplication(firstApp).length.should.equal(3);
+    transaction.getActiveByApplication(firstApp).length.should.equal(1);
+    transaction.getByApplication(firstApp).length.should.equal(3);
   });
 
   describe("when tracing scoped metrics", function () {
@@ -76,7 +76,7 @@ describe("new-school transaction tracing", function () {
 
     it("should add traces by scope", function () {
       tt.measure('Custom/Test08', 'TEST');
-      expect(tt.metrics('Custom/Test08', 'TEST')).to.not.equal(null);
+      expect(tt.getMetrics('Custom/Test08', 'TEST')).to.not.equal(null);
     });
 
     it("should track the same metric name separately in separate scopes", function () {
@@ -89,8 +89,8 @@ describe("new-school transaction tracing", function () {
       var third = tt.measure('Custom/Test09', 'TWICE');
       third.end();
 
-      expect(tt.statistics('Custom/Test09', 'ONCE').toObject().calls).to.equal(1);
-      expect(tt.statistics('Custom/Test09', 'TWICE').toObject().calls).to.equal(2);
+      expect(tt.getStatistics('Custom/Test09', 'ONCE').toObject().calls).to.equal(1);
+      expect(tt.getStatistics('Custom/Test09', 'TWICE').toObject().calls).to.equal(2);
     });
   });
 
@@ -99,7 +99,7 @@ describe("new-school transaction tracing", function () {
       var tt = transaction.create(agent);
 
       tt.measure('Custom/Test01');
-      should.exist(tt.metrics('Custom/Test01'));
+      should.exist(tt.getMetrics('Custom/Test01'));
     });
 
     it("should allow multiple traces for same name", function () {
@@ -115,7 +115,7 @@ describe("new-school transaction tracing", function () {
 
       tt.end();
 
-      expect(tt.statistics(TRACE_NAME).toObject().calls).to.equal(traces.length);
+      expect(tt.getStatistics(TRACE_NAME).toObject().calls).to.equal(traces.length);
     });
 
     it("should allow multiple overlapping traces for same name", function (done) {
@@ -133,7 +133,7 @@ describe("new-school transaction tracing", function () {
         // so in this case will close the first transaction
         tt.end();
 
-        var statistics = tt.statistics(TRACE_NAME).toObject();
+        var statistics = tt.getStatistics(TRACE_NAME).toObject();
         expect(statistics.calls).to.equal(2);
         expect(statistics.max).to.be.above(SLEEP_DURATION - 1);
 
@@ -148,7 +148,7 @@ describe("new-school transaction tracing", function () {
       tt.end();
 
       tt.measure('Custom/Test04');
-      should.not.exist(tt.metrics('Custom/Test04'));
+      should.not.exist(tt.getMetrics('Custom/Test04'));
     });
 
     describe("when fetching statistics", function () {
@@ -158,7 +158,7 @@ describe("new-school transaction tracing", function () {
         tt.measure('Custom/Test05');
         tt.end();
 
-        expect(tt.statistics('Custom/Test05').toJSON()).to.deep.equal([1, 0, 0, 0, 0, 0]);
+        expect(tt.getStatistics('Custom/Test05').toJSON()).to.deep.equal([1, 0, 0, 0, 0, 0]);
       });
     });
   });
@@ -185,7 +185,7 @@ describe("new-school transaction tracing", function () {
     });
 
     it("should be returned when statistics is called with no parameters", function () {
-      var summary = tt.statistics();
+      var summary = tt.getStatistics();
 
       expect(summary.scoped.TEST['Custom/Test11'].toJSON()[0]).to.equal(1);
       expect(summary.scoped.TEST['Custom/Test12'].toJSON()[0]).to.equal(1);
@@ -196,7 +196,7 @@ describe("new-school transaction tracing", function () {
     });
 
     it("should be returned when summary is called", function () {
-      var summary = tt.summary();
+      var summary = tt.summarize();
 
       expect(summary.scoped.TEST['Custom/Test11'].toJSON()[0]).to.equal(1);
       expect(summary.scoped.TEST['Custom/Test12'].toJSON()[0]).to.equal(1);
