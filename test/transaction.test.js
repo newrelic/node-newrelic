@@ -222,6 +222,50 @@ describe("new-school transaction tracing", function () {
       expect(metrics.length).to.equal(1);
       metrics[0].getExclusiveDurationInMillis().should.equal(5);
     });
+
+    it("should accurately sum partially overlapping child traces", function () {
+      var tt    = transaction.create(agent)
+        , trace = tt.measure('Custom/Test20');
+
+      trace.setDurationInMillis(42);
+
+      var now = Date.now();
+
+      var child1 = trace.addChild('Custom/Test20/Child1');
+      child1.setDurationInMillis(22, now);
+
+      // add another child trace completely encompassed by the first
+      var child2 = trace.addChild('Custom/Test20/Child2');
+      child2.setDurationInMillis(5, now + 5);
+
+      // add another that starts simultaneously the first range but that extends beyond
+      var child3 = trace.addChild('Custom/Test20/Child3');
+      child3.setDurationInMillis(33, now);
+
+      var metrics = tt.getMetrics('Custom/Test20');
+      expect(metrics.length).to.equal(1);
+      metrics[0].getExclusiveDurationInMillis().should.equal(9);
+    });
+
+    it("should accurately sum partially overlapping, open-ranged child traces", function () {
+      var tt    = transaction.create(agent)
+        , trace = tt.measure('Custom/Test21');
+
+      trace.setDurationInMillis(42);
+
+      var now = Date.now();
+
+      var child1 = trace.addChild('Custom/Test21/Child1');
+      child1.setDurationInMillis(22, now);
+
+      // add another that starts simultaneously the first range but that extends beyond
+      var child2 = trace.addChild('Custom/Test21/Child2');
+      child2.setDurationInMillis(11, now + 22);
+
+      var metrics = tt.getMetrics('Custom/Test21');
+      expect(metrics.length).to.equal(1);
+      metrics[0].getExclusiveDurationInMillis().should.equal(9);
+    });
   });
 
   describe("when producing a summary of the whole transaction", function () {
