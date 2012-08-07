@@ -4,7 +4,7 @@ var path        = require('path')
   , chai        = require('chai')
   , should      = chai.should()
   , expect      = chai.expect
-  , transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   ;
 
 describe("new-school transaction tracing", function () {
