@@ -122,6 +122,19 @@
           "version": "0.7.0"
         }
       }
+    },
+    "sinon": {
+      "version": "1.4.2",
+      "dependencies": {
+        "buster-format": {
+          "version": "0.5.5",
+          "dependencies": {
+            "buster-core": {
+              "version": "0.6.4"
+            }
+          }
+        }
+      }
     }
   }
 }

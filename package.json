@@ -1,49 +1,50 @@
 {
-  "name"            : "newrelic_agent",
-  "version"         : "0.0.0-9",
-  "author"          : "Forrest L Norvell <forrest@newrelic.com> (http://github.com/othiym23)",
-  "contributors"    : [
+  "name": "newrelic_agent",
+  "version": "0.0.0-9",
+  "author": "Forrest L Norvell <forrest@newrelic.com> (http://github.com/othiym23)",
+  "contributors": [
     {
-      "name"  : "Saxon D'Aubin",
-      "email" : "saxon@newrelic.com",
-      "web"   : "http://newrelic.com"
+      "name": "Saxon D'Aubin",
+      "email": "saxon@newrelic.com",
+      "web": "http://newrelic.com"
     },
     {
-      "name"  : "Forrest L Norvell",
-      "email" : "forrest@newrelic.com",
-      "web"   : "http://newrelic.com/"
+      "name": "Forrest L Norvell",
+      "email": "forrest@newrelic.com",
+      "web": "http://newrelic.com/"
     }
   ],
-  "description"     : "New Relic agent",
-  "keywords"        : [
+  "description": "New Relic agent",
+  "keywords": [
     "monitoring",
     "debugging",
     "instrumentation",
     "profiling",
     "performance"
   ],
-  "homepage"        : "http://github.com/newrelic/nodejs_agent",
-  "directories"     : {
-    "lib" : "lib"
+  "homepage": "http://github.com/newrelic/nodejs_agent",
+  "directories": {
+    "lib": "lib"
   },
-  "scripts"         : {
-    "test" : "make test"
+  "scripts": {
+    "test": "make test"
   },
-  "dependencies"    : {
-    "winston" : ">= 0.5.9",
-    "pkginfo" : "~0.2"
+  "dependencies": {
+    "winston": ">= 0.5.9",
+    "pkginfo": "~0.2"
   },
-  "devDependencies" : {
-    "mocha"      : "~1",
-    "chai"       : "~1.0",
-    "cover"      : "~0.2",
-    "request"    : "~2",
-    "express"    : "~2",
-    "connect"    : "~2"
+  "devDependencies": {
+    "mocha": "~1",
+    "chai": "~1.0",
+    "cover": "~0.2",
+    "request": "~2",
+    "express": "~2",
+    "connect": "~2",
+    "sinon": "~1.4.2"
   },
-  "repository"      : {
-    "type" : "git",
-    "url"  : "https://github.com/newrelic/nodejs_agent.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/newrelic/nodejs_agent.git"
   },
-  "private"         : true
+  "private": true
 }
