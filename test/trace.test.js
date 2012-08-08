@@ -1,9 +1,10 @@
 'use strict';
 
-var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , trace   = require(path.join(__dirname, '..', 'lib', 'trace'))
+var path   = require('path')
+  , chai   = require('chai')
+  , should = chai.should()
+  , trace  = require(path.join(__dirname, '..', 'lib', 'trace'))
+  , Tracer = require(path.join(__dirname, '..', 'lib', 'trace-legacy', 'tracer'))
   ;
 
 describe('execution tracing', function () {
@@ -29,7 +30,7 @@ describe('execution tracing', function () {
     });
 
     it('should insert a trace into the stats traced by the agent', function (done) {
-      var tracer = new trace.Tracer(transaction, 'Custom/Test');
+      var tracer = new Tracer(transaction, 'Custom/Test');
       tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
@@ -41,12 +42,12 @@ describe('execution tracing', function () {
     });
 
     it('should only insert a single trace per transaction', function (done) {
-      var tracer = new trace.Tracer(transaction, 'Custom/Test2');
+      var tracer = new Tracer(transaction, 'Custom/Test2');
       tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
-      tracer = new trace.Tracer(transaction, 'Custom/Test3');
+      tracer = new Tracer(transaction, 'Custom/Test3');
       tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
