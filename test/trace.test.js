@@ -7,22 +7,6 @@ var path    = require('path')
   ;
 
 describe('execution tracing', function () {
-  describe('working with raw timers', function () {
-    it('should have a start defined on instantiation', function (done) {
-      var timer = new trace.Timer();
-      should.exist(timer.start);
-
-      return done();
-    });
-
-    it('should not have a end defined on instantiation', function (done) {
-      var timer = new trace.Timer();
-      should.not.exist(timer.end);
-
-      return done();
-    });
-  });
-
   describe('within the tracer', function () {
     var agent
       , transaction
