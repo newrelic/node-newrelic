@@ -1,9 +1,11 @@
-var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , config  = require(path.join(__dirname, '..', 'lib', 'config.default'))
-  , error   = require(path.join(__dirname, '..', 'lib', 'error'))
+'use strict';
+
+var path         = require('path')
+  , chai         = require('chai')
+  , should       = chai.should()
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
+  , ErrorService = require(path.join(__dirname, '..', 'lib', 'error'))
   ;
 
 function createTransaction(code) {
@@ -14,7 +16,7 @@ describe('error delivery', function () {
   var service;
 
   beforeEach(function (done) {
-    service = new error.ErrorService(logger, config.config);
+    service = new ErrorService(logger, config.config);
 
     return done();
   });
