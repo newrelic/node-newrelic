@@ -7,14 +7,6 @@ var path    = require('path')
   ;
 
 describe('execution tracing', function () {
-  it('should accurately return a raw stacktrace', function (done) {
-    var stack = trace.getRawStack();
-    // nothing like a hardcoded assumption about how the test is being run. Mmmm.
-    stack[1].receiver.type.should.equal('test');
-
-    return done();
-  });
-
   describe('working with raw timers', function () {
     it('should have a start defined on instantiation', function (done) {
       var timer = new trace.Timer();
