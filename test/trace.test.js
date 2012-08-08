@@ -1,3 +1,5 @@
+'use strict';
+
 var path    = require('path')
   , chai    = require('chai')
   , should  = chai.should()
@@ -39,10 +41,8 @@ describe('execution tracing', function () {
       return 0;
     }
 
-    before(function (done) {
+    before(function () {
       teststamp = Date.now();
-
-      return done();
     });
 
     beforeEach(function (done) {

@@ -1,17 +1,18 @@
 'use strict';
 
-var path = require('path')
-  , chai = require('chai')
-  , expect = chai.expect
+var path            = require('path')
+  , chai            = require('chai')
+  , expect          = chai.expect
+  , should          = chai.should()
+  , Timer           = require(path.join(__dirname, '..', 'lib', 'timer'))
+  , Transaction     = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   , ParsedStatement = require(path.join(__dirname, '..', 'lib', 'db', 'parsed-statement'))
-  , Timer = require(path.join(__dirname, '..', 'lib', 'timer'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   ;
 
 function checkDatMetric(transaction, name, scope) {
   var metric = transaction.getMetrics(name, scope);
 
-  expect(metric).to.exist;
+  should.exist(metric);
   expect(metric.length).to.equal(1);
   expect(metric[0].getDurationInMillis()).to.equal(333);
 }

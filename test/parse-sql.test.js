@@ -5,8 +5,6 @@ var path        = require('path')
   , util        = require('util')
   , should      = chai.should()
   , parseSql    = require(path.join(__dirname, '..', 'lib', 'db', 'parse-sql'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
-  , Timer       = require(path.join(__dirname, '..', 'lib', 'timer'))
   ;
 
 describe('database query parser', function () {
@@ -20,12 +18,6 @@ describe('database query parser', function () {
 
       should.exist(ps.model);
       ps.model.should.equal('dude');
-
-      var trans = new Transaction({name : 'SELECT test'});
-      var timing = new Timer();
-      timing.setDurationInMillis(333);
-
-      ps.recordMetrics(trans, 'TEST', timing);
     });
 
     it("should parse another simple query", function () {

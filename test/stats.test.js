@@ -1,10 +1,14 @@
-var path        = require('path')
-  , chai        = require('chai')
-  , should      = chai.should()
-  , expect      = chai.expect
-  , logger      = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , stats       = require(path.join(__dirname, '..', 'lib', 'stats'))
-  , statsEngine = require(path.join(__dirname, '..', 'lib', 'stats', 'engine'))
+'use strict';
+
+var path          = require('path')
+  , chai          = require('chai')
+  , should        = chai.should()
+  , expect        = chai.expect
+  , logger        = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , Stats         = require(path.join(__dirname, '..', 'lib', 'stats'))
+  , StatsEngine   = require(path.join(__dirname, '..', 'lib', 'stats', 'engine'))
+  , Collection    = require(path.join(__dirname, '..', 'lib', 'stats', 'collection'))
+  , MetricDataSet = require(path.join(__dirname, '..', 'lib', 'metric', 'data-set'))
   ;
 
 function verifyStats(stats, callCount, totalTime, totalExclusive, min, max) {
@@ -26,14 +30,14 @@ describe("metric data sets", function () {
     ;
 
   beforeEach(function (done) {
-    engine   = new statsEngine.StatsEngine();
-    unscoped = new stats.Collection(engine);
+    engine   = new StatsEngine();
+    unscoped = new Collection(engine);
 
     return done();
   });
 
   it("shouldn't complain when given an empty data set", function (done) {
-    var mds = new stats.MetricDataSet(unscoped, engine.scopedStats, {});
+    var mds = new MetricDataSet(unscoped, engine.scopedStats, {});
     var result;
     expect(function () { result = JSON.stringify(mds); }).not.throws();
 
@@ -45,7 +49,7 @@ describe("metric data sets", function () {
   it("should produce correct data for serialization", function (done) {
     engine.statsByScope(SCOPE).byName(NAME).recordValueInMillis(1200, 1000);
 
-    var mds = new stats.MetricDataSet(unscoped, engine.scopedStats, {});
+    var mds = new MetricDataSet(unscoped, engine.scopedStats, {});
     var result;
     expect(function () { result = JSON.stringify(mds); }).not.throws();
 
@@ -60,7 +64,7 @@ describe("statistics calculation", function () {
   var statistics;
 
   beforeEach(function (done) {
-    statistics = new stats.Stats();
+    statistics = new Stats();
 
     return done();
   });

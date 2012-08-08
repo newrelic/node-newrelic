@@ -1,9 +1,12 @@
-var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , metric  = require(path.join(__dirname, '..', 'lib', 'metric'))
-  , stats   = require(path.join(__dirname, '..', 'lib', 'stats'))
+'use strict';
+
+var path             = require('path')
+  , chai             = require('chai')
+  , should           = chai.should()
+  , logger           = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , metric           = require(path.join(__dirname, '..', 'lib', 'metric'))
+  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metric', 'normalizer'))
+  , Collection       = require(path.join(__dirname, '..', 'lib', 'stats', 'collection'))
   ;
 
 function Engine(apdexT) {
@@ -17,7 +20,7 @@ describe('web transaction metrics', function () {
     , statsCollection;
 
   before(function (done) {
-    normalizer = new metric.MetricNormalizer();
+    normalizer = new MetricNormalizer();
 
     return done();
   });
@@ -25,7 +28,7 @@ describe('web transaction metrics', function () {
   describe('when handling normal requests', function () {
     it('should correctly infer a satisfying end-user experience', function (done) {
       engine = new Engine(0.06);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 55, 55, 200);
 
       var result = {
@@ -42,7 +45,7 @@ describe('web transaction metrics', function () {
 
     it('should correctly infer a tolerable end-user experience', function (done) {
       engine = new Engine(0.05);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 55, 100, 200);
 
       var result = {
@@ -59,7 +62,7 @@ describe('web transaction metrics', function () {
 
     it('should correctly infer a frustrating end-user experience', function (done) {
       engine = new Engine(0.01);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 55, 55, 200);
 
       var result = {
@@ -78,7 +81,7 @@ describe('web transaction metrics', function () {
   describe('when dealing with exceptional requests', function () {
     it('should correctly handle missing resources', function (done) {
       engine = new Engine(0.01);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 55, 55, 404);
 
       var result = {
@@ -95,7 +98,7 @@ describe('web transaction metrics', function () {
 
     it('should correctly handle bad requests', function (done) {
       engine = new Engine(0.01);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 55, 55, 400);
 
       var result = {
@@ -112,7 +115,7 @@ describe('web transaction metrics', function () {
 
     it('should correctly handle over-long URIs', function (done) {
       engine = new Engine(0.01);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 55, 55, 414);
 
       var result = {
@@ -129,7 +132,7 @@ describe('web transaction metrics', function () {
 
     it('should correctly handle internal server errors', function (done) {
       engine = new Engine(0.01);
-      statsCollection = new stats.Collection(engine);
+      statsCollection = new Collection(engine);
       metric.recordWebTransactionMetrics(normalizer, statsCollection, '/test', 1, 1, 500);
 
       var result = {
