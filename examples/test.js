@@ -1,3 +1,5 @@
+'use strict';
+
 var fs    = require('fs')
   , http  = require('http')
   , agent = require('newrelic_agent')()
@@ -6,8 +8,6 @@ var fs    = require('fs')
 //agent.connect('d67afc830dab717fd163bfcb0b8b88423e9a1a3b', 'staging-collector.newrelic.com');
 //agent.connect('bootstrap_newrelic_admin_license_key_000', 'localhost', '8081');
 
-
-//agent.logToConsole();
 
 var Client = require('mysql').Client;
 var client = new Client();

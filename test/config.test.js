@@ -1,3 +1,5 @@
+'use strict';
+
 var path   = require('path')
   , chai   = require('chai')
   , should = chai.should()
@@ -42,8 +44,9 @@ describe("the agent configuration", function () {
 
           var sampleConfig = fs.createReadStream(path.join(__dirname, '..', 'lib', 'config.default.js'));
           var sandboxedConfig = fs.createWriteStream(CONFIGPATH);
+          sampleConfig.pipe(sandboxedConfig);
 
-          util.pump(sampleConfig, sandboxedConfig, done);
+          return done();
         });
       });
     });
@@ -70,20 +73,16 @@ describe("the agent configuration", function () {
       });
     });
 
-    it("should load the configuration", function (done) {
+    it("should load the configuration", function () {
       expect(function () { config.initialize(logger); }).not.throws();
-
-      return done();
     });
 
-    it("should expose the location of the overridden configuration on the resulting object", function (done) {
+    it("should expose the location of the overridden configuration on the resulting object", function () {
       var configuration = config.initialize(logger);
       configuration.newrelic_home.should.equal(DESTDIR);
-
-      return done();
     });
 
-    it("should correctly expose all of the default properties", function (done) {
+    it("should correctly expose all of the default properties", function () {
       var configuration = config.initialize(logger);
 
       delete configuration.newrelic_home;
@@ -97,8 +96,6 @@ describe("the agent configuration", function () {
       configuration.error_collector.ignore_status_codes.should.eql([404]);
       configuration.transaction_tracer.enabled.should.equal(true);
       configuration.transaction_tracer.trace_threshold.should.equal('apdex_f');
-
-      return done();
     });
   });
 });

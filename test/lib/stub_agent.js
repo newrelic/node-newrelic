@@ -11,7 +11,7 @@ var path        = require('path')
 function StubAgent() {
   events.EventEmitter.call(this);
 
-  logger.setLevel('debug');
+  logger.level = 'debug';
 
   this.transactions = [];
   this.transactionFinished = function (transaction) {
