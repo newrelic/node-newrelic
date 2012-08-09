@@ -1,10 +1,11 @@
 'use strict';
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , trace  = require(path.join(__dirname, '..', 'lib', 'trace'))
-  , Tracer = require(path.join(__dirname, '..', 'lib', 'trace-legacy', 'tracer'))
+var path         = require('path')
+  , chai         = require('chai')
+  , should       = chai.should()
+  , trace        = require(path.join(__dirname, '..', 'lib', 'trace'))
+  , Tracer       = require(path.join(__dirname, '..', 'lib', 'trace-legacy', 'tracer'))
+  , FakeyMcAgent = require(path.join(__dirname, 'lib', 'stub_agent'))
   ;
 
 describe('execution tracing', function () {
@@ -23,10 +24,14 @@ describe('execution tracing', function () {
     });
 
     beforeEach(function (done) {
-      agent = require('./lib/stub_agent').createAgent();
+      agent = new FakeyMcAgent();
       transaction = trace.createTransaction(agent);
 
       return done();
+    });
+
+    afterEach(function () {
+      agent.stop();
     });
 
     it('should insert a trace into the stats traced by the agent', function (done) {

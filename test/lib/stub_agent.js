@@ -40,6 +40,8 @@ function StubAgent() {
 }
 util.inherits(StubAgent, events.EventEmitter);
 
-exports.createAgent = function () {
-  return new StubAgent();
+StubAgent.prototype.stop = function () {
+  trace.resetTransactions();
 };
+
+module.exports = StubAgent;

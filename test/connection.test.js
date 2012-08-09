@@ -1,9 +1,12 @@
-var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , config  = require(path.join(__dirname, '..', 'lib', 'config'))
-  , service = require(path.join(__dirname, '..', 'lib', 'service'))
+'use strict';
+
+var path         = require('path')
+  , chai         = require('chai')
+  , should       = chai.should()
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , config       = require(path.join(__dirname, '..', 'lib', 'config'))
+  , collector    = require(path.join(__dirname, '..', 'lib', 'collector', 'connection'))
+  , FakeyMcAgent = require(path.join(__dirname, 'lib', 'stub_agent'))
   ;
 
 describe('connecting to New Relic', function () {
@@ -14,8 +17,8 @@ describe('connecting to New Relic', function () {
     , collectorHost = 'staging-collector.newrelic.com'
     ;
 
-  before(function (done) {
-    agent = require('./lib/stub_agent').createAgent();
+  before(function () {
+    agent = new FakeyMcAgent();
     configuration = config.initialize(logger, {
       'config' : {
         'app_name'    : 'node.js Tests',
@@ -25,9 +28,11 @@ describe('connecting to New Relic', function () {
       }
     });
     agent.config = configuration;
-    newRelic = service.createNewRelicService(agent);
+    newRelic = collector.createCollectorConnection(agent);
+  });
 
-    return done();
+  after(function () {
+    agent.stop();
   });
 
   it('should establish a connection', function (done) {
