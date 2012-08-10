@@ -1,12 +1,12 @@
 'use strict';
 
-var path         = require('path')
-  , chai         = require('chai')
-  , should       = chai.should()
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , config       = require(path.join(__dirname, '..', 'lib', 'config'))
-  , collector    = require(path.join(__dirname, '..', 'lib', 'collector', 'connection'))
-  , FakeyMcAgent = require(path.join(__dirname, 'lib', 'stub_agent'))
+var path                = require('path')
+  , chai                = require('chai')
+  , should              = chai.should()
+  , logger              = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , config              = require(path.join(__dirname, '..', 'lib', 'config'))
+  , CollectorConnection = require(path.join(__dirname, '..', 'lib', 'collector', 'connection'))
+  , FakeyMcAgent        = require(path.join(__dirname, 'lib', 'stub_agent'))
   ;
 
 describe('connecting to New Relic', function () {
@@ -28,7 +28,7 @@ describe('connecting to New Relic', function () {
       }
     });
     agent.config = configuration;
-    newRelic = collector.createCollectorConnection(agent);
+    newRelic = new CollectorConnection(agent);
   });
 
   after(function () {

@@ -1,6 +1,9 @@
+'use strict';
+
 var path = require('path')
-  , mocker = require(path.join(__dirname, 'mock_connection'))
+  , sinon = require('sinon')
   , trace = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+  , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
   ;
 
 /*
@@ -28,7 +31,9 @@ exports.loadAgent = function (options) {
 };
 
 exports.loadMockedAgent = function () {
-  return exports.loadAgent({connection : new mocker.Connection()});
+  var connection = new CollectorConnection({config : {applications : function () { return 'none'; }}});
+  sinon.stub(connection, 'connect');
+  return exports.loadAgent({connection : connection});
 };
 
 exports.unloadAgent = function (agent) {
