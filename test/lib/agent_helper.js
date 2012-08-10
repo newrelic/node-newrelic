@@ -31,7 +31,11 @@ exports.loadAgent = function (options) {
 };
 
 exports.loadMockedAgent = function () {
-  var connection = new CollectorConnection({config : {applications : function () { return 'none'; }}});
+  var connection = new CollectorConnection({
+    config : {
+      applications : function () { return 'none'; }
+    }
+  });
   sinon.stub(connection, 'connect');
   return exports.loadAgent({connection : connection});
 };
