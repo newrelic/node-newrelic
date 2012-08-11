@@ -1,8 +1,8 @@
 'use strict';
 
-var path = require('path')
-  , sinon = require('sinon')
-  , trace = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+var path                = require('path')
+  , sinon               = require('sinon')
+  , trace               = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
   ;
 
