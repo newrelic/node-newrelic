@@ -1,25 +1,22 @@
 'use strict';
 
-var path                = require('path')
-  , chai                = require('chai')
-  , should              = chai.should()
-  , logger              = require(path.join(__dirname, '..', 'lib', 'logger'))
-  , config              = require(path.join(__dirname, '..', 'lib', 'config'))
-  , CollectorConnection = require(path.join(__dirname, '..', 'lib', 'collector', 'connection'))
-  , FakeyMcAgent        = require(path.join(__dirname, 'lib', 'stub_agent'))
+var path   = require('path')
+  , chai   = require('chai')
+  , expect = chai.expect
+  , logger = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , config = require(path.join(__dirname, '..', 'lib', 'config'))
+  , Agent  = require(path.join(__dirname, '..', 'lib', 'agent'))
   ;
 
 describe('connecting to New Relic', function () {
   var agent
-    , configuration
-    , newRelic
     , testLicense   = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
     , collectorHost = 'staging-collector.newrelic.com'
     ;
 
   before(function () {
-    agent = new FakeyMcAgent();
-    configuration = config.initialize(logger, {
+    agent = new Agent();
+    agent.config = config.initialize(logger, {
       'config' : {
         'app_name'    : 'node.js Tests',
         'license_key' : testLicense,
@@ -27,19 +24,19 @@ describe('connecting to New Relic', function () {
         'port'        : 80
       }
     });
-    agent.config = configuration;
-    newRelic = new CollectorConnection(agent);
-  });
-
-  after(function () {
-    agent.stop();
+    agent.applicationPort = 6666;
   });
 
   it('should establish a connection', function (done) {
-    newRelic.on('connect', function () {
-      // TODO: this should test more, and handle failure better.
-      return done();
+    agent.on('connect', function () {
+      expect(agent.connection).to.be.an('object');
+      expect(agent.connection.applicationName).to.deep.equal(['node.js Tests']);
+      agent.connection.on('connect', function () {
+        agent.stop();
+
+        return done();
+      });
     });
-    newRelic.connect();
+    agent.start();
   });
 });
