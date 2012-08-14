@@ -10,21 +10,16 @@ describe('the New Relic agent', function () {
   describe("when working with a live connection to the service, created in the traditional manner", function () {
     var agent;
 
-    before(function (done) {
+    before(function () {
       agent = helper.loadAgent();
-
-      return done();
     });
 
-    after(function (done) {
-      var deaded = helper.unloadAgent(agent);
-      should.exist(deaded);
-
-      return done();
+    after(function () {
+      helper.unloadAgent(agent);
     });
 
     it("should start up properly", function (done) {
-      should.exist(agent, 'agent exists');
+      should.exist(agent);
 
       agent.on('connect', function () {
         should.exist(agent.connection, 'connection exists');
@@ -32,6 +27,7 @@ describe('the New Relic agent', function () {
         return done();
       });
 
+      agent.start();
       agent.noticeAppPort(6666);
     });
   });

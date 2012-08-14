@@ -3,6 +3,8 @@
 var path                = require('path')
   , sinon               = require('sinon')
   , trace               = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+  , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
+  , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
   ;
 
@@ -27,7 +29,16 @@ function getAgentPath() {
 
 exports.loadAgent = function (options) {
   trace.resetTransactions();
-  return require(getAgentPath())(options);
+
+  var agent = new Agent(options);
+  shimmer.wrapAgent(agent);
+  shimmer.patchModule(agent);
+  return agent;
+};
+
+exports.unloadAgent = function (agent) {
+  agent.stop();
+  shimmer.unwrapAgent(agent);
 };
 
 exports.loadMockedAgent = function () {
@@ -38,10 +49,4 @@ exports.loadMockedAgent = function () {
   });
   sinon.stub(connection, 'connect');
   return exports.loadAgent({connection : connection});
-};
-
-exports.unloadAgent = function (agent) {
-  agent.stop();
-
-  return uncacheModule(getAgentPath());
 };

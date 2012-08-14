@@ -1,8 +1,11 @@
+'use strict';
+
 var path    = require('path')
   , chai    = require('chai')
   , should  = chai.should()
   , http    = require('http')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
 describe('agent instrumentation of the http module', function () {
@@ -14,6 +17,7 @@ describe('agent instrumentation of the http module', function () {
 
   before(function (done) {
     agent = helper.loadMockedAgent();
+    shimmer.bootstrapInstrumentation(agent);
 
     var server = http.createServer(function (request, response) {
       response.writeHead(200, {'Content-Length' : PAGE.length, 'Content-Type' : 'text/html'});
@@ -78,7 +82,7 @@ describe('agent instrumentation of the http module', function () {
       if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true;
     });
 
-    return done(found ? null : 'failed to find Dispatcher configuration');
+    return done(found ? null : new Error('failed to find Dispatcher configuration'));
   });
 
   it("should record unscoped HTTP dispatcher stats after a normal request", function (done) {
