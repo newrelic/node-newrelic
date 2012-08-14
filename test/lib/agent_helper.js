@@ -23,26 +23,28 @@ function uncacheModule(pathname) {
   return nuked;
 }
 
-exports.loadAgent = function (options) {
-  trace.resetTransactions();
+var helper = module.exports = {
+  loadAgent : function loadAgent(options) {
+    trace.resetTransactions();
 
-  var agent = new Agent(options);
-  shimmer.wrapAgent(agent);
-  shimmer.patchModule(agent);
-  return agent;
-};
+    var agent = new Agent(options);
+    shimmer.wrapAgent(agent);
+    shimmer.patchModule(agent);
+    return agent;
+  },
 
-exports.unloadAgent = function (agent) {
-  agent.stop();
-  shimmer.unwrapAgent(agent);
-};
+  unloadAgent : function unloadAgent(agent) {
+    agent.stop();
+    shimmer.unwrapAgent(agent);
+  },
 
-exports.loadMockedAgent = function () {
-  var connection = new CollectorConnection({
-    config : {
-      applications : function () { return 'none'; }
-    }
-  });
-  sinon.stub(connection, 'connect');
-  return exports.loadAgent({connection : connection});
+  loadMockedAgent : function loadMockedAgent() {
+    var connection = new CollectorConnection({
+      config : {
+        applications : function () { return 'none'; }
+      }
+    });
+    sinon.stub(connection, 'connect');
+    return helper.loadAgent({connection : connection});
+  }
 };
