@@ -1,3 +1,5 @@
+'use strict';
+
 var path   = require('path')
   , chai   = require('chai')
   , should = chai.should()
@@ -71,7 +73,7 @@ describe('the New Relic agent', function () {
     });
 
     it('should expose its configured errorService directly', function (done) {
-      should.exist(agent.errorService);
+      should.exist(agent.errors);
 
       return done();
     });
