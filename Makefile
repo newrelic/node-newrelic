@@ -17,6 +17,7 @@ test-cov: node_modules
 	@$(COVER) report
 
 test: node_modules
+	@rm -f newrelic_agent.log
 	@$(MOCHA)
 
 clean:
