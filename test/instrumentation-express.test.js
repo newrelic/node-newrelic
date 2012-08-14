@@ -1,3 +1,5 @@
+'use strict';
+
 var path    = require('path')
   , chai    = require('chai')
   , should  = chai.should()

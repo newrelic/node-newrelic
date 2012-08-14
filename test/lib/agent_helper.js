@@ -3,6 +3,8 @@
 var path                = require('path')
   , sinon               = require('sinon')
   , trace               = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+  , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
+  , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
   ;
 
@@ -21,27 +23,29 @@ function uncacheModule(pathname) {
   return nuked;
 }
 
-function getAgentPath() {
-  return path.join(__dirname, '..', '..', 'lib', 'newrelic_agent');
-}
+var helper = module.exports = {
+  loadAgent : function loadAgent(options) {
+    trace.resetTransactions();
 
-exports.loadAgent = function (options) {
-  trace.resetTransactions();
-  return require(getAgentPath())(options);
-};
+    var agent = new Agent(options);
+    shimmer.wrapAgent(agent);
+    shimmer.patchModule(agent);
+    return agent;
+  },
 
-exports.loadMockedAgent = function () {
-  var connection = new CollectorConnection({
-    config : {
-      applications : function () { return 'none'; }
-    }
-  });
-  sinon.stub(connection, 'connect');
-  return exports.loadAgent({connection : connection});
-};
+  unloadAgent : function unloadAgent(agent) {
+    agent.stop();
+    shimmer.unwrapAgent(agent);
+    shimmer.unpatchModule();
+  },
 
-exports.unloadAgent = function (agent) {
-  agent.stop();
-
-  return uncacheModule(getAgentPath());
+  loadMockedAgent : function loadMockedAgent() {
+    var connection = new CollectorConnection({
+      config : {
+        applications : function () { return 'none'; }
+      }
+    });
+    sinon.stub(connection, 'connect');
+    return helper.loadAgent({connection : connection});
+  }
 };

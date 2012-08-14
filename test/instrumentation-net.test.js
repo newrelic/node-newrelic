@@ -1,8 +1,11 @@
+'use strict';
+
 var path    = require('path')
   , chai    = require('chai')
   , should  = chai.should()
   , net     = require('net')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
 describe("agent instrumentation of the net module", function () {
@@ -14,6 +17,7 @@ describe("agent instrumentation of the net module", function () {
 
   beforeEach(function (done) {
     agent = helper.loadMockedAgent();
+    shimmer.bootstrapInstrumentation(agent);
 
     server = net.createServer(function (conn) {
       conn.write(RESPONSE);
@@ -42,7 +46,6 @@ describe("agent instrumentation of the net module", function () {
     });
 
     client.on('end', function () {
-      should.exist(agent.applicationPort, 'agent.applicationPort not set');
       agent.applicationPort.should.equal(PORT);
 
       return done();
