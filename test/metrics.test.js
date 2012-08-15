@@ -1,9 +1,10 @@
 'use strict';
 
-var path    = require('path')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , Metrics = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
+var path        = require('path')
+  , chai        = require('chai')
+  , expect      = chai.expect
+  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
+  , RenameRules = require(path.join(__dirname, '..', 'lib', 'metric', 'rename-rules'))
   ;
 
 describe("Metrics", function () {
@@ -24,18 +25,15 @@ describe("Metrics", function () {
     });
 
     it("should include blank set of metric renaming rules by default", function () {
-      expect(metrics.metricIds).deep.equal({});
+      expect(metrics.renamer).deep.equal(new RenameRules());
     });
   });
 
   describe("when calling constructor with valid parameters", function () {
     var TEST_APDEX = 0.4;
-    var TEST_RENAMER = {};
+    var TEST_RENAMER = new RenameRules([[{name : 'Test/RenameMe333'}, 'Test/Rollup']]);
 
     beforeEach(function () {
-      var key = ['Test/RenameMe333', undefined];
-      TEST_RENAMER[key] = metrics.getOrCreateMetric('Test/Rollup'); // leaky but will work
-
       metrics = new Metrics(TEST_RENAMER, TEST_APDEX);
     });
 

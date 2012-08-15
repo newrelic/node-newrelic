@@ -10,6 +10,7 @@ var path             = require('path')
   , ApdexStats       = require(path.join(__dirname, '..', 'lib', 'stats', 'apdex'))
   , Metric           = require(path.join(__dirname, '..', 'lib', 'trace', 'metric'))
   , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metric', 'normalizer'))
+  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metric', 'rename-rules'))
   , Collection       = require(path.join(__dirname, '..', 'lib', 'stats', 'collection'))
   ;
 
@@ -29,7 +30,7 @@ describe("web transaction metrics", function () {
     return done();
   });
 
-  describe("when dealing with Metric objects", function () {
+  describe("with Metric class", function () {
     it("should have a name", function () {
       var metric = new Metric('Agent/Test');
       expect(metric.name).equal('Agent/Test');
@@ -79,8 +80,7 @@ describe("web transaction metrics", function () {
         beforeEach(function () {
           metric = new Metric('Agent/DataTest384');
           expect(metric.stats.incrementCallCount).a('function');
-          renamer = {};
-          renamer[['Agent/DataTest384', undefined]] = new Metric('Agent/Serialization');
+          renamer = new RenameRules([[{name : 'Agent/DataTest384'}, 'Agent/Serialization']]);
         });
 
         it("should get the bare stats right", function () {
@@ -101,8 +101,7 @@ describe("web transaction metrics", function () {
         beforeEach(function () {
           metric = new Metric('Agent/DataTest385', null, 0.8);
           expect(metric.stats.incrementFrustrating).a('function');
-          renamer = {};
-          renamer[['Agent/DataTest385', undefined]] = new Metric('Agent/Serialization');
+          renamer = new RenameRules([[{name : 'Agent/DataTest385'}, 'Agent/Serialization']]);
         });
 
         it("should get the bare stats right", function () {
