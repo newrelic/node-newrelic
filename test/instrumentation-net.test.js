@@ -15,6 +15,11 @@ describe("agent instrumentation of the net module", function () {
     , PORT     = 9876
     ;
 
+  before(function () {
+    // something else might have already wrapped the net listen
+    shimmer.unwrapMethod(net.Server.prototype, 'net.Server.prototype', 'listen');
+  });
+
   beforeEach(function (done) {
     agent = helper.loadMockedAgent();
     shimmer.bootstrapInstrumentation(agent);
