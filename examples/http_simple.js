@@ -1,3 +1,5 @@
+'use strict';
+
 var http  = require('http')
   , agent = require ('newrelic_agent')()
   ;
@@ -7,8 +9,7 @@ var server = http.createServer(function (request, response) {
   response.writeHead(200, {'Content-Length' : body.length, 'Content-Type' : 'text/html'});
   response.end(body);
 
-  console.log('scoped stats after request', JSON.stringify(agent.statsEngine.scopedStats));
-  console.log('unscoped stats after request', JSON.stringify(agent.statsEngine.unscopedStats));
+  console.log('metrics after request', JSON.stringify(agent.metrics));
 });
 
 server.listen(8080, 'localhost');
