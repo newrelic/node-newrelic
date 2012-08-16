@@ -19,7 +19,7 @@ describe("an instrumented Express application", function () {
   before(function (done) {
     agent = helper.loadMockedAgent();
     // set apdexT so apdex stats will be recorded
-    agent.statsEngine.apdexT = 1;
+    agent.metrics.apdexT = 1;
 
     var express = require('express');
 
@@ -40,48 +40,40 @@ describe("an instrumented Express application", function () {
     });
   });
 
-  after(function (done) {
+  after(function () {
     app.close();
     helper.unloadAgent(agent);
-
-    return done();
   });
 
-  it("should serve content", function (done) {
+  it("should serve content", function () {
     fetchedResponse.headers['content-type'].should.equal('application/json; charset=utf-8');
     fetchedBody.should.equal('{"yep":true}');
-
-    return done();
   });
 
-  it("should record unscoped path statistics", function (done) {
-    var summary = agent.statsEngine.unscopedStats.byName('WebTransaction/Uri/test-get').toJSON();
-    summary[0].should.equal(1);
-
-    return done();
+  it("should record unscoped path statistics", function () {
+    var stats = agent.metrics.getOrCreateMetric('WebTransaction/Uri/test-get').stats;
+    stats.callCount.should.equal(1);
   });
 
   /**
    * This test case took three days to get running.
    */
-  it("should record apdex without some low-level method-wrapping problem", function (done) {
-    var summary = agent.statsEngine.unscopedStats.getApdexStats('Apdex/Uri/test-get').toJSON();
-    summary[0].should.equal(1);
-
-    return done();
+  it("should record apdex without some low-level method-wrapping problem", function () {
+    var stats = agent.metrics.getOrCreateApdexMetric('Apdex/Uri/test-get').stats;
+    stats.satisfying.should.equal(1);
   });
 
-  it("should roll up web transaction statistics", function (done) {
-    var summary = agent.statsEngine.unscopedStats.byName('WebTransaction').toJSON();
-    summary[0].should.equal(1);
-
-    return done();
+  it("should roll up web transaction statistics", function () {
+    var stats = agent.metrics.getOrCreateMetric('WebTransaction').stats;
+    stats.callCount.should.equal(1);
   });
 
-  it("should roll up HTTP dispatcher statistics", function (done) {
-    var summary = agent.statsEngine.unscopedStats.byName('HttpDispatcher').toJSON();
-    summary[0].should.equal(1);
+  it("should roll up HTTP dispatcher statistics", function () {
+    var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
+    stats.callCount.should.equal(1);
+  });
 
-    return done();
+  it("should dump a JSON representation of its statistics", function () {
+    JSON.stringify(agent.metrics).should.match(/WebTransaction\/Uri\/test-get/);
   });
 });

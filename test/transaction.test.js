@@ -270,7 +270,7 @@ describe("new-school transaction tracing", function () {
         tt.measure('Custom/Test05');
         tt.end();
 
-        expect(tt.getStatistics('Custom/Test05').toJSON()).to.deep.equal([1, 0, 0, 0, 0, 0]);
+        expect(tt.getStatistics('Custom/Test05').calls).to.equal(1);
       });
     });
   });

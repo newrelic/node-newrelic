@@ -3,6 +3,7 @@
 var path   = require('path')
   , chai   = require('chai')
   , should = chai.should()
+  , expect = chai.expect
   , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
@@ -56,8 +57,8 @@ describe('the New Relic agent', function () {
       return done();
     });
 
-    it('should expose its configured statsEngine directly', function (done) {
-      should.exist(agent.statsEngine);
+    it('should expose its configured metrics directly', function (done) {
+      should.exist(agent.metrics);
 
       return done();
     });
@@ -120,11 +121,11 @@ describe('the New Relic agent', function () {
       });
 
       describe("when signaling events out of band", function () {
-        it("should reset the stats engine's ApdexT value when the configuration is changed", function (done) {
-          should.not.exist(agent.statsEngine.apdexT);
+        it("should update the metrics' apdex tolerating value when configuration changes", function (done) {
+          expect(agent.metrics.apdexT).equal(0);
           process.nextTick(function () {
-            should.exist(agent.statsEngine.apdexT);
-            agent.statsEngine.apdexT.should.equal(0.666);
+            should.exist(agent.metrics.apdexT);
+            agent.metrics.apdexT.should.equal(0.666);
 
             return done();
           });
@@ -135,37 +136,32 @@ describe('the New Relic agent', function () {
         it("should reset the configuration and metrics normalizer when the agent connects", function (done) {
           should.not.exist(agent.config.apdex_t);
           process.nextTick(function () {
-            should.exist(agent.config.apdex_t);
-            agent.config.apdex_t.should.equal(0.742);
-
-            should.exist(agent.statsEngine.apdexT);
-            agent.statsEngine.apdexT.should.equal(0.742);
-
-            should.exist(agent.metricNormalizer.rules);
-            agent.metricNormalizer.rules.should.eql([0]);
+            expect(agent.config.apdex_t).equal(0.742);
+            expect(agent.metrics.apdexT).equal(0.742);
+            expect(agent.metricNormalizer.rules).deep.equal([0]);
 
             return done();
           });
 
-          connection.emit('connect', {'apdex_t' : 0.742, url_rules : [0]});
+          connection.emit('connect', {apdex_t : 0.742, url_rules : [0]});
         });
 
         it("should parse metrics responses when metric data is received", function (done) {
-          var STATNAME = "Custom/Test/events";
-          var SCOPE    = "TEST";
-          var METRICID = "test000000001";
+          var NAME     = 'Custom/Test/events';
+          var SCOPE    = 'TEST';
+          var METRICID = 'Test/Rollup';
 
           var testIDs = {};
-          testIDs[STATNAME + ',' + SCOPE] = METRICID;
+          testIDs[NAME + ',' + SCOPE] = METRICID;
 
-          agent.statsEngine.metricIds.should.eql([]);
+          agent.metrics.renamer.length.should.equal(0);
           process.nextTick(function () {
-            agent.statsEngine.metricIds.should.eql(testIDs);
+            agent.metrics.renamer.lookup(NAME, SCOPE).should.equal('Test/Rollup');
 
             return done();
           });
 
-          connection.emit('metricDataResponse', [[{"name" : STATNAME, "scope" : SCOPE}, METRICID]]);
+          connection.emit('metricDataResponse', [[{name : NAME, scope : SCOPE}, METRICID]]);
         });
       });
     });

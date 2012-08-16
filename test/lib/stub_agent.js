@@ -1,11 +1,11 @@
 'use strict';
 
-var path        = require('path')
-  , events      = require('events')
-  , util        = require('util')
-  , logger      = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
-  , StatsEngine = require(path.join(__dirname, '..', '..', 'lib', 'stats', 'engine'))
-  , trace       = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+var path    = require('path')
+  , events  = require('events')
+  , util    = require('util')
+  , logger  = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
+  , trace   = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+  , Metrics = require(path.join(__dirname, '..', '..', 'lib', 'metric', 'metrics'))
   ;
 
 function StubAgent() {
@@ -18,7 +18,7 @@ function StubAgent() {
     this.transactions.push(transaction);
   };
 
-  this.statsEngine = new StatsEngine();
+  this.metrics = new Metrics();
   trace.setTransactions(this);
 
   this.config = require('../../lib/config').initialize(logger, {'config':{'app_name':'node.js Tests'}});

@@ -34,19 +34,17 @@ describe('execution tracing', function () {
       agent.stop();
     });
 
-    it('should insert a trace into the stats traced by the agent', function (done) {
+    it('should insert a trace into the stats traced by the agent', function () {
       var tracer = new Tracer(transaction, 'Custom/Test');
       tracer.getDurationInMillis = stubDuration;
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
-      var stats = agent.transactions[0].scopedStats.byName('Custom/Test');
-      JSON.stringify(stats).should.equal('[1,0,0,0,0,0]', 'should only have one invocation of the test trace');
-
-      return done();
+      var stats = agent.metrics.getOrCreateMetric('Custom/Test').stats;
+      stats.callCount.should.equal(1);
     });
 
-    it('should only insert a single trace per transaction', function (done) {
+    it('should only insert a single trace per transaction', function () {
       var tracer = new Tracer(transaction, 'Custom/Test2');
       tracer.getDurationInMillis = stubDuration;
       tracer.finish();
@@ -57,10 +55,8 @@ describe('execution tracing', function () {
       tracer.finish();
       agent.transactions.length.should.equal(1);
 
-      var stats = agent.transactions[0].scopedStats;
-      JSON.stringify(stats.getMetricData()).should.equal('[[{"name":"Custom/Test2"},[1,0,0,0,0,0]]]');
-
-      return done();
+      var stats = agent.metrics.getOrCreateMetric('Custom/Test2', 'TEST').stats;
+      stats.callCount.should.equal(1);
     });
   });
 });

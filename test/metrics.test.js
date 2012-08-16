@@ -1,10 +1,12 @@
 'use strict';
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
-  , RenameRules = require(path.join(__dirname, '..', 'lib', 'metric', 'rename-rules'))
+var path             = require('path')
+  , chai             = require('chai')
+  , expect           = chai.expect
+  , EventEmitter     = require('events').EventEmitter
+  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
+  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metric', 'rename-rules'))
+  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metric', 'normalizer'))
   ;
 
 describe("Metrics", function () {
@@ -156,5 +158,133 @@ describe("Metrics", function () {
     // merged metrics
     expect(metrics.getOrCreateMetric('Test/Unscoped').stats.callCount).equal(2);
     expect(metrics.getOrCreateMetric('Test/Scoped', 'MERGE').stats.callCount).equal(2);
+  });
+
+  it("should dynamically update its apdex tolerating value", function (done) {
+    var APDEX_VALUE = 0.725;
+
+    expect(metrics.apdexT).equal(0);
+
+    var checker = function (params) {
+      expect(params.apdex_t).equal(APDEX_VALUE);
+      expect(metrics.apdexT).equal(APDEX_VALUE);
+      return done();
+    };
+
+    var emitter = new EventEmitter();
+    emitter.addListener('change', metrics.updateApdexT.bind(metrics));
+    emitter.addListener('change', checker);
+
+    emitter.emit('change', {apdex_t : 0.725});
+  });
+
+  describe("when recording web transactions", function () {
+    var normalizer;
+
+    before(function () {
+      normalizer = new MetricNormalizer();
+    });
+
+    describe("with normal requests", function () {
+      it("should infer a satisfying end-user experience", function () {
+        var metrics = new Metrics(null, 0.06);
+        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 200);
+
+        var result = [
+          [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction/Uri/test'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
+          [{name : 'Apdex/Uri/test'},          [1,     0,     0,     0,     0,        0]],
+          [{name : 'Apdex'},                   [1,     0,     0,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+
+      it("should infer a tolerable end-user experience", function () {
+        var metrics = new Metrics(null, 0.05);
+        metrics.recordWebTransaction(normalizer, '/test', 55, 100, 200);
+
+        var result = [
+          [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction/Uri/test'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
+          [{name : 'Apdex/Uri/test'},          [0,     1,     0,     0,     0,        0]],
+          [{name : 'Apdex'},                   [0,     1,     0,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+
+      it("should infer a frustrating end-user experience", function () {
+        var metrics = new Metrics(null, 0.01);
+        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 200);
+
+        var result = [
+          [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction/Uri/test'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
+          [{name : 'Apdex/Uri/test'},          [0,     0,     1,     0,     0,        0]],
+          [{name : 'Apdex'},                   [0,     0,     1,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+    });
+
+    describe("with exceptional requests", function () {
+      it("should handle missing resources", function () {
+        var metrics = new Metrics(null, 0.01);
+        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 404);
+
+        var result = [
+          [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction/StatusCode/404'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
+          [{name : 'Apdex/StatusCode/404'},          [0,     0,     1,     0,     0,        0]],
+          [{name : 'Apdex'},                         [0,     0,     1,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+
+      it("should handle bad requests", function () {
+        var metrics = new Metrics(null, 0.01);
+        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 400);
+
+        var result = [
+          [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction/StatusCode/400'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
+          [{name : 'Apdex/StatusCode/400'},          [0,     0,     1,     0,     0,        0]],
+          [{name : 'Apdex'},                         [0,     0,     1,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+
+      it("should handle over-long URIs", function () {
+        var metrics = new Metrics(null, 0.01);
+        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 414);
+
+        var result = [
+          [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction/StatusCode/414'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
+          [{name : 'Apdex/StatusCode/414'},          [0,     0,     1,     0,     0,        0]],
+          [{name : 'Apdex'},                         [0,     0,     1,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+
+      it("should handle internal server errors", function () {
+        var metrics = new Metrics(null, 0.01);
+        metrics.recordWebTransaction(normalizer, '/test', 1, 1, 500);
+
+        var result = [
+          [{name : 'WebTransaction'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name : 'HttpDispatcher'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name : 'WebTransaction/Uri/test'}, [1, 0.001,     0, 0.001, 0.001, 0.000001]],
+          [{name : 'Apdex/Uri/test'},          [0,     0,     1,     0,     0,        0]],
+          [{name : 'Apdex'},                   [0,     0,     1,     0,     0,        0]]
+        ];
+        expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
+      });
+    });
   });
 });

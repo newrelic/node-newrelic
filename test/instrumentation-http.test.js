@@ -53,26 +53,20 @@ describe('agent instrumentation of the http module', function () {
     });
   });
 
-  after(function (done) {
+  after(function () {
     helper.unloadAgent(agent);
-
-    return done();
   });
 
-  it("should successfully fetch the page", function (done) {
+  it("should successfully fetch the page", function () {
     fetchedResponse.statusCode.should.equal(200);
 
     should.exist(fetchedBody);
     fetchedBody.should.equal(PAGE);
-
-    return done();
   });
 
-  it("should record unscoped path stats after a normal request", function (done) {
-    var pathStats = agent.statsEngine.unscopedStats.byName('WebTransaction/Uri/path').toJSON();
-    pathStats[0].should.equal(1);
-
-    return done();
+  it("should record unscoped path stats after a normal request", function () {
+    var stats = agent.metrics.getOrCreateMetric('WebTransaction/Uri/path').stats;
+    stats.callCount.should.equal(1);
   });
 
   it("should indicate that the http dispatcher is in play", function (done) {
@@ -85,10 +79,8 @@ describe('agent instrumentation of the http module', function () {
     return done(found ? null : new Error('failed to find Dispatcher configuration'));
   });
 
-  it("should record unscoped HTTP dispatcher stats after a normal request", function (done) {
-    var dispatchStats = agent.statsEngine.unscopedStats.byName('HttpDispatcher').toJSON();
-    dispatchStats[0].should.equal(1);
-
-    return done();
+  it("should record unscoped HTTP dispatcher stats after a normal request", function () {
+    var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
+    stats.callCount.should.equal(1);
   });
 });

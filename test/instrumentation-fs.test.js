@@ -1,3 +1,5 @@
+'use strict';
+
 var path    = require('path')
   , chai    = require('chai')
   , should  = chai.should()
@@ -47,15 +49,15 @@ describe("agent instrumentation of the fs module", function () {
     fs.readdir(TESTDIR, function (error, files) {
       if (error) return done(error);
 
-      files.should.be.an.instanceof(Array);
+      files.should.be.an('array');
       files.length.should.equal(3);
       [FILE1, FILE2, FILE3].forEach(function (filename) {
         files.should.include(filename);
       });
 
-      var readdirStats = JSON.stringify(agent.statsEngine.statsByScope('FIXME').byName('Filesystem/ReadDir/' + TESTDIR));
-      should.exist(readdirStats);
-      readdirStats.should.match(/^\[[0-9.,]+\]$/);
+      var stats = agent.metrics.getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR, 'FIXME').stats;
+      JSON.stringify(agent.metrics).should.equal('[]');
+      stats.callCount.should.equal(1);
 
       return done();
     });
