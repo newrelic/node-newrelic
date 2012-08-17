@@ -7,92 +7,9 @@ var path        = require('path')
   , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   ;
 
-describe("new-school transaction tracing", function () {
+describe("Transaction", function () {
   // don't add Sinon into the mix until I know what to spy on
   var agent = {name : "test application"};
-
-  afterEach(function () {
-    transaction.reset();
-  });
-
-  it("must have every transaction associated with an application", function () {
-    expect(function () { transaction.create(); }).throws(/must be scoped to an application/);
-  });
-
-  it("should create new transactions on demand", function () {
-    should.exist(transaction.create(agent));
-  });
-
-  it("should be able to deal with multiple active transactions", function () {
-    var first  = transaction.create(agent);
-    var second = transaction.create(agent);
-
-    first.should.not.equal(second);
-    transaction.getActiveByApplication(agent).length.should.equal(2);
-  });
-
-  it("should only show active transactions per application on the active list", function () {
-    var first  = transaction.create(agent);
-    var second = transaction.create(agent);
-    var third  = transaction.create(agent);
-
-    transaction.getActiveByApplication(agent).length.should.equal(3);
-    first.end();
-    second.end();
-    transaction.getActiveByApplication(agent).length.should.equal(1);
-  });
-
-  it("should scope the transaction to the agent", function () {
-    var tt = transaction.create(agent);
-    tt.end();
-
-    should.exist(tt.application);
-    tt.application.should.equal(agent);
-  });
-
-  it("should allow counting the number of transactions by application", function () {
-    var firstApp    = {name : 'first'};
-    var firstFirst  = transaction.create(firstApp);
-    var secondFirst = transaction.create(firstApp);
-    var thirdFirst  = transaction.create(firstApp);
-
-    var secondApp    = {name : 'second'};
-    var firstSecond  = transaction.create(secondApp);
-    var secondSecond = transaction.create(secondApp);
-
-    firstFirst.end();
-    secondFirst.end();
-
-    transaction.getActiveByApplication(firstApp).length.should.equal(1);
-    transaction.getByApplication(firstApp).length.should.equal(3);
-  });
-
-  describe("when tracing scoped metrics", function () {
-    var tt;
-
-    beforeEach(function () {
-      tt = transaction.create(agent);
-    });
-
-    it("should add traces by scope", function () {
-      tt.measure('Custom/Test08', 'TEST');
-      expect(tt.getMetrics('Custom/Test08', 'TEST')).to.not.equal(null);
-    });
-
-    it("should track the same metric name separately in separate scopes", function () {
-      var one = tt.measure('Custom/Test09', 'ONCE');
-      one.end();
-
-      var other = tt.measure('Custom/Test09', 'TWICE');
-      other.end();
-
-      var third = tt.measure('Custom/Test09', 'TWICE');
-      third.end();
-
-      expect(tt.getStatistics('Custom/Test09', 'ONCE').toObject().calls).to.equal(1);
-      expect(tt.getStatistics('Custom/Test09', 'TWICE').toObject().calls).to.equal(2);
-    });
-  });
 
   describe("when dealing with individual traces", function () {
     it("should add traces by name", function () {
@@ -318,4 +235,6 @@ describe("new-school transaction tracing", function () {
       expect(summary.unscoped['Custom/Test15'].toJSON()[0]).to.equal(1);
     });
   });
+
+  it("should create a trace on demand");
 });
