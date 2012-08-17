@@ -52,7 +52,7 @@ describe("mocks / stubs combined with the legacy trace API", function (done) {
       /*
        * Drive the instrumentation by calling the instrumented method.
        */
-      mysqlInstrument.initialize(stubAgent, trace, mysql);
+      mysqlInstrument(stubAgent, trace, mysql);
       mysql.Client.prototype.query('SELECT * FROM test_table', function (error, data) {
         mockTransaction.verify();
 
@@ -85,7 +85,7 @@ describe("mocks / stubs combined with the legacy trace API", function (done) {
       /*
        * Drive the instrumentation by calling the instrumented method.
        */
-      mysqlInstrument.initialize(agent, trace, mysql);
+      mysqlInstrument(agent, trace, mysql);
       mysql.Client.prototype.query('SELECT * FROM test_table', function (error, data) {
         mockTrace.verify();
         mockTracer.verify();
