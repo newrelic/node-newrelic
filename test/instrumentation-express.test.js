@@ -5,7 +5,6 @@ var path    = require('path')
   , should  = chai.should()
   , request = require('request')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , logger  = require(path.join(__dirname, '..', 'lib', 'logger'))
   ;
 
 describe("an instrumented Express application", function () {

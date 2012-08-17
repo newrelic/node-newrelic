@@ -36,7 +36,7 @@ var helper = module.exports = {
   unloadAgent : function unloadAgent(agent) {
     agent.stop();
     shimmer.unwrapAgent(agent);
-    shimmer.unpatchModule();
+    shimmer.unwrapAll();
   },
 
   loadMockedAgent : function loadMockedAgent() {

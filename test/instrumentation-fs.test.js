@@ -5,6 +5,7 @@ var path    = require('path')
   , should  = chai.should()
   , fs      = require('fs')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
 describe("agent instrumentation of the fs module", function () {
@@ -17,6 +18,7 @@ describe("agent instrumentation of the fs module", function () {
 
   before(function (done) {
     agent = helper.loadMockedAgent();
+    shimmer.bootstrapInstrumentation(agent);
 
     fs.mkdir(TESTDIR, function (error) {
       if (error) return done(error);
@@ -56,7 +58,6 @@ describe("agent instrumentation of the fs module", function () {
       });
 
       var stats = agent.metrics.getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR, 'FIXME').stats;
-      JSON.stringify(agent.metrics).should.equal('[]');
       stats.callCount.should.equal(1);
 
       return done();

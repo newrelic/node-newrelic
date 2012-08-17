@@ -12,47 +12,36 @@ describe('execution tracing', function () {
   describe('within the tracer', function () {
     var agent
       , transaction
-      , teststamp
       ;
 
-    function stubDuration () {
-      return 0;
-    }
-
     before(function () {
-      teststamp = Date.now();
-    });
-
-    beforeEach(function (done) {
       agent = helper.loadMockedAgent();
-      transaction = trace.createTransaction(agent);
-
-      return done();
     });
 
-    afterEach(function () {
-      agent.stop();
+    beforeEach(function () {
+      transaction = trace.createTransaction(agent);
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
     });
 
     it('should insert a trace into the stats traced by the agent', function () {
       var tracer = new Tracer(transaction, 'Custom/Test');
-      tracer.getDurationInMillis = stubDuration;
       tracer.finish();
 
-      var stats = agent.metrics.getOrCreateMetric('Custom/Test').stats;
+      var stats = agent.metrics.getOrCreateMetric('Custom/Test', 'FIXME').stats;
       stats.callCount.should.equal(1);
     });
 
     it('should only insert a single trace per transaction', function () {
       var tracer = new Tracer(transaction, 'Custom/Test2');
-      tracer.getDurationInMillis = stubDuration;
       tracer.finish();
 
       tracer = new Tracer(transaction, 'Custom/Test3');
-      tracer.getDurationInMillis = stubDuration;
       tracer.finish();
 
-      var stats = agent.metrics.getOrCreateMetric('Custom/Test2').stats;
+      var stats = agent.metrics.getOrCreateMetric('Custom/Test2', 'FIXME').stats;
       stats.callCount.should.equal(1);
     });
   });
