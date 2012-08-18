@@ -7,4 +7,5 @@ describe("Probe", function () {
   describe("when finished", function () {
     it("should know its exclusive runtime");
   });
+  it("should retain any associated SQL statements");
 });
