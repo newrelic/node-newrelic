@@ -1,7 +1,7 @@
 'use strict';
 
-var http  = require('http')
-  , agent = require ('newrelic_agent')()
+var agent = require ('newrelic_agent')()
+  , http  = require('http')
   ;
 
 var server = http.createServer(function (request, response) {
