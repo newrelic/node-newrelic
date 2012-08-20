@@ -194,8 +194,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/Uri/test'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
-          [{name : 'Apdex/Uri/test'},          [1,     0,     0,     0,     0,        0]],
-          [{name : 'Apdex'},                   [1,     0,     0,     0,     0,        0]]
+          [{name : 'Apdex/Uri/test'},          [1,     0,     0,  0.06,  0.06,        0]],
+          [{name : 'Apdex'},                   [1,     0,     0,  0.06,  0.06,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });
@@ -208,8 +208,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/Uri/test'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
-          [{name : 'Apdex/Uri/test'},          [0,     1,     0,     0,     0,        0]],
-          [{name : 'Apdex'},                   [0,     1,     0,     0,     0,        0]]
+          [{name : 'Apdex/Uri/test'},          [0,     1,     0,  0.05,  0.05,        0]],
+          [{name : 'Apdex'},                   [0,     1,     0,  0.05,  0.05,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });
@@ -222,8 +222,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/Uri/test'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
-          [{name : 'Apdex/Uri/test'},          [0,     0,     1,     0,     0,        0]],
-          [{name : 'Apdex'},                   [0,     0,     1,     0,     0,        0]]
+          [{name : 'Apdex/Uri/test'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name : 'Apdex'},                   [0,     0,     1,  0.01,  0.01,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });
@@ -238,8 +238,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/StatusCode/404'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
-          [{name : 'Apdex/StatusCode/404'},          [0,     0,     1,     0,     0,        0]],
-          [{name : 'Apdex'},                         [0,     0,     1,     0,     0,        0]]
+          [{name : 'Apdex/StatusCode/404'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name : 'Apdex'},                         [0,     0,     1,  0.01,  0.01,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });
@@ -252,8 +252,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/StatusCode/400'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
-          [{name : 'Apdex/StatusCode/400'},          [0,     0,     1,     0,     0,        0]],
-          [{name : 'Apdex'},                         [0,     0,     1,     0,     0,        0]]
+          [{name : 'Apdex/StatusCode/400'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name : 'Apdex'},                         [0,     0,     1,  0.01,  0.01,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });
@@ -266,8 +266,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/StatusCode/414'}, [1, 0.055,     0, 0.055, 0.055, 0.003025]],
-          [{name : 'Apdex/StatusCode/414'},          [0,     0,     1,     0,     0,        0]],
-          [{name : 'Apdex'},                         [0,     0,     1,     0,     0,        0]]
+          [{name : 'Apdex/StatusCode/414'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name : 'Apdex'},                         [0,     0,     1,  0.01,  0.01,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });
@@ -280,8 +280,8 @@ describe("Metrics", function () {
           [{name : 'WebTransaction'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name : 'HttpDispatcher'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name : 'WebTransaction/Uri/test'}, [1, 0.001,     0, 0.001, 0.001, 0.000001]],
-          [{name : 'Apdex/Uri/test'},          [0,     0,     1,     0,     0,        0]],
-          [{name : 'Apdex'},                   [0,     0,     1,     0,     0,        0]]
+          [{name : 'Apdex/Uri/test'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name : 'Apdex'},                   [0,     0,     1,  0.01,  0.01,        0]]
         ];
         expect(JSON.stringify(metrics)).equal(JSON.stringify(result));
       });

@@ -82,16 +82,16 @@ describe("Metric", function () {
       });
 
       it("should get the bare stats right", function () {
-        expect(JSON.stringify(metric.toData())).equal('[{"name":"Agent/DataTest385"},[0,0,0,0,0,0]]');
+        expect(JSON.stringify(metric.toData())).equal('[{"name":"Agent/DataTest385"},[0,0,0,0.8,0.8,0]]');
       });
 
       it("should correctly rename metrics given rules", function () {
-        expect(JSON.stringify(metric.toData(renamer))).equal('[{"name":"Agent/Serialization"},[0,0,0,0,0,0]]');
+        expect(JSON.stringify(metric.toData(renamer))).equal('[{"name":"Agent/Serialization"},[0,0,0,0.8,0.8,0]]');
       });
 
       it("should correctly serialize statistics", function () {
         metric.stats.recordValueInMillis(3220);
-        expect(JSON.stringify(metric.toData())).equal('[{"name":"Agent/DataTest385"},[0,0,1,0,0,0]]');
+        expect(JSON.stringify(metric.toData())).equal('[{"name":"Agent/DataTest385"},[0,0,1,0.8,0.8,0]]');
       });
     });
   });
