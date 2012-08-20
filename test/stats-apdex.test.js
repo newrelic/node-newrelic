@@ -24,6 +24,14 @@ describe("ApdexStats", function () {
       .throws('Apdex summary must be created with a tolerated value');
   });
 
+  it("should export apdexT in the 4th field of the timeslice", function () {
+    expect(statistics.toJSON()[3]).equal(0.3);
+  });
+
+  it("should export apdexT in the 5th field (why?) of the timeslice", function () {
+    expect(statistics.toJSON()[4]).equal(0.3);
+  });
+
   it("should correctly summarize a sample set of statistics", function () {
     statistics.recordValueInMillis(1251);
     statistics.recordValueInMillis(250);
