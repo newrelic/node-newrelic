@@ -4,18 +4,36 @@ var path        = require('path')
   , chai        = require('chai')
   , should      = chai.should()
   , expect      = chai.expect
+  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   ;
 
 describe("Transaction", function () {
-  // don't add Sinon into the mix until I know what to spy on
-  var agent = {name : "test application"};
+  var agent = helper.loadMockedAgent();
 
+  it("should create a trace on demand");
   it("should have at most one associated trace");
-  it("should have its own metrics");
+  it("should manage its own metrics");
   it("should hand the metrics off to the Agent metrics object upon finalization");
 
-  describe("when dealing with individual traces", function () {
+  it("should provide a mechanism to associate itself with a URL", function () {
+    var trans = new Transaction(agent);
+    expect(function () { trans.setURL('/test/1'); }).not.throws();
+  });
+
+  it("should know when it's not a web transaction", function () {
+    var trans = new Transaction(agent);
+    expect(trans.isWeb()).equal(false);
+  });
+
+  it("should know when it's a web transaction", function () {
+    var trans = new Transaction(agent);
+    trans.setURL('/test/1');
+    expect(trans.isWeb()).equal(true);
+  });
+
+  describe("when dealing with individual metrics", function () {
     it("should add metrics by name", function () {
       var tt = transaction.create(agent);
 
@@ -91,6 +109,4 @@ describe("Transaction", function () {
     it("should produce a human-readable summary");
     it("should produce a metrics summary suitable for the collector");
   });
-
-  it("should create a trace on demand");
 });
