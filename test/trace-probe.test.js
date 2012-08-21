@@ -39,10 +39,10 @@ describe("Probe", function () {
   it("should retain any associated SQL statements");
   it("should allow an arbitrary number of Probes from functions called in the scope of this Probe");
 
-  describe("when finished", function () {
-    it("should have a finished timer", function () {
+  describe("when ended", function () {
+    it("should have a ended timer", function () {
       var probe = new Probe(new Trace('Test/TraceExample04'), 'UnitTest');
-      probe.finish();
+      probe.end();
       expect(probe.timer.isRunning()).equal(false);
     });
 
