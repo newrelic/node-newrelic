@@ -12,8 +12,9 @@ describe("Probe", function () {
     expect(function noTrace() {
       var probe = new Probe(null, 'UnitTest');
     }).throws();
+
     var success = new Probe(new Trace('Test/TraceExample07'), 'UnitTest');
-    expect(success.trace).an('object');
+    expect(success.trace).instanceof(Trace);
   });
 
   it("should be named", function () {
@@ -36,6 +37,7 @@ describe("Probe", function () {
 
   it("should accept a callback that records metrics associated with this probe");
   it("should retain any associated SQL statements");
+  it("should allow an arbitrary number of Probes from functions called in the scope of this Probe");
 
   describe("when finished", function () {
     it("should have a finished timer", function () {
