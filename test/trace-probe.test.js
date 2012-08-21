@@ -34,6 +34,7 @@ describe("Probe", function () {
     expect(probe.timer.isRunning()).equal(true);
   });
 
+  it("should accept a callback that records metrics associated with this probe");
   it("should retain any associated SQL statements");
 
   describe("when finished", function () {
