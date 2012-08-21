@@ -1,4 +1,5 @@
 {
+  "es5": true,
   "laxcomma": true,
   "eqeqeq": true,
   "forin": true,
