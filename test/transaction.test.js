@@ -7,7 +7,7 @@ var path        = require('path')
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   , Metrics     = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
-  , Trace       = require(path.join(__dirname, '..', 'lib', 'trace-nu'))
+  , Trace       = require(path.join(__dirname, '..', 'lib', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   ;
 

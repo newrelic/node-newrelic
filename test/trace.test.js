@@ -5,7 +5,7 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , Probe       = require(path.join(__dirname, '..', 'lib', 'trace', 'probe'))
-  , Trace       = require(path.join(__dirname, '..', 'lib', 'trace-nu'))
+  , Trace       = require(path.join(__dirname, '..', 'lib', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   ;
 
