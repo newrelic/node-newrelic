@@ -3,7 +3,7 @@
 var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
-  , getRawStack = require(path.join(__dirname, '..', 'lib', 'trace-legacy', 'stack-helper'))
+  , getRawStack = require(path.join(__dirname, '..', 'lib', 'util', 'raw-stack'))
   ;
 
 describe('stacktrace helper', function () {
