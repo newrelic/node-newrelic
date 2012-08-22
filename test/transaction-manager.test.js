@@ -4,13 +4,14 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , should      = chai.should()
+  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   , Agent       = require(path.join(__dirname, '..', 'lib', 'agent'))
   ;
 
 describe("the transaction API", function () {
   // don't add Sinon into the mix until I know what to spy on
-  var agent = {name : "test application"};
+  var agent = helper.loadMockedAgent();
 
   afterEach(function () {
     transaction.reset();
@@ -52,12 +53,14 @@ describe("the transaction API", function () {
   });
 
   it("should group transactions by application", function () {
-    var firstApp    = {name : 'first'};
+    var firstApp    = helper.loadMockedAgent();
+    firstApp.name   = 'first';
     var firstFirst  = transaction.create(firstApp);
     var secondFirst = transaction.create(firstApp);
     var thirdFirst  = transaction.create(firstApp);
 
-    var secondApp    = {name : 'second'};
+    var secondApp    = helper.loadMockedAgent();
+    secondApp.name   = 'second';
     var firstSecond  = transaction.create(secondApp);
     var secondSecond = transaction.create(secondApp);
 

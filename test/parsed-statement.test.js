@@ -4,6 +4,7 @@ var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
   , should          = chai.should()
+  , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
   , Timer           = require(path.join(__dirname, '..', 'lib', 'timer'))
   , Transaction     = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   , ParsedStatement = require(path.join(__dirname, '..', 'lib', 'db', 'parsed-statement'))
@@ -27,7 +28,7 @@ describe("recording metrics", function () {
       var timer = new Timer();
       timer.setDurationInMillis(333);
 
-      transaction = new Transaction({name : 'SELECT test'});
+      transaction = new Transaction(helper.loadMockedAgent());
 
       ps.recordMetrics(transaction, 'TEST', timer);
       transaction.end();
@@ -68,7 +69,7 @@ describe("recording metrics", function () {
       var timer = new Timer();
       timer.setDurationInMillis(333);
 
-      transaction = new Transaction({name : 'SELECT test'});
+      transaction = new Transaction(helper.loadMockedAgent());
 
       ps.recordMetrics(transaction, null, timer);
       transaction.end();
