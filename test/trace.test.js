@@ -4,7 +4,7 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , Probe       = require(path.join(__dirname, '..', 'lib', 'trace', 'probe'))
+  , Probe       = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   ;
