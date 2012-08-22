@@ -5,7 +5,7 @@ var path         = require('path')
   , should       = chai.should()
   , trace        = require(path.join(__dirname, '..', 'lib', 'trace'))
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , Tracer       = require(path.join(__dirname, '..', 'lib', 'trace-legacy', 'tracer'))
+  , Tracer       = require(path.join(__dirname, '..', 'lib', 'legacy', 'tracer'))
   ;
 
 describe('execution tracing', function () {
