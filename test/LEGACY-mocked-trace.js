@@ -2,7 +2,7 @@
 
 var path = require('path')
   , sinon = require('sinon')
-  , database = require(path.join(__dirname, '..', 'lib', 'database'))
+  , database = require(path.join(__dirname, '..', 'lib', 'legacy', 'database'))
   , trace = require(path.join(__dirname, '..', 'lib', 'trace'))
   , mysqlInstrument = require(path.join(__dirname, '..', 'lib', 'instrumentation', 'mysql'))
   , Agent = require(path.join(__dirname, '..', 'lib', 'agent'))
