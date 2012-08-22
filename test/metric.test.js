@@ -4,7 +4,7 @@ var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
   , Metric           = require(path.join(__dirname, '..', 'lib', 'trace', 'metric'))
-  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metric', 'rename-rules'))
+  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
   ;
 
 describe("Metric", function () {

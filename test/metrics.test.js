@@ -4,9 +4,9 @@ var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
   , EventEmitter     = require('events').EventEmitter
-  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
-  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metric', 'rename-rules'))
-  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metric', 'normalizer'))
+  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics', 'metrics'))
+  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
+  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
   ;
 
 describe("Metrics", function () {
