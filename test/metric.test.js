@@ -3,7 +3,7 @@
 var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
-  , Metric           = require(path.join(__dirname, '..', 'lib', 'trace', 'metric'))
+  , Metric           = require(path.join(__dirname, '..', 'lib', 'metrics', 'metric'))
   , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
   ;
 

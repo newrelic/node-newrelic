@@ -4,7 +4,7 @@ var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
   , EventEmitter     = require('events').EventEmitter
-  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics', 'metrics'))
+  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics'))
   , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
   , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
   ;
