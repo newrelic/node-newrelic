@@ -1,11 +1,11 @@
 'use strict';
 
-var path = require('path')
-  , sinon = require('sinon')
-  , database = require(path.join(__dirname, '..', 'lib', 'legacy', 'database'))
-  , trace = require(path.join(__dirname, '..', 'lib', 'trace'))
+var path            = require('path')
+  , sinon           = require('sinon')
+  , database        = require(path.join(__dirname, '..', 'lib', 'legacy', 'database'))
+  , trace           = require(path.join(__dirname, '..', 'lib', 'legacy', 'trace'))
   , mysqlInstrument = require(path.join(__dirname, '..', 'lib', 'instrumentation', 'mysql'))
-  , Agent = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , Agent           = require(path.join(__dirname, '..', 'lib', 'agent'))
   ;
 
 describe("mocks / stubs combined with the legacy trace API", function (done) {

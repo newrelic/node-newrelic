@@ -3,7 +3,7 @@
 var path         = require('path')
   , chai         = require('chai')
   , should       = chai.should()
-  , trace        = require(path.join(__dirname, '..', 'lib', 'trace'))
+  , trace        = require(path.join(__dirname, '..', 'lib', 'legacy', 'trace'))
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , Tracer       = require(path.join(__dirname, '..', 'lib', 'legacy', 'tracer'))
   ;

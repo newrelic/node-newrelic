@@ -2,7 +2,7 @@
 
 var path                = require('path')
   , sinon               = require('sinon')
-  , trace               = require(path.join(__dirname, '..', '..', 'lib', 'trace'))
+  , trace               = require(path.join(__dirname, '..', '..', 'lib', 'legacy', 'trace'))
   , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
