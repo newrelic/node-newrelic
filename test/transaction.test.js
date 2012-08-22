@@ -6,16 +6,60 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
+  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metric', 'metrics'))
+  , Trace       = require(path.join(__dirname, '..', 'lib', 'trace-nu'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   ;
 
 describe("Transaction", function () {
-  var agent = helper.loadMockedAgent();
+  var agent
+    , trans
+    ;
 
-  it("should create a trace on demand");
-  it("should have at most one associated trace");
-  it("should manage its own metrics");
-  it("should hand the metrics off to the Agent metrics object upon finalization");
+  beforeEach(function () {
+    agent = helper.loadMockedAgent();
+    trans = new Transaction(agent);
+  });
+
+  it("should be created without an associated trace", function () {
+    expect(trans.trace).equal(undefined);
+  });
+
+  it("should create a trace on demand", function () {
+    var trace = trans.getTrace();
+    expect(trace).instanceOf(Trace);
+    expect(trans.trace).equal(trace);
+  });
+
+  it("should have at most one associated trace", function () {
+    var trace = trans.getTrace();
+    expect(trans.trace).not.instanceof(Array);
+  });
+
+  it("should hand its metrics off to the agent upon finalization", function (done) {
+    agent.on('transactionFinished', function (metrics) {
+      expect(metrics).equal(trans.metrics);
+
+      return done();
+    });
+
+    trans.end();
+  });
+
+  describe("with associated metrics", function () {
+    it("should manage its own independent of the agent", function () {
+      expect(trans.metrics).instanceOf(Metrics);
+      expect(trans.metrics).not.equal(agent.metrics);
+    });
+
+    it("should have the same apdex threshold as the agent's", function () {
+      expect(agent.metrics.apdexT).equal(trans.metrics.apdexT);
+    });
+
+    it("should have the same metric renaming rules as the agent's", function () {
+      expect(agent.metrics.renamer).equal(trans.metrics.renamer);
+    });
+  });
 
   it("should provide a mechanism to associate itself with a URL", function () {
     var trans = new Transaction(agent);
