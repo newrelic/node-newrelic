@@ -4,7 +4,7 @@ var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
   , Probe  = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
-  , Trace  = require(path.join(__dirname, '..', 'lib', 'trace'))
+  , Trace  = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
   ;
 
 describe("Probe", function () {
