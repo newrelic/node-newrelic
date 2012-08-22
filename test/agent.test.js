@@ -51,72 +51,50 @@ describe('the New Relic agent', function () {
       agent.noticeAppPort(6666);
     });
 
-    after(function (done) {
+    after(function () {
       var deaded = helper.unloadAgent(agent);
-
-      return done();
     });
 
-    it('should expose its configured metrics directly', function (done) {
+    it('should expose its configured metrics directly', function () {
       should.exist(agent.metrics);
-
-      return done();
     });
 
-    it('should expose its configuration directly', function (done) {
+    it('should expose its configuration directly', function () {
       should.exist(agent.config);
-
-      return done();
     });
 
-    it('should expose its configured errorService directly', function (done) {
+    it('should expose its configured errorService directly', function () {
       should.exist(agent.errors);
-
-      return done();
     });
 
-    it('should expose its configured metricNormalizer directly', function (done) {
+    it('should expose its configured metricNormalizer directly', function () {
       should.exist(agent.metricNormalizer);
-
-      return done();
     });
 
     describe("when dealing with its event handlers", function () {
       describe("when setting up event subscriptions", function () {
-        it("should have one handler defined on the 'change' event on the agent's configuration", function (done) {
+        it("should have one handler defined on the 'change' event on the agent's configuration", function () {
           agent.config.listeners('change').length.should.equal(1);
-
-          return done();
         });
 
-        it("should have two handlers defined on the 'connect' event on the agent", function (done) {
+        it("should have two handlers defined on the 'connect' event on the agent", function () {
           connection.listeners('connect').length.should.equal(2);
-
-          return done();
         });
 
-        it("should have one handler defined on the 'metricDataError' event on the agent", function (done) {
+        it("should have one handler defined on the 'metricDataError' event on the agent", function () {
           connection.listeners('metricDataError').length.should.equal(1);
-
-          return done();
         });
 
-        it("should have one handler defined on the 'metricDataResponse' event on the agent", function (done) {
+        it("should have one handler defined on the 'metricDataResponse' event on the agent", function () {
           connection.listeners('metricDataResponse').length.should.equal(1);
-
-          return done();
         });
 
-        it("should have one handler defined on the 'errorDataError' event on the agent", function (done) {
+        it("should have one handler defined on the 'errorDataError' event on the agent", function () {
           connection.listeners('errorDataError').length.should.equal(1);
-
-          return done();
         });
 
-        it("should have one handler defined on the 'connectError' event on the agent", function (done) {
+        it("should have one handler defined on the 'connectError' event on the agent", function () {
           connection.listeners('connectError').length.should.equal(1);
-
-          return done();
         });
       });
 
@@ -164,6 +142,10 @@ describe('the New Relic agent', function () {
           connection.emit('metricDataResponse', [[{name : NAME, scope : SCOPE}, METRICID]]);
         });
       });
+    });
+
+    it("should have one handler defined on the transactionFinished event", function () {
+      agent.listeners('transactionFinished').length.should.equal(1);
     });
   });
 });
