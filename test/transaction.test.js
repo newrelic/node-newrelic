@@ -8,7 +8,7 @@ var path        = require('path')
   , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'trace'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe("Transaction", function () {

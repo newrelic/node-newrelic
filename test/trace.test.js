@@ -6,7 +6,7 @@ var path        = require('path')
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , Probe       = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'trace'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe('Trace', function () {
