@@ -5,6 +5,7 @@ var path            = require('path')
   , expect          = chai.expect
   , should          = chai.should()
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , Metric          = require(path.join(__dirname, '..', 'lib', 'trace', 'metric'))
   , Timer           = require(path.join(__dirname, '..', 'lib', 'timer'))
   , Transaction     = require(path.join(__dirname, '..', 'lib', 'trace', 'transaction'))
   , ParsedStatement = require(path.join(__dirname, '..', 'lib', 'db', 'parsed-statement'))
@@ -13,9 +14,8 @@ var path            = require('path')
 function checkDatMetric(transaction, name, scope) {
   var metric = transaction.getMetrics(name, scope);
 
-  should.exist(metric);
-  expect(metric.length).to.equal(1);
-  expect(metric[0].getDurationInMillis()).to.equal(333);
+  expect(metric).instanceof(Metric);
+  expect(metric.stats.total).to.equal(0.333);
 }
 
 describe("recording metrics", function () {

@@ -93,7 +93,6 @@ describe("Transaction", function () {
 
       for (var i = 0; i < 5; i++) {
         traces[i] = tt.measure(TRACE_NAME);
-        traces[i].end();
       }
 
       tt.end();
@@ -109,7 +108,6 @@ describe("Transaction", function () {
 
       var first = tt.measure(TRACE_NAME);
       var second = tt.measure(TRACE_NAME);
-      second.end();
 
       setTimeout(function () {
         // this will automatically close out any open transactions,
@@ -138,14 +136,11 @@ describe("Transaction", function () {
     it("should allow manual setting of metric durations", function () {
       var tt = transaction.create(agent);
 
-      var trace = tt.measure('Custom/Test16');
-      trace.setDurationInMillis(65);
-
+      var trace = tt.measure('Custom/Test16', null, 65);
       tt.end();
 
       var metrics = tt.getMetrics('Custom/Test16');
-      expect(metrics.length).to.equal(1);
-      metrics[0].getDurationInMillis().should.equal(65);
+      metrics.stats.total.should.equal(0.065);
     });
   });
 
