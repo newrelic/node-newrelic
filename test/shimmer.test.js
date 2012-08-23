@@ -9,7 +9,7 @@ var path         = require('path')
   , EventEmitter = require('events').EventEmitter
   ;
 
-describe('the instrumentation injector', function () {
+describe("the instrumentation injector", function () {
   var nodule = {
     c : 2,
     ham : 'ham',
@@ -111,6 +111,16 @@ describe('the instrumentation injector', function () {
     var current;
     var synchronizer = new EventEmitter();
 
+    var spamTransaction = function () {
+      current = transaction.create(agent);
+      process.nextTick(function () {
+        var lookup = agent.getTransaction();
+        expect(lookup).equal(current);
+
+        synchronizer.emit('inner', lookup);
+      });
+    };
+
     var doneCount = 0;
     var transactions = [];
     synchronizer.on('inner', function (trans) {
@@ -122,15 +132,7 @@ describe('the instrumentation injector', function () {
     });
 
     for (var i = 0; i < 10; i += 1) {
-      process.nextTick(function () {
-        current = transaction.create(agent);
-        process.nextTick(function () {
-          var lookup = agent.getTransaction();
-          expect(lookup).equal(current);
-
-          synchronizer.emit('inner', lookup);
-        });
-      });
+      process.nextTick(spamTransaction);
     }
   });
 });
