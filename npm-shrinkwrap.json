@@ -1,9 +1,9 @@
 {
   "name": "newrelic_agent",
-  "version": "0.0.0-9",
+  "version": "0.0.1-1",
   "dependencies": {
     "winston": {
-      "version": "0.6.1",
+      "version": "0.6.2",
       "dependencies": {
         "async": {
           "version": "0.1.22"
@@ -11,14 +11,14 @@
         "colors": {
           "version": "0.6.0-1"
         },
+        "cycle": {
+          "version": "1.0.0"
+        },
         "eyes": {
           "version": "0.1.7"
         },
         "stack-trace": {
           "version": "0.0.6"
-        },
-        "cycle": {
-          "version": "1.0.0"
         }
       }
     },
@@ -76,25 +76,16 @@
         }
       }
     },
-    "express": {
-      "version": "2.5.9",
+    "sinon": {
+      "version": "1.4.2",
       "dependencies": {
-        "connect": {
-          "version": "1.8.7",
+        "buster-format": {
+          "version": "0.5.5",
           "dependencies": {
-            "formidable": {
-              "version": "1.0.11"
+            "buster-core": {
+              "version": "0.6.4"
             }
           }
-        },
-        "mime": {
-          "version": "1.2.4"
-        },
-        "qs": {
-          "version": "0.4.2"
-        },
-        "mkdirp": {
-          "version": "0.3.0"
         }
       }
     },
@@ -123,16 +114,25 @@
         }
       }
     },
-    "sinon": {
-      "version": "1.4.2",
+    "express": {
+      "version": "2.5.9",
       "dependencies": {
-        "buster-format": {
-          "version": "0.5.5",
+        "connect": {
+          "version": "1.8.7",
           "dependencies": {
-            "buster-core": {
-              "version": "0.6.4"
+            "formidable": {
+              "version": "1.0.11"
             }
           }
+        },
+        "mime": {
+          "version": "1.2.4"
+        },
+        "qs": {
+          "version": "0.4.2"
+        },
+        "mkdirp": {
+          "version": "0.3.0"
         }
       }
     }
