@@ -1,9 +1,12 @@
 'use strict';
 
-var path    = require('path')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
+var path         = require('path')
+  , chai         = require('chai')
+  , expect       = chai.expect
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
+  , transaction  = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
+  , EventEmitter = require('events').EventEmitter
   ;
 
 describe('the instrumentation injector', function () {
@@ -74,7 +77,7 @@ describe('the instrumentation injector', function () {
     expect(after).equal(false);
   });
 
-  it("should still work when an NR-wrapped method is wrapped again", function () {
+  it("shouldn't break anything when an NR-wrapped method is wrapped again", function () {
     var hamceptacle = '';
     var before = false;
     var after = false;
@@ -101,5 +104,33 @@ describe('the instrumentation injector', function () {
     expect(before).equal(true);
     expect(after).equal(true);
     expect(hammed).equal(true);
+  });
+
+  it("should scope transactions to the appropriate context", function (done) {
+    var agent = helper.loadMockedAgent();
+    var current;
+    var synchronizer = new EventEmitter();
+
+    var doneCount = 0;
+    var transactions = [];
+    synchronizer.on('inner', function (trans) {
+      doneCount += 1;
+      transactions.push(trans);
+      expect(trans).equal(current);
+
+      if (doneCount === 10) return done();
+    });
+
+    for (var i = 0; i < 10; i += 1) {
+      process.nextTick(function () {
+        current = transaction.create(agent);
+        process.nextTick(function () {
+          var lookup = agent.getTransaction();
+          expect(lookup).equal(current);
+
+          synchronizer.emit('inner', lookup);
+        });
+      });
+    }
   });
 });
