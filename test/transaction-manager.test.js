@@ -54,13 +54,13 @@ describe("the transaction API", function () {
 
   it("should group transactions by application", function () {
     var firstApp              = helper.loadMockedAgent();
-    firstApp.config.app_name  = 'first';
+    firstApp.config.app_name  = ['first'];
     var firstFirst            = transaction.create(firstApp);
     var secondFirst           = transaction.create(firstApp);
     var thirdFirst            = transaction.create(firstApp);
 
     var secondApp             = helper.loadMockedAgent();
-    secondApp.config.app_name = 'second';
+    secondApp.config.app_name = ['second'];
     var firstSecond           = transaction.create(secondApp);
     var secondSecond          = transaction.create(secondApp);
 

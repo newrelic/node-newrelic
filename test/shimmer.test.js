@@ -106,33 +106,43 @@ describe("the instrumentation injector", function () {
     expect(hammed).equal(true);
   });
 
-  it("should scope transactions to the appropriate context", function (done) {
-    var agent = helper.loadMockedAgent();
-    var current;
-    var synchronizer = new EventEmitter();
+  describe("with full instrumentation running", function () {
+    var agent;
 
-    var spamTransaction = function () {
-      current = transaction.create(agent);
-      process.nextTick(function () {
-        var lookup = agent.getTransaction();
-        expect(lookup).equal(current);
-
-        synchronizer.emit('inner', lookup);
-      });
-    };
-
-    var doneCount = 0;
-    var transactions = [];
-    synchronizer.on('inner', function (trans) {
-      doneCount += 1;
-      transactions.push(trans);
-      expect(trans).equal(current);
-
-      if (doneCount === 10) return done();
+    beforeEach(function () {
+      agent = helper.loadMockedAgent();
     });
 
-    for (var i = 0; i < 10; i += 1) {
-      process.nextTick(spamTransaction);
-    }
+    afterEach(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("should scope transactions to the appropriate context", function (done) {
+      var synchronizer = new EventEmitter();
+      var transactions = [];
+
+      var spamTransaction = function (i) {
+        var current = transaction.create(agent);
+        transactions[i] = current;
+        process.nextTick(function () {
+          var lookup = agent.getTransaction();
+          expect(lookup).equal(current);
+
+          synchronizer.emit('inner', lookup, i);
+        });
+      };
+
+      var doneCount = 0;
+      synchronizer.on('inner', function (trans, j) {
+        doneCount += 1;
+        expect(trans).equal(transactions[j]);
+
+        if (doneCount === 10) return done();
+      });
+
+      for (var i = 0; i < 10; i += 1) {
+        process.nextTick(spamTransaction.bind(this, i));
+      }
+    });
   });
 });
