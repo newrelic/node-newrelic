@@ -2,7 +2,7 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , getRawStack  = require(path.join(__dirname, '..', 'lib', 'util', 'raw-stack'))
-  , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
+  , callstack    = require(path.join(__dirname, '..', 'lib', 'util', 'callstack'))
   ;
 
 describe("when manipulating the call stack", function () {
@@ -11,11 +11,11 @@ describe("when manipulating the call stack", function () {
 
   describe("and you don't care about strict mode and abusing arguments.callee", function () {
     it("should be able to find the caller", function () {
-      expect(shimmer.findCaller(0)).equal(arguments.callee);
+      expect(callstack.findCaller(0)).equal(arguments.callee);
     });
 
     it("should be able to find the caller by default", function () {
-      expect((function () { return shimmer.findCaller(); }())).equal(arguments.callee);
+      expect((function () { return callstack.findCaller(); }())).equal(arguments.callee);
     });
 
     it("should be able to find the caller", function () {
@@ -51,7 +51,7 @@ describe("when manipulating the call stack", function () {
     it("should find the caller", function () {
       var caller = function () {
         (function () {
-          var parentFunction = shimmer.findCaller();
+          var parentFunction = callstack.findCaller();
           expect(parentFunction).equal(caller);
         }());
       };
@@ -62,8 +62,8 @@ describe("when manipulating the call stack", function () {
     it("should use findCaller to match results given by getRawStack", function () {
       var caller = function () {
         (function () {
-          var thisFunction    = shimmer.findCaller(0);
-          var callingFunction = shimmer.findCaller();
+          var thisFunction    = callstack.findCaller(0);
+          var callingFunction = callstack.findCaller();
 
           var frames = getRawStack();
           expect(frames[0].fun).equal(thisFunction);
@@ -75,20 +75,20 @@ describe("when manipulating the call stack", function () {
     });
 
     it("should annotate the call stack", function () {
-      shimmer.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
+      callstack.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
 
-      expect(shimmer.findCaller(0)[NR_PROPNAME]).equal(NR_PROPVALUE);
+      expect(callstack.findCaller(0)[NR_PROPNAME]).equal(NR_PROPVALUE);
     });
 
     it("should find the annotation later", function () {
-      expect(shimmer.findAnnotation(NR_PROPNAME)).equal(undefined);
-      shimmer.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
-      expect(shimmer.findAnnotation(NR_PROPNAME)).equal(NR_PROPVALUE);
+      expect(callstack.findAnnotation(NR_PROPNAME)).equal(undefined);
+      callstack.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
+      expect(callstack.findAnnotation(NR_PROPNAME)).equal(NR_PROPVALUE);
     });
 
     it("should find the annotation even from a deep call stack", function () {
-      expect(shimmer.findAnnotation(NR_PROPNAME)).equal(undefined);
-      shimmer.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
+      expect(callstack.findAnnotation(NR_PROPNAME)).equal(undefined);
+      callstack.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
       (function () {
         (function () {
           (function () {
@@ -97,7 +97,7 @@ describe("when manipulating the call stack", function () {
                 (function () {
                   (function () {
                     (function () {
-                      expect(shimmer.findAnnotation(NR_PROPNAME)).equal(NR_PROPVALUE);
+                      expect(callstack.findAnnotation(NR_PROPNAME)).equal(NR_PROPVALUE);
                     }());
                   }());
                 }());
