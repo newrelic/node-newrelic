@@ -6,7 +6,7 @@ var path         = require('path')
   ;
 
 describe("when manipulating the call stack", function () {
-  var NR_PROPNAME = "__NR_transaction";
+  var NR_PROPNAME = "__NR__transaction";
   var NR_PROPVALUE = "yes";
 
   describe("and you don't care about strict mode and abusing arguments.callee", function () {
@@ -75,20 +75,20 @@ describe("when manipulating the call stack", function () {
     });
 
     it("should annotate the call stack", function () {
-      callstack.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
+      callstack.annotateCaller(NR_PROPVALUE);
 
       expect(callstack.findCaller(0)[NR_PROPNAME]).equal(NR_PROPVALUE);
     });
 
     it("should find the annotation later", function () {
-      expect(callstack.findAnnotation(NR_PROPNAME)).equal(undefined);
-      callstack.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
-      expect(callstack.findAnnotation(NR_PROPNAME)).equal(NR_PROPVALUE);
+      expect(callstack.findAnnotation()).equal(undefined);
+      callstack.annotateCaller(NR_PROPVALUE);
+      expect(callstack.findAnnotation()).equal(NR_PROPVALUE);
     });
 
     it("should find the annotation even from a deep call stack", function () {
-      expect(callstack.findAnnotation(NR_PROPNAME)).equal(undefined);
-      callstack.annotateCaller(NR_PROPNAME, NR_PROPVALUE);
+      expect(callstack.findAnnotation()).equal(undefined);
+      callstack.annotateCaller(NR_PROPVALUE);
       (function () {
         (function () {
           (function () {
@@ -97,7 +97,7 @@ describe("when manipulating the call stack", function () {
                 (function () {
                   (function () {
                     (function () {
-                      expect(callstack.findAnnotation(NR_PROPNAME)).equal(NR_PROPVALUE);
+                      expect(callstack.findAnnotation()).equal(NR_PROPVALUE);
                     }());
                   }());
                 }());
