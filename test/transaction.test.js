@@ -83,6 +83,8 @@ describe("Transaction", function () {
 
       tt.measure('Custom/Test01');
       should.exist(tt.getMetrics('Custom/Test01'));
+
+      tt.end();
     });
 
     it("should allow multiple metric measurements for same name", function () {

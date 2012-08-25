@@ -31,6 +31,9 @@ describe("the transaction API", function () {
 
     first.should.not.equal(second);
     transaction.getActiveByApplication(agent).length.should.equal(2);
+
+    first.end();
+    second.end();
   });
 
   it("should only show active transactions per application on the active list", function () {
@@ -43,6 +46,9 @@ describe("the transaction API", function () {
     second.end();
     transaction.getActiveByApplication(agent).length.should.equal(1);
     transaction.getActiveByApplication(agent)[0].should.equal(third);
+
+    // if instrumentation is enabled, be sure to terminate transactions
+    third.end();
   });
 
   it("should bind new transactions to the agent", function () {
@@ -69,5 +75,10 @@ describe("the transaction API", function () {
 
     transaction.getActiveByApplication(firstApp).length.should.equal(1);
     transaction.getByApplication(firstApp).length.should.equal(3);
+
+    // if instrumentation is enabled, be sure to terminate transactions
+    thirdFirst.end();
+    firstSecond.end();
+    secondSecond.end();
   });
 });
