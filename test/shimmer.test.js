@@ -248,7 +248,7 @@ describe("the instrumentation injector", function () {
         , doneCount = 0
         ;
 
-      var verifier = function (i, phase, passed) {
+      var verify = function (i, phase, passed) {
         var lookup = agent.getTransaction();
         logger.verbose(i + ' ' + phase + ' ' +
                        (lookup ? lookup.id : 'missing') + ' ' +
@@ -259,13 +259,13 @@ describe("the instrumentation injector", function () {
       };
 
       eventer.on('rntest', function(trans, j) {
-        verifier(j, 'eventer', trans);
+        verify(j, 'eventer', trans);
         synchronizer.emit('inner', trans, j);
       });
 
       var createTimer = function (trans, j) {
         return function () {
-          verifier(j, 'createTimer', trans);
+          verify(j, 'createTimer', trans);
           eventer.emit('rntest', trans, j);
         };
       };
@@ -276,17 +276,17 @@ describe("the instrumentation injector", function () {
           transactions[j] = current;
           ids[j] = current.id;
 
-          verifier(j, 'createTicker', current);
+          verify(j, 'createTicker', current);
 
           process.nextTick(function () {
-            verifier(j, 'nextTick', current);
+            verify(j, 'nextTick', current);
             setTimeout(createTimer(current, j), 0);
           });
         };
       };
 
       synchronizer.on('inner', function (trans, j) {
-        verifier(j, 'synchronizer', trans);
+        verify(j, 'synchronizer', trans);
         doneCount += 1;
         expect(trans).equal(transactions[j]);
         expect(trans.id).equal(ids[j]);
