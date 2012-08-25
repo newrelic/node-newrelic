@@ -4,6 +4,7 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
   , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   , transaction  = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   , EventEmitter = require('events').EventEmitter
@@ -249,9 +250,9 @@ describe("the instrumentation injector", function () {
 
       var verifier = function (i, phase, passed) {
         var lookup = agent.getTransaction();
-        console.log(i + ' ' + phase + ' ' +
-                    (lookup ? lookup.id : 'missing') + ' ' +
-                    (passed ? passed.id : 'missing'));
+        logger.verbose(i + ' ' + phase + ' ' +
+                       (lookup ? lookup.id : 'missing') + ' ' +
+                       (passed ? passed.id : 'missing'));
         expect(lookup).equal(passed);
         expect(lookup).equal(transactions[i]);
         expect(lookup.id).equal(ids[i]);
