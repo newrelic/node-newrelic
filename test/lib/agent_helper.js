@@ -9,21 +9,6 @@ var path                = require('path')
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
   ;
 
-/*
- * This function is very impolite. It removes a module from the module
- * cache, thus ensuring that a singleton is reset across test runs.
- */
-function uncacheModule(pathname) {
-  var module   = require('module')
-    , resolved = module._resolveFilename(pathname)
-    , nuked    = module._cache[resolved]
-    ;
-
-  delete module._cache[resolved];
-
-  return nuked;
-}
-
 var helper = module.exports = {
   loadAgent : function loadAgent(options) {
     trace.resetTransactions();
