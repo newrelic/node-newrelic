@@ -63,7 +63,7 @@ describe('Timer', function () {
     var timer = new Timer();
     timer.begin();
     setTimeout(function () {
-      expect(timer.getDurationInMillis()).above(4);
+      expect(timer.getDurationInMillis()).above(3);
 
       return done();
     }, 5);
