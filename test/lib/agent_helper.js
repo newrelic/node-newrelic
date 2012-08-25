@@ -4,6 +4,7 @@ var path                = require('path')
   , sinon               = require('sinon')
   , trace               = require(path.join(__dirname, '..', '..', 'lib', 'legacy', 'trace'))
   , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
+  , transaction         = require(path.join(__dirname, '..', '..', 'lib', 'transaction', 'manager'))
   , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
   ;
@@ -37,6 +38,7 @@ var helper = module.exports = {
     agent.stop();
     shimmer.unwrapAgent(agent);
     shimmer.unwrapAll();
+    transaction.reset();
   },
 
   loadMockedAgent : function loadMockedAgent() {
