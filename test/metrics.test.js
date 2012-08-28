@@ -37,7 +37,7 @@ describe("Metrics", function () {
     var TEST_NORMALIZER = new MetricNormalizer();
 
     beforeEach(function () {
-      metrics = new Metrics(TEST_RENAMER, TEST_APDEX, TEST_NORMALIZER);
+      metrics = new Metrics(TEST_APDEX, TEST_RENAMER, TEST_NORMALIZER);
     });
 
     it("should pass apdex through to ApdexStats", function () {
@@ -186,7 +186,7 @@ describe("Metrics", function () {
   describe("when recording web transactions", function () {
     describe("with normal requests", function () {
       it("should infer a satisfying end-user experience", function () {
-        var metrics = new Metrics(null, 0.06);
+        var metrics = new Metrics(0.06);
         metrics.recordWebTransaction('/test', 55, 55, 200);
 
         var result = [
@@ -200,7 +200,7 @@ describe("Metrics", function () {
       });
 
       it("should infer a tolerable end-user experience", function () {
-        var metrics = new Metrics(null, 0.05);
+        var metrics = new Metrics(0.05);
         metrics.recordWebTransaction('/test', 55, 100, 200);
 
         var result = [
@@ -214,7 +214,7 @@ describe("Metrics", function () {
       });
 
       it("should infer a frustrating end-user experience", function () {
-        var metrics = new Metrics(null, 0.01);
+        var metrics = new Metrics(0.01);
         metrics.recordWebTransaction('/test', 55, 55, 200);
 
         var result = [
@@ -230,7 +230,7 @@ describe("Metrics", function () {
 
     describe("with exceptional requests", function () {
       it("should handle missing resources", function () {
-        var metrics = new Metrics(null, 0.01);
+        var metrics = new Metrics(0.01);
         metrics.recordWebTransaction('/test', 55, 55, 404);
 
         var result = [
@@ -244,7 +244,7 @@ describe("Metrics", function () {
       });
 
       it("should handle bad requests", function () {
-        var metrics = new Metrics(null, 0.01);
+        var metrics = new Metrics(0.01);
         metrics.recordWebTransaction('/test', 55, 55, 400);
 
         var result = [
@@ -258,7 +258,7 @@ describe("Metrics", function () {
       });
 
       it("should handle over-long URIs", function () {
-        var metrics = new Metrics(null, 0.01);
+        var metrics = new Metrics(0.01);
         metrics.recordWebTransaction('/test', 55, 55, 414);
 
         var result = [
@@ -272,7 +272,7 @@ describe("Metrics", function () {
       });
 
       it("should handle internal server errors", function () {
-        var metrics = new Metrics(null, 0.01);
+        var metrics = new Metrics(0.01);
         metrics.recordWebTransaction('/test', 1, 1, 500);
 
         var result = [
