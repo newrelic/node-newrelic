@@ -67,8 +67,8 @@ describe('the New Relic agent', function () {
       should.exist(agent.errors);
     });
 
-    it('should expose its configured metricNormalizer directly', function () {
-      should.exist(agent.metricNormalizer);
+    it('should expose its configured metric normalizer via the default metrics', function () {
+      should.exist(agent.metrics.normalizer);
     });
 
     describe("when dealing with its event handlers", function () {
@@ -116,7 +116,7 @@ describe('the New Relic agent', function () {
           process.nextTick(function () {
             expect(agent.config.apdex_t).equal(0.742);
             expect(agent.metrics.apdexT).equal(0.742);
-            expect(agent.metricNormalizer.rules).deep.equal([0]);
+            expect(agent.metrics.normalizer.rules).deep.equal([0]);
 
             return done();
           });

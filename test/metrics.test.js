@@ -34,9 +34,10 @@ describe("Metrics", function () {
   describe("when calling constructor with valid parameters", function () {
     var TEST_APDEX = 0.4;
     var TEST_RENAMER = new RenameRules([[{name : 'Test/RenameMe333'}, 'Test/Rollup']]);
+    var TEST_NORMALIZER = new MetricNormalizer();
 
     beforeEach(function () {
-      metrics = new Metrics(TEST_RENAMER, TEST_APDEX);
+      metrics = new Metrics(TEST_RENAMER, TEST_APDEX, TEST_NORMALIZER);
     });
 
     it("should pass apdex through to ApdexStats", function () {
@@ -49,6 +50,10 @@ describe("Metrics", function () {
       var summary = metrics.toJSON();
       expect(JSON.stringify(summary))
         .equal('[[{"name":"Test/Rollup"},[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
+    });
+
+    it("should expose configured normalizer", function () {
+      expect(metrics.normalizer).equal(TEST_NORMALIZER);
     });
   });
 
@@ -179,16 +184,10 @@ describe("Metrics", function () {
   });
 
   describe("when recording web transactions", function () {
-    var normalizer;
-
-    before(function () {
-      normalizer = new MetricNormalizer();
-    });
-
     describe("with normal requests", function () {
       it("should infer a satisfying end-user experience", function () {
         var metrics = new Metrics(null, 0.06);
-        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 200);
+        metrics.recordWebTransaction('/test', 55, 55, 200);
 
         var result = [
           [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -202,7 +201,7 @@ describe("Metrics", function () {
 
       it("should infer a tolerable end-user experience", function () {
         var metrics = new Metrics(null, 0.05);
-        metrics.recordWebTransaction(normalizer, '/test', 55, 100, 200);
+        metrics.recordWebTransaction('/test', 55, 100, 200);
 
         var result = [
           [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -216,7 +215,7 @@ describe("Metrics", function () {
 
       it("should infer a frustrating end-user experience", function () {
         var metrics = new Metrics(null, 0.01);
-        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 200);
+        metrics.recordWebTransaction('/test', 55, 55, 200);
 
         var result = [
           [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -232,7 +231,7 @@ describe("Metrics", function () {
     describe("with exceptional requests", function () {
       it("should handle missing resources", function () {
         var metrics = new Metrics(null, 0.01);
-        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 404);
+        metrics.recordWebTransaction('/test', 55, 55, 404);
 
         var result = [
           [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -246,7 +245,7 @@ describe("Metrics", function () {
 
       it("should handle bad requests", function () {
         var metrics = new Metrics(null, 0.01);
-        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 400);
+        metrics.recordWebTransaction('/test', 55, 55, 400);
 
         var result = [
           [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -260,7 +259,7 @@ describe("Metrics", function () {
 
       it("should handle over-long URIs", function () {
         var metrics = new Metrics(null, 0.01);
-        metrics.recordWebTransaction(normalizer, '/test', 55, 55, 414);
+        metrics.recordWebTransaction('/test', 55, 55, 414);
 
         var result = [
           [{name : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -274,7 +273,7 @@ describe("Metrics", function () {
 
       it("should handle internal server errors", function () {
         var metrics = new Metrics(null, 0.01);
-        metrics.recordWebTransaction(normalizer, '/test', 1, 1, 500);
+        metrics.recordWebTransaction('/test', 1, 1, 500);
 
         var result = [
           [{name : 'WebTransaction'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
