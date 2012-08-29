@@ -145,7 +145,7 @@ describe('the New Relic agent', function () {
     });
 
     it("should have one handler defined on the transactionFinished event", function () {
-      agent.listeners('transactionFinished').length.should.equal(1);
+      agent.listeners('transactionFinished').length.should.equal(2);
     });
   });
 });

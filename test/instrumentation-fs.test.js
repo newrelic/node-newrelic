@@ -57,7 +57,7 @@ describe("agent instrumentation of the fs module", function () {
         files.should.include(filename);
       });
 
-      var stats = agent.metrics.getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR, 'FIXME').stats;
+      var stats = agent.getTransaction().metrics.getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR, 'FIXME').stats;
       stats.callCount.should.equal(1);
 
       return done();

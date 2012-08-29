@@ -2,7 +2,6 @@
 
 var path                = require('path')
   , sinon               = require('sinon')
-  , trace               = require(path.join(__dirname, '..', '..', 'lib', 'legacy', 'trace'))
   , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , transaction         = require(path.join(__dirname, '..', '..', 'lib', 'transaction', 'manager'))
   , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
@@ -11,8 +10,6 @@ var path                = require('path')
 
 var helper = module.exports = {
   loadAgent : function loadAgent(options) {
-    trace.resetTransactions();
-
     var agent = new Agent(options);
     shimmer.wrapAgent(agent);
     shimmer.patchModule(agent);

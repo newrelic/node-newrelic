@@ -13,10 +13,14 @@ describe('agent instrumentation of the http module', function () {
     , fetchedResponse
     , fetchedBody;
 
-  var PAGE = '<html><head><title>test response</title></head><body><p>I heard you like HTML.</p></body></html>';
+  var PAGE = '<html>' +
+             '<head><title>test response</title></head>' +
+             '<body><p>I heard you like HTML.</p></body>' +
+             '</html>';
 
   before(function (done) {
     agent = helper.loadMockedAgent();
+
     shimmer.bootstrapInstrumentation(agent);
 
     var server = http.createServer(function (request, response) {
@@ -83,4 +87,7 @@ describe('agent instrumentation of the http module', function () {
     var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
     stats.callCount.should.equal(1);
   });
+
+  it("should associate outbound HTTP requests with the inbound transaction");
+  it("shouldn't record transactions for requests for favicon.ico");
 });
