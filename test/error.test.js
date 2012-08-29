@@ -3,7 +3,6 @@
 var path         = require('path')
   , chai         = require('chai')
   , should       = chai.should()
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
   , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
   , ErrorService = require(path.join(__dirname, '..', 'lib', 'error'))
   ;
@@ -16,7 +15,7 @@ describe('error delivery', function () {
   var service;
 
   beforeEach(function (done) {
-    service = new ErrorService(logger, config.config);
+    service = new ErrorService(config.config);
 
     return done();
   });
