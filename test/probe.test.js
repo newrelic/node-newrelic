@@ -17,6 +17,17 @@ describe("Probe", function () {
     expect(success.trace).instanceof(Trace);
   });
 
+  it("should call an optional callback function", function (done) {
+    expect(function noCallback() {
+      var probe = new Probe(new Trace('Test/TraceExample08'), 'UnitTest');
+    }).not.throws();
+
+    var working = new Probe(new Trace('Test/TraceExample09'), 'UnitTest', function () {
+      return done();
+    });
+    working.end();
+  });
+
   it("should be named", function () {
     expect(function noName() {
       var probe = new Probe(new Trace('Test/TraceExample06'));
@@ -35,7 +46,14 @@ describe("Probe", function () {
     expect(probe.timer.isRunning()).equal(true);
   });
 
-  it("should accept a callback that records metrics associated with this probe");
+  it("should accept a callback that records metrics associated with this probe", function (done) {
+    var probe = new Probe(new Trace('Test/TraceExample10'), 'UnitTest', function (insider) {
+      expect(insider).equal(probe);
+      return done();
+    });
+
+    probe.end();
+  });
   it("should retain any associated SQL statements");
   it("should allow an arbitrary number of Probes from functions called in the scope of this Probe");
 

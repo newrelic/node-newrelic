@@ -55,6 +55,15 @@ describe('Trace', function () {
       expect(probe).instanceof(Probe);
     });
 
+    it("should call a callback associated with the probe at creation time", function (done) {
+      var probe;
+      probe = trace.add('Custom/Test18/Child1', function () {
+        return done();
+      });
+
+      probe.end();
+    });
+
     it("should measure exclusive time vs total time at each level of the graph", function () {
       var child = trace.add('Custom/Test18/Child1');
 
