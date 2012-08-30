@@ -87,42 +87,18 @@ describe("Transaction", function () {
       tt.end();
     });
 
-    it("should allow multiple metric measurements for same name", function () {
-      var TRACE_NAME = 'Custom/Test02'
-        , tt = transaction.create(agent)
-        , traces = []
-        ;
-
-      for (var i = 0; i < 5; i++) {
-        traces[i] = tt.measure(TRACE_NAME);
-      }
-
-      tt.end();
-
-      // FIXME: expect(tt.getStatistics(TRACE_NAME).toObject().calls).to.equal(traces.length);
-    });
-
-    it("should allow multiple overlapping metric measurements for same name", function (done) {
+    it("should allow multiple overlapping metric measurements for same name", function () {
       var TRACE_NAME = 'Custom/Test06'
         , SLEEP_DURATION = 43
         , tt = transaction.create(agent)
         ;
 
-      var first = tt.measure(TRACE_NAME);
-      var second = tt.measure(TRACE_NAME);
+      var first = tt.measure(TRACE_NAME, null, SLEEP_DURATION);
+      var second = tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5);
 
-      setTimeout(function () {
-        // this will automatically close out any open transactions,
-        // so in this case will close the first transaction
-        tt.end();
-
-        var statistics = tt.getMetrics(TRACE_NAME)[0];
-        // FIXME: these are obsolete now -- need to adapt
-        // expect(statistics.calls).to.equal(2);
-        // expect(statistics.max).to.be.above(SLEEP_DURATION - 1);
-
-        return done();
-      }, SLEEP_DURATION);
+      var statistics = tt.getMetrics(TRACE_NAME).stats;
+      expect(statistics.callCount).to.equal(2);
+      expect(statistics.max).above((SLEEP_DURATION - 1) / 1000);
     });
 
     it("shouldn't measure metrics gathered after the transaction has finished", function () {
