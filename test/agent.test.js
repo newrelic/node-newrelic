@@ -116,12 +116,12 @@ describe('the New Relic agent', function () {
           process.nextTick(function () {
             expect(agent.config.apdex_t).equal(0.742);
             expect(agent.metrics.apdexT).equal(0.742);
-            expect(agent.metrics.normalizer.rules).deep.equal([0]);
+            expect(agent.metrics.normalizer.rules).deep.equal([]);
 
             return done();
           });
 
-          connection.emit('connect', {apdex_t : 0.742, url_rules : [0]});
+          connection.emit('connect', {apdex_t : 0.742, url_rules : []});
         });
 
         it("should parse metrics responses when metric data is received", function (done) {
