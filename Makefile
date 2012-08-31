@@ -20,6 +20,9 @@ test: node_modules
 	@rm -f newrelic_agent.log
 	@$(MOCHA)
 
+test-pending: node_modules
+	@$(MOCHA) --reporter list | grep -v ✓
+
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 
