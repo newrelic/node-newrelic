@@ -118,6 +118,8 @@ describe("NormalizerRule", function () {
     });
   });
 
+  it("should replace all the instances of a pattern when so specified");
+
   describe("when given an incomplete specification", function () {
     it("shouldn't throw (but it can log!)", function () {
       expect(function () { rule = new Rule(); }).not.throws();
