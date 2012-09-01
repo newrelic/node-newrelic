@@ -23,6 +23,9 @@ test: node_modules
 test-pending: node_modules
 	@$(MOCHA) --reporter list | grep -v ✓
 
+test-pending-noinst: node_modules
+	@$(MOCHA) --reporter list | grep -v ✓ | grep -v 'agent instrumentation of'
+
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 
