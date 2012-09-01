@@ -3,15 +3,19 @@
 var path    = require('path')
   , chai    = require('chai')
   , should  = chai.should()
+  , expect  = chai.expect
   , http    = require('http')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
-describe('agent instrumentation of the http module', function () {
+describe("built-in http module instrumentation", function () {
   var agent
-    , fetchedResponse
+    , transaction
+    , fetchedStatusCode
     , fetchedBody;
+
+  var PAYLOAD = JSON.stringify({msg : 'ok'});
 
   var PAGE = '<html>' +
              '<head><title>test response</title></head>' +
@@ -20,33 +24,41 @@ describe('agent instrumentation of the http module', function () {
 
   before(function (done) {
     agent = helper.loadMockedAgent();
-
     shimmer.bootstrapInstrumentation(agent);
 
-    var server = http.createServer(function (request, response) {
-      response.writeHead(200, {'Content-Length' : PAGE.length, 'Content-Type' : 'text/html'});
-      response.end(PAGE);
+    var external = http.createServer(function (request, response) {
+      expect(agent.getTransaction()).not.equal(undefined);
+
+      response.writeHead(200,
+                         {'Content-Length' : PAYLOAD.length,
+                          'Content-Type'   : 'application/json'});
+      response.end(PAYLOAD);
     });
 
-    server.listen(8123, 'localhost', function () {
-      fetchedBody = '';
-      var req = http.request({port   : 8123,
-                              host   : 'localhost',
-                              path   : '/path',
+    var server = http.createServer(function (request, response) {
+      expect(agent.getTransaction()).not.equal(undefined);
+
+      var req = http.request({port : 8321,
+                              host : 'localhost',
+                              path : '/status',
                               method : 'GET'},
-                             function (response) {
-                               if (response.statusCode !== 200) return done(response.statusCode);
+                             function (requestResponse) {
+                               if (requestResponse.statusCode !== 200) {
+                                 return done(requestResponse.statusCode);
+                               }
 
-                               fetchedResponse = response;
+                               expect(agent.getTransaction()).not.equal(undefined);
+                               transaction = agent.getTransaction();
 
-                               response.setEncoding('utf8');
-                               response.on('data', function (data) {
-                                 fetchedBody = fetchedBody + data;
+                               requestResponse.setEncoding('utf8');
+                               requestResponse.on('data', function (data) {
+                                 expect(data).equal(PAYLOAD);
                                });
 
-                               response.on('end', function () {
-                                 return done();
-                               });
+                               response.writeHead(200,
+                                                  {'Content-Length' : PAGE.length,
+                                                   'Content-Type'   : 'text/html'});
+                               response.end(PAGE);
                              });
 
       req.on('error', function (error) {
@@ -55,6 +67,42 @@ describe('agent instrumentation of the http module', function () {
 
       req.end();
     });
+
+    external.listen(8321, 'localhost', function () {
+      server.listen(8123, 'localhost', function () {
+        // The transaction doesn't get created until after the instrumented
+        // server handler fires.
+        expect(agent.getTransaction()).equal(undefined);
+
+        fetchedBody = '';
+        var req = http.request({port   : 8123,
+                                host   : 'localhost',
+                                path   : '/path',
+                                method : 'GET'},
+                               function (response) {
+                                 if (response.statusCode !== 200) {
+                                   return done(response.statusCode);
+                                 }
+
+                                 fetchedStatusCode = response.statusCode;
+
+                                 response.setEncoding('utf8');
+                                 response.on('data', function (data) {
+                                   fetchedBody = fetchedBody + data;
+                                 });
+
+                                 response.on('end', function () {
+                                   return done();
+                                 });
+                               });
+
+        req.on('error', function (error) {
+          return done(error);
+        });
+
+        req.end();
+      });
+    });
   });
 
   after(function () {
@@ -62,7 +110,7 @@ describe('agent instrumentation of the http module', function () {
   });
 
   it("should successfully fetch the page", function () {
-    fetchedResponse.statusCode.should.equal(200);
+    fetchedStatusCode.should.equal(200);
 
     should.exist(fetchedBody);
     fetchedBody.should.equal(PAGE);
@@ -85,9 +133,12 @@ describe('agent instrumentation of the http module', function () {
 
   it("should record unscoped HTTP dispatcher stats after a normal request", function () {
     var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
-    stats.callCount.should.equal(1);
+    stats.callCount.should.equal(2);
   });
 
-  it("should associate outbound HTTP requests with the inbound transaction");
+  it("should associate outbound HTTP requests with the inbound transaction", function () {
+    expect(transaction.metrics.getOrCreateMetric('External/localhost/http', '/status').stats.callCount).equal(1);
+  });
+
   it("shouldn't record transactions for requests for favicon.ico");
 });
