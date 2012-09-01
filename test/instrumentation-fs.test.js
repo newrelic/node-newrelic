@@ -8,7 +8,7 @@ var path    = require('path')
   , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
-describe("agent instrumentation of the fs module", function () {
+describe("built-in fs module instrumentation", function () {
   var TESTDIR = 'XXXSHOULDNOTEXISTXXX'
     , FILE1   = 'IMAFILE'
     , FILE2   = 'IMANOTHERFILE'
@@ -63,4 +63,6 @@ describe("agent instrumentation of the fs module", function () {
       return done();
     });
   });
+
+  it("should pick up scope when called in a scoped transaction");
 });

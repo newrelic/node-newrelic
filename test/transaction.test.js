@@ -165,6 +165,8 @@ describe("Transaction", function () {
         ];
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
+
+      it("should strip query strings from request URLs");
     });
 
     describe("with exceptional requests", function () {
@@ -230,4 +232,6 @@ describe("Transaction", function () {
     it("should produce a human-readable summary");
     it("should produce a metrics summary suitable for the collector");
   });
+
+  it("should scope web transactions to their URL");
 });

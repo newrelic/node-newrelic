@@ -11,7 +11,7 @@ function createTransaction(code) {
   return { statusCode : code };
 }
 
-describe('error delivery', function () {
+describe("ErrorService", function () {
   var service;
 
   beforeEach(function (done) {
@@ -20,7 +20,7 @@ describe('error delivery', function () {
     return done();
   });
 
-  it('should send the correct number of errors', function (done) {
+  it("should send the correct number of errors", function (done) {
     var errors = [1, 2, 3, 4, 5];
 
     service.onSendError(errors);
@@ -37,7 +37,7 @@ describe('error delivery', function () {
     return done();
   });
 
-  it('should handle errors properly for transactions', function (done) {
+  it("should handle errors properly for transactions", function (done) {
     service.onTransactionFinished(createTransaction(400));
     service.onTransactionFinished(createTransaction(500));
 
@@ -47,7 +47,7 @@ describe('error delivery', function () {
     return done();
   });
 
-  it('should ignore 404 errors for transactions', function (done) {
+  it("should ignore 404 errors for transactions", function (done) {
     service.onTransactionFinished(createTransaction(400));
     // 404 errors are ignored by default
     service.onTransactionFinished(createTransaction(404));
@@ -59,4 +59,7 @@ describe('error delivery', function () {
 
     return done();
   });
+
+  it("should associate errors with the scope of the transaction");
+  it("should put transactions in domains");
 });

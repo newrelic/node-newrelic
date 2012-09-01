@@ -57,4 +57,9 @@ describe("Stats", function () {
     statistics.merge(other);
     verifyStats(statistics, 5, 0.5309999999999999, 0.119, 0.051, 0.120, 0.060201); // LOL IEEE 854
   });
+
+  describe("when handling quantities", function () {
+    it("should store bytes as bytes, rescaling only at serialization");
+    it("should store time as nanoseconds, rescaling only at serialization");
+  });
 });

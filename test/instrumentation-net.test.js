@@ -8,17 +8,12 @@ var path    = require('path')
   , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
-describe("agent instrumentation of the net module", function () {
+describe("built-in net module instrumentation", function () {
   var agent
     , server
     , RESPONSE = 'WHANGADANG\n'
     , PORT     = 9876
     ;
-
-  before(function () {
-    // something else might have already wrapped the net listen
-    shimmer.unwrapMethod(net.Server.prototype, 'net.Server.prototype', 'listen');
-  });
 
   beforeEach(function (done) {
     agent = helper.loadMockedAgent();

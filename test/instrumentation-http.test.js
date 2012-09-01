@@ -146,4 +146,5 @@ describe("built-in http module instrumentation", function () {
   });
 
   it("shouldn't record transactions for requests for favicon.ico");
+  it("should capture metrics for the last byte to exit / enter as part of a response / request");
 });

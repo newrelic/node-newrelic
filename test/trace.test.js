@@ -127,7 +127,6 @@ describe('Trace', function () {
       var child2 = trace.add('Custom/Test21/Child2');
       child2.setDurationInMillis(11, now + 22);
 
-      // FIXME: validate that the above works?
       expect(trace.getExclusiveDurationInMillis()).equal(9);
     });
   });

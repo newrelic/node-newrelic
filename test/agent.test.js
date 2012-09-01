@@ -8,7 +8,7 @@ var path   = require('path')
   ;
 
 describe('the New Relic agent', function () {
-  describe("when working with a live connection to the service, created in the traditional manner", function () {
+  describe("when establishing a connection to the staging collector", function () {
     var agent;
 
     before(function () {
@@ -31,6 +31,7 @@ describe('the New Relic agent', function () {
       agent.start();
       agent.noticeAppPort(6666);
     });
+    it("should give up after retrying x times");
   });
 
   describe("when working offline with a mocked service connection", function () {
@@ -70,6 +71,9 @@ describe('the New Relic agent', function () {
     it('should expose its configured metric normalizer via the default metrics', function () {
       should.exist(agent.metrics.normalizer);
     });
+
+    it("should create its own transactions directly");
+    it("should look up transactions itself");
 
     describe("when dealing with its event handlers", function () {
       describe("when setting up event subscriptions", function () {
