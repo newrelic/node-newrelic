@@ -1,10 +1,11 @@
 'use strict';
 
-var path   = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , Probe  = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
-  , Trace  = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
+var path        = require('path')
+  , chai        = require('chai')
+  , expect      = chai.expect
+  , Probe       = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
+  , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe("Probe", function () {
@@ -22,7 +23,7 @@ describe("Probe", function () {
       var probe = new Probe(new Trace('Test/TraceExample08'), 'UnitTest');
     }).not.throws();
 
-    var working = new Probe(new Trace('Test/TraceExample09'), 'UnitTest', function () {
+    var working = new Probe(new Trace(new Transaction('Test/TraceExample09')), 'UnitTest', function () {
       return done();
     });
     working.end();
@@ -47,7 +48,7 @@ describe("Probe", function () {
   });
 
   it("should accept a callback that records metrics associated with this probe", function (done) {
-    var probe = new Probe(new Trace('Test/TraceExample10'), 'UnitTest', function (insider) {
+    var probe = new Probe(new Trace(new Transaction('Test/TraceExample10')), 'UnitTest', function (insider) {
       expect(insider).equal(probe);
       return done();
     });
