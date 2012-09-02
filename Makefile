@@ -2,7 +2,7 @@ MOCHA = node_modules/mocha/bin/mocha
 MOCHA_NOBIN = node_modules/.bin/_mocha
 COVER = node_modules/cover/bin/cover
 
-.PHONY: all build test-cov test clean notes
+.PHONY: all build test-cov test clean notes pending pending-core
 all: build test
 
 node_modules: package.json
@@ -20,12 +20,6 @@ test: node_modules
 	@rm -f newrelic_agent.log
 	@$(MOCHA)
 
-test-pending: node_modules
-	@$(MOCHA) --reporter list | grep -v ✓
-
-test-pending-noinst: node_modules
-	@$(MOCHA) --reporter list | grep -v ✓ | grep -v 'agent instrumentation of'
-
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 
@@ -35,3 +29,9 @@ notes:
 	       -name newrelic_agent.log -prune -o \
 	       \( -name ".*" -a \! -name . \) -prune -o \
 	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE' {} \; | less -r
+
+pending: node_modules
+	@$(MOCHA) --reporter list | grep -v ✓
+
+pending-core: node_modules
+	@$(MOCHA) --reporter list | grep -v ✓ | grep -v 'agent instrumentation of'
