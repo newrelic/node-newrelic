@@ -118,7 +118,21 @@ describe("NormalizerRule", function () {
     });
   });
 
-  it("should replace all the instances of a pattern when so specified");
+  it("should replace all the instances of a pattern when so specified", function () {
+    var sample = {
+      "each_segment"     : false,
+      "eval_order"       : 0,
+      "terminate_chain"  : false,
+      "match_expression" : "xXx",
+      "replace_all"      : true,
+      "ignore"           : false,
+      "replacement"      : "y"
+    };
+    rule = new Rule(sample);
+
+    expect(rule.pattern.global).equal(true);
+    expect(rule.apply('/test/xXxxXx0xXxzxxxxXx')).equal('/test/yy0yzxxxy');
+  });
 
   describe("when given an incomplete specification", function () {
     it("shouldn't throw (but it can log!)", function () {
