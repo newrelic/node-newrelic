@@ -2,9 +2,11 @@
 
 var path         = require('path')
   , chai         = require('chai')
-  , should       = chai.should()
+  , expect       = chai.expect
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
   , ErrorService = require(path.join(__dirname, '..', 'lib', 'error'))
+  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 function createTransaction(code) {
@@ -14,40 +16,34 @@ function createTransaction(code) {
 describe("ErrorService", function () {
   var service;
 
-  beforeEach(function (done) {
+  beforeEach(function () {
     service = new ErrorService(config.config);
-
-    return done();
   });
 
-  it("should send the correct number of errors", function (done) {
+  it("should send the correct number of errors", function () {
     var errors = [1, 2, 3, 4, 5];
 
     service.onSendError(errors);
-    service.errors.length.should.equal(5, '5 errors on the queue after the first submission');
+    expect(service.errors.length).equal(5);
 
     service.onSendError(errors);
-    service.errors.length.should.equal(10, '10 errors on the queue after the second submission');
+    expect(service.errors.length).equal(10);
 
     service.onSendError(errors);
     service.onSendError(errors);
     service.onSendError([3,4,5,6,6,6,6,6]); // we're over the max here.
-    service.errors.length.should.equal(20, '20 errors on the queue after overflowing the submission queue');
-
-    return done();
+    expect(service.errors.length).equal(20);
   });
 
-  it("should handle errors properly for transactions", function (done) {
+  it("should handle errors properly for transactions", function () {
     service.onTransactionFinished(createTransaction(400));
     service.onTransactionFinished(createTransaction(500));
 
-    service.errorCount.should.equal(2, "error count returned by error service should match length of error array");
-    service.errors.length.should.equal(2, "error array length should match count returned by error service");
-
-    return done();
+    expect(service.errorCount).equal(2);
+    expect(service.errors.length).equal(2);
   });
 
-  it("should ignore 404 errors for transactions", function (done) {
+  it("should ignore 404 errors for transactions", function () {
     service.onTransactionFinished(createTransaction(400));
     // 404 errors are ignored by default
     service.onTransactionFinished(createTransaction(404));
@@ -55,11 +51,50 @@ describe("ErrorService", function () {
     service.onTransactionFinished(createTransaction(404));
     service.onTransactionFinished(createTransaction(404));
 
-    service.errorCount.should.equal(1, "transaction error count should ignore 404s");
-
-    return done();
+    expect(service.errorCount).equal(1);
   });
 
-  it("should associate errors with the scope of the transaction");
+  describe("with a service unavailable (503) error", function () {
+    var scope
+      , error
+      ;
+
+    before(function () {
+      service = new ErrorService(config.config);
+
+      var agent = helper.loadMockedAgent();
+      var transaction = new Transaction(agent);
+      scope = transaction.measureWeb('/test-request/zxrkbl', 503, 5, 5);
+      transaction.end();
+
+      service.onTransactionFinished(transaction);
+      error = service.errors[0];
+    });
+
+    it("should associate errors with the transaction's scope", function () {
+      var errorScope = error[1];
+
+      expect(errorScope).equal(scope);
+    });
+
+    it("should associate errors with a message", function () {
+      var message = error[2];
+
+      expect(message).equal('HttpError 503');
+    });
+
+    it("should associate errors with a message class", function () {
+      var messageClass = error[3];
+
+      expect(messageClass).equal('HttpError 503');
+    });
+
+    it("should associate errors with parameters", function () {
+      var params = error[4];
+
+      expect(params).deep.equal({request_uri : "/test-request/zxrkbl"});
+    });
+  });
+
   it("should put transactions in domains");
 });
