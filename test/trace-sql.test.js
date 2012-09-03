@@ -4,8 +4,9 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
   , Stats       = require(path.join(__dirname, '..', 'lib', 'stats'))
-  , SQLTrace    = require(path.join(__dirname, '..' , 'lib', 'transaction', 'trace', 'sql'))
+  , SQLTrace    = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'sql'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
@@ -69,7 +70,7 @@ describe('SQLTrace', function () {
     });
 
     it("that is compressed with zlib and Base64 encoded", function (done) {
-      SQLTrace.encodeParams(params, function (err, encoded) {
+      codec.encode(params, function (err, encoded) {
         if (err) return done(err);
 
         expect(encoded).equal('eJyrVkpKzUtNy0zOTCyqjM9MUbIyNDCsBQBd+Ae2');
@@ -79,7 +80,7 @@ describe('SQLTrace', function () {
     });
 
     it("that can be reconstituted", function (done) {
-      SQLTrace.decodeParams('eJyrVkpKzUtNy0zOTCyqjM9MUbIyNDCsBQBd+Ae2', function (err, decoded) {
+      codec.decode('eJyrVkpKzUtNy0zOTCyqjM9MUbIyNDCsBQBd+Ae2', function (err, decoded) {
         if (err) return done(err);
 
         expect(decoded).deep.equal({"beneficiary_id" : 101});
@@ -89,9 +90,9 @@ describe('SQLTrace', function () {
     });
 
     it("that can codecify itself", function (done) {
-      SQLTrace.encodeParams(params, function (err, encoded) {
+      codec.encode(params, function (err, encoded) {
         if (err) return done(err);
-        SQLTrace.decodeParams(encoded, function (err, decoded) {
+        codec.decode(encoded, function (err, decoded) {
           if (err) return done(err);
 
           expect(decoded).deep.equal(params);
@@ -107,7 +108,7 @@ describe('SQLTrace', function () {
     var params = {"beneficiary_id" : 101};
     var trace = new SQLTrace(query, transaction, stats);
 
-    trace.generateTrace("WebTransaction/DB/getBeneficiary", params, function (err, trace) {
+    trace.generateJSON("WebTransaction/DB/getBeneficiary", params, function (err, trace) {
       if (err) return done(err);
 
       var finished = [

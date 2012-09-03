@@ -199,7 +199,7 @@ describe("CollectorConnection", function () {
       var trace = new SQLTrace('SELECT dude FROM bro WHERE meat = :ham',
                                transaction,
                                new Stats());
-      trace.generateTrace('DB/BroSQL/dudefella', {ham : 'steak'}, function (err, json) {
+      trace.generateJSON('DB/BroSQL/dudefella', {ham : 'steak'}, function (err, json) {
         if (err) return done(err);
 
         sqls.push(json);
