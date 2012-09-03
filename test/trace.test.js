@@ -4,6 +4,7 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
   , Probe       = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
@@ -31,7 +32,44 @@ describe('Trace', function () {
     expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws();
   });
 
-  it("should produce a transaction trace in the collector's expected format");
+  it("should produce a transaction trace in the collector's expected format", function (done) {
+    var agent = helper.loadMockedAgent();
+    var transaction = new Transaction(agent);
+    transaction.measureWeb('/test', 200, 33);
+
+    var trace = transaction.getTrace();
+    trace.root.timer.setDurationInMillis(33, 0);
+
+    var db = trace.add('DB/select/getSome');
+    db.setDurationInMillis(14, 3);
+
+    var memcache = trace.add('Memcache/lookup/user/13');
+    memcache.setDurationInMillis(20, 8);
+
+    var children = [db.toJSON(), memcache.toJSON()];
+
+    codec.encode(children, function (err, encoded) {
+      if (err) return done(err);
+
+      // See docs on Transaction.generateJSON for what goes in which field.
+      var expected = [0, 33, 'WebTransaction/Uri/test', '/test',
+        encoded.toString('base64'), // compressed segment / probe data
+        '', // FIXME: depends on RUM token in session
+        null,
+        false // FIXME: also depends on RUM, not worrying about it for now
+      ];
+
+      transaction.getTrace().generateJSON(function (err, traceJSON) {
+        if (err) return done(err);
+
+        expect(traceJSON).deep.equal(expected);
+
+        helper.unloadAgent(agent);
+        return done();
+      });
+    });
+  });
+
   it("should produce human-readable JSON of the entire trace graph");
 
   describe("when inserting probes", function () {

@@ -55,6 +55,7 @@ describe("Probe", function () {
 
     probe.end();
   });
+
   it("should retain any associated SQL statements");
   it("should allow an arbitrary number of Probes from functions called in the scope of this Probe");
 
@@ -67,6 +68,15 @@ describe("Probe", function () {
 
     it("should know its exclusive duration");
     it("should produce human-readable JSON");
+
+    it("should produce JSON that conforms to the collector spec", function () {
+      var trace = new Trace('WebTransaction/Uri/test');
+      var probe = new Probe(trace, 'DB/select/getSome');
+      probe.setDurationInMillis(14, 3);
+      // See documentation on Probe.toJSON for what goes in which field.
+      expect(probe.toJSON()).deep.equal([3, 17, 'DB/select/getSome', '', []]);
+    });
+
     it("should record its own metrics onto the trace");
   });
 });
