@@ -37,8 +37,18 @@ describe("Transaction", function () {
   });
 
   it("should hand its metrics off to the agent upon finalization", function (done) {
-    agent.on('transactionFinished', function (metrics) {
-      expect(metrics).equal(trans.metrics);
+    agent.on('transactionFinished', function (inner) {
+      expect(inner.metrics).equal(trans.metrics);
+
+      return done();
+    });
+
+    trans.end();
+  });
+
+  it("should hand itself off to the agent upon finalization", function (done) {
+    agent.on('transactionFinished', function (inner) {
+      expect(inner).equal(trans);
 
       return done();
     });
