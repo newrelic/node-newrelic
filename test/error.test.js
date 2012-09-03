@@ -55,20 +55,25 @@ describe("ErrorService", function () {
   });
 
   describe("with a service unavailable (503) error", function () {
-    var scope
+    var agent
+      , scope
       , error
       ;
 
     before(function () {
       service = new ErrorService(config.config);
 
-      var agent = helper.loadMockedAgent();
+      agent = helper.loadMockedAgent();
       var transaction = new Transaction(agent);
       scope = transaction.measureWeb('/test-request/zxrkbl', 503, 5, 5);
       transaction.end();
 
       service.onTransactionFinished(transaction);
       error = service.errors[0];
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
     });
 
     it("should associate errors with the transaction's scope", function () {
