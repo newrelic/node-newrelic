@@ -6,7 +6,6 @@ var path         = require('path')
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
   , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
-  , transaction  = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   , EventEmitter = require('events').EventEmitter
   ;
 
@@ -127,16 +126,19 @@ describe("the instrumentation injector", function () {
         ;
 
       var spamTransaction = function (i) {
-        var current = transaction.create(agent);
-        transactions[i] = current;
-        ids[i] = current.id;
+        // need to ensure that each one gets created in its own context
+        (function (i) {
+          var current = agent.createTransaction();
+          transactions[i] = current;
+          ids[i] = current.id;
 
-        process.nextTick(function () {
-          var lookup = agent.getTransaction();
-          expect(lookup).equal(current);
+          process.nextTick(function () {
+            var lookup = agent.getTransaction();
+            expect(lookup).equal(current);
 
-          synchronizer.emit('inner', lookup, i);
-        });
+            synchronizer.emit('inner', lookup, i);
+          });
+        }(i));
       };
 
       var doneCount = 0;
@@ -164,16 +166,19 @@ describe("the instrumentation injector", function () {
         ;
 
       var spamTransaction = function (i) {
-        var current = transaction.create(agent);
-        transactions[i] = current;
-        ids[i] = current.id;
+        // need to ensure that each one gets created in its own context
+        (function (i) {
+          var current = agent.createTransaction();
+          transactions[i] = current;
+          ids[i] = current.id;
 
-        setTimeout(function () {
-          var lookup = agent.getTransaction();
-          expect(lookup).equal(current);
+          setTimeout(function () {
+            var lookup = agent.getTransaction();
+            expect(lookup).equal(current);
 
-          synchronizer.emit('inner', lookup, i);
-        }, 1);
+            synchronizer.emit('inner', lookup, i);
+          }, 1);
+        }(i));
       };
 
       var doneCount = 0;
@@ -203,7 +208,7 @@ describe("the instrumentation injector", function () {
         ;
 
       var eventTransaction = function (j) {
-        var current = transaction.create(agent)
+        var current = agent.createTransaction()
           , id      = current.id
           , name    = ('ttest' + (j + 1))
           ;
@@ -272,7 +277,7 @@ describe("the instrumentation injector", function () {
 
       var createTicker = function (j) {
         return function () {
-          var current = transaction.create(agent);
+          var current = agent.createTransaction();
           transactions[j] = current;
           ids[j] = current.id;
 
