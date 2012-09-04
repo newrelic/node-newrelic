@@ -5,7 +5,7 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
-  , Probe       = require(path.join(__dirname, '..', 'lib', 'transaction', 'probe'))
+  , Segment     = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'segment'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -22,12 +22,12 @@ describe('Trace', function () {
     expect(tt.transaction).instanceof(Transaction);
   });
 
-  it("should have the root of a Probe tree", function () {
+  it("should have the root of a Segment tree", function () {
     var tt = new Trace(new Transaction(helper.loadMockedAgent()));
-    expect(tt.root).instanceof(Probe);
+    expect(tt.root).instanceof(Segment);
   });
 
-  it("should be the primary interface for adding probes to a trace", function () {
+  it("should be the primary interface for adding segments to a trace", function () {
     var trace = new Trace(new Transaction(helper.loadMockedAgent()));
     expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws();
   });
@@ -53,7 +53,7 @@ describe('Trace', function () {
 
       // See docs on Transaction.generateJSON for what goes in which field.
       var expected = [0, 33, 'WebTransaction/Uri/test', '/test',
-        encoded.toString('base64'), // compressed segment / probe data
+        encoded.toString('base64'), // compressed segment / segment data
         '', // FIXME: depends on RUM token in session
         null,
         false // FIXME: also depends on RUM, not worrying about it for now
@@ -72,34 +72,34 @@ describe('Trace', function () {
 
   it("should produce human-readable JSON of the entire trace graph");
 
-  describe("when inserting probes", function () {
+  describe("when inserting segments", function () {
     var trace;
 
     beforeEach(function () {
       trace = new Trace(new Transaction(helper.loadMockedAgent()));
     });
 
-    it("should require a name for the new probe", function () {
+    it("should require a name for the new segment", function () {
       expect(function () { trace.add(); }).throws(/must be named/);
     });
 
-    it("should allow child probes on a trace", function () {
+    it("should allow child segments on a trace", function () {
       expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws();
     });
 
-    it("should return the probe", function () {
-      var probe;
-      expect(function () { probe = trace.add('Custom/Test18/Child1'); }).not.throws();
-      expect(probe).instanceof(Probe);
+    it("should return the segment", function () {
+      var segment;
+      expect(function () { segment = trace.add('Custom/Test18/Child1'); }).not.throws();
+      expect(segment).instanceof(Segment);
     });
 
-    it("should call a callback associated with the probe at creation time", function (done) {
-      var probe;
-      probe = trace.add('Custom/Test18/Child1', function () {
+    it("should call a callback associated with the segment at creation time", function (done) {
+      var segment;
+      segment = trace.add('Custom/Test18/Child1', function () {
         return done();
       });
 
-      probe.end();
+      segment.end();
     });
 
     it("should measure exclusive time vs total time at each level of the graph", function () {
@@ -111,7 +111,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(20);
     });
 
-    it("should accurately sum overlapping probes", function () {
+    it("should accurately sum overlapping segments", function () {
       trace.setDurationInMillis(42);
 
       var now = Date.now();
@@ -134,7 +134,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(5);
     });
 
-    it("should accurately sum partially overlapping probes", function () {
+    it("should accurately sum partially overlapping segments", function () {
       trace.setDurationInMillis(42);
 
       var now = Date.now();
@@ -153,7 +153,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(9);
     });
 
-    it("should accurately sum partially overlapping, open-ranged probes", function () {
+    it("should accurately sum partially overlapping, open-ranged segments", function () {
       trace.setDurationInMillis(42);
 
       var now = Date.now();
