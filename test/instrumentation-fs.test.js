@@ -32,6 +32,8 @@ describe("built-in fs module instrumentation", function () {
   });
 
   after(function (done) {
+    helper.unloadAgent(agent);
+
     [FILE1, FILE2, FILE3].forEach(function (filename) {
       fs.unlinkSync(path.join(TESTDIR, filename));
     });
@@ -39,14 +41,12 @@ describe("built-in fs module instrumentation", function () {
     fs.rmdir(TESTDIR, function (error) {
       if (error) return done(error);
 
-      helper.unloadAgent(agent);
-
       return done();
     });
   });
 
   it("should trace the reading of directories", function (done) {
-    agent.createTransaction();
+    var trans = agent.createTransaction();
 
     fs.readdir(TESTDIR, function (error, files) {
       if (error) return done(error);
@@ -59,6 +59,8 @@ describe("built-in fs module instrumentation", function () {
 
       var stats = agent.getTransaction().metrics.getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR, 'FIXME').stats;
       stats.callCount.should.equal(1);
+
+      trans.end();
 
       return done();
     });

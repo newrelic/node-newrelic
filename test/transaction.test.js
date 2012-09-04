@@ -5,7 +5,6 @@ var path        = require('path')
   , should      = chai.should()
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , transaction = require(path.join(__dirname, '..', 'lib', 'transaction', 'manager'))
   , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
@@ -19,6 +18,14 @@ describe("Transaction", function () {
   beforeEach(function () {
     agent = helper.loadMockedAgent();
     trans = new Transaction(agent);
+  });
+
+  afterEach(function () {
+    helper.unloadAgent(agent);
+  });
+
+  it("should require an agent to create new transactions", function () {
+    expect(function () { var trans = new Transaction(); }).throws(/must be bound to the agent/);
   });
 
   it("should be created without an associated trace", function () {
@@ -89,7 +96,7 @@ describe("Transaction", function () {
 
   describe("when dealing with individual metrics", function () {
     it("should add metrics by name", function () {
-      var tt = transaction.create(agent);
+      var tt = agent.createTransaction();
 
       tt.measure('Custom/Test01');
       should.exist(tt.getMetrics('Custom/Test01'));
@@ -100,7 +107,7 @@ describe("Transaction", function () {
     it("should allow multiple overlapping metric measurements for same name", function () {
       var TRACE_NAME = 'Custom/Test06'
         , SLEEP_DURATION = 43
-        , tt = transaction.create(agent)
+        , tt = agent.createTransaction()
         ;
 
       var first = tt.measure(TRACE_NAME, null, SLEEP_DURATION);
@@ -112,7 +119,7 @@ describe("Transaction", function () {
     });
 
     it("shouldn't measure metrics gathered after the transaction has finished", function () {
-      var tt = transaction.create(agent);
+      var tt = agent.createTransaction();
 
       tt.measure('Custom/Test03');
       tt.end();
@@ -122,7 +129,7 @@ describe("Transaction", function () {
     });
 
     it("should allow manual setting of metric durations", function () {
-      var tt = transaction.create(agent);
+      var tt = agent.createTransaction();
 
       var trace = tt.measure('Custom/Test16', null, 65);
       tt.end();

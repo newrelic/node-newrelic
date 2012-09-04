@@ -73,7 +73,10 @@ describe('the New Relic agent', function () {
       should.exist(agent.metrics.normalizer);
     });
 
-    it("should create its own transactions directly");
+    it("should create its own transactions directly", function () {
+      expect(function () { agent.createTransaction(); }).not.throws();
+    });
+
     it("should look up transactions itself");
 
     describe("when dealing with its event handlers", function () {
