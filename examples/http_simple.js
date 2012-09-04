@@ -1,6 +1,6 @@
 'use strict';
 
-var agent = require ('newrelic_agent')()
+var agent = require ('newrelic_agent')
   , http  = require('http')
   ;
 

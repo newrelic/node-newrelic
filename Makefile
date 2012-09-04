@@ -28,7 +28,7 @@ notes:
 	       -wholename ./cover_html -prune -o \
 	       -name newrelic_agent.log -prune -o \
 	       \( -name ".*" -a \! -name . \) -prune -o \
-	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE' {} \; | less -r
+	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE|TBD|hax' {} \; | less -r
 
 pending: node_modules
 	@$(MOCHA) --reporter list | grep -v ✓

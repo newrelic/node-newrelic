@@ -5,19 +5,13 @@ var path    = require('path')
   , Agent   = require(path.join(__dirname, 'lib', 'agent'))
   ;
 
-var agent;
+var agent = new Agent();
 
-module.exports = function (options) {
-  if (!agent) {
-    agent = new Agent(options);
+// set up all of the instrumentation
+shimmer.wrapAgent(agent);
+shimmer.patchModule(agent);
+shimmer.bootstrapInstrumentation(agent);
 
-    // set up all of the instrumentation
-    shimmer.wrapAgent(agent);
-    shimmer.patchModule(agent);
-    shimmer.bootstrapInstrumentation(agent);
+agent.start();
 
-    agent.start();
-  }
-
-  return agent;
-};
+module.exports = agent;
