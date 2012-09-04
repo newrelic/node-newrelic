@@ -11,6 +11,16 @@ var path        = require('path')
   ;
 
 describe('Trace', function () {
+  var agent;
+
+  beforeEach(function () {
+    agent = helper.loadMockedAgent();
+  });
+
+  afterEach(function () {
+    helper.unloadAgent(agent);
+  });
+
   it("should always be bound to a transaction", function () {
     // fail
     expect(function () {
@@ -18,22 +28,21 @@ describe('Trace', function () {
     }).throws(/must be associated with a transaction/);
 
     // succeed
-    var tt = new Trace(new Transaction(helper.loadMockedAgent()));
+    var tt = new Trace(new Transaction(agent));
     expect(tt.transaction).instanceof(Transaction);
   });
 
   it("should have the root of a Segment tree", function () {
-    var tt = new Trace(new Transaction(helper.loadMockedAgent()));
+    var tt = new Trace(new Transaction(agent));
     expect(tt.root).instanceof(Segment);
   });
 
   it("should be the primary interface for adding segments to a trace", function () {
-    var trace = new Trace(new Transaction(helper.loadMockedAgent()));
+    var trace = new Trace(new Transaction(agent));
     expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws();
   });
 
   it("should produce a transaction trace in the collector's expected format", function (done) {
-    var agent = helper.loadMockedAgent();
     var transaction = new Transaction(agent);
     transaction.measureWeb('/test', 200, 33);
 
@@ -76,7 +85,7 @@ describe('Trace', function () {
     var trace;
 
     beforeEach(function () {
-      trace = new Trace(new Transaction(helper.loadMockedAgent()));
+      trace = new Trace(new Transaction(agent));
     });
 
     it("should require a name for the new segment", function () {

@@ -19,7 +19,17 @@ function checkDatMetric(transaction, name, scope) {
 }
 
 describe("recording metrics", function () {
-  var transaction;
+  var agent
+    , transaction
+    ;
+
+  before(function () {
+    agent = helper.loadMockedAgent();
+  });
+
+  after(function () {
+    helper.unloadAgent(agent);
+  });
 
   describe("on scoped transactions involving parsed database statements", function () {
     before(function (done) {
@@ -28,7 +38,7 @@ describe("recording metrics", function () {
       var timer = new Timer();
       timer.setDurationInMillis(333);
 
-      transaction = new Transaction(helper.loadMockedAgent());
+      transaction = new Transaction(agent);
 
       ps.recordMetrics(transaction, 'TEST', timer);
       transaction.end();
@@ -69,7 +79,7 @@ describe("recording metrics", function () {
       var timer = new Timer();
       timer.setDurationInMillis(333);
 
-      transaction = new Transaction(helper.loadMockedAgent());
+      transaction = new Transaction(agent);
 
       ps.recordMetrics(transaction, null, timer);
       transaction.end();
