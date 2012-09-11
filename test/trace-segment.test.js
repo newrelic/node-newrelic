@@ -74,7 +74,7 @@ describe("TraceSegment", function () {
       var segment = new TraceSegment(trace, 'DB/select/getSome');
       segment.setDurationInMillis(14, 3);
       // See documentation on TraceSegment.toJSON for what goes in which field.
-      expect(segment.toJSON()).deep.equal([3, 17, 'DB/select/getSome', '', []]);
+      expect(segment.toJSON()).deep.equal([3, 17, 'DB/select/getSome', null, []]);
     });
 
     it("should record its own metrics onto the trace");

@@ -43,11 +43,15 @@ describe('Trace', function () {
   });
 
   it("should produce a transaction trace in the collector's expected format", function (done) {
+    var START = 0
+      , DURATION = 33
+      ;
+
     var transaction = new Transaction(agent);
-    transaction.measureWeb('/test', 200, 33);
+    transaction.measureWeb('/test', 200, DURATION);
 
     var trace = transaction.getTrace();
-    trace.root.timer.setDurationInMillis(33, 0);
+    trace.root.timer.setDurationInMillis(DURATION, START);
 
     var db = trace.add('DB/select/getSome');
     db.setDurationInMillis(14, 3);
@@ -55,26 +59,57 @@ describe('Trace', function () {
     var memcache = trace.add('Memcache/lookup/user/13');
     memcache.setDurationInMillis(20, 8);
 
-    var children = [db.toJSON(), memcache.toJSON()];
+    /*
+     * Segment data repeats the outermost data, nested, with the scope for the
+     * outermost version having its scope always set to "ROOT". The null bits
+     * are parameters, which are optional, and so far, unimplemented for Node.
+     */
+    var root = [
+      START,
+      DURATION,
+      'ROOT',
+      null, // TODO: parameters
+      [
+        START,
+        DURATION,
+        'WebTransaction/Uri/test',
+        null, // TODO: parameters
+        [
+          // TODO: ensure that the ordering is correct WRT start time
+          db.toJSON(),
+          memcache.toJSON()
+        ]
+      ]
+    ];
 
-    codec.encode(children, function (err, encoded) {
+    codec.encode(root, function (err, encoded) {
       if (err) return done(err);
 
       // See docs on Transaction.generateJSON for what goes in which field.
-      var expected = [0, 33, 'WebTransaction/Uri/test', '/test',
-        encoded.toString('base64'), // compressed segment / segment data
-        '', // FIXME: depends on RUM token in session
-        null,
-        false // FIXME: also depends on RUM, not worrying about it for now
+      var expected = [
+        START,
+        DURATION,
+        'WebTransaction/Uri/test',  // scope
+        '/test',                    // URI path
+        encoded, // compressed segment / segment data
+        '',                         // FIXME: depends on RUM token in session
+        null,                       // reserved, always NULL
+        false                       // FIXME: RUM2 session persistence, not
+                                    //        worrying about it for now
       ];
 
       transaction.getTrace().generateJSON(function (err, traceJSON) {
         if (err) return done(err);
 
-        expect(traceJSON).deep.equal(expected);
+        codec.decode(traceJSON[4], function (derr, reconstituted) {
+          if (derr) return done(derr);
 
-        helper.unloadAgent(agent);
-        return done();
+          expect(reconstituted, "reconstituted trace segments").deep.equal(root);
+          expect(traceJSON,     "full trace JSON").deep.equal(expected);
+
+          helper.unloadAgent(agent);
+          return done();
+        });
       });
     });
   });
