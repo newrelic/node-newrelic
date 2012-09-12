@@ -7,11 +7,17 @@ var path    = require('path')
 
 var agent = new Agent();
 
-// set up all of the instrumentation
-shimmer.wrapAgent(agent);
-shimmer.patchModule(agent);
-shimmer.bootstrapInstrumentation(agent);
+/**
+ * Don't set up the rest of the agent if it didn't successfully load its
+ * configuration.
+ */
+if (agent.config) {
+  // set up all of the instrumentation
+  shimmer.wrapAgent(agent);
+  shimmer.patchModule(agent);
+  shimmer.bootstrapInstrumentation(agent);
 
-agent.start();
+  agent.start();
+}
 
 module.exports = agent;
