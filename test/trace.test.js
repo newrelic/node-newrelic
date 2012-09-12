@@ -43,15 +43,15 @@ describe('Trace', function () {
   });
 
   it("should produce a transaction trace in the collector's expected format", function (done) {
-    var START = 0
-      , DURATION = 33
-      ;
+    var DURATION = 33;
 
     var transaction = new Transaction(agent);
     transaction.measureWeb('/test', 200, DURATION);
 
     var trace = transaction.getTrace();
-    trace.root.timer.setDurationInMillis(DURATION, START);
+    var start = trace.root.timer.start;
+    expect(start, "root segment's start time").above(0);
+    trace.root.timer.setDurationInMillis(DURATION);
 
     var db = trace.add('DB/select/getSome');
     db.setDurationInMillis(14, 3);
@@ -65,13 +65,13 @@ describe('Trace', function () {
      * are parameters, which are optional, and so far, unimplemented for Node.
      */
     var root = [
-      START,
-      DURATION,
+      start,
+      start + DURATION,
       'ROOT',
       null, // TODO: parameters
       [
-        START,
-        DURATION,
+        start,
+        start + DURATION,
         'WebTransaction/Uri/test',
         null, // TODO: parameters
         [
@@ -87,8 +87,8 @@ describe('Trace', function () {
 
       // See docs on Transaction.generateJSON for what goes in which field.
       var expected = [
-        START,
-        DURATION,
+        start,
+        DURATION / 1000,
         'WebTransaction/Uri/test',  // scope
         '/test',                    // URI path
         encoded, // compressed segment / segment data
