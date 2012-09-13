@@ -140,7 +140,7 @@ describe('TraceAggregator', function () {
     });
   });
 
-  it("should collect traces for transactions that exceed 4 * apdex_t", function () {
+  it("should collect traces for transactions that exceed apdex_f", function () {
     var ABOVE_THRESHOLD = 29;
     var APDEXT = 0.007;
 
@@ -166,7 +166,7 @@ describe('TraceAggregator', function () {
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD);
   });
 
-  it("should not collect traces for transactions that don't exceed 4 * apdex_t", function () {
+  it("should not collect traces for transactions that don't exceed apdex_f", function () {
     var BELOW_THRESHOLD = 27;
     var APDEXT = 0.007;
 
@@ -189,6 +189,42 @@ describe('TraceAggregator', function () {
     transaction.measureWeb('/test', 200, BELOW_THRESHOLD);
 
     aggregator.add(transaction);
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined);
+  });
+
+  it("should collect traces for transactions that exceed explicit trace threshold", function () {
+    var ABOVE_THRESHOLD = 29;
+    var THRESHOLD = 0.028;
+
+    var config = {
+      transaction_tracer : {
+        enabled         : true,
+        trace_threshold : THRESHOLD
+      }
+    };
+
+    var aggregator = new TraceAggregator(config);
+    aggregator.reported = 10; // needed to override "first 5"
+    aggregator.add(createTransaction('/test', ABOVE_THRESHOLD));
+
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD);
+  });
+
+  it("should not collect traces for transactions that don't exceed explicit trace threshold", function () {
+    var BELOW_THRESHOLD = 29;
+    var THRESHOLD = 0.030;
+
+    var config = {
+      transaction_tracer : {
+        enabled         : true,
+        trace_threshold : THRESHOLD
+      }
+    };
+
+    var aggregator = new TraceAggregator(config);
+    aggregator.reported = 10; // needed to override "first 5"
+    aggregator.add(createTransaction('/test', BELOW_THRESHOLD));
+
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined);
   });
 
