@@ -58,16 +58,20 @@ describe('the New Relic agent', function () {
       helper.unloadAgent(agent);
     });
 
-    it('should expose its configured metrics directly', function () {
+    it('exposes its summary metrics', function () {
       should.exist(agent.metrics);
     });
 
-    it('should expose its configuration directly', function () {
+    it('exposes its configuration', function () {
       should.exist(agent.config);
     });
 
-    it('should expose its configured errorService directly', function () {
+    it('exposes its error service', function () {
       should.exist(agent.errors);
+    });
+
+    it('exposes its slow trace aggregator', function () {
+      should.exist(agent.traces);
     });
 
     it('should expose its configured metric normalizer via the default metrics', function () {
@@ -162,16 +166,11 @@ describe('the New Relic agent', function () {
           var trace = trans.getTrace();
           trans.measureWeb('/ham/update/3', 200, 304);
 
-          agent.on('transactionTraceCaptured', function () {
-            expect(agent.traces.length).equal(1);
+          agent.once('transactionFinished', function () {
+            expect(agent.traces.trace, "trace should be captured").not.equal(undefined);
+            expect(agent.traces.trace.getDurationInMillis(), "same trace just passed in").equal(304);
 
-            trace.generateJSON(function (err, json) {
-              if (err) return done(err);
-
-              expect(agent.traces[0]).deep.equal(json);
-
-              return done();
-            });
+            return done();
           });
 
           trans.end();
@@ -182,14 +181,8 @@ describe('the New Relic agent', function () {
     it("should have three handlers defined on the transactionFinished event", function () {
       // one to merge metrics
       // one to update error counts
-      // one to update list of transaction traces
+      // one to pass finished traces to the slow trace aggregator
       agent.listeners('transactionFinished').length.should.equal(3);
-    });
-
-    describe("with transaction traces to report to the collector", function () {
-      it("should produce an empty list of traces by default", function () {
-        expect(agent.traces).deep.equal([]);
-      });
     });
   });
 });
