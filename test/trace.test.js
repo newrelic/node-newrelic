@@ -65,13 +65,13 @@ describe('Trace', function () {
      * are parameters, which are optional, and so far, unimplemented for Node.
      */
     var root = [
-      start,
-      start + DURATION,
+      0,
+      DURATION,
       'ROOT',
       null, // TODO: parameters
       [
-        start,
-        start + DURATION,
+        0,
+        DURATION,
         'WebTransaction/Uri/test',
         null, // TODO: parameters
         [
