@@ -1,10 +1,11 @@
 'use strict';
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+var path        = require('path')
+  , chai        = require('chai')
+  , should      = chai.should()
+  , expect      = chai.expect
+  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe('the New Relic agent', function () {
@@ -77,7 +78,12 @@ describe('the New Relic agent', function () {
       expect(function () { agent.createTransaction(); }).not.throws();
     });
 
-    it("should look up transactions itself");
+    it("should look up transactions itself", function () {
+      expect(function () {
+        agent.createTransaction();
+        expect(agent.getTransaction()).instanceof(Transaction);
+      }).not.throws();
+    });
 
     describe("when dealing with its event handlers", function () {
       describe("when setting up event subscriptions", function () {
