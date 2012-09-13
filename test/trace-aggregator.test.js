@@ -5,10 +5,30 @@ var path            = require('path')
   , expect          = chai.expect
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
   , TraceAggregator = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'aggregator'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe('TraceAggregator', function () {
+  var agent;
+
+  function createTransaction(name, duration) {
+    var transaction = new Transaction(agent);
+    // gotta create the trace
+    transaction.getTrace();
+    transaction.measureWeb(name, 200, duration);
+    transaction.end();
+
+    return transaction;
+  }
+
+  beforeEach(function () {
+    agent = helper.loadMockedAgent();
+  });
+
+  afterEach(function () {
+    helper.unloadAgent(agent);
+  });
+
   it("should require a configuration at startup time", function () {
     expect(function () { var aggregator = new TraceAggregator(); }).throws();
     var config = {
@@ -36,26 +56,41 @@ describe('TraceAggregator', function () {
       config.transaction_tracer.top_n = TOP_N;
 
       var aggregator = new TraceAggregator(config);
-      expect(aggregator.size).equal(TOP_N);
+      expect(aggregator.capacity).equal(TOP_N);
     });
 
     it("should default to tracking the slowest transaction in a harvest period if top_n is undefined", function () {
       var aggregator = new TraceAggregator(config);
-      expect(aggregator.size).equal(1);
+      expect(aggregator.capacity).equal(1);
     });
 
     it("should default to tracking the slowest transaction in a harvest period if top_n is 0", function () {
       config.transaction_tracer.top_n = 0;
 
       var aggregator = new TraceAggregator(config);
-      expect(aggregator.size).equal(1);
+      expect(aggregator.capacity).equal(1);
     });
 
-    it("should keep 1 transaction per harvest cycle");
-    it("should only send a new trace for a given scope if it's slower than the old one");
+    it("should only save a trace for an existing scope if new one is slower", function () {
+      var URI = '/simple';
+      var aggregator  = new TraceAggregator(config);
+      aggregator.reported = 10; // needed to override "first 5"
+
+      aggregator.add(createTransaction(URI, 300));
+
+      aggregator.add(createTransaction(URI, 200));
+      expect(aggregator.requestTimes['WebTransaction/Uri/simple'],
+             'lower value').equal(300);
+
+      aggregator.add(createTransaction(URI, 400));
+      expect(aggregator.requestTimes['WebTransaction/Uri/simple'],
+             'higher value').equal(400);
+    });
+
+    it("should only track transactions for the top N scopes");
   });
 
-  it("should collect traces for transactions that exceed 4 * apdex_t", function (done) {
+  it("should collect traces for transactions that exceed 4 * apdex_t", function () {
     var ABOVE_THRESHOLD = 29;
     var APDEXT = 0.007;
 
@@ -67,24 +102,21 @@ describe('TraceAggregator', function () {
     };
 
     var aggregator  = new TraceAggregator(config)
-      , agent       = helper.loadMockedAgent()
       , transaction = new Transaction(agent)
       , trace       = transaction.getTrace()
       ;
+
+    aggregator.reported = 10; // needed to override "first 5"
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT;
     transaction.measureWeb('/test', 200, ABOVE_THRESHOLD);
 
-    aggregator.once('capture', function () {
-      expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD);
-
-      return done();
-    });
     aggregator.add(transaction);
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD);
   });
 
-  it("should not collect traces for transactions that don't exceed 4 * apdex_t", function (done) {
+  it("should not collect traces for transactions that don't exceed 4 * apdex_t", function () {
     var BELOW_THRESHOLD = 27;
     var APDEXT = 0.007;
 
@@ -96,21 +128,18 @@ describe('TraceAggregator', function () {
     };
 
     var aggregator  = new TraceAggregator(config)
-      , agent       = helper.loadMockedAgent()
       , transaction = new Transaction(agent)
       , trace       = transaction.getTrace()
       ;
+
+    aggregator.reported = 10; // needed to override "first 5"
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT;
     transaction.measureWeb('/test', 200, BELOW_THRESHOLD);
 
-    aggregator.once('capture', function () {
-      expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined);
-
-      return done();
-    });
     aggregator.add(transaction);
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined);
   });
 
   it("should have its own logical notion of a harvest cycle", function (done) {
@@ -121,38 +150,27 @@ describe('TraceAggregator', function () {
       }
     };
 
-    var aggregator  = new TraceAggregator(config)
-      , agent       = helper.loadMockedAgent()
-      , transaction = new Transaction(agent)
-      ;
-
-    transaction.measureWeb('/test', 200, 418);
-    var trace = transaction.getTrace();
-
-    var deebeez = trace.add('DB/select/hodad');
-    deebeez.setDurationInMillis(395, 5);
-
-    transaction.end();
-
+    var aggregator  = new TraceAggregator(config);
     aggregator.once('harvest', function firstHarvest(empty) {
-      expect(empty).deep.equal([]);
+      expect(empty).equal(undefined);
 
-      aggregator.once('capture', function firstCapture() {
-        aggregator.once('harvest', function finalHarvest(traceData) {
-          expect(traceData).an('array');
-          expect(traceData.length).equal(1);
-          expect(traceData[0]).an('array');
+      expect(function addExists() { aggregator.add(createTransaction('/test', 418)); }).not.throws();
 
-          return done();
-        });
-        aggregator.harvest();
+      aggregator.once('harvest', function finalHarvest(traceData) {
+        expect(traceData).an('array');
+        expect(traceData.length).equal(8);
+        expect(traceData[2]).equal('WebTransaction/Uri/test');
+
+        return done();
       });
-      expect(function addExists() { aggregator.add(transaction); }).not.throws();
+
+      aggregator.harvest();
     });
+
     expect(function harvestExists() { aggregator.harvest(); }).not.throws();
   });
 
-  it("should group transactions by the metric name associated with the transaction", function (done) {
+  it("should group transactions by the metric name associated with the transaction", function () {
     var config = {
       transaction_tracer : {
         enabled : true,
@@ -160,27 +178,113 @@ describe('TraceAggregator', function () {
       }
     };
 
-    var aggregator  = new TraceAggregator(config)
-      , agent       = helper.loadMockedAgent()
-      , transaction = new Transaction(agent)
-      , trace       = transaction.getTrace()
-      ;
+    var aggregator  = new TraceAggregator(config);
 
-    transaction.measureWeb('/test', 200, 20);
-
-    var segment = trace.add('DB/select/getSome');
-    segment.setDurationInMillis(12, 2);
-
-    aggregator.once('capture', function () {
-      expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(20);
-
-      return done();
-    });
-    aggregator.add(transaction);
+    aggregator.add(createTransaction('/test', 20));
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(20);
   });
 
-  it("should get track 5 different transactions between harvest cycle");
+  it("should always report slow traces until 5 have been sent", function (done) {
+    var config = {
+      transaction_tracer : {
+        enabled : true
+      }
+    };
+
+    var aggregator = new TraceAggregator(config);
+
+    var verifier = function (encoded, shouldExist) {
+      if (shouldExist) {
+        expect(encoded).not.equal(undefined);
+      }
+      else {
+        expect(encoded).equal(undefined);
+      }
+    };
+
+    aggregator.add(createTransaction('/testOne', 503));
+    aggregator.once('harvest', function (encoded) {
+      verifier(encoded, true);
+
+      aggregator.add(createTransaction('/testTwo', 406));
+      aggregator.once('harvest', function (encoded) {
+        verifier(encoded, true);
+
+        aggregator.add(createTransaction('/testThree', 720));
+        aggregator.once('harvest', function (encoded) {
+          verifier(encoded, true);
+
+          aggregator.add(createTransaction('/testOne', 415));
+          aggregator.once('harvest', function (encoded) {
+            verifier(encoded, true);
+
+            aggregator.add(createTransaction('/testTwo', 510));
+            aggregator.once('harvest', function (encoded) {
+              verifier(encoded, true);
+
+              aggregator.add(createTransaction('/testOne', 502));
+              aggregator.once('harvest', function (encoded) {
+                verifier(encoded, false);
+
+                return done();
+              });
+              aggregator.harvest();
+            });
+            aggregator.harvest();
+          });
+          aggregator.harvest();
+        });
+        aggregator.harvest();
+      });
+      aggregator.harvest();
+    });
+    aggregator.harvest();
+  });
+
   describe("when request timings are tracked over time", function () {
-    it("should reset the map after 5 harvest cycles with no slow transactions");
+    it("should reset timings after 5 harvest cycles with no slow traces", function (done) {
+      var config = {
+        transaction_tracer : {
+          enabled : true
+        }
+      };
+
+      var aggregator = new TraceAggregator(config);
+      aggregator.add(createTransaction('/test', 503));
+
+      var remaining = 4;
+      // 2nd-5th harvests: no serialized trace, timing still set
+      var looper = function (encoded) {
+        expect(encoded).equal(undefined);
+        expect(aggregator.requestTimes['WebTransaction/Uri/test'],
+               "still churning").equal(503);
+
+        remaining -= 1;
+        if (remaining === 0) {
+          aggregator.removeListener('harvest', looper);
+
+          // 6th harvest: no serialized trace, timings reset
+          aggregator.once('harvest', function (encoded) {
+            expect(encoded).equal(undefined);
+            expect(aggregator.requestTimes['WebTransaction/Uri/test'],
+                   "on the last pass").equal(undefined);
+
+            return done();
+          });
+          aggregator.harvest();
+        }
+      };
+
+      // 1st harvest: serialized trace, timing is set
+      aggregator.once('harvest', function (encoded) {
+        expect(encoded).not.equal(undefined);
+        expect(aggregator.requestTimes['WebTransaction/Uri/test'],
+               "still churning").equal(503);
+
+        aggregator.on('harvest', looper);
+        for (var i = 0; i < 4; i++) aggregator.harvest();
+      });
+      aggregator.harvest();
+    });
   });
 });
