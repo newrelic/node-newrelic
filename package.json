@@ -1,6 +1,6 @@
 {
   "name": "newrelic_agent",
-  "version": "0.2.0-22",
+  "version": "0.8.0-24",
   "author": "Forrest L Norvell <forrest@newrelic.com> (http://github.com/othiym23)",
   "contributors": [
     {
@@ -23,6 +23,9 @@
     "performance"
   ],
   "homepage": "http://github.com/newrelic/nodejs_agent",
+  "engines" : {
+    "node" : ">=0.8.0"
+  },
   "directories": {
     "lib": "lib"
   },
