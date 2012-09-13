@@ -52,22 +52,22 @@ describe('TraceAggregator', function () {
 
     it("should set n from its configuration", function () {
       var TOP_N = 21;
-
       config.transaction_tracer.top_n = TOP_N;
-
       var aggregator = new TraceAggregator(config);
+
       expect(aggregator.capacity).equal(TOP_N);
     });
 
     it("should default to tracking the slowest transaction in a harvest period if top_n is undefined", function () {
       var aggregator = new TraceAggregator(config);
+
       expect(aggregator.capacity).equal(1);
     });
 
     it("should default to tracking the slowest transaction in a harvest period if top_n is 0", function () {
       config.transaction_tracer.top_n = 0;
-
       var aggregator = new TraceAggregator(config);
+
       expect(aggregator.capacity).equal(1);
     });
 
@@ -87,7 +87,57 @@ describe('TraceAggregator', function () {
              'higher value').equal(400);
     });
 
-    it("should only track transactions for the top N scopes");
+    it("should only track transactions for the top N scopes", function (done) {
+      config.transaction_tracer.top_n = 5;
+      var aggregator = new TraceAggregator(config);
+      aggregator.reported = 10; // needed to override "first 5"
+
+      aggregator.add(createTransaction('/testOne', 800));
+      aggregator.once('harvest', function (encoded) {
+        expect(encoded, '1st harvest').an('array');
+        aggregator.add(createTransaction('/testTwo', 800));
+        aggregator.once('harvest', function (encoded) {
+          expect(encoded, '2nd harvest').an('array');
+          aggregator.add(createTransaction('/testThr', 800));
+          aggregator.once('harvest', function (encoded) {
+            expect(encoded, '3rd harvest').an('array');
+            aggregator.add(createTransaction('/testFor', 800));
+            aggregator.once('harvest', function (encoded) {
+              expect(encoded, '4th harvest').an('array');
+              aggregator.add(createTransaction('/testF5v', 800));
+              aggregator.once('harvest', function (encoded) {
+                expect(encoded, '5th harvest').an('array');
+                // n = 5, so this sixth transaction is gonna lose
+                aggregator.add(createTransaction('/testSix', 900));
+                aggregator.once('harvest', function (encoded) {
+                  expect(encoded, '6th harvest').equal(undefined);
+                  expect(aggregator.requestTimes['WebTransaction/Uri/testOne'],
+                         "1 of top 5").equal(800);
+                  expect(aggregator.requestTimes['WebTransaction/Uri/testTwo'],
+                         "2 of top 5").equal(800);
+                  expect(aggregator.requestTimes['WebTransaction/Uri/testThr'],
+                         "3 of top 5").equal(800);
+                  expect(aggregator.requestTimes['WebTransaction/Uri/testFor'],
+                         "4 of top 5").equal(800);
+                  expect(aggregator.requestTimes['WebTransaction/Uri/testF5v'],
+                         "5 of top 5").equal(800);
+                  expect(aggregator.requestTimes['WebTransaction/Uri/testSix'],
+                         "6 of top 5 -- OOPS").equal(undefined);
+
+                  return done();
+                });
+                aggregator.harvest();
+              });
+              aggregator.harvest();
+            });
+            aggregator.harvest();
+          });
+          aggregator.harvest();
+        });
+        aggregator.harvest();
+      });
+      aggregator.harvest();
+    });
   });
 
   it("should collect traces for transactions that exceed 4 * apdex_t", function () {
