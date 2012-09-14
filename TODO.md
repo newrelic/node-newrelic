@@ -11,10 +11,14 @@
 
 ### TO DO:
 
-* Third-pary instrumentation:
+* Additional third-party instrumentation:
     1. Redis
     2. PostgreSQL
+    2. CouchDB
+    2. mikael/request
+* Proxy support.
 * Better tests for existing instrumentation.
 * Replace callstack-based shim with domains.
 * Lots more testing of what the data looks like in RPM.
 * Publish a build of the agent via NPM.
+* Refine how transaction traces gather and report time used.
