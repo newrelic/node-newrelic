@@ -1,4 +1,4 @@
-## v0.8.1-25 / alpha-02 (2012-09-14):
+### v0.8.1-25 / alpha-02 (2012-09-14):
 
 * Transaction traces no longer crash the RPM transaction trace viewer.
 * The Node.js agent now follows the rules for Top N slow trace gathering.
@@ -11,7 +11,7 @@
   to start up under old versions, but won't crash the app.
 * Don't crash the instrumented app if config is missing.
 
-## v0.8.0-21 / alpha-01 (2012-09-11);
+### v0.8.0-21 / alpha-01 (2012-09-11);
 
 * The agent faithfully records and reports basic metrics.
 * The agent reports error metrics.

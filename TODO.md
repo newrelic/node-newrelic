@@ -1,4 +1,4 @@
-KNOWN ISSUES:
+### KNOWN ISSUES:
 
 * The overhead incurred by the agent is too high for high-load production
   apps.
@@ -9,7 +9,7 @@ KNOWN ISSUES:
 * Transaction traces do not correctly set up the parent-child call
   relationships necessary for meaningful transaction traces.
 
-TO DO:
+### TO DO:
 
 * Third-pary instrumentation:
     1. Redis
