@@ -66,4 +66,45 @@ describe("DataSender", function () {
       expect(headers["User-Agent"]).not.equal(undefined);
     });
   });
+
+  describe("when performing RPC against the collector", function () {
+    var sender
+      , mockSender
+      , TEST_RUN_ID = Math.floor(Math.random() * 3000)
+      ;
+
+    beforeEach(function () {
+      var config = {
+        host        : 'collector.newrelic.com',
+        port        : '80',
+        license_key : 'hamburtson'
+      };
+      sender = new DataSender(config, TEST_RUN_ID);
+      mockSender = sinon.mock(sender);
+    });
+
+    it("should always add the agent run ID, if set", function () {
+      var METHOD = 'TEST'
+        , PARAMS = {test : "value"}
+        , URL    = sinon.match(new RegExp('agent_run_id=' + TEST_RUN_ID))
+        ;
+
+      mockSender.expects('send').once().withExactArgs(METHOD, URL, PARAMS);
+      sender.invokeMethod(METHOD, PARAMS);
+
+      mockSender.verify();
+    });
+
+    it("should correctly set up the method", function () {
+      var METHOD = 'TEST'
+        , PARAMS = {test : "value"}
+        , URL    = sinon.match(new RegExp('method=' + METHOD))
+        ;
+
+      mockSender.expects('send').once().withExactArgs(METHOD, URL, PARAMS);
+      sender.invokeMethod(METHOD, PARAMS);
+
+      mockSender.verify();
+    });
+  });
 });

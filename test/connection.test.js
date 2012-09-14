@@ -70,7 +70,6 @@ describe("CollectorConnection", function () {
       , mockConnection
       , method
       , uri
-      , compress
       , params
       ;
 
@@ -92,10 +91,9 @@ describe("CollectorConnection", function () {
       // replace CollectorConnection.createDataSender
       var sender = new DataSender(agent.config, SAMPLE_RUN_ID);
       // stub out DataSender.send
-      sender.send = function (sMethod, sUri, sCompress, sParams) {
+      sender.send = function (sMethod, sUri, sParams) {
         method   = sMethod;
         uri      = sUri;
-        compress = sCompress;
         params   = sParams;
       };
 
@@ -115,8 +113,6 @@ describe("CollectorConnection", function () {
       expect(method).equal('metric_data');
       expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                               'metric_data', SAMPLE_RUN_ID));
-      expect(compress).equal(true);
-
       var runId      = params[0]
         , startTime  = params[1]
         , endTime    = params[2]
@@ -142,8 +138,6 @@ describe("CollectorConnection", function () {
       expect(method).equal('error_data');
       expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                               'error_data', SAMPLE_RUN_ID));
-      expect(compress).equal(true);
-
       var runId     = params[0]
         , errorData = params[1]
         ;
@@ -181,8 +175,6 @@ describe("CollectorConnection", function () {
       expect(method).equal('transaction_sample_data');
       expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                               'transaction_sample_data', SAMPLE_RUN_ID));
-      expect(compress).equal(true);
-
       var runId     = params[0]
         , traceData = params[1]
         ;
@@ -210,8 +202,6 @@ describe("CollectorConnection", function () {
         expect(method).equal('sql_trace_data');
         expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                                 'sql_trace_data', SAMPLE_RUN_ID));
-        expect(compress).equal(true);
-
         var sqlTraces = params;
         expect(sqlTraces).deep.equal(sqls);
 
