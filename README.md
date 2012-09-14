@@ -63,7 +63,8 @@ Nic:
 
 You'll need a New Relic account.
 
-+ If you don't have one, just sign up through http://newrelic.com/. Once your account is set up you'll have a license key that you'll use a few steps later.
++ If you don't have one, just sign up through http://newrelic.com/. Once your
+  account is set up you'll have a license key that you'll use a few steps later.
 + Unzip the archive.
 + Run `npm install` from within the agent directory to install the agent's dependencies.
 + Drop the agent into the `node_modules` directory of an app you want to monitor.
@@ -71,4 +72,7 @@ You'll need a New Relic account.
 + Edit `newrelic.js` and replace `license_key`'s value with the license key for your account.
 + Add `require('newrelic_agent');` as the first line of the app's main module.
 
-When you start your app, the agent should start up with it and start reporting data that will appear within our UI after a few minutes. The agent will write its log to a file named `newrelic_agent.log` in the application directory. If the agent doesn't send data that file might provide insight into the problem.
+When you start your app, the agent should start up with it and start reporting
+data that will appear within our UI after a few minutes. The agent will write
+its log to a file named `newrelic_agent.log` in the application directory. If
+the agent doesn't send data that file might provide insight into the problem.
