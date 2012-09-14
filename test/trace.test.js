@@ -68,12 +68,12 @@ describe('Trace', function () {
       0,
       DURATION,
       'ROOT',
-      null, // TODO: parameters
+      {},
       [
         0,
         DURATION,
         'WebTransaction/Uri/test',
-        null, // TODO: parameters
+        {},
         [
           // TODO: ensure that the ordering is correct WRT start time
           db.toJSON(),
