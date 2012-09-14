@@ -1,8 +1,9 @@
 'use strict';
 
-var path = require('path')
-  , chai = require('chai')
-  , expect = chai.expect
+var path       = require('path')
+  , chai       = require('chai')
+  , expect     = chai.expect
+  , sinon      = require('sinon')
   , DataSender = require(path.join(__dirname, '..', 'lib', 'collector', 'data-sender'))
   ;
 
@@ -29,7 +30,7 @@ describe("DataSender", function () {
     expect(sender.canonicalizeURL(raw)).equal(expected);
   });
 
-  describe("when generating headers", function () {
+  describe("when generating headers for a plain request", function () {
     var headers;
 
     beforeEach(function () {
@@ -39,7 +40,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.createHeaders('identity', 80);
+      headers = sender.createHeaders(80);
     });
 
     it("should use the content type from the parameter", function () {
@@ -60,6 +61,44 @@ describe("DataSender", function () {
 
     it("should tell the server we're sending JSON", function () {
       expect(headers["Content-Type"]).equal("application/json");
+    });
+
+    it("should have a user-agent string", function () {
+      expect(headers["User-Agent"]).not.equal(undefined);
+    });
+  });
+
+  describe("when generating headers for a compressed request", function () {
+    var headers;
+
+    beforeEach(function () {
+      var config = {
+        host       : 'collector.newrelic.com',
+        port       : '80'
+      };
+      var sender = new DataSender(config, 12);
+
+      headers = sender.createHeaders(92, true);
+    });
+
+    it("should use the content type from the parameter", function () {
+      expect(headers["CONTENT-ENCODING"]).equal("deflate");
+    });
+
+    it("should use the content length from the parameter", function () {
+      expect(headers["Content-Length"]).equal(92);
+    });
+
+    it("should use a keepalive connection for reasons that escape me", function () {
+      expect(headers.Connection).equal("Keep-Alive");
+    });
+
+    it("should have the host from the configuration", function () {
+      expect(headers.host).equal("collector.newrelic.com");
+    });
+
+    it("should tell the server we're sending JSON", function () {
+      expect(headers["Content-Type"]).equal("application/octet-stream");
     });
 
     it("should have a user-agent string", function () {
