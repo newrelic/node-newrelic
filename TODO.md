@@ -14,8 +14,8 @@
 * Additional third-party instrumentation:
     1. Redis
     2. PostgreSQL
-    2. CouchDB
-    2. mikael/request
+    3. CouchDB
+    4. mikael/request
 * Proxy support.
 * Better tests for existing instrumentation.
 * Replace callstack-based shim with domains.
