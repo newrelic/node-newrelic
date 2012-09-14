@@ -31,12 +31,8 @@ the agent doesn't send data that file might provide insight into the problem.
 ## Running tests
 
 The agent's unit tests are written in
-[mocha](http://visionmedia.github.com/mocha/), and can be run either via
-npm:
-
-```
-npm test
-```
+[mocha](http://visionmedia.github.com/mocha/), and can be run via
+`npm test`.
 
 If you encounter any test failures, please contact New Relic support, and
 be sure to include whatever information you can about how you're running
