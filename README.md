@@ -1,78 +1,57 @@
 # New Relic Node.js agent
 
+Make sure you have a New Relic account before starting. Until the end of the
+beta, you'll want to have access to Pro features like slow transaction traces.
+Contact your New Relic representative to see about getting a trial upgrade for
+the purposes of testing.
 
 ## Getting started
 
-1. [Install node](http://nodejs.org/#download).
-2. [Install npm](http://npmjs.org/) (for versions of node < 0.5).
-3. Clone this repository.
-4. Run:
-
-```
-git clone git@github.com:newrelic/nodejs_agent.git
-cd nodejs_agent
-npm link
-```
-
-`npm link` will fetch the agent's dependencies into `node_modules` and link the agent into `/usr/local/lib/node_modules/`.
-
-
-## Running tests
-
-The agent's unit tests are written in [mocha](http://visionmedia.github.com/mocha/), and can be run either via the Makefile or by npm itself:
-
-```
-npm test
-```
-
-or
-
-```
-make test
-```
-
-If you'd like to check the test suite's code coverage, just run:
-
-```
-make test-cov
-```
-
-and then open `cover_html/index.html` in a browser.
-
-
-## Continuous integration
-
-Jenkins builds are running [here](https://hudson.newrelic.com/job/Node.js%20Agent/).
-
-Nic:
-> Just a heads-up: I installed the nodejs and npm packages from http://nodejs.tchol.org/ onto the chi-hudson-2 worker so that Saxon could add the new Node.js agent into CI.
->
-> I also added a `nodejs` label to that worker in Hudson, so that jobs requiring Node can find a worker without needing to specify by hostname.
->
-> Here are the steps I followed:
->
->     wget http://nodejs.tchol.org/repocfg/el/nodejs-stable-release.noarch.rpm
->
->     yum localinstall --nogpgcheck nodejs-stable-release.noarch.rpm
->     yum install nodejs
->     yum install npm
->     yum install nodejs-compat-symlinks.noarch
-
-
-### Beta Customer Instructions
-
-You'll need a New Relic account.
-
-+ If you don't have one, just sign up through http://newrelic.com/. Once your
-  account is set up you'll have a license key that you'll use a few steps later.
-+ Unzip the archive.
-+ Run `npm install` from within the agent directory to install the agent's dependencies.
-+ Drop the agent into the `node_modules` directory of an app you want to monitor.
-+ Copy `newrelic.js` from the agent directory into the root directory of your application.
-+ Edit `newrelic.js` and replace `license_key`'s value with the license key for your account.
-+ Add `require('newrelic_agent');` as the first line of the app's main module.
+1. [Install node](http://nodejs.org/#download). For now, at least 0.8.0 is
+   required. Development work is being done against the latest version.
+2. Put this directory under the node_modules directory for the application
+   you want to instrument.
+3. Run `npm install` to pull down the agent's dependencies.
+4. If you want to instrument multiple applications, unpack the distribution
+   into a directory and run `npm link` from the root of the distribution.
+   From then, to use the agent in your apps, just run
+   `npm link newrelic_agent` from the root of the application to be
+   instrumented (after running `npm install`).
+5. Copy `newrelic.js` from the agent directory into the root directory of
+   your application.
+6. Edit `newrelic.js` and replace `license_key`'s value with the license key
+   for your account.
+7. Add `require('newrelic_agent');` as the first line of the app's main module.
 
 When you start your app, the agent should start up with it and start reporting
 data that will appear within our UI after a few minutes. The agent will write
 its log to a file named `newrelic_agent.log` in the application directory. If
 the agent doesn't send data that file might provide insight into the problem.
+
+## Running tests
+
+The agent's unit tests are written in
+[mocha](http://visionmedia.github.com/mocha/), and can be run either via
+npm:
+
+```
+npm test
+```
+
+If you encounter any test failures, please contact New Relic support, and
+be sure to include whatever information you can about how you're running
+Node and what the test suite returned.
+
+## Recent changes
+
+Information about changes to the agent are in the [NEWS file](NEWS.md).
+
+## Known issues & remaining work
+
+Information about what's known to be broken and what's being worked on
+soon is in the [TODO file](TODO.md).
+
+## LICENSE
+
+The New Relic Node.js is free-to-use, proprietary software. please see
+the [full license](LICENSE) for details.
