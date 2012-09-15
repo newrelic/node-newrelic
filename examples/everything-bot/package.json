@@ -18,13 +18,14 @@
   ],
   "author": "Forrest L Norvell <forrest@newrelic.com> (http://github.com/othiym23)",
   "license": "BSD",
-  "engines" : {
-    "node" : "~0.8"
+  "engines": {
+    "node": "~0.8"
   },
   "dependencies": {
     "bunyan": "*",
     "mongodb": "~1.1",
     "express": "~3",
-    "carrier": "*"
+    "carrier": "*",
+    "architect": "*"
   }
 }

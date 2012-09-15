@@ -5,17 +5,17 @@ var path       = require('path')
   , connect    = require('connect')
   , mongodb    = require('mongodb')
   , bootstrap  = require(path.join(__dirname, 'bootstrap'))
-  , Logger     = require('bunyan')
+  , logger     = require(path.join(__dirname, 'logger'))
   , Collection = mongodb.Collection
   , DB         = mongodb.Db
   , Server     = mongodb.Server
   ;
 
-// logger setup
-var logger = new Logger({name: 'everything-bot'});
 app.use(connect.logger('dev'));
 
-bootstrap(logger, function () {
+bootstrap(function (error) {
+  if (error) return logger.error(error);
+
   logger.info('bootstrapped and ready to go!');
 
   // MongoDB setup
