@@ -1,3 +1,8 @@
+### v0.8.2-26 / alpha-03 (2012-09-14):
+
+* By popular demand, support for Node 0.6.x. Tested against versions
+	0.6.5 and 0.6.19.
+
 ### v0.8.1-25 / alpha-02 (2012-09-14):
 
 * Transaction traces no longer crash the RPM transaction trace viewer.

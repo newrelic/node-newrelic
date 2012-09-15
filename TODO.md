@@ -4,7 +4,7 @@
   apps.
 * The method used to make instrumentation pervasive touches a lot of the
   core of Node.js and is both slow and potentially fragile.
-* The agent works only with Node.js 0.8.0 and newer.
+* The agent works only with Node.js 0.6 and newer.
 * The agent uses memory very inefficiently.
 * Transaction traces do not correctly set up the parent-child call
   relationships necessary for meaningful transaction traces.

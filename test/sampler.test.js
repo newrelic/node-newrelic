@@ -49,7 +49,12 @@ describe("environmental sampler", function () {
     setTimeout(function () {
       var stats = agent.metrics.getOrCreateMetric('Events/wait').stats;
       expect(stats.callCount).equal(1);
-      expect(stats.total).above(0);
+      // process.hrtime will notice the passage of time, but this happens
+      // too fast to measure any meaningful latency in versions of Node
+      // that don't have process.hrtime available, so just make sure
+      // we're not getting back undefined or null here.
+      expect(stats.total).a('number');
+      if (process.hrtime) expect(stats.total).above(0);
 
       return done();
     }, 0);

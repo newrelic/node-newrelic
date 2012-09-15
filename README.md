@@ -7,8 +7,9 @@ the purposes of testing.
 
 ## Getting started
 
-1. [Install node](http://nodejs.org/#download). For now, at least 0.8.0 is
-   required. Development work is being done against the latest version.
+1. [Install node](http://nodejs.org/#download). For now, at least 0.6 is
+   required. Development work is being done against the latest released
+   version.
 2. Put this directory under the node_modules directory for the application
    you want to instrument.
 3. Run `npm install` to pull down the agent's dependencies.
