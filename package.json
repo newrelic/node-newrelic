@@ -23,8 +23,8 @@
     "performance"
   ],
   "homepage": "http://github.com/newrelic/nodejs_agent",
-  "engines" : {
-    "node" : ">=0.8.0"
+  "engines": {
+    "node": ">=0.6.0"
   },
   "directories": {
     "lib": "lib"
