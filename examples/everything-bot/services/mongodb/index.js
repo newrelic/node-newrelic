@@ -9,7 +9,7 @@ var fs           = require('fs')
 var mprocess;
 
 var api = {
-  mongodb : {
+  mongodbProcess : {
     shutdown : function (callback) {
       if (mprocess) mprocess.kill();
       console.error('MongoDB killed.');
@@ -19,7 +19,7 @@ var api = {
 
 function spawnMongo(options, next) {
   var logger = options.logger;
-  logger.debug('starting up MongoDB');
+  logger.debug('starting MongoDB');
 
   mprocess = spawn('mongod',
                   [

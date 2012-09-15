@@ -1,9 +1,9 @@
 {
-  "name": "mongodb",
+  "name": "redis",
   "version": "0.0.0",
   "main": "index.js",
   "private": true,
   "plugin": {
-    "provides": ["mongodbProcess"]
+    "provides": ["redisProcess"]
   }
 }

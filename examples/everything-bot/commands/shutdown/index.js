@@ -2,7 +2,7 @@
 
 module.exports = function setup(options, imports, register) {
   var logger  = options.logger
-    , mongodb = imports.mongodb
+    , mongodb = imports.mongodbProcess
     ;
 
   process.on('SIGINT', function () {

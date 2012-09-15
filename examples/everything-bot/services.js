@@ -11,6 +11,8 @@ module.exports = [
   {packagePath : path.join(__dirname, 'services', 'mongodb'),
    dbpath      : path.join(__dirname, 'benchmarkr-mongodb'),
    logger      : logger.child({component : 'mongodb'})},
+  {packagePath : path.join(__dirname, 'services', 'redis'),
+   logger      : logger.child({component : 'redis'})},
   {packagePath : path.join(__dirname, 'commands', 'shutdown'),
    logger      : logger}
 ];
