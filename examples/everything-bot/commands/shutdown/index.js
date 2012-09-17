@@ -1,13 +1,15 @@
 'use strict';
 
 module.exports = function setup(options, imports, register) {
-  var logger  = options.logger
-    , mongodb = imports.mongodbProcess
+  var logger           = options.logger
+    , mongodbProcess   = imports.mongodbProcess
+    , redisProcess     = imports.redisProcess
     ;
 
   process.on('SIGINT', function () {
     console.error("Got SIGINT. Shutting down.");
-    mongodb.shutdown();
+    mongodbProcess.shutdown();
+    redisProcess.shutdown();
     process.exit(0);
   });
 

@@ -4,6 +4,9 @@
   "main": "index.js",
   "private": true,
   "plugin": {
-    "consumes": ["mongodbProcess", "redisProcess"]
+    "consumes": [
+      "mongodbProcess"
+    , "redisProcess"
+    ]
   }
 }
