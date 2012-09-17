@@ -13,6 +13,8 @@ module.exports = [
    logger      : logger.child({component : 'mongodb'})},
   {packagePath : path.join(__dirname, 'services', 'redis'),
    logger      : logger.child({component : 'redis'})},
+  {packagePath : path.join(__dirname, 'services', 'memcached'),
+   logger      : logger.child({component : 'memcached'})},
   {packagePath : path.join(__dirname, 'commands', 'shutdown'),
    logger      : logger}
 ];
