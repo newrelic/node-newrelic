@@ -6,6 +6,7 @@ var fs           = require('fs')
   , spawn        = require('child_process').spawn
   ;
 
+var MONGO_LOG_REGEXP = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]+ [0-9:]+ (.+)$/;
 var mprocess;
 
 var api = {
@@ -33,7 +34,7 @@ function spawnMongo(options, next) {
   });
 
   carrier.carry(mprocess.stdout, function (line) {
-    logger.debug(line);
+    logger.debug(line.replace(MONGO_LOG_REGEXP, '$3'));
 
     if (line.match(/waiting for connections on/)) return next(null, api);
   });

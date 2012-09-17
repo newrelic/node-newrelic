@@ -6,6 +6,7 @@ var fs           = require('fs')
   , spawn        = require('child_process').spawn
   ;
 
+var REDIS_LOG_REGEXP = / [0-9]+ (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9:]+( -)?/;
 var redisProcess;
 
 var api = {
@@ -29,7 +30,7 @@ module.exports = function setup(options, imports, register) {
   });
 
   carrier.carry(redisProcess.stdout, function (line) {
-    logger.debug(line);
+    logger.debug(line.replace(REDIS_LOG_REGEXP, ''));
 
     if (line.match(/now ready to accept connections/)) return register(null, api);
   });
