@@ -20,7 +20,7 @@ var api = {
 
 module.exports = function setup(options, imports, register) {
   var logger = options.logger;
-  logger.debug('starting Redis');
+  logger.info('starting Redis');
 
   redisProcess = spawn('redis-server', [],
                        {stdio : [process.stdin, 'pipe', 'pipe']});

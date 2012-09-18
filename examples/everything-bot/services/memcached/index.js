@@ -19,7 +19,7 @@ var api = {
 
 module.exports = function setup(options, imports, register) {
   var logger = options.logger;
-  logger.debug('starting memcached');
+  logger.info('starting memcached');
 
   memcachedProcess = spawn('memcached', ['-v'],
                            {stdio : [process.stdin, 'pipe', 'pipe']});

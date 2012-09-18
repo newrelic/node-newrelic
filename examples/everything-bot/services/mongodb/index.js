@@ -20,7 +20,7 @@ var api = {
 
 function spawnMongo(options, next) {
   var logger = options.logger;
-  logger.debug('starting MongoDB');
+  logger.info('starting MongoDB');
 
   mprocess = spawn('mongod',
                   [
