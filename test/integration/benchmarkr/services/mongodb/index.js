@@ -7,39 +7,43 @@ var fs           = require('fs')
   ;
 
 var MONGO_LOG_REGEXP = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]+ [0-9:]+ (.+)$/;
-var mprocess;
+var mongoProcess;
+function shutdown(callback) {
+  if (mongoProcess) mongoProcess.kill();
+  console.error('MongoDB killed.');
+
+  if (callback) return callback();
+}
 
 var api = {
   mongodbProcess : {
-    shutdown : function (callback) {
-      if (mprocess) mprocess.kill();
-      console.error('MongoDB killed.');
-    }
-  }
+    shutdown   : shutdown
+  },
+  onDestroy : shutdown
 };
 
 function spawnMongo(options, next) {
   var logger = options.logger;
   logger.info('starting MongoDB');
 
-  mprocess = spawn('mongod',
-                  [
-                    '--dbpath', options.dbpath,
-                    '--nohttpinterface'
-                  ],
-                  {stdio : [process.stdin, 'pipe', 'pipe']});
+  mongoProcess = spawn('mongod',
+                       [
+                         '--dbpath', options.dbpath,
+                         '--nohttpinterface'
+                       ],
+                       {stdio : [process.stdin, 'pipe', 'pipe']});
 
-  mprocess.on('exit', function (code, signal) {
+  mongoProcess.on('exit', function (code, signal) {
     logger.info('mongod exited with signal %s and returned code %s', signal, code);
   });
 
-  carrier.carry(mprocess.stdout, function (line) {
+  carrier.carry(mongoProcess.stdout, function (line) {
     logger.debug(line.replace(MONGO_LOG_REGEXP, '$3'));
 
     if (line.match(/waiting for connections on/)) return next(null, api);
   });
 
-  carrier.carry(mprocess.stderr, function (line) {
+  carrier.carry(mongoProcess.stderr, function (line) {
     logger.error(line);
   });
 }

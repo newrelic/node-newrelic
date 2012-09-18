@@ -8,14 +8,18 @@ var fs           = require('fs')
 
 var MYSQL_LOG_REGEXP = /^([0-9]+) [0-9:]+/;
 var mysqldProcess;
+function shutdown(callback) {
+  if (mysqldProcess) mysqldProcess.kill();
+  console.error('MySQL killed.');
+
+  if (callback) return callback();
+}
 
 var api = {
   mysqldProcess : {
-    shutdown : function (callback) {
-      if (mysqldProcess) mysqldProcess.kill();
-      console.error('MySQL killed.');
-    }
-  }
+    shutdown  : shutdown
+  },
+  onDestroy : shutdown
 };
 
 function spawnMySQL(options, next) {
@@ -23,9 +27,7 @@ function spawnMySQL(options, next) {
   logger.info('starting MySQL');
 
   mysqldProcess = spawn('mysqld',
-                        [
-                          '--datadir=' + options.dbpath
-                        ],
+                        ['--datadir=' + options.dbpath],
                         {stdio : [process.stdin, 'pipe', 'pipe']});
 
   mysqldProcess.on('exit', function (code, signal) {
@@ -37,9 +39,11 @@ function spawnMySQL(options, next) {
   });
 
   carrier.carry(mysqldProcess.stderr, function (line) {
+    var cleaned = line.replace(MYSQL_LOG_REGEXP, '[$1]');
     // mysqld thinks it's better than everyone and puts all its output on stderr
-    logger.debug(line.replace(MYSQL_LOG_REGEXP, '[$1]'));
+    logger.debug(cleaned);
 
+    if (line.match(/fatal error/i)) return next(cleaned);
     if (line.match(/mysqld: ready for connections./)) return next(null, api);
   });
 }

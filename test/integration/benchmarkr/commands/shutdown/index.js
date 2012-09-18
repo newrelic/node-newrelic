@@ -8,14 +8,23 @@ module.exports = function setup(options, imports, register) {
     , memcachedProcess = imports.memcachedProcess
     ;
 
-  process.on('SIGINT', function () {
-    console.error("Got SIGINT. Shutting down.");
+  function quit(code) {
     mongodbProcess.shutdown();
     mysqldProcess.shutdown();
     redisProcess.shutdown();
     memcachedProcess.shutdown();
-    process.exit(0);
+
+    process.exit(code);
+  }
+
+  process.on('SIGINT', function () {
+    console.error("Got SIGINT. Shutting down.");
+    quit(0);
   });
 
-  return register();
+  return register(null, {
+    shutdown : {
+      quit : quit
+    }
+  });
 };

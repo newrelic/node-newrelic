@@ -8,14 +8,18 @@ var fs           = require('fs')
 
 var REDIS_LOG_REGEXP = / [0-9]+ (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9:]+( -)?/;
 var redisProcess;
+function shutdown(callback) {
+  if (redisProcess) redisProcess.kill();
+  console.error('Redis killed.');
+
+  if (callback) return callback();
+}
 
 var api = {
   redisProcess : {
-    shutdown : function (callback) {
-      if (redisProcess) redisProcess.kill();
-      console.error('Redis killed.');
-    }
-  }
+    shutdown  : shutdown
+  },
+  onDestroy : shutdown
 };
 
 module.exports = function setup(options, imports, register) {

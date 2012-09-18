@@ -9,6 +9,7 @@
       "mysqldProcess",
       "redisProcess",
       "memcachedProcess"
-    ]
+    ],
+    "provides" : ["shutdown"]
   }
 }

@@ -7,14 +7,19 @@ var fs           = require('fs')
   ;
 
 var memcachedProcess;
+function shutdown(callback) {
+      if (memcachedProcess) memcachedProcess.kill();
+      console.error('memcached killed.');
+
+      if (callback) return callback();
+
+}
 
 var api = {
   memcachedProcess : {
-    shutdown : function (callback) {
-      if (memcachedProcess) memcachedProcess.kill();
-      console.error('memcached killed.');
-    }
-  }
+    shutdown  : shutdown
+  },
+  onDestroy : shutdown
 };
 
 module.exports = function setup(options, imports, register) {

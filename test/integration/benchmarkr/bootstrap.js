@@ -12,9 +12,15 @@ module.exports = function bootstrap(next) {
 
   var config = architect.loadConfig(services);
   architect.createApp(config, function (error, app) {
-    if (error) return next(error);
+    if (error) {
+      logger.debug('The architect was unable to awaken! Abandoning hope.');
 
-    logger.debug("The architect is in control.");
-    return next();
+      app.destroy();
+      return next(error);
+    }
+    else {
+      logger.debug("The architect is in control.");
+      return next();
+    }
   });
 };
