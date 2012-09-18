@@ -6,6 +6,7 @@
   "plugin": {
     "consumes": [
       "mongodbProcess",
+      "mysqldProcess",
       "redisProcess",
       "memcachedProcess"
     ]
