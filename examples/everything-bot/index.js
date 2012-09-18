@@ -16,7 +16,7 @@ app.use(connect.logger('dev'));
 bootstrap(function (error) {
   if (error) return logger.error(error);
 
-  logger.info('bootstrapped and ready to go!');
+  logger.info('External servers started.');
 
   // MongoDB setup
   var server = new Server('127.0.0.1', 27017);

@@ -14,7 +14,7 @@ module.exports = function bootstrap(next) {
   architect.createApp(config, function (error, app) {
     if (error) return next(error);
 
-    logger.info("External services started.");
+    logger.debug("The architect is in control.");
     return next();
   });
 };

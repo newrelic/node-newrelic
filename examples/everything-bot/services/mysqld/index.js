@@ -24,7 +24,7 @@ function spawnMySQL(options, next) {
 
   mysqldProcess = spawn('mysqld',
                         [
-                          '--datadir', options.dbpath
+                          '--datadir=' + options.dbpath
                         ],
                         {stdio : [process.stdin, 'pipe', 'pipe']});
 
@@ -37,6 +37,7 @@ function spawnMySQL(options, next) {
   });
 
   carrier.carry(mysqldProcess.stderr, function (line) {
+    // mysqld thinks it's better than everyone and puts all its output on stderr
     logger.debug(line.replace(MYSQL_LOG_REGEXP, '[$1]'));
 
     if (line.match(/mysqld: ready for connections./)) return next(null, api);
@@ -48,6 +49,9 @@ function findInstallDir(options, next) {
     , configPath = ''
     ;
 
+  // Presumes you're on a system grownup enough to have a 'which' that's
+  // not just a shell built-in. Not going to work super great on Windows,
+  // sorry. Send me a pull request.
   findConfig = spawn('which', ['my_print_defaults'],
                      {stdio : [process.stdin, 'pipe', 'pipe']});
 
@@ -65,8 +69,7 @@ function findInstallDir(options, next) {
   });
 
   carrier.carry(findConfig.stderr, function (line) {
-    var logger = options.logger;
-    logger.error(line);
+    options.logger.error(line);
   });
 }
 
@@ -90,7 +93,7 @@ function initDatadir(options, next) {
                      {stdio : [process.stdin, 'pipe', 'pipe']});
 
     init.on('exit', function () {
-      logger.info('MySQL data directory bootstrapped');
+      logger.info('MySQL data directory bootstrapped.');
       if (creationError) return next(creationError);
 
       return spawnMySQL(options, next);
