@@ -31,36 +31,6 @@ describe("CollectorConnection", function () {
     , collectorHost = 'staging-collector.newrelic.com'
     ;
 
-  describe("connecting to staging-collector.newrelic.com", function () {
-    before(function () {
-      agent = new Agent();
-      agent.config = config.initialize(logger, {
-        'config' : {
-          'app_name'    : 'node.js Tests',
-          'license_key' : testLicense,
-          'host'        : collectorHost,
-          'port'        : 80
-        }
-      });
-      agent.applicationPort = 6666;
-    });
-
-    it("should establish a connection", function (done) {
-      agent.on('connect', function () {
-        expect(agent.connection.applicationName).deep.equal(['node.js Tests']);
-
-        agent.connection.on('connect', function () {
-          expect(agent.connection.agentRunId).not.equal(undefined);
-          agent.stop();
-
-          return done();
-        });
-      });
-
-      agent.start();
-    });
-  });
-
   describe("with a mocked DataSender", function () {
     var SAMPLE_RUN_ID = 101010101
       , PROTOCOL_VERSION = 9
