@@ -49,9 +49,7 @@ function spawnMySQL(options, next) {
 }
 
 function findInstallDir(options, next) {
-  var findConfig
-    , configPath = ''
-    ;
+  var findConfig;
 
   // Presumes you're on a system grownup enough to have a 'which' that's
   // not just a shell built-in. Not going to work super great on Windows,
@@ -59,17 +57,13 @@ function findInstallDir(options, next) {
   findConfig = spawn('which', ['my_print_defaults'],
                      {stdio : [process.stdin, 'pipe', 'pipe']});
 
-  findConfig.on('exit', function () {
-    fs.readlink(configPath, function (err, target) {
+  carrier.carry(findConfig.stdout, function (line) {
+    fs.readlink(line, function (err, target) {
       if (err) return next(err);
 
-      var installPath = path.dirname(path.dirname(path.resolve(path.dirname(configPath), target)));
+      var installPath = path.dirname(path.dirname(path.resolve(path.dirname(line), target)));
       return next(null, installPath);
     });
-  });
-
-  carrier.carry(findConfig.stdout, function (line) {
-    configPath += line;
   });
 
   carrier.carry(findConfig.stderr, function (line) {
