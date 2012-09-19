@@ -1,14 +1,28 @@
 'use strict';
 
-var path        = require('path')
-  , chai        = require('chai')
-  , should      = chai.should()
-  , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+var path         = require('path')
+  , chai         = require('chai')
+  , should       = chai.should()
+  , expect       = chai.expect
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
-describe('the New Relic agent', function () {
+describe("the New Relic agent", function () {
+  it("accepts a custom configuration as an option passed to the constructor", function () {
+    var config = configurator.initialize(logger, {
+      config : {
+        sample : true
+      }
+    });
+    var agent = new Agent({config : config});
+
+    expect(agent.config.sample).equal(true);
+  });
+
   describe("when establishing a connection to the staging collector", function () {
     var agent;
 
@@ -58,27 +72,27 @@ describe('the New Relic agent', function () {
       helper.unloadAgent(agent);
     });
 
-    it('exposes its summary metrics', function () {
+    it("exposes its summary metrics", function () {
       should.exist(agent.metrics);
     });
 
-    it('exposes its configuration', function () {
+    it("exposes its configuration", function () {
       should.exist(agent.config);
     });
 
-    it('exposes its error service', function () {
+    it("exposes its error service", function () {
       should.exist(agent.errors);
     });
 
-    it('exposes its slow trace aggregator', function () {
+    it("exposes its slow trace aggregator", function () {
       should.exist(agent.traces);
     });
 
-    it('should expose its configured metric normalizer via the default metrics', function () {
+    it("exposes its configured metric normalizer via the default metrics", function () {
       should.exist(agent.metrics.normalizer);
     });
 
-    it("should create its own transactions directly", function () {
+    it("creates its own transactions directly", function () {
       expect(function () { agent.createTransaction(); }).not.throws();
     });
 
@@ -87,6 +101,55 @@ describe('the New Relic agent', function () {
         agent.createTransaction();
         expect(agent.getTransaction()).instanceof(Transaction);
       }).not.throws();
+    });
+
+    it("should have debugging configuration by default", function () {
+      expect(agent.config.debug).not.equal(undefined);
+    });
+
+    describe("with debugging configured", function () {
+      it("should have internal instrumentation disabled by default", function () {
+        var debug = agent.config.debug;
+        expect(debug.internal_metrics).equal(false);
+      });
+
+      it("can be created with internal instrumentation enabled in the configuration", function () {
+        var config = configurator.initialize(logger, {
+          config : {debug : {internal_metrics : true}}
+        });
+        var debugged = new Agent({config : config});
+
+        var debug = debugged.config.debug;
+        expect(debug.internal_metrics).equal(true);
+      });
+
+      describe("with internal instrumentation enabled", function () {
+        var debugged;
+
+        beforeEach(function () {
+          var config = configurator.initialize(logger, {
+            config : {debug : {internal_metrics : true}}
+          });
+          debugged = new Agent({config : config});
+        });
+
+        it("should have an object for tracking internal metrics", function () {
+          expect(debugged.config.debug.supportability).not.equal(undefined);
+        });
+
+        it("should find an internal metric for transaction processed", function (done) {
+          debugged.once('transactionFinished', function () {
+            var metric = debugged.config.debug.supportability.getMetric('Supportability/Transaction/Count');
+            expect(metric, 'is defined').not.equal(undefined);
+            expect(metric.stats.callCount, 'has been incremented').equal(1);
+
+            return done();
+          });
+
+          var transaction = debugged.createTransaction();
+          transaction.end();
+        });
+      });
     });
 
     describe("when dealing with its event handlers", function () {
