@@ -42,7 +42,11 @@
     "request": "~2",
     "express": "~2",
     "connect": "~2",
-    "sinon": "~1.4.2"
+    "sinon": "~1.4.2",
+    "mysql": "~0.9.6",
+    "architect": "~0.1.4",
+    "wrench": "~1.3.9",
+    "carrier": "~0.1.7"
   },
   "repository": {
     "type": "git",
