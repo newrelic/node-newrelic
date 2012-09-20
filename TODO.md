@@ -24,3 +24,5 @@
 * Lots more testing of what the data looks like in RPM.
 * Publish a build of the agent via NPM.
 * Refine how transaction traces gather and report time used.
+* Instrumentation for HTTPS connections.
+* Simpler instrumentation for web services using the core HTTP module.

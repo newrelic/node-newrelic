@@ -1,3 +1,7 @@
+### v0.8.4-30 / alpha-05 (2012-09-20):
+
+* Improved timing of Express / Connect request handlers.
+
 ### v0.8.3-28 / alpha-04 (2012-09-19):
 
 * Added support for internal supportability metrics (enabled via setting
