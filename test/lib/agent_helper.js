@@ -32,9 +32,14 @@ var helper = module.exports = {
     return helper.loadAgent({connection : connection});
   },
 
-  withMySQL : function withMySQL(callback) {
-    var config = architect.loadConfig(path.join(__dirname, 'architecture', 'mysql-only.js'));
-    architect.createApp(config, callback);
+  bootstrapMySQL : function bootstrapMySQL(callback) {
+    var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
+    var config = architect.loadConfig(bootstrapped);
+    architect.createApp(config, function (error, app) {
+      if (error) helper.cleanMySQL(app, function () { return callback(error); });
+
+      return callback(null, app);
+    });
   },
 
   cleanMySQL : function cleanMySQL(app, callback) {

@@ -1,0 +1,10 @@
+{
+  "name": "mysqlBootstrap",
+  "version": "0.0.0",
+  "main": "index.js",
+  "private": true,
+  "plugin": {
+    "consumes": ["mysqldProcess"],
+    "provides": ["mysqlBootstrap"]
+  }
+}
