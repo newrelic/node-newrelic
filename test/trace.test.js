@@ -88,7 +88,7 @@ describe('Trace', function () {
       // See docs on Transaction.generateJSON for what goes in which field.
       var expected = [
         start,
-        DURATION / 1000,
+        DURATION,
         'WebTransaction/Uri/test',  // scope
         '/test',                    // URI path
         encoded, // compressed segment / segment data
