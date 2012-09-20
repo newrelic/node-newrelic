@@ -98,16 +98,29 @@ function seedData(options, next) {
   };
 }
 
+/**
+ * There isn't actually an exported API, as all the action is in the setup
+ * itself.
+ */
 module.exports = function setup(options, imports, register) {
   var client = mysql.createClient({
     user     : 'root',
     database : 'mysql'
   });
 
-  // doesn't actually do anything -- all the action is in this setup method.
-  var api = {mysqlBootstrap : {}};
-  var bootstrap = withUser(options, withDB(options, withTable(options, seedData(options, function (error) {
-    register(error, api);
-  }))));
+  var finish = function (error, client) {
+    register(error, {mysqlBootstrap : {}});
+  };
+
+  /*
+   * The power of functional programming: since each task is a generator taking
+   * a uniform set of parameters and returning a callback with a uniform
+   * interface, we can just apply a fold to get a composition of the set of
+   * tasks and get something almost as concise as point-free style.
+   */
+  var tasks = [withUser, withDB, withTable, seedData, finish];
+  var bootstrap = tasks.reverse().reduce(function (previous, current) {
+    return current(options, previous);
+  });
   bootstrap(null, client);
 };
