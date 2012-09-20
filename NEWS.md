@@ -1,3 +1,8 @@
+### v0.8.3-28 / alpha-04 (2012-09-19):
+
+* Added support for internal supportability metrics (enabled via setting
+	debug.internal_metrics to true in newrelic.js).
+
 ### v0.8.2-26 / alpha-03 (2012-09-14):
 
 * By popular demand, support for Node 0.6.x. Tested against versions

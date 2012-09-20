@@ -8,6 +8,8 @@
 * The agent uses memory very inefficiently.
 * Transaction traces do not correctly set up the parent-child call
   relationships necessary for meaningful transaction traces.
+* Server-side configuration is unavailable until support is added within
+	the core New Relic application.
 
 ### TO DO:
 

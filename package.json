@@ -1,6 +1,6 @@
 {
   "name": "newrelic_agent",
-  "version": "0.8.2-26",
+  "version": "0.8.3-28",
   "author": "Forrest L Norvell <forrest@newrelic.com> (http://github.com/othiym23)",
   "contributors": [
     {
