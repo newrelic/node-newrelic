@@ -2,7 +2,7 @@ MOCHA = node_modules/mocha/bin/mocha
 MOCHA_NOBIN = node_modules/.bin/_mocha
 COVER = node_modules/cover/bin/cover
 
-.PHONY: all build test-cov test clean notes pending pending-core
+.PHONY: all build test-cov test clean notes pending pending-core unit integration
 all: build test
 
 node_modules: package.json
@@ -16,9 +16,14 @@ test-cov: node_modules
 	@$(COVER) report html
 	@$(COVER) report
 
-test: node_modules
+test: unit integration
+
+unit: node_modules
 	@rm -f newrelic_agent.log
 	@$(MOCHA)
+
+integration: node_modules
+	@$(MOCHA) test/integration
 
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
@@ -32,6 +37,8 @@ notes:
 
 pending: node_modules
 	@$(MOCHA) --reporter list | grep -v ✓
+	@$(MOCHA) --reporter list test/integration | grep -v ✓
 
 pending-core: node_modules
 	@$(MOCHA) --reporter list | grep -v ✓ | grep -v 'agent instrumentation of'
+	@$(MOCHA) --reporter list test/integration | grep -v ✓ | grep -v 'agent instrumentation of'
