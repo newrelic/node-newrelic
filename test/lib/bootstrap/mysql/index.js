@@ -109,7 +109,11 @@ module.exports = function setup(options, imports, register) {
   });
 
   var finish = function (error, client) {
-    register(error, {mysqlBootstrap : {}});
+    if (error) return register(error);
+
+    client.end(function (error) {
+      register(error, {mysqlBootstrap : {}});
+    });
   };
 
   /*
