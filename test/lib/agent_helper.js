@@ -22,21 +22,26 @@ var helper = module.exports = {
     shimmer.unwrapAll();
   },
 
-  loadMockedAgent : function loadMockedAgent() {
+  loadMockedAgent : function loadMockedAgent(options) {
+    if (!options) options = {};
+
     var connection = new CollectorConnection({
       config : {
         applications : function () { return 'none'; }
       }
     });
+
     sinon.stub(connection, 'connect');
-    return helper.loadAgent({connection : connection});
+    options.connection = connection;
+
+    return helper.loadAgent(options);
   },
 
   bootstrapMySQL : function bootstrapMySQL(callback) {
     var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
     architect.createApp(config, function (error, app) {
-      if (error) helper.cleanMySQL(app, function () { return callback(error); });
+      if (error) return helper.cleanMySQL(app, function () { return callback(error); });
 
       return callback(null, app);
     });
