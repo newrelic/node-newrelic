@@ -24,7 +24,8 @@ unit: node_modules
 	@$(MOCHA)
 
 integration: node_modules
-	@$(TAP) test/integration/*.tap.js
+	@time $(TAP) test/integration/*.tap.js
+
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 
