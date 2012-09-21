@@ -1,10 +1,10 @@
 'use strict';
 
-var path = require('path')
-  , chai = require('chai')
-  , expect = chai.expect
+var path    = require('path')
+  , chai    = require('chai')
+  , expect  = chai.expect
   , sampler = require(path.join(__dirname, '..', 'lib', 'sampler'))
-  , Agent = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , Agent   = require(path.join(__dirname, '..', 'lib', 'agent'))
   ;
 
 describe("environmental sampler", function () {
