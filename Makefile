@@ -1,6 +1,7 @@
-MOCHA = node_modules/mocha/bin/mocha
+MOCHA       = node_modules/.bin/mocha
 MOCHA_NOBIN = node_modules/.bin/_mocha
-COVER = node_modules/cover/bin/cover
+COVER       = node_modules/.bin/cover
+TAP         = node_modules/.bin/tap
 
 .PHONY: all build test-cov test clean notes pending pending-core unit integration
 all: build test
@@ -23,8 +24,7 @@ unit: node_modules
 	@$(MOCHA)
 
 integration: node_modules
-	@$(MOCHA) test/integration
-
+	@$(TAP) test/integration/*.test.js
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 

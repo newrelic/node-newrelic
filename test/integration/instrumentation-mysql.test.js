@@ -1,33 +1,30 @@
 'use strict';
 
 var path = require('path')
+  , tap = require('tap')
+  , test = tap.test
   , mysql = require('mysql')
   , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
-describe("MySQL instrumentation", function () {
-  var agent
-    , architecture
-    ;
+test("MySQL instrumentation should find the MySQL call in the transaction trace",
+     function (t) {
+  t.plan(2);
 
-  before(function (done) {
-    this.timeout(20 * 1000);
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+  var agent = helper.loadMockedAgent();
+  shimmer.bootstrapInstrumentation(agent);
 
-    helper.bootstrapMySQL(function (error, app) {
-      if (error) return done(error);
+  helper.bootstrapMySQL(function (error, app) {
+    if (error) return t.fail(error);
 
-      architecture = app;
-      return done();
+    t.ok(true, "tests go here");
+
+    helper.cleanMySQL(app, function done() {
+      t.ok(true, "cleanup tests go here");
+
+      helper.unloadAgent(agent);
+      t.end();
     });
   });
-
-  after(function (done) {
-    helper.unloadAgent(agent);
-    helper.cleanMySQL(architecture, done);
-  });
-
-  it("should find the MySQL call in the transaction trace");
 });

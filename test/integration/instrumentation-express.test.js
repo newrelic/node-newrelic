@@ -1,62 +1,57 @@
 'use strict';
 
 var path    = require('path')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , should  = chai.should()
+  , tap     = require('tap')
+  , test    = tap.test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
+  , util = require('util')
   ;
 
-describe("agent instrumentation of Express", function () {
-  var agent
-    , app
+test("agent instrumentation of Express should measure request duration properly (NA-46)",
+     {timeout : 5 * 1000},
+     function (t) {
+  t.plan(4);
+
+  var agent = helper.loadMockedAgent();
+  shimmer.bootstrapInstrumentation(agent);
+
+  // express.createServer() went away sometime after Express 2.4.3
+  // Customer in NA-46 is / was using Express 2.4.3
+  var app = require('express').createServer();
+
+  var TEST_PATH = '/test'
+    , TEST_PORT = 9876
+    , TEST_HOST = 'localhost'
+    , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+    , DELAY     = 2100
+    , PAGE      = '<html>' +
+                  '<head><title>test response</title></head>' +
+                  '<body><p>I heard you like HTML.</p></body>' +
+                  '</html>'
     ;
 
-  beforeEach(function () {
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
-
-    // express.createServer() went away sometime after Express 2.4.3
-    // Customer in NA-46 is / was using Express 2.4.3
-    app = require('express').createServer();
+  app.get(TEST_PATH, function (request, response) {
+    t.ok(agent.getTransaction(), "the transaction is visible inside the Express handler");
+    response.writeHead(200, {'Content-Length' : PAGE.length,
+                             'Content-Type'   : 'text/html'});
+    setTimeout(function () { response.end(PAGE); }, DELAY);
   });
 
-  afterEach(function () {
-    helper.unloadAgent(agent);
-  });
+  app.listen(TEST_PORT, TEST_HOST, function ready() {
+    request.get(TEST_URL, function (error, response, body) {
+      if (error) t.fail(error);
+      t.notOk(agent.getTransaction(), "transaction isn't visible from request");
 
-  it("should time the request cycle properly (NA-46)", function (done) {
-    this.timeout(5 * 1000);
+      t.equals(body, PAGE, "response and original page text match");
+      console.error(util.inspect(agent));
+      var timing = agent.metrics.getMetric('WebTransaction/Uri/test').stats.total * 1000;
+      t.ok(timing > DELAY - 100, "given some setTimeout slop, the request was long enough");
 
-    var TEST_PATH = '/test'
-      , TEST_PORT = 9876
-      , TEST_HOST = 'localhost'
-      , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-      , DELAY     = 2100
-      , PAGE      = '<html>' +
-                    '<head><title>test response</title></head>' +
-                    '<body><p>I heard you like HTML.</p></body>' +
-                    '</html>'
-      ;
-
-    app.get(TEST_PATH, function (request, response) {
-      should.exist(agent.getTransaction());
-      response.writeHead(200, {'Content-Length' : PAGE.length, 'Content-Type' : 'text/html'});
-      setTimeout(function () { response.end(PAGE); }, DELAY);
-    });
-
-    app.listen(TEST_PORT, TEST_HOST, function ready() {
-      request.get(TEST_URL, function (error, response, body) {
-        if (error) return done(error);
-        should.not.exist(agent.getTransaction());
-
-        expect(body).equal(PAGE);
-        var timing = agent.metrics.getMetric('WebTransaction/Uri/test').stats.total * 1000;
-        expect(timing).above(DELAY - 100); // setTimeout is a little sloppy, yo
-
-        return done();
+      app.close(function shutdown() {
+        helper.unloadAgent(agent);
+        t.end();
       });
     });
   });

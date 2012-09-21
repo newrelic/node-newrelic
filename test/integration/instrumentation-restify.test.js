@@ -1,50 +1,43 @@
 'use strict';
 
 var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , expect  = chai.expect
+  , tap     = require('tap')
+  , test    = tap.test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   ;
 
-describe("agent instrumentation of HTTP using Restify", function () {
-  var agent
-    , server
-    ;
+test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
+     function (t) {
+  t.plan(6);
 
-  beforeEach(function () {
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+  var agent = helper.loadMockedAgent();
+  shimmer.bootstrapInstrumentation(agent);
 
-    var restify = require('restify');
+  var restify = require('restify');
+  var server = restify.createServer();
 
-    server = restify.createServer();
+  server.get('/hello/:name', function sayHello(req, res, next) {
+    t.ok(agent.getTransaction(), "transaction is available in handler");
+    res.send('hello ' + req.params.name);
   });
 
-  afterEach(function () {
-    helper.unloadAgent(agent);
-  });
+  server.listen(8765, function () {
+    t.notOk(agent.getTransaction(), "transaction shouldn't leak into server");
 
-  it("shouldn't crash when Restify is initialized", function (done) {
-    server.get('/hello/:name', function sayHello(req, res, next) {
-      res.send('hello ' + req.params.name);
-    });
+    request.get('http://localhost:8765/hello/friend', function (error, response, body) {
+      if (error) return t.fail(error);
+      t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request");
 
-    server.listen(8080, function () {
-      should.not.exist(agent.getTransaction());
+      var metric = agent.metrics.getMetric('WebTransaction/Uri/hello/friend');
+      t.ok(metric, "request metrics found");
+      t.equals(metric.stats.callCount, 1, "number of calls");
+      t.equals(body, '"hello friend"', "data returned by restify is as expected");
 
-      request.get('http://localhost:8080/hello/friend', function (error, response, body) {
-        if (error) return done(error);
-        should.not.exist(agent.getTransaction());
-
-        var metric = agent.metrics.getMetric('WebTransaction/Uri/hello/friend');
-        should.exist(metric);
-        expect(metric.stats.callCount, "number of calls").equal(1);
-        expect(body, "data returned by restify").equal('"hello friend"');
-
-        return done();
+      server.close(function () {
+        helper.unloadAgent(agent);
+        t.end();
       });
     });
   });
