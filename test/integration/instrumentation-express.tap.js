@@ -6,7 +6,6 @@ var path    = require('path')
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
-  , util = require('util')
   ;
 
 test("agent instrumentation of Express should measure request duration properly (NA-46)",
@@ -45,7 +44,6 @@ test("agent instrumentation of Express should measure request duration properly 
       t.notOk(agent.getTransaction(), "transaction isn't visible from request");
 
       t.equals(body, PAGE, "response and original page text match");
-      console.error(util.inspect(agent));
       var timing = agent.metrics.getMetric('WebTransaction/Uri/test').stats.total * 1000;
       t.ok(timing > DELAY - 100, "given some setTimeout slop, the request was long enough");
 
