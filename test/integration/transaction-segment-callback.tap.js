@@ -150,9 +150,11 @@ function Tracer(context) {
   this.numTransactions = 0;
   this.context = context;
 
-  this.trace = [];
+  this.trace     = [];
   this.creations = [];
   this.wrappings = [];
+
+  this.verbose   = [];
 }
 
 Tracer.prototype.internalTraceCall = function (direction, call) {
@@ -162,15 +164,32 @@ Tracer.prototype.internalTraceCall = function (direction, call) {
                        call.segment.id,
                        call.id);
   this.trace.push(id);
+  this.verbose.push(id);
 };
 
 Tracer.prototype.internalTraceCreation = function (type) {
-  this.creations.push(util.format("+%s", type[0]));
+  var creation = util.format("+%s", type[0]);
+  this.creations.push(creation);
+  this.verbose.push(creation);
 };
 
 Tracer.prototype.internalTraceWrapping = function (direction, type) {
-  this.wrappings.push(util.format("%s%s", direction, type));
+  var wrapping = util.format("%s%s", direction, type);
+  this.wrappings.push(wrapping);
+  this.verbose.push(wrapping);
 };
+
+Tracer.prototype.wrapInternalTrace = function (type, handler) {
+  var self = this;
+  return function () {
+    self.internalTraceWrapping('->', type);
+    var returned = handler.apply(this, arguments);
+    self.internalTraceWrapping('<-', type);
+
+    return returned;
+  };
+};
+
 Tracer.prototype.enter = function (call) {
   this.internalTraceCall('->', call);
   this.context.enter(call);
@@ -186,17 +205,6 @@ Tracer.prototype.addTransaction = function () {
 
   this.internalTraceCreation('Trace');
   return new Transaction(this.numTransactions);
-};
-
-Tracer.prototype.wrapInternalTrace = function (type, handler) {
-  var self = this;
-  return function () {
-    self.internalTraceWrapping('->', type);
-    var returned = handler.apply(this, arguments);
-    self.internalTraceWrapping('<-', type);
-
-    return returned;
-  };
 };
 
 Tracer.prototype.addSegment = function (transaction) {
@@ -313,7 +321,7 @@ var context = new Context(true); // want to ensure that enter/exit are paired
 //   <- SEGMENT T1S1
 // <- TRANSACTION T1
 test("a. synchronous handler", function (t) {
-  t.plan(4);
+  t.plan(5);
 
   var tracer = new Tracer(context);
 
@@ -341,6 +349,15 @@ test("a. synchronous handler", function (t) {
     '<-T1S1C1'
   ];
   t.deepEquals(tracer.trace, calls, "call entry / exit sequence should match.");
+
+  var full = [
+    '->T outer', '<-T outer',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T1S1C1', '<-T1S1C1',
+    '<-T inner',
+  ];
+  t.deepEquals(tracer.verbose, full, "full trace should match.");
 });
 
 
@@ -356,7 +373,7 @@ test("a. synchronous handler", function (t) {
 //   <- SEGMENT T1S1
 // <- TRANSACTION T1
 test("b. asynchronous handler", function (t) {
-  t.plan(4);
+  t.plan(5);
 
   var tracer = new Tracer(context);
 
@@ -382,7 +399,7 @@ test("b. asynchronous handler", function (t) {
   var wrappings = [
     '->T outer', '<-T outer', // handler proxying
     '->T inner',              // handler invocation
-    '->C outer', '<-C outer', // callback proxying
+      '->C outer', '<-C outer', // callback proxying
     '<-T inner',
     '->C inner', '<-C inner'  // callback invocation
   ];
@@ -395,6 +412,22 @@ test("b. asynchronous handler", function (t) {
     '<-T1S1C2'
   ];
   t.deepEquals(tracer.trace, calls, "call entry / exit sequence should match");
+
+  var full = [
+    '->T outer', '<-T outer',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T1S1C1',
+      '->C outer',
+        '+C',
+      '<-C outer',
+      '<-T1S1C1',
+    '<-T inner',
+    '->C inner',
+      '->T1S1C2', '<-T1S1C2',
+    '<-C inner'
+  ];
+  t.deepEquals(tracer.verbose, full, "full trace should match.");
 });
 
 // c. two overlapping executions of an asynchronous handler
@@ -419,7 +452,7 @@ test("b. asynchronous handler", function (t) {
 //   <- SEGMENT T2S1
 // <- TRANSACTION T2
 test("c. two overlapping executions of an asynchronous handler", function (t) {
-  t.plan(5);
+  t.plan(6);
 
   var tracer = new Tracer(context);
 
@@ -472,6 +505,33 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
     '<-T2S1C2'
   ];
   t.deepEquals(tracer.trace, calls, "call entry / exit sequence should match");
+
+  var full = [
+    '->T outer', '<-T outer',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T1S1C1',
+        '->C outer',
+          '+C',
+        '<-C outer',
+      '<-T1S1C1',
+    '<-T inner',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T2S1C1',
+        '->C outer',
+          '+C',
+        '<-C outer',
+      '<-T2S1C1',
+    '<-T inner',
+    '->C inner',
+      '->T1S1C2', '<-T1S1C2',
+    '<-C inner',
+    '->C inner',
+      '->T2S1C2', '<-T2S1C2',
+    '<-C inner'
+  ];
+  t.deepEquals(tracer.verbose, full, "full trace should match.");
 });
 
 // d. synchronous handler with synchronous subsidiary handler
@@ -487,7 +547,7 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
 //   <- SEGMENT T1S1
 // <- TRANSACTION T1
 test("d. synchronous handler with synchronous subsidiary handler", function (t) {
-  t.plan(4);
+  t.plan(5);
 
   var tracer = new Tracer(context);
 
@@ -528,6 +588,21 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
     '<-T1S1C1'
   ];
   t.deepEquals(tracer.trace, calls, "call entry / exit sequence should match");
+
+  var full = [
+    '->S outer', '<-S outer',
+    '->T outer', '<-T outer',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T1S1C1',
+        '->S inner',
+          '+S', '+C',
+          '->T1S2C1', '<-T1S2C1',
+        '<-S inner',
+      '<-T1S1C1',
+    '<-T inner'
+  ];
+  t.deepEquals(tracer.verbose, full, "full trace should match.");
 });
 
 // e. asynchronous handler with an asynchronous subsidiary handler
@@ -551,7 +626,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
 //   <- SEGMENT T1S2
 // <- TRANSACTION T1
 test("e. asynchronous handler with an asynchronous subsidiary handler", function (t) {
-  t.plan(4);
+  t.plan(5);
 
   var tracer = new Tracer(context);
 
@@ -612,6 +687,35 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
     '<-T1S2C2'
   ];
   t.deepEquals(tracer.trace, calls, "call entry / exit sequence should match");
+
+  var full = [
+    '->S outer', '<-S outer',
+    '->T outer', '<-T outer',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T1S1C1',
+        '->C outer',
+          '+C',
+        '<-C outer',
+        '->S inner',
+          '+S', '+C',
+          '->T1S2C1',
+            '->C outer',
+              '+C',
+            '<-C outer',
+          '<-T1S2C1',
+        '<-S inner',
+      '<-T1S1C1',
+    '<-T inner',
+    '->C inner',
+      '->T1S2C2',
+        '->C inner',
+          '->T1S1C2', '<-T1S1C2',
+        '<-C inner',
+      '<-T1S2C2',
+    '<-C inner'
+  ];
+  t.deepEquals(tracer.verbose, full, "full trace should match.");
 });
 
 // f. two overlapping executions of an asynchronous handler with an asynchronous subsidiary handler
@@ -648,7 +752,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
 //     <- CALL T2S2C2: 16. execution exits 2nd subsidiary callback
 // <- TRANSACTION T2
 test("f. two overlapping executions of an asynchronous handler with an asynchronous subsidiary handler", function (t) {
-  t.plan(5);
+  t.plan(6);
 
   var tracer = new Tracer(context);
 
@@ -734,4 +838,56 @@ test("f. two overlapping executions of an asynchronous handler with an asynchron
     '<-T2S2C2'
   ];
   t.deepEquals(tracer.trace, calls, "call entry / exit sequence should match");
+
+  var full = [
+    '->S outer', '<-S outer',
+    '->T outer', '<-T outer',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T1S1C1',
+        '->C outer',
+          '+C',
+        '<-C outer',
+        '->S inner',
+          '+S', '+C',
+          '->T1S2C1',
+            '->C outer',
+              '+C',
+            '<-C outer',
+          '<-T1S2C1',
+        '<-S inner',
+      '<-T1S1C1',
+    '<-T inner',
+    '->T inner',
+      '+T', '+S', '+C',
+      '->T2S1C1',
+        '->C outer',
+          '+C',
+        '<-C outer',
+        '->S inner',
+          '+S', '+C',
+          '->T2S2C1',
+            '->C outer',
+              '+C',
+            '<-C outer',
+          '<-T2S2C1',
+        '<-S inner',
+      '<-T2S1C1',
+    '<-T inner',
+    '->C inner',
+      '->T1S2C2',
+        '->C inner',
+          '->T1S1C2', '<-T1S1C2',
+        '<-C inner',
+      '<-T1S2C2',
+    '<-C inner',
+    '->C inner',
+      '->T2S2C2',
+        '->C inner',
+          '->T2S1C2', '<-T2S1C2',
+        '<-C inner',
+      '<-T2S2C2',
+    '<-C inner'
+  ];
+  t.deepEquals(tracer.verbose, full, "full trace should match.");
 });
