@@ -25,15 +25,21 @@ the purposes of testing.
 7. Add `require('newrelic_agent');` as the first line of the app's main module.
 
 When you start your app, the agent should start up with it and start reporting
-data that will appear within our UI after a few minutes. The agent will write
-its log to a file named `newrelic_agent.log` in the application directory. If
-the agent doesn't send data that file might provide insight into the problem.
+data that will appear within our UI after a few minutes. Because the agent
+minimizes the amount of bandwidth it consumes, it only reports metrics, errors
+and transaction traces once a minute, so if you add the agent to tests that run
+in under a minute, the agent won't have time to report data to New Relic. The
+agent will write its log to a file named `newrelic_agent.log` in the
+application directory. If the agent doesn't send data or crashes your app, the
+log can help New Relic determine what went wrong, so be sure to send it along
+with any bug reports or support requests.
 
 ## Running tests
 
-The agent's unit tests are written in
-[mocha](http://visionmedia.github.com/mocha/), and can be run via
-`npm test`.
+The agent's unit tests use [mocha](http://visionmedia.github.com/mocha/). Its
+integration tests use [node-tap](http://github.com/isaacs/node-tap/). If you
+want to run them yourself, they can be run via `npm test`, except on Windows,
+where we haven't had time to do much testing yet.
 
 If you encounter any test failures, please contact New Relic support, and
 be sure to include whatever information you can about how you're running
@@ -50,5 +56,5 @@ soon is in the [TODO file](TODO.md).
 
 ## LICENSE
 
-The New Relic Node.js is free-to-use, proprietary software. Please see
+The New Relic Node.js agent is free-to-use, proprietary software. Please see
 the [full license](LICENSE) for details.

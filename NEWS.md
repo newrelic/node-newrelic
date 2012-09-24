@@ -1,3 +1,10 @@
+### v0.8.5-34 / alpha-06 (2012-09-24):
+
+* Transaction trace durations are now reported properly (were seconds, now
+  milliseconds).
+* The agent no longer causes Restify applications to crash.
+* The internal Node metrics sampler now shuts itself down properly.
+
 ### v0.8.4-30 / alpha-05 (2012-09-20):
 
 * Improved timing of Express / Connect request handlers.
@@ -5,12 +12,12 @@
 ### v0.8.3-28 / alpha-04 (2012-09-19):
 
 * Added support for internal supportability metrics (enabled via setting
-	debug.internal_metrics to true in newrelic.js).
+  debug.internal_metrics to true in newrelic.js).
 
 ### v0.8.2-26 / alpha-03 (2012-09-14):
 
 * By popular demand, support for Node 0.6.x. Tested against versions
-	0.6.5 and 0.6.19.
+  0.6.5 and 0.6.19.
 
 ### v0.8.1-25 / alpha-02 (2012-09-14):
 
