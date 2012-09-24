@@ -155,44 +155,61 @@ function Tracer(context) {
   this.wrappings = [];
 }
 
-Tracer.prototype.enter = function (call) {
-  var id = util.format("->T%dS%dC%d",
+Tracer.prototype.internalTraceCall = function (direction, call) {
+  var id = util.format("%sT%dS%dC%d",
+                       direction,
                        call.segment.transaction.id,
                        call.segment.id,
                        call.id);
   this.trace.push(id);
+};
 
+Tracer.prototype.internalTraceCreation = function (type) {
+  this.creations.push(util.format("+%s", type[0]));
+};
+
+Tracer.prototype.internalTraceWrapping = function (direction, type) {
+  this.wrappings.push(util.format("%s%s", direction, type));
+};
+Tracer.prototype.enter = function (call) {
+  this.internalTraceCall('->', call);
   this.context.enter(call);
 };
 
 Tracer.prototype.exit = function (call) {
-  var id = util.format("<-T%dS%dC%d",
-                       call.segment.transaction.id,
-                       call.segment.id,
-                       call.id);
-  this.trace.push(id);
-
+  this.internalTraceCall('<-', call);
   this.context.exit(call);
 };
 
 Tracer.prototype.addTransaction = function () {
   this.numTransactions += 1;
 
-  this.creations.push("+T");
+  this.internalTraceCreation('Trace');
   return new Transaction(this.numTransactions);
+};
+
+Tracer.prototype.wrapInternalTrace = function (type, handler) {
+  var self = this;
+  return function () {
+    self.internalTraceWrapping('->', type);
+    var returned = handler.apply(this, arguments);
+    self.internalTraceWrapping('<-', type);
+
+    return returned;
+  };
 };
 
 Tracer.prototype.addSegment = function (transaction) {
   if (!transaction) transaction = this.addTransaction();
 
-  this.creations.push("+S");
+  this.internalTraceCreation('Segment');
   return transaction.addSegment();
 };
 
 Tracer.prototype.addCall = function (segment) {
   if (!segment) segment = this.addSegment();
 
-  this.creations.push("+C");
+  this.internalTraceCreation('Call');
   return segment.addCall();
 };
 
@@ -205,24 +222,18 @@ Tracer.prototype.addCall = function (segment) {
  * @returns {Function} Proxied function.
  */
 Tracer.prototype.transactionProxy = function (handler) {
-  this.wrappings.push("->T outer");
-
   var self = this;
-  var wrapped = function () {
-    self.wrappings.push("->T inner");
+  return this.wrapInternalTrace('T outer', function () {
+    return self.wrapInternalTrace('T inner', function () {
+      var call = self.addCall();
 
-    var call = self.addCall();
+      self.enter(call);
+      var returned = handler.apply(this, arguments);
+      self.exit(call);
 
-    self.enter(call);
-    var returned = handler.apply(this, arguments);
-    self.exit(call);
-
-    self.wrappings.push("<-T inner");
-    return returned;
-  };
-
-  this.wrappings.push("<-T outer");
-  return wrapped;
+      return returned;
+    });
+  })(); // <-- call immediately
 };
 
 /**
@@ -235,29 +246,23 @@ Tracer.prototype.transactionProxy = function (handler) {
  * @returns {Function} Proxied function.
  */
 Tracer.prototype.segmentProxy = function (handler) {
-  this.wrappings.push("->S outer");
-
   var self = this;
-  var wrapped = function () {
-    // don't implicitly create transactions
-    if (!self.context.transaction) return handler.apply(this, arguments);
+  return this.wrapInternalTrace('S outer', function () {
+    return self.wrapInternalTrace('S inner', function () {
+      // don't implicitly create transactions
+      if (!self.context.transaction) return handler.apply(this, arguments);
 
-    self.wrappings.push("->S inner");
+      var segment = self.addSegment(self.context.transaction)
+        , call    = self.addCall(segment)
+        ;
 
-    var segment = self.addSegment(self.context.transaction)
-      , call    = self.addCall(segment)
-      ;
+      self.enter(call);
+      var returned = handler.apply(this, arguments);
+      self.exit(call);
 
-    self.enter(call);
-    var returned = handler.apply(this, arguments);
-    self.exit(call);
-
-    self.wrappings.push("<-S inner");
-    return returned;
-  };
-
-  this.wrappings.push("<-S outer");
-  return wrapped;
+      return returned;
+    });
+  })(); // <-- call immediately
 };
 
 /**
@@ -275,24 +280,18 @@ Tracer.prototype.callbackProxy = function (handler) {
   // don't implicitly create transactions
   if (!this.context.transaction) return handler;
 
-  this.wrappings.push("->C outer");
-
-  var call = this.addCall(this.context.segment);
-
   var self = this;
-  var wrapped = function () {
-    self.wrappings.push("->C inner");
+  return this.wrapInternalTrace('C outer', function () {
+    var call = self.addCall(self.context.segment);
 
-    self.enter(call);
-    var returned = handler.apply(this, arguments);
-    self.exit(call);
+    return self.wrapInternalTrace('C inner', function () {
+      self.enter(call);
+      var returned = handler.apply(this, arguments);
+      self.exit(call);
 
-    self.wrappings.push("<-C inner");
-    return returned;
-  };
-
-  this.wrappings.push("<-C outer");
-  return wrapped;
+      return returned;
+    });
+  })(); // <-- call immediately
 };
 
 
