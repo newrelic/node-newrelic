@@ -97,10 +97,11 @@ describe("the New Relic agent", function () {
     });
 
     it("should look up transactions itself", function () {
+      var transaction;
       expect(function () {
-        agent.createTransaction();
-        expect(agent.getTransaction()).instanceof(Transaction);
+        transaction = agent.createTransaction();
       }).not.throws();
+      expect(transaction).instanceof(Transaction);
     });
 
     it("should have debugging configuration by default", function () {
