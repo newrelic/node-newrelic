@@ -32,7 +32,7 @@ test("agent instrumentation of Express should measure request duration properly 
     ;
 
   app.get(TEST_PATH, function (request, response) {
-    t.ok(agent.getTransaction(), "the transaction is visible inside the Express handler");
+    t.ok(agent.getTransaction(), "the transaction should be visible inside the Express handler");
     response.writeHead(200, {'Content-Length' : PAGE.length,
                              'Content-Type'   : 'text/html'});
     setTimeout(function () { response.end(PAGE); }, DELAY);
@@ -41,7 +41,7 @@ test("agent instrumentation of Express should measure request duration properly 
   app.listen(TEST_PORT, TEST_HOST, function ready() {
     request.get(TEST_URL, function (error, response, body) {
       if (error) t.fail(error);
-      t.notOk(agent.getTransaction(), "transaction isn't visible from request");
+      t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
 
       t.equals(body, PAGE, "response and original page text match");
       var timing = agent.metrics.getMetric('WebTransaction/Uri/test').stats.total * 1000;
