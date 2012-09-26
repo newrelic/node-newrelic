@@ -11,7 +11,7 @@ var path    = require('path')
 test("agent instrumentation of Express should measure request duration properly (NA-46)",
      {timeout : 5 * 1000},
      function (t) {
-  t.plan(4);
+  t.plan(6);
 
   var agent = helper.loadMockedAgent();
   shimmer.bootstrapInstrumentation(agent);
@@ -41,11 +41,25 @@ test("agent instrumentation of Express should measure request duration properly 
   app.listen(TEST_PORT, TEST_HOST, function ready() {
     request.get(TEST_URL, function (error, response, body) {
       if (error) t.fail(error);
+
       t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
 
       t.equals(body, PAGE, "response and original page text match");
+
       var timing = agent.metrics.getMetric('WebTransaction/Uri/test').stats.total * 1000;
       t.ok(timing > DELAY - 100, "given some setTimeout slop, the request was long enough");
+
+      var found = false;
+      agent.environment.toJSON().forEach(function (pair) {
+        if (pair[0] === 'Dispatcher' && pair[1] === 'express') found = true;
+      });
+      t.ok(found, "should indicate that the Express dispatcher is in play");
+
+      found = false;
+      agent.environment.toJSON().forEach(function (pair) {
+        if (pair[0] === 'Framework' && pair[1] === 'express') found = true;
+      });
+      t.ok(found, "should indicate that Express itself is in play");
 
       app.close(function shutdown() {
         helper.unloadAgent(agent);
