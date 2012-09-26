@@ -19,7 +19,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
   var server = restify.createServer();
 
   server.get('/hello/:name', function sayHello(req, res, next) {
-    t.ok(agent.getTransaction(), "transaction is available in handler");
+    t.ok(agent.getTransaction(), "transaction should be available in handler");
     res.send('hello ' + req.params.name);
   });
 
@@ -31,9 +31,9 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request");
 
       var metric = agent.metrics.getMetric('WebTransaction/Uri/hello/friend');
-      t.ok(metric, "request metrics found");
-      t.equals(metric.stats.callCount, 1, "number of calls");
-      t.equals(body, '"hello friend"', "data returned by restify is as expected");
+      t.ok(metric, "request metrics should have been gathered");
+      t.equals(metric.stats.callCount, 1, "handler should have been called");
+      t.equals(body, '"hello friend"', "data returned by restify should be as expected");
 
       server.close(function () {
         helper.unloadAgent(agent);
