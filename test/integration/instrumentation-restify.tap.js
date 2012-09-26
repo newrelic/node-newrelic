@@ -10,7 +10,7 @@ var path    = require('path')
 
 test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
      function (t) {
-  t.plan(6);
+  t.plan(8);
 
   var agent = helper.loadMockedAgent();
   shimmer.bootstrapInstrumentation(agent);
@@ -34,6 +34,18 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
       t.ok(metric, "request metrics should have been gathered");
       t.equals(metric.stats.callCount, 1, "handler should have been called");
       t.equals(body, '"hello friend"', "data returned by restify should be as expected");
+
+      var found = false;
+      agent.environment.toJSON().forEach(function (pair) {
+        if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true;
+      });
+      t.ok(found, "should indicate that the Restify dispatcher is in play");
+
+      found = false;
+      agent.environment.toJSON().forEach(function (pair) {
+        if (pair[0] === 'Framework' && pair[1] === 'restify') found = true;
+      });
+      t.ok(found, "should indicate that restify itself is in play");
 
       server.close(function () {
         helper.unloadAgent(agent);
