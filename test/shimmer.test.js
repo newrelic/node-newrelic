@@ -126,19 +126,19 @@ describe("the instrumentation injector", function () {
         ;
 
       var spamTransaction = function (i) {
-        // need to ensure that each one gets created in its own context
-        (function (i) {
-          var current = agent.createTransaction();
+        var wrapped = agent.tracer.transactionProxy(function () {
+          var current     = agent.getTransaction();
           transactions[i] = current;
-          ids[i] = current.id;
+          ids[i]          = current.id;
 
-          process.nextTick(function () {
+          process.nextTick(agent.tracer.callbackProxy(function () {
             var lookup = agent.getTransaction();
             expect(lookup).equal(current);
 
             synchronizer.emit('inner', lookup, i);
-          });
-        }(i));
+          }));
+        });
+        wrapped();
       };
 
       var doneCount = 0;
@@ -166,19 +166,19 @@ describe("the instrumentation injector", function () {
         ;
 
       var spamTransaction = function (i) {
-        // need to ensure that each one gets created in its own context
-        (function (i) {
-          var current = agent.createTransaction();
+        var wrapped = agent.tracer.transactionProxy(function () {
+          var current     = agent.getTransaction();
           transactions[i] = current;
-          ids[i] = current.id;
+          ids[i]          = current.id;
 
-          setTimeout(function () {
+          setTimeout(agent.tracer.callbackProxy(function () {
             var lookup = agent.getTransaction();
             expect(lookup).equal(current);
 
             synchronizer.emit('inner', lookup, i);
-          }, 1);
-        }(i));
+          }), 1);
+        });
+        wrapped();
       };
 
       var doneCount = 0;
@@ -208,23 +208,26 @@ describe("the instrumentation injector", function () {
         ;
 
       var eventTransaction = function (j) {
-        var current = agent.createTransaction()
-          , id      = current.id
-          , name    = ('ttest' + (j + 1))
-          ;
+        var wrapped = agent.tracer.transactionProxy(function () {
+          var current = agent.getTransaction()
+            , id      = current.id
+            , name    = ('ttest' + (j + 1))
+            ;
 
-        transactions[j] = current;
-        ids[j]          = id;
+          transactions[j] = current;
+          ids[j]          = id;
 
-        eventer.on(name, function () {
-          var lookup = agent.getTransaction();
-          expect(lookup).equal(current);
-          expect(lookup.id).equal(id);
+          eventer.on(name, agent.tracer.callbackProxy(function () {
+            var lookup = agent.getTransaction();
+            expect(lookup).equal(current);
+            expect(lookup.id).equal(id);
 
-          eventer.emit('inner', lookup, j);
+            eventer.emit('inner', lookup, j);
+          }));
+
+          eventer.emit(name);
         });
-
-        eventer.emit(name);
+        wrapped();
       };
 
       var doneCount = 0;
@@ -269,25 +272,30 @@ describe("the instrumentation injector", function () {
       });
 
       var createTimer = function (trans, j) {
-        return function () {
-          verify(j, 'createTimer', trans);
-          eventer.emit('rntest', trans, j);
-        };
+        var wrapped = agent.tracer.segmentProxy(function () {
+          setTimeout(agent.tracer.callbackProxy(function () {
+            var current = agent.getTransaction();
+
+            verify(j, 'createTimer', current);
+            eventer.emit('rntest', current, j);
+          }), 0);
+        });
+        wrapped();
       };
 
       var createTicker = function (j) {
-        return function () {
-          var current = agent.createTransaction();
+        return agent.tracer.transactionProxy(function () {
+          var current     = agent.getTransaction();
           transactions[j] = current;
-          ids[j] = current.id;
+          ids[j]          = current.id;
 
           verify(j, 'createTicker', current);
 
-          process.nextTick(function () {
+          process.nextTick(agent.tracer.callbackProxy(function () {
             verify(j, 'nextTick', current);
-            setTimeout(createTimer(current, j), 0);
-          });
-        };
+            createTimer(current, j);
+          }));
+        });
       };
 
       synchronizer.on('inner', function (trans, j) {
