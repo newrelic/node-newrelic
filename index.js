@@ -8,7 +8,7 @@ var path    = require('path')
 var agent = new Agent();
 
 if (process.version && process.version.split('.')[1] < 6) {
-  return console.log('New Relic requires a version of Node equal to or greater than 0.6');
+  return console.error('New Relic requires a version of Node equal to or greater than 0.6');
 }
 
 /**
