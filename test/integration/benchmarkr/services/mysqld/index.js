@@ -112,7 +112,7 @@ function initDatadir(options, next) {
 module.exports = function setup(options, imports, register) {
   var dbpath = options.dbpath;
 
-  fs.exists(dbpath, function (exists) {
+  (fs.exists || path.exists)(dbpath, function (exists) {
     if (!exists) {
       fs.mkdir(dbpath, '0755', function (err) {
         if (err) return register(err);
