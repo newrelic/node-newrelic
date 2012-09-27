@@ -29,11 +29,15 @@ var context = new Context(true); // want to ensure that enter/exit are paired
 //   <- SEGMENT T1S1
 // <- TRANSACTION T1
 test("a. synchronous handler", function (t) {
-  t.plan(5);
+  t.plan(8);
 
   var tracer = new Tracer(agent, context);
 
+  var transaction;
   var handler = function (multiplier, multiplicand) {
+    transaction = context.state.getTransaction();
+    t.ok(transaction, "should find transaction in handler");
+
     return multiplier * multiplicand;
   };
   var wrapped = tracer.transactionProxy(handler);
@@ -41,22 +45,25 @@ test("a. synchronous handler", function (t) {
   var product = wrapped(5, 7);
   t.equal(product, 35, "wrapped function still works");
 
+  t.ok(transaction.state, "state should be attached to transaction");
+  var describer = transaction.state.describer;
+  t.ok(describer, "describer should be on state");
   var creations = [
     '+T', '+S', '+C' // handler invocation
   ];
-  t.deepEquals(tracer.describer.creations, creations, "creation sequence should match.");
+  t.deepEquals(describer.creations, creations, "creation sequence should match.");
 
   var wrappings = [
     '->T outer', '<-T outer', // handler proxying
     '->T inner', '<-T inner', // handler invocation
   ];
-  t.deepEquals(tracer.describer.wrappings, wrappings, "wrapping sequence should match.");
+  t.deepEquals(describer.wrappings, wrappings, "wrapping sequence should match.");
 
   var calls = [
     '->T1S1C1',
     '<-T1S1C1'
   ];
-  t.deepEquals(tracer.describer.trace, calls, "call entry / exit sequence should match.");
+  t.deepEquals(describer.trace, calls, "call entry / exit sequence should match.");
 
   var full = [
     '->T outer', '<-T outer',
@@ -65,7 +72,7 @@ test("a. synchronous handler", function (t) {
       '->T1S1C1', '<-T1S1C1',
     '<-T inner',
   ];
-  t.deepEquals(tracer.describer.verbose, full, "full trace should match.");
+  t.deepEquals(describer.verbose, full, "full trace should match.");
 });
 
 
@@ -85,7 +92,10 @@ test("b. asynchronous handler", function (t) {
 
   var tracer = new Tracer(agent, context);
 
+  var transaction;
   var handler = function (multiplier) {
+    transaction = context.state.getTransaction();
+
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
     };
@@ -98,11 +108,12 @@ test("b. asynchronous handler", function (t) {
   var product = cb(11);
   t.equal(product, 33, "wrapped function still works");
 
+  var describer = transaction.state.describer;
   var creations = [
     '+T', '+S', '+C', // handler invocation
     '+C'              // callback invocation
   ];
-  t.deepEquals(tracer.describer.creations, creations, "creation sequence should match.");
+  t.deepEquals(describer.creations, creations, "creation sequence should match.");
 
   var wrappings = [
     '->T outer', '<-T outer', // handler proxying
@@ -111,7 +122,7 @@ test("b. asynchronous handler", function (t) {
     '<-T inner',
     '->C inner', '<-C inner'  // callback invocation
   ];
-  t.deepEquals(tracer.describer.wrappings, wrappings, "wrapping sequence should match.");
+  t.deepEquals(describer.wrappings, wrappings, "wrapping sequence should match.");
 
   var calls = [
     '->T1S1C1',
@@ -119,7 +130,7 @@ test("b. asynchronous handler", function (t) {
     '->T1S1C2',
     '<-T1S1C2'
   ];
-  t.deepEquals(tracer.describer.trace, calls, "call entry / exit sequence should match");
+  t.deepEquals(describer.trace, calls, "call entry / exit sequence should match");
 
   var full = [
     '->T outer', '<-T outer',
@@ -135,7 +146,7 @@ test("b. asynchronous handler", function (t) {
       '->T1S1C2', '<-T1S1C2',
     '<-C inner'
   ];
-  t.deepEquals(tracer.describer.verbose, full, "full trace should match.");
+  t.deepEquals(describer.verbose, full, "full trace should match.");
 });
 
 // c. two overlapping executions of an asynchronous handler
@@ -160,11 +171,14 @@ test("b. asynchronous handler", function (t) {
 //   <- SEGMENT T2S1
 // <- TRANSACTION T2
 test("c. two overlapping executions of an asynchronous handler", function (t) {
-  t.plan(6);
+  t.plan(11);
 
   var tracer = new Tracer(agent, context);
 
+  var transactions = [];
   var handler = function (multiplier) {
+    transactions.push(context.state.getTransaction());
+
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
     };
@@ -181,65 +195,49 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
   var product2 = cb2(11);
   t.equal(product2, 55, "wrapped function still works");
 
-  var creations = [
-    '+T', '+S', '+C', // 1st handler invocation
-    '+C',             // 1st callback proxying
-    '+T', '+S', '+C', // 2nd handler invocation
-    '+C'              // 2nd callback proxying
-  ];
-  t.deepEquals(tracer.describer.creations, creations, "creation sequence should match.");
+  t.equals(transactions.length, 2, "should have tracked 2 transactions.");
+  transactions.forEach(function (transaction, index) {
+    var describer = transaction.state.describer;
+    var creations = [
+      '+T', '+S', '+C', // handler invocation
+      '+C',             // callback proxying
+    ];
+    t.deepEquals(describer.creations, creations, "creation sequence should match.");
 
-  var wrappings = [
-    '->T outer', '<-T outer', // transaction proxying
-    '->T inner',              // 1st handler invocation
-    '->C outer', '<-C outer', // 1st callback proxying
-    '<-T inner',
-    '->T inner',              // 2nd handler invocation
-    '->C outer', '<-C outer', // 2nd callback proxying
-    '<-T inner',
-    '->C inner', '<-C inner', // 1st callback invocation
-    '->C inner', '<-C inner'  // 2nd callback invocation
-  ];
-  t.deepEquals(tracer.describer.wrappings, wrappings, "wrapping sequence should match.");
+    var wrappings = [
+      '->T outer', '<-T outer', // transaction proxying
+      '->T inner',              // handler invocation
+      '->C outer', '<-C outer', // callback proxying
+      '<-T inner',
+      '->C inner', '<-C inner'  // callback invocation
+    ];
+    t.deepEquals(describer.wrappings, wrappings, "wrapping sequence should match.");
 
-  var calls = [
-    '->T1S1C1',
-    '<-T1S1C1',
-    '->T2S1C1',
-    '<-T2S1C1',
-    '->T1S1C2',
-    '<-T1S1C2',
-    '->T2S1C2',
-    '<-T2S1C2'
-  ];
-  t.deepEquals(tracer.describer.trace, calls, "call entry / exit sequence should match");
+    var i = index + 1;
+    var calls = [
+      '->T'+i+'S1C1',
+      '<-T'+i+'S1C1',
+      '->T'+i+'S1C2',
+      '<-T'+i+'S1C2',
+    ];
+    t.deepEquals(describer.trace, calls, "call entry / exit sequence should match");
 
-  var full = [
-    '->T outer', '<-T outer',
-    '->T inner',
-      '+T', '+S', '+C',
-      '->T1S1C1',
-        '->C outer',
-          '+C',
-        '<-C outer',
-      '<-T1S1C1',
-    '<-T inner',
-    '->T inner',
-      '+T', '+S', '+C',
-      '->T2S1C1',
-        '->C outer',
-          '+C',
-        '<-C outer',
-      '<-T2S1C1',
-    '<-T inner',
-    '->C inner',
-      '->T1S1C2', '<-T1S1C2',
-    '<-C inner',
-    '->C inner',
-      '->T2S1C2', '<-T2S1C2',
-    '<-C inner'
-  ];
-  t.deepEquals(tracer.describer.verbose, full, "full trace should match.");
+    var full = [
+      '->T outer', '<-T outer',
+      '->T inner',
+        '+T', '+S', '+C',
+        '->T'+i+'S1C1',
+          '->C outer',
+            '+C',
+          '<-C outer',
+        '<-T'+i+'S1C1',
+      '<-T inner',
+      '->C inner',
+        '->T'+i+'S1C2', '<-T'+i+'S1C2',
+      '<-C inner',
+    ];
+    t.deepEquals(describer.verbose, full, "full trace should match.");
+  });
 });
 
 // d. synchronous handler with synchronous subsidiary handler
@@ -264,7 +262,9 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
   };
   var wrappedSubsidiary = tracer.segmentProxy(subsidiary);
 
+  var transaction;
   var handler = function (multiplier, multiplicand) {
+    transaction = context.state.getTransaction();
     var product = multiplier * multiplicand;
 
     return wrappedSubsidiary(product, 7);
@@ -274,11 +274,12 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
   var result = wrapped(3, 5);
   t.equals(result, 22, "wrapped function still works");
 
+  var describer = transaction.state.describer;
   var creations = [
     '+T', '+S', '+C', // handler invocation
     '+S', '+C'        // subsidiary handler invocation
   ];
-  t.deepEquals(tracer.describer.creations, creations, "creation sequence should match.");
+  t.deepEquals(describer.creations, creations, "creation sequence should match.");
 
   var wrappings = [
     '->S outer', '<-S outer', // segment proxying
@@ -287,7 +288,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
     '->S inner', '<-S inner', // subsidiary handler invocation
     '<-T inner'
   ];
-  t.deepEquals(tracer.describer.wrappings, wrappings, "wrapping sequence should match.");
+  t.deepEquals(describer.wrappings, wrappings, "wrapping sequence should match.");
 
   var calls = [
     '->T1S1C1',
@@ -295,7 +296,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
     '<-T1S2C1',
     '<-T1S1C1'
   ];
-  t.deepEquals(tracer.describer.trace, calls, "call entry / exit sequence should match");
+  t.deepEquals(describer.trace, calls, "call entry / exit sequence should match");
 
   var full = [
     '->S outer', '<-S outer',
@@ -310,7 +311,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
       '<-T1S1C1',
     '<-T inner'
   ];
-  t.deepEquals(tracer.describer.verbose, full, "full trace should match.");
+  t.deepEquals(describer.verbose, full, "full trace should match.");
 });
 
 // e. asynchronous handler with an asynchronous subsidiary handler
@@ -347,7 +348,9 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
   };
   var wrappedSubsidiary = tracer.segmentProxy(subsidiary);
 
+  var transaction;
   var handler = function (multiplier, multiplicand, callback) {
+    transaction = context.state.getTransaction();
     var next = function (value, divisor) {
       return value / divisor;
     };
@@ -361,13 +364,14 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
   var result = cb(17, 2);
   t.equals(result, 80, "wrapped functions still work");
 
+  var describer = transaction.state.describer;
   var creations = [
     '+T', '+S', '+C', // handler invocation
     '+C',             // handler callback invocation
     '+S', '+C',       // subsidiary handler invocation
     '+C'              // subsidiary handler callback invocation
   ];
-  t.deepEquals(tracer.describer.creations, creations, "creation sequence should match.");
+  t.deepEquals(describer.creations, creations, "creation sequence should match.");
 
   var wrappings = [
     '->S outer', '<-S outer', // segment proxying -- purposefully out of order!
@@ -382,7 +386,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
     '->C inner', '<-C inner', // handler callback invocation
     '<-C inner'
   ];
-  t.deepEquals(tracer.describer.wrappings, wrappings, "wrapping sequence should match.");
+  t.deepEquals(describer.wrappings, wrappings, "wrapping sequence should match.");
 
   var calls = [
     '->T1S1C1',
@@ -394,7 +398,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
     '<-T1S1C2',
     '<-T1S2C2'
   ];
-  t.deepEquals(tracer.describer.trace, calls, "call entry / exit sequence should match");
+  t.deepEquals(describer.trace, calls, "call entry / exit sequence should match");
 
   var full = [
     '->S outer', '<-S outer',
@@ -423,7 +427,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
       '<-T1S2C2',
     '<-C inner'
   ];
-  t.deepEquals(tracer.describer.verbose, full, "full trace should match.");
+  t.deepEquals(describer.verbose, full, "full trace should match.");
 });
 
 // f. two overlapping executions of an asynchronous handler with an asynchronous subsidiary handler
@@ -460,7 +464,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
 //     <- CALL T2S2C2: 16. execution exits 2nd subsidiary callback
 // <- TRANSACTION T2
 test("f. two overlapping executions of an asynchronous handler with an asynchronous subsidiary handler", function (t) {
-  t.plan(6);
+  t.plan(11);
 
   var tracer = new Tracer(agent, context);
 
@@ -473,7 +477,10 @@ test("f. two overlapping executions of an asynchronous handler with an asynchron
   };
   var wrappedSubsidiary = tracer.segmentProxy(subsidiary);
 
+  var transactions = [];
   var handler = function (multiplier, multiplicand, callback) {
+    transactions.push(context.state.getTransaction());
+
     var next = function (value, divisor) {
       return value / divisor;
     };
@@ -491,111 +498,72 @@ test("f. two overlapping executions of an asynchronous handler with an asynchron
   var result2 = cb2(13, 2);
   t.equals(result2, 45, "wrapped functions still work");
 
-  var creations = [
-    '+T', '+S', '+C', // 1st handler invocation
-    '+C',             // 1st callback invocation
-    '+S', '+C',       // 1st subsidiary handler invocation
-    '+C',             // 1st subsidiary callback invocation
-    '+T', '+S', '+C', // 2nd handler invocation
-    '+C',             // 2nd callback invocation
-    '+S', '+C',       // 2nd subsidiary handler invocation
-    '+C'              // 2nd subsidiary callback invocation
-  ];
-  t.deepEquals(tracer.describer.creations, creations, "creation sequence should match.");
+  t.equals(transactions.length, 2, "should have tracked 2 transactions.");
+  transactions.forEach(function (transaction, index) {
+    var describer = transaction.state.describer;
+    var creations = [
+      '+T', '+S', '+C', // 1st handler invocation
+      '+C',             // 1st callback invocation
+      '+S', '+C',       // 1st subsidiary handler invocation
+      '+C',             // 1st subsidiary callback invocation
+    ];
+    t.deepEquals(describer.creations, creations, "creation sequence should match.");
 
-  var wrappings = [
-    '->S outer', '<-S outer', // segment proxying -- purposefully out of order!
-    '->T outer', '<-T outer', // transaction proxying
-    '->T inner',              // 1st handler invocation
-    '->C outer', '<-C outer', // 1st handler callback proxying
-    '->S inner',              // 1st subsidiary handler invocation
-    '->C outer', '<-C outer', // 1st subsidiary callback wrapping
-    '<-S inner',
-    '<-T inner',
-    '->T inner',              // 2nd handler invocation
-    '->C outer', '<-C outer', // 2nd handler callback proxying
-    '->S inner',              // 2nd subsidiary handler invocation
-    '->C outer', '<-C outer', // 2nd subsidiary callback wrapping
-    '<-S inner',
-    '<-T inner',
-    '->C inner',              // 1st subsidiary callback invocation
-    '->C inner', '<-C inner', // 1st handler callback invocation
-    '<-C inner',
-    '->C inner',              // 2nd subsidiary callback invocation
-    '->C inner', '<-C inner', // 2nd handler callback invocation
-    '<-C inner'
-  ];
-  t.deepEquals(tracer.describer.wrappings, wrappings, "wrapping sequence should match.");
+    var wrappings = [
+      '->S outer', '<-S outer', // segment proxying -- purposefully out of order!
+      '->T outer', '<-T outer', // transaction proxying
+      '->T inner',              // handler invocation
+      '->C outer', '<-C outer', // handler callback proxying
+      '->S inner',              // subsidiary handler invocation
+      '->C outer', '<-C outer', // subsidiary callback wrapping
+      '<-S inner',
+      '<-T inner',
+      '->C inner',              // subsidiary callback invocation
+      '->C inner', '<-C inner', // handler callback invocation
+      '<-C inner',
+    ];
+    t.deepEquals(describer.wrappings, wrappings, "wrapping sequence should match.");
 
-  var calls = [
-    '->T1S1C1',
-    '->T1S2C1',
-    '<-T1S2C1',
-    '<-T1S1C1',
-    '->T2S1C1',
-    '->T2S2C1',
-    '<-T2S2C1',
-    '<-T2S1C1',
-    '->T1S2C2',
-    '->T1S1C2',
-    '<-T1S1C2',
-    '<-T1S2C2',
-    '->T2S2C2',
-    '->T2S1C2',
-    '<-T2S1C2',
-    '<-T2S2C2'
-  ];
-  t.deepEquals(tracer.describer.trace, calls, "call entry / exit sequence should match");
+    var i = index + 1;
+    var calls = [
+      '->T'+i+'S1C1',
+      '->T'+i+'S2C1',
+      '<-T'+i+'S2C1',
+      '<-T'+i+'S1C1',
+      '->T'+i+'S2C2',
+      '->T'+i+'S1C2',
+      '<-T'+i+'S1C2',
+      '<-T'+i+'S2C2',
+    ];
+    t.deepEquals(describer.trace, calls, "call entry / exit sequence should match");
 
-  var full = [
-    '->S outer', '<-S outer',
-    '->T outer', '<-T outer',
-    '->T inner',
-      '+T', '+S', '+C',
-      '->T1S1C1',
-        '->C outer',
-          '+C',
-        '<-C outer',
-        '->S inner',
-          '+S', '+C',
-          '->T1S2C1',
-            '->C outer',
-              '+C',
-            '<-C outer',
-          '<-T1S2C1',
-        '<-S inner',
-      '<-T1S1C1',
-    '<-T inner',
-    '->T inner',
-      '+T', '+S', '+C',
-      '->T2S1C1',
-        '->C outer',
-          '+C',
-        '<-C outer',
-        '->S inner',
-          '+S', '+C',
-          '->T2S2C1',
-            '->C outer',
-              '+C',
-            '<-C outer',
-          '<-T2S2C1',
-        '<-S inner',
-      '<-T2S1C1',
-    '<-T inner',
-    '->C inner',
-      '->T1S2C2',
-        '->C inner',
-          '->T1S1C2', '<-T1S1C2',
-        '<-C inner',
-      '<-T1S2C2',
-    '<-C inner',
-    '->C inner',
-      '->T2S2C2',
-        '->C inner',
-          '->T2S1C2', '<-T2S1C2',
-        '<-C inner',
-      '<-T2S2C2',
-    '<-C inner'
-  ];
-  t.deepEquals(tracer.describer.verbose, full, "full trace should match.");
+    var full = [
+      '->S outer', '<-S outer',
+      '->T outer', '<-T outer',
+      '->T inner',
+        '+T', '+S', '+C',
+        '->T'+i+'S1C1',
+          '->C outer',
+            '+C',
+          '<-C outer',
+          '->S inner',
+            '+S', '+C',
+            '->T'+i+'S2C1',
+              '->C outer',
+                '+C',
+              '<-C outer',
+            '<-T'+i+'S2C1',
+          '<-S inner',
+        '<-T'+i+'S1C1',
+      '<-T inner',
+      '->C inner',
+        '->T'+i+'S2C2',
+          '->C inner',
+            '->T'+i+'S1C2', '<-T'+i+'S1C2',
+          '<-C inner',
+        '<-T'+i+'S2C2',
+      '<-C inner',
+    ];
+    t.deepEquals(describer.verbose, full, "full trace should match.");
+  });
 });
