@@ -45,11 +45,13 @@ test("built-in fs module instrumentation should trace the reading of directories
         var stats = agent
           .getTransaction()
           .metrics
-          .getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR, 'FIXME')
+          .getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR)
           .stats;
         t.equals(stats.callCount, 1, "instrumentation should know method was called");
 
-        agent.getTransaction().end();
+        var transaction = agent.getTransaction();
+        console.dir(transaction.trace.root.children);
+        transaction.end();
         helper.unloadAgent(agent);
 
         [FILE1, FILE2, FILE3].forEach(function (filename) {
