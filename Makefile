@@ -1,7 +1,8 @@
-MOCHA       = node_modules/.bin/mocha
-MOCHA_NOBIN = node_modules/.bin/_mocha
-COVER       = node_modules/.bin/cover
-TAP         = node_modules/.bin/tap
+MOCHA        = node_modules/.bin/mocha
+MOCHA_NOBIN  = node_modules/.bin/_mocha
+COVER        = node_modules/.bin/cover
+TAP          = node_modules/.bin/tap
+NODE_VERSION = $(shell node --version)
 
 .PHONY: all build test-cov test clean notes pending pending-core unit integration
 all: build test
@@ -11,6 +12,7 @@ node_modules: package.json
 	npm install
 
 build: clean node_modules
+	@echo "Running node $(NODE_VERSION)."
 
 test-cov: node_modules
 	@$(COVER) run $(MOCHA_NOBIN)
