@@ -1,11 +1,11 @@
 'use strict';
 
-var path = require('path')
-  , tap = require('tap')
-  , test = tap.test
-  , mysql = require('mysql')
+var path    = require('path')
+  , tap     = require('tap')
+  , test    = tap.test
+  , mysql   = require('mysql')
   , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
-  , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+  , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
 test("MySQL instrumentation should find the MySQL call in the transaction trace",
