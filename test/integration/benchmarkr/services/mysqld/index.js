@@ -9,10 +9,15 @@ var fs           = require('fs')
 var MYSQL_LOG_REGEXP = /^([0-9]+) [0-9:]+/;
 var mysqldProcess;
 function shutdown(callback) {
-  if (mysqldProcess) mysqldProcess.kill();
-  console.error('MySQL killed.');
+  carrier.carry(mysqldProcess.stderr, function (line) {
+    if (line.match(/mysqld: Shutdown complete/)) {
+      console.error('MySQL killed.');
 
-  if (callback) return callback();
+      if (callback) return callback();
+    }
+  });
+
+  if (mysqldProcess) mysqldProcess.kill();
 }
 
 var api = {

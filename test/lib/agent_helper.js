@@ -48,9 +48,8 @@ var helper = module.exports = {
   },
 
   cleanMySQL : function cleanMySQL(app, callback) {
-    app.destroy();
-    // give MySQL a chance to shut down
-    process.nextTick(function () {
+    var mysqld = app.getService('mysqldProcess');
+    mysqld.shutdown(function () {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
 
       return callback();
