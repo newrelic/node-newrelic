@@ -48,7 +48,8 @@
     "wrench": "~1.3.9",
     "carrier": "~0.1.7",
     "restify": "~1.4.4",
-    "tap": "~0.3"
+    "tap": "~0.3",
+    "mongodb": "~1.1.7"
   },
   "repository": {
     "type": "git",

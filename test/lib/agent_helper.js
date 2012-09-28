@@ -55,5 +55,25 @@ var helper = module.exports = {
 
       return callback();
     });
+  },
+
+  bootstrapMongoDB : function bootstrapMongoDB(callback) {
+    var bootstrapped = path.join(__dirname, 'architecture', 'mongodb-bootstrapped.js');
+    var config = architect.loadConfig(bootstrapped);
+    architect.createApp(config, function (error, app) {
+      if (error) return helper.cleanMongoDB(app, function () { return callback(error); });
+
+      return callback(null, app);
+    });
+  },
+
+  cleanMongoDB : function cleanMongoDB(app, callback) {
+    app.destroy();
+    // give MongoDB a chance to shut down
+    process.nextTick(function () {
+      wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mongodb'));
+
+      return callback();
+    });
   }
 };

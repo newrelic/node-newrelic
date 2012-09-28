@@ -32,18 +32,15 @@ describe("recording metrics", function () {
   });
 
   describe("on scoped transactions involving parsed database statements", function () {
-    before(function (done) {
+    before(function () {
       var ps = new ParsedStatement('select', 'test_collection');
-
-      var timer = new Timer();
-      timer.setDurationInMillis(333);
 
       transaction = new Transaction(agent);
 
-      ps.recordMetrics(transaction, 'TEST', timer);
+      var segment = transaction.getTrace().add('test');
+      segment.setDurationInMillis(333);
+      ps.recordMetrics(segment, 'TEST');
       transaction.end();
-
-      return done();
     });
 
     it("should find a scoped database metric bounded to the collection and the operation (SELECT)", function () {
@@ -73,18 +70,15 @@ describe("recording metrics", function () {
   });
 
   describe("on unscoped transactions involving parsed database statements", function () {
-    before(function (done) {
+    before(function () {
       var ps = new ParsedStatement('select', 'test_collection');
-
-      var timer = new Timer();
-      timer.setDurationInMillis(333);
 
       transaction = new Transaction(agent);
 
-      ps.recordMetrics(transaction, null, timer);
+      var segment = transaction.getTrace().add('test');
+      segment.setDurationInMillis(333);
+      ps.recordMetrics(segment, null);
       transaction.end();
-
-      return done();
     });
 
     it("should find an unscoped database metric bounded to the collection and the operation (SELECT)", function () {
