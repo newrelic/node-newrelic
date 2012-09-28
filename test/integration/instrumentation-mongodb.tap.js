@@ -10,7 +10,7 @@ var path    = require('path')
 test("MongoDB instrumentation should find the MongoDB call in the transaction trace",
      {timeout : 5000},
      function (t) {
-  t.plan(7);
+  t.plan(14);
 
   var self = this;
   helper.bootstrapMongoDB(function (error, app) {
@@ -48,15 +48,31 @@ test("MongoDB instrumentation should find the MongoDB call in the transaction tr
           collection.insert(hunx, function (error, result) {
             if (error) return t.fail(error);
 
+            t.ok(agent.getTransaction(), "transaction should still be visible.");
+
             collection.findOne({id : 1}, function (error, item) {
+              if (error) return t.fail(error);
+
+              t.ok(agent.getTransaction(), "transaction should still still be visible.");
+
               t.deepEquals(item, hunx, "MongoDB should still work.");
 
               transaction.end();
+
               var trace = transaction.getTrace();
               t.ok(trace, "trace should exist.");
               t.ok(trace.root, "root element should exist.");
               t.equals(trace.root.children.length, 1, "There should be only one child.");
-              t.equals(trace.root.children[0].name, "Mongodb/insert", "should see the insert");
+
+              var insertSegment = trace.root.children[0];
+              t.ok(insertSegment, "trace segment for insert should exist");
+              t.equals(insertSegment.name, "Mongodb/insert", "should register the insert");
+              t.equals(insertSegment.children.length, 1, "insert should have a child");
+
+              var findSegment = insertSegment.children[0];
+              t.ok(findSegment, "trace segment for find should exist");
+              t.equals(findSegment.name, "Mongodb/find", "should register the find");
+              t.equals(findSegment.children.length, 0, "insert should leave us here at the end");
 
               t.end();
             });
