@@ -9,10 +9,15 @@ var fs           = require('fs')
 var MONGO_LOG_REGEXP = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]+ [0-9:]+ (.+)$/;
 var mongoProcess;
 function shutdown(callback) {
-  if (mongoProcess) mongoProcess.kill();
-  console.error('MongoDB killed.');
+  carrier.carry(mongoProcess.stdout, function (line) {
+    if (line.match(/dbexit: really exiting now/)) {
+      console.error('MongoDB killed.');
 
-  if (callback) return callback();
+      if (callback) return callback();
+    }
+  });
+
+  if (mongoProcess) mongoProcess.kill();
 }
 
 var api = {

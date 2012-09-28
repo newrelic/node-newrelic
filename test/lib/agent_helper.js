@@ -68,9 +68,8 @@ var helper = module.exports = {
   },
 
   cleanMongoDB : function cleanMongoDB(app, callback) {
-    app.destroy();
-    // give MongoDB a chance to shut down
-    process.nextTick(function () {
+    var mongod = app.getService('mongodbProcess');
+    mongod.shutdown(function () {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mongodb'));
 
       return callback();
