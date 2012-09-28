@@ -49,7 +49,8 @@
     "carrier": "~0.1.7",
     "restify": "~1.4.4",
     "tap": "~0.3",
-    "mongodb": "~1.1.7"
+    "mongodb": "~1.1.7",
+    "memcached": "0.0.12"
   },
   "repository": {
     "type": "git",

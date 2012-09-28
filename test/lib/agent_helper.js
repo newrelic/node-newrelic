@@ -37,23 +37,19 @@ var helper = module.exports = {
     return helper.loadAgent(options);
   },
 
-  bootstrapMySQL : function bootstrapMySQL(callback) {
-    var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
-    var config = architect.loadConfig(bootstrapped);
+  bootstrapMemcached : function bootstrapMemcahed(callback) {
+    var memcached = path.join(__dirname, 'architecture', 'memcached.js');
+    var config = architect.loadConfig(memcached);
     architect.createApp(config, function (error, app) {
-      if (error) return helper.cleanMySQL(app, function () { return callback(error); });
+      if (error) return helper.cleanMemcached(app, function () { return callback(error); });
 
       return callback(null, app);
     });
   },
 
-  cleanMySQL : function cleanMySQL(app, callback) {
-    var mysqld = app.getService('mysqldProcess');
-    mysqld.shutdown(function () {
-      wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
-
-      return callback();
-    });
+  cleanMemcached : function cleanMemcached(app, callback) {
+    var memcached = app.getService('memcachedProcess');
+    memcached.shutdown(callback);
   },
 
   bootstrapMongoDB : function bootstrapMongoDB(callback) {
@@ -70,6 +66,25 @@ var helper = module.exports = {
     var mongod = app.getService('mongodbProcess');
     mongod.shutdown(function () {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mongodb'));
+
+      return callback();
+    });
+  },
+
+  bootstrapMySQL : function bootstrapMySQL(callback) {
+    var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
+    var config = architect.loadConfig(bootstrapped);
+    architect.createApp(config, function (error, app) {
+      if (error) return helper.cleanMySQL(app, function () { return callback(error); });
+
+      return callback(null, app);
+    });
+  },
+
+  cleanMySQL : function cleanMySQL(app, callback) {
+    var mysqld = app.getService('mysqldProcess');
+    mysqld.shutdown(function () {
+      wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
 
       return callback();
     });
