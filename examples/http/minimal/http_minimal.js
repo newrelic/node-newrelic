@@ -1,15 +1,13 @@
 'use strict';
 
-var agent = require ('newrelic_agent')
-  , http  = require('http')
-  ;
+require('newrelic_agent');
+
+var http  = require('http');
 
 var server = http.createServer(function (request, response) {
   var body = '<html><head><title>yo dawg</title></head><body><p>I heard you like HTML.</p></body></html>';
   response.writeHead(200, {'Content-Length' : body.length, 'Content-Type' : 'text/html'});
   response.end(body);
-
-  console.log('metrics after request', JSON.stringify(agent.metrics));
 });
 
-server.listen(8080, 'localhost');
+server.listen(8088, 'localhost');
