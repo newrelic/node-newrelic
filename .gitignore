@@ -3,4 +3,3 @@ newrelic_agent.log
 .coverage_data
 cover_html
 npm-debug.log
-examples/newrelic.js
