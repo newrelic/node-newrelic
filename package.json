@@ -1,7 +1,7 @@
 {
   "name": "newrelic_agent",
-  "version": "0.8.5-34",
-  "author": "Forrest L Norvell <forrest@newrelic.com> (http://github.com/othiym23)",
+  "version": "0.9.0-39",
+  "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "contributors": [
     {
       "name": "Saxon D'Aubin",
@@ -16,11 +16,12 @@
   ],
   "description": "New Relic agent",
   "keywords": [
+    "apm",
+    "performance",
     "monitoring",
-    "debugging",
     "instrumentation",
-    "profiling",
-    "performance"
+    "debugging",
+    "profiling"
   ],
   "homepage": "http://github.com/newrelic/nodejs_agent",
   "engines": {
@@ -50,7 +51,7 @@
     "restify": "~1.4.4",
     "tap": "~0.3",
     "mongodb": "~1.1.7",
-    "memcached": "0.0.12"
+    "memcached": "~0.0.12"
   },
   "repository": {
     "type": "git",

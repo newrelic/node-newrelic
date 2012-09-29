@@ -1,3 +1,23 @@
+### v0.9.0-39 / beta-01 (2012-09-28):
+
+* Completely new transaction tracer. Faster, simpler and vastly more
+	deterministic, but the reworking likely introduced a bunch of new bugs. This
+	also means that the agent no longer directly affects the callstack or
+	overrides any of the core event-handling methods, which means the overhead
+	of the transaction tracer is vastly reduced. Which is good, because you
+	still can't turn it off.
+* Transaction traces should now report the correct caller-callee relationships.
+* Transaction tracer is now internally instrumented, for better debugging.
+* Added support for Restify.
+* Using the Node.js agent in Restify app no longer causes them to crash
+	(fixes NA-47).
+* Improved support for Express (NA-8).
+* Lots of fixes to the MongoDB, MySQL and memcached instrumentation.
+* MongoDB instrumentation no longer crashes MongoDB apps that include
+	the agent (NA-48).
+* More testing in Node.js 0.6.x (hard to completely test, as node-tap isn't
+	that friendly to Node < 0.6.21).
+
 ### v0.8.5-34 / alpha-06 (2012-09-24):
 
 * Transaction trace durations are now reported properly (were seconds, now
