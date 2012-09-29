@@ -117,10 +117,10 @@ test("built-in http module instrumentation should trace the reading of directori
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
       t.equals(stats.callCount, 2, "should have accounted for all the internal http requests");
 
-      stats = agent.metrics.getOrCreateMetric('External/localhost/http', TEST_EXTERNAL_PATH).stats;
+      stats = agent.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost' + TEST_EXTERNAL_PATH).stats;
       t.equals(stats.callCount, 1, "should record outbound HTTP requests in the agent's metrics");
 
-      stats = transaction.metrics.getOrCreateMetric('External/localhost/http', TEST_EXTERNAL_PATH).stats;
+      stats = transaction.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost' + TEST_EXTERNAL_PATH).stats;
       t.equals(stats.callCount, 1, "should associate outbound HTTP requests with the inbound transaction");
 
       t.end();

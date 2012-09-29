@@ -138,11 +138,11 @@ describe("built-in http module instrumentation", function () {
   });
 
   it("should associate outbound HTTP requests with the inbound transaction", function () {
-    expect(transaction.metrics.getOrCreateMetric('External/localhost/http', '/status').stats.callCount).equal(1);
+    expect(transaction.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost/status').stats.callCount).equal(1);
   });
 
   it("should record outbound HTTP requests in the agent's metrics", function () {
-    expect(agent.metrics.getOrCreateMetric('External/localhost/http', '/status').stats.callCount).equal(1);
+    expect(agent.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost/status').stats.callCount).equal(1);
   });
 
   it("shouldn't record transactions for requests for favicon.ico");

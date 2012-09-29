@@ -53,10 +53,14 @@ describe('Trace', function () {
     expect(start, "root segment's start time").above(0);
     trace.root.timer.setDurationInMillis(DURATION);
 
-    var db = trace.add('DB/select/getSome');
+    var web = trace.add('WebTransaction/Uri/test');
+    // top-level element will share a duration with the quasi-ROOT node
+    web.setDurationInMillis(DURATION, 0);
+
+    var db = web.add('DB/select/getSome');
     db.setDurationInMillis(14, 3);
 
-    var memcache = trace.add('Memcache/lookup/user/13');
+    var memcache = web.add('Memcache/lookup/user/13');
     memcache.setDurationInMillis(20, 8);
 
     /*
@@ -64,25 +68,35 @@ describe('Trace', function () {
      * outermost version having its scope always set to "ROOT". The null bits
      * are parameters, which are optional, and so far, unimplemented for Node.
      */
-    var root = [
+    var rootSegment = [
       0,
       DURATION,
       'ROOT',
       {},
       [
-        0,
-        DURATION,
-        'WebTransaction/Uri/test',
-        {},
         [
-          // TODO: ensure that the ordering is correct WRT start time
-          db.toJSON(),
-          memcache.toJSON()
+          0,
+          DURATION,
+          'WebTransaction/Uri/test',
+          {},
+          [
+            // TODO: ensure that the ordering is correct WRT start time
+            db.toJSON(),
+            memcache.toJSON()
+          ]
         ]
       ]
     ];
 
-    codec.encode(root, function (err, encoded) {
+    var rootNode = [
+      trace.root.timer.start / 1000,
+      {}, // FIXME: request parameters
+      {}, // FIXME: custom parameters
+      rootSegment,
+      {}  // FIXME: parameter groups
+    ];
+
+    codec.encode(rootNode, function (err, encoded) {
       if (err) return done(err);
 
       // See docs on Transaction.generateJSON for what goes in which field.
@@ -104,7 +118,7 @@ describe('Trace', function () {
         codec.decode(traceJSON[4], function (derr, reconstituted) {
           if (derr) return done(derr);
 
-          expect(reconstituted, "reconstituted trace segments").deep.equal(root);
+          expect(reconstituted, "reconstituted trace segments").deep.equal(rootNode);
           expect(traceJSON,     "full trace JSON").deep.equal(expected);
 
           helper.unloadAgent(agent);
