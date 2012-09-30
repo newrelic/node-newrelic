@@ -12,7 +12,6 @@ var path                = require('path')
 var helper = module.exports = {
   loadAgent : function loadAgent(options) {
     var agent = new Agent(options);
-    shimmer.wrapAgent(agent);
     shimmer.patchModule(agent);
     return agent;
   },

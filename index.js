@@ -17,7 +17,6 @@ if (process.version && process.version.split('.')[1] < 6) {
  */
 if (agent.config) {
   // set up all of the instrumentation
-  shimmer.wrapAgent(agent);
   shimmer.patchModule(agent);
   shimmer.bootstrapInstrumentation(agent);
 
