@@ -3,7 +3,7 @@
 require('newrelic_agent');
 
 var http   = require('http')
-  , logger = require('../lib/logger').child({component : 'http_random_delays'})
+  , logger = require('../../../lib/logger').child({component : 'http_random_delays'})
   ;
 
 var server = http.createServer(function (request, response) {

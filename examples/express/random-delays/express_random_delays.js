@@ -4,7 +4,7 @@ require('newrelic_agent');
 
 var express = require('express')
   , app     = express.createServer()
-  , logger  = require('../lib/logger').child({component : 'express_random_delays'})
+  , logger  = require('../../../lib/logger').child({component : 'express_random_delays'})
   ;
 
 app.use(express.logger('dev'));
