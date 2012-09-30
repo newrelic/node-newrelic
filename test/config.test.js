@@ -6,7 +6,7 @@ var path   = require('path')
   , expect = chai.expect
   , util   = require('util')
   , fs     = require('fs')
-  , logger = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , logger = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
   , config = require(path.join(__dirname, '..', 'lib', 'config'))
   ;
 

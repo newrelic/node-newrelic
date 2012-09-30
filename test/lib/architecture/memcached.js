@@ -9,5 +9,5 @@ var path   = require('path')
  */
 module.exports = [
   {packagePath : path.join(__dirname, '..', '..', 'integration', 'benchmarkr', 'services', 'memcached'),
-   logger      : logger}
+   logger      : logger.child({component : 'memcached'})}
 ];

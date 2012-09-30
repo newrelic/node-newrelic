@@ -34,7 +34,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "winston": ">= 0.5.9"
+    "bunyan": "~0.14.0"
   },
   "devDependencies": {
     "mocha": "~1",

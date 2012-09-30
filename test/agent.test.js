@@ -6,7 +6,7 @@ var path         = require('path')
   , expect       = chai.expect
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
   , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;

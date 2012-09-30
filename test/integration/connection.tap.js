@@ -3,7 +3,7 @@
 var path         = require('path')
   , tap          = require('tap')
   , test         = tap.test
-  , logger       = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
+  , logger       = require(path.join(__dirname, '..', '..', 'lib', 'logger')).child({component : 'TEST'})
   , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
   , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   ;

@@ -3,7 +3,7 @@
 require('newrelic_agent');
 
 var http   = require('http')
-  , logger = require('../lib/logger')
+  , logger = require('../lib/logger').child({component : 'http_random_delays'})
   ;
 
 var server = http.createServer(function (request, response) {
@@ -12,7 +12,7 @@ var server = http.createServer(function (request, response) {
 
   // let's generate some slow transaction traces
   var wait = Math.random() * 4000;
-  if (wait > 2000) logger.verbose("waiting " + wait + " milliseconds to return for " + request.url);
+  if (wait > 2000) logger.trace("waiting %d milliseconds to return for %s.", wait, request.url);
 
   setTimeout(function () { response.end(body); }, wait);
 });

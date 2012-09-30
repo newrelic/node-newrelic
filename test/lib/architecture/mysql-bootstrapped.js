@@ -10,12 +10,12 @@ var path   = require('path')
 module.exports = [
   {packagePath : path.join(__dirname, '..', '..', 'integration', 'benchmarkr', 'services', 'mysqld'),
    dbpath      : path.join(__dirname, '..', '..', 'integration', 'test-mysql'),
-   logger      : logger},
+   logger      : logger.child({component : 'mysqld'})},
   {packagePath : path.join(__dirname, '..', 'bootstrap', 'mysql'),
    db          : {
      user  : 'test_user',
      name  : 'agent_integration',
      table : 'test'
    },
-   logger      : logger}
+   logger      : logger.child({component : 'mysql_bootstrap'})}
 ];
