@@ -43,9 +43,29 @@ describe("Metric", function () {
     expect(metric.toJSON()).deep.equal({name : 'Agent/Test'});
   });
 
+  it("should stringify to a spec with a name", function () {
+    var metric = new Metric('Agent/Test');
+    expect(JSON.stringify(metric)).equal('{"name":"Agent/Test"}');
+  });
+
+  it("should produce a JSON representation that's just an ID if name is numeric", function () {
+    var metric = new Metric(6156);
+    expect(metric.toJSON()).equal(6156);
+  });
+
+  it("should stringify to a number if name is numeric", function () {
+    var metric = new Metric(6156);
+    expect(JSON.stringify(metric)).equal("6156");
+  });
+
   it("should produce a JSON representation with a name & scope (when included)", function () {
     var metric = new Metric('Agent/Test', 'TEST');
     expect(metric.toJSON()).deep.equal({name : 'Agent/Test', scope : 'TEST'});
+  });
+
+  it("should stringify to a spec with a name and scope (when included)", function () {
+    var metric = new Metric('Agent/Test', 'TEST');
+    expect(JSON.stringify(metric)).equal('{"name":"Agent/Test","scope":"TEST"}');
   });
 
   describe("when serializing", function () {
