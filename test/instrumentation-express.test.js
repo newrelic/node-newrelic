@@ -21,7 +21,7 @@ describe("an instrumented Express application", function () {
     shimmer.bootstrapInstrumentation(agent);
 
     // set apdexT so apdex stats will be recorded
-    agent.metrics.apdexT = 1;
+    agent.apdexT = 1;
 
     var express = require('express');
 
@@ -57,9 +57,6 @@ describe("an instrumented Express application", function () {
     stats.callCount.should.equal(1);
   });
 
-  /**
-   * This test case took three days to get running.
-   */
   it("should record apdex without some low-level method-wrapping problem", function () {
     var stats = agent.metrics.getOrCreateApdexMetric('Apdex/Uri/test-get').stats;
     stats.satisfying.should.equal(1);

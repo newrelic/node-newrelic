@@ -44,16 +44,17 @@ describe('Trace', function () {
 
   it("should produce a transaction trace in the collector's expected format", function (done) {
     var DURATION = 33;
+    var URL = '/test?test=value';
 
     var transaction = new Transaction(agent);
-    transaction.measureWeb('/test', 200, DURATION);
+    transaction.measureWeb(URL, 200, DURATION);
 
     var trace = transaction.getTrace();
     var start = trace.root.timer.start;
     expect(start, "root segment's start time").above(0);
-    trace.root.timer.setDurationInMillis(DURATION);
+    trace.root.timer.setDurationInMillis(DURATION, 0);
 
-    var web = trace.add('WebTransaction/Uri/test');
+    var web = trace.addWeb(URL);
     // top-level element will share a duration with the quasi-ROOT node
     web.setDurationInMillis(DURATION, 0);
 
@@ -78,7 +79,7 @@ describe('Trace', function () {
           0,
           DURATION,
           'WebTransaction/Uri/test',
-          {},
+          {test : 'value'},
           [
             // TODO: ensure that the ordering is correct WRT start time
             db.toJSON(),
@@ -90,7 +91,7 @@ describe('Trace', function () {
 
     var rootNode = [
       trace.root.timer.start / 1000,
-      {}, // FIXME: request parameters
+      {test : "value"},
       {}, // FIXME: custom parameters
       rootSegment,
       {}  // FIXME: parameter groups

@@ -78,11 +78,6 @@ describe("Transaction", function () {
     });
   });
 
-  it("should provide a mechanism to associate itself with a URL", function () {
-    var trans = new Transaction(agent);
-    expect(function () { trans.setURL('/test/1'); }).not.throws();
-  });
-
   it("should know when it's not a web transaction", function () {
     var trans = new Transaction(agent);
     expect(trans.isWeb()).equal(false);
@@ -90,7 +85,7 @@ describe("Transaction", function () {
 
   it("should know when it's a web transaction", function () {
     var trans = new Transaction(agent);
-    trans.setURL('/test/1');
+    trans.url = '/test/1';
     expect(trans.isWeb()).equal(true);
   });
 
@@ -183,7 +178,11 @@ describe("Transaction", function () {
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
 
-      it("should strip query strings from request URLs");
+      it("should parse parameters out of request URLs", function () {
+        trans.measureWeb('/test?test1=value1&test2&test3=50');
+
+        expect(trans.url).equal('/test');
+      });
     });
 
     describe("with exceptional requests", function () {

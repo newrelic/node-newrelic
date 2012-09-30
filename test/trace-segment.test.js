@@ -2,6 +2,7 @@
 
 var path         = require('path')
   , chai         = require('chai')
+  , should       = chai.should()
   , expect       = chai.expect
   , TraceSegment = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'segment'))
   , Trace        = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
@@ -54,6 +55,47 @@ describe("TraceSegment", function () {
     });
 
     segment.end();
+  });
+
+  describe("with children created from URLs", function () {
+    var webChild;
+
+    before(function () {
+      var trace = new Trace('Test/TraceExample03');
+      trace.root.setDurationInMillis(1, 0);
+      var segment = new TraceSegment(new Trace('Test/TraceExample03'), 'UnitTest');
+      segment.setDurationInMillis(1, 0);
+      webChild = segment.addWeb('/test?test1=value1&test2&test3=50');
+      webChild.setDurationInMillis(1, 0);
+    });
+
+    it("should return the URL minus any query parameters", function () {
+      expect(webChild.name).equal('WebTransaction/Uri/test');
+    });
+
+    it("should have parameters on the child segment", function () {
+      should.exist(webChild.parameters);
+    });
+
+    it("should have the parameters that were passed in the query string", function () {
+      expect(webChild.parameters.test1).equal('value1');
+      expect(webChild.parameters.test3).equal('50');
+    });
+
+    it("should set parameters with empty values to true", function () {
+      expect(webChild.parameters.test2).equal(true);
+    });
+
+    it("should serialize the segment with the parameters", function () {
+      var expected = [
+        0,
+        1,
+        'WebTransaction/Uri/test',
+        {test1 : 'value1', test2 : true, test3 : '50'},
+        []
+      ];
+      expect(webChild.toJSON()).deep.equal(expected);
+    });
   });
 
   it("should retain any associated SQL statements");
