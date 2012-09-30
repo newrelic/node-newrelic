@@ -165,23 +165,5 @@ describe("Metrics", function () {
     expect(metrics.getOrCreateMetric('Test/Scoped', 'MERGE').stats.callCount).equal(2);
   });
 
-  it("should dynamically update its apdex tolerating value", function (done) {
-    var APDEX_VALUE = 0.725;
-
-    expect(metrics.apdexT).equal(0);
-
-    var checker = function (params) {
-      expect(params.apdex_t).equal(APDEX_VALUE);
-      expect(metrics.apdexT).equal(APDEX_VALUE);
-      return done();
-    };
-
-    var emitter = new EventEmitter();
-    emitter.addListener('change', metrics.updateApdexT.bind(metrics));
-    emitter.addListener('change', checker);
-
-    emitter.emit('change', {apdex_t : 0.725});
-  });
-
   it("should not let exclusive duration exceed total duration");
 });
