@@ -1,3 +1,19 @@
+### v0.9.1-46 / beta-02 (2012-10-01):
+
+* Fixed an issue in how transaction traces were serialized that kept them from
+  being displayed within RPM.
+* Added request parameters to transaction traces, as well as URL normalization.
+* Reconciled segment names in transaction traces with the corresponding
+	metric names.
+* Changed the logging module to bunyan. This means that logs are now stored
+	as JSON. If you want pretty-printed logs, `npm install -g bunyan` and then
+	use the bunyan CLI tool to format and filter the logs.
+* The agent now sets the logging level to the configured level. Logs sent to
+	New Relic should have been captured at the 'trace' level for the duration
+	of the beta.
+* Fixed metric -> ID renaming semantics.
+* Verified that agent works with Node 0.8's cluster module.
+
 ### v0.9.0-39 / beta-01 (2012-09-28):
 
 * Completely new transaction tracer. Faster, simpler and vastly more
