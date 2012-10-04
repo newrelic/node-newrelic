@@ -116,15 +116,15 @@ function checkBootstrapped(options, next) {
       if (rows.length > 0) {
         client.query("SELECT COUNT(*) AS counted " +
                      "  FROM " + db + "." + table, function (error, rows) {
-          if (error) return next(error);
+          if (error) return next(error, client);
 
           if (rows[0].counted > 0) return next(null, client);
 
-          return next(new Error('only partially bootstrapped'));
+          return next(new Error('only partially bootstrapped'), client);
         });
       }
       else {
-        return next(new Error('not bootstrapped'));
+        return next(new Error('not bootstrapped'), client);
       }
     });
   };
