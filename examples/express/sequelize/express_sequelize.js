@@ -2,7 +2,7 @@
 
 require('newrelic_agent');
 
-var path      = require ('path')
+var path      = require('path')
   , architect = require('architect')
   , express   = require('express')
   , logger    = require('../../../lib/logger').child({component : 'express_sequelize'})
