@@ -40,7 +40,7 @@ function bootstrapRestify(Model) {
         return next();
       }
 
-      if (!entities || entities.length > 1) {
+      if (entities.length > 1) {
         // https://github.com/joho/7XX-rfc
         response.send(712, {success : false, error   : 'wat'});
         return next();
