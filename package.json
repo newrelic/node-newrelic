@@ -51,7 +51,8 @@
     "restify": "~1.4.4",
     "tap": "~0.3",
     "mongodb": "~1.1.7",
-    "memcached": "~0.0.12"
+    "memcached": "~0.0.12",
+    "sequelize": "~1.6"
   },
   "repository": {
     "type": "git",

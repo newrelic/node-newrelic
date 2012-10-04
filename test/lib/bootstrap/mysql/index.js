@@ -98,7 +98,38 @@ function seedData(options, next) {
   };
 }
 
+function checkBootstrapped(options, next) {
+  var table  = options.db.table
+    , db     = options.db.name
+    , logger = options.logger
+    ;
+
+  return function (error, client) {
+    if (error) return next(error);
+
+    client.query("SELECT table_name " +
+                 "  FROM information_schema.tables " +
+                 " WHERE table_schema = ? " +
+                 "   AND table_name = ?", [db, table], function (error, rows) {
+      if (error) return next(error);
+
+      if (rows.length > 0) {
+        client.query("SELECT COUNT(*) AS counted " +
+                     "  FROM " + db + "." + table, function (error, rows) {
+          if (error) return next(error);
+
+          if (rows[0].counted > 0) return next(null, 'bootstrapped');
+        });
+      }
+      else {
+        return next(new Error('not bootstrapped'));
+      }
+    });
+  };
+}
+
 /**
+ *
  * There isn't actually an exported API, as all the action is in the setup
  * itself.
  */
@@ -108,23 +139,30 @@ module.exports = function setup(options, imports, register) {
     database : 'mysql'
   });
 
-  var finish = function (error, client) {
-    if (error) return register(error);
+  // don't bootstrap if everything's OK
+  var checker = checkBootstrapped(options, function (error, outcome) {
+    if (!error && outcome === 'bootstrapped') return register(null, {mysqlBootstrap : {}});
 
-    client.end(function (error) {
-      register(error, {mysqlBootstrap : {}});
+    // not bootstrapped, or something got messed up before
+    var finish = function (error, client) {
+      if (error) return register(error);
+
+      client.end(function (error) {
+        register(error, {mysqlBootstrap : {}});
+      });
+    };
+
+    /*
+     * The power of functional programming: since each task is a generator taking
+     * a uniform set of parameters and returning a callback with a uniform
+     * interface, we can just apply a fold to get a composition of the set of
+     * tasks and get something almost as concise as point-free style.
+     */
+    var tasks = [withUser, withDB, withTable, seedData, finish];
+    var bootstrap = tasks.reverse().reduce(function (previous, current) {
+      return current(options, previous);
     });
-  };
-
-  /*
-   * The power of functional programming: since each task is a generator taking
-   * a uniform set of parameters and returning a callback with a uniform
-   * interface, we can just apply a fold to get a composition of the set of
-   * tasks and get something almost as concise as point-free style.
-   */
-  var tasks = [withUser, withDB, withTable, seedData, finish];
-  var bootstrap = tasks.reverse().reduce(function (previous, current) {
-    return current(options, previous);
+    bootstrap(null, client);
   });
-  bootstrap(null, client);
+  checker(null, client);
 };
