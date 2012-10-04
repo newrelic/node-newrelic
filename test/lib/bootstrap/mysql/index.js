@@ -118,7 +118,9 @@ function checkBootstrapped(options, next) {
                      "  FROM " + db + "." + table, function (error, rows) {
           if (error) return next(error);
 
-          if (rows[0].counted > 0) return next(null, 'bootstrapped');
+          if (rows[0].counted > 0) return next(null, client);
+
+          return next(new Error('only partially bootstrapped'));
         });
       }
       else {
@@ -140,8 +142,8 @@ module.exports = function setup(options, imports, register) {
   });
 
   // don't bootstrap if everything's OK
-  var checker = checkBootstrapped(options, function (error, outcome) {
-    if (!error && outcome === 'bootstrapped') return register(null, {mysqlBootstrap : {}});
+  var checker = checkBootstrapped(options, function (error, client) {
+    if (!error) return register(null, {mysqlBootstrap : {}});
 
     // not bootstrapped, or something got messed up before
     var finish = function (error, client) {
