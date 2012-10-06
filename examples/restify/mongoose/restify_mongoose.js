@@ -51,6 +51,39 @@ function bootstrapRestify(Model) {
     });
   });
 
+  server.get('/test/entity/:id', function (request, response, next) {
+    Model.find({"entity" : request.params.id}, function (error, entities) {
+      if (error) {
+        response.send(500, {success : false, error   : error});
+        return next(error);
+      }
+
+      if (!entities || entities.length < 1) {
+        response.send(404, {success : false, error   : 'not_found'});
+        return next();
+      }
+
+      response.send(entities);
+      return next();
+    });
+  });
+
+  server.get('/test/value/:id', function (request, response, next) {
+    Model.find({"value" : request.params.id}, function (error, entities) {
+      if (error) {
+        response.send(500, {success : false, error   : error});
+        return next(error);
+      }
+
+      if (!entities || entities.length < 1) {
+        response.send(404, {success : false, error   : 'not_found'});
+        return next();
+      }
+
+      response.send(entities);
+      return next();
+    });
+  });
 
   server.listen(8088, 'localhost', function () {
     console.info("Restify + Mongoose server up and ready for connections.");
