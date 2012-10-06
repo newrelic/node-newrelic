@@ -61,11 +61,11 @@ describe("TraceSegment", function () {
     var webChild;
 
     before(function () {
-      var trace = new Trace('Test/TraceExample03');
-      trace.root.setDurationInMillis(1, 0);
+      var trace   = new Trace('Test/TraceExample03');
       var segment = new TraceSegment(new Trace('Test/TraceExample03'), 'UnitTest');
-      segment.setDurationInMillis(1, 0);
-      webChild = segment.addWeb('/test?test1=value1&test2&test3=50');
+      webChild    = segment.addWeb('/test?test1=value1&test2&test3=50');
+
+      trace.setDurationInMillis(1, 0);
       webChild.setDurationInMillis(1, 0);
     });
 
