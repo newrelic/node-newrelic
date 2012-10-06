@@ -66,13 +66,13 @@ test("MongoDB instrumentation should find the MongoDB call in the transaction tr
 
               var insertSegment = trace.root.children[0];
               t.ok(insertSegment, "trace segment for insert should exist");
-              t.equals(insertSegment.name, "Mongodb/insert", "should register the insert");
+              t.equals(insertSegment.name, "MongoDB/test/insert", "should register the insert");
               t.equals(insertSegment.children.length, 1, "insert should have a child");
 
               var findSegment = insertSegment.children[0];
               t.ok(findSegment, "trace segment for find should exist");
-              t.equals(findSegment.name, "Mongodb/find", "should register the find");
-              t.equals(findSegment.children.length, 0, "insert should leave us here at the end");
+              t.equals(findSegment.name, "MongoDB/test/find", "should register the find");
+              t.equals(findSegment.children.length, 0, "find should leave us here at the end");
 
               t.end();
             });
