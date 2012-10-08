@@ -64,7 +64,10 @@ function findInstallDir(options, next) {
 
   carrier.carry(findConfig.stdout, function (line) {
     fs.readlink(line, function (err, target) {
-      if (err) return next(err);
+      if (err) {
+        // probably not a link, try to proceed with the original file
+        return next(null, path.dirname(path.dirname(line)));
+      }
 
       var installPath = path.dirname(path.dirname(path.resolve(path.dirname(line), target)));
       return next(null, installPath);
