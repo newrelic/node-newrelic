@@ -18,7 +18,7 @@ test("agent instrumentation of Express should measure request duration properly 
 
   // express.createServer() went away sometime after Express 2.4.3
   // Customer in NA-46 is / was using Express 2.4.3
-  var app = require('express').createServer();
+  var express = require('express');
 
   var TEST_PATH = '/test'
     , TEST_PORT = 9876
@@ -31,6 +31,35 @@ test("agent instrumentation of Express should measure request duration properly 
                   '</html>'
     ;
 
+  var app, runServer, stopServer;
+  // FIXME: this could be a lot cleaner
+  if (express.version[0] === '3') {
+    app = express();
+
+    var server;
+    runServer = function (callback) {
+      var http = require('http');
+
+      server = http.createServer(app);
+      server.listen(TEST_PORT, TEST_HOST, callback);
+    };
+
+    stopServer = function (callback) {
+      server.close(callback);
+    };
+  }
+  else {
+    app = express.createServer();
+
+    runServer = function (callback) {
+      app.listen(TEST_PORT, TEST_HOST, callback);
+    };
+
+    stopServer = function (callback) {
+      app.close(callback);
+    };
+  }
+
   app.get(TEST_PATH, function (request, response) {
     t.ok(agent.getTransaction(), "the transaction should be visible inside the Express handler");
     response.writeHead(200, {'Content-Length' : PAGE.length,
@@ -38,7 +67,7 @@ test("agent instrumentation of Express should measure request duration properly 
     setTimeout(function () { response.end(PAGE); }, DELAY);
   });
 
-  app.listen(TEST_PORT, TEST_HOST, function ready() {
+  runServer(function ready() {
     request.get(TEST_URL, function (error, response, body) {
       if (error) t.fail(error);
 
@@ -61,7 +90,7 @@ test("agent instrumentation of Express should measure request duration properly 
       });
       t.ok(found, "should indicate that Express itself is in play");
 
-      app.close(function shutdown() {
+      stopServer(function shutdown() {
         helper.unloadAgent(agent);
         t.end();
       });

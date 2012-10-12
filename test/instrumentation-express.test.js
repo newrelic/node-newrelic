@@ -10,6 +10,8 @@ var path    = require('path')
 
 describe("an instrumented Express application", function () {
   var app
+    , runServer
+    , stopServer
     , agent
     , fetchedResponse
     , fetchedBody
@@ -24,13 +26,39 @@ describe("an instrumented Express application", function () {
     agent.apdexT = 1;
 
     var express = require('express');
+    if (express.version[0] === '3') {
+      app = express();
+
+      var server;
+      runServer = function (callback) {
+        var http = require('http');
+
+        server = http.createServer(app);
+        server.listen(8062, callback);
+      };
+
+      stopServer = function (callback) {
+        server.close(callback);
+      };
+    }
+    else {
+      app = express.createServer();
+
+      runServer = function (callback) {
+        app.listen(8062, callback);
+      };
+
+      stopServer = function (callback) {
+        app.close(callback);
+      };
+    }
 
     app = express.createServer();
     app.get('/test-get', function (req, res) {
       res.send({yep : true});
     });
 
-    app.listen(8062, function () {
+    runServer(function () {
       request.get('http://localhost:8062/test-get', function (error, response, body) {
         if (error) return done(error);
 
@@ -43,13 +71,13 @@ describe("an instrumented Express application", function () {
   });
 
   after(function () {
-    app.close();
+    stopServer();
     helper.unloadAgent(agent);
   });
 
   it("should serve content", function () {
     fetchedResponse.headers['content-type'].should.equal('application/json; charset=utf-8');
-    fetchedBody.should.equal('{"yep":true}');
+    JSON.parse(fetchedBody).should.deep.equal({"yep":true});
   });
 
   it("should record unscoped path statistics", function () {
