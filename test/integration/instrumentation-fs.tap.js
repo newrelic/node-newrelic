@@ -30,7 +30,7 @@ test("built-in fs module instrumentation should trace the reading of directories
 
     t.notOk(agent.getTransaction());
 
-    var wrapped = agent.tracer.transactionProxy(function () {
+    helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction());
       fs.readdir(TESTDIR, function (error, files) {
         if (error) return t.fail(error);
@@ -65,6 +65,5 @@ test("built-in fs module instrumentation should trace the reading of directories
         });
       });
     });
-    wrapped();
   });
 });

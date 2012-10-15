@@ -36,6 +36,10 @@ var helper = module.exports = {
     return helper.loadAgent(options);
   },
 
+  runInTransaction : function runInTransaction(agent, callback) {
+    return agent.tracer.transactionProxy(callback)(); // <-- invoke immediately
+  },
+
   bootstrapMemcached : function bootstrapMemcahed(callback) {
     var memcached = path.join(__dirname, 'architecture', 'memcached.js');
     var config = architect.loadConfig(memcached);

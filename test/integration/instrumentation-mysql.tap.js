@@ -36,7 +36,7 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
     });
 
     t.notOk(agent.getTransaction(), "no transaction should be in play yet.");
-    var wrapped = agent.tracer.transactionProxy(function transactionInScope() {
+    helper.runInTransaction(agent, function transactionInScope() {
       client.query("SELECT * FROM test WHERE id = ?", [1], function (error, rows) {
         if (error) return t.fail(error);
 
@@ -87,6 +87,5 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
         });
       });
     });
-    wrapped();
   });
 });

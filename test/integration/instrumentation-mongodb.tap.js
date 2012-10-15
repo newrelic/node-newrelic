@@ -40,17 +40,17 @@ test("MongoDB instrumentation should find the MongoDB call in the transaction tr
         if (error) return t.fail(error);
         t.notOk(agent.getTransaction(), "no transaction should be in play yet.");
 
-        var wrapped = agent.tracer.transactionProxy(function transactionInScope() {
+        helper.runInTransaction(agent, function transactionInScope() {
           var transaction = agent.getTransaction();
           t.ok(transaction, "transaction should be visible.");
 
           var hunx = {id : 1, hamchunx : "verbloks"};
-          collection.insert(hunx, function (error, result) {
+          collection.insert(hunx, function insertCallback(error, result) {
             if (error) return t.fail(error);
 
             t.ok(agent.getTransaction(), "transaction should still be visible.");
 
-            collection.findOne({id : 1}, function (error, item) {
+            collection.findOne({id : 1}, function findOneCallback(error, item) {
               if (error) return t.fail(error);
 
               t.ok(agent.getTransaction(), "transaction should still still be visible.");
@@ -78,7 +78,6 @@ test("MongoDB instrumentation should find the MongoDB call in the transaction tr
             });
           });
         });
-        wrapped();
       });
     });
   });

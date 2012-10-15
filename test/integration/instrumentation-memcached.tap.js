@@ -30,7 +30,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
 
     t.notOk(agent.getTransaction(), "no transaction should be in play");
 
-    var wrapped = agent.tracer.transactionProxy(function transactionInScope() {
+    helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction();
       t.ok(transaction, "transaction should be visible");
 
@@ -67,6 +67,5 @@ test("memcached instrumentation should find memcached calls in the transaction t
         });
       });
     });
-    wrapped();
   });
 });
