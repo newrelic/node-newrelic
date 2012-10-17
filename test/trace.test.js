@@ -94,7 +94,7 @@ describe('Trace', function () {
       {test : "value"},
       {}, // FIXME: custom parameters
       rootSegment,
-      {}  // FIXME: parameter groups
+      []  // FIXME: parameter groups
     ];
 
     codec.encode(rootNode, function (err, encoded) {
