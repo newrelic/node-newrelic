@@ -53,7 +53,8 @@
     "mongodb": "~1.1.7",
     "memcached": "~0.0.12",
     "sequelize": "~1.6",
-    "mongoose": "~3.2.1"
+    "mongoose": "~3.2.1",
+    "redis": "~0.8.1"
   },
   "repository": {
     "type": "git",
