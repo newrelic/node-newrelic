@@ -113,16 +113,6 @@ describe("Transaction", function () {
       expect(statistics.max).above((SLEEP_DURATION - 1) / 1000);
     });
 
-    it("shouldn't measure metrics gathered after the transaction has finished", function () {
-      var tt = agent.createTransaction();
-
-      tt.measure('Custom/Test03');
-      tt.end();
-
-      tt.measure('Custom/Test04');
-      should.not.exist(tt.getMetrics('Custom/Test04'));
-    });
-
     it("should allow manual setting of metric durations", function () {
       var tt = agent.createTransaction();
 
