@@ -29,14 +29,14 @@ unit: node_modules
 	@$(MOCHA)
 
 integration: node_modules
-	rm -f test/integration/newrelic_agent.log
-	for package in $(INT_PACKAGES) ; do \
+	@rm -f test/integration/newrelic_agent.log
+	@for package in $(INT_PACKAGES) ; do \
 		dir=$$(dirname $$package) ; \
 		cd $$dir ; \
 		rm -rf node_modules ; \
 		npm install ; \
 	done
-	time $(TAP) $(INTEGRATION)
+	@time $(TAP) $(INTEGRATION)
 
 clean:
 	rm -rf npm-debug.log newrelic_agent.log test/integration/newrelic_agent.log .coverage_data cover_html
