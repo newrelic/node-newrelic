@@ -18,10 +18,7 @@
 * Instrumentation for the MongoDB driver only properly instruments queries
 	that include callbacks -- the promise-style and evented interfaces aren't
 	implemented yet.
-* Likewise, the MySQL driver only properly instruments queries with callbacks.
-	Fortunately, the MySQL driver code is much easier to work with, so full
-	support for it should be along presently.
-* Transaction tracing can't be disabled right now.
+* Transaction and error tracing can't be disabled right now.
 * When using Node's included clustering support, each worker process will
 	open its own connection to New Relic's servers, and will incur its own
 	overhead costs.
@@ -29,10 +26,10 @@
 ### TO DO:
 
 * Additional third-party instrumentation:
-    1. Redis
-    2. PostgreSQL
-    3. CouchDB
-    4. mikael/request
+    1. Redis (WIP)
+    2. mikael/request
+    3. PostgreSQL (probably not pre-GA)
+    4. CouchDB (not pre-GA)
 * Use domains for transaction and error tracing when they're available.
 * Better tests for existing instrumentation.
 * Differentiate between HTTP and HTTPS connections.
@@ -49,3 +46,4 @@
 * garbage collector instrumentation
 * full server-side configuration
 * capacity planning
+* thread profiling

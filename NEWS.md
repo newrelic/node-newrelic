@@ -1,3 +1,15 @@
+### v0.9.2-53 / beta-03 (2012-11-02):
+
+* Added support for node-mysql 2.0.0a driver series.
+* Added support for Express 3.
+* Added rudimentary instrumentation for node-redis.
+* Added rudimentary support for generic-pool (for use with MySQL).
+* Fixed view instrumentation for Express.
+* Improved coverage of MongoDB driver.
+* Many small fixes to make logging more robust.
+* Don't return a partially initialized agent -- shut agent down
+	gracefully if startup fails.
+
 ### v0.9.1-46 / beta-02 (2012-10-01):
 
 * Fixed an issue in how transaction traces were serialized that kept them from

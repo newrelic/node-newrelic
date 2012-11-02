@@ -38,12 +38,12 @@ with any bug reports or support requests.
 
 The agent's unit tests use [mocha](http://visionmedia.github.com/mocha/). Its
 integration tests use [node-tap](http://github.com/isaacs/node-tap/). If you
-want to run them yourself, they can be run via `npm test`, except on Windows,
-where we haven't had time to do much testing yet.
+want to run them yourself, they can be run via `npm test`, except on Windows.
+Work on a Windows solution is forthcoming.
 
-If you encounter any test failures, please contact New Relic support, and
-be sure to include whatever information you can about how you're running
-Node and what the test suite returned.
+If you encounter any test failures, please contact New Relic support or the
+beta list, and be sure to include whatever information you can about how you're
+running Node and what the test suite returned.
 
 ## Recent changes
 
