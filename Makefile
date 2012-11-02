@@ -3,6 +3,9 @@ MOCHA_NOBIN  = node_modules/.bin/_mocha
 COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
 NODE_VERSION = $(shell node --version)
+INTEGRATION  = $(shell find . -name *.tap.js -print)
+# only want to find root package.json files, not those in node_modules
+INT_PACKAGES = $(shell find test/integration/versioned -depth 2 -name package.json -print)
 
 .PHONY: all build test-cov test clean notes pending pending-core unit integration
 all: build test
@@ -26,8 +29,14 @@ unit: node_modules
 	@$(MOCHA)
 
 integration: node_modules
-	@rm -f test/integration/newrelic_agent.log
-	@time $(TAP) test/integration/*.tap.js
+	rm -f test/integration/newrelic_agent.log
+	for package in $(INT_PACKAGES) ; do \
+		dir=$$(dirname $$package) ; \
+		cd $$dir ; \
+		rm -rf node_modules ; \
+		npm install ; \
+	done
+	time $(TAP) $(INTEGRATION)
 
 clean:
 	rm -rf npm-debug.log newrelic_agent.log test/integration/newrelic_agent.log .coverage_data cover_html

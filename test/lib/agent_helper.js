@@ -78,6 +78,11 @@ var helper = module.exports = {
     var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
     architect.createApp(config, function (error, app) {
+      var cleanup = helper.cleanMySQL.bind(helper, app,
+                                           function() { console.error("cleaned up!"); });
+      process.on('uncaughtException', cleanup);
+      process.on('SIGINT', cleanup);
+
       if (error) return helper.cleanMySQL(app, function () { return callback(error); });
 
       return callback(null, app);
