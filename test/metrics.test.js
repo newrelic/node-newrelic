@@ -33,7 +33,7 @@ describe("Metrics", function () {
 
   describe("when calling constructor with valid parameters", function () {
     var TEST_APDEX = 0.4;
-    var TEST_RENAMER = new RenameRules([[{name : 'Test/RenameMe333'}, 'Test/Rollup']]);
+    var TEST_RENAMER = new RenameRules([[{name : 'Test/RenameMe333'}, 1337]]);
     var TEST_NORMALIZER = new MetricNormalizer();
 
     beforeEach(function () {
@@ -48,8 +48,7 @@ describe("Metrics", function () {
     it("should pass metric naming rules through for serialization", function () {
       metrics.measureDurationUnscoped('Test/RenameMe333', 400, 300);
       var summary = metrics.toJSON();
-      expect(JSON.stringify(summary))
-        .equal('[[{"name":"Test/Rollup"},[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
+      expect(JSON.stringify(summary)).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
     });
 
     it("should expose configured normalizer", function () {
