@@ -39,8 +39,8 @@ describe("ErrorService", function () {
     service.onTransactionFinished(createTransaction(400));
     service.onTransactionFinished(createTransaction(500));
 
-    expect(service.errorCount).equal(2);
     expect(service.errors.length).equal(2);
+    expect(service.errorCount).equal(2);
   });
 
   it("should ignore 404 errors for transactions", function () {
@@ -60,7 +60,7 @@ describe("ErrorService", function () {
       , error
       ;
 
-    before(function () {
+    beforeEach(function () {
       service = new ErrorService(config.config);
 
       agent = helper.loadMockedAgent();
@@ -72,8 +72,15 @@ describe("ErrorService", function () {
       error = service.errors[0];
     });
 
-    after(function () {
+    afterEach(function () {
       helper.unloadAgent(agent);
+    });
+
+    it("should properly reset when finished", function () {
+      expect(service.errorCount).equal(1);
+
+      service.clear();
+      expect(service.errorCount).equal(0);
     });
 
     it("should associate errors with the transaction's scope", function () {
