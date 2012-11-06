@@ -1,3 +1,12 @@
+### v0.9.3-57 / beta-04 (2012-11-06):
+
+* Send a list of the packages and dependencies available to an app on
+	connection to New Relic servers.
+* Generally cleaned up submission of configuration information.
+* Added trace-level logging of instrumentation to help diagnose issues
+	with transaction tracing.
+* Fixes to web error transaction reporting.
+
 ### v0.9.2-53 / beta-03 (2012-11-02):
 
 * Added support for node-mysql 2.0.0a driver series.
@@ -30,7 +39,7 @@
 
 * Completely new transaction tracer. Faster, simpler and vastly more
 	deterministic, but the reworking likely introduced a bunch of new bugs. This
-	also means that the agent no longer directly affects the callstack or
+	also means that the agent no longer directly affects the call stack or
 	overrides any of the core event-handling methods, which means the overhead
 	of the transaction tracer is vastly reduced. Which is good, because you
 	still can't turn it off.

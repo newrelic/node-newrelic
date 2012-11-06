@@ -1,7 +1,7 @@
 ### KNOWN ISSUES:
 
 * The CPU and memory overhead incurred by the Node agent is relatively
-	minor (~5-15%, depending on how much of the instrumentation your
+	minor (~1-10%, depending on how much of the instrumentation your
 	apps end up using), but may not be appropriate for production use.
 	In particular, GC activity is significantly increased due to the
 	large number of ephemeral objects created by metrics gathering. For
