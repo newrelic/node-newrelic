@@ -40,7 +40,7 @@ var helper = module.exports = {
     return agent.tracer.transactionProxy(callback)(); // <-- invoke immediately
   },
 
-  bootstrapMemcached : function bootstrapMemcahed(callback) {
+  bootstrapMemcached : function bootstrapMemcached(callback) {
     var memcached = path.join(__dirname, 'architecture', 'memcached.js');
     var config = architect.loadConfig(memcached);
     architect.createApp(config, function (error, app) {
