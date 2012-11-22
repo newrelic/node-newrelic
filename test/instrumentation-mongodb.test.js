@@ -1,14 +1,13 @@
 'use strict';
 
-var path    = require('path')
-  , util    = require('util')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , should  = chai.should()
-  , sinon   = require('sinon')
-  , bson    = require('bson')
-  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
-  , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
+var path   = require('path')
+  , util   = require('util')
+  , chai   = require('chai')
+  , expect = chai.expect
+  , should = chai.should()
+  , sinon  = require('sinon')
+  , bson   = require('bson')
+  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 function dox() {
@@ -34,8 +33,7 @@ describe("agent instrumentation of MongoDB", function () {
     ;
 
   beforeEach(function () {
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    agent = helper.instrumentMockedAgent();
 
     // load the driver after loading is patched
     mongodb = require('mongodb');

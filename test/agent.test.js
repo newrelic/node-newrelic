@@ -27,11 +27,11 @@ describe("the New Relic agent", function () {
     var agent;
 
     before(function () {
-      agent = helper.loadAgent();
+      agent = new Agent();
     });
 
     after(function () {
-      helper.unloadAgent(agent);
+      agent.stop();
     });
 
     it("should start up properly", function (done) {

@@ -5,15 +5,13 @@ var path   = require('path')
   , tap    = require('tap')
   , test   = tap.test
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   ;
 
 test("built-in fs module instrumentation should trace the reading of directories",
      function (t) {
   t.plan(8);
 
-  var agent = helper.loadMockedAgent();
-  shimmer.bootstrapInstrumentation(agent);
+  var agent = helper.instrumentMockedAgent();
 
   var TESTDIR = 'XXXSHOULDNOTEXISTXXX'
     , FILE1   = 'IMAFILE'

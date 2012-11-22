@@ -1,10 +1,9 @@
 'use strict';
 
-var path    = require('path')
-  , test    = require('tap').test
-  , logger  = require(path.join(__dirname, '..', '..', '..', '..', 'lib', 'logger'))
-  , shimmer = require(path.join(__dirname, '..', '..', '..', '..', 'lib', 'shimmer'))
-  , helper  = require(path.join(__dirname, '..', '..', '..', 'lib', 'agent_helper'))
+var path   = require('path')
+  , test   = require('tap').test
+  , logger = require(path.join(__dirname, '..', '..', '..', '..', 'lib', 'logger'))
+  , helper = require(path.join(__dirname, '..', '..', '..', 'lib', 'agent_helper'))
   ;
 
 var DBUSER = 'test_user'
@@ -19,8 +18,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
   helper.bootstrapMySQL(function (error, app) {
     // set up the instrumentation before loading MySQL
-    var agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    var agent = helper.instrumentMockedAgent();
     var mysql   = require('mysql')
       , generic = require('generic-pool')
       ;

@@ -1,11 +1,10 @@
 'use strict';
 
-var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , net     = require('net')
-  , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
+var path   = require('path')
+  , chai   = require('chai')
+  , should = chai.should()
+  , net    = require('net')
+  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 describe("built-in net module instrumentation", function () {
@@ -16,8 +15,7 @@ describe("built-in net module instrumentation", function () {
     ;
 
   beforeEach(function (done) {
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    agent = helper.instrumentMockedAgent();
 
     server = net.createServer(function (conn) {
       conn.write(RESPONSE);

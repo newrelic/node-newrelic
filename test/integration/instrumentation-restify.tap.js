@@ -5,15 +5,13 @@ var path    = require('path')
   , test    = tap.test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   ;
 
 test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
      function (t) {
   t.plan(8);
 
-  var agent = helper.loadMockedAgent();
-  shimmer.bootstrapInstrumentation(agent);
+  var agent = helper.instrumentMockedAgent();
 
   var restify = require('restify');
   var server = restify.createServer();

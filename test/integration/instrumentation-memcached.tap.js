@@ -1,10 +1,9 @@
 'use strict';
 
-var path    = require('path')
-  , tap     = require('tap')
-  , test    = tap.test
-  , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
-  , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+var path   = require('path')
+  , tap    = require('tap')
+  , test   = tap.test
+  , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
 test("memcached instrumentation should find memcached calls in the transaction trace",
@@ -16,8 +15,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
   helper.bootstrapMemcached(function (error, app) {
     if (error) return t.fail(error);
 
-    var agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    var agent = helper.instrumentMockedAgent();
     var Memcached = require('memcached');
 
     var memcached = new Memcached('localhost:11211');

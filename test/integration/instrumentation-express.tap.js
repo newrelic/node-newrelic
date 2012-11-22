@@ -5,7 +5,6 @@ var path    = require('path')
   , test    = tap.test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   ;
 
 test("agent instrumentation of Express should measure request duration properly (NA-46)",
@@ -13,8 +12,7 @@ test("agent instrumentation of Express should measure request duration properly 
      function (t) {
   t.plan(6);
 
-  var agent = helper.loadMockedAgent();
-  shimmer.bootstrapInstrumentation(agent);
+  var agent = helper.instrumentMockedAgent();
 
   // express.createServer() went away sometime after Express 2.4.3
   // Customer in NA-46 is / was using Express 2.4.3

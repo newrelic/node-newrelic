@@ -1,12 +1,11 @@
 'use strict';
 
-var path    = require('path')
-  , chai    = require('chai')
-  , should  = chai.should()
-  , expect  = chai.expect
-  , http    = require('http')
-  , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
+var path   = require('path')
+  , chai   = require('chai')
+  , should = chai.should()
+  , expect = chai.expect
+  , http   = require('http')
+  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 describe("built-in http module instrumentation", function () {
@@ -24,8 +23,7 @@ describe("built-in http module instrumentation", function () {
              '</html>';
 
   before(function (done) {
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    agent = helper.instrumentMockedAgent();
 
     var external = http.createServer(function (request, response) {
       expect(agent.getTransaction()).not.equal(undefined);

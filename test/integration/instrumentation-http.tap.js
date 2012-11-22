@@ -1,19 +1,17 @@
 'use strict';
 
-var path    = require('path')
-  , tap     = require('tap')
-  , test    = tap.test
-  , http    = require('http')
-  , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
+var path   = require('path')
+  , tap    = require('tap')
+  , test   = tap.test
+  , http   = require('http')
+  , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
 test("built-in http module instrumentation should trace the reading of directories",
      function (t) {
   t.plan(12);
 
-  var agent = helper.loadMockedAgent();
-  shimmer.bootstrapInstrumentation(agent);
+  var agent = helper.instrumentMockedAgent();
 
   var TEST_INTERNAL_PORT = 8123
     , TEST_INTERNAL_PATH = '/path'

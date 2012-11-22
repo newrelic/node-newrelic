@@ -1,10 +1,9 @@
 'use strict';
 
-var path    = require('path')
-  , tap     = require('tap')
-  , test    = tap.test
-  , shimmer = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
-  , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+var path   = require('path')
+  , tap    = require('tap')
+  , test   = tap.test
+  , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
@@ -16,8 +15,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
   helper.bootstrapMongoDB(function (error, app) {
     if (error) return t.fail(error);
 
-    var agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    var agent = helper.instrumentMockedAgent();
     var mongodb = require('mongodb');
 
     var server = new mongodb.Server('localhost', 27017, {auto_reconnect : true});

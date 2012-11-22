@@ -10,17 +10,16 @@ var path                = require('path')
   ;
 
 var helper = module.exports = {
-  loadAgent : function loadAgent(options) {
-    var agent = new Agent(options);
-    shimmer.patchModule(agent);
-    return agent;
-  },
-
-  unloadAgent : function unloadAgent(agent) {
-    agent.stop();
-    shimmer.unwrapAll();
-  },
-
+  /**
+   * Set up an agent that won't try to connect to the collector, but also
+   * won't instrument any calling code.
+   *
+   * @param object options Any configuration to override in the agent.
+   *                       See agent.js for details, but so far this includes
+   *                       passing in a config object and the connection stub
+   *                       created in this function.
+   * @returns Agent Agent with a mocked connection method.
+   */
   loadMockedAgent : function loadMockedAgent(options) {
     if (!options) options = {};
 
@@ -33,7 +32,33 @@ var helper = module.exports = {
     sinon.stub(connection, 'connect');
     options.connection = connection;
 
-    return helper.loadAgent(options);
+    return new Agent(options);
+  },
+
+  /**
+   * Builds on loadMockedAgent by patching the module loader and setting up
+   * the instrumentation framework.
+   *
+   * @returns Agent Agent with a mocked connection method.
+   */
+  instrumentMockedAgent : function instrumentMockedAgent() {
+    var agent = helper.loadMockedAgent();
+    shimmer.patchModule(agent);
+    shimmer.bootstrapInstrumentation(agent);
+
+    return agent;
+  },
+
+  /**
+   * Shut down the agent, ensuring that any instrumentation scaffolding
+   * is shut down.
+   *
+   * @param Agent agent The agent to shut down.
+   */
+  unloadAgent : function unloadAgent(agent) {
+    agent.stop();
+    shimmer.unwrapAll();
+    shimmer.unpatchModule();
   },
 
   /**

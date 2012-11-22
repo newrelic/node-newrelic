@@ -5,7 +5,6 @@ var path    = require('path')
   , should  = chai.should()
   , request = require('request')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   ;
 
 describe("an instrumented Express application", function () {
@@ -19,8 +18,7 @@ describe("an instrumented Express application", function () {
     ;
 
   before(function (done) {
-    agent = helper.loadMockedAgent();
-    shimmer.bootstrapInstrumentation(agent);
+    agent = helper.instrumentMockedAgent();
 
     // set apdexT so apdex stats will be recorded
     agent.apdexT = 1;

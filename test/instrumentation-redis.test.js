@@ -7,7 +7,6 @@ var path         = require('path')
   , expect       = chai.expect
   , should       = chai.should()
   , sinon        = require('sinon')
-  , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
@@ -49,8 +48,7 @@ describe("agent instrumentation of Redis", function () {
       ;
 
     beforeEach(function () {
-      agent = helper.loadMockedAgent();
-      shimmer.bootstrapInstrumentation(agent);
+      agent = helper.instrumentMockedAgent();
       var redis = require('redis');
 
       connection = new FakeConnection();
