@@ -1,13 +1,30 @@
 'use strict';
 
 var path    = require('path')
+  , util    = require('util')
   , chai    = require('chai')
   , expect  = chai.expect
   , should  = chai.should()
   , sinon   = require('sinon')
+  , bson    = require('bson')
   , shimmer = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
+
+function dox() {
+  if (arguments.length) {
+    var documents = Array.prototype.slice.call(arguments);
+    return {
+      documents : documents,
+      numberReturned : documents.length,
+      cursorId : bson.Long.fromInt(0),
+      responseFlag : 1
+    };
+  }
+  else {
+    return {documents : [{}]};
+  }
+}
 
 describe("agent instrumentation of MongoDB", function () {
   var agent
@@ -35,7 +52,11 @@ describe("agent instrumentation of MongoDB", function () {
   describe("for each operation", function () {
     beforeEach(function (done) {
       sinon.stub(db, '_executeInsertCommand', function (inserter, options, callback) {
-        callback(null, {documents : [{}]});
+        callback(null, dox());
+      });
+
+      agent.once('transactionFinished', function () {
+        return done();
       });
 
       helper.runInTransaction(agent, function () {
@@ -48,9 +69,6 @@ describe("agent instrumentation of MongoDB", function () {
           var transaction = agent.getTransaction();
           should.exist(transaction);
 
-          agent.once('transactionFinished', function () {
-            return done();
-          });
           transaction.end();
         });
       });
@@ -82,9 +100,148 @@ describe("agent instrumentation of MongoDB", function () {
     });
   });
 
-  it("should instrument inserting documents");
-  it("should instrument finding documents");
-  it("should instrument updating documents");
-  it("should instrument removing documents");
-  it("should instrument saving documents");
+  it("should instrument inserting documents", function (done) {
+    sinon.stub(db, '_executeInsertCommand', function (inserter, options, callback) {
+      callback(null, dox());
+    });
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('Database/fake/insert', 'MongoDB/fake/insert').stats;
+      expect(stats.callCount).equal(1);
+
+      return done();
+    });
+
+    helper.runInTransaction(agent, function () {
+      var collection = new mongodb.Collection(db, 'fake', pkfactory);
+      collection.insert({id : 1, hamchunx : 'verbloks'},
+                        {safe : true},
+                        function (error, result) {
+        if (error) return done(error);
+
+        var transaction = agent.getTransaction();
+        should.exist(transaction);
+
+        transaction.end();
+      });
+    });
+  });
+
+  it("should instrument finding documents", function (done) {
+    var returned = false;
+    sinon.stub(mongodb.Cursor.prototype, 'nextObject', function (callback) {
+      if (!returned) {
+        returned = true;
+        callback(null, {id : 1, hamchunx : 'verbloks'});
+      }
+      else {
+        callback(null, null);
+      }
+    });
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('Database/fake/find', 'MongoDB/fake/find').stats;
+      expect(stats.callCount).equal(1);
+
+      mongodb.Cursor.prototype.nextObject.restore();
+      return done();
+    });
+
+    helper.runInTransaction(agent, function () {
+      var collection = new mongodb.Collection(db, 'fake', pkfactory);
+      collection.findOne({id : 1},
+                         {safe : true},
+                         function (error, result) {
+        if (error) return done(error);
+
+        should.exist(result);
+
+        var transaction = agent.getTransaction();
+        should.exist(transaction);
+
+        transaction.end();
+      });
+    });
+  });
+
+  it("should instrument updating documents", function (done) {
+    sinon.stub(db, '_executeUpdateCommand', function (updater, options, callback) {
+      callback(null, dox());
+    });
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('Database/fake/update', 'MongoDB/fake/update').stats;
+      expect(stats.callCount).equal(1);
+
+      return done();
+    });
+
+    helper.runInTransaction(agent, function () {
+      var collection = new mongodb.Collection(db, 'fake', pkfactory);
+      collection.update({a:1},
+                        {$set:{b:2}},
+                        function (error, results) {
+        if (error) return done(error);
+
+        var transaction = agent.getTransaction();
+        should.exist(transaction);
+
+        transaction.end();
+      });
+    });
+  });
+
+  it("should instrument removing documents", function (done) {
+    sinon.stub(db, '_executeRemoveCommand', function (updater, options, callback) {
+      callback(null, dox());
+    });
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('Database/fake/remove', 'MongoDB/fake/remove').stats;
+      expect(stats.callCount).equal(1);
+
+      return done();
+    });
+
+    helper.runInTransaction(agent, function () {
+      var collection = new mongodb.Collection(db, 'fake', pkfactory);
+      collection.remove({a:1},
+                        {safe : true},
+                        function (error, result) {
+        if (error) return done(error);
+
+        var transaction = agent.getTransaction();
+        should.exist(transaction);
+
+        transaction.end();
+      });
+    });
+  });
+
+  it("should instrument saving documents", function (done) {
+    sinon.stub(db, '_executeInsertCommand', function (inserter, options, callback) {
+      callback(null, dox());
+    });
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('Database/fake/insert', 'MongoDB/fake/insert').stats;
+      expect(stats.callCount).equal(1);
+
+      return done();
+    });
+
+    helper.runInTransaction(agent, function () {
+      var collection = new mongodb.Collection(db, 'fake', pkfactory);
+      collection.save({hamchunx : 'verblox'},
+                      {safe : true},
+                      function (error, result) {
+        if (error) return done(error);
+
+        var transaction = agent.getTransaction();
+        should.exist(transaction);
+
+        transaction.end();
+      });
+    });
+  });
 });
