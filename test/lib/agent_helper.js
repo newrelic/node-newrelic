@@ -36,10 +36,25 @@ var helper = module.exports = {
     return helper.loadAgent(options);
   },
 
+  /**
+   * Create a transactional scope in which instrumentation that will only add
+   * trace segments to existing transactions will funciton.
+   *
+   * @param Agent agent The agent whose tracer should be used to create the
+   *                    transaction.
+   * @param Function callback The function to be run within the transaction.
+   */
   runInTransaction : function runInTransaction(agent, callback) {
     return agent.tracer.transactionProxy(callback)(); // <-- invoke immediately
   },
 
+  /**
+   * Use c9/architect to bootstrap a memcached server for running integration
+   * tests.
+   *
+   * @param Function callback The operations to be performed while the server
+   *                          is running.
+   */
   bootstrapMemcached : function bootstrapMemcached(callback) {
     var memcached = path.join(__dirname, 'architecture', 'memcached.js');
     var config = architect.loadConfig(memcached);
@@ -50,11 +65,25 @@ var helper = module.exports = {
     });
   },
 
+  /**
+   * Shut down and clean up after memcached.
+   *
+   * @param Object app The architect app to be shut down.
+   * @param Function callback The operations to be run after the server is
+   *                          shut down.
+   */
   cleanMemcached : function cleanMemcached(app, callback) {
     var memcached = app.getService('memcachedProcess');
     memcached.shutdown(callback);
   },
 
+  /**
+   * Use c9/architect to bootstrap a MongoDB server for running integration
+   * tests.
+   *
+   * @param Function callback The operations to be performed while the server
+   *                          is running.
+   */
   bootstrapMongoDB : function bootstrapMongoDB(callback) {
     var bootstrapped = path.join(__dirname, 'architecture', 'mongodb-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
@@ -74,6 +103,14 @@ var helper = module.exports = {
     });
   },
 
+  /**
+   * Use c9/architect to bootstrap a MySQL server for running integration
+   * tests. Will create a blank data directory, meant to be paired with
+   * cleanMySQL.
+   *
+   * @param Function callback The operations to be performed while the server
+   *                          is running.
+   */
   bootstrapMySQL : function bootstrapMySQL(callback) {
     var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
