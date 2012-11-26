@@ -11,18 +11,7 @@ var path   = require('path')
   ;
 
 function dox() {
-  if (arguments.length) {
-    var documents = Array.prototype.slice.call(arguments);
-    return {
-      documents : documents,
-      numberReturned : documents.length,
-      cursorId : bson.Long.fromInt(0),
-      responseFlag : 1
-    };
-  }
-  else {
-    return {documents : [{}]};
-  }
+  return {documents : [{}]};
 }
 
 describe("agent instrumentation of MongoDB", function () {
