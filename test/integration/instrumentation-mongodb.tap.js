@@ -19,7 +19,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     var mongodb = require('mongodb');
 
     var server = new mongodb.Server('localhost', 27017, {auto_reconnect : true});
-    var db = new mongodb.Db('integration', server);
+    var db = new mongodb.Db('integration', server, {safe : true});
 
     self.tearDown(function () {
       db.close(true, function (error, result) {
@@ -32,7 +32,19 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     });
 
     t.test("with a callback", function (t) {
-      t.plan(14);
+      t.plan(18);
+
+      agent.once('transactionFinished', function () {
+        t.equals(agent.metrics.getMetric('Database/all').stats.callCount, 2,
+                 "should find both operations");
+        t.equals(agent.metrics.getMetric('Database/insert').stats.callCount, 1,
+                 "basic insert should be recorded");
+        t.equals(agent.metrics.getMetric('Database/test/insert').stats.callCount, 1,
+                 "collection insertion should be recorded");
+        t.equals(agent.metrics.getMetric('Database/test/insert',
+                                         'MongoDB/test/insert').stats.callCount, 1,
+                 "Scoped MongoDB request should be recorded");
+      });
 
       db.open(function (error, db) {
         if (error) return t.fail(error);
@@ -88,7 +100,19 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     });
 
     t.test("with a Cursor", function (t) {
-      t.plan(1);
+      t.plan(7);
+
+      agent.once('transactionFinished', function () {
+        t.equals(agent.metrics.getMetric('Database/all').stats.callCount, 4,
+                 "should find all operations including cursor");
+        t.equals(agent.metrics.getMetric('Database/insert').stats.callCount, 2,
+                 "basic insert should be recorded with cursor");
+        t.equals(agent.metrics.getMetric('Database/test2/insert').stats.callCount, 1,
+                 "collection insertion should be recorded from cursor");
+        t.equals(agent.metrics.getMetric('Database/test2/insert',
+                                         'MongoDB/test2/insert').stats.callCount, 1,
+                 "Scoped MongoDB request should be recorded from cursor");
+      });
 
       db.open(function (error, db) {
         if (error) return t.fail(error);
@@ -96,13 +120,26 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
         db.createCollection('test2', function (error, collection) {
           if (error) return t.fail(error);
 
-          helper.runInTransaction(agent, function transactionInScope() {
+          helper.runInTransaction(agent, function transactionInScope(transaction) {
             var hunx = {id : 1, hamchunx : "verbloks"};
             var insertCursor = collection.insert(hunx, function (error, result) {
               var cursor = collection.find({id : 1});
               t.ok(cursor, "cursor should be returned by callback-less find");
 
-              t.end();
+              cursor.toArray(function (error, results) {
+                if (error) return t.fail(error);
+
+                t.equals(results.length, 1, "Should be one result.");
+                t.equals(results[0].hamchunx, 'verbloks', "Driver should still work.");
+
+                transaction.end();
+
+                db.close(function (error, result) {
+                  if (error) t.fail(error);
+
+                  t.end();
+                });
+              });
             });
           });
         });
