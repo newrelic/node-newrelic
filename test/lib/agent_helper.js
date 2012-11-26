@@ -70,7 +70,10 @@ var helper = module.exports = {
    * @param Function callback The function to be run within the transaction.
    */
   runInTransaction : function runInTransaction(agent, callback) {
-    return agent.tracer.transactionProxy(callback)(); // <-- invoke immediately
+    return agent.tracer.transactionProxy(function () {
+      var transaction = agent.getTransaction();
+      callback(transaction);
+    })(); // <-- invoke immediately
   },
 
   /**
