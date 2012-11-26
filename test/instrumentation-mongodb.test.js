@@ -88,11 +88,6 @@ describe("agent instrumentation of MongoDB", function () {
     });
 
     it("should update the scoped aggregate statistics for the operation type", function () {
-      var stats = agent.metrics.getMetric('Database/insert').stats;
-      expect(stats.callCount).equal(1);
-    });
-
-    it("should update the scoped aggregate statistics for the operation type", function () {
       var stats = agent.metrics.getMetric('Database/fake/insert', 'MongoDB/fake/insert').stats;
       expect(stats.callCount).equal(1);
     });
