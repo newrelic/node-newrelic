@@ -10,19 +10,13 @@ the purposes of testing.
 1. [Install node](http://nodejs.org/#download). For now, at least 0.6 is
    required. Development work is being done against the latest released
    version.
-2. Put this directory under the node_modules directory for the application
-   you want to instrument.
-3. Run `npm install` to pull down the agent's dependencies.
-4. If you want to instrument multiple applications, unpack the distribution
-   into a directory and run `npm link` from the root of the distribution.
-   From then, to use the agent in your apps, just run
-   `npm link newrelic_agent` from the root of the application to be
-   instrumented (after running `npm install`).
-5. Copy `newrelic.js` from the agent directory into the root directory of
+2. Install this module via `npm install newrelic` for the application you
+   want to monitor.
+3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
    your application.
-6. Edit `newrelic.js` and replace `license_key`'s value with the license key
+4. Edit `newrelic.js` and replace `license_key`'s value with the license key
    for your account.
-7. Add `require('newrelic_agent');` as the first line of the app's main module.
+5. Add `require('newrelic_agent');` as the first line of the app's main module.
 
 When you start your app, the agent should start up with it and start reporting
 data that will appear within our UI after a few minutes. Because the agent

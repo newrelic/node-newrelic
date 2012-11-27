@@ -1,6 +1,6 @@
 {
-  "name": "newrelic_agent",
-  "version": "0.9.3-57",
+  "name": "newrelic",
+  "version": "0.9.4-61",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "contributors": [
     {
@@ -60,6 +60,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/newrelic/nodejs_agent.git"
-  },
-  "private": true
+  }
 }

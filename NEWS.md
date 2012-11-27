@@ -1,3 +1,8 @@
+### v0.9.4-61 / beta-05 (2012-11-26):
+
+* Further improvements to node-mongodb-native instrumentation.
+* Package now available via npm as "newrelic".
+
 ### v0.9.3-57 / beta-04 (2012-11-06):
 
 * Send a list of the packages and dependencies available to an app on
