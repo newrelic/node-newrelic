@@ -16,7 +16,9 @@ the purposes of testing.
    your application.
 4. Edit `newrelic.js` and replace `license_key`'s value with the license key
    for your account.
-5. Add `require('newrelic_agent');` as the first line of the app's main module.
+5. Add `require('newrelic');` as the first line of the app's main module.
+   *IMPORTANT*: formerly this was `require('newrelic_agent')`, and you *MUST*
+	 update your code.
 
 When you start your app, the agent should start up with it and start reporting
 data that will appear within our UI after a few minutes. Because the agent
@@ -41,12 +43,12 @@ running Node and what the test suite returned.
 
 ## Recent changes
 
-Information about changes to the agent are in the [NEWS file](NEWS.md).
+Information about changes to the agent are in NEWS.md.
 
 ## Known issues & remaining work
 
 Information about what's known to be broken and what's being worked on
-soon is in the [TODO file](TODO.md).
+soon is in TODO.md.
 
 ## LICENSE
 
