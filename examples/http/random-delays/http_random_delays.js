@@ -1,6 +1,6 @@
 'use strict';
 
-require('newrelic_agent');
+require('newrelic');
 
 var http   = require('http')
   , logger = require('../../../lib/logger').child({component : 'http_random_delays'})

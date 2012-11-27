@@ -1,6 +1,6 @@
 'use strict';
 
-require('newrelic_agent');
+require('newrelic');
 
 var path      = require('path')
   , architect = require('architect')

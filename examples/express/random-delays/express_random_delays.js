@@ -1,6 +1,6 @@
 'use strict';
 
-require('newrelic_agent');
+require('newrelic');
 
 var express = require('express')
   , app     = express.createServer()

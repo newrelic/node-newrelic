@@ -1,6 +1,6 @@
 'use strict';
 
-require('newrelic_agent');
+require('newrelic');
 
 var cluster = require('cluster')
   , http    = require('http')
