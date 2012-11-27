@@ -20,6 +20,10 @@ the purposes of testing.
    *IMPORTANT*: formerly this was `require('newrelic_agent')`, and you *MUST*
 	 update your code.
 
+If you wish to keep the configuration for the agent separate from your
+application, the agent will look for newrelic.js in the directory referenced
+by the environment variable `NEWRELIC_HOME` if it's set.
+
 When you start your app, the agent should start up with it and start reporting
 data that will appear within our UI after a few minutes. Because the agent
 minimizes the amount of bandwidth it consumes, it only reports metrics, errors
