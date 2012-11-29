@@ -1,3 +1,7 @@
+### v0.9.5-63 / beta-06 (2012-11-28):
+
+* Be more careful in dealing with HTTP requests.
+
 ### v0.9.4-61 / beta-05 (2012-11-26):
 
 * Further improvements to node-mongodb-native instrumentation.
