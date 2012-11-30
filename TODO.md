@@ -13,11 +13,6 @@
 	let us know. If possible, include the package.json for your application
 	with your report.
 * The agent works only with Node.js 0.6 and newer.
-* Server-side configuration is unavailable until support is added within
-  the core New Relic application.
-* Instrumentation for the MongoDB driver only properly instruments queries
-	that include callbacks -- the promise-style and evented interfaces aren't
-	implemented yet.
 * Transaction and error tracing can't be disabled right now.
 * When using Node's included clustering support, each worker process will
 	open its own connection to New Relic's servers, and will incur its own
@@ -26,14 +21,10 @@
 ### TO DO:
 
 * Additional third-party instrumentation:
-    1. Redis (WIP)
-    2. mikael/request
-    3. PostgreSQL (probably not pre-GA)
-    4. CouchDB (not pre-GA)
-* Use domains for transaction and error tracing when they're available.
+    1. PostgreSQL (probably not pre-GA)
+    2. CouchDB (not pre-GA)
 * Better tests for existing instrumentation.
 * Differentiate between HTTP and HTTPS connections.
-* Publish a build of the agent via npm.
 * Proxy support.
 * Lots more testing of what the data looks like in RPM.
 

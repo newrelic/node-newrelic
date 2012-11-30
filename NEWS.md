@@ -1,3 +1,11 @@
+### v0.9.6-70 / beta-07 (2012-11-30):
+
+* Added first cut at support for error tracing via Node.js 0.8+ domains.
+	Versions of Node.js that support it (v0.8.9 and above) will make a
+	best-faith effort to clean up after errors.
+* Improved non-domain error handling on outbound HTTP requests.
+* Dramatically improved accuracy of HTTP request timing.
+
 ### v0.9.5-63 / beta-06 (2012-11-28):
 
 * Be more careful in dealing with HTTP requests.

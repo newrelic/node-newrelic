@@ -8,8 +8,9 @@ the purposes of testing.
 ## Getting started
 
 1. [Install node](http://nodejs.org/#download). For now, at least 0.6 is
-   required. Development work is being done against the latest released
-   version.
+   required. Some features (e.g. error tracing) depend in whole or in part on
+   features in 0.8 and above. Development work is being done against the latest
+   released version.
 2. Install this module via `npm install newrelic` for the application you
    want to monitor.
 3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
@@ -18,7 +19,7 @@ the purposes of testing.
    for your account.
 5. Add `require('newrelic');` as the first line of the app's main module.
    *IMPORTANT*: formerly this was `require('newrelic_agent')`, and you *MUST*
-	 update your code.
+   update your code.
 
 When you start your app, the agent should start up with it and start reporting
 data that will appear within our UI after a few minutes. Because the agent
@@ -53,4 +54,4 @@ soon is in TODO.md.
 ## LICENSE
 
 The New Relic Node.js agent is free-to-use, proprietary software. Please see
-the [full license](LICENSE) for details.
+the full license (found in LICENSE in this distribution) for details.
