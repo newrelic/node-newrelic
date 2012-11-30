@@ -7,7 +7,7 @@ var path   = require('path')
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
-test("built-in http module instrumentation should trace the reading of directories",
+test("built-in http module instrumentation should handle both internal and external requests",
      function (t) {
   t.plan(12);
 
@@ -52,7 +52,7 @@ test("built-in http module instrumentation should trace the reading of directori
       response.writeHead(200,
                          {'Content-Length' : PAGE.length,
                           'Content-Type'   : 'text/html'});
-                         response.end(PAGE);
+      response.end(PAGE);
     };
   };
 
@@ -71,14 +71,10 @@ test("built-in http module instrumentation should trace the reading of directori
   });
 
   this.tearDown(function () {
-    external.close(function shutdown() {
-      server.close(function shutdowner() {
-        t.end();
-      });
-    });
+    external.close();
+    server.close();
   });
 
-  var self = this;
   var testResponseHandler = function (response) {
     if (response.statusCode !== 200) return t.fail(response.statusCode);
 
@@ -97,7 +93,7 @@ test("built-in http module instrumentation should trace the reading of directori
          * emit the raw event myself.
          */
         t.bailout("Transaction wasn't set by response handler");
-        return self.emit('end');
+        return this.emit('end');
       }
 
       t.equals(response.statusCode, 200, "should successfully fetch the page");
@@ -123,7 +119,7 @@ test("built-in http module instrumentation should trace the reading of directori
 
       t.end();
     });
-  };
+  }.bind(this);
 
   external.listen(TEST_EXTERNAL_PORT, TEST_HOST, function () {
     server.listen(TEST_INTERNAL_PORT, TEST_HOST, function () {
