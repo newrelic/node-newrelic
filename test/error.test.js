@@ -3,8 +3,10 @@
 var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
+  , should       = chai.should()
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
+  , dominion     = require(path.join(__dirname, '..', 'lib', 'dominion'))
   , ErrorService = require(path.join(__dirname, '..', 'lib', 'error'))
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -108,5 +110,90 @@ describe("ErrorService", function () {
     });
   });
 
-  it("should put transactions in domains");
+  if (dominion.available) {
+    describe("when domains are available", function () {
+      var mochaHandler
+        , agent
+        , domain
+        , active
+        , json
+        ;
+
+      before(function (done) {
+        /**
+         * Mocha is extremely zealous about trapping errors, and runs each test
+         * in a try / catch block. To get the exception to propagate out to the
+         * domain's uncaughtException handler, we need to put the test in an
+         * asynchronous context and break out of the mocha jail.
+         */
+        process.nextTick(function () {
+          // disable mocha's error handler
+          mochaHandler = process.listeners('uncaughtException').pop();
+
+          agent = helper.loadMockedAgent();
+          var disruptor = agent.tracer.transactionProxy(function () {
+            domain = agent.getTransaction().trace.domain;
+            active = process.domain;
+
+            active.once('error', function (e) {
+              json = agent.errors.errors[0];
+
+              return done();
+            });
+
+            // trigger the domain
+            throw new Error('sample error');
+          });
+
+          disruptor();
+        });
+      });
+
+      after(function () {
+        // ...but be sure to re-enable mocha's error handler
+        process.on('uncaughtException', mochaHandler);
+      });
+
+      it("should put transactions in domains", function () {
+        should.exist(domain);
+        should.exist(active);
+        expect(domain).equal(active);
+      });
+
+      it("should find a single error", function () {
+        expect(agent.errors.errors.length).equal(1);
+      });
+
+      describe("when handed an error from a domain", function () {
+        it("should find the error", function () {
+          should.exist(json);
+        });
+
+        it("should have 5 elements in the trace", function () {
+          expect(json.length).equal(5);
+        });
+
+        it("should always have a 0 (ignored) timestamp", function () {
+          expect(json[0]).equal(0);
+        });
+
+        it("should have the default ('Unknown') scope", function () {
+          expect(json[1]).equal('Unknown');
+        });
+
+        it("should have the error's message", function () {
+          expect(json[2]).equal('sample error');
+        });
+
+        it("should have the error's constructor name (class)", function () {
+          expect(json[3]).equal('Error');
+        });
+
+        it("should default to empty parameters", function () {
+          expect(json[4]).deep.equal({});
+        });
+      });
+    });
+
+  }
 });
