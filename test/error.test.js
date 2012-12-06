@@ -22,6 +22,21 @@ describe("ErrorService", function () {
     service = new ErrorService(config.config);
   });
 
+  it("shouldn't gather errors if it's switched off", function () {
+    var error = new Error('this error will never be seen');
+    service.config.error_collector.enabled = false;
+
+    expect(service.errorCount).equal(0);
+    expect(service.errors.length).equal(0);
+
+    service.add(error);
+
+    expect(service.errorCount).equal(1);
+    expect(service.errors.length).equal(0);
+
+    service.config.error_collector.enabled = true;
+  });
+
   it("should retain a maximum of 20 errors to send", function () {
     var error = new Error('test error');
 
