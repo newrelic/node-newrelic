@@ -7,7 +7,7 @@ var path         = require('path')
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
   , dominion     = require(path.join(__dirname, '..', 'lib', 'dominion'))
-  , ErrorService = require(path.join(__dirname, '..', 'lib', 'error'))
+  , ErrorTracer  = require(path.join(__dirname, '..', 'lib', 'error'))
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
@@ -15,11 +15,11 @@ function createTransaction(code) {
   return { statusCode : code };
 }
 
-describe("ErrorService", function () {
+describe("ErrorTracer", function () {
   var service;
 
   beforeEach(function () {
-    service = new ErrorService(config.config);
+    service = new ErrorTracer(config.config);
   });
 
   it("shouldn't gather errors if it's switched off", function () {
@@ -78,7 +78,7 @@ describe("ErrorService", function () {
       ;
 
     beforeEach(function () {
-      service = new ErrorService(config.config);
+      service = new ErrorTracer(config.config);
 
       agent = helper.loadMockedAgent();
       var transaction = new Transaction(agent);

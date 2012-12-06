@@ -9,7 +9,7 @@ var path                = require('path')
   , Agent               = require(path.join(__dirname, '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', 'lib', 'collector', 'connection'))
   , DataSender          = require(path.join(__dirname, '..', 'lib', 'collector', 'data-sender'))
-  , ErrorService        = require(path.join(__dirname, '..', 'lib', 'error'))
+  , ErrorTracer         = require(path.join(__dirname, '..', 'lib', 'error'))
   , Metrics             = require(path.join(__dirname, '..', 'lib', 'metrics'))
   , SQLTrace            = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'sql'))
   , Stats               = require(path.join(__dirname, '..', 'lib', 'stats'))
@@ -96,7 +96,7 @@ describe("CollectorConnection", function () {
 
     // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/ErrorData.html
     it("should send traced errors in the expected format", function () {
-      var errors = new ErrorService(agent.config);
+      var errors = new ErrorTracer(agent.config);
 
       var transaction = new Transaction(agent);
       transaction.measureWeb('/test-request/churro', 400, 5, 5);
