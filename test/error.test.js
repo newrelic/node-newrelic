@@ -22,18 +22,18 @@ describe("ErrorService", function () {
     service = new ErrorService(config.config);
   });
 
-  it("should send the correct number of errors", function () {
-    var errors = [1, 2, 3, 4, 5];
+  it("should retain a maximum of 20 errors to send", function () {
+    var error = new Error('test error');
 
-    service.onSendError(errors);
+    for (var i = 0; i < 5; i++) service.add(null, error);
     expect(service.errors.length).equal(5);
 
-    service.onSendError(errors);
+    for (i = 0; i < 5; i++) service.add(null, error);
     expect(service.errors.length).equal(10);
 
-    service.onSendError(errors);
-    service.onSendError(errors);
-    service.onSendError([3,4,5,6,6,6,6,6]); // we're over the max here.
+    // this will take the tracer 3 over the limit of 20
+    for (i = 0; i < 13; i++) service.add(null, error);
+    expect(service.errorCount).equal(23);
     expect(service.errors.length).equal(20);
   });
 
