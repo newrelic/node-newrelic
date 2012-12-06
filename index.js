@@ -12,12 +12,20 @@ try {
 
   var agent = new Agent();
 
-  /**
+  /*
    * Don't set up the rest of the agent if it didn't successfully load its
    * configuration.
    */
   if (agent.config) {
-    // set up all of the instrumentation
+    /*
+     * In order to ensure all user code is using instrumented versions of
+     * modules, instrumentation must be loaded at startup regardless of
+     * whether or not the agent is enabled in the config. It should be
+     * possible for users to switch the agent on and off at runtime.
+     *
+     * This also requires the agent to be a singleton, or else module loading
+     * will be patched multiple times, with undefined results.
+     */
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
 
