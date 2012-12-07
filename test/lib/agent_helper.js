@@ -57,8 +57,8 @@ var helper = module.exports = {
    */
   unloadAgent : function unloadAgent(agent) {
     agent.stop();
-    shimmer.unwrapAll();
     shimmer.unpatchModule();
+    shimmer.unwrapAll();
   },
 
   /**
