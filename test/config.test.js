@@ -90,7 +90,8 @@ describe("the agent configuration", function () {
       configuration.app_name.should.eql(['MyApplication']);
       configuration.host.should.equal('collector.newrelic.com');
       configuration.port.should.equal(80);
-      configuration.log_level.should.equal('info');
+      configuration.logging.level.should.equal('info');
+      configuration.logging.filepath.should.equal('');
       configuration.agent_enabled.should.equal(true);
       configuration.error_collector.enabled.should.equal(true);
       configuration.error_collector.ignore_status_codes.should.eql([404]);
