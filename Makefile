@@ -39,7 +39,7 @@ integration: node_modules
 	@time $(TAP) $(INTEGRATION)
 
 clean:
-	rm -rf npm-debug.log newrelic_agent.log test/integration/newrelic_agent.log .coverage_data cover_html
+	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 
 notes:
 	find . -wholename ./node_modules -prune -o \
