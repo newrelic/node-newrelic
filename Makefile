@@ -32,9 +32,10 @@ integration: node_modules
 	@rm -f test/integration/newrelic_agent.log
 	@for package in $(INT_PACKAGES) ; do \
 		dir=$$(dirname $$package) ; \
-		cd $$dir ; \
+		pushd $$dir ; \
 		rm -rf node_modules ; \
 		npm install ; \
+		popd ; \
 	done
 	@time $(TAP) $(INTEGRATION)
 
