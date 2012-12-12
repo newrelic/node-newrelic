@@ -1,8 +1,17 @@
+### v0.9.7-75 / beta-08 (2012-12-06):
+
+* Express view rendering was being instrumented improperly before, causing
+  rendering to fail and Express to hang. Both Express 2 and 3 were affected,
+  and both have been fixed.
+* When NODE_PATH is set, resolve NODE_PATh elements properly so that package
+  lookup for environmental information gathering doesn't crash the app.
+* Now send the Node version along with the rest of the environment data.
+
 ### v0.9.6-70 / beta-07 (2012-11-30):
 
 * Added first cut at support for error tracing via Node.js 0.8+ domains.
-	Versions of Node.js that support it (v0.8.9 and above) will make a
-	best-faith effort to clean up after errors.
+  Versions of Node.js that support it (v0.8.9 and above) will make a
+  best-faith effort to clean up after errors.
 * Improved non-domain error handling on outbound HTTP requests.
 * Dramatically improved accuracy of HTTP request timing.
 
@@ -18,10 +27,10 @@
 ### v0.9.3-57 / beta-04 (2012-11-06):
 
 * Send a list of the packages and dependencies available to an app on
-	connection to New Relic servers.
+  connection to New Relic servers.
 * Generally cleaned up submission of configuration information.
 * Added trace-level logging of instrumentation to help diagnose issues
-	with transaction tracing.
+  with transaction tracing.
 * Fixes to web error transaction reporting.
 
 ### v0.9.2-53 / beta-03 (2012-11-02):
@@ -34,7 +43,7 @@
 * Improved coverage of MongoDB driver.
 * Many small fixes to make logging more robust.
 * Don't return a partially initialized agent -- shut agent down
-	gracefully if startup fails.
+  gracefully if startup fails.
 
 ### v0.9.1-46 / beta-02 (2012-10-01):
 
@@ -42,35 +51,35 @@
   being displayed within RPM.
 * Added request parameters to transaction traces, as well as URL normalization.
 * Reconciled segment names in transaction traces with the corresponding
-	metric names.
+  metric names.
 * Changed the logging module to bunyan. This means that logs are now stored
-	as JSON. If you want pretty-printed logs, `npm install -g bunyan` and then
-	use the bunyan CLI tool to format and filter the logs.
+  as JSON. If you want pretty-printed logs, `npm install -g bunyan` and then
+  use the bunyan CLI tool to format and filter the logs.
 * The agent now sets the logging level to the configured level. Logs sent to
-	New Relic should have been captured at the 'trace' level for the duration
-	of the beta.
+  New Relic should have been captured at the 'trace' level for the duration
+  of the beta.
 * Fixed metric -> ID renaming semantics.
 * Verified that agent works with Node 0.8's cluster module.
 
 ### v0.9.0-39 / beta-01 (2012-09-28):
 
 * Completely new transaction tracer. Faster, simpler and vastly more
-	deterministic, but the reworking likely introduced a bunch of new bugs. This
-	also means that the agent no longer directly affects the call stack or
-	overrides any of the core event-handling methods, which means the overhead
-	of the transaction tracer is vastly reduced. Which is good, because you
-	still can't turn it off.
+  deterministic, but the reworking likely introduced a bunch of new bugs. This
+  also means that the agent no longer directly affects the call stack or
+  overrides any of the core event-handling methods, which means the overhead
+  of the transaction tracer is vastly reduced. Which is good, because you
+  still can't turn it off.
 * Transaction traces should now report the correct caller-callee relationships.
 * Transaction tracer is now internally instrumented, for better debugging.
 * Added support for Restify.
 * Using the Node.js agent in Restify app no longer causes them to crash
-	(fixes NA-47).
+  (fixes NA-47).
 * Improved support for Express (NA-8).
 * Lots of fixes to the MongoDB, MySQL and memcached instrumentation.
 * MongoDB instrumentation no longer crashes MongoDB apps that include
-	the agent (NA-48).
+  the agent (NA-48).
 * More testing in Node.js 0.6.x (hard to completely test, as node-tap isn't
-	that friendly to Node < 0.6.21).
+  that friendly to Node < 0.6.21).
 
 ### v0.8.5-34 / alpha-06 (2012-09-24):
 
