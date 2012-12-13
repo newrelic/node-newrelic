@@ -72,6 +72,20 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should pick up the proxy host", function () {
+      idempotentEnv('NEW_RELIC_PROXY_HOST', 'proxyhost', function (tc) {
+        should.exist(tc.proxy_host);
+        expect(tc.proxy_host).equal('proxyhost');
+      });
+    });
+
+    it("should pick up the proxy port", function () {
+      idempotentEnv('NEW_RELIC_PROXY_PORT', 7777, function (tc) {
+        should.exist(tc.proxy_port);
+        expect(tc.proxy_port).equal('7777');
+      });
+    });
+
     it("should pick up the log level", function () {
       idempotentEnv('NEW_RELIC_LOG_LEVEL', 'XXNOEXIST', function (tc) {
         should.exist(tc.logging.level);
@@ -170,6 +184,14 @@ describe("the agent configuration", function () {
 
     it("should connect to the collector on port 80", function () {
       configuration.port.should.equal(80);
+    });
+
+    it("should have no proxy host", function () {
+      configuration.proxy_host.should.equal('');
+    });
+
+    it("should have no proxy port", function () {
+      configuration.proxy_port.should.equal('');
     });
 
     it("should log at the info level", function () {
