@@ -3,6 +3,7 @@
 var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
+  , should          = chai.should()
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
   , configurator    = require(path.join(__dirname, '..', 'lib', 'config'))
   , logger          = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
@@ -83,15 +84,15 @@ describe('TraceAggregator', function () {
       var aggregator  = new TraceAggregator(config);
       aggregator.reported = 10; // needed to override "first 5"
 
-      aggregator.add(createTransaction(URI, 300));
+      aggregator.add(createTransaction(URI, 3000));
 
-      aggregator.add(createTransaction(URI, 200));
+      aggregator.add(createTransaction(URI, 2100));
       expect(aggregator.requestTimes['WebTransaction/Uri/simple'],
-             'lower value').equal(300);
+             'lower value').equal(3000);
 
-      aggregator.add(createTransaction(URI, 400));
+      aggregator.add(createTransaction(URI, 4000));
       expect(aggregator.requestTimes['WebTransaction/Uri/simple'],
-             'higher value').equal(400);
+             'higher value').equal(4000);
     });
 
     it("should only track transactions for the top N scopes", function (done) {
@@ -99,37 +100,37 @@ describe('TraceAggregator', function () {
       var aggregator = new TraceAggregator(config);
       aggregator.reported = 10; // needed to override "first 5"
 
-      aggregator.add(createTransaction('/testOne', 800));
+      aggregator.add(createTransaction('/testOne', 8000));
       aggregator.once('harvest', function (encoded) {
         expect(encoded, '1st harvest').an('array');
-        aggregator.add(createTransaction('/testTwo', 800));
+        aggregator.add(createTransaction('/testTwo', 8000));
         aggregator.once('harvest', function (encoded) {
           expect(encoded, '2nd harvest').an('array');
-          aggregator.add(createTransaction('/testThr', 800));
+          aggregator.add(createTransaction('/testThr', 8000));
           aggregator.once('harvest', function (encoded) {
             expect(encoded, '3rd harvest').an('array');
-            aggregator.add(createTransaction('/testFor', 800));
+            aggregator.add(createTransaction('/testFor', 8000));
             aggregator.once('harvest', function (encoded) {
               expect(encoded, '4th harvest').an('array');
-              aggregator.add(createTransaction('/testF5v', 800));
+              aggregator.add(createTransaction('/testF5v', 8000));
               aggregator.once('harvest', function (encoded) {
                 expect(encoded, '5th harvest').an('array');
                 // n = 5, so this sixth transaction is gonna lose
-                aggregator.add(createTransaction('/testSix', 900));
+                aggregator.add(createTransaction('/testSix', 9000));
                 aggregator.once('harvest', function (encoded) {
-                  expect(encoded, '6th harvest').equal(undefined);
+                  should.not.exist(encoded, '6th harvest');
                   expect(aggregator.requestTimes['WebTransaction/Uri/testOne'],
-                         "1 of top 5").equal(800);
+                         "1 of top 5").equal(8000);
                   expect(aggregator.requestTimes['WebTransaction/Uri/testTwo'],
-                         "2 of top 5").equal(800);
+                         "2 of top 5").equal(8000);
                   expect(aggregator.requestTimes['WebTransaction/Uri/testThr'],
-                         "3 of top 5").equal(800);
+                         "3 of top 5").equal(8000);
                   expect(aggregator.requestTimes['WebTransaction/Uri/testFor'],
-                         "4 of top 5").equal(800);
+                         "4 of top 5").equal(8000);
                   expect(aggregator.requestTimes['WebTransaction/Uri/testF5v'],
-                         "5 of top 5").equal(800);
-                  expect(aggregator.requestTimes['WebTransaction/Uri/testSix'],
-                         "6 of top 5 -- OOPS").equal(undefined);
+                         "5 of top 5").equal(8000);
+                  should.not.exist(aggregator.requestTimes['WebTransaction/Uri/testSix'],
+                                   "6 of top 5 -- OOPS");
 
                   return done();
                 });
@@ -253,11 +254,11 @@ describe('TraceAggregator', function () {
       }
     });
 
-    var aggregator  = new TraceAggregator(config);
+    var aggregator = new TraceAggregator(config);
     aggregator.once('harvest', function firstHarvest(empty) {
       expect(empty).equal(undefined);
 
-      expect(function addExists() { aggregator.add(createTransaction('/test', 418)); }).not.throws();
+      expect(function addExists() { aggregator.add(createTransaction('/test', 4180)); }).not.throws();
 
       aggregator.once('harvest', function finalHarvest(traceData) {
         expect(traceData).an('array');
@@ -285,13 +286,15 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config);
 
-    aggregator.add(createTransaction('/test', 20));
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(20);
+    aggregator.add(createTransaction('/test', 2100));
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(2100);
   });
 
   it("should always report slow traces until 5 have been sent", function (done) {
+    agent.apdexT = 0;
     var config = configurator.initialize(logger, {
       config : {
+        apdex_t : 0,
         transaction_tracer : {
           enabled : true
         }
@@ -302,10 +305,10 @@ describe('TraceAggregator', function () {
 
     var verifier = function (encoded, shouldExist) {
       if (shouldExist) {
-        expect(encoded).not.equal(undefined);
+        should.exist(encoded);
       }
       else {
-        expect(encoded).equal(undefined);
+        should.not.exist(encoded);
       }
     };
 
@@ -359,14 +362,14 @@ describe('TraceAggregator', function () {
       });
 
       var aggregator = new TraceAggregator(config);
-      aggregator.add(createTransaction('/test', 503));
+      aggregator.add(createTransaction('/test', 5030));
 
       var remaining = 4;
       // 2nd-5th harvests: no serialized trace, timing still set
       var looper = function (encoded) {
         expect(encoded).equal(undefined);
         expect(aggregator.requestTimes['WebTransaction/Uri/test'],
-               "still churning").equal(503);
+               "still churning").equal(5030);
 
         remaining -= 1;
         if (remaining === 0) {
@@ -388,7 +391,7 @@ describe('TraceAggregator', function () {
       aggregator.once('harvest', function (encoded) {
         expect(encoded).not.equal(undefined);
         expect(aggregator.requestTimes['WebTransaction/Uri/test'],
-               "still churning").equal(503);
+               "still churning").equal(5030);
 
         aggregator.on('harvest', looper);
         for (var i = 0; i < 4; i++) aggregator.harvest();

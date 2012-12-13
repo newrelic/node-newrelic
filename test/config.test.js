@@ -93,6 +93,13 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should pick up whether the apdexT is set", function () {
+      idempotentEnv('NEW_RELIC_APDEX_T', 0.666, function (tc) {
+        should.exist(tc.apdex_t);
+        expect(tc.apdex_t).equal('0.666');
+      });
+    });
+
     it("should pick up whether the error collector is enabled", function () {
       idempotentEnv('NEW_RELIC_ERRORS_ENABLED', 'NO', function (tc) {
         should.exist(tc.error_collector.enabled);

@@ -182,7 +182,7 @@ describe("the New Relic agent", function () {
 
       describe("when handling events", function () {
         it("should update the metrics' apdex tolerating value when configuration changes", function (done) {
-          expect(agent.metrics.apdexT).equal(0);
+          expect(agent.metrics.apdexT).equal(0.5);
           process.nextTick(function () {
             should.exist(agent.metrics.apdexT);
             agent.metrics.apdexT.should.equal(0.666);
@@ -194,7 +194,7 @@ describe("the New Relic agent", function () {
         });
 
         it("should reset the configuration and metrics normalizer when the agent connects", function (done) {
-          should.not.exist(agent.config.apdex_t);
+          expect(agent.config.apdex_t).equal(0.5);
           process.nextTick(function () {
             expect(agent.config.apdex_t).equal(0.742);
             expect(agent.metrics.apdexT).equal(0.742);
@@ -228,11 +228,11 @@ describe("the New Relic agent", function () {
           var trans = agent.createTransaction();
           // need to initialize the trace
           var trace = trans.getTrace();
-          trans.measureWeb('/ham/update/3', 200, 304);
+          trans.measureWeb('/ham/update/3', 200, 2100);
 
           agent.once('transactionFinished', function () {
-            expect(agent.traces.trace, "trace should be captured").not.equal(undefined);
-            expect(agent.traces.trace.getDurationInMillis(), "same trace just passed in").equal(304);
+            should.exist(agent.traces.trace);
+            expect(agent.traces.trace.getDurationInMillis(), "same trace just passed in").equal(2100);
 
             return done();
           });
