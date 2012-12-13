@@ -128,6 +128,13 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should pick up the transaction trace Top N scale", function () {
+      idempotentEnv('NEW_RELIC_TRACER_TOP_N', 20, function (tc) {
+        should.exist(tc.transaction_tracer.trace_threshold);
+        expect(tc.transaction_tracer.top_n).equal('20');
+      });
+    });
+
     it("should pick up whether internal metrics are enabled", function () {
       idempotentEnv('NEW_RELIC_DEBUG_METRICS', true, function (tc) {
         should.exist(tc.debug.internal_metrics);
@@ -165,32 +172,40 @@ describe("the agent configuration", function () {
       configuration.port.should.equal(80);
     });
 
-    it("should log at the info level by default", function () {
+    it("should log at the info level", function () {
       configuration.logging.level.should.equal('info');
     });
 
-    it("should have a blank default log filepath", function () {
+    it("should have a blank log filepath", function () {
       configuration.logging.filepath.should.equal('');
     });
 
-    it("should enable the agent by default", function () {
+    it("should enable the agent", function () {
       configuration.agent_enabled.should.equal(true);
     });
 
-    it("should enable the error collector by default", function () {
+    it("should have an apdexT of 0.5", function () {
+      configuration.apdex_t.should.equal(0.5);
+    });
+
+    it("should enable the error collector", function () {
       configuration.error_collector.enabled.should.equal(true);
     });
 
-    it("should ignore status code 404 by default", function () {
+    it("should ignore status code 404", function () {
       configuration.error_collector.ignore_status_codes.should.eql([404]);
     });
 
-    it("should enable the transaction tracer by default", function () {
+    it("should enable the transaction tracer", function () {
       configuration.transaction_tracer.enabled.should.equal(true);
     });
 
-    it("should set the transaction tracer threshold to 'apdex_f' by default", function () {
+    it("should set the transaction tracer threshold to 'apdex_f'", function () {
       configuration.transaction_tracer.trace_threshold.should.equal('apdex_f');
+    });
+
+    it("should collect one slow transaction trace per harvest cycle", function () {
+      configuration.transaction_tracer.top_n.should.equal(1);
     });
   });
 
