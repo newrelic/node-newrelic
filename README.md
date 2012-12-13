@@ -67,7 +67,8 @@ but for now, here's a list of the variables and their values:
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including
   the filename. The agent will shut down the process if it can't create
   this file, and it creates the log file with the same umask of the
-  process.
+  process. Setting this to `stdout` will write all logging to stdout, and
+	`stderr` will write all logging to stderr.
 * `NEW_RELIC_ERRORS_ENABLED`: Whether or not to trace errors within your
   application. Values are `true` or `false`.
 * `NEW_RELIC_ERRORS_CODES_IGNORED`: Comma-delimited list of HTTP
