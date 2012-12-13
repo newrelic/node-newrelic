@@ -45,91 +45,91 @@ describe("the agent configuration", function () {
 
   describe("when overriding configuration values via environment variables", function () {
     it("should pick up the application name", function () {
-      idempotentEnv('NR_APP_NAME', 'feeling testy,and schizophrenic', function (tc) {
+      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic', function (tc) {
         should.exist(tc.app_name);
         expect(tc.app_name).eql(['feeling testy', 'and schizophrenic']);
       });
     });
 
     it("should pick up the license key", function () {
-      idempotentEnv('NR_LICENSE_KEY', 'hambulance', function (tc) {
+      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'hambulance', function (tc) {
         should.exist(tc.license_key);
         expect(tc.license_key).equal('hambulance');
       });
     });
 
     it("should pick up the collector host", function () {
-      idempotentEnv('NR_COLLECTOR_HOST', 'localhost', function (tc) {
+      idempotentEnv('NEW_RELIC_HOST', 'localhost', function (tc) {
         should.exist(tc.host);
         expect(tc.host).equal('localhost');
       });
     });
 
     it("should pick up the collector port", function () {
-      idempotentEnv('NR_COLLECTOR_PORT', 7777, function (tc) {
+      idempotentEnv('NEW_RELIC_PORT', 7777, function (tc) {
         should.exist(tc.port);
         expect(tc.port).equal('7777');
       });
     });
 
     it("should pick up the log level", function () {
-      idempotentEnv('NR_LOGGING_LEVEL', 'XXNOEXIST', function (tc) {
+      idempotentEnv('NEW_RELIC_LOG_LEVEL', 'XXNOEXIST', function (tc) {
         should.exist(tc.logging.level);
         expect(tc.logging.level).equal('XXNOEXIST');
       });
     });
 
     it("should pick up the log filepath", function () {
-      idempotentEnv('NR_LOGGING_FILEPATH', '/highway/to/the/danger/zone', function (tc) {
+      idempotentEnv('NEW_RELIC_LOG', '/highway/to/the/danger/zone', function (tc) {
         should.exist(tc.logging.filepath);
         expect(tc.logging.filepath).equal('/highway/to/the/danger/zone');
       });
     });
 
     it("should pick up whether the agent is enabled", function () {
-      idempotentEnv('NR_AGENT_ENABLED', 0, function (tc) {
+      idempotentEnv('NEW_RELIC_ENABLED', 0, function (tc) {
         should.exist(tc.agent_enabled);
         expect(tc.agent_enabled).equal(false);
       });
     });
 
     it("should pick up whether the error collector is enabled", function () {
-      idempotentEnv('NR_ERROR_COLLECTOR_ENABLED', 'NO', function (tc) {
+      idempotentEnv('NEW_RELIC_ERRORS_ENABLED', 'NO', function (tc) {
         should.exist(tc.error_collector.enabled);
         expect(tc.error_collector.enabled).equal(false);
       });
     });
 
     it("should pick up which status codes are ignored", function () {
-      idempotentEnv('NR_ERROR_COLLECTOR_IGNORE_STATUS_CODES', '401,404,502', function (tc) {
+      idempotentEnv('NEW_RELIC_ERRORS_CODES_IGNORED', '401,404,502', function (tc) {
         should.exist(tc.error_collector.ignore_status_codes);
         expect(tc.error_collector.ignore_status_codes).eql(['401', '404', '502']);
       });
     });
 
     it("should pick up whether the transaction tracer is enabled", function () {
-      idempotentEnv('NR_TRANSACTION_TRACER_ENABLED', false, function (tc) {
+      idempotentEnv('NEW_RELIC_TRACER_ENABLED', false, function (tc) {
         should.exist(tc.transaction_tracer.enabled);
         expect(tc.transaction_tracer.enabled).equal(false);
       });
     });
 
     it("should pick up the transaction trace threshold", function () {
-      idempotentEnv('NR_TRANSACTION_TRACER_TRACE_THRESHOLD', 0.02, function (tc) {
+      idempotentEnv('NEW_RELIC_TRACER_THRESHOLD', 0.02, function (tc) {
         should.exist(tc.transaction_tracer.trace_threshold);
         expect(tc.transaction_tracer.trace_threshold).equal('0.02');
       });
     });
 
     it("should pick up whether internal metrics are enabled", function () {
-      idempotentEnv('NR_DEBUG_INTERNAL_METRICS', true, function (tc) {
+      idempotentEnv('NEW_RELIC_DEBUG_METRICS', true, function (tc) {
         should.exist(tc.debug.internal_metrics);
         expect(tc.debug.internal_metrics).equal(true);
       });
     });
 
     it("should pick up whether tracing of the transaction tracer is enabled", function () {
-      idempotentEnv('NR_DEBUG_TRACER_TRACING', 'yup', function (tc) {
+      idempotentEnv('NEW_RELIC_DEBUG_TRACER', 'yup', function (tc) {
         should.exist(tc.debug.tracer_tracing);
         expect(tc.debug.tracer_tracing).equal(true);
       });
@@ -196,8 +196,8 @@ describe("the agent configuration", function () {
       ;
 
     beforeEach(function (done) {
-      if (process.env.NEWRELIC_HOME) {
-        origHome = process.env.NEWRELIC_HOME;
+      if (process.env.NEW_RELIC_HOME) {
+        origHome = process.env.NEW_RELIC_HOME;
       }
 
       startDir = process.cwd();
@@ -209,7 +209,7 @@ describe("the agent configuration", function () {
           if (error) return done(error);
 
           process.chdir(NOPLACEDIR);
-          process.env.NEWRELIC_HOME = DESTDIR;
+          process.env.NEW_RELIC_HOME = DESTDIR;
 
           var sampleConfig = fs.createReadStream(path.join(__dirname, '..', 'lib', 'config.default.js'));
           var sandboxedConfig = fs.createWriteStream(CONFIGPATH);
@@ -222,10 +222,10 @@ describe("the agent configuration", function () {
 
     afterEach(function (done) {
       if (origHome) {
-        process.env.NEWRELIC_HOME = origHome;
+        process.env.NEW_RELIC_HOME = origHome;
       }
       else {
-        delete process.env.NEWRELIC_HOME;
+        delete process.env.NEW_RELIC_HOME;
       }
       origHome = null;
 

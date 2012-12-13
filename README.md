@@ -52,38 +52,39 @@ value found from the environment will always take precedence.
 This documentation will be moving to New Relic's servers with the 1.0 release,
 but for now, here's a list of the variables and their values:
 
-* `NEWRELIC_HOME`: path to the director in which you've placed newrelic.js.
-* `NR_APP_NAME`: The name of this application, for reporting to New Relic's
-  servers. This value can be also be a comma-delimited list of names.
-* `NR_AGENT_ENABLED`: Whether or not the agent should run. Good for
+* `NEW_RELIC_HOME`: path to the director in which you've placed newrelic.js.
+* `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
+  New Relic's servers. This value can be also be a comma-delimited list of
+  names.
+* `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
   temporarily disabling the agent while debugging other issues with your
   code.
-* `NR_LICENSE_KEY`: Your New Relic license key.
-* `NR_LOGGING_LEVEL`: Logging priority for the New Relic agent. Can be one of
+* `NEW_RELIC_LICENSE_KEY`: Your New Relic license key.
+* `NEW_RELIC_LOG_LEVEL`: Logging priority for the New Relic agent. Can be one of
   `error`, `warn`, `info`, `debug`, or `trace`. `debug` and `trace` are
   pretty chatty; unless you're helping New Relic figure out irregularities
   with the agent, you're probably best off using `info` or higher.
-* `NR_LOGGING_FILEPATH`: Complete path to the New Relic agent log, including
+* `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including
   the filename. The agent will shut down the process if it can't create
   this file, and it creates the log file with the same umask of the
   process.
-* `NR_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within your
+* `NEW_RELIC_ERRORS_ENABLED`: Whether or not to trace errors within your
   application. Values are `true` or `false`.
-* `NR_ERROR_COLLECTOR_IGNORE_STATUS_CODES`: Comma-delimited list of HTTP
+* `NEW_RELIC_ERRORS_CODES_IGNORED`: Comma-delimited list of HTTP
   status codes to ignore. Maybe you don't care if payment is required?
-* `NR_TRANSACTION_TRACER_ENABLED`: Whether to collect and submit slow
+* `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow
   transaction traces to New Relic. Values are `true` or `false`.
-* `NR_TRANSACTION_TRACER_TRACE_THRESHOLD`: Millisecond duration at which
+* `NEW_RELIC_TRACER_THRESHOLD`: Millisecond duration at which
   a transaction trace will count as slow and be sent to New Relic. Can
   also be set to `apdex_f`, at which point it will set the trace threshold
   to 4 times the current ApdexT.
-* `NR_COLLECTOR_HOST`: Hostname for the New Relic collector proxy. You
+* `NEW_RELIC_HOST`: Hostname for the New Relic collector proxy. You
   shouldn't need to change this.
-* `NR_COLLECTOR_PORT`: Port number on which the New Relic collector proxy
+* `NEW_RELIC_PORT`: Port number on which the New Relic collector proxy
   will be listening.
-* `NR_DEBUG_INTERNAL_METRICS`: Whether to collect internal supportability
+* `NEW_RELIC_DEBUG_METRICS`: Whether to collect internal supportability
   metrics for the agent. Don't mess with this unless New Relic asks you to.
-* `NR_DEBUG_TRACER_TRACING`: Whether to dump traces of the transaction tracer's
+* `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
   internal operation. You're welcome to enable it, but it's unlikely to be
   edifying unless you're a New Relic Node.js engineer.
 
