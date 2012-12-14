@@ -59,19 +59,23 @@ but for now, here's a list of the variables and their values:
 * `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
   temporarily disabling the agent while debugging other issues with your
   code.
+* `NEW_RELIC_NO_CONFIG_FILE`: Inhibit loading of the configuration file
+  altogether. Use with care. This presumes that all important configuration
+  will be available via environment variables, and some log messages
+  assume that a config file exists.
 * `NEW_RELIC_LICENSE_KEY`: Your New Relic license key.
-* `NEW_RELIC_LOG_LEVEL`: Logging priority for the New Relic agent. Can be one of
-  `error`, `warn`, `info`, `debug`, or `trace`. `debug` and `trace` are
-  pretty chatty; unless you're helping New Relic figure out irregularities
-  with the agent, you're probably best off using `info` or higher.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including
   the filename. The agent will shut down the process if it can't create
   this file, and it creates the log file with the same umask of the
   process. Setting this to `stdout` will write all logging to stdout, and
-	`stderr` will write all logging to stderr.
-* `NEW_RELIC_ERRORS_ENABLED`: Whether or not to trace errors within your
-  application. Values are `true` or `false`.
-* `NEW_RELIC_ERRORS_CODES_IGNORED`: Comma-delimited list of HTTP
+  `stderr` will write all logging to stderr.
+* `NEW_RELIC_LOG_LEVEL`: Logging priority for the New Relic agent. Can be one of
+  `error`, `warn`, `info`, `debug`, or `trace`. `debug` and `trace` are
+  pretty chatty; unless you're helping New Relic figure out irregularities
+  with the agent, you're probably best off using `info` or higher.
+* `NEW_RELIC_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within
+  your application. Values are `true` or `false`.
+* `NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES`: Comma-delimited list of HTTP
   status codes to ignore. Maybe you don't care if payment is required?
 * `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow
   transaction traces to New Relic. Values are `true` or `false`.
@@ -79,6 +83,11 @@ but for now, here's a list of the variables and their values:
   a transaction trace will count as slow and be sent to New Relic. Can
   also be set to `apdex_f`, at which point it will set the trace threshold
   to 4 times the current ApdexT.
+* `NEW_RELIC_TRACER_TOP_N`: Number of transaction traces to send to New
+  Relic on each 60-second harvest cycle. Defaults to 1. This can lead
+  to noisy transaction traces and should be used with care.
+* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value.
+  This is more often than not set from the server.
 * `NEW_RELIC_HOST`: Hostname for the New Relic collector proxy. You
   shouldn't need to change this.
 * `NEW_RELIC_PORT`: Port number on which the New Relic collector proxy
@@ -88,17 +97,6 @@ but for now, here's a list of the variables and their values:
 * `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
   internal operation. You're welcome to enable it, but it's unlikely to be
   edifying unless you're a New Relic Node.js engineer.
-
-## Running tests
-
-The agent's unit tests use [mocha](http://visionmedia.github.com/mocha/). Its
-integration tests use [node-tap](http://github.com/isaacs/node-tap/). If you
-want to run them yourself, they can be run via `npm test`, except on Windows.
-Work on a Windows solution is forthcoming.
-
-If you encounter any test failures, please contact New Relic support or the
-beta list, and be sure to include whatever information you can about how you're
-running Node and what the test suite returned.
 
 ## Recent changes
 

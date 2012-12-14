@@ -1,3 +1,13 @@
+### v0.9.10-85 / beta-10 (2012-12-13):
+
+* Squared up the environment variable names with existing practice,
+  especially with an eye towards conformity with Heroku documentation.
+* Flushed out all configuration used anywhere in the agent and made sure
+  it was documented in config.default.js.
+* Using the new environment setting NEW_RELIC_NO_CONFIG_FILE, override the
+  need to have a settings file at all.
+* Add the ability to send log output to stdout or stderr.
+
 ### v0.9.9-82 / beta-09 (2012-12-12):
 
 * Can now configure the agent via environment variables. See README.md for
