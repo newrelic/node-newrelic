@@ -108,21 +108,22 @@ describe("the agent configuration", function () {
     });
 
     it("should pick up whether the apdexT is set", function () {
-      idempotentEnv('NEW_RELIC_APDEX_T', 0.666, function (tc) {
+      idempotentEnv('NEW_RELIC_APDEX', 0.666, function (tc) {
         should.exist(tc.apdex_t);
         expect(tc.apdex_t).equal('0.666');
       });
     });
 
     it("should pick up whether the error collector is enabled", function () {
-      idempotentEnv('NEW_RELIC_ERRORS_ENABLED', 'NO', function (tc) {
+      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ENABLED', 'NO', function (tc) {
         should.exist(tc.error_collector.enabled);
         expect(tc.error_collector.enabled).equal(false);
       });
     });
 
     it("should pick up which status codes are ignored", function () {
-      idempotentEnv('NEW_RELIC_ERRORS_CODES_IGNORED', '401,404,502', function (tc) {
+      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+                    '401,404,502', function (tc) {
         should.exist(tc.error_collector.ignore_status_codes);
         expect(tc.error_collector.ignore_status_codes).eql(['401', '404', '502']);
       });
