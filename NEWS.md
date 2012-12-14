@@ -21,7 +21,7 @@
 * Express view rendering was being instrumented improperly before, causing
   rendering to fail and Express to hang. Both Express 2 and 3 were affected,
   and both have been fixed.
-* When NODE_PATH is set, resolve NODE_PATh elements properly so that package
+* When NODE_PATH is set, resolve NODE_PATH elements properly so that package
   lookup for environmental information gathering doesn't crash the app.
 * Now send the Node version along with the rest of the environment data.
 
