@@ -39,8 +39,11 @@ function idempotentEnv(name, value, callback) {
 
 describe("the agent configuration", function () {
   it("should handle a directly passed minimal configuration", function () {
-    var c = config.initialize(logger, {config : {'agent_enabled' : false}});
-    c.agent_enabled.should.equal(false);
+    var c;
+    expect(function testInitialize() {
+      c = config.initialize(logger, {config : {}});
+    }).not.throws();
+    c.agent_enabled.should.equal(true);
   });
 
   describe("when overriding configuration values via environment variables", function () {
@@ -260,7 +263,7 @@ describe("the agent configuration", function () {
           var sandboxedConfig = fs.createWriteStream(CONFIGPATH);
           sampleConfig.pipe(sandboxedConfig);
 
-          return done();
+          sandboxedConfig.on('close', function () { return done(); });
         });
       });
     });
@@ -294,6 +297,19 @@ describe("the agent configuration", function () {
     it("should expose the location of the overridden configuration on the resulting object", function () {
       var configuration = config.initialize(logger);
       configuration.newrelic_home.should.equal(DESTDIR);
+    });
+
+    it("should ignore the configuration file completely when so directed", function () {
+      process.env.NEW_RELIC_NO_CONFIG_FILE = 'true';
+      process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile';
+
+      var configuration;
+      expect(function envTest() {
+        configuration = config.initialize(logger);
+      }).not.throws();
+
+      should.not.exist(configuration.newrelic_home);
+      expect(configuration.error_collector && configuration.error_collector.enabled).equal(true);
     });
   });
 });
