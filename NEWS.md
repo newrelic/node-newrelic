@@ -1,3 +1,11 @@
+### v0.9.9-82 / beta-09 (2012-12-12):
+
+* Can now configure the agent via environment variables. See README.md for
+  details.
+* Can now configure the location of the agent log via either logging.filepath
+  in the configuration file, or NR_LOGGING_FILEPATH in the app's environment.
+* Turning off the error tracer via configuration now actually disables it.
+
 ### v0.9.7-75 / beta-08 (2012-12-06):
 
 * Express view rendering was being instrumented improperly before, causing
