@@ -3,6 +3,7 @@
 var path                = require('path')
   , chai                = require('chai')
   , expect              = chai.expect
+  , should              = chai.should()
   , sinon               = require('sinon')
   , logger              = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
   , config              = require(path.join(__dirname, '..', 'lib', 'config'))
@@ -177,6 +178,17 @@ describe("CollectorConnection", function () {
 
         return done();
       });
+    });
+
+    // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/Shutdown.html
+    it("should send shutdown command in the expected format", function () {
+      connection.sendShutdown();
+      mockConnection.verify();
+
+      expect(method).equal('shutdown');
+      expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
+                                              'shutdown', SAMPLE_RUN_ID));
+      should.not.exist(params);
     });
   });
 });
