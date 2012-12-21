@@ -5,7 +5,7 @@
 * Correctly wrap net.Server.prototype.listen -- wasn't returning the
   server object, which broke some apps.
 * If you're on a SmartOS VM with a 64-bit base image and a 64-bit build of
-  node that's v0.8.5 or earlier, the agent will no longer cause node to
+  Node that's v0.8.5 or earlier, the agent will no longer cause Node to
   crash. Don't even ask.
 
 ### v0.9.10-85 / beta-10 (2012-12-13):
