@@ -5,7 +5,8 @@ TAP          = node_modules/.bin/tap
 NODE_VERSION = $(shell node --version)
 INTEGRATION  = $(shell find . -name *.tap.js -print)
 # only want to find root package.json files, not those in node_modules
-INT_PACKAGES = $(shell find test/integration/versioned -depth 2 -name package.json -print)
+INT_PACKAGES = $(shell echo test/integration/versioned/*/package.json)
+STARTDIR     = $(shell pwd)
 
 .PHONY: all build test-cov test clean notes pending pending-core unit integration
 all: build test
@@ -32,10 +33,10 @@ integration: node_modules
 	@rm -f test/integration/newrelic_agent.log
 	@for package in $(INT_PACKAGES) ; do \
 		dir=$$(dirname $$package) ; \
-		pushd $$dir ; \
+		cd $$dir ; \
 		rm -rf node_modules ; \
 		npm install ; \
-		popd ; \
+		cd $(STARTDIR) ; \
 	done
 	@time $(TAP) $(INTEGRATION)
 
