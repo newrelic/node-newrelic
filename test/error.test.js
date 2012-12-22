@@ -125,6 +125,32 @@ describe("ErrorTracer", function () {
     });
   });
 
+  describe("when monitoring function application for errors", function () {
+    var transaction;
+
+    beforeEach(function () {
+      var agent = helper.loadMockedAgent();
+      transaction = new Transaction(agent);
+    });
+
+    it("should rethrow the exception", function () {
+      var testFunction = function () {
+        var uninitialized;
+        uninitialized.explosion.happens.here = "fabulous";
+      };
+
+      expect(function () { service.monitor(transaction, testFunction); }).throws(TypeError);
+    });
+
+    it("should return the correct value", function () {
+      var safeFunction = function (val) {
+        return val * val;
+      };
+
+      expect(service.monitor(transaction, safeFunction, null, [3])).equal(9);
+    });
+  });
+
   if (dominion.available) {
     describe("when domains are available", function () {
       var mochaHandler
