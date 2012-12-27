@@ -67,7 +67,7 @@ describe("built-in fs module instrumentation", function () {
       process.on('uncaughtException', mochaHandler);
     });
 
-    it("should trap errors thrown by the instrumentation in the error tracer", function (done) {
+    it("should trace errors thrown by the instrumentation in the error tracer", function (done) {
       process.once('uncaughtException', function () {
         var errors = agent.errors.errors; // not my finest naming scheme
         expect(errors.length).equal(1);
