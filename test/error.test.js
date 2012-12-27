@@ -38,16 +38,14 @@ describe("ErrorTracer", function () {
   });
 
   it("should retain a maximum of 20 errors to send", function () {
-    var error = new Error('test error');
-
-    for (var i = 0; i < 5; i++) service.add(null, error);
+    for (var i = 0; i < 5; i++) service.add(null, new Error('filling the queue'));
     expect(service.errors.length).equal(5);
 
-    for (i = 0; i < 5; i++) service.add(null, error);
+    for (i = 0; i < 5; i++) service.add(null, new Error('more filling the queue'));
     expect(service.errors.length).equal(10);
 
     // this will take the tracer 3 over the limit of 20
-    for (i = 0; i < 13; i++) service.add(null, error);
+    for (i = 0; i < 13; i++) service.add(null, new Error('overfilling the queue'));
     expect(service.errorCount).equal(23);
     expect(service.errors.length).equal(20);
   });
