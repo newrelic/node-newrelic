@@ -32,11 +32,12 @@ describe("CollectorConnection", function () {
     , collectorHost = 'staging-collector.newrelic.com'
     ;
 
-  describe("with a mocked DataSender", function () {
-    var SAMPLE_RUN_ID = 101010101
-      , PROTOCOL_VERSION = 9
-      ;
+  // CONSTANTS
+  var SAMPLE_RUN_ID = 101010101
+    , PROTOCOL_VERSION = 9
+    ;
 
+  describe("with a mocked DataSender", function () {
     var connection
       , mockConnection
       , method
@@ -189,6 +190,41 @@ describe("CollectorConnection", function () {
       expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                               'shutdown', SAMPLE_RUN_ID));
       should.not.exist(params);
+    });
+  });
+
+  describe("when sent a ForcedRestartException by the collector", function () {
+    it("should restart", function (done) {
+      var invokeMethod = DataSender.prototype.invokeMethod;
+
+      agent.once('restart', function () {
+        // if this event is received, mission accomplished
+        DataSender.prototype.invokeMethod = invokeMethod;
+        return done();
+      });
+
+      // don't need to actually talk to the connector
+      var emitted = false;
+      DataSender.prototype.invokeMethod = function (name, data) {
+        // don't keep emitting errors or else sendShutdown will trigger an infinite
+        // recursion.
+        if (!emitted) {
+          emitted = true;
+          this.emit('error', 'metric_data', {
+            error_type : "NewRelic::Agent::ForceRestartException",
+            message    : "RPM has detected that this agent has stale configuration. " +
+                         "Launch time=2012-12-07 22:20:37 " +
+                         "Config time=2012-12-07 22:21:55 " +
+                         "Forcing restart."
+          });
+        }
+      };
+
+      var connection        = new CollectorConnection(agent);
+      connection.agentRunId = SAMPLE_RUN_ID;
+      agent.connection      = connection;
+
+      connection.sendMetricData(0, 1, [1]);
     });
   });
 });
