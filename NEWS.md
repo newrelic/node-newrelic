@@ -1,3 +1,8 @@
+### v0.9.12-91 / beta-12 (2012-12-28):
+
+* Fixed the agent's auto-restart support to cleanly shut down the
+	connection (also fixed a bunch of bugs in restart).
+
 ### v0.9.11-88 / beta-11 (2012-12-20):
 
 * When server-side configuration changes, the agent will now correctly
