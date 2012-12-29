@@ -221,7 +221,7 @@ describe("ErrorTracer", function () {
         });
 
         it("should have the error's message", function () {
-          expect(json[2]).equal('sample error');
+          expect(json[2]).match(/^Error: sample error/);
         });
 
         it("should have the error's constructor name (class)", function () {
