@@ -111,3 +111,10 @@ soon is in TODO.md.
 
 The New Relic Node.js agent is free-to-use, proprietary software. Please see
 the full license (found in LICENSE in this distribution) for details.
+
+## Dependency Licenses
+
+The New Relic Node.js agent uses code from the following open source projects under the following licenses:
+    Bunyan                http://opensource.org/licenses/MIT
+
+The remainder of the code is under the New Relic Agent License contained in the LICENSE file.
