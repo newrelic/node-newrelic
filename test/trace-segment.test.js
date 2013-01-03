@@ -63,7 +63,7 @@ describe("TraceSegment", function () {
     before(function () {
       var trace   = new Trace('Test/TraceExample03');
       var segment = new TraceSegment(new Trace('Test/TraceExample03'), 'UnitTest');
-      webChild    = segment.addWeb('/test?test1=value1&test2&test3=50');
+      webChild    = segment.addWeb('/test?test1=value1&test2&test3=50&test4=');
 
       trace.setDurationInMillis(1, 0);
       webChild.setDurationInMillis(1, 0);
@@ -82,8 +82,12 @@ describe("TraceSegment", function () {
       expect(webChild.parameters.test3).equal('50');
     });
 
-    it("should set parameters with empty values to true", function () {
+    it("should set bare parameters to true (as in present)", function () {
       expect(webChild.parameters.test2).equal(true);
+    });
+
+    it("should set parameters with empty values to ''", function () {
+      expect(webChild.parameters.test4).equal('');
     });
 
     it("should serialize the segment with the parameters", function () {
@@ -91,7 +95,7 @@ describe("TraceSegment", function () {
         0,
         1,
         'WebTransaction/Uri/test',
-        {test1 : 'value1', test2 : true, test3 : '50'},
+        {test1 : 'value1', test2 : true, test3 : '50', test4 : ''},
         []
       ];
       expect(webChild.toJSON()).deep.equal(expected);
