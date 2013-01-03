@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "0.9.12-91",
+  "version": "0.9.12-92",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "contributors": [
     {
@@ -23,7 +23,7 @@
     "debugging",
     "profiling"
   ],
-  "homepage": "http://github.com/newrelic/nodejs_agent",
+  "homepage": "http://github.com/newrelic/node-newrelic",
   "engines": {
     "node": ">=0.6.0"
   },
@@ -59,6 +59,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/newrelic/nodejs_agent.git"
+    "url": "https://github.com/newrelic/node-newrelic.git"
   }
 }
