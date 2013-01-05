@@ -20,7 +20,7 @@ describe ("MetricNormalizer", function () {
   it("should normalize with an empty rule set", function () {
     expect(function () {
       var normalizer = new Normalizer();
-      normalizer.parseMetricRules({url_rules : []});
+      normalizer.load({url_rules : []});
 
       expect(normalizer.normalize('/sample')).eql({name : '/sample'});
     }).not.throws();
