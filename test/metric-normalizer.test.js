@@ -58,19 +58,19 @@ describe ("MetricNormalizer", function () {
 
   it("should normalize a JPEGgy URL", function () {
     var normalizer = new Normalizer(samples);
-    var normalized = normalizer.normalizeUrl('/excessivity.jpeg');
+    var normalized = normalizer.normalizeURL('/excessivity.jpeg');
     expect(normalized).equal('/*.jpeg');
   });
 
   it("should normalize a JPGgy URL", function () {
     var normalizer = new Normalizer(samples);
-    var normalized = normalizer.normalizeUrl('/excessivity.jpg');
+    var normalized = normalizer.normalizeURL('/excessivity.jpg');
     expect(normalized).equal('/*.jpg');
   });
 
   it("should normalize a CSS URL", function () {
     var normalizer = new Normalizer(samples);
-    var normalized = normalizer.normalizeUrl('/style.css');
+    var normalized = normalizer.normalizeURL('/style.css');
     expect(normalized).equal('/*.css');
   });
 
