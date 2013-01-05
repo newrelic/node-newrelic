@@ -67,6 +67,47 @@ describe("NormalizerRule", function () {
     });
   });
 
+  describe("with Saxon's patterns", function () {
+    describe("including '^(?!account|application).*'", function () {
+      beforeEach(function () {
+        rule = new Rule({
+          "each_segment"     : true,
+          "match_expression" : "^(?!account|application).*",
+          "replacement"      : "*"
+        });
+      });
+
+      it("implies '/account/myacc/application/test' -> '/account/*/application/*'",
+         function () {
+        expect(rule.apply('/account/myacc/application/test'))
+          .equal('/account/*/application/*');
+      });
+
+      it("implies '/oh/dude/account/myacc/application' -> '/*/*/account/*/application'",
+         function () {
+        expect(rule.apply('/oh/dude/account/myacc/application'))
+          .equal('/*/*/account/*/application');
+      });
+    });
+
+    describe("including '^(?!channel|download|popups|search|tap|user|related|admin|api|genres|notification).*'",
+            function () {
+      beforeEach(function () {
+        rule = new Rule({
+          "each_segment"     : true,
+          "match_expression" : "^(?!channel|download|popups|search|tap|user|related|admin|api|genres|notification).*",
+          "replacement"      : "*"
+        });
+      });
+
+      it("implies '/tap/stuff/user/gfy77t/view' -> '/tap/*/user/*/*'",
+         function () {
+        expect(rule.apply('/tap/stuff/user/gfy77t/view'))
+          .equal('/tap/*/user/*/*');
+      });
+    });
+  });
+
   describe("with a more complex substitution rule", function () {
     before(function () {
       // sample rule sent by staging collector 1 on 2012-08-29
