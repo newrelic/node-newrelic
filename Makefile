@@ -51,9 +51,7 @@ notes:
 	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE|TBD|hax' {} \; | less -r
 
 pending: node_modules
-	@$(MOCHA) --reporter list | grep -v ✓
-	@$(MOCHA) --reporter list test/integration | grep -v ✓
+	@$(MOCHA) --reporter list | egrep '^\s+\-'
 
 pending-core: node_modules
-	@$(MOCHA) --reporter list | grep -v ✓ | grep -v 'agent instrumentation of'
-	@$(MOCHA) --reporter list test/integration | grep -v ✓ | grep -v 'agent instrumentation of'
+	@$(MOCHA) --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
