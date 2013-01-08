@@ -8,9 +8,9 @@ the purposes of testing.
 ## Getting started
 
 1. [Install node](http://nodejs.org/#download). For now, at least 0.6 is
-   required. Some features (e.g. error tracing) depend in whole or in part on
-   features in 0.8 and above. Development work is being done against the latest
-   released version.
+   required. Some features (e.g. error tracing) depend in whole or in
+   part on features in 0.8 and above. Development work on the agentis
+   being done against the latest released non-development version of Node.
 2. Install this module via `npm install newrelic` for the application you
    want to monitor.
 3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
@@ -25,22 +25,23 @@ If you wish to keep the configuration for the agent separate from your
 application, the agent will look for newrelic.js in the directory referenced
 by the environment variable `NEWRELIC_HOME` if it's set.
 
-When you start your app, the agent should start up with it and start reporting
-data that will appear within our UI after a few minutes. Because the agent
-minimizes the amount of bandwidth it consumes, it only reports metrics, errors
-and transaction traces once a minute, so if you add the agent to tests that run
-in under a minute, the agent won't have time to report data to New Relic. The
-agent will write its log to a file named `newrelic_agent.log` in the
-application directory. If the agent doesn't send data or crashes your app, the
-log can help New Relic determine what went wrong, so be sure to send it along
-with any bug reports or support requests.
+When you start your app, the agent should start up with it and start
+reporting data that will appear within our UI after a few minutes.
+Because the agent minimizes the amount of bandwidth it consumes, it
+only reports data once a minute, so if you add the agent to tests
+that take less than a minute to run, the agent won't have time to
+report data to New Relic. The agent will write its log to a file named
+`newrelic_agent.log` in the application directory. If the agent doesn't
+send data or crashes your app, the log can help New Relic determine what
+went wrong, so be sure to send it along with any bug reports or support
+requests.
 
 ## Configuring the agent
 
-The agent can be tailored to your app's requirements, both from the server and
-via the newrelic.js configuration file you created above. For more details on
-what can be configured, refer to `lib/config.default.js`, which documents
-the available variables and their default values.
+The agent can be tailored to your app's requirements, both from the
+server and via the newrelic.js configuration file you created. For more
+details on what can be configured, refer to `lib/config.default.js`,
+which documents the available variables and their default values.
 
 In addition, for those of you running in Heroku, Microsoft Azure or any other
 PaaS environment that makes it easier to control configuration via the your
