@@ -152,7 +152,7 @@ describe("DataSender", function () {
       response.statusCode = 401;
 
       sender.on('error', function (message, error) {
-        expect(error.message).equal('Got HTTP 401 in response to TEST.');
+        expect(error.message).equal("Got HTTP 401 in response to TEST.");
 
         return done();
       });
@@ -181,6 +181,48 @@ describe("DataSender", function () {
         response.emit('data', sampleBody);
         response.emit('end');
       });
+    });
+  });
+
+  describe("when handling a response's message", function () {
+    var sender;
+
+    beforeEach(function () {
+      sender = new DataSender({host : 'localhost'});
+    });
+
+    it("should hand off decoding errors", function (done) {
+      sender.on('error', function (message, error) {
+        expect(message).equal('TEST');
+        expect(error.message).equal('unspecified decoding error');
+
+        return done();
+      });
+
+      sender.handleMessage('TEST', new Error('unspecified decoding error'));
+    });
+
+    it("should hand off server exceptions", function (done) {
+      sender.on('error', function (message, error) {
+        expect(message).equal('TEST');
+        expect(error).eql({error_type : 'NewRelic::Agent::ForceRestartException'});
+
+        return done();
+      });
+
+      var body = '{"exception":{"error_type":"NewRelic::Agent::ForceRestartException"}}';
+      sender.handleMessage('TEST', null, body);
+    });
+
+    it("should hand off return_value, if set", function (done) {
+      sender.on('response', function (response) {
+        expect(response).eql({url_rules : []});
+
+        return done();
+      });
+
+      var body = '{"return_value":{"url_rules":[]}}';
+      sender.handleMessage('TEST', null, body);
     });
   });
 });
