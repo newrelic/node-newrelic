@@ -1,3 +1,13 @@
+### v0.9.13-101 / beta-13 (2013-01-07):
+
+* When New Relic's servers (or an intermediate proxy) returned a response with
+	a status code other than 20x, the entire instrumented application would
+	crash.
+* Some metric normalization rules were not being interpreted correctly, leading
+	to malformed normalized metric names.
+* Metric normalization rules that specifed that matching metrics were to be
+	ignored were not being enforced.
+
 ### v0.9.12-91 / beta-12 (2012-12-28):
 
 * Fixed the agent's auto-restart support to cleanly shut down the

@@ -67,6 +67,47 @@ describe("NormalizerRule", function () {
     });
   });
 
+  describe("with Saxon's patterns", function () {
+    describe("including '^(?!account|application).*'", function () {
+      beforeEach(function () {
+        rule = new Rule({
+          "each_segment"     : true,
+          "match_expression" : "^(?!account|application).*",
+          "replacement"      : "*"
+        });
+      });
+
+      it("implies '/account/myacc/application/test' -> '/account/*/application/*'",
+         function () {
+        expect(rule.apply('/account/myacc/application/test'))
+          .equal('/account/*/application/*');
+      });
+
+      it("implies '/oh/dude/account/myacc/application' -> '/*/*/account/*/application'",
+         function () {
+        expect(rule.apply('/oh/dude/account/myacc/application'))
+          .equal('/*/*/account/*/application');
+      });
+    });
+
+    describe("including '^(?!channel|download|popups|search|tap|user|related|admin|api|genres|notification).*'",
+            function () {
+      beforeEach(function () {
+        rule = new Rule({
+          "each_segment"     : true,
+          "match_expression" : "^(?!channel|download|popups|search|tap|user|related|admin|api|genres|notification).*",
+          "replacement"      : "*"
+        });
+      });
+
+      it("implies '/tap/stuff/user/gfy77t/view' -> '/tap/*/user/*/*'",
+         function () {
+        expect(rule.apply('/tap/stuff/user/gfy77t/view'))
+          .equal('/tap/*/user/*/*');
+      });
+    });
+  });
+
   describe("with a more complex substitution rule", function () {
     before(function () {
       // sample rule sent by staging collector 1 on 2012-08-29
@@ -140,35 +181,35 @@ describe("NormalizerRule", function () {
     });
 
     it("should default to not applying the rule to each segment", function () {
-      expect((new Rule()).eachSegment).equal(false);
+      expect(new Rule().eachSegment).equal(false);
     });
 
     it("should default the rule's precedence to 0", function () {
-      expect((new Rule()).precedence).equal(0);
+      expect(new Rule().precedence).equal(0);
     });
 
     it("should default to not terminating rule evaluation", function () {
-      expect((new Rule()).isTerminal).equal(false);
+      expect(new Rule().isTerminal).equal(false);
     });
 
     it("should have a regexp that matches the empty string", function () {
-      expect((new Rule()).patternString).equal('^$');
+      expect(new Rule().pattern).eql(/^$/);
     });
 
     it("should use the entire match as the replacement value", function () {
-      expect((new Rule()).replacement).equal('$0');
+      expect(new Rule().replacement).equal('$0');
     });
 
     it("should default to not replacing all instances", function () {
-      expect((new Rule()).replaceAll).equal(false);
+      expect(new Rule().replaceAll).equal(false);
     });
 
     it("should default to not ignoring matching URLs", function () {
-      expect((new Rule()).ignore).equal(false);
+      expect(new Rule().ignore).equal(false);
     });
 
     it("should silently pass through the input if applied", function () {
-      expect((new Rule()).apply('sample/input')).equal('sample/input');
+      expect(new Rule().apply('sample/input')).equal('sample/input');
     });
   });
 });
