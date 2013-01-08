@@ -181,35 +181,35 @@ describe("NormalizerRule", function () {
     });
 
     it("should default to not applying the rule to each segment", function () {
-      expect((new Rule()).eachSegment).equal(false);
+      expect(new Rule().eachSegment).equal(false);
     });
 
     it("should default the rule's precedence to 0", function () {
-      expect((new Rule()).precedence).equal(0);
+      expect(new Rule().precedence).equal(0);
     });
 
     it("should default to not terminating rule evaluation", function () {
-      expect((new Rule()).isTerminal).equal(false);
+      expect(new Rule().isTerminal).equal(false);
     });
 
     it("should have a regexp that matches the empty string", function () {
-      expect((new Rule()).patternString).equal('^$');
+      expect(new Rule().pattern).eql(/^$/);
     });
 
     it("should use the entire match as the replacement value", function () {
-      expect((new Rule()).replacement).equal('$0');
+      expect(new Rule().replacement).equal('$0');
     });
 
     it("should default to not replacing all instances", function () {
-      expect((new Rule()).replaceAll).equal(false);
+      expect(new Rule().replaceAll).equal(false);
     });
 
     it("should default to not ignoring matching URLs", function () {
-      expect((new Rule()).ignore).equal(false);
+      expect(new Rule().ignore).equal(false);
     });
 
     it("should silently pass through the input if applied", function () {
-      expect((new Rule()).apply('sample/input')).equal('sample/input');
+      expect(new Rule().apply('sample/input')).equal('sample/input');
     });
   });
 });

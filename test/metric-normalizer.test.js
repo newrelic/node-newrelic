@@ -73,6 +73,26 @@ describe ("MetricNormalizer", function () {
       expect(function () { var normalizer = new Normalizer(sample); }).not.throws();
     });
 
+    it("should eliminate duplicate rules as part of loading them", function () {
+      var reduced = [
+        {eachSegment : false, precedence : 0, isTerminal : true,
+         pattern: /^(test_match_nothing)$/,
+         replaceAll : false, ignore : false, replacement : '$1'},
+        {eachSegment : false, precedence : 0, isTerminal : true,
+         pattern: /.*\\.(css|gif|ico|jpe?g|js|png|swf)$/,
+         replaceAll : false, ignore : false, replacement : '/*.$1'},
+        {eachSegment : true, precedence : 1, isTerminal : false,
+         pattern: /^[0-9][0-9a-f_,.\-]*$/,
+         replaceAll : false, ignore : false, replacement : '*'},
+        {eachSegment : false, precedence : 2, isTerminal : false,
+         pattern: /^(.*)\/[0-9][0-9a-f_,\-]*\\.([0-9a-z][0-9a-z]*)$/,
+         replaceAll : false, ignore : false, replacement : '$1/.*$2'}
+      ];
+
+      var normalizer = new Normalizer(sample);
+      expect(normalizer.rules).eql(reduced);
+    });
+
     it("should normalize a JPEGgy URL", function () {
       expect(new Normalizer(sample).normalize('/excessivity.jpeg')).eql({
         name       : '/excessivity.jpeg',
