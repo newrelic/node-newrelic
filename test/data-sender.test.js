@@ -1,9 +1,12 @@
 'use strict';
 
-var path       = require('path')
-  , chai       = require('chai')
-  , expect     = chai.expect
-  , DataSender = require(path.join(__dirname, '..', 'lib', 'collector', 'data-sender'))
+var path         = require('path')
+  , chai         = require('chai')
+  , expect       = chai.expect
+  , should       = chai.should()
+  , EventEmitter = require('events').EventEmitter
+  , Stream       = require('stream')
+  , DataSender   = require(path.join(__dirname, '..', 'lib', 'collector', 'data-sender'))
   ;
 
 describe("DataSender", function () {
@@ -29,6 +32,12 @@ describe("DataSender", function () {
                    '?marshal_format=json&protocol_version=9&' +
                    'license_key=&method=test&agent_run_id=12';
     expect(sender.getURL('test')).equal(expected);
+  });
+
+  it("should require a message type when invoking a remote method", function () {
+    var sender = new DataSender();
+    expect(function () { sender.invokeMethod(); })
+      .throws("Can't send the collector a message without a message type");
   });
 
   describe("when generating headers for a plain request", function () {
@@ -107,7 +116,7 @@ describe("DataSender", function () {
     });
   });
 
-  describe("when performing RPC against the collector", function () {
+  describe("when generating the collector URL", function () {
     var sender
       , TEST_RUN_ID = Math.floor(Math.random() * 3000)
       ;
@@ -128,6 +137,50 @@ describe("DataSender", function () {
 
     it("should correctly set up the method", function () {
       expect(sender.getURL('TEST_METHOD')).match(/method=TEST_METHOD/);
+    });
+  });
+
+  describe("when processing a collector response", function () {
+    var sender;
+
+    beforeEach(function () {
+      sender = new DataSender({host : 'localhost'});
+    });
+
+    it("should raise an error if the response has an error status code", function (done) {
+      var response = new EventEmitter();
+      response.statusCode = 401;
+
+      sender.on('error', function (message, error) {
+        expect(error.message).equal('Got HTTP 401 in response to TEST.');
+
+        return done();
+      });
+      sender.onCollectorResponse('TEST', response);
+    });
+
+    it("should hand off the response to the message handler", function (done) {
+      var response = new Stream();
+      response.setEncoding = function () {}; // fake it til you make it
+      response.readable = true;
+      response.statusCode = 200;
+
+      var sampleBody = '{"return_value":{"messages":[]}}';
+
+      sender.handleMessage = function (message, error, body) {
+        expect(message).equal('TEST');
+        should.not.exist(error);
+        expect(body).equal(sampleBody);
+
+        return done();
+      };
+
+      sender.onCollectorResponse('TEST', response);
+
+      process.nextTick(function () {
+        response.emit('data', sampleBody);
+        response.emit('end');
+      });
     });
   });
 });
