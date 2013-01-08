@@ -62,11 +62,10 @@ describe("CollectorConnection", function () {
 
       // replace CollectorConnection.createDataSender
       var sender = new DataSender(agent.config, SAMPLE_RUN_ID);
-      // stub out DataSender.send
-      sender.send = function (sMethod, sUri, sParams) {
-        method   = sMethod;
-        uri      = sUri;
-        params   = sParams;
+      sender.invokeMethod = function (sMethod, sParams) {
+        method = sMethod;
+        uri    = sender.getURL(method);
+        params = sParams;
       };
 
       // replace CollectorConnection.createDataSender

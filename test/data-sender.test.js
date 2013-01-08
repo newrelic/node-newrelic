@@ -3,7 +3,6 @@
 var path       = require('path')
   , chai       = require('chai')
   , expect     = chai.expect
-  , sinon      = require('sinon')
   , DataSender = require(path.join(__dirname, '..', 'lib', 'collector', 'data-sender'))
   ;
 
@@ -25,9 +24,11 @@ describe("DataSender", function () {
     };
     var sender = new DataSender(config, 12);
 
-    var raw = '/listener/invoke';
-    var expected = 'http://collector.newrelic.com:80/listener/invoke';
-    expect(sender.canonicalizeURL(raw)).equal(expected);
+    var expected = 'http://collector.newrelic.com:80' +
+                   '/agent_listener/invoke_raw_method' +
+                   '?marshal_format=json&protocol_version=9&' +
+                   'license_key=&method=test&agent_run_id=12';
+    expect(sender.getURL('test')).equal(expected);
   });
 
   describe("when generating headers for a plain request", function () {
@@ -40,7 +41,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.createHeaders(80);
+      headers = sender.getHeaders('test');
     });
 
     it("should use the content type from the parameter", function () {
@@ -48,7 +49,7 @@ describe("DataSender", function () {
     });
 
     it("should use the content length from the parameter", function () {
-      expect(headers["Content-Length"]).equal(80);
+      expect(headers["Content-Length"]).equal(4);
     });
 
     it("should use a keepalive connection for reasons that escape me", function () {
@@ -78,7 +79,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.createHeaders(92, true);
+      headers = sender.getHeaders('zxxvxzxzzx', true);
     });
 
     it("should use the content type from the parameter", function () {
@@ -86,7 +87,7 @@ describe("DataSender", function () {
     });
 
     it("should use the content length from the parameter", function () {
-      expect(headers["Content-Length"]).equal(92);
+      expect(headers["Content-Length"]).equal(10);
     });
 
     it("should use a keepalive connection for reasons that escape me", function () {
@@ -108,7 +109,6 @@ describe("DataSender", function () {
 
   describe("when performing RPC against the collector", function () {
     var sender
-      , mockSender
       , TEST_RUN_ID = Math.floor(Math.random() * 3000)
       ;
 
@@ -119,31 +119,15 @@ describe("DataSender", function () {
         license_key : 'hamburtson'
       };
       sender = new DataSender(config, TEST_RUN_ID);
-      mockSender = sinon.mock(sender);
     });
 
     it("should always add the agent run ID, if set", function () {
-      var METHOD = 'TEST'
-        , PARAMS = {test : "value"}
-        , URL    = sinon.match(new RegExp('agent_run_id=' + TEST_RUN_ID))
-        ;
-
-      mockSender.expects('send').once().withExactArgs(METHOD, URL, PARAMS);
-      sender.invokeMethod(METHOD, PARAMS);
-
-      mockSender.verify();
+      expect(sender.agentRunId).equal(TEST_RUN_ID);
+      expect(sender.getURL('TEST_METHOD')).match(new RegExp('agent_run_id=' + TEST_RUN_ID));
     });
 
     it("should correctly set up the method", function () {
-      var METHOD = 'TEST'
-        , PARAMS = {test : "value"}
-        , URL    = sinon.match(new RegExp('method=' + METHOD))
-        ;
-
-      mockSender.expects('send').once().withExactArgs(METHOD, URL, PARAMS);
-      sender.invokeMethod(METHOD, PARAMS);
-
-      mockSender.verify();
+      expect(sender.getURL('TEST_METHOD')).match(/method=TEST_METHOD/);
     });
   });
 });
