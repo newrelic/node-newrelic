@@ -81,10 +81,18 @@ describe("the environment scraper", function () {
   });
 
   it("should have built a flattened package list", function () {
-    expect(find(settings, 'Packages').length).above(5);
+    var packages = find(settings, 'Packages');
+    expect(packages.length).above(5);
+    packages.forEach(function (pair) {
+      expect(JSON.parse(pair).length).equal(2);
+    });
   });
 
   it("should have built a flattened dependency list", function () {
-    expect(find(settings, 'Dependencies').length).above(5);
+    var dependencies = find(settings, 'Dependencies');
+    expect(dependencies.length).above(5);
+    dependencies.forEach(function (pair) {
+      expect(JSON.parse(pair).length).equal(2);
+    });
   });
 });
