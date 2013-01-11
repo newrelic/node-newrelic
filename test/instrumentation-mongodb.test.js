@@ -36,6 +36,26 @@ describe("agent instrumentation of MongoDB", function () {
     helper.unloadAgent(agent);
   });
 
+  describe("shouldn't cause bootstrapping to fail", function () {
+    var agent
+      , initialize
+      ;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      initialize = require(path.join(__dirname, '..', 'lib',
+                                     'instrumentation', 'mongodb'));
+    });
+
+    it("when passed no module", function () {
+      expect(function () { initialize(agent); }).not.throws();
+    });
+
+    it("when passed an empty module", function () {
+      expect(function () { initialize(agent, {}); }).not.throws();
+    });
+  });
+
   describe("for each operation", function () {
     beforeEach(function (done) {
       sinon.stub(db, '_executeInsertCommand', function (inserter, options, callback) {
