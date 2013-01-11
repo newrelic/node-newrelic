@@ -19,6 +19,25 @@ describe("built-in http module instrumentation", function () {
     '<body><p>I heard you like HTML.</p></body>' +
     '</html>';
 
+  describe("shouldn't cause bootstrapping to fail", function () {
+    var initialize
+      ;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      initialize = require(path.join(__dirname, '..', 'lib',
+                                     'instrumentation', 'core', 'http'));
+    });
+
+    it("when passed no module", function () {
+      expect(function () { initialize(agent); }).not.throws();
+    });
+
+    it("when passed an empty module", function () {
+      expect(function () { initialize(agent, {}); }).not.throws();
+    });
+  });
+
   describe("when running a request", function () {
     var transaction
       , fetchedStatusCode
@@ -145,15 +164,8 @@ describe("built-in http module instrumentation", function () {
                                                         expect(stats.callCount).equal(1);
     });
 
-    it("should record outbound HTTP requests in the agent's metrics", function () {
-      var stats = agent.metrics.getOrCreateMetric('External/localhost/http',
-                                                  'External/localhost/status').stats;
-                                                  expect(stats.callCount).equal(1);
-    });
-
     it("shouldn't record transactions for requests for favicon.ico");
     it("should capture metrics for the last byte to exit / enter as part of a response / request");
-
   });
 
   describe("with error monitor", function () {
@@ -187,12 +199,12 @@ describe("built-in http module instrumentation", function () {
           return done();
         });
 
-        server = http.createServer(function (req, res) {
+        server = http.createServer(function () {
           throw new Error("whoops!");
         });
 
         server.listen(8182, function () {
-          http.get("http://localhost:8182/", function (res) {
+          http.get("http://localhost:8182/", function () {
             console.log("actually got response");
           });
         });
@@ -219,7 +231,7 @@ describe("built-in http module instrumentation", function () {
 
         server.listen(8183, function () {
           helper.runInTransaction(agent, function () {
-            http.get("http://localhost:8183/", function (response) {
+            http.get("http://localhost:8183/", function () {
               throw new Error("whoah");
             });
           });

@@ -32,11 +32,31 @@ describe("built-in fs module instrumentation", function () {
     fs.readdir = readdir;
   });
 
+  describe("shouldn't cause bootstrapping to fail", function () {
+    var agent
+      , initialize
+      ;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      initialize = require(path.join(__dirname, '..', 'lib',
+                                     'instrumentation', 'core', 'fs'));
+    });
+
+    it("when passed no module", function () {
+      expect(function () { initialize(agent); }).not.throws();
+    });
+
+    it("when passed an empty module", function () {
+      expect(function () { initialize(agent, {}); }).not.throws();
+    });
+  });
+
   it("should pick up scope when called in a scoped transaction");
 
   it("should add a metric segment when called as part of a transaction", function (done) {
     helper.runInTransaction(agent, function transactionInScope() {
-      fs.readdir('stub', function (error, files) {
+      fs.readdir('stub', function (error) {
         if (error) return done(error); // habits die hard
 
         var transaction = agent.getTransaction();
@@ -67,7 +87,8 @@ describe("built-in fs module instrumentation", function () {
       process.on('uncaughtException', mochaHandler);
     });
 
-    it("should trace errors thrown by the instrumentation in the error tracer", function (done) {
+    it("should trace errors thrown by the instrumentation in the error tracer",
+       function (done) {
       process.once('uncaughtException', function () {
         var errors = agent.errors.errors; // not my finest naming scheme
         expect(errors.length).equal(1);
@@ -76,7 +97,7 @@ describe("built-in fs module instrumentation", function () {
       });
 
       helper.runInTransaction(agent, function transactionInScope() {
-        fs.readdir('stub', function (error, files) {
+        fs.readdir('stub', function () {
           throw new Error("what happens here?");
         });
       });
@@ -90,7 +111,7 @@ describe("built-in fs module instrumentation", function () {
       });
 
       helper.runInTransaction(agent, function transactionInScope() {
-        fs.readdir('stub', function (error, files) {
+        fs.readdir('stub', function () {
           throw new Error("ohno");
         });
       });

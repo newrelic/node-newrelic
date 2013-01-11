@@ -1,3 +1,11 @@
+### v0.9.14-105 / beta-14 (2013-01-07):
+
+* In some cases, the monkeypatching used by the instrumentation wasn't
+  written sufficiently defensively, leading to applications crashing at
+  startup when using the agent.
+* Changed how packages and dependencies are serialized when sent to New
+  Relic's servers.
+
 ### v0.9.13-101 / beta-13 (2013-01-07):
 
 * When New Relic's servers (or an intermediate proxy) returned a response with
