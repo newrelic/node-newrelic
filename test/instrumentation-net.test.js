@@ -2,6 +2,7 @@
 
 var path   = require('path')
   , chai   = require('chai')
+  , expect = chai.expect
   , should = chai.should()
   , net    = require('net')
   , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
@@ -49,4 +50,25 @@ describe("built-in net module instrumentation", function () {
       return done();
     });
   });
+
+  describe("shouldn't cause bootstrapping to fail", function () {
+    var agent
+      , initialize
+      ;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      initialize = require(path.join(__dirname, '..', 'lib',
+                                     'instrumentation', 'core', 'net'));
+    });
+
+    it("when passed no module", function () {
+      expect(function () { initialize(agent); }).not.throws();
+    });
+
+    it("when passed an empty module", function () {
+      expect(function () { initialize(agent, {}); }).not.throws();
+    });
+  });
+
 });
