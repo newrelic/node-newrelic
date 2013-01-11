@@ -22,7 +22,7 @@ describe("built-in fs module instrumentation", function () {
       expect(function () { initialize(agent); }).not.throws();
     });
 
-    it("when passed a module with no RedisClient present.", function () {
+    it("when passed an empty module", function () {
       expect(function () { initialize(agent, {}); }).not.throws();
     });
   });
