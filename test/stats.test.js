@@ -6,10 +6,12 @@ var path   = require('path')
   , Stats  = require(path.join(__dirname, '..', 'lib', 'stats'))
   ;
 
+/*jshint maxparams:8 */
 describe("Stats", function () {
   var statistics;
 
-  var verifyStats = function verifyStats(stats, callCount, totalTime, totalExclusive, min, max, sumOfSquares) {
+  var verifyStats = function verifyStats(stats, callCount, totalTime,
+                                         totalExclusive, min, max, sumOfSquares) {
     expect(stats.callCount).equal(callCount);
     expect(stats.total).equal(totalTime);
     expect(stats.totalExclusive).equal(totalExclusive);
@@ -37,10 +39,24 @@ describe("Stats", function () {
     verifyStats(statistics, 2, 0.240, 0.0, 0.120, 0.120, 0.0288);
   });
 
-  it("should increment the call count", function () {
-    statistics.incrementCallCount();
+  describe("when incrementing the call count", function () {
+    it("should increment by 1 by default", function () {
+      statistics.incrementCallCount();
 
-    verifyStats(statistics, 1, 0, 0, 0, 0, 0);
+      verifyStats(statistics, 1, 0, 0, 0, 0, 0);
+    });
+
+    it("should increment by the provided value", function () {
+      statistics.incrementCallCount(23);
+
+      verifyStats(statistics, 23, 0, 0, 0, 0, 0);
+    });
+
+    it("shouldn't increment when the provided value is 0", function () {
+      statistics.incrementCallCount(0);
+
+      verifyStats(statistics, 0, 0, 0, 0, 0, 0);
+    });
   });
 
   it("should correctly merge summaries", function () {
@@ -55,7 +71,8 @@ describe("Stats", function () {
     verifyStats(other, 2, 0.240, 0.0, 0.120, 0.120, 0.0288);
 
     statistics.merge(other);
-    verifyStats(statistics, 5, 0.5309999999999999, 0.119, 0.051, 0.120, 0.060201); // LOL IEEE 854
+    // LOL IEEE 754
+    verifyStats(statistics, 5, 0.5309999999999999, 0.119, 0.051, 0.120, 0.060201);
   });
 
   describe("when handling quantities", function () {
