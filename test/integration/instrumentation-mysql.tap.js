@@ -12,7 +12,10 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
 
   var self = this;
   helper.bootstrapMySQL(function (error, app) {
-    if (error) return t.fail(error);
+    if (error) {
+      t.fail(error);
+      return t.end();
+    }
 
     var agent = helper.instrumentMockedAgent();
     var mysql = require('mysql');
