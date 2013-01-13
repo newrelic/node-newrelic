@@ -6,7 +6,8 @@ var path                = require('path')
   , wrench              = require('wrench')
   , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
-  , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'connection'))
+  , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib',
+                                            'collector', 'connection'))
   ;
 
 var helper = module.exports = {
@@ -87,7 +88,9 @@ var helper = module.exports = {
     var memcached = path.join(__dirname, 'architecture', 'memcached.js');
     var config = architect.loadConfig(memcached);
     architect.createApp(config, function (error, app) {
-      if (error) return helper.cleanMemcached(app, function () { return callback(error); });
+      if (error) return helper.cleanMemcached(app, function () {
+        return callback(error);
+      });
 
       return callback(null, app);
     });
@@ -125,7 +128,8 @@ var helper = module.exports = {
   cleanMongoDB : function cleanMongoDB(app, callback) {
     var mongod = app.getService('mongodbProcess');
     mongod.shutdown(function () {
-      wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mongodb'));
+      wrench.rmdirSyncRecursive(path.join(__dirname, '..',
+                                          'integration', 'test-mongodb'));
 
       return callback();
     });
@@ -143,11 +147,6 @@ var helper = module.exports = {
     var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
     architect.createApp(config, function (error, app) {
-      var cleanup = helper.cleanMySQL.bind(helper, app,
-                                           function() { console.error("cleaned up!"); });
-      process.on('uncaughtException', cleanup);
-      process.on('SIGINT', cleanup);
-
       if (error) return helper.cleanMySQL(app, function () { return callback(error); });
 
       return callback(null, app);
@@ -159,7 +158,7 @@ var helper = module.exports = {
     mysqld.shutdown(function () {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
 
-      return callback();
+      if (callback) return callback();
     });
   }
 };
