@@ -1,134 +1,176 @@
 'use strict';
 
-var fs           = require('fs')
-  , path         = require('path')
-  , carrier      = require('carrier')
-  , spawn        = require('child_process').spawn
+var fs      = require('fs')
+  , path    = require('path')
+  , spawn   = require('child_process').spawn
+  , carrier = require('carrier')
+  , Q       = require('q')
   ;
 
 var MYSQL_LOG_REGEXP = /^([0-9]+) [0-9:]+/;
 
-function spawnMySQL(options, next) {
-  var logger = options.logger;
-  logger.info('starting MySQL');
+module.exports = function setup(options, imports, register) {
+  var dbpath = options.dbpath
+    , logger = options.logger
+    ;
 
-  var mysqldProcess = spawn('mysqld',
-                            ['--datadir=' + options.dbpath],
-                            {stdio : [process.stdin, 'pipe', 'pipe']});
-
-  function shutdown(callback) {
-    carrier.carry(mysqldProcess.stderr, function (line) {
-      if (line.match(/mysqld: Shutdown complete/)) {
-        console.error('MySQL killed.');
-
-        if (callback) return callback();
-      }
-    });
-
-    mysqldProcess.kill();
+  function run() {
+    var commands = Array.prototype.slice.call(arguments);
+    return commands.reduce(
+      function (last, next) { return last.then(next); },
+      Q.resolve()
+    );
   }
 
-  var api = {
-    mysqldProcess : {shutdown : shutdown},
-    onDestroy : shutdown
-  };
-
-  mysqldProcess.on('exit', function (code, signal) {
-    logger.info('MySQL exited with signal %s and returned code %s', signal, code);
-  });
-
-  carrier.carry(mysqldProcess.stdout, function (line) {
-    logger.info(line);
-  });
-
-  carrier.carry(mysqldProcess.stderr, function (line) {
-    var cleaned = line.replace(MYSQL_LOG_REGEXP, '[$1]');
-    // mysqld thinks it's better than everyone and puts all its output on stderr
-    logger.debug(cleaned);
-
-    if (line.match(/fatal error/i)) return next(cleaned);
-    if (line.match(/mysqld: ready for connections./)) return next(null, api);
-  });
-}
-
-function findInstallDir(options, next) {
-  var findConfig;
-
-  // Presumes you're on a system grownup enough to have a 'which' that's
-  // not just a shell built-in. Not going to work super great on Windows,
-  // sorry. Send me a pull request.
-  findConfig = spawn('which', ['my_print_defaults'],
-                     {stdio : [process.stdin, 'pipe', 'pipe']});
-
-  carrier.carry(findConfig.stdout, function (line) {
-    fs.readlink(line, function (err, target) {
-      if (err) {
-        // probably not a link, try to proceed with the original file
-        return next(null, path.dirname(path.dirname(line)));
-      }
-
-      var installPath = path.dirname(path.dirname(path.resolve(path.dirname(line),
-                                                               target)));
-      return next(null, installPath);
+  function dataDirExists() {
+    return Q.nfcall((fs.exists || path.exists), dbpath).then(function (exists) {
+      if (!exists) throw new Error(dbpath + " doesn't exist.");
     });
-  });
+  }
 
-  carrier.carry(findConfig.stderr, function (line) {
-    options.logger.error(line);
-  });
-}
+  function makeDataDir() {
+    logger.debug("Creating %s.", dbpath);
 
-function initDatadir(options, next) {
-  var creationError;
+    return Q.ninvoke(fs, 'mkdir', dbpath, '0755');
+  }
 
-  findInstallDir(options, function (err, basedir) {
-    if (err) return next(err);
+  function findInstallDir() {
+    logger.debug("Finding MySQL install path.");
+    var deferred = Q.defer();
 
-    var logger = options.logger;
-    logger.debug('initializing MySQL data directory %s with basedir %s',
-                 options.dbpath,
+    /* Presumes you're on a system grownup enough to have a 'which' that's not
+     * just a shell built-in. Not going to work on Windows, sorry. Send me a
+     * pull request.
+     */
+    var findConfig = spawn('which',
+                           ['my_print_defaults'],
+                           {stdio : [process.stdin, 'pipe', 'pipe']});
+
+    carrier.carry(findConfig.stdout, function (line) {
+      fs.readlink(line, function (err, target) {
+        // probably not a link, try to proceed with the original file
+        if (err) return deferred.resolve(path.dirname(path.dirname(line)));
+
+        var installPath = path.dirname(path.dirname(path.resolve(path.dirname(line),
+                                                                 target)));
+        return deferred.resolve(installPath);
+      });
+    });
+
+    carrier.carry(findConfig.stderr, function (line) {
+      return deferred.reject(new Error(line));
+    });
+
+    return deferred.promise;
+  }
+
+  function initDataDir(basedir) {
+    var deferred = Q.defer();
+
+    logger.debug("Initializing data directory %s using MySQL tools in %s.",
+                 dbpath,
                  basedir);
 
     var init = spawn('mysql_install_db',
                      [
                        '--force',
                        '--basedir=' + basedir,
-                       '--datadir=' + options.dbpath
+                       '--datadir=' + dbpath
                      ],
                      {stdio : [process.stdin, 'pipe', 'pipe']});
 
     init.on('exit', function () {
-      logger.info('MySQL data directory bootstrapped.');
-      if (creationError) return next(creationError);
+      logger.info("MySQL data directory bootstrapped.");
 
-      return spawnMySQL(options, next);
+      return deferred.resolve();
     });
 
     carrier.carry(init.stdout, function (line) {
       logger.debug(line);
 
-      if (line.match(/FATAL ERROR/)) creationError = line;
+      if (line.match(/FATAL ERROR/)) return deferred.reject(new Error(line));
     });
 
     carrier.carry(init.stderr, function (line) {
       logger.error(line);
     });
-  });
-}
 
-module.exports = function setup(options, imports, register) {
-  var dbpath = options.dbpath;
+    return deferred.promise;
+  }
 
-  (fs.exists || path.exists)(dbpath, function (exists) {
-    if (!exists) {
-      fs.mkdir(dbpath, '0755', function (err) {
-        if (err) return register(err);
+  function spawnMySQL() {
+    logger.info("Starting MySQL!");
+    var deferred = Q.defer();
 
-        initDatadir(options, register);
+    var mysqldProcess = spawn('mysqld',
+                              ['--datadir=' + dbpath],
+                              {stdio : [process.stdin, 'pipe', 'pipe']});
+
+    mysqldProcess.on('exit', function (code, signal) {
+      logger.info("MySQL exited with signal %s and returned code %s",
+                  signal,
+                  code);
+    });
+
+    function shutdown(callback) {
+      carrier.carry(mysqldProcess.stderr, function (line) {
+        if (line.match(/mysqld: Shutdown complete/)) {
+          console.error('MySQL killed.');
+
+          if (callback) process.nextTick(callback);
+        }
       });
+
+      mysqldProcess.kill();
     }
-    else {
-      spawnMySQL(options, register);
-    }
-  });
+
+    carrier.carry(mysqldProcess.stdout, function (line) {
+      logger.info(line);
+    });
+
+    // mysqld thinks it's better than everyone and puts all its output on stderr
+    carrier.carry(mysqldProcess.stderr, function (line) {
+      var cleaned = line.replace(MYSQL_LOG_REGEXP, '[$1]');
+      logger.debug(cleaned);
+
+      if (line.match(/fatal error/i)) return deferred.reject(new Error(cleaned));
+
+      if (line.match(/mysqld: ready for connections./)) {
+        var api = {
+          mysqldProcess : {
+            shutdown : shutdown
+          },
+          onDestroy : shutdown // not documented in architect, may go away
+        };
+
+        return deferred.resolve(api);
+      }
+    });
+
+    return deferred.promise;
+  }
+
+  function succeeded(api) {
+    logger.info("MySQL up and running.");
+    return register(null, api);
+  }
+
+  function failed(error) {
+    return register(error);
+  }
+
+  dataDirExists()
+    .then(
+      spawnMySQL,
+      function noDataDirYet(error) {
+        logger.debug(error.message);
+
+        run(
+          makeDataDir,
+          findInstallDir,
+          initDataDir,
+          spawnMySQL
+        ).then(succeeded, failed);
+      }
+    );
 };
