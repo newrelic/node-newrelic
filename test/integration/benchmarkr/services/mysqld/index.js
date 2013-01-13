@@ -159,18 +159,17 @@ module.exports = function setup(options, imports, register) {
     return register(error);
   }
 
-  dataDirExists()
-    .then(
-      spawnMySQL,
-      function noDataDirYet(error) {
-        logger.debug(error.message);
+  dataDirExists().then(
+    spawnMySQL,
+    function noDataDirYet(error) {
+      logger.debug(error.message);
 
-        run(
-          makeDataDir,
-          findInstallDir,
-          initDataDir,
-          spawnMySQL
-        ).then(succeeded, failed);
-      }
-    );
+      run(
+        makeDataDir,
+        findInstallDir,
+        initDataDir,
+        spawnMySQL
+      ).then(succeeded, failed);
+    }
+  );
 };
