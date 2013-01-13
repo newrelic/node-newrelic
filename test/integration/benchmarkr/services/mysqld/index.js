@@ -7,33 +7,31 @@ var fs           = require('fs')
   ;
 
 var MYSQL_LOG_REGEXP = /^([0-9]+) [0-9:]+/;
-var mysqldProcess;
-function shutdown(callback) {
-  carrier.carry(mysqldProcess.stderr, function (line) {
-    if (line.match(/mysqld: Shutdown complete/)) {
-      console.error('MySQL killed.');
-
-      if (callback) return callback();
-    }
-  });
-
-  if (mysqldProcess) mysqldProcess.kill();
-}
-
-var api = {
-  mysqldProcess : {
-    shutdown  : shutdown
-  },
-  onDestroy : shutdown
-};
 
 function spawnMySQL(options, next) {
   var logger = options.logger;
   logger.info('starting MySQL');
 
-  mysqldProcess = spawn('mysqld',
-                        ['--datadir=' + options.dbpath],
-                        {stdio : [process.stdin, 'pipe', 'pipe']});
+  var mysqldProcess = spawn('mysqld',
+                            ['--datadir=' + options.dbpath],
+                            {stdio : [process.stdin, 'pipe', 'pipe']});
+
+  function shutdown(callback) {
+    carrier.carry(mysqldProcess.stderr, function (line) {
+      if (line.match(/mysqld: Shutdown complete/)) {
+        console.error('MySQL killed.');
+
+        if (callback) return callback();
+      }
+    });
+
+    mysqldProcess.kill();
+  }
+
+  var api = {
+    mysqldProcess : {shutdown : shutdown},
+    onDestroy : shutdown
+  };
 
   mysqldProcess.on('exit', function (code, signal) {
     logger.info('MySQL exited with signal %s and returned code %s', signal, code);
@@ -69,7 +67,8 @@ function findInstallDir(options, next) {
         return next(null, path.dirname(path.dirname(line)));
       }
 
-      var installPath = path.dirname(path.dirname(path.resolve(path.dirname(line), target)));
+      var installPath = path.dirname(path.dirname(path.resolve(path.dirname(line),
+                                                               target)));
       return next(null, installPath);
     });
   });
