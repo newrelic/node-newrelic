@@ -15,6 +15,13 @@ module.exports = function setup(options, imports, register) {
     , tablename = options.db.table
     ;
 
+  function run(client, commands) {
+    return commands.reduce(
+      function (last, next) { return last.then(next); },
+      Q.resolve(client)
+    );
+  }
+
   function query(client, sql, successMessage) {
     return Q.ninvoke(client, 'query', sql).then(function () {
       logger.debug(successMessage);
@@ -53,15 +60,13 @@ module.exports = function setup(options, imports, register) {
     );
   }
 
-  function reconnectAsUser(client) {
-    return end(client).then(function () {
-      logger.debug("Reconnecting as %s.", username);
+  function connectAsTestUser() {
+    logger.debug("Reconnecting as %s.", username);
 
-      return mysql.createClient({
-        user     : username,
-        database : dbname
-      });
-    });
+    return Q.resolve(mysql.createClient({
+      user     : username,
+      database : dbname
+    }));
   }
 
   function createTestTable(client) {
@@ -90,17 +95,18 @@ module.exports = function setup(options, imports, register) {
               " WHERE table_schema = ? " +
               "   AND table_name = ?";
 
+    /* A weird side effect of Q.ninvoke: more than just one non-error
+     * parameter expected on the callback, get back an array of all of
+     * them. Q.get(0) will grab the first parameter.
+     */
     return Q.ninvoke(client, 'query', sql, [dbname, tablename])
-      .then(function (args) {
-        /* A weird side effect of Q.ninvoke: more than just one non-error
-         * parameter expected on the callback, get back an array of all of
-         * them.
-         */
-        var result = args[0];
-        logger.debug("Tables matching SQL [%s]: %s", sql, result.length);
-        if (result.length > 0) return client;
+      .get(0)
+      .get('length')
+      .then(function (length) {
+        logger.debug("%s test table(s) found.", length);
+        if (length > 0) return client;
 
-        throw new Error("Test table missing. Not bootstrapped.");
+        throw new Error("Test table missing. Test database not initialized.");
       });
   }
 
@@ -109,19 +115,20 @@ module.exports = function setup(options, imports, register) {
               "  FROM " + dbname + "." + tablename;
 
     return Q.ninvoke(client, 'query', sql)
-      .then(function (args) {
-        var result = args[0];
-
+      .get(0)
+      .then(function (result) {
         if (result.length !== 1) throw new Error("Test table query failed.");
 
-        logger.debug("Test data rows: %s", result[0].counted);
-        if (result[0].counted > 0) return client;
+        var count = result[0].counted;
+        logger.debug("%s test data row(s).", count);
+        if (count > 0) return client;
 
-        throw new Error("No test data seeded. Only partially bootstrapped.");
+        throw new Error("No test data seeded. Only partially initialized.");
       });
   }
 
   function succeeded() {
+    logger.info("Test database initialized.");
     return register(null, {mysqlBootstrap : {}});
   }
 
@@ -129,35 +136,28 @@ module.exports = function setup(options, imports, register) {
     return register(error);
   }
 
-  function run() {
-    var commands = Array.prototype.slice.call(arguments);
-    return commands.reduce(
-      function (last, next) { return last.then(next); },
-      Q.resolve(mysql.createClient({
-        user     : 'root',
-        database : 'mysql'
-      }))
-    );
-  }
+  var client = mysql.createClient({
+    user     : 'root',
+    database : 'mysql'
+  });
 
-  // make a verifier that can be reused once the bootstrap is complete
-  var checker = run(ensureTable, ensureData, end);
-  checker.then(
+  // actually run the initializer
+  var isInitialized = run(client, [ensureTable, ensureData, end]);
+  isInitialized.then(
     succeeded,
     function notYetBootstrapped(error) {
-      // will indicate which piece wasn't yet bootstrapped
       logger.debug(error.message);
 
-      var bootstrap = run(
-        // basic database setup
-        createUser, grantPermissions, createDB,
-        // drop permissions
-        reconnectAsUser,
-        // create stuff as user
-        createTestTable, createSeedData
+      // reuse the first connection because why not
+      var bootstrap = run(client,
+        [
+          createUser, grantPermissions, createDB, end,
+          connectAsTestUser,
+          createTestTable, createSeedData,
+          ensureTable, ensureData, end
+        ]
       );
-
-      bootstrap.then(checker).then(succeeded, failed).done();
+      bootstrap.then(succeeded, failed).done();
     }
   );
 };
