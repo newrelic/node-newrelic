@@ -50,7 +50,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.getHeaders('test');
+      headers = sender.getHeaders(4);
     });
 
     it("should use the content type from the parameter", function () {
@@ -88,7 +88,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.getHeaders('zxxvxzxzzx', true);
+      headers = sender.getHeaders(10, true);
     });
 
     it("should use the content type from the parameter", function () {
@@ -226,23 +226,27 @@ describe("DataSender", function () {
     });
   });
 
-  it("shouldn't throw when getting headers for a compressed buffer", function () {
-    var sender = new DataSender({host : 'localhost'})
-      , data   = new Buffer("zxxvxzxa", 'ascii')
-      , headers
-      ;
+  it("shouldn't throw when dealing with compressed data", function (done) {
+    var sender = new DataSender({host : 'localhost'});
+    sender.shouldCompress = function () { return true; };
+    sender.postToCollector = function (message, headers, deflated) {
+      expect(deflated.readUInt8(0)).equal(120);
+      expect(deflated.length).equal(14);
 
-    expect(function () { headers = sender.getHeaders(data, true); }).not.throws();
-    expect(headers['Content-Length']).equal(8);
+      return done();
+    };
+
+    sender.invokeMethod('test', 'data');
   });
 
-  it("shouldn't throw when getting headers for an uncompressed buffer", function () {
-    var sender = new DataSender({host : 'localhost'})
-      , data   = "zxxvxzxa"
-      , headers
-      ;
+  it("shouldn't throw when preparing uncompressed data", function (done) {
+    var sender = new DataSender({host : 'localhost'});
+    sender.postToCollector = function (message, headers, data) {
+      expect(data).equal('"data"');
 
-    expect(function () { headers = sender.getHeaders(data, false); }).not.throws();
-    expect(headers['Content-Length']).equal(8);
+      return done();
+    };
+
+    sender.invokeMethod('test', 'data');
   });
 });
