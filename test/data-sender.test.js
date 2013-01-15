@@ -225,4 +225,24 @@ describe("DataSender", function () {
       sender.handleMessage('TEST', null, body);
     });
   });
+
+  it("shouldn't throw when getting headers for a compressed buffer", function () {
+    var sender = new DataSender({host : 'localhost'})
+      , data   = new Buffer("zxxvxzxa", 'ascii')
+      , headers
+      ;
+
+    expect(function () { headers = sender.getHeaders(data, true); }).not.throws();
+    expect(headers['Content-Length']).equal(8);
+  });
+
+  it("shouldn't throw when getting headers for an uncompressed buffer", function () {
+    var sender = new DataSender({host : 'localhost'})
+      , data   = "zxxvxzxa"
+      , headers
+      ;
+
+    expect(function () { headers = sender.getHeaders(data, false); }).not.throws();
+    expect(headers['Content-Length']).equal(8);
+  });
 });
