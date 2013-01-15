@@ -1,3 +1,8 @@
+### v0.9.15-107 / beta-15 (2013-01-14):
+
+* The agent's built-in compression for sending large payloads to New Relic
+	wasn't correctly handling the Buffer returned by zlib, leading to a crash.
+
 ### v0.9.14-105 / beta-14 (2013-01-07):
 
 * In some cases, the monkeypatching used by the instrumentation wasn't
