@@ -66,7 +66,7 @@ describe("DataSender", function () {
     });
 
     it("should have the host from the configuration", function () {
-      expect(headers.host).equal("collector.newrelic.com");
+      expect(headers.Host).equal("collector.newrelic.com");
     });
 
     it("should tell the server we're sending JSON", function () {
@@ -104,7 +104,7 @@ describe("DataSender", function () {
     });
 
     it("should have the host from the configuration", function () {
-      expect(headers.host).equal("collector.newrelic.com");
+      expect(headers.Host).equal("collector.newrelic.com");
     });
 
     it("should tell the server we're sending JSON", function () {
@@ -132,7 +132,9 @@ describe("DataSender", function () {
 
     it("should always add the agent run ID, if set", function () {
       expect(sender.agentRunId).equal(TEST_RUN_ID);
-      expect(sender.getURL('TEST_METHOD')).match(new RegExp('agent_run_id=' + TEST_RUN_ID));
+
+      var runPattern = new RegExp('agent_run_id=' + TEST_RUN_ID);
+      expect(sender.getURL('TEST_METHOD')).match(runPattern);
     });
 
     it("should correctly set up the method", function () {
