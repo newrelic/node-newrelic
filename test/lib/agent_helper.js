@@ -33,7 +33,9 @@ var helper = module.exports = {
     sinon.stub(connection, 'connect');
     options.connection = connection;
 
-    return new Agent(options);
+    var agent = new Agent(options);
+    agent.setupConnection();
+    return agent;
   },
 
   /**
