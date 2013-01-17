@@ -257,5 +257,64 @@ describe("the New Relic agent", function () {
         agent.listeners('transactionFinished').length.should.equal(3);
       });
     });
+
+    describe("when apdex_t changes", function () {
+      var APDEX_T = 0.9876;
+
+      it("should update its own apdexT", function () {
+        expect(agent.apdexT).not.equal(APDEX_T);
+
+        agent.onApdexTChange({apdex_t : APDEX_T});
+
+        expect(agent.apdexT).equal(APDEX_T);
+      });
+
+      it("should update the current metrics collection's apdexT", function () {
+        expect(agent.metrics.apdexT).not.equal(APDEX_T);
+
+        agent.onApdexTChange({apdex_t : APDEX_T});
+
+        expect(agent.metrics.apdexT).equal(APDEX_T);
+      });
+    });
+
+    describe("when new metric name -> ID renaming rules may or may not have come in",
+             function () {
+      it("shouldn't throw if no new rules are received", function () {
+        expect(function () { agent.onNewRenameRules(null); }).not.throws();
+      });
+
+      it("shouldn't throw if new rules are received", function () {
+        var rules = [[{name : 'Test/RenameMe1'}, 1001],
+                     [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]];
+
+        expect(function () { agent.onNewRenameRules(rules); }).not.throws();
+      });
+    });
+
+    describe("when new metric normalization rules may or may not have come in",
+             function () {
+      it("shouldn't throw if no new rules are received", function () {
+        expect(function () { agent.onNewNormalizationRules(null); }).not.throws();
+      });
+
+      it("shouldn't throw if new rules are received", function () {
+        var rules = {
+          url_rules : [
+            {each_segment : false, eval_order : 0, terminate_chain : true,
+             match_expression : '^(test_match_nothing)$',
+             replace_all : false, ignore : false, replacement : '\\1'},
+            {each_segment : false, eval_order : 0, terminate_chain : true,
+             match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+             replace_all : false, ignore : false, replacement : '/*.\\1'},
+            {each_segment : false, eval_order : 0, terminate_chain : true,
+             match_expression : '^(test_match_nothing)$',
+             replace_all : false, ignore : false, replacement : '\\1'}
+          ]
+        };
+
+        expect(function () { agent.onNewNormalizationRules(rules); }).not.throws();
+      });
+    });
   });
 });
