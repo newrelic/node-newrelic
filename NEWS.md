@@ -1,3 +1,26 @@
+### v0.9.16-121 / beta-16 (2013-01-16):
+
+* For some of the modules instrumented by the agent (fs, http, Express 2
+	and 3), the error tracer now adds error tracing to wrapped function calls.
+	This means that more of the functions in those modules will send traced
+	errors to New Relic, even if they're trapping errors themselves. Also
+	improves error tracer in versions of Node without domains. The error
+	tracer rethrows all caught errors, so as to not alter behavior of
+	instrumented apps.
+* The error count sent by the agent was frequently incorrect due to an
+	off-by-one bug.
+* Include the entire stacktrace in traced errors.
+* When the agent fails to successfully connect to New Relic's servers, it
+	will try 6 more times, progressively waiting longer between each failed
+	attempt. If no connection can be made, the agent will shut itself down.
+* The agent no longer crashes instrumented applications when DNS resolution
+	fails during the initial handshake with New Relic's servers. It logs the
+	failures instead and retries later.
+* The agent no longer alters the behavior of the generic-pool module in a
+	way that causes modules using it to break (including node-postgres).
+* In some cases, the domains-based error tracer was not working correctly.
+* The agent logs significantly more useful debugging information.
+
 ### v0.9.15-107 / beta-15 (2013-01-14):
 
 * The agent's built-in compression for sending large payloads to New Relic
