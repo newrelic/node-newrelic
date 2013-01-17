@@ -26,14 +26,14 @@ test("built-in fs module instrumentation should trace the reading of directories
       var written = fs.writeFileSync(path.join(TESTDIR, filename), 'I like clams', 'utf8');
     });
 
-    t.notOk(agent.getTransaction());
+    t.notOk(agent.getTransaction(), "transaction isn't yet created");
 
     helper.runInTransaction(agent, function transactionInScope() {
-      t.ok(agent.getTransaction());
+      t.ok(agent.getTransaction(), "transaction is now in context");
       fs.readdir(TESTDIR, function (error, files) {
         if (error) return t.fail(error);
 
-        t.ok(agent.getTransaction());
+        t.ok(agent.getTransaction(), "transaction is still in context in callback");
 
         t.equals(files.length, 3, "all the files show up");
         [FILE1, FILE2, FILE3].forEach(function (filename) {

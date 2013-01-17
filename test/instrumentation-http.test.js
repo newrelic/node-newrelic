@@ -4,14 +4,23 @@ var path   = require('path')
   , chai   = require('chai')
   , should = chai.should()
   , expect = chai.expect
-  , http   = require('http')
   , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 describe("built-in http module instrumentation", function () {
+  var http
+    , agent
+    ;
+
+  var PAYLOAD = JSON.stringify({msg : 'ok'});
+
+  var PAGE = '<html>' +
+    '<head><title>test response</title></head>' +
+    '<body><p>I heard you like HTML.</p></body>' +
+    '</html>';
+
   describe("shouldn't cause bootstrapping to fail", function () {
-    var agent
-      , initialize
+    var initialize
       ;
 
     before(function () {
@@ -29,25 +38,18 @@ describe("built-in http module instrumentation", function () {
     });
   });
 
-  describe("with an HTTP server running inside the test", function () {
-    var agent
-      , transaction
+  describe("when running a request", function () {
+    var transaction
       , fetchedStatusCode
       , fetchedBody
       ;
 
-    var PAYLOAD = JSON.stringify({msg : 'ok'});
-
-    var PAGE = '<html>' +
-               '<head><title>test response</title></head>' +
-               '<body><p>I heard you like HTML.</p></body>' +
-               '</html>';
-
     before(function (done) {
+      http  = require('http');
       agent = helper.instrumentMockedAgent();
 
       var external = http.createServer(function (request, response) {
-        expect(agent.getTransaction()).not.equal(undefined);
+        should.exist(agent.getTransaction());
 
         response.writeHead(200,
                            {'Content-Length' : PAYLOAD.length,
@@ -56,36 +58,36 @@ describe("built-in http module instrumentation", function () {
       });
 
       var server = http.createServer(function (request, response) {
-        expect(agent.getTransaction()).not.equal(undefined);
+        should.exist(agent.getTransaction());
 
         var req = http.request({port : 8321,
                                 host : 'localhost',
                                 path : '/status',
                                 method : 'GET'},
-                               function (requestResponse) {
-                                 if (requestResponse.statusCode !== 200) {
-                                   return done(requestResponse.statusCode);
-                                 }
+                                function (requestResponse) {
+            if (requestResponse.statusCode !== 200) {
+              return done(requestResponse.statusCode);
+            }
 
-                                 expect(agent.getTransaction()).not.equal(undefined);
-                                 transaction = agent.getTransaction();
+            transaction = agent.getTransaction();
+            should.exist(transaction);
 
-                                 requestResponse.setEncoding('utf8');
-                                 requestResponse.on('data', function (data) {
-                                   expect(data).equal(PAYLOAD);
-                                 });
+            requestResponse.setEncoding('utf8');
+            requestResponse.on('data', function (data) {
+              expect(data).equal(PAYLOAD);
+            });
 
-                                 response.writeHead(200,
-                                                    {'Content-Length' : PAGE.length,
-                                                     'Content-Type'   : 'text/html'});
+            response.writeHead(200,
+                               {'Content-Length' : PAGE.length,
+                                 'Content-Type'   : 'text/html'});
                                  response.end(PAGE);
-                               });
+          });
 
-        req.on('error', function (error) {
-          return done(error);
-        });
+          req.on('error', function (error) {
+            return done(error);
+          });
 
-        req.end();
+          req.end();
       });
 
       external.listen(8321, 'localhost', function () {
@@ -99,22 +101,22 @@ describe("built-in http module instrumentation", function () {
                                   host   : 'localhost',
                                   path   : '/path',
                                   method : 'GET'},
-                                 function (response) {
-                                   if (response.statusCode !== 200) {
-                                     return done(response.statusCode);
-                                   }
+                                  function (response) {
+            if (response.statusCode !== 200) {
+              return done(response.statusCode);
+            }
 
-                                   fetchedStatusCode = response.statusCode;
+            fetchedStatusCode = response.statusCode;
 
-                                   response.setEncoding('utf8');
-                                   response.on('data', function (data) {
-                                     fetchedBody = fetchedBody + data;
-                                   });
+            response.setEncoding('utf8');
+            response.on('data', function (data) {
+              fetchedBody = fetchedBody + data;
+            });
 
-                                   response.on('end', function () {
-                                     return done();
-                                   });
-                                 });
+            response.on('end', function () {
+              return done();
+            });
+          });
 
           req.on('error', function (error) {
             return done(error);
@@ -157,14 +159,84 @@ describe("built-in http module instrumentation", function () {
     });
 
     it("should associate outbound HTTP requests with the inbound transaction", function () {
-      expect(transaction.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost/status').stats.callCount).equal(1);
+      var stats = transaction.metrics.getOrCreateMetric('External/localhost/http',
+                                                        'External/localhost/status').stats;
+                                                        expect(stats.callCount).equal(1);
     });
 
-    it("should record outbound HTTP requests in the agent's metrics", function () {
-      expect(agent.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost/status').stats.callCount).equal(1);
-    });
+    it("shouldn't record transactions for requests for favicon.ico");
+    it("should capture metrics for the last byte to exit / enter as part of a response / request");
   });
 
-  it("shouldn't record transactions for requests for favicon.ico");
-  it("should capture metrics for the last byte to exit / enter as part of a response / request");
+  describe("with error monitor", function () {
+    var mochaHandler;
+
+    before(function () {
+      mochaHandler = process.listeners('uncaughtException').pop();
+    });
+
+    after(function () {
+      process.on('uncaughtException', mochaHandler);
+    });
+
+    beforeEach(function () {
+      http  = require('http');
+      agent = helper.instrumentMockedAgent();
+    });
+
+    afterEach(function () {
+      helper.unloadAgent(agent);
+    });
+
+    describe("for http.createServer", function () {
+      it("should trace errors in top-level handlers", function (done) {
+        var server;
+        process.once('uncaughtException', function () {
+          var errors = agent.errors.errors;
+          expect(errors.length).equal(1);
+
+          server.close();
+          return done();
+        });
+
+        server = http.createServer(function () {
+          throw new Error("whoops!");
+        });
+
+        server.listen(8182, function () {
+          http.get("http://localhost:8182/", function () {
+            console.log("actually got response");
+          });
+        });
+      });
+    });
+
+    describe("for http.request", function () {
+      it("should trace errors in listeners", function (done) {
+        var server;
+        process.once('uncaughtException', function () {
+          var errors = agent.errors.errors;
+          expect(errors.length).equal(1);
+
+          server.close();
+          return done();
+        });
+
+        server = http.createServer(function (request, response) {
+          response.writeHead(200,
+                             {'Content-Length' : PAYLOAD.length,
+                              'Content-Type'   : 'application/json'});
+          response.end(PAYLOAD);
+        });
+
+        server.listen(8183, function () {
+          helper.runInTransaction(agent, function () {
+            http.get("http://localhost:8183/", function () {
+              throw new Error("whoah");
+            });
+          });
+        });
+      });
+    });
+  });
 });

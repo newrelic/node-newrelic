@@ -38,16 +38,14 @@ describe("ErrorTracer", function () {
   });
 
   it("should retain a maximum of 20 errors to send", function () {
-    var error = new Error('test error');
-
-    for (var i = 0; i < 5; i++) service.add(null, error);
+    for (var i = 0; i < 5; i++) service.add(null, new Error('filling the queue'));
     expect(service.errors.length).equal(5);
 
-    for (i = 0; i < 5; i++) service.add(null, error);
+    for (i = 0; i < 5; i++) service.add(null, new Error('more filling the queue'));
     expect(service.errors.length).equal(10);
 
     // this will take the tracer 3 over the limit of 20
-    for (i = 0; i < 13; i++) service.add(null, error);
+    for (i = 0; i < 13; i++) service.add(null, new Error('overfilling the queue'));
     expect(service.errorCount).equal(23);
     expect(service.errors.length).equal(20);
   });
@@ -125,6 +123,32 @@ describe("ErrorTracer", function () {
     });
   });
 
+  describe("when monitoring function application for errors", function () {
+    var transaction;
+
+    beforeEach(function () {
+      var agent = helper.loadMockedAgent();
+      transaction = new Transaction(agent);
+    });
+
+    it("should rethrow the exception", function () {
+      var testFunction = function () {
+        var uninitialized;
+        uninitialized.explosion.happens.here = "fabulous";
+      };
+
+      expect(function () { service.monitor(transaction, testFunction); }).throws(TypeError);
+    });
+
+    it("should return the correct value", function () {
+      var safeFunction = function (val) {
+        return val * val;
+      };
+
+      expect(service.monitor(transaction, safeFunction, null, [3])).equal(9);
+    });
+  });
+
   if (dominion.available) {
     describe("when domains are available", function () {
       var mochaHandler
@@ -197,7 +221,7 @@ describe("ErrorTracer", function () {
         });
 
         it("should have the error's message", function () {
-          expect(json[2]).equal('sample error');
+          expect(json[2]).match(/^Error: sample error/);
         });
 
         it("should have the error's constructor name (class)", function () {

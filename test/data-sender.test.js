@@ -50,7 +50,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.getHeaders('test');
+      headers = sender.getHeaders(4);
     });
 
     it("should use the content type from the parameter", function () {
@@ -66,7 +66,7 @@ describe("DataSender", function () {
     });
 
     it("should have the host from the configuration", function () {
-      expect(headers.host).equal("collector.newrelic.com");
+      expect(headers.Host).equal("collector.newrelic.com");
     });
 
     it("should tell the server we're sending JSON", function () {
@@ -88,7 +88,7 @@ describe("DataSender", function () {
       };
       var sender = new DataSender(config, 12);
 
-      headers = sender.getHeaders('zxxvxzxzzx', true);
+      headers = sender.getHeaders(10, true);
     });
 
     it("should use the content type from the parameter", function () {
@@ -104,7 +104,7 @@ describe("DataSender", function () {
     });
 
     it("should have the host from the configuration", function () {
-      expect(headers.host).equal("collector.newrelic.com");
+      expect(headers.Host).equal("collector.newrelic.com");
     });
 
     it("should tell the server we're sending JSON", function () {
@@ -132,7 +132,9 @@ describe("DataSender", function () {
 
     it("should always add the agent run ID, if set", function () {
       expect(sender.agentRunId).equal(TEST_RUN_ID);
-      expect(sender.getURL('TEST_METHOD')).match(new RegExp('agent_run_id=' + TEST_RUN_ID));
+
+      var runPattern = new RegExp('agent_run_id=' + TEST_RUN_ID);
+      expect(sender.getURL('TEST_METHOD')).match(runPattern);
     });
 
     it("should correctly set up the method", function () {
@@ -224,5 +226,29 @@ describe("DataSender", function () {
       var body = '{"return_value":{"url_rules":[]}}';
       sender.handleMessage('TEST', null, body);
     });
+  });
+
+  it("shouldn't throw when dealing with compressed data", function (done) {
+    var sender = new DataSender({host : 'localhost'});
+    sender.shouldCompress = function () { return true; };
+    sender.postToCollector = function (message, headers, deflated) {
+      expect(deflated.readUInt8(0)).equal(120);
+      expect(deflated.length).equal(14);
+
+      return done();
+    };
+
+    sender.invokeMethod('test', 'data');
+  });
+
+  it("shouldn't throw when preparing uncompressed data", function (done) {
+    var sender = new DataSender({host : 'localhost'});
+    sender.postToCollector = function (message, headers, data) {
+      expect(data).equal('"data"');
+
+      return done();
+    };
+
+    sender.invokeMethod('test', 'data');
   });
 });

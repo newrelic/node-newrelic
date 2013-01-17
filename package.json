@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "0.9.14-105",
+  "version": "0.9.16-121",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "contributors": [
     {
@@ -55,7 +55,8 @@
     "sequelize": "~1.6",
     "mongoose": "~3.2.1",
     "redis": "~0.8.1",
-    "bson": "~0.1.5"
+    "bson": "~0.1.5",
+    "q": "~0.8.12"
   },
   "repository": {
     "type": "git",

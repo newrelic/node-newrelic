@@ -1,170 +1,163 @@
 'use strict';
 
-var mysql = require('mysql');
-
-function withUser(options, next) {
-  var user   = options.db.user
-    , logger = options.logger
-    ;
-
-  return function (error, client) {
-    if (error) return next(error);
-
-    client.query("CREATE USER '" + user + "'@'localhost'", function (error) {
-      if (error) return next(error);
-
-      logger.debug("User '" + user + "' created successfully.");
-
-      next(null, client);
-    });
-  };
-}
-
-function withDB(options, next) {
-  var db     = options.db.name
-    , user   = options.db.user
-    , logger = options.logger
-    ;
-
-  return function (error, client) {
-    if (error) return next(error);
-
-    client.query("GRANT ALL ON " + db + ".* TO '" +
-                 user + "'@'localhost'", function (error) {
-      if (error) return next(error);
-
-      logger.debug("Access granted to user '" + user + "'.");
-
-      client.query("CREATE DATABASE IF NOT EXISTS " + db, function (error) {
-        if (error) return next(error);
-
-        logger.debug("Database '" + db + "' created.");
-
-        client.end(function (error) {
-          if (error) return next(error);
-
-          logger.debug("Connection as root destroyed. Reconnecting as test user.");
-
-          var lesserClient = mysql.createClient({
-            user     : user,
-            database : db
-          });
-
-          next(null, lesserClient);
-        });
-      });
-    });
-  };
-}
-
-function withTable(options, next) {
-  var table  = options.db.table
-    , logger = options.logger
-    ;
-
-  return function (error, client) {
-    if (error) return next(error);
-
-    client.query("CREATE TABLE IF NOT EXISTS " + table +
-                 "(" +
-                 "  id         INTEGER(10) PRIMARY KEY AUTO_INCREMENT," +
-                 "  test_value VARCHAR(255)" +
-                 ")", function (error) {
-      if (error) return next(error);
-
-      logger.debug("Table '" + table + "' created.");
-
-      next(null, client);
-    });
-  };
-}
-
-function seedData(options, next) {
-  var table  = options.db.table
-    , logger = options.logger
-    ;
-
-  return function (error, client) {
-    if (error) return next(error);
-
-    client.query("INSERT INTO " + table +
-                 " (test_value) VALUE (\"hamburgefontstiv\")", function (error) {
-      if (error) return next(error);
-
-      logger.debug("Test data seeded into table '" + table + "'.");
-
-      next(null, client);
-    });
-  };
-}
-
-function checkBootstrapped(options, next) {
-  var table  = options.db.table
-    , db     = options.db.name
-    , logger = options.logger
-    ;
-
-  return function (error, client) {
-    if (error) return next(error);
-
-    client.query("SELECT table_name " +
-                 "  FROM information_schema.tables " +
-                 " WHERE table_schema = ? " +
-                 "   AND table_name = ?", [db, table], function (error, rows) {
-      if (error) return next(error);
-
-      if (rows.length > 0) {
-        client.query("SELECT COUNT(*) AS counted " +
-                     "  FROM " + db + "." + table, function (error, rows) {
-          if (error) return next(error, client);
-
-          if (rows[0].counted > 0) return next(null, client);
-
-          return next(new Error('only partially bootstrapped'), client);
-        });
-      }
-      else {
-        return next(new Error('not bootstrapped'), client);
-      }
-    });
-  };
-}
+var mysql = require('mysql')
+  , Q     = require('q')
+  ;
 
 /**
- *
  * There isn't actually an exported API, as all the action is in the setup
  * itself.
  */
 module.exports = function setup(options, imports, register) {
+  var logger    = options.logger
+    , username  = options.db.user
+    , dbname    = options.db.name
+    , tablename = options.db.table
+    ;
+
+  function run(client, commands) {
+    return commands.reduce(
+      function (last, next) { return last.then(next); },
+      Q.resolve(client)
+    );
+  }
+
+  function query(client, sql, successMessage) {
+    return Q.ninvoke(client, 'query', sql).then(function () {
+      logger.debug(successMessage);
+
+      return client;
+    });
+  }
+
+  function end(client) {
+    return Q.ninvoke(client, 'end').then(function () {
+      logger.debug("Connection as %s destroyed.", client.user);
+    });
+  }
+
+  function createUser(client) {
+    return query(
+      client,
+      "CREATE USER '" + username + "'@'localhost'",
+      "User '" + username + "' created successfully."
+    );
+  }
+
+  function grantPermissions(client) {
+    return query(
+      client,
+      "GRANT ALL ON " + dbname + ".* TO '" + username + "'@'localhost'",
+      "Access granted to user '" + username + "'."
+    );
+  }
+
+  function createDB(client) {
+    return query(
+      client,
+      "CREATE DATABASE IF NOT EXISTS " + dbname,
+      "Database '" + dbname + "' created."
+    );
+  }
+
+  function connectAsTestUser() {
+    logger.debug("Reconnecting as %s.", username);
+
+    return Q.resolve(mysql.createClient({
+      user     : username,
+      database : dbname
+    }));
+  }
+
+  function createTestTable(client) {
+    return query(
+      client,
+      "CREATE TABLE IF NOT EXISTS " + tablename +
+        "(" +
+        "  id         INTEGER(10) PRIMARY KEY AUTO_INCREMENT," +
+        "  test_value VARCHAR(255)" +
+        ")",
+      "Table '" + tablename + "' created."
+    );
+  }
+
+  function createSeedData(client) {
+    return query(
+      client,
+      "INSERT INTO " + tablename + " (test_value) VALUE (\"hamburgefontstiv\")",
+      "Test data seeded into table '" + tablename + "'."
+    );
+  }
+
+  function ensureTable(client) {
+    var sql = "SELECT table_name " +
+              "  FROM information_schema.tables " +
+              " WHERE table_schema = ? " +
+              "   AND table_name = ?";
+
+    /* A weird side effect of Q.ninvoke: more than just one non-error
+     * parameter expected on the callback, get back an array of all of
+     * them. Q.get(0) will grab the first parameter.
+     */
+    return Q.ninvoke(client, 'query', sql, [dbname, tablename])
+      .get(0)
+      .get('length')
+      .then(function (length) {
+        logger.debug("%s test table(s) found.", length);
+        if (length > 0) return client;
+
+        throw new Error("Test table missing. Test database not initialized.");
+      });
+  }
+
+  function ensureData(client) {
+    var sql = "SELECT COUNT(*) AS counted " +
+              "  FROM " + dbname + "." + tablename;
+
+    return Q.ninvoke(client, 'query', sql)
+      .get(0)
+      .then(function (result) {
+        if (result.length !== 1) throw new Error("Test table query failed.");
+
+        var count = result[0].counted;
+        logger.debug("%s test data row(s).", count);
+        if (count > 0) return client;
+
+        throw new Error("No test data seeded. Only partially initialized.");
+      });
+  }
+
+  function succeeded() {
+    logger.info("Test database initialized.");
+    return register(null, {mysqlBootstrap : {}});
+  }
+
+  function failed(error) {
+    return register(error);
+  }
+
   var client = mysql.createClient({
     user     : 'root',
     database : 'mysql'
   });
 
-  // don't bootstrap if everything's OK
-  var checker = checkBootstrapped(options, function (error, client) {
-    if (!error) return register(null, {mysqlBootstrap : {}});
+  // actually run the initializer
+  var isInitialized = run(client, [ensureTable, ensureData, end]);
+  isInitialized.then(
+    succeeded,
+    function notYetBootstrapped(error) {
+      logger.debug(error.message);
 
-    // not bootstrapped, or something got messed up before
-    var finish = function (error, client) {
-      if (error) return register(error);
-
-      client.end(function (error) {
-        register(error, {mysqlBootstrap : {}});
-      });
-    };
-
-    /*
-     * The power of functional programming: since each task is a generator taking
-     * a uniform set of parameters and returning a callback with a uniform
-     * interface, we can just apply a fold to get a composition of the set of
-     * tasks and get something almost as concise as point-free style.
-     */
-    var tasks = [withUser, withDB, withTable, seedData, finish];
-    var bootstrap = tasks.reverse().reduce(function (previous, current) {
-      return current(options, previous);
-    });
-    bootstrap(null, client);
-  });
-  checker(null, client);
+      // reuse the first connection because why not
+      var bootstrap = run(client,
+        [
+          createUser, grantPermissions, createDB, end,
+          connectAsTestUser,
+          createTestTable, createSeedData,
+          ensureTable, ensureData, end
+        ]
+      );
+      bootstrap.then(succeeded, failed).done();
+    }
+  );
 };

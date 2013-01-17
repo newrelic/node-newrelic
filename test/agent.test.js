@@ -6,13 +6,14 @@ var path         = require('path')
   , expect       = chai.expect
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+      .child({component : 'TEST'})
   , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
-  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe("the New Relic agent", function () {
-  it("accepts a custom configuration as an option passed to the constructor", function () {
+  it("accepts a custom configuration as an option passed to the constructor",
+     function () {
     var config = configurator.initialize(logger, {
       config : {
         sample : true
@@ -23,22 +24,17 @@ describe("the New Relic agent", function () {
     expect(agent.config.sample).equal(true);
   });
 
-  describe("when establishing a connection to the staging collector", function () {
+  describe("at connection time", function () {
     var agent;
 
-    before(function () {
+    beforeEach(function () {
       agent = new Agent();
     });
 
-    after(function () {
-      agent.stop();
-    });
-
-    it("should start up properly", function (done) {
-      should.exist(agent);
-
+    it("should connect immediately upon noticing appliction port", function (done) {
       agent.on('connect', function () {
         should.exist(agent.connection, 'connection exists');
+        agent.stop();
 
         return done();
       });
@@ -47,7 +43,40 @@ describe("the New Relic agent", function () {
       agent.noticeAppPort(6666);
     });
 
-    it("should give up after retrying x times");
+    it("should retry on connection failure", function (done) {
+      // _nextConnectAttempt requires agent.connection exist
+      agent.setupConnection();
+
+      agent._failAndRetry = function () {
+        return done();
+      };
+
+      var backoff = agent.nextBackoff();
+      expect(backoff).eql({interval : 15, warn : false, error : false});
+
+      agent._nextConnectAttempt(backoff);
+
+      should.exist(agent.connection);
+      agent.connection.emit('connectError', 'testConnect', new Error('agent test'));
+    });
+
+    it("should give up after retrying 6 times", function (done) {
+      // _nextConnectAttempt requires agent.connection exist
+      agent.setupConnection();
+
+      agent._failAndShutdown = function () {
+        return done();
+      };
+      agent.connectionFailures = 6;
+
+      var backoff = agent.nextBackoff();
+      expect(backoff).eql({interval : 300, warn : false, error : true});
+
+      agent._nextConnectAttempt(backoff);
+
+      should.exist(agent.connection);
+      agent.connection.emit('connectError', 'testConnect', new Error('agent test'));
+    });
   });
 
   describe("when working offline with a mocked service connection", function () {
@@ -101,7 +130,6 @@ describe("the New Relic agent", function () {
       expect(function () {
         transaction = agent.createTransaction();
       }).not.throws();
-      expect(transaction).instanceof(Transaction);
     });
 
     it("should have debugging configuration by default", function () {
@@ -114,7 +142,8 @@ describe("the New Relic agent", function () {
         expect(debug.internal_metrics).equal(false);
       });
 
-      it("can be created with internal instrumentation enabled in the configuration", function () {
+      it("can be created with internal instrumentation enabled in the configuration",
+         function () {
         var config = configurator.initialize(logger, {
           config : {debug : {internal_metrics : true}}
         });
@@ -140,7 +169,10 @@ describe("the New Relic agent", function () {
 
         it("should find an internal metric for transaction processed", function (done) {
           debugged.once('transactionFinished', function () {
-            var metric = debugged.config.debug.supportability.getMetric('Supportability/Transaction/Count');
+            var supportability = debugged.config.debug.supportability
+              , metric = supportability.getMetric('Supportability/Transaction/Count')
+              ;
+
             expect(metric, 'is defined').not.equal(undefined);
             expect(metric.stats.callCount, 'has been incremented').equal(1);
 
@@ -153,100 +185,136 @@ describe("the New Relic agent", function () {
       });
     });
 
-    describe("when dealing with its event handlers", function () {
-      describe("when setting up event subscriptions", function () {
-        it("should have one handler defined on the 'change' event on the agent's configuration", function () {
-          agent.config.listeners('change').length.should.equal(1);
+    describe("when handling events", function () {
+      it("should update the metrics' apdex tolerating value when configuration changes",
+         function (done) {
+        expect(agent.metrics.apdexT).equal(0.5);
+        process.nextTick(function () {
+          should.exist(agent.metrics.apdexT);
+          agent.metrics.apdexT.should.equal(0.666);
+
+          return done();
         });
 
-        it("should have two handlers defined on the 'connect' event on the agent", function () {
-          connection.listeners('connect').length.should.equal(2);
-        });
-
-        it("should have one handler defined on the 'metricDataError' event on the agent", function () {
-          connection.listeners('metricDataError').length.should.equal(1);
-        });
-
-        it("should have one handler defined on the 'metricDataResponse' event on the agent", function () {
-          connection.listeners('metricDataResponse').length.should.equal(1);
-        });
-
-        it("should have one handler defined on the 'errorDataError' event on the agent", function () {
-          connection.listeners('errorDataError').length.should.equal(1);
-        });
-
-        it("should have one handler defined on the 'connectError' event on the agent", function () {
-          connection.listeners('connectError').length.should.equal(1);
-        });
+        agent.config.emit('change', {'apdex_t' : 0.666});
       });
 
-      describe("when handling events", function () {
-        it("should update the metrics' apdex tolerating value when configuration changes", function (done) {
-          expect(agent.metrics.apdexT).equal(0.5);
-          process.nextTick(function () {
-            should.exist(agent.metrics.apdexT);
-            agent.metrics.apdexT.should.equal(0.666);
+      it("should reset the configuration and metrics normalizer on connection",
+         function (done) {
+        expect(agent.config.apdex_t).equal(0.5);
+        process.nextTick(function () {
+          expect(agent.config.apdex_t).equal(0.742);
+          expect(agent.metrics.apdexT).equal(0.742);
+          expect(agent.metrics.normalizer.rules).deep.equal([]);
 
-            return done();
-          });
-
-          agent.config.emit('change', {'apdex_t' : 0.666});
+          return done();
         });
 
-        it("should reset the configuration and metrics normalizer when the agent connects", function (done) {
-          expect(agent.config.apdex_t).equal(0.5);
-          process.nextTick(function () {
-            expect(agent.config.apdex_t).equal(0.742);
-            expect(agent.metrics.apdexT).equal(0.742);
-            expect(agent.metrics.normalizer.rules).deep.equal([]);
+        connection.emit('connect', {apdex_t : 0.742, url_rules : []});
+      });
 
-            return done();
-          });
+      it("should parse metrics responses when metric data is received",
+         function (done) {
+        var NAME     = 'Custom/Test/events';
+        var SCOPE    = 'TEST';
+        var METRICID = 'Test/Rollup';
 
-          connection.emit('connect', {apdex_t : 0.742, url_rules : []});
+        var testIDs = {};
+        testIDs[NAME + ',' + SCOPE] = METRICID;
+
+        agent.metrics.renamer.length.should.equal(0);
+        process.nextTick(function () {
+          agent.metrics.renamer.lookup(NAME, SCOPE).should.equal('Test/Rollup');
+
+          return done();
         });
 
-        it("should parse metrics responses when metric data is received", function (done) {
-          var NAME     = 'Custom/Test/events';
-          var SCOPE    = 'TEST';
-          var METRICID = 'Test/Rollup';
+        connection.emit('metricDataResponse',
+                        [[{name : NAME, scope : SCOPE}, METRICID]]);
+      });
 
-          var testIDs = {};
-          testIDs[NAME + ',' + SCOPE] = METRICID;
+      it("should capture the trace off a finished transaction", function (done) {
+        var trans = agent.createTransaction();
+        // need to initialize the trace
+        trans.getTrace();
+        trans.measureWeb('/ham/update/3', 200, 2100);
 
-          agent.metrics.renamer.length.should.equal(0);
-          process.nextTick(function () {
-            agent.metrics.renamer.lookup(NAME, SCOPE).should.equal('Test/Rollup');
+        agent.once('transactionFinished', function () {
+          var trace = agent.traces.trace;
+          should.exist(trace);
+          expect(trace.getDurationInMillis(), "same trace just passed in").equal(2100);
 
-            return done();
-          });
-
-          connection.emit('metricDataResponse', [[{name : NAME, scope : SCOPE}, METRICID]]);
+          return done();
         });
 
-        it("should capture the trace off a finished transaction", function (done) {
-          var trans = agent.createTransaction();
-          // need to initialize the trace
-          var trace = trans.getTrace();
-          trans.measureWeb('/ham/update/3', 200, 2100);
+        trans.end();
+      });
 
-          agent.once('transactionFinished', function () {
-            should.exist(agent.traces.trace);
-            expect(agent.traces.trace.getDurationInMillis(), "same trace just passed in").equal(2100);
-
-            return done();
-          });
-
-          trans.end();
-        });
+      it("should have three handlers registered for transactionFinished", function () {
+        // one to merge metrics
+        // one to update error counts
+        // one to pass finished traces to the slow trace aggregator
+        agent.listeners('transactionFinished').length.should.equal(3);
       });
     });
 
-    it("should have three handlers defined on the transactionFinished event", function () {
-      // one to merge metrics
-      // one to update error counts
-      // one to pass finished traces to the slow trace aggregator
-      agent.listeners('transactionFinished').length.should.equal(3);
+    describe("when apdex_t changes", function () {
+      var APDEX_T = 0.9876;
+
+      it("should update its own apdexT", function () {
+        expect(agent.apdexT).not.equal(APDEX_T);
+
+        agent.onApdexTChange({apdex_t : APDEX_T});
+
+        expect(agent.apdexT).equal(APDEX_T);
+      });
+
+      it("should update the current metrics collection's apdexT", function () {
+        expect(agent.metrics.apdexT).not.equal(APDEX_T);
+
+        agent.onApdexTChange({apdex_t : APDEX_T});
+
+        expect(agent.metrics.apdexT).equal(APDEX_T);
+      });
+    });
+
+    describe("when new metric name -> ID renaming rules may or may not have come in",
+             function () {
+      it("shouldn't throw if no new rules are received", function () {
+        expect(function () { agent.onNewRenameRules(null); }).not.throws();
+      });
+
+      it("shouldn't throw if new rules are received", function () {
+        var rules = [[{name : 'Test/RenameMe1'}, 1001],
+                     [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]];
+
+        expect(function () { agent.onNewRenameRules(rules); }).not.throws();
+      });
+    });
+
+    describe("when new metric normalization rules may or may not have come in",
+             function () {
+      it("shouldn't throw if no new rules are received", function () {
+        expect(function () { agent.onNewNormalizationRules(null); }).not.throws();
+      });
+
+      it("shouldn't throw if new rules are received", function () {
+        var rules = {
+          url_rules : [
+            {each_segment : false, eval_order : 0, terminate_chain : true,
+             match_expression : '^(test_match_nothing)$',
+             replace_all : false, ignore : false, replacement : '\\1'},
+            {each_segment : false, eval_order : 0, terminate_chain : true,
+             match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+             replace_all : false, ignore : false, replacement : '/*.\\1'},
+            {each_segment : false, eval_order : 0, terminate_chain : true,
+             match_expression : '^(test_match_nothing)$',
+             replace_all : false, ignore : false, replacement : '\\1'}
+          ]
+        };
+
+        expect(function () { agent.onNewNormalizationRules(rules); }).not.throws();
+      });
     });
   });
 });

@@ -10,9 +10,11 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
      function (t) {
   t.plan(22);
 
-  var self = this;
   helper.bootstrapMySQL(function (error, app) {
-    if (error) return t.fail(error);
+    if (error) {
+      t.fail(error);
+      return t.end();
+    }
 
     var agent = helper.instrumentMockedAgent();
     var mysql = require('mysql');
@@ -23,8 +25,8 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
     });
     t.ok(client, "Client should be created OK.");
 
-    self.tearDown(function () {
-      client.end(function (error) {
+    this.tearDown(function () {
+      client.end(function cleanup(error) {
         if (error) t.fail(error);
 
         helper.cleanMySQL(app, function done() {
@@ -36,20 +38,31 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
     t.notOk(agent.getTransaction(), "no transaction should be in play yet.");
     helper.runInTransaction(agent, function transactionInScope() {
       client.query("SELECT * FROM test WHERE id = ?", [1], function (error, rows) {
-        if (error) return t.fail(error);
+        if (error) {
+          t.fail(error);
+          return t.end();
+        }
 
         t.ok(agent.getTransaction(), "transaction should be visible");
         t.equals(rows.length, 1, "there should be one row");
         var row = rows[0];
         t.equals(row.id, 1, "mysql driver should still work (found id)");
-        t.equals(row.test_value, 'hamburgefontstiv', "mysql driver should still work (found value)");
+        t.equals(row.test_value, 'hamburgefontstiv',
+                 "mysql driver should still work (found value)");
 
-        client.query("INSERT INTO test (test_value) VALUE (\"raxjambles\")", function (error) {
-          if (error) return t.fail(error);
+        client.query("INSERT INTO test (test_value) VALUE (\"raxjambles\")",
+                     function (error) {
+          if (error) {
+            t.fail(error);
+            return t.end();
+          }
 
           t.ok(agent.getTransaction(), "transaction should still be visible");
           client.query("SELECT COUNT(*) AS num_rows FROM test", function (error, rows) {
-            if (error) return t.fail(error);
+            if (error) {
+              t.fail(error);
+              return t.end();
+            }
 
             var transaction = agent.getTransaction();
             t.ok(transaction, "transaction should still be visible");
@@ -67,23 +80,29 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
 
             var selectSegment = trace.root.children[0];
             t.ok(selectSegment, "trace segment for first SELECT should exist");
-            t.equals(selectSegment.name, "Database/test/select", "should register as SELECT");
-            t.equals(selectSegment.children.length, 1, "SELECT should have a single child");
+            t.equals(selectSegment.name, "Database/test/select",
+                     "should register as SELECT");
+            t.equals(selectSegment.children.length, 1,
+                     "SELECT should have a single child");
 
             var insertSegment = selectSegment.children[0];
             t.ok(insertSegment, "trace segment for INSERT should exist");
-            t.equals(insertSegment.name, "Database/test/insert", "should register as INSERT");
-            t.equals(insertSegment.children.length, 1, "INSERT should have a single child");
+            t.equals(insertSegment.name, "Database/test/insert",
+                     "should register as INSERT");
+            t.equals(insertSegment.children.length, 1,
+                     "INSERT should have a single child");
 
             var countSegment = insertSegment.children[0];
             t.ok(countSegment, "trace segment for SELECT COUNT(*) should exist");
-            t.equals(countSegment.name, "Database/test/select", "should register as SELECT");
-            t.equals(countSegment.children.length, 0, "SELECT COUNT should leave us here at the end");
+            t.equals(countSegment.name, "Database/test/select",
+                     "should register as SELECT");
+            t.equals(countSegment.children.length, 0,
+                     "SELECT COUNT should leave us here at the end");
 
             t.end();
           });
         });
       });
     });
-  });
+  }.bind(this));
 });

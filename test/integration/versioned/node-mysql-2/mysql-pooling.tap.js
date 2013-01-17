@@ -12,7 +12,7 @@ var DBUSER = 'test_user'
   ;
 
 test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
-     {timeout : Infinity},
+     {timeout : 30 * 1000},
      function (t) {
   t.plan(9);
 
@@ -45,6 +45,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
         client.on('error', function (err) {
           poolLogger.error("MySQL connection errored out, destroying connection");
+          poolLogger.error(err);
           pool.destroy(client);
         });
 
@@ -148,7 +149,8 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
         }
 
         t.equals(row.id, 1, "node-mysql should still work (found id)");
-        t.equals(row.test_value, 'hamburgefontstiv', "mysql driver should still work (found value)");
+        t.equals(row.test_value, 'hamburgefontstiv',
+                 "mysql driver should still work (found value)");
 
         transaction.end();
 
@@ -159,7 +161,8 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
         var selectSegment = trace.root.children[0];
         t.ok(selectSegment, "trace segment for first SELECT should exist");
-        t.equals(selectSegment.name, "Database/agent_integration.test/select", "should register as SELECT");
+        t.equals(selectSegment.name, "Database/agent_integration.test/select",
+                 "should register as SELECT");
         t.equals(selectSegment.children.length, 0, "SELECT should have no children");
 
         t.end();

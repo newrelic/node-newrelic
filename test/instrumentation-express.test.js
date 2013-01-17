@@ -3,7 +3,6 @@
 var path    = require('path')
   , chai    = require('chai')
   , expect  = chai.expect
-  , should  = chai.should()
   , request = require('request')
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
@@ -37,7 +36,6 @@ describe("an instrumented Express application", function () {
       , agent
       , fetchedResponse
       , fetchedBody
-      , PORT = 8062
       ;
 
     before(function (done) {
