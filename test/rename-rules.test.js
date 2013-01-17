@@ -21,6 +21,20 @@ describe('RenameRules', function () {
     expect(function () { rules.load(undefined); }).not.throws();
   });
 
+  it("shouldn't throw if passed an empty rule list", function () {
+    var rules;
+
+    expect(function () { rules = new RenameRules(); }).not.throws();
+    expect(function () { rules.load([]); }).not.throws();
+  });
+
+  it("shouldn't throw if passed garbage input", function () {
+    var rules;
+
+    expect(function () { rules = new RenameRules(); }).not.throws();
+    expect(function () { rules.load({name : 'garbage'}, 1001); }).not.throws();
+  });
+
   it("should load a set of rules passed into the constructor", function () {
     var rules = new RenameRules([[{name : 'Test/RenameMe1'}, 1001],
                                  [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]]);
