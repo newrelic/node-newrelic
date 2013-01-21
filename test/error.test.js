@@ -137,7 +137,9 @@ describe("ErrorTracer", function () {
         uninitialized.explosion.happens.here = "fabulous";
       };
 
-      expect(function () { service.monitor(transaction, testFunction); }).throws(TypeError);
+      expect(function () {
+        service.monitor(testFunction, transaction);
+      }).throws(TypeError);
     });
 
     it("should return the correct value", function () {
@@ -145,7 +147,7 @@ describe("ErrorTracer", function () {
         return val * val;
       };
 
-      expect(service.monitor(transaction, safeFunction, null, [3])).equal(9);
+      expect(service.monitor(safeFunction.bind(null, 3), transaction)).equal(9);
     });
   });
 
@@ -174,7 +176,7 @@ describe("ErrorTracer", function () {
             domain = agent.getTransaction().trace.domain;
             active = process.domain;
 
-            active.once('error', function (e) {
+            active.once('error', function () {
               json = agent.errors.errors[0];
 
               return done();

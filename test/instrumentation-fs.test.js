@@ -19,26 +19,28 @@ describe("built-in fs module instrumentation", function () {
     , agent
     ;
 
-  beforeEach(function () {
+  before(function () {
     fs = require('fs');
     readdir = fs.readdir;
     fs.readdir = readstub;
+  });
 
+  beforeEach(function () {
     agent = helper.instrumentMockedAgent();
   });
 
   afterEach(function () {
     helper.unloadAgent(agent);
+  });
+
+  after(function () {
     fs.readdir = readdir;
   });
 
   describe("shouldn't cause bootstrapping to fail", function () {
-    var agent
-      , initialize
-      ;
+    var initialize;
 
     before(function () {
-      agent = helper.loadMockedAgent();
       initialize = require(path.join(__dirname, '..', 'lib',
                                      'instrumentation', 'core', 'fs'));
     });
@@ -74,6 +76,18 @@ describe("built-in fs module instrumentation", function () {
         transaction.end();
       });
     });
+  });
+
+  it("shouldn't crash when called outside of transaction", function (done) {
+    expect(function nonTransactionalReaddir() {
+      fs.readdir('stub', function (error, files) {
+        if (error) return done(error);
+
+        expect(files).eql([]);
+
+        return done();
+      });
+    }).not.throws();
   });
 
   describe("with error monitor", function () {
