@@ -23,7 +23,7 @@ test("built-in fs module instrumentation should trace the reading of directories
     if (error) return t.fail(error);
 
     [FILE1, FILE2, FILE3].forEach(function (filename) {
-      var written = fs.writeFileSync(path.join(TESTDIR, filename), 'I like clams', 'utf8');
+      fs.writeFileSync(path.join(TESTDIR, filename), 'I like clams', 'utf8');
     });
 
     t.notOk(agent.getTransaction(), "transaction isn't yet created");
@@ -48,7 +48,6 @@ test("built-in fs module instrumentation should trace the reading of directories
         t.equals(stats.callCount, 1, "instrumentation should know method was called");
 
         var transaction = agent.getTransaction();
-        console.dir(transaction.trace.root.children);
         transaction.end();
         helper.unloadAgent(agent);
 

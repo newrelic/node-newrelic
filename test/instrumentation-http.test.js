@@ -153,19 +153,24 @@ describe("built-in http module instrumentation", function () {
       return done(found ? null : new Error('failed to find Dispatcher configuration'));
     });
 
-    it("should record unscoped HTTP dispatcher stats after a normal request", function () {
+    it("should record unscoped HTTP dispatcher stats after a normal request",
+       function () {
       var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
       stats.callCount.should.equal(2);
     });
 
-    it("should associate outbound HTTP requests with the inbound transaction", function () {
-      var stats = transaction.metrics.getOrCreateMetric('External/localhost/http',
-                                                        'External/localhost/status').stats;
-                                                        expect(stats.callCount).equal(1);
+    it("should associate outbound HTTP requests with the inbound transaction",
+       function () {
+      var stats = transaction
+                    .metrics
+                    .getOrCreateMetric('External/localhost/http',
+                                       'External/localhost/status').stats;
+      expect(stats.callCount).equal(1);
     });
 
     it("shouldn't record transactions for requests for favicon.ico");
-    it("should capture metrics for the last byte to exit / enter as part of a response / request");
+    it("should capture metrics for the last byte to exit as part of a response");
+    it("should capture metrics for the last byte to enter as part of a request");
   });
 
   describe("with error monitor", function () {
@@ -205,7 +210,7 @@ describe("built-in http module instrumentation", function () {
 
         server.listen(8182, function () {
           http.get("http://localhost:8182/", function () {
-            console.log("actually got response");
+            done("actually got response");
           });
         });
       });

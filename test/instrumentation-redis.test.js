@@ -1,8 +1,6 @@
 'use strict';
 
 var path         = require('path')
-  , net          = require('net')
-  , EventEmitter = require('events').EventEmitter
   , chai         = require('chai')
   , expect       = chai.expect
   , should       = chai.should()
@@ -27,9 +25,7 @@ FakeConnection.prototype.setTimeout = function (timeout) {
   this.timeout = timeout;
 };
 
-FakeConnection.prototype.write = function (written) {
-  console.error(written);
-};
+FakeConnection.prototype.write = function () {};
 
 describe("agent instrumentation of Redis", function () {
   describe("shouldn't cause bootstrapping to fail", function () {
