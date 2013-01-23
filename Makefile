@@ -18,8 +18,12 @@ node_modules: package.json
 build: clean node_modules
 	@echo "Running node $(NODE_VERSION)."
 
-test-cov: node_modules
+test-cov: clean node_modules
 	@$(COVER) run $(MOCHA_NOBIN)
+	@for tapfile in $(INTEGRATION) ; do \
+		$(COVER) run $$tapfile ; \
+	done
+	@$(COVER) combine
 	@$(COVER) report html
 	@$(COVER) report
 
