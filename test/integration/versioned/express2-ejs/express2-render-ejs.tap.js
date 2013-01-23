@@ -145,9 +145,9 @@ test("agent instrumentation of Express 2", function (t) {
 
     app.listen(TEST_PORT, TEST_HOST, function () {
       t.equal(app.stack.length, 3,
-              "3 elements in middleware stack: Express, router, error trapper");
-      t.equal(app.stack[2].handle.name, 'sentinel',
-              "error handler is in place");
+              "3 middleware functions: Express, router, error trapper");
+      t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel',
+              "error handler is last function in middleware chain");
 
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);

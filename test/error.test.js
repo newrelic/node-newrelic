@@ -12,7 +12,7 @@ var path         = require('path')
   ;
 
 function createTransaction(code) {
-  return { statusCode : code };
+  return { statusCode : code, exceptions : [] };
 }
 
 describe("ErrorTracer", function () {
@@ -69,6 +69,63 @@ describe("ErrorTracer", function () {
     expect(service.errorCount).equal(1);
   });
 
+  describe("with an internal server error (500) and an exception", function () {
+    var agent
+      , scope
+      , error
+      ;
+
+    beforeEach(function () {
+      agent = helper.loadMockedAgent();
+      service = agent.errors;
+
+      var transaction = new Transaction(agent)
+        , exception   = new Error('500 test error')
+        ;
+
+      transaction.exceptions.push(exception);
+      scope = transaction.measureWeb('/test-request/zxrkbl', 500, 5, 5);
+      transaction.end();
+
+      error = service.errors[0];
+    });
+
+    afterEach(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("should properly reset when finished", function () {
+      expect(service.errorCount).equal(1);
+
+      service.clear();
+      expect(service.errorCount).equal(0);
+    });
+
+    it("should associate errors with the transaction's scope", function () {
+      var errorScope = error[1];
+
+      expect(errorScope).equal(scope);
+    });
+
+    it("should associate errors with a message", function () {
+      var message = error[2];
+
+      expect(message).match(/500 test error/);
+    });
+
+    it("should associate errors with a message class", function () {
+      var messageClass = error[3];
+
+      expect(messageClass).equal('Error');
+    });
+
+    it("should associate errors with parameters", function () {
+      var params = error[4];
+
+      expect(params).eql({request_uri : "/test-request/zxrkbl"});
+    });
+  });
+
   describe("with a service unavailable (503) error", function () {
     var agent
       , scope
@@ -76,14 +133,13 @@ describe("ErrorTracer", function () {
       ;
 
     beforeEach(function () {
-      service = new ErrorTracer(config.config);
-
       agent = helper.loadMockedAgent();
+      service = agent.errors;
+
       var transaction = new Transaction(agent);
       scope = transaction.measureWeb('/test-request/zxrkbl', 503, 5, 5);
       transaction.end();
 
-      service.onTransactionFinished(transaction);
       error = service.errors[0];
     });
 

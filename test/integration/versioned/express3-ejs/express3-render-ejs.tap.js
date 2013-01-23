@@ -5,8 +5,9 @@ process.env.NODE_ENV = 'test';
 
 var path    = require('path')
   , test    = require('tap').test
-  , helper  = require(path.join(__dirname, '..', '..', '..', 'lib', 'agent_helper'))
   , request = require('request')
+  , shimmer = require(path.join(__dirname, '..', '..', '..', '..', 'lib', 'shimmer'))
+  , helper  = require(path.join(__dirname, '..', '..', '..', 'lib', 'agent_helper'))
   ;
 
 var TEST_PATH = '/test'
@@ -122,8 +123,14 @@ test("agent instrumentation of Express 3", function (t) {
   });
 
   t.test("should trap errors correctly", function (t) {
-    var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
+    var agent = helper.instrumentMockedAgent();
+
+    // see shimmer.reinstrument for info on why this is here
+    shimmer.reinstrument(agent, path.join(__dirname,
+                                          'node_modules', 'express',
+                                          'node_modules', 'connect'));
+
+    var app    = require('express')()
       , server = require('http').createServer(app)
       ;
 
@@ -138,6 +145,11 @@ test("agent instrumentation of Express 3", function (t) {
     });
 
     server.listen(TEST_PORT, TEST_HOST, function () {
+      t.equal(app.stack.length, 4,
+              "4 middleware functions: query parser, Express, router, error trapper");
+      t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel',
+              "error handler is last function in middleware chain");
+
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
