@@ -29,7 +29,7 @@ describe("an instrumented Express application", function () {
     });
   });
 
-  describe("for Express 2 (mocked)", function () {
+  describe("for Express 2 (stubbed)", function () {
     var agent
       , stub
       , http
@@ -49,6 +49,7 @@ describe("an instrumented Express application", function () {
         process.nextTick(cb);
         return 'rendered';
       };
+      http.ServerResponse.prototype.send = function () {};
 
       require(path.join(__dirname, '..', 'lib',
                         'instrumentation', 'express'))(agent, stub);
@@ -57,6 +58,7 @@ describe("an instrumented Express application", function () {
     after(function () {
       helper.unloadAgent(agent);
       delete http.ServerResponse.prototype.render;
+      delete http.ServerResponse.prototype.send;
     });
 
     it("should set dispatcher to Express when a new server is created", function () {
@@ -75,18 +77,21 @@ describe("an instrumented Express application", function () {
       expect(frameworks[0]).equal('express');
     });
 
-    it("should wrap http.ServerResponse.prototype.render", function (done) {
+    it("should trace http.ServerResponse.prototype.render", function (done) {
       should.exist(http.ServerResponse.prototype.render);
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
 
-        expect(http.ServerResponse.prototype.render.call(null,
-                                                         'TEST',
-                                                         {},
-                                                         function () {
+        var res = http.ServerResponse.prototype; // yuck
+        expect(res.render.call(res, 'TEST', {}, function () {
           process.nextTick(function () {
-            var json = transaction.getTrace().root.toJSON();
-            expect(json[4][0][2]).equal('View/TEST/Rendering');
+            var json     = transaction.getTrace().root.toJSON()
+              , children = json[4]
+              , render   = children[0]
+              , name     = render[2]
+              ;
+
+            expect(name).equal('View/TEST/Rendering');
 
             return done();
           });
@@ -94,27 +99,54 @@ describe("an instrumented Express application", function () {
       });
     });
 
-    it("should wrap http.ServerResponse.prototype.render with missing options",
+    it("should trace http.ServerResponse.prototype.render when called with no options",
        function (done) {
       should.exist(http.ServerResponse.prototype.render);
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
 
-        expect(http.ServerResponse.prototype.render.call(null,
-                                                         'TEST',
-                                                         function () {
+        var res = http.ServerResponse.prototype;
+        expect(res.render.call(res, 'TEST', function () {
           process.nextTick(function () {
-            var json = transaction.getTrace().root.toJSON();
-            expect(json[4][0][2]).equal('View/TEST/Rendering');
+            var json     = transaction.getTrace().root.toJSON()
+              , children = json[4]
+              , render   = children[0]
+              , name     = render[2]
+              ;
+
+            expect(name).equal('View/TEST/Rendering');
 
             return done();
           });
         })).equal('rendered');
       });
     });
+
+    it("should trace http.ServerResponse.prototype.render when called with no callback",
+       function (done) {
+      should.exist(http.ServerResponse.prototype.render);
+      helper.runInTransaction(agent, function () {
+        var transaction = agent.getTransaction();
+
+        var res = http.ServerResponse.prototype;
+        expect(res.render.call(res, 'TEST')).equal('rendered');
+
+        process.nextTick(function () {
+          var json     = transaction.getTrace().root.toJSON()
+            , children = json[4]
+            , render   = children[0]
+            , name     = render[2]
+            ;
+
+          expect(name).equal('View/TEST/Rendering');
+
+          return done();
+        });
+      });
+    });
   });
 
-  describe("for Express 3 (mocked)", function () {
+  describe("for Express 3 (stubbed)", function () {
     var agent
       , stub
       ;
@@ -131,7 +163,8 @@ describe("an instrumented Express application", function () {
           render : function (view, options, cb) {
             process.nextTick(cb);
             return 'rendered';
-          }
+          },
+          send : function () {}
         }
       };
 
@@ -159,14 +192,20 @@ describe("an instrumented Express application", function () {
       expect(frameworks[0]).equal('express');
     });
 
-    it("should wrap express.response.render", function (done) {
+    it("should trace express.response.render", function (done) {
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
 
-        expect(stub.response.render.call(null, 'TEST', {}, function () {
+        var res = stub.response;
+        expect(res.render.call(res, 'TEST', {}, function () {
           process.nextTick(function () {
-            var json = transaction.getTrace().root.toJSON();
-            expect(json[4][0][2]).equal('View/TEST/Rendering');
+            var json     = transaction.getTrace().root.toJSON()
+              , children = json[4]
+              , render   = children[0]
+              , name     = render[2]
+              ;
+
+            expect(name).equal('View/TEST/Rendering');
 
             return done();
           });
@@ -174,19 +213,46 @@ describe("an instrumented Express application", function () {
       });
     });
 
-    it("should wrap express.response.render with a missing options",
+    it("should trace express.response.render when called with no options",
        function (done) {
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
 
-        expect(stub.response.render.call(null, 'TEST', function () {
+        var res = stub.response;
+        expect(res.render.call(res, 'TEST', function () {
           process.nextTick(function () {
-            var json = transaction.getTrace().root.toJSON();
-            expect(json[4][0][2]).equal('View/TEST/Rendering');
+            var json     = transaction.getTrace().root.toJSON()
+              , children = json[4]
+              , render   = children[0]
+              , name     = render[2]
+              ;
+
+            expect(name).equal('View/TEST/Rendering');
 
             return done();
           });
         })).equal('rendered');
+      });
+    });
+
+    it("should trace express.response.render when called with no callback",
+       function (done) {
+      helper.runInTransaction(agent, function () {
+        var transaction = agent.getTransaction();
+
+        var res = stub.response;
+        expect(res.render.call(res, 'TEST')).equal('rendered');
+        process.nextTick(function () {
+          var json     = transaction.getTrace().root.toJSON()
+            , children = json[4]
+            , render   = children[0]
+            , name     = render[2]
+            ;
+
+          expect(name).equal('View/TEST/Rendering');
+
+          return done();
+        });
       });
     });
   });
