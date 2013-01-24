@@ -160,7 +160,6 @@ describe("an instrumented Express application", function () {
     });
 
     it("should wrap express.response.render", function (done) {
-      should.exist(stub.response.render);
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
 
@@ -177,7 +176,6 @@ describe("an instrumented Express application", function () {
 
     it("should wrap express.response.render with a missing options",
        function (done) {
-      should.exist(stub.response.render);
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
 
