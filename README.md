@@ -53,7 +53,7 @@ value found from the environment will always take precedence.
 This documentation will be moving to New Relic's servers with the 1.0 release,
 but for now, here's a list of the variables and their values:
 
-* `NEW_RELIC_HOME`: path to the director in which you've placed newrelic.js.
+* `NEW_RELIC_HOME`: path to the directory in which you've placed newrelic.js.
 * `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
   New Relic's servers. This value can be also be a comma-delimited list of
   names.
