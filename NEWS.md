@@ -1,3 +1,20 @@
+### v0.9.17-132 / beta-17 (2013-01-24):
+
+* Using fs.readdir will no longer crash the agent and your apps. Oops!
+* Added error-tracing middleware for Connect 1 & 2 applications, which includes
+  Express 2 and 3 applications. This middleware is inserted automatically and
+  transparently. Because it's common for end-user error handlers to not
+  propagate errors (by calling next(error) from within the handler), the
+  instrumentation inserts the middleware before the first error handler added
+  to the middleware chain.
+* The node-redis driver now correctly traces Redis calls made without a
+  callback.
+* Connections to New Relic that partially succeeded will now correctly keep
+  attempting to connect until the connection succeeds or the number of retries
+  is exhausted.
+* Added a handler for yet another kind of New Relic server error
+  (RuntimeError).
+
 ### v0.9.16-121 / beta-16 (2013-01-16):
 
 * For some of the modules instrumented by the agent (fs, http, Express 2
