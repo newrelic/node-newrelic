@@ -25,7 +25,10 @@ describe("Transaction", function () {
   });
 
   it("should require an agent to create new transactions", function () {
-    expect(function () { var trans = new Transaction(); }).throws(/must be bound to the agent/);
+    var trans;
+    expect(function () {
+      trans = new Transaction();
+    }).throws(/must be bound to the agent/);
   });
 
   it("should be created without an associated trace", function () {
@@ -40,7 +43,7 @@ describe("Transaction", function () {
 
   it("should have at most one associated trace", function () {
     var trace = trans.getTrace();
-    expect(trans.trace).not.instanceof(Array);
+    expect(trace).not.instanceof(Array);
   });
 
   it("should hand its metrics off to the agent upon finalization", function (done) {
@@ -99,14 +102,15 @@ describe("Transaction", function () {
       tt.end();
     });
 
-    it("should allow multiple overlapping metric measurements for same name", function () {
+    it("should allow multiple overlapping metric measurements for same name",
+       function () {
       var TRACE_NAME = 'Custom/Test06'
         , SLEEP_DURATION = 43
         , tt = agent.createTransaction()
         ;
 
-      var first = tt.measure(TRACE_NAME, null, SLEEP_DURATION);
-      var second = tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5);
+      tt.measure(TRACE_NAME, null, SLEEP_DURATION);
+      tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5);
 
       var statistics = tt.getMetrics(TRACE_NAME).stats;
       expect(statistics.callCount).to.equal(2);
@@ -116,7 +120,7 @@ describe("Transaction", function () {
     it("should allow manual setting of metric durations", function () {
       var tt = agent.createTransaction();
 
-      var trace = tt.measure('Custom/Test16', null, 65);
+      tt.measure('Custom/Test16', null, 65);
       tt.end();
 
       var metrics = tt.getMetrics('Custom/Test16');
@@ -168,8 +172,14 @@ describe("Transaction", function () {
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
 
-      it("should parse parameters out of request URLs", function () {
+      it("should chop query strings delimited by ? from request URLs", function () {
         trans.measureWeb('/test?test1=value1&test2&test3=50');
+
+        expect(trans.url).equal('/test');
+      });
+
+      it("should chop query strings delimited by ; from request URLs", function () {
+        trans.measureWeb('/test;jsessionid=c83048283dd1328ac21aed8a8277d');
 
         expect(trans.url).equal('/test');
       });
