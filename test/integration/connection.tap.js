@@ -3,7 +3,8 @@
 var path         = require('path')
   , tap          = require('tap')
   , test         = tap.test
-  , logger       = require(path.join(__dirname, '..', '..', 'lib', 'logger')).child({component : 'TEST'})
+  , logger       = require(path.join(__dirname, '..', '..',
+                                     'lib', 'logger')).child({component : 'TEST'})
   , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
   , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   ;
@@ -35,7 +36,6 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
       ;
 
     t.ok(connection, "agent connection initialized");
-    t.ok(agent.id, "agent's ID is known");
 
     connection.on('connectResponse', function (host) {
       t.ok(host, "got a redirect host");
