@@ -4,9 +4,9 @@ var path   = require('path')
   , chai   = require('chai')
   , should = chai.should()
   , expect = chai.expect
-  , util   = require('util')
   , fs     = require('fs')
-  , logger = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
+  , logger = require(path.join(__dirname, '..',
+                               'lib', 'logger')).child({component : 'TEST'})
   , config = require(path.join(__dirname, '..', 'lib', 'config'))
   ;
 
@@ -48,7 +48,8 @@ describe("the agent configuration", function () {
 
   describe("when overriding configuration values via environment variables", function () {
     it("should pick up the application name", function () {
-      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic', function (tc) {
+      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic',
+                    function (tc) {
         should.exist(tc.app_name);
         expect(tc.app_name).eql(['feeling testy', 'and schizophrenic']);
       });
@@ -160,7 +161,8 @@ describe("the agent configuration", function () {
       });
     });
 
-    it("should pick up whether tracing of the transaction tracer is enabled", function () {
+    it("should pick up whether tracing of the transaction tracer is enabled",
+       function () {
       idempotentEnv('NEW_RELIC_DEBUG_TRACER', 'yup', function (tc) {
         should.exist(tc.debug.tracer_tracing);
         expect(tc.debug.tracer_tracing).equal(true);
@@ -202,8 +204,9 @@ describe("the agent configuration", function () {
       configuration.logging.level.should.equal('info');
     });
 
-    it("should have a blank log filepath", function () {
-      configuration.logging.filepath.should.equal('');
+    it("should have a log filepath of process.cwd + newrelic_agent.log", function () {
+      var logPath = path.join(process.cwd(), 'newrelic_agent.log');
+      configuration.logging.filepath.should.equal(logPath);
     });
 
     it("should enable the agent", function () {
@@ -259,7 +262,8 @@ describe("the agent configuration", function () {
           process.chdir(NOPLACEDIR);
           process.env.NEW_RELIC_HOME = DESTDIR;
 
-          var sampleConfig = fs.createReadStream(path.join(__dirname, '..', 'lib', 'config.default.js'));
+          var sampleConfig = fs.createReadStream(path.join(__dirname, '..',
+                                                           'lib', 'config.default.js'));
           var sandboxedConfig = fs.createWriteStream(CONFIGPATH);
           sampleConfig.pipe(sandboxedConfig);
 
@@ -294,7 +298,7 @@ describe("the agent configuration", function () {
       expect(function () { config.initialize(logger); }).not.throws();
     });
 
-    it("should expose the location of the overridden configuration on the resulting object", function () {
+    it("should export the home directory on the resulting object", function () {
       var configuration = config.initialize(logger);
       configuration.newrelic_home.should.equal(DESTDIR);
     });
@@ -309,7 +313,8 @@ describe("the agent configuration", function () {
       }).not.throws();
 
       should.not.exist(configuration.newrelic_home);
-      expect(configuration.error_collector && configuration.error_collector.enabled).equal(true);
+      expect(configuration.error_collector &&
+             configuration.error_collector.enabled).equal(true);
     });
   });
 });
