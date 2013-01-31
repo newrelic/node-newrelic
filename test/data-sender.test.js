@@ -251,4 +251,17 @@ describe("DataSender", function () {
 
     sender.invokeMethod('test', 'data');
   });
+
+  it("should handle DNS lookup errors properly", function (done) {
+    var sender =  new DataSender({host : 'failed.domain.cxlrg'});
+    sender.once('error', function (message, error) {
+      expect(message).equal('TEST');
+      should.exist(error);
+      expect(error.message).equal('getaddrinfo ENOENT');
+
+      return done();
+    });
+
+    sender.postToCollector('TEST');
+  });
 });
