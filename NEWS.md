@@ -3,8 +3,9 @@
 * `;` is now treated as a query separator in URLs, just like `?`.
 * When using `stdout` or `stderr` for logging and not using a configuration
   file, logging will now work as expected.
-* The error-handling code for DNS lookup of the collector was itself erroneous.
-  It should no longer crash instrumented apps when DNS lookup fails.
+* The error-handling code for DNS lookup of New Relic's servers was itself
+  erroneous.  It should no longer crash instrumented apps when DNS lookup
+  fails.
 * Simplified agent startup process.
 
 ### v0.9.17-132 / beta-17 (2013-01-24):
