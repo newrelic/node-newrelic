@@ -31,18 +31,6 @@ describe("the New Relic agent", function () {
       agent = new Agent();
     });
 
-    it("should connect immediately upon noticing appliction port", function (done) {
-      agent.on('connect', function () {
-        should.exist(agent.connection, 'connection exists');
-        agent.stop();
-
-        return done();
-      });
-
-      agent.start();
-      agent.noticeAppPort(6666);
-    });
-
     it("should retry on connection failure", function (done) {
       // _nextConnectAttempt requires agent.connection exist
       agent.setupConnection();
@@ -94,7 +82,7 @@ describe("the New Relic agent", function () {
         return done();
       });
 
-      agent.noticeAppPort(6666);
+      agent.start();
     });
 
     afterEach(function () {

@@ -100,11 +100,5 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
     });
   });
 
-  /*
-   * Immediately set the applicationPort (don't do this in production code)
-   * to get the connect handler to fire immediately, instead of waiting for
-   * 15 seconds.
-   */
-  agent.applicationPort = 6666;
   agent.start();
 });
