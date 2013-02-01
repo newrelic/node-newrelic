@@ -48,37 +48,41 @@ describe("the environment scraper", function () {
     should.exist(find(settings, 'Node.js version'));
   });
 
-  it("should know whether npm was installed with Node.js", function () {
-    should.exist(find(settings, 'npm installed?'));
-  });
+  if (process.config) {
+    describe("for versions of Node with process.config", function () {
+      it("should know whether npm was installed with Node.js", function () {
+        should.exist(find(settings, 'npm installed?'));
+      });
 
-  it("should know whether WAF was installed with Node.js", function () {
-    should.exist(find(settings, 'WAF build system installed?'));
-  });
+      it("should know whether WAF was installed with Node.js", function () {
+        should.exist(find(settings, 'WAF build system installed?'));
+      });
 
-  it("should know whether OpenSSL support was compiled into Node.js", function () {
-    should.exist(find(settings, 'OpenSSL support?'));
-  });
+      it("should know whether OpenSSL support was compiled into Node.js", function () {
+        should.exist(find(settings, 'OpenSSL support?'));
+      });
 
-  it("should know whether OpenSSL was dynamically linked in", function () {
-    should.exist(find(settings, 'Dynamically linked to OpenSSL?'));
-  });
+      it("should know whether OpenSSL was dynamically linked in", function () {
+        should.exist(find(settings, 'Dynamically linked to OpenSSL?'));
+      });
 
-  it("should know whether V8 was dynamically linked in", function () {
-    should.exist(find(settings, 'Dynamically linked to V8?'));
-  });
+      it("should know whether V8 was dynamically linked in", function () {
+        should.exist(find(settings, 'Dynamically linked to V8?'));
+      });
 
-  it("should know whether Zlib was dynamically linked in", function () {
-    should.exist(find(settings, 'Dynamically linked to Zlib?'));
-  });
+      it("should know whether Zlib was dynamically linked in", function () {
+        should.exist(find(settings, 'Dynamically linked to Zlib?'));
+      });
 
-  it("should know whether DTrace support was configured", function () {
-    should.exist(find(settings, 'DTrace support?'));
-  });
+      it("should know whether DTrace support was configured", function () {
+        should.exist(find(settings, 'DTrace support?'));
+      });
 
-  it("should know whether Event Tracing for Windows was configured", function () {
-    should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'));
-  });
+      it("should know whether Event Tracing for Windows was configured", function () {
+        should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'));
+      });
+    });
+  }
 
   it("should have built a flattened package list", function () {
     var packages = find(settings, 'Packages');

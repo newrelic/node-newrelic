@@ -2,7 +2,6 @@
 
 var path   = require ('path')
   , fs     = require('fs')
-  , domain = require('domain')
   , tap    = require('tap')
   , test   = tap.test
   , wrench = require('wrench')
@@ -17,22 +16,25 @@ test("logger configuration from environment", function (t) {
     if (exists(path.join(process.cwd(), DIRNAME))) wrench.rmdirSyncRecursive(DIRNAME);
   });
 
-  var d = domain.create();
-  d.on('error', function (error) {
-    t.fail(error);
-    t.end();
-  });
+  fs.mkdir(DIRNAME, function (error) {
+    if (error) {
+      t.fail("couldn't make directory: %s", error);
+      return t.end();
+    }
 
-  d.run(function () {
-    fs.mkdir(DIRNAME, d.intercept(function () {
-      process.chdir(DIRNAME);
+    process.chdir(DIRNAME);
 
-      process.env.NEW_RELIC_LOG = 'stdout';
-      process.env.NEW_RELIC_NO_CONFIG_FILE = '1';
+    process.env.NEW_RELIC_LOG = 'stdout';
+    process.env.NEW_RELIC_NO_CONFIG_FILE = '1';
 
+    try {
       t.ok(require(path.join(__dirname, '..', '..', 'lib', 'logger')),
            "requiring logger returned a logging object");
-      t.end();
-    }));
+    }
+    catch (error) {
+      t.fail("loading logger failed: %s", error);
+    }
+
+    t.end();
   });
 });

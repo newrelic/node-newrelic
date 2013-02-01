@@ -209,7 +209,7 @@ describe("built-in http module instrumentation", function () {
         });
 
         server.listen(8182, function () {
-          http.get("http://localhost:8182/", function () {
+          http.get({host : 'localhost', port : 8182}, function () {
             done("actually got response");
           });
         });
@@ -236,7 +236,7 @@ describe("built-in http module instrumentation", function () {
 
         server.listen(8183, function () {
           helper.runInTransaction(agent, function () {
-            http.get("http://localhost:8183/", function () {
+            http.get({host : 'localhost', port : 8183}, function () {
               throw new Error("whoah");
             });
           });
