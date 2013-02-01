@@ -116,6 +116,8 @@ module.exports = function setup(options, imports, register) {
       carrier.carry(mysqldProcess.stderr, function (line) {
         if (line.match(/mysqld: Shutdown complete/)) {
           console.error('MySQL killed.');
+          // HAX: Node v0.6.11 and earlier hang because the stdin getter is buggy
+          process.stdin.pause();
 
           if (callback) process.nextTick(callback);
         }

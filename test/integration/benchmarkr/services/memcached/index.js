@@ -1,15 +1,15 @@
 'use strict';
 
-var fs           = require('fs')
-  , path         = require('path')
-  , carrier      = require('carrier')
-  , spawn        = require('child_process').spawn
+var carrier = require('carrier')
+  , spawn   = require('child_process').spawn
   ;
 
 var memcachedProcess;
 function shutdown(callback) {
       if (memcachedProcess) memcachedProcess.kill();
       console.error('memcached killed.');
+      // HAX: Node v0.6.11 and earlier hang because the stdin getter is buggy
+      process.stdin.pause();
 
       if (callback) return callback();
 

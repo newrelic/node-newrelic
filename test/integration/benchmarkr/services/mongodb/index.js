@@ -12,6 +12,8 @@ function shutdown(callback) {
   carrier.carry(mongoProcess.stdout, function (line) {
     if (line.match(/dbexit: really exiting now/)) {
       console.error('MongoDB killed.');
+      // HAX: Node v0.6.11 and earlier hang because the stdin getter is buggy
+      process.stdin.pause();
 
       if (callback) return callback();
     }
