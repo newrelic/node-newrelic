@@ -86,14 +86,8 @@ test("built-in http module instrumentation should handle both internal and exter
     // this is where execution ends up -- test asserts go here
     response.on('end', function () {
       if (!transaction) {
-        /*
-         * FIXME: either calling bailout should emit an end event,
-         * or things should be wired up such that calling end here
-         * triggers the teardown method, but until then, HAX to
-         * emit the raw event myself.
-         */
         t.bailout("Transaction wasn't set by response handler");
-        return this.emit('end');
+        return this.end();
       }
 
       t.equals(response.statusCode, 200, "should successfully fetch the page");
