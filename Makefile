@@ -48,11 +48,11 @@ clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 
 notes:
-	find . -wholename ./node_modules -prune -o \
-	       -wholename ./cover_html -prune -o \
+	find . -name node_modules -prune -o \
+	       -name cover_html -prune -o \
 	       -name newrelic_agent.log -prune -o \
 	       \( -name ".*" -a \! -name . \) -prune -o \
-	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE|TBD|hax' {} \; | less -r
+	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE|TBD|hax|HAX' {} \; | less -r
 
 pending: node_modules
 	@$(MOCHA) --reporter list | egrep '^\s+\-'
