@@ -1,12 +1,10 @@
 'use strict';
 
 var path   = require('path')
-  , util   = require('util')
   , chai   = require('chai')
   , expect = chai.expect
   , should = chai.should()
   , sinon  = require('sinon')
-  , bson   = require('bson')
   , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
@@ -70,7 +68,7 @@ describe("agent instrumentation of MongoDB", function () {
         var collection = new mongodb.Collection(db, 'fake', pkfactory);
         collection.insert({id : 1, hamchunx : 'verbloks'},
                           {safe : true},
-                          function (error, result) {
+                          function (error) {
           if (error) return done(error);
 
           var transaction = agent.getTransaction();
@@ -96,8 +94,10 @@ describe("agent instrumentation of MongoDB", function () {
       expect(stats.callCount).equal(1);
     });
 
-    it("should update the scoped aggregate statistics for the operation type", function () {
-      var stats = agent.metrics.getMetric('Database/fake/insert', 'MongoDB/fake/insert').stats;
+    it("should update the scoped aggregate statistics for the operation type",
+       function () {
+      var stats = agent.metrics.getMetric('Database/fake/insert',
+                                          'MongoDB/fake/insert').stats;
       expect(stats.callCount).equal(1);
     });
   });
@@ -108,7 +108,8 @@ describe("agent instrumentation of MongoDB", function () {
     });
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('Database/fake/insert', 'MongoDB/fake/insert').stats;
+      var stats = agent.metrics.getMetric('Database/fake/insert',
+                                          'MongoDB/fake/insert').stats;
       expect(stats.callCount).equal(1);
 
       return done();
@@ -118,7 +119,7 @@ describe("agent instrumentation of MongoDB", function () {
       var collection = new mongodb.Collection(db, 'fake', pkfactory);
       collection.insert({id : 1, hamchunx : 'verbloks'},
                         {safe : true},
-                        function (error, result) {
+                        function (error) {
         if (error) return done(error);
 
         var transaction = agent.getTransaction();
@@ -130,22 +131,15 @@ describe("agent instrumentation of MongoDB", function () {
   });
 
   it("should instrument finding documents", function (done) {
-    var returned = false;
-    sinon.stub(mongodb.Cursor.prototype, 'nextObject', function (callback) {
-      if (!returned) {
-        returned = true;
-        callback(null, {id : 1, hamchunx : 'verbloks'});
-      }
-      else {
-        callback(null, null);
-      }
+    sinon.stub(db, '_executeQueryCommand', function (finder, options, callback) {
+      callback(null, {documents : [{id : 1, hamchunx : 'verbloks'}]});
     });
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('Database/fake/find', 'MongoDB/fake/find').stats;
+      var stats = agent.metrics.getMetric('Database/fake/find',
+                                          'MongoDB/fake/find').stats;
       expect(stats.callCount).equal(1);
 
-      mongodb.Cursor.prototype.nextObject.restore();
       return done();
     });
 
@@ -160,7 +154,6 @@ describe("agent instrumentation of MongoDB", function () {
 
         var transaction = agent.getTransaction();
         should.exist(transaction);
-
         transaction.end();
       });
     });
@@ -172,7 +165,8 @@ describe("agent instrumentation of MongoDB", function () {
     });
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('Database/fake/update', 'MongoDB/fake/update').stats;
+      var stats = agent.metrics.getMetric('Database/fake/update',
+                                          'MongoDB/fake/update').stats;
       expect(stats.callCount).equal(1);
 
       return done();
@@ -182,7 +176,7 @@ describe("agent instrumentation of MongoDB", function () {
       var collection = new mongodb.Collection(db, 'fake', pkfactory);
       collection.update({a:1},
                         {$set:{b:2}},
-                        function (error, results) {
+                        function (error) {
         if (error) return done(error);
 
         var transaction = agent.getTransaction();
@@ -199,7 +193,8 @@ describe("agent instrumentation of MongoDB", function () {
     });
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('Database/fake/remove', 'MongoDB/fake/remove').stats;
+      var stats = agent.metrics.getMetric('Database/fake/remove',
+                                          'MongoDB/fake/remove').stats;
       expect(stats.callCount).equal(1);
 
       return done();
@@ -209,7 +204,7 @@ describe("agent instrumentation of MongoDB", function () {
       var collection = new mongodb.Collection(db, 'fake', pkfactory);
       collection.remove({a:1},
                         {safe : true},
-                        function (error, result) {
+                        function (error) {
         if (error) return done(error);
 
         var transaction = agent.getTransaction();
@@ -226,7 +221,8 @@ describe("agent instrumentation of MongoDB", function () {
     });
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('Database/fake/insert', 'MongoDB/fake/insert').stats;
+      var stats = agent.metrics.getMetric('Database/fake/insert',
+                                          'MongoDB/fake/insert').stats;
       expect(stats.callCount).equal(1);
 
       return done();
@@ -236,7 +232,7 @@ describe("agent instrumentation of MongoDB", function () {
       var collection = new mongodb.Collection(db, 'fake', pkfactory);
       collection.save({hamchunx : 'verblox'},
                       {safe : true},
-                      function (error, result) {
+                      function (error) {
         if (error) return done(error);
 
         var transaction = agent.getTransaction();
