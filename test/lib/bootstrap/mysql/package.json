@@ -4,7 +4,14 @@
   "main": "index.js",
   "private": true,
   "plugin": {
-    "consumes": ["mysqldProcess"],
-    "provides": ["mysqlBootstrap"]
+    "consumes": [
+      "mysqldProcess"
+    ],
+    "provides": [
+      "mysqlBootstrap"
+    ]
+  },
+  "dependencies": {
+    "mysql": "~0.9.6"
   }
 }

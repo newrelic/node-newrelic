@@ -5,7 +5,7 @@ TAP          = node_modules/.bin/tap
 NODE_VERSION = $(shell node --version)
 INTEGRATION  = $(shell find . -name *.tap.js -print)
 # only want to find root package.json files, not those in node_modules
-INT_PACKAGES = $(shell echo test/integration/versioned/*/package.json)
+INT_PACKAGES = $(shell echo test/versioned/*/package.json)
 STARTDIR     = $(shell pwd)
 
 .PHONY: all build test-cov test clean notes pending pending-core unit integration

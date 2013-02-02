@@ -42,18 +42,14 @@
     "cover": "*",
     "request": "*",
     "sinon": "*",
-    "mysql": "*",
     "architect": "*",
     "wrench": "*",
     "carrier": "*",
     "restify": "*",
     "tap": "*",
-    "mongodb": "*",
     "memcached": "*",
     "sequelize": "*",
-    "mongoose": "*",
     "redis": "*",
-    "bson": "*",
     "q": "*"
   },
   "repository": {

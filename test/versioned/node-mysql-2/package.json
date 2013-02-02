@@ -1,0 +1,19 @@
+{
+  "name": "node-mysql-2",
+  "version": "0.0.0",
+  "description": "tests for version 2.0a of the node-mysql driver",
+  "main": "mysql-pooling.tap.js",
+  "scripts": {
+    "test": "tap mysql-pooling.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "dependencies": {
+    "mysql": "~2",
+    "generic-pool": "~2"
+  },
+  "devDependencies": {
+    "tap": "*"
+  },
+  "private": true
+}

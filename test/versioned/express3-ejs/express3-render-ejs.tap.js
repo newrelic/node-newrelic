@@ -6,8 +6,8 @@ process.env.NODE_ENV = 'test';
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
-  , shimmer = require(path.join(__dirname, '..', '..', '..', '..', 'lib', 'shimmer'))
-  , helper  = require(path.join(__dirname, '..', '..', '..', 'lib', 'agent_helper'))
+  , shimmer = require(path.join(__dirname, '..', '..', '..', 'lib', 'shimmer'))
+  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
 var TEST_PATH = '/test'

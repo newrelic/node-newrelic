@@ -2,8 +2,8 @@
 
 var path   = require('path')
   , test   = require('tap').test
-  , logger = require(path.join(__dirname, '..', '..', '..', '..', 'lib', 'logger'))
-  , helper = require(path.join(__dirname, '..', '..', '..', 'lib', 'agent_helper'))
+  , logger = require(path.join(__dirname, '..', '..', '..', 'lib', 'logger'))
+  , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
 var DBUSER = 'test_user'

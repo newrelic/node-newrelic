@@ -3,7 +3,7 @@
 var path   = require('path')
   , tap    = require('tap')
   , test   = tap.test
-  , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+  , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
