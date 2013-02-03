@@ -22,7 +22,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     var db = new mongodb.Db('integration', server, {safe : true});
 
     self.tearDown(function () {
-      db.close(true, function (error, result) {
+      db.close(true, function (error) {
         if (error) t.fail(error);
 
         helper.cleanMongoDB(app, function done() {
@@ -58,7 +58,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
             t.ok(transaction, "transaction should be visible");
 
             var hunx = {id : 1, hamchunx : "verbloks"};
-            collection.insert(hunx, function insertCallback(error, result) {
+            collection.insert(hunx, function insertCallback(error) {
               if (error) return t.fail(error);
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -75,19 +75,23 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
                 var trace = transaction.getTrace();
                 t.ok(trace, "trace should exist.");
                 t.ok(trace.root, "root element should exist.");
-                t.equals(trace.root.children.length, 1, "There should be only one child.");
+                t.equals(trace.root.children.length, 1,
+                         "There should be only one child.");
 
                 var insertSegment = trace.root.children[0];
                 t.ok(insertSegment, "trace segment for insert should exist");
-                t.equals(insertSegment.name, "MongoDB/test/insert", "should register the insert");
+                t.equals(insertSegment.name, "MongoDB/test/insert",
+                         "should register the insert");
                 t.equals(insertSegment.children.length, 1, "insert should have a child");
 
                 var findSegment = insertSegment.children[0];
                 t.ok(findSegment, "trace segment for find should exist");
-                t.equals(findSegment.name, "MongoDB/test/find", "should register the find");
-                t.equals(findSegment.children.length, 0, "find should leave us here at the end");
+                t.equals(findSegment.name, "MongoDB/test/find",
+                         "should register the find");
+                t.equals(findSegment.children.length, 0,
+                         "find should leave us here at the end");
 
-                db.close(function (error, result) {
+                db.close(function (error) {
                   if (error) t.fail(error);
 
                   t.end();
@@ -122,7 +126,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
           helper.runInTransaction(agent, function transactionInScope(transaction) {
             var hunx = {id : 1, hamchunx : "verbloks"};
-            var insertCursor = collection.insert(hunx, function (error, result) {
+            collection.insert(hunx, function () {
               var cursor = collection.find({id : 1});
               t.ok(cursor, "cursor should be returned by callback-less find");
 
@@ -134,7 +138,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
                 transaction.end();
 
-                db.close(function (error, result) {
+                db.close(function (error) {
                   if (error) t.fail(error);
 
                   t.end();
