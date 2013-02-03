@@ -133,7 +133,7 @@ var helper = module.exports = {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..',
                                           'integration', 'test-mongodb'));
 
-      return callback();
+      if (callback) return callback();
     });
   },
 
