@@ -1,15 +1,22 @@
 # New Relic Node.js agent
 
-Make sure you have a New Relic account before starting. Until the end of the
-beta, you'll want to have access to Pro features like slow transaction traces.
-Contact your New Relic representative to see about getting a trial upgrade for
-the purposes of testing.
+This package instruments your application for performance monitoring
+with [New Relic](http://newrelic.com).
+
+This is a beta release. You should probably try it in your staging or
+development environment first. If you would prefer to wait for the GA
+release, please [sign up](http://try.newrelic.com/nodejs) to be notified.
+
+Make sure you have a [New Relic account](http://newrelic.com) before
+starting. To see all the features, such as slow transaction traces, you will
+need a New Relic Pro subscription. Contact your New Relic representative to
+request a Pro Trial subscription during your beta testing.
 
 ## Getting started
 
 1. [Install node](http://nodejs.org/#download). For now, at least 0.6 is
    required. Some features (e.g. error tracing) depend in whole or in
-   part on features in 0.8 and above. Development work on the agentis
+   part on features in 0.8 and above. Development work on the agent is
    being done against the latest released non-development version of Node.
 2. Install this module via `npm install newrelic` for the application you
    want to monitor.
@@ -26,21 +33,22 @@ application, the agent will look for newrelic.js in the directory referenced
 by the environment variable `NEWRELIC_HOME` if it's set.
 
 When you start your app, the agent should start up with it and start
-reporting data that will appear within our UI after a few minutes.
-Because the agent minimizes the amount of bandwidth it consumes, it
-only reports data once a minute, so if you add the agent to tests
-that take less than a minute to run, the agent won't have time to
-report data to New Relic. The agent will write its log to a file named
-`newrelic_agent.log` in the application directory. If the agent doesn't
-send data or crashes your app, the log can help New Relic determine what
-went wrong, so be sure to send it along with any bug reports or support
-requests.
+reporting data that will appear within [the New Relic
+UI](https://rpm.newrelic.com/) after a few minutes. Because the agent
+minimizes the amount of bandwidth it consumes, it only reports data once a
+minute, so if you add the agent to tests that take less than a minute to run,
+the agent won't have time to report data to New Relic. The agent will write
+its log to a file named `newrelic_agent.log` in the application directory. If
+the agent doesn't send data or crashes your app, the log can help New Relic
+determine what went wrong, so be sure to send it along with any bug reports
+or support requests.
 
 ## Configuring the agent
 
-The agent can be tailored to your app's requirements, both from the
-server and via the newrelic.js configuration file you created. For more
-details on what can be configured, refer to `lib/config.default.js`,
+The agent can be tailored to your app's requirements, both from the server
+and via the newrelic.js configuration file you created. For more details on
+what can be configured, refer to
+[`lib/config.default.js`](https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js),
 which documents the available variables and their default values.
 
 In addition, for those of you running in Heroku, Microsoft Azure or any other
@@ -107,6 +115,20 @@ Information about changes to the agent are in NEWS.md.
 
 Information about what's known to be broken and what's being worked on
 soon is in TODO.md.
+
+## Support
+
+During the beta, our support bandwidth is limited. We cannot guarantee a
+specific turn-around on questions and issues. However, we try to reply and
+resolve issues promptly and we *greatly* appreciate feedback about how to
+make the product better.
+
+Please [submit a ticket](https://support.newrelic.com) if you don't see the
+data you expect, if the agent generates an error, if you have a feature that
+you would like to see, or if you have a library that you would like
+instrumented. In the ticket, please provide as much information as you can
+about your application and the issue, including your `newrelic_agent.log`,
+`package.json` and app code snippets.
 
 ## LICENSE
 
