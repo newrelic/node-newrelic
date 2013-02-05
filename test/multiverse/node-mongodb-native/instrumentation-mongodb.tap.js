@@ -6,14 +6,6 @@ var path   = require('path')
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
-function ender(t, db, agent) {
-  db.close(true, function (error) {
-    if (error) t.fail(error);
-
-    helper.unloadAgent(agent);
-  });
-}
-
 function getDB() {
   var mongodb = require('mongodb')
     , server  = new mongodb.Server('localhost', 27017, {auto_reconnect : true})
@@ -51,6 +43,7 @@ function verifyTrace(t, transaction, operation) {
            "should register the " + operation);
 }
 
+// +4 asserts
 function verifyNoStats(t, agent, operation) {
   t.notOk(agent.metrics.getMetric('Database/all'),
           "should find no operations");
@@ -63,12 +56,14 @@ function verifyNoStats(t, agent, operation) {
            "scoped MongoDB request should not be recorded");
 }
 
-function runWithoutTransaction(context, t, callback) {
-  var agent = helper.instrumentMockedAgent()
-    , db    = getDB()
-    ;
+function runWithDB(context, t, callback) {
+  var db = getDB();
 
-  context.tearDown(ender.bind(null, t, db, agent));
+  context.tearDown(function () {
+    db.close(true, function (error) {
+      if (error) t.fail(error);
+    });
+  });
 
   db.open(function (error, db) {
     if (error) { t.fail(error); return t.end(); }
@@ -76,8 +71,17 @@ function runWithoutTransaction(context, t, callback) {
     db.createCollection('test', {safe : false}, function (error, collection) {
       if (error) { t.fail(error); return t.end(); }
 
-      callback.call(context, agent, collection);
+      callback.call(context, collection);
     });
+  });
+}
+
+function runWithoutTransaction(context, t, callback) {
+  runWithDB(context, t, function (collection) {
+    var agent = helper.instrumentMockedAgent();
+    context.tearDown(helper.unloadAgent.bind(null, agent));
+
+    callback.call(context, agent, collection);
   });
 }
 
@@ -102,7 +106,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("inside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", function (t) {
+        t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -125,7 +129,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with no callback (w = 0)", {timeout : 5000}, function (t) {
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
           t.plan(9);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -149,7 +153,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("outside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", function (t) {
+        t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -167,7 +171,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with no callback (w = 0)", {timeout : 5000}, function (t) {
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
           t.plan(4);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -189,7 +193,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("inside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", function (t) {
+        t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -210,7 +214,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with Cursor", function (t) {
+        t.test("with Cursor", {timeout : 1000}, function (t) {
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -236,7 +240,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("outside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", function (t) {
+        t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -252,7 +256,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with Cursor", function (t) {
+        t.test("with Cursor", {timeout : 1000}, function (t) {
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -277,7 +281,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("inside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", function (t) {
+        t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -305,7 +309,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("outside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", function (t) {
+        t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -323,6 +327,449 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
         // findOne doesn't do anything useful without a callback
         t.test("findOne requires a callback", function (t) { t.end(); });
+      });
+    });
+
+    t.test("findAndModify", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.skip("with callback", {timeout : 1000}, function (t) {
+          t.plan(12);
+
+          runWithTransaction(this, t, function (agent, collection) {
+            var transaction = agent.getTransaction();
+
+            addMetricsVerifier(t, agent, 'find');
+
+            collection.findAndModify({feeblers : {$exists : true}},
+                                     [['id', 1]],
+                                     {$set : {__findAndModify : true}},
+                                     {"new" : true},
+                                     function (error, doc) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.ok(doc, "should have gotten back the modified document");
+              t.ok(doc.__findAndModify, "have evidence of modification");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'find');
+            });
+          });
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection) {
+            var transaction = agent.getTransaction();
+
+            addMetricsVerifier(t, agent, 'find');
+
+            collection.findAndModify({hamchunx : {$exists : true}},
+                                     [['id', 1]],
+                                     {$set : {__findAndModifyImmediate : true}});
+
+            setTimeout(function () {
+              collection.find({__findAndModifyImmediate : true})
+                        .toArray(function (error, docs) {
+                if (error) { t.fail(error); return t.end(); }
+
+                t.ok(agent.getTransaction(), "transaction should still be visible");
+
+                t.ok(docs, "should have found a modified document");
+                t.equal(docs.length, 1, "only one document should have been modified");
+                t.ok(docs[0].__findAndModifyImmediate,
+                     "have evidence of modification");
+
+                transaction.end();
+
+                verifyTrace(t, transaction, 'find');
+              });
+            }, 100);
+          });
+        });
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.findAndModify({hamchunx : {$exists : true}},
+                                     [['id', 1]],
+                                     {$set : {__findAndModify : true}},
+                                     {"new" : true},
+                                     function (error, doc) {
+              if (error) { t.fail(error); return t.end(); }
+              t.notOk(agent.getTransaction(), "should be no transaction");
+
+              t.ok(doc, "should have gotten back the modified document");
+              t.ok(doc.__findAndModify, "have evidence of modification");
+
+              verifyNoStats(t, agent, 'find');
+            });
+          });
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.findAndModify({feebler : {$exists : true}},
+                                     [['id', 1]],
+                                     {$set : {__findAndModifyImmediate : true}});
+
+            setTimeout(function () {
+              collection.find({__findAndModifyImmediate : true})
+                        .toArray(function (error, docs) {
+                if (error) { t.fail(error); return t.end(); }
+                t.notOk(agent.getTransaction(), "should be no transaction");
+
+                t.ok(docs, "should have found a modified document");
+                t.equal(docs.length, 1, "only one document should have been modified");
+                t.ok(docs[0].__findAndModifyImmediate,
+                     "have evidence of modification");
+
+                verifyNoStats(t, agent, 'find');
+              });
+            }, 100);
+          });
+        });
+      });
+    });
+
+    t.test("findAndRemove", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(12);
+
+          var current = this;
+          runWithDB(current, t, function (context, collection) {
+            var it0rm = {id : 876, bornToDie : 'young'};
+            collection.insert(it0rm, function (error) {
+              if (error) { t.fail(error); return t.end(); }
+
+              runWithTransaction(current, t, function (agent, collection) {
+                var transaction = agent.getTransaction();
+
+                addMetricsVerifier(t, agent, 'remove');
+
+                collection.findAndRemove({bornToDie : {$exists : true}},
+                                         [['id', 1]],
+                                         function (error, doc) {
+                  if (error) { t.fail(error); return t.end(); }
+
+                  t.ok(agent.getTransaction(), "transaction should still be visible");
+
+                  t.ok(doc, "should have gotten back the removed document");
+                  t.equal(doc.id, 876, "should have evidence of removal");
+
+                  transaction.end();
+
+                  verifyTrace(t, transaction, 'find');
+                });
+              });
+            });
+          });
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(12);
+
+          var current = this;
+          runWithDB(current, t, function (context, collection) {
+            var it0rm = {id : 678, bornToDie : 'younger'};
+            collection.insert(it0rm, function (error) {
+              if (error) { t.fail(error); return t.end(); }
+
+              runWithTransaction(current, t, function (agent, collection) {
+                var transaction = agent.getTransaction();
+
+                addMetricsVerifier(t, agent, 'remove');
+
+                collection.findAndRemove({bornToDie : {$exists : true}});
+                setTimeout(function () {
+                  collection.find({bornToDie : {$exists : true}})
+                            .toArray(function (error, docs) {
+                    if (error) { t.fail(error); return t.end(); }
+                    t.ok(agent.getTransaction(), "transaction should still be visible");
+
+                    t.ok(docs, "should have found a removed document");
+                    t.equal(docs.length, 0, "all documents should have been removed");
+
+                    transaction.end();
+
+                    verifyTrace(t, transaction, 'remove');
+                  });
+                }, 100);
+              });
+            });
+          });
+        });
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          var current = this;
+          runWithDB(current, t, function (context, collection) {
+            var it0rm = {id : 987, bornToDie : 'young'};
+            collection.insert(it0rm, function (error) {
+              if (error) { t.fail(error); return t.end(); }
+
+              runWithoutTransaction(current, t, function (agent, collection) {
+                collection.findAndRemove({bornToDie : {$exists : true}},
+                                         [['id', 1]],
+                                         function (error, doc) {
+                  if (error) { t.fail(error); return t.end(); }
+                  t.notOk(agent.getTransaction(), "should have no transaction");
+
+                  t.ok(doc, "should have gotten back the removed document");
+                  t.equal(doc.id, 987, "should have evidence of removal");
+
+                  verifyNoStats(t, agent, 'remove');
+                });
+              });
+            });
+          });
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+
+          var current = this;
+          runWithDB(current, t, function (context, collection) {
+            var it0rm = {id : 789, bornToDie : 'younger'};
+            collection.insert(it0rm, function (error) {
+              if (error) { t.fail(error); return t.end(); }
+
+              runWithoutTransaction(current, t, function (agent, collection) {
+                addMetricsVerifier(t, agent, 'remove');
+
+                collection.findAndRemove({bornToDie : {$exists : true}});
+                setTimeout(function () {
+                  collection.find({bornToDie : {$exists : true}})
+                            .toArray(function (error, docs) {
+                    if (error) { t.fail(error); return t.end(); }
+                    t.notOk(agent.getTransaction(), "should have no transaction");
+
+                    t.ok(docs, "should have found a removed document");
+                    t.equal(docs.length, 0, "all documents should have been removed");
+
+                    verifyNoStats(t, agent, 'remove');
+                  });
+                }, 100);
+              });
+            });
+          });
+        });
+      });
+    });
+
+    t.skip("update", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(11);
+
+          runWithTransaction(this, t, function (agent, collection) {
+            var transaction = agent.getTransaction();
+
+            addMetricsVerifier(t, agent, 'update');
+
+            collection.update({feeblers : {$exist : true}},
+                              {$set : {__updated : 'yup'}},
+                              function (error, numberModified) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(numberModified, 2, "should have modified 2 documents");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'update');
+            });
+          });
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(14);
+
+          runWithTransaction(this, t, function (agent, collection) {
+            var transaction = agent.getTransaction();
+
+            addMetricsVerifier(t, agent, 'update');
+
+            collection.update({feeblers : {$exist : true}},
+                              {$set : {__updated : 'yup'}});
+
+            setTimeout(function () {
+              collection.find({__updated : 'yup'}).toArray(function (error, docs) {
+                if (error) { t.fail(error); return t.end(); }
+
+                t.ok(agent.getTransaction(), "transaction should still be visible");
+
+                t.ok(docs, "should have gotten back results");
+                t.equal(docs.length, 2, "should have found 2 modified");
+                docs.forEach(function (doc) {
+                  t.ok(doc.feeblers, "expected value found");
+                });
+
+                transaction.end();
+
+                verifyTrace(t, transaction, 'update');
+              });
+            }, 100);
+          });
+        });
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.update({hamchunx : {$exist : true}},
+                              {$set : {__updated : 'yup'}},
+                              function (error, numberModified) {
+              if (error) { t.fail(error); return t.end(); }
+              t.notOk(agent.getTransaction(), "should be no transaction");
+
+              t.equal(numberModified, 2, "should have modified 2 documents");
+
+              verifyNoStats(t, agent, 'update');
+            });
+          });
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+
+          runWithTransaction(this, t, function (agent, collection) {
+            collection.update({hamchunx : {$exist : true}},
+                              {$set : {__updated : 'yup'}});
+
+            setTimeout(function () {
+              collection.find({__updated : 'yup'}).toArray(function (error, docs) {
+                if (error) { t.fail(error); return t.end(); }
+                t.notOk(agent.getTransaction(), "should be no transaction");
+
+                t.ok(docs, "should have gotten back results");
+                t.equal(docs.length, 2, "should have found 2 modified");
+                docs.forEach(function (doc) {
+                  t.ok(doc.feeblers, "expected value found");
+                });
+
+                verifyNoStats(t, agent, 'update');
+              });
+            }, 100);
+          });
+        });
+      });
+    });
+
+    t.skip("save", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+      });
+    });
+
+    t.skip("count", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+      });
+    });
+
+    t.skip("remove", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
+
+        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
+          t.plan(6);
+        });
       });
     });
   });
