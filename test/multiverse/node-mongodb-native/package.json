@@ -9,7 +9,8 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "devDependencies": {
-    "tap": "*"
+    "tap": "*",
+    "trycatch": "*"
   },
   "private": true
 }

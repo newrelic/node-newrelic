@@ -1,9 +1,10 @@
 'use strict';
 
-var path   = require('path')
-  , tap    = require('tap')
-  , test   = tap.test
-  , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+var path     = require('path')
+  , trycatch = require('trycatch')
+  , tap      = require('tap')
+  , test     = tap.test
+  , helper   = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
 function getDB() {
@@ -75,37 +76,32 @@ function verifyNoStats(t, agent, operation) {
 }
 
 function runWithDB(context, t, callback) {
-  var failer = function (error) {
-    console.error("%s %s %s:", t.harness.harness.conf.name,
-                  t.harness.conf.name, t.conf.name);
-    console.error(error.stack);
-
-    t.fail(error);
-    t.end();
-  };
-
-  process.on('uncaughtException', failer);
-
   var db = getDB();
 
   context.tearDown(function () {
-    process.removeListener('uncaughtException', failer);
     db.close(true, function (error) {
-      console.log("MongoDB connection closed.");
       if (error) t.fail(error);
     });
   });
 
-  db.open(function (error, db) {
-    console.log("MongoDB connection opened.");
-    if (error) { t.fail(error); return t.end(); }
+  // <3 CrabDude and creationix
+  trycatch(
+    function () {
+      db.open(function (error, db) {
+        if (error) { t.fail(error); return t.end(); }
 
-    db.createCollection('test', {safe : false}, function (error, collection) {
-      if (error) { t.fail(error); return t.end(); }
+        db.createCollection('test', {safe : false}, function (error, collection) {
+          if (error) { t.fail(error); return t.end(); }
 
-      callback.call(context, collection);
-    });
-  });
+          callback.call(context, collection);
+        });
+      });
+    },
+    function (error) {
+      t.fail(error);
+      t.end();
+    }
+  );
 }
 
 function runWithoutTransaction(context, t, callback) {
@@ -141,7 +137,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("insert inside transaction with callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -162,7 +157,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("insert inside transaction with no callback");
           t.plan(9);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -184,7 +178,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("insert outside transaction with callback");
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -203,7 +196,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("insert outside transaction with no callback");
           t.plan(4);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -226,7 +218,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("find inside transaction with callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -246,7 +237,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with Cursor", {timeout : 1000}, function (t) {
-          console.log("find inside transaction with Cursor");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -271,7 +261,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("find outside transaction with callback");
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -288,7 +277,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with Cursor", {timeout : 1000}, function (t) {
-          console.log("find outside transaction with Cursor");
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -314,7 +302,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("findOne inside transaction with callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -340,7 +327,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("findOne outside transaction with callback");
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -367,7 +353,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("findAndModify inside transaction with callback");
           t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -399,7 +384,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("findAndModify outside transaction with callback");
           t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -430,7 +414,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("findAndRemove inside transaction with callback");
           t.plan(12);
 
           var current = this;
@@ -462,7 +445,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("findAndRemove inside transaction with no callback");
           t.plan(12);
 
           var current = this;
@@ -499,7 +481,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("findAndRemove outside transaction with callback");
           t.plan(7);
 
           var current = this;
@@ -526,7 +507,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("findAndRemove outside transaction with no callback");
           t.plan(6);
 
           var current = this;
@@ -565,7 +545,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("update inside transaction with callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -588,7 +567,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("update inside transaction with no callback");
           t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -622,7 +600,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("update outside transaction with callback");
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -640,7 +617,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("update outside transaction with no callback");
           t.plan(6);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -673,7 +649,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("save inside transaction with callback");
           t.plan(13);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -697,7 +672,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("save inside transaction with no callback");
           t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -728,7 +702,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("save outside transaction with callback");
           t.plan(8);
 
           runWithoutTransaction(this, t, function (agent, collection) {
@@ -747,7 +720,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("save outside transaction with no callback");
           t.plan(7);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -777,7 +749,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("count inside transaction with callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -804,7 +775,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("count outside transaction with callback");
           t.plan(6);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -830,7 +800,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("remove inside transaction with callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -851,7 +820,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("remove inside transaction with no callback");
           t.plan(11);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
@@ -879,7 +847,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          console.log("remove outside transaction with callback");
           t.plan(6);
 
           runWithTransaction(this, t, function (agent, collection) {
@@ -895,7 +862,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          console.log("remove outside transaction with no callback");
           t.plan(6);
 
           runWithTransaction(this, t, function (agent, collection) {
