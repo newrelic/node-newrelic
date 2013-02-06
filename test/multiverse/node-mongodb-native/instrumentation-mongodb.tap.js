@@ -7,14 +7,6 @@ var path     = require('path')
   , helper   = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
-function getDB() {
-  var mongodb = require('mongodb')
-    , server  = new mongodb.Server('localhost', 27017, {auto_reconnect : true})
-    ;
-
-  return new mongodb.Db('integration', server, {safe : true});
-}
-
 // +4 asserts
 function addMetricsVerifier(t, agent, operation) {
   agent.once('transactionFinished', function () {
@@ -76,7 +68,10 @@ function verifyNoStats(t, agent, operation) {
 }
 
 function runWithDB(context, t, callback) {
-  var db = getDB();
+  var mongodb = require('mongodb')
+    , server  = new mongodb.Server('localhost', 27017, {auto_reconnect : true})
+    , db      = mongodb.Db('integration', server, {safe : true})
+    ;
 
   context.tearDown(function () {
     db.close(true, function (error) {
