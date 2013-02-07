@@ -4,9 +4,10 @@
 
 var path           = require('path')
   , fs             = require('fs')
-  , exists         = (fs.existsSync || path.existsSync)
   , util           = require('util')
-  , wrench         = require('wrench')
+  , async          = require('async')
+  , recreate       = require(path.join(__dirname, '..', 'lib', 'recreate'))
+  , runner         = require(path.join(__dirname, '..', 'lib', 'test_ruiner'))
   , MultiInstaller = require(path.join(__dirname, '..', 'lib', 'multi_installer'))
   ;
 
@@ -15,13 +16,6 @@ var path           = require('path')
  */
 // FIXME: factor this out into a config file
 var MAPPING = {'node-mongodb-native' : 'mongodb'};
-
-function remakeOutputDir(prefix, subdir) {
-  var dir = path.join(prefix, subdir);
-
-  if (exists(dir)) wrench.rmdirSyncRecursive(dir);
-  wrench.mkdirSyncRecursive(dir, '0755');
-}
 
 function dumpError(error, info, status) {
   var filename = util.format("%s_%s_%s.log", status, info.name,
@@ -32,65 +26,61 @@ function dumpError(error, info, status) {
   fs.writeFileSync(output, error.message);
 }
 
-function logger(error, info) {
-  if (error) {
-    // FIXME: dump error.message to a log for that driver version
-    if (error.killed) {
-      console.error("FAILED install %s %s: npm took too long; multiverse killed it.",
-                    info.name, info.version);
-      dumpError(error, info, 'timeout');
-    }
-    else if (error.signal) {
-      console.error("FAILED install %s %s: process got killed with signal %s.",
-                    info.name, info.version,
-                    error.signal);
-      dumpError(error, info, 'killed');
-    }
-    else {
-      console.error("FAILED install %s %s (code %s).",
-                    info.name, info.version,
-                    error.code);
-      dumpError(error, info, 'crashed');
-    }
+function postInstall(error, info, callback) {
+  if (!error) return runner(info, callback);
+
+  if (error.killed) {
+    console.error("FAILED install %s %s: npm took too long; multiverse killed it.",
+                  info.name, info.version);
+    dumpError(error, info, 'timeout');
+  }
+  else if (error.signal) {
+    console.error("FAILED install %s %s: process got killed with signal %s.",
+                  info.name, info.version,
+                  error.signal);
+    dumpError(error, info, 'killed');
   }
   else {
-    // FIXME: run the test suite against this version of the driver.
-    console.log("installed %s %s.", info.name, info.version);
+    console.error("FAILED install %s %s (code %s).",
+                  info.name, info.version,
+                  error.code);
+    dumpError(error, info, 'crashed');
   }
+
+  callback();
 }
 
-function _each(prefix, entries) {
-  var entry = path.join(prefix, entries.shift());
-  fs.stat(entry, function (error, stat) {
-    if (error) {
-      console.error(error.stack);
-      if (entries.length > 0) _each(prefix, entries);
-      return;
-    }
+function visitMultiverseModule(directory, callback) {
+  var basename = path.basename(directory)
+    , target   = MAPPING[basename] || basename
+    ;
 
-    if (stat.isDirectory()) {
-      var basename = path.basename(entry)
-        , target   = MAPPING[basename] || basename
-        ;
+  recreate(directory, 'build-errors');
 
-      remakeOutputDir(entry, 'build-errors');
-      remakeOutputDir(entry, 'tap');
-
-      var installer = new MultiInstaller(target, entry);
-      installer.on('finished', function () {
-        if (entries.length > 0) _each(prefix, entries);
-      });
-      installer.each(logger);
-    }
-  });
+  new MultiInstaller(target, directory).forEach(postInstall, callback);
 }
 
 /*
- * ACTUAL ACTION GOES HERE
+ * here's where things actually happen
  */
 var base = path.resolve(__dirname, '..', 'multiverse');
 fs.readdir(base, function (error, entries) {
   if (error) return console.error(error);
 
-  _each(base, entries);
+  async.forEachSeries(
+    entries,
+    function (filename, callback) {
+      var entry = path.join(base, filename);
+      fs.stat(entry, function (error, stat) {
+        if (error) return callback(error);
+
+        if (stat.isDirectory()) visitMultiverseModule(entry, callback);
+      });
+    },
+    function finished(error) {
+      if (error) return console.log(error.stack);
+
+      console.log("multiverse run complete.");
+    }
+  );
 });
