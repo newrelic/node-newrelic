@@ -2,90 +2,95 @@
 // vim: ft=javascript
 'use strict';
 
-// FIXME: refactor components out into separate libraries
-
-var path = require('path')
-  , util = require('util')
-  , exec = require('child_process').exec
+var path           = require('path')
+  , fs             = require('fs')
+  , exists         = (fs.existsSync || path.existsSync)
+  , util           = require('util')
+  , wrench         = require('wrench')
+  , MultiInstaller = require(path.join(__dirname, '..', 'lib', 'multi_installer'))
   ;
 
 /*
  * CONSTANTS
  */
 // FIXME: factor this out into a config file
-var MAPPING    = {mongodb : 'node-mongodb-native'}
-  , IMPATIENCE = 15000
-  ;
+var MAPPING = {'node-mongodb-native' : 'mongodb'};
 
-var target = process.argv[process.argv.length - 1]
-  , arena  = MAPPING[target] || target
-  , prefix = path.resolve('..', 'multiverse', arena)
-  ;
+function remakeOutputDir(prefix, subdir) {
+  var dir = path.join(prefix, subdir);
 
-if (!target) return console.error("ERROR! Must provide a suite to run!");
-
-function forVersions(name, callback) {
-  exec(
-    'npm view --json ' + name + ' versions',
-    function (error, stdout) {
-      if (error) return callback(error);
-
-      callback(null, JSON.parse(stdout));
-    }
-  );
+  if (exists(dir)) wrench.rmdirSyncRecursive(dir);
+  wrench.mkdirSyncRecursive(dir, '0755');
 }
 
-function install(name, version, callback) {
-  var versioned = name + '@' + version
-    , command   = util.format('npm install --prefix %s %s', prefix, versioned)
+function dumpError(error, info, status) {
+  var filename = util.format("%s_%s_%s.log", status, info.name,
+                             info.version.replace(/\./, '-'))
+    , output   = path.join(info.prefix, 'build-errors', filename)
     ;
 
-  exec(
-    command,
-    // sometimes MongoDB install failures go off to the moon
-    {timeout : IMPATIENCE},
-    function (error) { callback(error, {name : name, version : version}); }
-  );
-}
-
-function install_(target, versions, callback) {
-  if (versions.length < 1) return console.log("installed all versions!");
-
-  var version = versions.pop();
-  install(target, version, function (error, results) {
-    callback(error, results);
-
-    // keep on truckin' until you hit the end of the road
-    install_(target, versions, callback);
-  });
+  fs.writeFileSync(output, error.message);
 }
 
 function logger(error, info) {
   if (error) {
     // FIXME: dump error.message to a log for that driver version
     if (error.killed) {
-      console.error("npm took too long to install %s %s, so multiverse killed it.",
+      console.error("FAILED install %s %s: npm took too long; multiverse killed it.",
                     info.name, info.version);
+      dumpError(error, info, 'timeout');
     }
     else if (error.signal) {
-      console.error("process got killed with signal %s while installing %s %s.",
+      console.error("FAILED install %s %s: process got killed with signal %s.",
                     info.name, info.version,
                     error.signal);
+      dumpError(error, info, 'killed');
     }
     else {
-      console.error("install for %s %s failed (code %s).",
+      console.error("FAILED install %s %s (code %s).",
                     info.name, info.version,
                     error.code);
+      dumpError(error, info, 'crashed');
     }
   }
   else {
     // FIXME: run the test suite against this version of the driver.
-    console.log("Installed %s %s.", info.name, info.version);
+    console.log("installed %s %s.", info.name, info.version);
   }
 }
 
-forVersions(target, function (error, versions) {
+function _each(prefix, entries) {
+  var entry = path.join(prefix, entries.shift());
+  fs.stat(entry, function (error, stat) {
+    if (error) {
+      console.error(error.stack);
+      if (entries.length > 0) _each(prefix, entries);
+      return;
+    }
+
+    if (stat.isDirectory()) {
+      var basename = path.basename(entry)
+        , target   = MAPPING[basename] || basename
+        ;
+
+      remakeOutputDir(entry, 'build-errors');
+      remakeOutputDir(entry, 'tap');
+
+      var installer = new MultiInstaller(target, entry);
+      installer.on('finished', function () {
+        if (entries.length > 0) _each(prefix, entries);
+      });
+      installer.each(logger);
+    }
+  });
+}
+
+/*
+ * ACTUAL ACTION GOES HERE
+ */
+var base = path.resolve(__dirname, '..', 'multiverse');
+fs.readdir(base, function (error, entries) {
   if (error) return console.error(error);
 
-  install_(target, versions, logger);
+  _each(base, entries);
 });
