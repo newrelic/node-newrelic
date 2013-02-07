@@ -1,0 +1,91 @@
+#!/usr/bin/env node
+// vim: ft=javascript
+'use strict';
+
+// FIXME: refactor components out into separate libraries
+
+var path = require('path')
+  , util = require('util')
+  , exec = require('child_process').exec
+  ;
+
+/*
+ * CONSTANTS
+ */
+// FIXME: factor this out into a config file
+var MAPPING    = {mongodb : 'node-mongodb-native'}
+  , IMPATIENCE = 15000
+  ;
+
+var target = process.argv[process.argv.length - 1]
+  , arena  = MAPPING[target] || target
+  , prefix = path.resolve('..', 'multiverse', arena)
+  ;
+
+if (!target) return console.error("ERROR! Must provide a suite to run!");
+
+function forVersions(name, callback) {
+  exec(
+    'npm view --json ' + name + ' versions',
+    function (error, stdout) {
+      if (error) return callback(error);
+
+      callback(null, JSON.parse(stdout));
+    }
+  );
+}
+
+function install(name, version, callback) {
+  var versioned = name + '@' + version
+    , command   = util.format('npm install --prefix %s %s', prefix, versioned)
+    ;
+
+  exec(
+    command,
+    // sometimes MongoDB install failures go off to the moon
+    {timeout : IMPATIENCE},
+    function (error) { callback(error, {name : name, version : version}); }
+  );
+}
+
+function install_(target, versions, callback) {
+  if (versions.length < 1) return console.log("installed all versions!");
+
+  var version = versions.pop();
+  install(target, version, function (error, results) {
+    callback(error, results);
+
+    // keep on truckin' until you hit the end of the road
+    install_(target, versions, callback);
+  });
+}
+
+function logger(error, info) {
+  if (error) {
+    // FIXME: dump error.message to a log for that driver version
+    if (error.killed) {
+      console.error("npm took too long to install %s %s, so multiverse killed it.",
+                    info.name, info.version);
+    }
+    else if (error.signal) {
+      console.error("process got killed with signal %s while installing %s %s.",
+                    info.name, info.version,
+                    error.signal);
+    }
+    else {
+      console.error("install for %s %s failed (code %s).",
+                    info.name, info.version,
+                    error.code);
+    }
+  }
+  else {
+    // FIXME: run the test suite against this version of the driver.
+    console.log("Installed %s %s.", info.name, info.version);
+  }
+}
+
+forVersions(target, function (error, versions) {
+  if (error) return console.error(error);
+
+  install_(target, versions, logger);
+});
