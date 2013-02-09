@@ -51,7 +51,7 @@
     "sequelize": "*",
     "redis": "*",
     "q": "*",
-    "async": "*"
+    "qx": "*"
   },
   "repository": {
     "type": "git",

@@ -2,13 +2,14 @@
 // vim: ft=javascript
 'use strict';
 
-var path           = require('path')
-  , fs             = require('fs')
-  , util           = require('util')
-  , async          = require('async')
-  , recreate       = require(path.join(__dirname, '..', 'lib', 'recreate'))
-  , runner         = require(path.join(__dirname, '..', 'lib', 'test_ruiner'))
-  , MultiInstaller = require(path.join(__dirname, '..', 'lib', 'multi_installer'))
+var path      = require('path')
+  , Q         = require('q')
+  , Qx        = require('qx')
+  , fs        = require('fs')
+  , readdir   = Q.nfbind(fs.readdir)
+  , stat      = Q.nfbind(fs.stat)
+  , runner    = require(path.join(__dirname, '..', 'lib', 'tap_runner'))
+  , installer = require(path.join(__dirname, '..', 'lib', 'multi_installer'))
   ;
 
 /*
@@ -17,70 +18,42 @@ var path           = require('path')
 // FIXME: factor this out into a config file
 var MAPPING = {'node-mongodb-native' : 'mongodb'};
 
-function dumpError(error, info, status) {
-  var filename = util.format("%s_%s_%s.log", status, info.name,
-                             info.version.replace(/\./, '-'))
-    , output   = path.join(info.prefix, 'build-errors', filename)
-    ;
+var base = path.resolve(__dirname, '..', 'multiverse');
 
-  fs.writeFileSync(output, error.message);
+function installAndTest(directory) {
+  var target = MAPPING[directory] || directory;
+
+  return installer.visitAll(path.join(base, directory), target, runner);
 }
 
-function postInstall(error, info, callback) {
-  if (!error) return runner(info, callback);
-
-  if (error.killed) {
-    console.error("FAILED install %s %s: npm took too long; multiverse killed it.",
-                  info.name, info.version);
-    dumpError(error, info, 'timeout');
-  }
-  else if (error.signal) {
-    console.error("FAILED install %s %s: process got killed with signal %s.",
-                  info.name, info.version,
-                  error.signal);
-    dumpError(error, info, 'killed');
-  }
-  else {
-    console.error("FAILED install %s %s (code %s).",
-                  info.name, info.version,
-                  error.code);
-    dumpError(error, info, 'crashed');
+function isDirectory(entry) {
+  function statHelper(info) {
+    return info.isDirectory();
   }
 
-  callback();
+  return stat(path.join(base, entry)).then(statHelper);
 }
 
-function visitMultiverseModule(directory, callback) {
-  var basename = path.basename(directory)
-    , target   = MAPPING[basename] || basename
-    ;
+function onlyDirectories(entries) {
+  return Qx.filter(entries, isDirectory);
+}
 
-  recreate(directory, 'build-errors');
+function visit(directories) {
+  return Q.allResolved(directories.map(installAndTest));
+}
 
-  new MultiInstaller(target, directory).forEach(postInstall, callback);
+function finished() {
+  console.log("multiverse run complete.");
+}
+
+function failed(error) {
+  console.error(error.stack);
 }
 
 /*
  * here's where things actually happen
  */
-var base = path.resolve(__dirname, '..', 'multiverse');
-fs.readdir(base, function (error, entries) {
-  if (error) return console.error(error);
-
-  async.forEachSeries(
-    entries,
-    function (filename, callback) {
-      var entry = path.join(base, filename);
-      fs.stat(entry, function (error, stat) {
-        if (error) return callback(error);
-
-        if (stat.isDirectory()) visitMultiverseModule(entry, callback);
-      });
-    },
-    function finished(error) {
-      if (error) return console.log(error.stack);
-
-      console.log("multiverse run complete.");
-    }
-  );
-});
+return readdir(base)
+         .then(onlyDirectories)
+         .then(visit)
+         .done(finished, failed);
