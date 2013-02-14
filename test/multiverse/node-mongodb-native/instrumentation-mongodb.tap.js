@@ -418,7 +418,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               if (error) { t.fail(error); return t.end(); }
 
               runWithTransaction(current, t, function (agent, collection, transaction) {
-                addMetricsVerifier(t, agent, 'remove');
+                addMetricsVerifier(t, agent, 'find');
 
                 collection.findAndRemove({bornToDie : {$exists : true}},
                                          [['id', 1]],
@@ -439,37 +439,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(12);
-
-          var current = this;
-          runWithDB(current, t, function (collection) {
-            var it0rm = {id : 678, bornToDie : 'younger'};
-            collection.insert(it0rm, function (error) {
-              if (error) { t.fail(error); return t.end(); }
-
-              runWithTransaction(current, t, function (agent, collection, transaction) {
-                addMetricsVerifier(t, agent, 'remove');
-
-                collection.findAndRemove({bornToDie : {$exists : true}});
-                setTimeout(function () {
-                  collection.find({bornToDie : {$exists : true}})
-                            .toArray(function (error, docs) {
-                    if (error) { t.fail(error); return t.end(); }
-                    t.ok(agent.getTransaction(), "transaction should still be visible");
-
-                    t.ok(docs, "should have found a removed document");
-                    t.equal(docs.length, 0, "all documents should have been removed");
-
-                    transaction.end();
-
-                    verifyTrace(t, transaction, 'remove');
-                  });
-                }, 100);
-              });
-            });
-          });
-        });
+        t.comment("findAndRemove requires a callback");
       });
 
       t.test("outside transaction", function (t) {
@@ -501,35 +471,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(6);
-
-          var current = this;
-          runWithDB(current, t, function (collection) {
-            var it0rm = {id : 789, bornToDie : 'younger'};
-            collection.insert(it0rm, function (error) {
-              if (error) { t.fail(error); return t.end(); }
-
-              runWithoutTransaction(current, t, function (agent, collection) {
-                addMetricsVerifier(t, agent, 'remove');
-
-                collection.findAndRemove({bornToDie : {$exists : true}});
-                setTimeout(function () {
-                  collection.find({bornToDie : {$exists : true}})
-                            .toArray(function (error, docs) {
-                    if (error) { t.fail(error); return t.end(); }
-                    t.notOk(agent.getTransaction(), "should have no transaction");
-
-                    t.ok(docs, "should have found a removed document");
-                    t.equal(docs.length, 0, "all documents should have been removed");
-
-                    verifyNoStats(t, agent, 'remove');
-                  });
-                }, 100);
-              });
-            });
-          });
-        });
+        t.comment("findAndRemove requires a callback");
       });
     });
 
@@ -545,8 +487,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'update');
 
-            collection.update({feeblers : {$exist : true}},
+            collection.update({feeblers : {$exists : true}},
                               {$set : {__updated : 'yup'}},
+                              {safe : true, multi : true},
                               function (error, numberModified) {
               if (error) { t.fail(error); return t.end(); }
 
