@@ -257,7 +257,8 @@ describe("DataSender", function () {
     sender.once('error', function (message, error) {
       expect(message).equal('TEST');
       should.exist(error);
-      expect(error.message).equal('getaddrinfo ENOENT');
+      // https://github.com/joyent/node/commit/7295bb9435c
+      expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)$/);
 
       return done();
     });
