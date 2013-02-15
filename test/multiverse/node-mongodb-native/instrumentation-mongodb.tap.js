@@ -488,7 +488,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
             addMetricsVerifier(t, agent, 'update');
 
             collection.update({feeblers : {$exists : true}},
-                              {$set : {__updated : 'yup'}},
+                              {$set : {__updatedWith : 'yup'}},
                               {safe : true, multi : true},
                               function (error, numberModified) {
               if (error) { t.fail(error); return t.end(); }
@@ -510,11 +510,11 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'update');
 
-            collection.update({feeblers : {$exist : true}},
-                              {$set : {__updated : 'yup'}});
+            collection.update({feeblers : {$exists : true}},
+                              {$set : {__updatedWith : 'yup'}});
 
             setTimeout(function () {
-              collection.find({__updated : 'yup'}).toArray(function (error, docs) {
+              collection.find({__updatedWith : 'yup'}).toArray(function (error, docs) {
                 if (error) { t.fail(error); return t.end(); }
 
                 t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -541,8 +541,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           t.plan(6);
 
           runWithoutTransaction(this, t, function (agent, collection) {
-            collection.update({hamchunx : {$exist : true}},
-                              {$set : {__updated : 'yup'}},
+            collection.update({hamchunx : {$exists : true}},
+                              {$set : {__updatedWithout : 'yup'}},
+                              {safe : true, multi : true},
                               function (error, numberModified) {
               if (error) { t.fail(error); return t.end(); }
               t.notOk(agent.getTransaction(), "should be no transaction");
@@ -555,21 +556,21 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(9);
 
           runWithTransaction(this, t, function (agent, collection) {
-            collection.update({hamchunx : {$exist : true}},
-                              {$set : {__updated : 'yup'}});
+            collection.update({hamchunx : {$exists : true}},
+                              {$set : {__updatedWithout : 'yup'}});
 
             setTimeout(function () {
-              collection.find({__updated : 'yup'}).toArray(function (error, docs) {
+              collection.find({__updatedWithout : 'yup'}).toArray(function (error, docs) {
                 if (error) { t.fail(error); return t.end(); }
                 t.notOk(agent.getTransaction(), "should be no transaction");
 
                 t.ok(docs, "should have gotten back results");
                 t.equal(docs.length, 2, "should have found 2 modified");
                 docs.forEach(function (doc) {
-                  t.ok(doc.feeblers, "expected value found");
+                  t.ok(doc.hamchunx, "expected value found");
                 });
 
                 verifyNoStats(t, agent, 'update');
@@ -610,7 +611,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(12);
+          t.plan(8);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'insert');
@@ -652,7 +653,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               t.ok(result._id, "should have evidence that it saved");
               t.ok(result.__saved, "should have evidence we got our original document");
 
-              verifyTrace(t, agent, 'insert');
+              verifyNoStats(t, agent, 'insert');
             });
           });
         });
@@ -672,7 +673,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                 t.equal(docs.length, 1, "should have only found one document");
                 t.equal(docs[0].id, 555, "should have evidence it's the same document");
 
-                verifyTrace(t, agent, 'insert');
+                verifyNoStats(t, agent, 'insert');
               });
             }, 100);
           });
@@ -715,7 +716,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(6);
 
-          runWithTransaction(this, t, function (agent, collection) {
+          runWithoutTransaction(this, t, function (agent, collection) {
             collection.count(function (error, count) {
               if (error) { t.fail(error); return t.end(); }
               t.notOk(agent.getTransaction(), "should have no transaction");
@@ -743,12 +744,12 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'remove');
 
-            collection.remove({hamchunx : {$exists : true}}, function (error, removed) {
+            collection.remove({id: 1}, function (error, removed) {
               if (error) { t.fail(error); return t.end(); }
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
 
-              t.equal(removed, 2, "should have removed 2 documents from collection");
+              t.equal(removed, 1, "should have removed 1 document from collection");
 
               transaction.end();
 
@@ -763,14 +764,14 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'remove');
 
-            collection.remove({feeblers : {$exists : true}});
+            collection.remove({id : 2});
             setTimeout(function () {
-              collection.count({feeblers : {$exists : true}}, function (error, nope) {
+              collection.count({id : 2}, function (error, nope) {
                 if (error) { t.fail(error); return t.end(); }
 
                 t.ok(agent.getTransaction(), "transaction should still be visible");
 
-                t.notOk(nope, "should have removed 2 documents from collection");
+                t.notOk(nope, "should have removed document with id 2 from collection");
 
                 transaction.end();
 
@@ -787,12 +788,12 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.test("with callback", {timeout : 1000}, function (t) {
           t.plan(6);
 
-          runWithTransaction(this, t, function (agent, collection) {
-            collection.remove({hamchunx : {$exists : true}}, function (error, removed) {
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.remove({id : 3}, function (error, removed) {
               if (error) { t.fail(error); return t.end(); }
               t.notOk(agent.getTransaction(), "should have no transaction");
 
-              t.equal(removed, 2, "should have removed 2 documents from collection");
+              t.equal(removed, 1, "should have removed 1 document from collection");
 
               verifyNoStats(t, agent, 'remove');
             });
@@ -802,14 +803,14 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
           t.plan(6);
 
-          runWithTransaction(this, t, function (agent, collection) {
-            collection.remove({feeblers : {$exists : true}});
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.remove({id : 4});
             setTimeout(function () {
-              collection.count({feeblers : {$exists : true}}, function (error, nope) {
+              collection.count({id : 4}, function (error, nope) {
                 if (error) { t.fail(error); return t.end(); }
                 t.notOk(agent.getTransaction(), "should have no transaction");
 
-                t.notOk(nope, "should have removed 2 documents from collection");
+                t.notOk(nope, "should have removed document with id 4 from collection");
 
                 verifyNoStats(t, agent, 'remove');
               });
