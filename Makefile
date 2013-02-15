@@ -3,7 +3,8 @@ MOCHA_NOBIN  = node_modules/.bin/_mocha
 COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
 NODE_VERSION = $(shell node --version)
-INTEGRATION  = $(shell find . -name *.tap.js -print)
+INTEGRATION  =  $(wildcard test/integration/*.tap.js)
+INTEGRATION  += $(wildcard test/versioned/*/*.tap.js)
 # subcomponents manage their own modules
 NPMDIRS =  $(wildcard test/lib/bootstrap/*)
 NPMDIRS += $(wildcard test/versioned/*)
