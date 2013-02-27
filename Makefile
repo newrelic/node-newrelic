@@ -7,6 +7,9 @@ INTEGRATION  = $(shell find . -name *.tap.js -print)
 # only want to find root package.json files, not those in node_modules
 INT_PACKAGES = $(shell echo test/integration/versioned/*/package.json)
 STARTDIR     = $(shell pwd)
+TESTKEY      = test/lib/test-key.key
+TESTCERT     = test/lib/self-signed-test-certificate.crt
+TESTSUBJ     = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
 .PHONY: all build test-cov test clean notes pending pending-core unit integration
 all: build test
@@ -33,7 +36,7 @@ unit: node_modules
 	@rm -f newrelic_agent.log
 	@$(MOCHA)
 
-integration: node_modules
+integration: node_modules $(TESTCERT)
 	@rm -f test/integration/newrelic_agent.log
 	@for package in $(INT_PACKAGES) ; do \
 		dir=$$(dirname $$package) ; \
@@ -46,6 +49,7 @@ integration: node_modules
 
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
+	rm -rf $(TESTKEY) $(TESTCERT)
 
 notes:
 	find . -wholename ./node_modules -prune -o \
@@ -59,3 +63,20 @@ pending: node_modules
 
 pending-core: node_modules
 	@$(MOCHA) --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
+
+$(TESTKEY):
+	@openssl genrsa -out $(TESTKEY) 1024
+
+$(TESTCERT): $(TESTKEY)
+	@openssl req \
+		-new \
+		-subj $(TESTSUBJ) \
+		-key $(TESTKEY) \
+		-out server.csr
+	@openssl x509 \
+		-req \
+		-days 365 \
+		-in server.csr \
+		-signkey $(TESTKEY) \
+		-out $(TESTCERT)
+	@rm server.csr
