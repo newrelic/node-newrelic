@@ -7,11 +7,14 @@ INTEGRATION  = $(shell find . -name *.tap.js -print)
 # only want to find root package.json files, not those in node_modules
 INT_PACKAGES = $(shell echo test/integration/versioned/*/package.json)
 STARTDIR     = $(shell pwd)
+# SSL
 TESTKEY      = test/lib/test-key.key
 TESTCERT     = test/lib/self-signed-test-certificate.crt
 TESTSUBJ     = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
-.PHONY: all build test-cov test clean notes pending pending-core unit integration
+.PHONY: all build test-cov test clean notes pending pending-core
+.PHONY: unit integration ssl
+
 all: build test
 
 node_modules: package.json
@@ -63,6 +66,8 @@ pending: node_modules
 
 pending-core: node_modules
 	@$(MOCHA) --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
+
+ssl: $(TESTCERT)
 
 $(TESTKEY):
 	@openssl genrsa -out $(TESTKEY) 1024
