@@ -3,3 +3,7 @@ newrelic_agent.log
 .coverage_data
 cover_html
 npm-debug.log
+*.key
+*.crt
+ca-index*
+ca-serial*

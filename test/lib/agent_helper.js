@@ -1,6 +1,7 @@
 'use strict';
 
 var path                = require('path')
+  , fs                  = require('fs')
   , sinon               = require('sinon')
   , architect           = require('architect')
   , wrench              = require('wrench')
@@ -8,6 +9,14 @@ var path                = require('path')
   , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib',
                                             'collector', 'connection'))
+  ;
+
+/*
+ * CONSTANTS
+ */
+
+var KEYPATH  = path.join(__dirname, 'test-key.key')
+  , CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
   ;
 
 var helper = module.exports = {
@@ -161,6 +170,18 @@ var helper = module.exports = {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
 
       if (callback) return callback();
+    });
+  },
+
+  withSSL : function (callback) {
+    fs.readFile(KEYPATH, function (error, key) {
+      if (error) return callback(error);
+
+      fs.readFile(CERTPATH, function (error, certificate) {
+        if (error) return callback(error);
+
+        callback(null, key, certificate);
+      });
     });
   }
 };
