@@ -8,9 +8,16 @@ INTEGRATION  = $(shell find . -name *.tap.js -print)
 INT_PACKAGES = $(shell echo test/integration/versioned/*/package.json)
 STARTDIR     = $(shell pwd)
 # SSL
-TESTKEY      = test/lib/test-key.key
-TESTCERT     = test/lib/self-signed-test-certificate.crt
-TESTSUBJ     = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
+SSLKEY       = test/lib/test-key.key
+# certificate authority, so curl doesn't complain
+CACERT       = test/lib/ca-certificate.crt
+CASUBJ       = "/O=testsuite/OU=New Relic CA/CN=Node.js test CA"
+CACONFIG     = test/lib/test-ca.conf
+CAINDEX      = test/lib/ca-index
+CASERIAL     = test/lib/ca-serial
+# actual certificate configuration
+CERTIFICATE  = test/lib/self-signed-test-certificate.crt
+SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
 .PHONY: all build test-cov test clean notes pending pending-core
 .PHONY: unit integration ssl
@@ -39,7 +46,7 @@ unit: node_modules
 	@rm -f newrelic_agent.log
 	@$(MOCHA)
 
-integration: node_modules $(TESTCERT)
+integration: node_modules $(CERTIFICATE)
 	@rm -f test/integration/newrelic_agent.log
 	@for package in $(INT_PACKAGES) ; do \
 		dir=$$(dirname $$package) ; \
@@ -52,7 +59,8 @@ integration: node_modules $(TESTCERT)
 
 clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
-	rm -rf $(TESTKEY) $(TESTCERT)
+	rm -rf $(SSLKEY) $(CACERT) $(CAINDEX) $(CASERIAL) $(CERTIFICATE)
+	rm -rf test/lib/*.old test/lib/*.attr
 
 notes:
 	find . -wholename ./node_modules -prune -o \
@@ -67,21 +75,37 @@ pending: node_modules
 pending-core: node_modules
 	@$(MOCHA) --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
 
-ssl: $(TESTCERT)
+ssl: $(CERTIFICATE)
 
-$(TESTKEY):
-	@openssl genrsa -out $(TESTKEY) 1024
+$(SSLKEY):
+	@openssl genrsa -out $(SSLKEY) 1024
 
-$(TESTCERT): $(TESTKEY)
+$(CAINDEX):
+	@touch $(CAINDEX)
+
+$(CASERIAL):
+	@echo 000a > $(CASERIAL)
+
+$(CACERT): $(SSLKEY) $(CAINDEX) $(CASERIAL)
 	@openssl req \
 		-new \
-		-subj $(TESTSUBJ) \
-		-key $(TESTKEY) \
+		-subj $(CASUBJ) \
+		-key $(SSLKEY) \
+		-days 3650 \
+		-x509 \
+		-out $(CACERT)
+
+$(CERTIFICATE): $(CACERT)
+	@openssl req \
+		-new \
+		-subj $(SUBJECT) \
+		-key $(SSLKEY) \
 		-out server.csr
-	@openssl x509 \
-		-req \
-		-days 365 \
+	@openssl ca \
+		-batch \
+		-cert $(CACERT) \
+		-config $(CACONFIG) \
+		-keyfile $(SSLKEY) \
 		-in server.csr \
-		-signkey $(TESTKEY) \
-		-out $(TESTCERT)
-	@rm server.csr
+		-out $(CERTIFICATE)
+	@rm -f server.csr

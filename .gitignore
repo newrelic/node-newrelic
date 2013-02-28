@@ -5,3 +5,5 @@ cover_html
 npm-debug.log
 *.key
 *.crt
+ca-index*
+ca-serial*
