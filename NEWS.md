@@ -1,3 +1,9 @@
+### v0.9.19 / beta-19 (2013-03-04):
+
+* HTTPS instrumentation is both more complete and far better tested.
+* Restify servers using HTTPS listeners should now be properly
+  instrumented.
+
 ### v0.9.18-137 / beta-18 (2013-01-30):
 
 * `;` is now treated as a query separator in URLs, just like `?`.
@@ -28,23 +34,23 @@
 ### v0.9.16-121 / beta-16 (2013-01-16):
 
 * For some of the modules instrumented by the agent (fs, http, Express 2
-	and 3), the error tracer now adds error tracing to wrapped function calls.
-	This means that more of the functions in those modules will send traced
-	errors to New Relic, even if they're trapping errors themselves. Also
-	improves error tracer in versions of Node without domains. The error
-	tracer rethrows all caught errors, so as to not alter behavior of
-	instrumented apps.
+  and 3), the error tracer now adds error tracing to wrapped function calls.
+  This means that more of the functions in those modules will send traced
+  errors to New Relic, even if they're trapping errors themselves. Also
+  improves error tracer in versions of Node without domains. The error
+  tracer rethrows all caught errors, so as to not alter behavior of
+  instrumented apps.
 * The error count sent by the agent was frequently incorrect due to an
-	off-by-one bug.
+  off-by-one bug.
 * Include the entire stacktrace in traced errors.
 * When the agent fails to successfully connect to New Relic's servers, it
-	will try 6 more times, progressively waiting longer between each failed
-	attempt. If no connection can be made, the agent will shut itself down.
+  will try 6 more times, progressively waiting longer between each failed
+  attempt. If no connection can be made, the agent will shut itself down.
 * The agent no longer crashes instrumented applications when DNS resolution
-	fails during the initial handshake with New Relic's servers. It logs the
-	failures instead and retries later.
+  fails during the initial handshake with New Relic's servers. It logs the
+  failures instead and retries later.
 * The agent no longer alters the behavior of the generic-pool module in a
-	way that causes modules using it to break (including node-postgres).
+  way that causes modules using it to break (including node-postgres).
 * In some cases, the domains-based error tracer was not working correctly.
 * The agent logs significantly more useful debugging information.
 
@@ -64,17 +70,17 @@
 ### v0.9.13-101 / beta-13 (2013-01-07):
 
 * When New Relic's servers (or an intermediate proxy) returned a response with
-	a status code other than 20x, the entire instrumented application would
-	crash.
+  a status code other than 20x, the entire instrumented application would
+  crash.
 * Some metric normalization rules were not being interpreted correctly, leading
-	to malformed normalized metric names.
+  to malformed normalized metric names.
 * Metric normalization rules that specifed that matching metrics were to be
-	ignored were not being enforced.
+  ignored were not being enforced.
 
 ### v0.9.12-91 / beta-12 (2012-12-28):
 
 * Fixed the agent's auto-restart support to cleanly shut down the
-	connection (also fixed a bunch of bugs in restart).
+  connection (also fixed a bunch of bugs in restart).
 
 ### v0.9.11-88 / beta-11 (2012-12-20):
 
