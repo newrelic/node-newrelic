@@ -17,6 +17,7 @@ var path                = require('path')
 
 var KEYPATH  = path.join(__dirname, 'test-key.key')
   , CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
+  , CAPATH   = path.join(__dirname, 'ca-certificate.crt')
   ;
 
 var helper = module.exports = {
@@ -180,7 +181,11 @@ var helper = module.exports = {
       fs.readFile(CERTPATH, function (error, certificate) {
         if (error) return callback(error);
 
-        callback(null, key, certificate);
+        fs.readFile(CAPATH, function (error, ca) {
+          if (error) return callback(error);
+
+          callback(null, key, certificate, ca);
+        });
       });
     });
   }

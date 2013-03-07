@@ -54,7 +54,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
 });
 
 test("Restify should still be instrumented when run with SSL", function (t) {
-  helper.withSSL(function (error, key, certificate) {
+  helper.withSSL(function (error, key, certificate, ca) {
     if (error) {
       t.fail("unable to set up SSL: " + error);
       t.end();
@@ -73,7 +73,7 @@ test("Restify should still be instrumented when run with SSL", function (t) {
     server.listen(8443, function () {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server");
 
-      request.get('https://ssl.lvh.me:8443/hello/friend',
+      request.get({url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca},
                   function (error, response, body) {
         if (error) {
           t.fail(error);
