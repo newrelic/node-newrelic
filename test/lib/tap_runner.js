@@ -15,7 +15,9 @@ var path     = require('path')
 /*
  * CONSTANTS
  */
-var IMPATIENCE = 30000;
+var IMPATIENCE      = 30000
+  , DEFAULT_COMMAND = 'node'
+  ;
 
 function isTapFile(name) {
   return name.match(/\.tap\.js$/);
@@ -42,7 +44,8 @@ module.exports = function (info) {
     }
 
     var filepath = path.join(info.prefix, files[index])
-      , producer = exec('node ' + filepath, {timeout : IMPATIENCE}, execed)
+      , command  = info.command || DEFAULT_COMMAND
+      , producer = exec(command + ' ' + filepath, {timeout : IMPATIENCE}, execed)
       , consumer = tap.createConsumer()
       , busted   = 0
       , tests    = 0

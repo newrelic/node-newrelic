@@ -51,7 +51,8 @@
     "sequelize": "*",
     "redis": "*",
     "q": "*",
-    "qx": "*"
+    "qx": "*",
+    "nave": "*"
   },
   "repository": {
     "type": "git",
