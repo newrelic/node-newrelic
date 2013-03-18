@@ -30,7 +30,7 @@ request a Pro Trial subscription during your beta testing.
 
 If you wish to keep the configuration for the agent separate from your
 application, the agent will look for newrelic.js in the directory referenced
-by the environment variable `NEWRELIC_HOME` if it's set.
+by the environment variable `NEW_RELIC_HOME` if it's set.
 
 When you start your app, the agent should start up with it and start
 reporting data that will appear within [the New Relic
@@ -123,7 +123,7 @@ Information about changes to the agent are in NEWS.md.
   If you notice missing or incorrect information from transaction traces,
   let us know.
 * External requests (and other calls to modules made as part of a
-	transaction) are not being accurately instrumented in many cases.
+  transaction) are not being accurately instrumented in many cases.
 * There are over 20,000 modules on npm. We can only instrument a tiny
   number of them. Even for the modules we support, there are a very
   large number of ways to use them. If you see data you don't expect on
@@ -131,10 +131,10 @@ Information about changes to the agent are in NEWS.md.
   that is producing the strange data, it will gratefully be used to
   improve the agent.
 * There is an error tracer in the Node agent, but it's a work in progress.
-	In particular, it still does not intercept errors that may already be
-	handled by frameworks. Also, parts of it depend on the new, experimental
-	[domain](http://nodejs.org/api/domain.html) API added in Node 0.8, and
-	domain-specific functionality will not work in apps running in
+  In particular, it still does not intercept errors that may already be
+  handled by frameworks. Also, parts of it depend on the new, experimental
+  [domain](http://nodejs.org/api/domain.html) API added in Node 0.8, and
+  domain-specific functionality will not work in apps running in
   Node 0.6.x.
 * The CPU and memory overhead incurred by the Node agent is relatively
   minor (~1-10%, depending on how much of the instrumentation your
