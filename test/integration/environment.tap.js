@@ -7,6 +7,17 @@ var path  = require('path')
   , agent
   ;
 
+test("Using should shouldn't cause the agent to explode on startup.", function (t) {
+  t.plan(2);
+
+  var should;
+  t.doesNotThrow(function () {
+    should = require('should');
+    agent = new Agent();
+    t.ok(agent.should);
+  }, "shouldn't throw when should is included.");
+});
+
 test("Environment scraper shouldn't die if HOME isn't set.", function (t) {
   t.plan(2);
 
