@@ -174,14 +174,16 @@ describe("built-in http module instrumentation", function () {
   });
 
   describe("with error monitor", function () {
-    var mochaHandler;
+    var mochaHandlers;
 
     before(function () {
-      mochaHandler = process.listeners('uncaughtException').pop();
+      mochaHandlers = process._events['uncaughtException'];
+      // FIXME: hahahaha this will never come back to haunt me *cries*
+      delete process._events['uncaughtException'];
     });
 
     after(function () {
-      process.on('uncaughtException', mochaHandler);
+      process._events['uncaughtException'] = mochaHandlers;
     });
 
     beforeEach(function () {
@@ -191,6 +193,11 @@ describe("built-in http module instrumentation", function () {
 
     afterEach(function () {
       helper.unloadAgent(agent);
+    });
+
+    it("should have stored mocha's exception handler", function () {
+      should.exist(mochaHandlers);
+      expect(mochaHandlers.length).equal(1);
     });
 
     describe("for http.createServer", function () {

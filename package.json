@@ -37,7 +37,7 @@
     "bunyan": "~0.14.0"
   },
   "devDependencies": {
-    "mocha": "~1",
+    "mocha": "*",
     "chai": "~1.0",
     "cover": "~0.2",
     "request": "~2",
