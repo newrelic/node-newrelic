@@ -91,14 +91,20 @@ describe("built-in fs module instrumentation", function () {
   });
 
   describe("with error monitor", function () {
-    var mochaHandler;
+    var mochaHandlers;
 
     before(function () {
-      mochaHandler = process.listeners('uncaughtException').pop();
+      // disable mocha's error handler
+      mochaHandlers = helper.onlyDomains();
     });
 
     after(function () {
-      process.on('uncaughtException', mochaHandler);
+      process._events['uncaughtException'] = mochaHandlers;
+    });
+
+    it("should have stored mocha's exception handler", function () {
+      should.exist(mochaHandlers);
+      expect(mochaHandlers.length).above(0);
     });
 
     it("should trace errors thrown by the instrumentation in the error tracer",

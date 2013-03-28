@@ -209,7 +209,7 @@ describe("ErrorTracer", function () {
 
   if (dominion.available) {
     describe("when domains are available", function () {
-      var mochaHandler
+      var mochaHandlers
         , agent
         , domain
         , active
@@ -225,7 +225,7 @@ describe("ErrorTracer", function () {
          */
         process.nextTick(function () {
           // disable mocha's error handler
-          mochaHandler = process.listeners('uncaughtException').pop();
+          mochaHandlers = helper.onlyDomains();
 
           agent = helper.loadMockedAgent();
           var disruptor = agent.tracer.transactionProxy(function () {
@@ -248,7 +248,7 @@ describe("ErrorTracer", function () {
 
       after(function () {
         // ...but be sure to re-enable mocha's error handler
-        process.on('uncaughtException', mochaHandler);
+        process._events['uncaughtException'] = mochaHandlers;
       });
 
       it("should put transactions in domains", function () {

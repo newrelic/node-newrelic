@@ -1,9 +1,9 @@
 'use strict';
 
-var path = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , should = chai.should()
+var path        = require('path')
+  , chai        = require('chai')
+  , expect      = chai.expect
+  , should      = chai.should()
   , environment = require(path.join(__dirname, '..', 'lib', 'environment'))
   ;
 
@@ -55,7 +55,12 @@ describe("the environment scraper", function () {
       });
 
       it("should know whether WAF was installed with Node.js", function () {
-        should.exist(find(settings, 'WAF build system installed?'));
+        // 0.10 drops node-waf support
+        // FIXME: break this out into a Node-version-specific test
+        var waf = process.config.variables.node_install_waf;
+        if (waf === true || waf === false) {
+          should.exist(find(settings, 'WAF build system installed?'));
+        }
       });
 
       it("should know whether OpenSSL support was compiled into Node.js", function () {
