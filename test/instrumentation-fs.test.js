@@ -94,9 +94,8 @@ describe("built-in fs module instrumentation", function () {
     var mochaHandlers;
 
     before(function () {
-      mochaHandlers = process._events['uncaughtException'];
-      // FIXME: hahahaha this will never come back to haunt me *cries*
-      delete process._events['uncaughtException'];
+      // disable mocha's error handler
+      mochaHandlers = helper.onlyDomains();
     });
 
     after(function () {
@@ -105,7 +104,7 @@ describe("built-in fs module instrumentation", function () {
 
     it("should have stored mocha's exception handler", function () {
       should.exist(mochaHandlers);
-      expect(mochaHandlers.length).equal(1);
+      expect(mochaHandlers.length).above(0);
     });
 
     it("should trace errors thrown by the instrumentation in the error tracer",

@@ -225,9 +225,7 @@ describe("ErrorTracer", function () {
          */
         process.nextTick(function () {
           // disable mocha's error handler
-          mochaHandlers = process._events['uncaughtException'];
-          // FIXME: hahahaha this will never come back to haunt me *cries*
-          delete process._events['uncaughtException'];
+          mochaHandlers = helper.onlyDomains();
 
           agent = helper.loadMockedAgent();
           var disruptor = agent.tracer.transactionProxy(function () {

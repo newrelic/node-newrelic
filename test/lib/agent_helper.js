@@ -188,5 +188,24 @@ var helper = module.exports = {
         });
       });
     });
+  },
+
+  // FIXME: I long for the day I no longer need this gross hack
+  onlyDomains : function () {
+    var exceptionHandlers = process._events['uncaughtException'];
+    if (exceptionHandlers) {
+      if (Array.isArray(exceptionHandlers)) {
+        process._events['uncaughtException'] = exceptionHandlers.filter(function (f) {
+          return f.name === 'uncaughtHandler';
+        });
+      }
+      else {
+        if (exceptionHandlers.name !== 'uncaughtException') {
+          delete process._events['uncaughtException'];
+        }
+      }
+    }
+
+    return exceptionHandlers;
   }
 };
