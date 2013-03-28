@@ -217,6 +217,8 @@ describe("ErrorTracer", function () {
         ;
 
       before(function (done) {
+        agent = helper.loadMockedAgent();
+
         /**
          * Mocha is extremely zealous about trapping errors, and runs each test
          * in a try / catch block. To get the exception to propagate out to the
@@ -227,16 +229,15 @@ describe("ErrorTracer", function () {
           // disable mocha's error handler
           mochaHandlers = helper.onlyDomains();
 
-          agent = helper.loadMockedAgent();
+          process.once('uncaughtException', function () {
+            json = agent.errors.errors[0];
+
+            return done();
+          });
+
           var disruptor = agent.tracer.transactionProxy(function () {
             domain = agent.getTransaction().trace.domain;
             active = process.domain;
-
-            active.once('error', function () {
-              json = agent.errors.errors[0];
-
-              return done();
-            });
 
             // trigger the domain
             throw new Error('sample error');
