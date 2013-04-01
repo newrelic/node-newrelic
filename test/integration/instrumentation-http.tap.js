@@ -73,6 +73,7 @@ test("built-in http module instrumentation should handle both internal and exter
   this.tearDown(function () {
     external.close();
     server.close();
+    helper.unloadAgent(agent);
   });
 
   var testResponseHandler = function (response) {
@@ -131,5 +132,54 @@ test("built-in http module instrumentation should handle both internal and exter
 
       req.end();
     });
+  });
+});
+
+test("built-in http module instrumentation shouldn't swallow errors",
+     function (t) {
+  t.plan(4);
+
+  var agent = helper.instrumentMockedAgent();
+
+  function handleRequest(req, res) {
+    t.ok(process.domain, "should have a domain available");
+    process.once('uncaughtException', function (error) {
+      t.ok(error, "Got error in domain handler.");
+      res.statusCode = 501;
+
+      res.end();
+    });
+
+    // this is gonna blow up
+    var x = x.dieshere.ohno;
+  }
+
+  function makeRequest() {
+    // 0.10 agents don't time out
+    var options = {
+      host  : 'localhost',
+      port  : 1337,
+      path  : '/',
+      agent : false
+    };
+
+    http.get(options, function (res) {
+      t.equal(agent.errors.errors.length, 2,
+              "FIXME: should have recorded an error (2 for now)");
+      t.equal(res.statusCode, 501, "got expected (error) status code");
+
+      t.end();
+    });
+  }
+
+  var server = http.createServer(handleRequest.bind(this));
+
+  this.tearDown(function () {
+    server.close();
+    helper.unloadAgent(agent);
+  });
+
+  server.listen(1337, function () {
+    process.nextTick(makeRequest);
   });
 });

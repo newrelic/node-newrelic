@@ -1,3 +1,13 @@
+### v0.9.20 / beta-20 (2013-03-28):
+
+* The implementation of domains changed in Node 0.10.x, which necessitated
+  a fair amount of work on the error tracer to preserve the existing
+  error tracer behavior.
+* The error tracer no longer improperly swallows thrown errors.
+* The agent no longer assumes that a home directory is set.
+* The agent now works correctly with the `should` assertion helper
+  library.
+
 ### v0.9.19 / beta-19 (2013-03-04):
 
 * HTTPS instrumentation is both more complete and far better tested.
