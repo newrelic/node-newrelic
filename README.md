@@ -20,13 +20,12 @@ request a Pro Trial subscription during your beta testing.
    being done against the latest released non-development version of Node.
 2. Install this module via `npm install newrelic` for the application you
    want to monitor.
-3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
-   your application.
-4. Edit `newrelic.js` and replace `license_key`'s value with the license key
-   for your account.
-5. Add `require('newrelic');` as the first line of the app's main module.
-   *IMPORTANT*: formerly this was `require('newrelic_agent')`, and you *MUST*
-   update your code.
+3. Copy the following code into your application
+
+    require('newrelic').profile({
+      app_name: 'your_app_name',
+      license_key: 'your_license_key,
+    });
 
 If you wish to keep the configuration for the agent separate from your
 application, the agent will look for newrelic.js in the directory referenced
