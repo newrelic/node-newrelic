@@ -92,6 +92,14 @@ describe("Transaction", function () {
     expect(trans.isWeb()).equal(true);
   });
 
+  it("shouldn't crash when measuring URL paths without a leading slash", function () {
+    var trans = new Transaction(agent);
+    expect(function () {
+      trans.measureWeb('?t_u=http://some.com/o/p', 200, 1);
+      expect(trans.url).equal('/');
+    }).not.throws();
+  });
+
   describe("when dealing with individual metrics", function () {
     it("should add metrics by name", function () {
       var tt = agent.createTransaction();
