@@ -10,9 +10,10 @@ exports.config = {
    */
   app_name : ['My Application'],
   /**
-   * Your New Relic license key.
+   * Your New Relic license key. Reading from the environment allows you to keep
+   * the key out of your repository.
    */
-  license_key : 'license key here',
+  license_key : process.env.newrelic_key,
   logging : {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
