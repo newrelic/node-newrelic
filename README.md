@@ -1,11 +1,29 @@
 # New Relic Node.js agent
 
+## Support
+
+*IMPORTANT*: New Relic for Node is currently in closed beta and is 
+*UNSUPPORTED*. Customers who tried it out during the open beta period are 
+welcome to continue using it and will receive ongoing limited technical 
+support, but any new deployments will not receive technical support.
+
+Why? Because we've learned a *ton* during the beta and now we're heads down
+working on some major improvements and addressing qualities issues that
+prevented us from a 1.0 release.
+
+We're just as eager as you are to see Node + New Relic live happily ever 
+after and we're 100% committed to it. We expect to open up a new beta in the
+coming months. If you'd like to know when the new beta is ready, please 
+[sign up](http://try.newrelic.com/nodejs) to be notified.
+
+## Overview
+
 This package instruments your application for performance monitoring
 with [New Relic](http://newrelic.com).
 
-This is a beta release. You should probably try it in your staging or
-development environment first. If you would prefer to wait for the GA
-release, please [sign up](http://try.newrelic.com/nodejs) to be notified.
+This is an *UNSUPPORTED* beta release. It has knon quality issues that may
+affect your application's stability. You should probably try it in your 
+staging or development environment first to see how it works for you.
 
 Make sure you have a [New Relic account](http://newrelic.com) before
 starting. To see all the features, such as slow transaction traces, you will
@@ -170,20 +188,6 @@ Information about changes to the agent are in NEWS.md.
 * full server-side configuration
 * capacity planning
 * thread profiling
-
-## Support
-
-During the beta, our support bandwidth is limited. We cannot guarantee a
-specific turn-around on questions and issues. However, we try to reply and
-resolve issues promptly and we *greatly* appreciate feedback about how to
-make the product better.
-
-Please [submit a ticket](https://support.newrelic.com) if you don't see the
-data you expect, if the agent generates an error, if you have a feature that
-you would like to see, or if you have a library that you would like
-instrumented. In the ticket, please provide as much information as you can
-about your application and the issue, including your `newrelic_agent.log`,
-`package.json` and app code snippets.
 
 ## LICENSE
 
