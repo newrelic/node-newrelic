@@ -2,18 +2,18 @@
 
 ## Support
 
-*IMPORTANT*: New Relic for Node is currently in closed beta and is 
-*UNSUPPORTED*. Customers who tried it out during the open beta period are 
-welcome to continue using it and will receive ongoing limited technical 
+*IMPORTANT*: New Relic for Node.js is currently in closed beta and is
+*UNSUPPORTED*. Customers who tried it out during the open beta period are
+welcome to continue using it and will receive ongoing limited technical
 support, but any new deployments will not receive technical support.
 
 Why? Because we've learned a *ton* during the beta and now we're heads down
 working on some major improvements and addressing qualities issues that
 prevented us from a 1.0 release.
 
-We're just as eager as you are to see Node + New Relic live happily ever 
+We're just as eager as you are to see Node + New Relic live happily ever
 after and we're 100% committed to it. We expect to open up a new beta in the
-coming months. If you'd like to know when the new beta is ready, please 
+coming months. If you'd like to know when the new beta is ready, please
 [sign up](http://try.newrelic.com/nodejs) to be notified.
 
 ## Overview
@@ -21,8 +21,8 @@ coming months. If you'd like to know when the new beta is ready, please
 This package instruments your application for performance monitoring
 with [New Relic](http://newrelic.com).
 
-This is an *UNSUPPORTED* beta release. It has knon quality issues that may
-affect your application's stability. You should probably try it in your 
+This is an *UNSUPPORTED* beta release. It has known issues that may
+affect your application's stability. You should probably try it in your
 staging or development environment first to see how it works for you.
 
 Make sure you have a [New Relic account](http://newrelic.com) before
@@ -32,9 +32,9 @@ request a Pro Trial subscription during your beta testing.
 
 ## Getting started
 
-1. [Install node](http://nodejs.org/#download). For now, at least 0.6 is
+1. [Install node](http://nodejs.org/#download). For now, at least 0.8 is
    required. Some features (e.g. error tracing) depend in whole or in
-   part on features in 0.8 and above. Development work on the agent is
+   part on features in 0.10 and above. Development work on the agent is
    being done against the latest released non-development version of Node.
 2. Install this module via `npm install newrelic` for the application you
    want to monitor.
@@ -43,8 +43,6 @@ request a Pro Trial subscription during your beta testing.
 4. Edit `newrelic.js` and replace `license_key`'s value with the license key
    for your account.
 5. Add `require('newrelic');` as the first line of the app's main module.
-   *IMPORTANT*: formerly this was `require('newrelic_agent')`, and you *MUST*
-   update your code.
 
 If you wish to keep the configuration for the agent separate from your
 application, the agent will look for newrelic.js in the directory referenced
@@ -63,34 +61,29 @@ or support requests.
 
 ## Configuring the agent
 
-The agent can be tailored to your app's requirements, both from the server
-and via the newrelic.js configuration file you created. For more details on
+The agent can be tailored to your app's requirements, both from the server and
+via the newrelic.js configuration file you created. For complete details on
 what can be configured, refer to
 [`lib/config.default.js`](https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js),
 which documents the available variables and their default values.
 
-In addition, for those of you running in Heroku, Microsoft Azure or any other
-PaaS environment that makes it easier to control configuration via the your
-server's environment, all of the configuration variables in newrelic.js have
-counterparts that can be set in your service's shell environment. You can
-mix and match the configuration file and environment variables freely; the
-value found from the environment will always take precedence.
+In addition, for those of you running in PaaS environments like Heroku or
+Microsoft Azure, all of the configuration variables in `newrelic.js` have
+counterparts that can be set via environment variables. You can mix and match
+variables in the configuration file and environment variables freely;
+environment variables take precedence.
 
-This documentation will be moving to New Relic's servers with the 1.0 release,
-but for now, here's a list of the variables and their values:
+Here's the list of the most important variables and their values:
 
-* `NEW_RELIC_HOME`: path to the directory in which you've placed newrelic.js.
-* `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
-  New Relic's servers. This value can be also be a comma-delimited list of
-  names.
-* `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
-  temporarily disabling the agent while debugging other issues with your
-  code.
+* `NEW_RELIC_LICENSE_KEY`: Your New Relic license key.
 * `NEW_RELIC_NO_CONFIG_FILE`: Inhibit loading of the configuration file
   altogether. Use with care. This presumes that all important configuration
   will be available via environment variables, and some log messages
   assume that a config file exists.
-* `NEW_RELIC_LICENSE_KEY`: Your New Relic license key.
+* `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
+  New Relic's servers. This value can be also be a comma-delimited list of
+  names.
+* `NEW_RELIC_HOME`: path to the directory in which you've placed newrelic.js.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including
   the filename. The agent will shut down the process if it can't create
   this file, and it creates the log file with the same umask of the
@@ -100,6 +93,12 @@ but for now, here's a list of the variables and their values:
   `error`, `warn`, `info`, `debug`, or `trace`. `debug` and `trace` are
   pretty chatty; unless you're helping New Relic figure out irregularities
   with the agent, you're probably best off using `info` or higher.
+
+For completeness, here's the rest of the list:
+
+* `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
+  temporarily disabling the agent while debugging other issues with your
+  code.
 * `NEW_RELIC_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within
   your application. Values are `true` or `false`.
 * `NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES`: Comma-delimited list of HTTP
@@ -131,7 +130,9 @@ Information about changes to the agent are in NEWS.md.
 
 ### Known issues:
 
-* The agent works only with Node.js 0.6 and newer.
+* The agent works only with Node.js 0.6 and newer. Certain features rely on
+  Node 0.8. Some features may behave differently between 0.8 and 0.10. The
+  agent is optimized for newer versions of Node.
 * The metric names displayed in New Relic are a work in progress. The
   flexibility of Node's HTTP handling and routing presents unique
   challenges to the New Relic data model. We're working on a set of
