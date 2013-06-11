@@ -1,3 +1,7 @@
+### v0.9.22 / beta-22 (2013-06-11):
+
+* Capture request URL before Express can mess with it.
+
 ### v0.9.21 / beta-21 (2013-06-04):
 
 * Don't try to connect without a license key.
