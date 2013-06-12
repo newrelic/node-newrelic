@@ -1,3 +1,13 @@
+### v0.9.22 / beta-22 (2013-06-11):
+
+* Capture request URL before Express can mess with it.
+
+### v0.9.21 / beta-21 (2013-06-04):
+
+* Don't try to connect without a license key.
+* Clear out previous connection listeners on failed connection attempts.
+* Don't crash when normalizing paths without a leading slash.
+
 ### v0.9.20 / beta-20 (2013-03-28):
 
 * The implementation of domains changed in Node 0.10.x, which necessitated

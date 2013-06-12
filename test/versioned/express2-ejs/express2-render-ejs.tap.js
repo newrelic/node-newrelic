@@ -27,7 +27,7 @@ var TEST_PATH = '/test'
   ;
 
 test("agent instrumentation of Express 2", function (t) {
-  t.plan(4);
+  t.plan(5);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent = helper.instrumentMockedAgent()
@@ -185,7 +185,7 @@ test("agent instrumentation of Express 2", function (t) {
     app.get(TEST_PATH, function (request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler");
-           setTimeout(function () { response.send(BODY); }, DELAY);
+      setTimeout(function () { response.send(BODY); }, DELAY);
     });
 
     app.listen(TEST_PORT, TEST_HOST, function ready() {
@@ -211,6 +211,40 @@ test("agent instrumentation of Express 2", function (t) {
         var timing = stats.total * 1000;
         t.ok(timing > DELAY - 50,
              "given some setTimeout slop, the request was long enough");
+
+        t.end();
+      });
+    });
+  });
+
+  t.test("should capture URL correctly when configured with a prefix",
+         {timeout : 2 * 1000},
+         function (t) {
+    var agent = helper.instrumentMockedAgent()
+      , app   = require('express').createServer()
+      ;
+
+    this.tearDown(function () {
+      app.close();
+      helper.unloadAgent(agent);
+    });
+
+    app.use(TEST_PATH, function (request, response) {
+      t.ok(agent.getTransaction(),
+           "the transaction should be visible inside the Express handler");
+      t.equal('/ham', request.url);
+      response.send(BODY);
+    });
+
+    app.listen(TEST_PORT, TEST_HOST, function ready() {
+      request.get(TEST_URL + '/ham', function (error, response, body) {
+        if (error) t.fail(error);
+
+        t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
+        t.equals(body, BODY, "response and original page text match");
+
+        var stats = agent.metrics.getMetric('WebTransaction/Uri/test/ham').stats;
+        t.ok(stats, "Statistics should have been found for request.");
 
         t.end();
       });
