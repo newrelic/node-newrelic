@@ -30,7 +30,7 @@ describe("DataSender", function () {
     var expected = 'http://collector.newrelic.com:80' +
                    '/agent_listener/invoke_raw_method' +
                    '?marshal_format=json&protocol_version=9&' +
-                   'license_key=&method=test&agent_run_id=12';
+                   'license_key=&method=test&run_id=12';
     expect(sender.getURL('test')).equal(expected);
   });
 
@@ -133,7 +133,7 @@ describe("DataSender", function () {
     it("should always add the agent run ID, if set", function () {
       expect(sender.agentRunId).equal(TEST_RUN_ID);
 
-      var runPattern = new RegExp('agent_run_id=' + TEST_RUN_ID);
+      var runPattern = new RegExp('run_id=' + TEST_RUN_ID);
       expect(sender.getURL('TEST_METHOD')).match(runPattern);
     });
 

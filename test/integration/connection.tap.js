@@ -58,6 +58,17 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
       configUpdated = true;
     });
 
+    connection.on('connect', function (response) {
+      t.ok(connectResponseCalled, "already got redirect host when connected");
+      t.ok(handshakeResponseCalled, "already fetched agent configuration when connected");
+      t.ok(configUpdated, "configuration updated at connect time");
+      t.ok(response, "agent configuration made it through to the connect event");
+      t.ok(connection.agentRunId, "agent run ID is set after connect");
+
+      connected = true;
+      agent.stop();
+    });
+
     connection.on('end', function () {
       t.ok(connectResponseCalled, "already got redirect host at connection end time");
       t.ok(handshakeResponseCalled, "already performed handshake at connection end time");
@@ -86,17 +97,6 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
       closed = true;
 
       t.end();
-    });
-
-    connection.on('connect', function (response) {
-      t.ok(connectResponseCalled, "already got redirect host when connected");
-      t.ok(handshakeResponseCalled, "already fetched agent configuration when connected");
-      t.ok(configUpdated, "configuration updated at connect time");
-      t.ok(response, "agent configuration made it through to the connect event");
-      t.ok(connection.agentRunId, "agent run ID is set after connect");
-
-      connected = true;
-      agent.stop();
     });
   });
 

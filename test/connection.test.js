@@ -23,7 +23,7 @@ function generateSubmissionURL(protocolVersion, key, method, runId) {
     '&protocol_version=' + protocolVersion +
     '&license_key=' + key +
     '&method=' + method +
-    '&agent_run_id=' + runId;
+    '&run_id=' + runId;
 }
 
 describe("CollectorConnection", function () {
