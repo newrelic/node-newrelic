@@ -51,9 +51,8 @@ test("agent instrumentation of Express 3", function (t) {
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
-        var contentType = 'application/json; charset=utf-8';
-        t.equal(response.headers['content-type'], contentType,
-                "got correct content type");
+        t.ok(/application\/json/.test(response.headers['content-type']),
+             "got correct content type");
         t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.");
 
         var stats;
