@@ -1,0 +1,18 @@
+{
+  "name": "node-0-10-setImmediate",
+  "version": "0.0.0",
+  "description": "tests for setImmediate 0.9.x",
+  "main": "transaction-trace-async-propagation.tap.js",
+  "scripts": {
+    "test": "tap transaction-trace-async-propagation.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "engines": {
+    "node": "0.9.2"
+  },
+  "devDependencies": {
+    "tap": "*"
+  },
+  "private": true
+}
