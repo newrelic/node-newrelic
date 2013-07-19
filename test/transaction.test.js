@@ -102,7 +102,7 @@ describe("Transaction", function () {
 
   describe("when dealing with individual metrics", function () {
     it("should add metrics by name", function () {
-      var tt = agent.createTransaction();
+      var tt = new Transaction(agent);
 
       tt.measure('Custom/Test01');
       should.exist(tt.getMetrics('Custom/Test01'));
@@ -114,7 +114,7 @@ describe("Transaction", function () {
        function () {
       var TRACE_NAME = 'Custom/Test06'
         , SLEEP_DURATION = 43
-        , tt = agent.createTransaction()
+        , tt = new Transaction(agent)
         ;
 
       tt.measure(TRACE_NAME, null, SLEEP_DURATION);
@@ -126,7 +126,7 @@ describe("Transaction", function () {
     });
 
     it("should allow manual setting of metric durations", function () {
-      var tt = agent.createTransaction();
+      var tt = new Transaction(agent);
 
       tt.measure('Custom/Test16', null, 65);
       tt.end();

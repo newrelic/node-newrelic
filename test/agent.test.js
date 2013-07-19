@@ -9,6 +9,7 @@ var path         = require('path')
   , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
       .child({component : 'TEST'})
   , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
 describe("the New Relic agent", function () {
@@ -109,15 +110,8 @@ describe("the New Relic agent", function () {
       should.exist(agent.metrics.normalizer);
     });
 
-    it("creates its own transactions directly", function () {
-      expect(function () { agent.createTransaction(); }).not.throws();
-    });
-
     it("should look up transactions itself", function () {
-      var transaction;
-      expect(function () {
-        transaction = agent.createTransaction();
-      }).not.throws();
+      expect(function () { agent.getTransaction(); }).not.throws();
     });
 
     it("should have debugging configuration by default", function () {
@@ -167,7 +161,7 @@ describe("the New Relic agent", function () {
             return done();
           });
 
-          var transaction = debugged.createTransaction();
+          var transaction = new Transaction(debugged);
           transaction.end();
         });
       });
@@ -222,7 +216,7 @@ describe("the New Relic agent", function () {
       });
 
       it("should capture the trace off a finished transaction", function (done) {
-        var trans = agent.createTransaction();
+        var trans = new Transaction(agent);
         // need to initialize the trace
         trans.getTrace();
         trans.measureWeb('/ham/update/3', 200, 2100);
