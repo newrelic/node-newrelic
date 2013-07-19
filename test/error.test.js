@@ -180,11 +180,18 @@ describe("ErrorTracer", function () {
   });
 
   describe("when monitoring function application for errors", function () {
-    var transaction;
+    var agent
+      , transaction
+      ;
 
     beforeEach(function () {
-      var agent = helper.loadMockedAgent();
+      agent = helper.loadMockedAgent();
       transaction = new Transaction(agent);
+    });
+
+    afterEach(function () {
+      transaction.end();
+      helper.unloadAgent(agent);
     });
 
     it("should rethrow the exception", function () {
@@ -211,6 +218,7 @@ describe("ErrorTracer", function () {
     describe("when domains are available", function () {
       var mochaHandlers
         , agent
+        , transaction
         , domain
         , active
         , json
@@ -236,7 +244,8 @@ describe("ErrorTracer", function () {
           });
 
           var disruptor = agent.tracer.transactionProxy(function () {
-            domain = agent.getTransaction().trace.domain;
+            transaction = agent.getTransaction();
+            domain = transaction.trace.domain;
             active = process.domain;
 
             // trigger the domain
@@ -249,12 +258,20 @@ describe("ErrorTracer", function () {
 
       after(function () {
         // ...but be sure to re-enable mocha's error handler
+        transaction.end();
+        helper.unloadAgent(agent);
         process._events['uncaughtException'] = mochaHandlers;
       });
 
-      it("should put transactions in domains", function () {
+      it("should bind domain to trace", function () {
         should.exist(domain);
+      });
+
+      it("should have a domain active", function () {
         should.exist(active);
+      });
+
+      it("the error-handling domain should be the active domain", function () {
         expect(domain).equal(active);
       });
 
@@ -262,7 +279,7 @@ describe("ErrorTracer", function () {
         expect(agent.errors.errors.length).equal(1);
       });
 
-      describe("when handed an error from a domain", function () {
+      describe("and an error is traced", function () {
         it("should find the error", function () {
           should.exist(json);
         });
@@ -292,6 +309,5 @@ describe("ErrorTracer", function () {
         });
       });
     });
-
   }
 });

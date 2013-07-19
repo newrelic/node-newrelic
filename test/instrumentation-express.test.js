@@ -19,6 +19,10 @@ describe("an instrumented Express application", function () {
                                      'instrumentation', 'express'));
     });
 
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
     it("when passed no module", function () {
       expect(function () { initialize(agent); }).not.throws();
     });
@@ -80,22 +84,29 @@ describe("an instrumented Express application", function () {
     it("should trace http.ServerResponse.prototype.render", function (done) {
       should.exist(http.ServerResponse.prototype.render);
       helper.runInTransaction(agent, function () {
-        var transaction = agent.getTransaction();
+        var transaction = agent.getTransaction()
+          // FIXME: too quick, too dirty
+          , res         = http.ServerResponse.prototype
+          ;
 
-        var res = http.ServerResponse.prototype; // yuck
-        expect(res.render.call(res, 'TEST', {}, function () {
-          process.nextTick(function () {
-            var json     = transaction.getTrace().root.toJSON()
-              , children = json[4]
-              , render   = children[0]
-              , name     = render[2]
-              ;
+        function finalizer() {
+          var json     = transaction.getTrace().root.toJSON()
+            , children = json[4]
+            , render   = children[0]
+            , name     = render[2]
+            ;
 
-            expect(name).equal('View/TEST/Rendering');
+          expect(name).equal('View/TEST/Rendering');
+          transaction.end();
 
-            return done();
-          });
-        })).equal('rendered');
+          return done();
+        }
+
+        function handler() {
+          process.nextTick(finalizer);
+        }
+
+        expect(res.render.call(res, 'TEST', {}, handler)).equal('rendered');
       });
     });
 
@@ -115,6 +126,7 @@ describe("an instrumented Express application", function () {
               ;
 
             expect(name).equal('View/TEST/Rendering');
+            transaction.end();
 
             return done();
           });
@@ -139,6 +151,7 @@ describe("an instrumented Express application", function () {
             ;
 
           expect(name).equal('View/TEST/Rendering');
+          transaction.end();
 
           return done();
         });
@@ -206,6 +219,7 @@ describe("an instrumented Express application", function () {
               ;
 
             expect(name).equal('View/TEST/Rendering');
+            transaction.end();
 
             return done();
           });
@@ -228,6 +242,7 @@ describe("an instrumented Express application", function () {
               ;
 
             expect(name).equal('View/TEST/Rendering');
+            transaction.end();
 
             return done();
           });
@@ -250,6 +265,7 @@ describe("an instrumented Express application", function () {
             ;
 
           expect(name).equal('View/TEST/Rendering');
+          transaction.end();
 
           return done();
         });

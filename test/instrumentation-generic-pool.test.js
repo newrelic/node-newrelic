@@ -17,6 +17,10 @@ describe("agent instrumentation of generic-pool", function () {
                                    'instrumentation', 'generic-pool'));
   });
 
+  after(function () {
+    helper.unloadAgent(agent);
+  });
+
   describe("shouldn't cause bootstrapping to fail", function () {
     it("when passed no module", function () {
       expect(function () { initialize(agent); }).not.throws();

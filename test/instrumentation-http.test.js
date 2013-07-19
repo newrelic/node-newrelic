@@ -29,6 +29,10 @@ describe("built-in http module instrumentation", function () {
                                      'instrumentation', 'core', 'http'));
     });
 
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
     it("when passed no module", function () {
       expect(function () { initialize(agent); }).not.throws();
     });
@@ -77,10 +81,12 @@ describe("built-in http module instrumentation", function () {
               expect(data).equal(PAYLOAD);
             });
 
-            response.writeHead(200,
-                               {'Content-Length' : PAGE.length,
-                                 'Content-Type'   : 'text/html'});
-                                 response.end(PAGE);
+            response.writeHead(
+              200,
+              {'Content-Length' : PAGE.length,
+               'Content-Type'   : 'text/html'}
+            );
+            response.end(PAGE);
           });
 
           req.on('error', function (error) {
@@ -94,7 +100,7 @@ describe("built-in http module instrumentation", function () {
         server.listen(8123, 'localhost', function () {
           // The transaction doesn't get created until after the instrumented
           // server handler fires.
-          expect(agent.getTransaction()).equal(undefined);
+          should.not.exist(agent.getTransaction());
 
           fetchedBody = '';
           var req = http.request({port   : 8123,
@@ -135,12 +141,12 @@ describe("built-in http module instrumentation", function () {
       fetchedStatusCode.should.equal(200);
 
       should.exist(fetchedBody);
-      fetchedBody.should.equal(PAGE);
+      expect(fetchedBody).equal(PAGE);
     });
 
     it("should record unscoped path stats after a normal request", function () {
       var stats = agent.metrics.getOrCreateMetric('WebTransaction/Uri/path').stats;
-      stats.callCount.should.equal(1);
+      expect(stats.callCount).equal(1);
     });
 
     it("should indicate that the http dispatcher is in play", function (done) {
@@ -156,7 +162,7 @@ describe("built-in http module instrumentation", function () {
     it("should record unscoped HTTP dispatcher stats after a normal request",
        function () {
       var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
-      stats.callCount.should.equal(2);
+      expect(stats.callCount).equal(2);
     });
 
     it("should associate outbound HTTP requests with the inbound transaction",
@@ -241,10 +247,8 @@ describe("built-in http module instrumentation", function () {
         });
 
         server.listen(8183, function () {
-          helper.runInTransaction(agent, function () {
-            http.get({host : 'localhost', port : 8183}, function () {
-              throw new Error("whoah");
-            });
+          http.get({host : 'localhost', port : 8183}, function () {
+            throw new Error("whoah");
           });
         });
       });

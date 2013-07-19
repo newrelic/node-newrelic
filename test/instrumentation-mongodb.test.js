@@ -7,16 +7,6 @@ var path   = require('path')
   ;
 
 describe("agent instrumentation of MongoDB", function () {
-  var agent;
-
-  beforeEach(function () {
-    agent = helper.instrumentMockedAgent();
-  });
-
-  afterEach(function () {
-    helper.unloadAgent(agent);
-  });
-
   describe("shouldn't cause bootstrapping to fail", function () {
     var agent
       , initialize
@@ -26,6 +16,10 @@ describe("agent instrumentation of MongoDB", function () {
       agent = helper.loadMockedAgent();
       initialize = require(path.join(__dirname, '..', 'lib',
                                      'instrumentation', 'mongodb'));
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
     });
 
     it("when passed no module", function () {

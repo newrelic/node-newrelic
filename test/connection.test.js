@@ -101,6 +101,7 @@ describe("CollectorConnection", function () {
 
       var transaction = new Transaction(agent);
       transaction.measureWeb('/test-request/churro', 400, 5, 5);
+      transaction.end();
 
       errors.onTransactionFinished(transaction);
       connection.sendTracedErrors(errors.errors);
@@ -137,6 +138,7 @@ describe("CollectorConnection", function () {
       child.end();
       parent.end();
       transaction.getTrace().end();
+      transaction.end();
 
       var traces = [transaction.getTrace()];
 
@@ -156,6 +158,7 @@ describe("CollectorConnection", function () {
 
       var transaction = new Transaction(agent);
       transaction.measureWeb('/bros/steak', 200, 487, 28);
+      transaction.end();
 
       var trace = new SQLTrace('SELECT dude FROM bro WHERE meat = :ham',
                                transaction,

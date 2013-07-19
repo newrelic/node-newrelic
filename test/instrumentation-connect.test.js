@@ -21,6 +21,10 @@ describe("an instrumented Connect stack", function () {
                                      'instrumentation', 'connect'));
     });
 
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
     it("when passed no module", function () {
       expect(function () { initialize(agent); }).not.throws();
     });

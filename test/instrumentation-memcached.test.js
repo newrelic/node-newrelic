@@ -18,6 +18,10 @@ describe("agent instrumentation of memcached", function () {
                                      'instrumentation', 'memcached'));
     });
 
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
     it("when passed no module", function () {
       expect(function () { initialize(agent); }).not.throws();
     });

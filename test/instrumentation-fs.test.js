@@ -62,6 +62,8 @@ describe("built-in fs module instrumentation", function () {
         if (error) return done(error); // habits die hard
 
         var transaction = agent.getTransaction();
+        should.exist(transaction, "should find transaction inside readdir");
+
         agent.once('transactionFinished', function () {
           var metric = agent.metrics.getMetric('Filesystem/ReadDir/stub');
           should.exist(metric);

@@ -14,7 +14,10 @@ function FakeConnection () {
 
 FakeConnection.prototype.on = function (event, callback) {
   if (event === 'connect') return callback();
-  if (event === 'data') return this.on_data = callback;
+  if (event === 'data') {
+    this.on_data = callback;
+    return callback;
+  }
 };
 
 FakeConnection.prototype.setNoDelay = function (bagel) {
@@ -37,6 +40,10 @@ describe("agent instrumentation of Redis", function () {
       agent = helper.loadMockedAgent();
       initialize = require(path.join(__dirname, '..', 'lib',
                                      'instrumentation', 'redis'));
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
     });
 
     it("when passed no module", function () {
