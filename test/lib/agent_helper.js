@@ -20,6 +20,8 @@ var KEYPATH  = path.join(__dirname, 'test-key.key')
   , CAPATH   = path.join(__dirname, 'ca-certificate.crt')
   ;
 
+var agents = [];
+
 var helper = module.exports = {
   /**
    * Set up an agent that won't try to connect to the collector, but also
@@ -45,6 +47,12 @@ var helper = module.exports = {
 
     var agent = new Agent(options);
     agent.setupConnection();
+
+    if (agents.length > 0) {
+      throw new Error("Attempt to get agent without clearing out old one!");
+    }
+    agents.push(agent);
+
     return agent;
   },
 
@@ -72,6 +80,8 @@ var helper = module.exports = {
     agent.stop();
     shimmer.unpatchModule();
     shimmer.unwrapAll();
+
+    agents.pop();
   },
 
   /**
