@@ -33,12 +33,10 @@ describe("the New Relic agent", function () {
     });
 
     it("should retry on connection failure", function (done) {
-      // _nextConnectAttempt requires agent.connection exist
+      // _nextConnectAttempt requires that agent.connection exist
       agent.setupConnection();
 
-      agent._failAndRetry = function () {
-        return done();
-      };
+      agent._failAndRetry = function () { return done(); };
 
       var backoff = agent.nextBackoff();
       expect(backoff).eql({interval : 15, warn : false, error : false});
@@ -53,9 +51,7 @@ describe("the New Relic agent", function () {
       // _nextConnectAttempt requires agent.connection exist
       agent.setupConnection();
 
-      agent._failAndShutdown = function () {
-        return done();
-      };
+      agent._failAndShutdown = function () { return done(); };
       agent.connectionFailures = 6;
 
       var backoff = agent.nextBackoff();
