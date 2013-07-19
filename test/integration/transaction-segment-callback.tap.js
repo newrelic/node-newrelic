@@ -4,7 +4,6 @@ var path    = require('path')
   , tap     = require('tap')
   , test    = tap.test
   , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , Context = require(path.join(__dirname, '..', '..', 'lib', 'context'))
   , Tracer  = require(path.join(__dirname, '..', '..', 'lib',
                                 'transaction', 'tracer', 'debug'))
   ;
@@ -18,7 +17,6 @@ var path    = require('path')
 
 // set up shared context
 var agent = helper.loadMockedAgent();
-var context = new Context(true); // want to ensure that enter/exit are paired
 
 /* a. synchronous handler
  *
@@ -32,11 +30,11 @@ var context = new Context(true); // want to ensure that enter/exit are paired
 test("a. synchronous handler", function (t) {
   t.plan(8);
 
-  var tracer = new Tracer(agent, context);
+  var tracer = new Tracer(agent);
 
   var transaction;
   var handler = function (multiplier, multiplicand) {
-    transaction = context.state.getTransaction();
+    transaction = tracer.context.state.getTransaction();
     t.ok(transaction, "should find transaction in handler");
 
     return multiplier * multiplicand;
@@ -91,11 +89,11 @@ test("a. synchronous handler", function (t) {
 test("b. asynchronous handler", function (t) {
   t.plan(5);
 
-  var tracer = new Tracer(agent, context);
+  var tracer = new Tracer(agent);
 
   var transaction;
   var handler = function (multiplier) {
-    transaction = context.state.getTransaction();
+    transaction = tracer.context.state.getTransaction();
 
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
@@ -175,11 +173,11 @@ test("b. asynchronous handler", function (t) {
 test("c. two overlapping executions of an asynchronous handler", function (t) {
   t.plan(11);
 
-  var tracer = new Tracer(agent, context);
+  var tracer = new Tracer(agent);
 
   var transactions = [];
   var handler = function (multiplier) {
-    transactions.push(context.state.getTransaction());
+    transactions.push(tracer.context.state.getTransaction());
 
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
@@ -258,7 +256,7 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
 test("d. synchronous handler with synchronous subsidiary handler", function (t) {
   t.plan(5);
 
-  var tracer = new Tracer(agent, context);
+  var tracer = new Tracer(agent);
 
   var subsidiary = function (value, addend) {
     return value + addend;
@@ -267,7 +265,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
 
   var transaction;
   var handler = function (multiplier, multiplicand) {
-    transaction = context.state.getTransaction();
+    transaction = tracer.context.state.getTransaction();
     var product = multiplier * multiplicand;
 
     return wrappedSubsidiary(product, 7);
@@ -341,7 +339,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
 test("e. asynchronous handler with an asynchronous subsidiary handler", function (t) {
   t.plan(5);
 
-  var tracer = new Tracer(agent, context);
+  var tracer = new Tracer(agent);
 
   var subsidiary = function (value, next) {
     var inner = function (addend, divisor) {
@@ -354,7 +352,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
 
   var transaction;
   var handler = function (multiplier, multiplicand, callback) {
-    transaction = context.state.getTransaction();
+    transaction = tracer.context.state.getTransaction();
     var next = function (value, divisor) {
       return value / divisor;
     };
@@ -472,7 +470,7 @@ test("f. two overlapping executions of an async handler with an async subsidiary
      function (t) {
   t.plan(11);
 
-  var tracer = new Tracer(agent, context);
+  var tracer = new Tracer(agent);
 
   var subsidiary = function (value, next) {
     var inner = function (addend, divisor) {
@@ -485,7 +483,7 @@ test("f. two overlapping executions of an async handler with an async subsidiary
 
   var transactions = [];
   var handler = function (multiplier, multiplicand, callback) {
-    transactions.push(context.state.getTransaction());
+    transactions.push(tracer.context.state.getTransaction());
 
     var next = function (value, divisor) {
       return value / divisor;
