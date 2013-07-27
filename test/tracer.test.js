@@ -4,8 +4,6 @@ var path    = require('path')
   , chai    = require('chai')
   , expect  = chai.expect
   , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , Context = require(path.join(__dirname, '..', 'lib', 'context'))
-  , Tracer  = require(path.join(__dirname, '..', 'lib', 'transaction', 'tracer'))
   ;
 
 describe('Tracer', function () {
@@ -16,6 +14,10 @@ describe('Tracer', function () {
   beforeEach(function () {
     agent  = helper.loadMockedAgent();
     tracer = agent.tracer;
+  });
+
+  afterEach(function () {
+    helper.unloadAgent(agent);
   });
 
   describe("when proxying a trace segment", function () {
