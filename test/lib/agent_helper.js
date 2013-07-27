@@ -20,7 +20,7 @@ var KEYPATH  = path.join(__dirname, 'test-key.key')
   , CAPATH   = path.join(__dirname, 'ca-certificate.crt')
   ;
 
-var agent;
+var _agent;
 
 var helper = module.exports = {
   /**
@@ -35,7 +35,7 @@ var helper = module.exports = {
    */
   loadMockedAgent : function loadMockedAgent(options) {
     if (!options) options = {};
-    if (agent) throw agent.__created;
+    if (_agent) throw _agent.__created;
 
     var connection = new CollectorConnection({
       config : {
@@ -46,11 +46,11 @@ var helper = module.exports = {
     sinon.stub(connection, 'connect');
     options.connection = connection;
 
-    agent = new Agent(options);
-    agent.__created = new Error("Only one agent at a time! This one was created at:");
-    agent.setupConnection();
+    _agent = new Agent(options);
+    _agent.__created = new Error("Only one agent at a time! This one was created at:");
+    _agent.setupConnection();
 
-    return agent;
+    return _agent;
   },
 
   /**
@@ -78,7 +78,7 @@ var helper = module.exports = {
     shimmer.unpatchModule();
     shimmer.unwrapAll();
 
-    agent = null;
+    if (agent === _agent) _agent = null;
   },
 
   /**
