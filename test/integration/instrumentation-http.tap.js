@@ -164,8 +164,8 @@ test("built-in http module instrumentation shouldn't swallow errors",
     };
 
     http.get(options, function (res) {
-      t.equal(agent.errors.errors.length, 2,
-              "FIXME: should have recorded an error (2 for now)");
+      t.equal(agent.errors.errors.length, 1, "should have recorded an error");
+      console.dir(agent.errors.errors[0]);
       t.equal(res.statusCode, 501, "got expected (error) status code");
 
       t.end();
