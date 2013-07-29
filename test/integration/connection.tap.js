@@ -10,7 +10,7 @@ var path         = require('path')
   ;
 
 test("CollectorConnection should connect to staging-collector.newrelic.com",
-     {timeout : 5 * 1000},
+     {timeout : 30 * 1000},
      function (t) {
   var config = configurator.initialize(logger, {
         'config' : {
