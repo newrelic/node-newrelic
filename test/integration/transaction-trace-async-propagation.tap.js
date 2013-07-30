@@ -13,6 +13,11 @@ test("a. async transaction with setTimeout",
   t.plan(1);
 
   var agent = helper.loadMockedAgent();
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function handler() {
     t.ok(agent.getTransaction(), "transaction should be visible");
   }
@@ -30,6 +35,10 @@ test("b. async transaction with setInterval",
     , handle
     ;
 
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function handler() {
     count += 1;
     if (count > 2) clearInterval(handle);
@@ -45,6 +54,11 @@ test("d. async transaction with process.nextTick",
   t.plan(1);
 
   var agent = helper.loadMockedAgent();
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function handler() {
     t.ok(agent.getTransaction(), "transaction should be visible");
   }
@@ -60,6 +74,10 @@ test("e. async transaction with EventEmitter.prototype.emit",
   var agent = helper.loadMockedAgent()
     , ee    = new EventEmitter()
     ;
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
 
   function handler() {
     t.ok(agent.getTransaction(), "transaction should be visible");
@@ -80,6 +98,10 @@ test("f. two overlapping runs of an async transaction with setTimeout",
     , second
     , agent = helper.loadMockedAgent()
     ;
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
 
   function handler(id) {
     t.ok(agent.getTransaction(), "transaction should be visible");
@@ -106,6 +128,10 @@ test("g. two overlapping runs of an async transaction with setInterval",
   t.plan(14);
 
   var agent = helper.loadMockedAgent();
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
 
   function runInterval() {
     var count = 0
@@ -142,6 +168,10 @@ test("i. two overlapping runs of an async transaction with process.nextTick",
     , agent = helper.loadMockedAgent()
     ;
 
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function handler(id) {
     t.ok(agent.getTransaction(), "transaction should be visible");
     t.equal(agent.getTransaction().id, id, "transaction matches");
@@ -170,6 +200,10 @@ test("j. two overlapping runs of an async transaction with EventEmitter.prototyp
     , ee    = new EventEmitter()
     ;
 
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function handler() {
     t.ok(agent.getTransaction(), "transaction should be visible");
   }
@@ -189,6 +223,11 @@ test("k. async transaction with an async sub-call with setTimeout",
   t.plan(5);
 
   var agent = helper.loadMockedAgent();
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function inner(callback) {
     setTimeout(function () {
       t.ok(agent.getTransaction(), "transaction should -- yep -- still be visible");
@@ -220,6 +259,10 @@ test("l. async transaction with an async sub-call with setInterval",
     , innerHandle
     ;
 
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function inner(callback) {
     innerHandle = setInterval(function () {
       clearInterval(innerHandle);
@@ -249,6 +292,11 @@ test("n. async transaction with an async sub-call with process.nextTick",
   t.plan(5);
 
   var agent = helper.loadMockedAgent();
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
+
   function inner(callback) {
     process.nextTick(function () {
       t.ok(agent.getTransaction(), "transaction should -- yep -- still be visible");
@@ -279,6 +327,10 @@ test("o. async transaction with an async sub-call with EventEmitter.prototype.em
     , outer = new EventEmitter()
     , inner = new EventEmitter()
     ;
+
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+  });
 
   inner.on('pong', function (callback) {
     t.ok(agent.getTransaction(), "transaction should still be visible");
