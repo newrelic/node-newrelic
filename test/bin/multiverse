@@ -39,7 +39,7 @@ function onlyDirectories(entries) {
 }
 
 function visit(directories) {
-  return Q.allResolved(directories.map(installAndTest));
+  return Q.allSettled(directories.map(installAndTest));
 }
 
 function finished() {

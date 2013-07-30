@@ -53,7 +53,7 @@ function install(visitor, base, target) {
 }
 
 function visit(directories) {
-  return Q.allResolved(directories.map(install.bind(null, runner, base)));
+  return Q.allSettled(directories.map(install.bind(null, runner, base)));
 }
 
 function finished() {
