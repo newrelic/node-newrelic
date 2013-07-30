@@ -34,7 +34,7 @@ test("a. synchronous handler", function (t) {
 
   var transaction;
   var handler = function (multiplier, multiplicand) {
-    transaction = tracer.context.state.getTransaction();
+    transaction = tracer.getState().getTransaction();
     t.ok(transaction, "should find transaction in handler");
 
     return multiplier * multiplicand;
@@ -93,7 +93,7 @@ test("b. asynchronous handler", function (t) {
 
   var transaction;
   var handler = function (multiplier) {
-    transaction = tracer.context.state.getTransaction();
+    transaction = tracer.getState().getTransaction();
 
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
@@ -177,7 +177,7 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
 
   var transactions = [];
   var handler = function (multiplier) {
-    transactions.push(tracer.context.state.getTransaction());
+    transactions.push(tracer.getState().getTransaction());
 
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
@@ -265,7 +265,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
 
   var transaction;
   var handler = function (multiplier, multiplicand) {
-    transaction = tracer.context.state.getTransaction();
+    transaction = tracer.getState().getTransaction();
     var product = multiplier * multiplicand;
 
     return wrappedSubsidiary(product, 7);
@@ -352,7 +352,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
 
   var transaction;
   var handler = function (multiplier, multiplicand, callback) {
-    transaction = tracer.context.state.getTransaction();
+    transaction = tracer.getState().getTransaction();
     var next = function (value, divisor) {
       return value / divisor;
     };
@@ -483,7 +483,7 @@ test("f. two overlapping executions of an async handler with an async subsidiary
 
   var transactions = [];
   var handler = function (multiplier, multiplicand, callback) {
-    transactions.push(tracer.context.state.getTransaction());
+    transactions.push(tracer.getState().getTransaction());
 
     var next = function (value, divisor) {
       return value / divisor;
