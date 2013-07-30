@@ -49,17 +49,20 @@ test("memcached instrumentation should find memcached calls in the transaction t
           var trace = transaction.getTrace();
           t.ok(trace, "trace should exist");
           t.ok(trace.root, "root element should exist");
-          t.equals(trace.root.children.length, 1, "there should be only one child of the root");
+          t.equals(trace.root.children.length, 1,
+                   "there should be only one child of the root");
 
           var setSegment = trace.root.children[0];
           t.ok(setSegment, "trace segment for set should exist");
           t.equals(setSegment.name, "Memcache/set", "should register the set");
-          t.equals(setSegment.children.length, 1, "set should have an only child");
+          t.equals(setSegment.children.length, 1,
+                   "set should have an only child");
 
           var getSegment = setSegment.children[0];
           t.ok(getSegment, "trace segment for get should exist");
           t.equals(getSegment.name, "Memcache/get", "should register the get");
-          t.equals(getSegment.children.length, 0, "get should leave us here at the end");
+          t.equals(getSegment.children.length, 0,
+                   "get should leave us here at the end");
 
           t.end();
         });
