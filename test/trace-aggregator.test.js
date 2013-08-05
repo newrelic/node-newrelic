@@ -226,7 +226,7 @@ describe('TraceAggregator', function () {
 
   it("should not collect traces for transactions that don't exceed explicit trace threshold", function () {
     var BELOW_THRESHOLD = 29;
-    var THRESHOLD = 0.030;
+    var THRESHOLD = 30;
 
     var config = configurator.initialize(logger, {
       config : {
