@@ -169,7 +169,10 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
+      , trace       = transaction.getTrace()
       ;
+
+    should.exist(trace);
 
     aggregator.reported = 10; // needed to override "first 5"
 
@@ -196,7 +199,10 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
+      , trace       = transaction.getTrace()
       ;
+
+    should.exist(trace);
 
     aggregator.reported = 10; // needed to override "first 5"
 
