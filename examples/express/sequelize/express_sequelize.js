@@ -3,13 +3,14 @@
 require('newrelic');
 
 var path      = require('path')
+  , http      = require('http')
   , architect = require('architect')
   , express   = require('express')
   , logger    = require('../../../lib/logger').child({component : 'express_sequelize'})
   ;
 
 function bootstrapExpress(Model) {
-  var app = express.createServer();
+  var app = express();
 
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
@@ -46,7 +47,8 @@ function bootstrapExpress(Model) {
     });
   });
 
-  app.listen(8088, 'localhost', function () {
+  var server = http.createServer(app);
+  server.listen(8088, 'localhost', function () {
     console.info("Express + Sequelize server up and ready for connections.");
     logger.info("Express + Sequelize server up and ready for connections.");
   });
