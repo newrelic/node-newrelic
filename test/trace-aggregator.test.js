@@ -6,8 +6,10 @@ var path            = require('path')
   , should          = chai.should()
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
   , configurator    = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger          = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
-  , TraceAggregator = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'aggregator'))
+  , logger          = require(path.join(__dirname, '..', 'lib', 'logger'))
+                        .child({component : 'TEST'})
+  , TraceAggregator = require(path.join(__dirname, '..', 'lib',
+                                        'transaction', 'trace', 'aggregator'))
   , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
@@ -33,7 +35,8 @@ describe('TraceAggregator', function () {
   });
 
   it("should require a configuration at startup time", function () {
-    expect(function () { var aggregator = new TraceAggregator(); }).throws();
+    var aggregator;
+    expect(function () { aggregator = new TraceAggregator(); }).throws();
     var config = configurator.initialize(logger, {
       config : {
         transaction_tracer : {
@@ -42,7 +45,7 @@ describe('TraceAggregator', function () {
       }
     });
 
-    expect(function () { var aggregator = new TraceAggregator(config); }).not.throws();
+    expect(function () { aggregator = new TraceAggregator(config); }).not.throws();
   });
 
   describe("with top n support", function () {
@@ -66,20 +69,23 @@ describe('TraceAggregator', function () {
       expect(aggregator.capacity).equal(TOP_N);
     });
 
-    it("should default to tracking the slowest transaction in a harvest period if top_n is undefined", function () {
+    it("should trackthe slowest transaction in a harvest period if top_n is undefined",
+       function () {
       var aggregator = new TraceAggregator(config);
 
       expect(aggregator.capacity).equal(1);
     });
 
-    it("should default to tracking the slowest transaction in a harvest period if top_n is 0", function () {
+    it("should track the slowest transaction in a harvest period if top_n is 0",
+       function () {
       config.transaction_tracer.top_n = 0;
       var aggregator = new TraceAggregator(config);
 
       expect(aggregator.capacity).equal(1);
     });
 
-    it("should only save a trace for an existing scope if new one is slower", function () {
+    it("should only save a trace for an existing scope if new one is slower",
+       function () {
       var URI = '/simple';
       var aggregator  = new TraceAggregator(config);
       aggregator.reported = 10; // needed to override "first 5"
@@ -163,7 +169,6 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
-      , trace       = transaction.getTrace()
       ;
 
     aggregator.reported = 10; // needed to override "first 5"
@@ -191,7 +196,6 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
-      , trace       = transaction.getTrace()
       ;
 
     aggregator.reported = 10; // needed to override "first 5"
@@ -204,7 +208,8 @@ describe('TraceAggregator', function () {
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined);
   });
 
-  it("should collect traces for transactions that exceed explicit trace threshold", function () {
+  it("should collect traces for transactions that exceed explicit trace threshold",
+     function () {
     var ABOVE_THRESHOLD = 29;
     var THRESHOLD = 0.028;
 
@@ -224,7 +229,8 @@ describe('TraceAggregator', function () {
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD);
   });
 
-  it("should not collect traces for transactions that don't exceed explicit trace threshold", function () {
+  it("should not collect traces for transactions that don't exceed trace threshold",
+     function () {
     var BELOW_THRESHOLD = 29;
     var THRESHOLD = 30;
 
@@ -258,7 +264,9 @@ describe('TraceAggregator', function () {
     aggregator.once('harvest', function firstHarvest(empty) {
       expect(empty).equal(undefined);
 
-      expect(function addExists() { aggregator.add(createTransaction('/test', 4180)); }).not.throws();
+      expect(function addExists() {
+        aggregator.add(createTransaction('/test', 4180));
+      }).not.throws();
 
       aggregator.once('harvest', function finalHarvest(traceData) {
         expect(traceData).an('array');
@@ -274,7 +282,8 @@ describe('TraceAggregator', function () {
     expect(function harvestExists() { aggregator.harvest(); }).not.throws();
   });
 
-  it("should group transactions by the metric name associated with the transaction", function () {
+  it("should group transactions by the metric name associated with the transaction",
+     function () {
     var config = configurator.initialize(logger, {
       config : {
         transaction_tracer : {
@@ -352,7 +361,8 @@ describe('TraceAggregator', function () {
   });
 
   describe("when request timings are tracked over time", function () {
-    it("should reset timings after 5 harvest cycles with no slow traces", function (done) {
+    it("should reset timings after 5 harvest cycles with no slow traces",
+       function (done) {
       var config = configurator.initialize(logger, {
         config : {
           transaction_tracer : {
