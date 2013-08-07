@@ -59,7 +59,8 @@
     "qx": "*",
     "nave": "*",
     "should": "*",
-    "nock": "*"
+    "nock": "*",
+    "split": "*"
   },
   "repository": {
     "type": "git",
