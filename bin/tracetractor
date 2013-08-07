@@ -4,12 +4,12 @@
  * Use this script to extract the transaction traces from newrelic_agent.log.
  * It spits out annotated JSON objects that should make it easier to figure out
  * what goes where in the trace data. Use it with a JSON pretty printer (`npm
- * -g install json`) and you can pipe the output through that to get nicely
+ * -g install jsontool`) and you can pipe the output through that to get nicely
  *  indented output:
  *
  * ./bin/tracetractor < newrelic_agent.log | json -ga
  *
- * json also allows you to pick values out of the objects, i.e.
+ * jsontool also allows you to pick values out of the objects, i.e.
  *
  * ./bin/tracetractor < newrelic_agent.log | json -ga 'trace.root.children[0].name'
  */
