@@ -1,14 +1,14 @@
 'use strict';
 
-var path  = require('path')
-  , test  = require('tap').test
-  , nock  = require('nock')
-  , dns   = require ('dns')
-  , Agent = require(path.join(__dirname, '..', '..', 'lib', 'agent.js'))
+var path        = require('path')
+  , test        = require('tap').test
+  , nock        = require('nock')
+  , dns         = require ('dns')
+  , Agent       = require(path.join(__dirname, '..', '..', 'lib', 'agent.js'))
   , Transaction = require(path.join(__dirname, '..', '..', 'lib', 'transaction.js'))
   ;
 
-test("harvesting with a mocked collector that returns 503", function (t) {
+test("harvesting with a mocked collector that returns 503 after connect", function (t) {
   nock.disableNetConnect();
 
   dns.lookup('collector.newrelic.com', function (error, collector) {
