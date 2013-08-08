@@ -181,6 +181,30 @@ var helper = module.exports = {
     });
   },
 
+  /**
+   * Use c9/architect to bootstrap a Redis server for running integration
+   * tests.
+   *
+   * @param Function callback The operations to be performed while the server
+   *                          is running.
+   */
+  bootstrapRedis : function bootstrapRedis(callback) {
+    var redis = path.join(__dirname, 'architecture', 'redis.js');
+    var config = architect.loadConfig(redis);
+    architect.createApp(config, function (error, app) {
+      if (error) return helper.cleanRedis(app, function () {
+        return callback(error);
+      });
+
+      return callback(null, app);
+    });
+  },
+
+  cleanRedis : function cleanRedis(app, callback) {
+    var redis = app.getService('redisProcess');
+    redis.shutdown(callback);
+  },
+
   withSSL : function (callback) {
     fs.readFile(KEYPATH, function (error, key) {
       if (error) return callback(error);

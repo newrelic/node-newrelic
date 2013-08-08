@@ -26,7 +26,7 @@ module.exports = function setup(options, imports, register) {
   var logger = options.logger;
   logger.info('starting Redis');
 
-  redisProcess = spawn('redis-server', [],
+  redisProcess = spawn('redis-server', ['--save', ''],
                        {stdio : [process.stdin, 'pipe', 'pipe']});
 
   redisProcess.on('exit', function (code, signal) {
