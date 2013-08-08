@@ -73,13 +73,13 @@ describe('Trace', function () {
       0,
       DURATION,
       'ROOT',
-      {},
+      {nr_async_wait : true},
       [
         [
           0,
           DURATION,
           'WebTransaction/Uri/test',
-          {test : 'value'},
+          {nr_async_wait : true, test : 'value'},
           [
             // TODO: ensure that the ordering is correct WRT start time
             db.toJSON(),
@@ -91,7 +91,7 @@ describe('Trace', function () {
 
     var rootNode = [
       trace.root.timer.start / 1000,
-      {test : "value"},
+      {nr_async_wait : true, test : "value"},
       {}, // FIXME: custom parameters
       rootSegment,
       []  // FIXME: parameter groups
