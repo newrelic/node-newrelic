@@ -73,4 +73,19 @@ describe('Timer', function () {
 
     expect(timer.toRange()).deep.equal([start, start + 5]);
   });
+
+  it("should calculate start times relative to other timers", function () {
+    var first = new Timer();
+    first.begin();
+
+    var second = new Timer();
+    second.begin();
+
+    first.end();
+    second.end();
+
+    var delta;
+    expect(function () { delta = second.startedRelativeTo(first); }).not.throw();
+    expect(delta).a('number');
+  });
 });

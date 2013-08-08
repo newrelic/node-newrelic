@@ -52,7 +52,7 @@ describe('Trace', function () {
     var trace = transaction.getTrace();
     var start = trace.root.timer.start;
     expect(start, "root segment's start time").above(0);
-    trace.root.timer.setDurationInMillis(DURATION, 0);
+    trace.setDurationInMillis(DURATION, 0);
 
     var web = trace.addWeb(URL);
     // top-level element will share a duration with the quasi-ROOT node
@@ -102,7 +102,7 @@ describe('Trace', function () {
 
       // See docs on Transaction.generateJSON for what goes in which field.
       var expected = [
-        start,
+        0,
         DURATION,
         'WebTransaction/Uri/test',  // scope
         '/test',                    // URI path

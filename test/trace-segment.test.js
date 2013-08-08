@@ -11,8 +11,9 @@ var path         = require('path')
 
 describe("TraceSegment", function () {
   it("should be bound to a Trace", function () {
+    var segment;
     expect(function noTrace() {
-      var segment = new TraceSegment(null, 'UnitTest');
+      segment = new TraceSegment(null, 'UnitTest');
     }).throws();
 
     var success = new TraceSegment(new Trace('Test/TraceExample07'), 'UnitTest');
@@ -20,8 +21,9 @@ describe("TraceSegment", function () {
   });
 
   it("should call an optional callback function", function (done) {
+    var segment;
     expect(function noCallback() {
-      var segment = new TraceSegment(new Trace('Test/TraceExample08'), 'UnitTest');
+      segment = new TraceSegment(new Trace('Test/TraceExample08'), 'UnitTest');
     }).not.throws();
 
     var working = new TraceSegment(new Trace(new Transaction('Test/TraceExample09')), 'UnitTest', function () {
@@ -31,8 +33,9 @@ describe("TraceSegment", function () {
   });
 
   it("should be named", function () {
+    var segment;
     expect(function noName() {
-      var segment = new TraceSegment(new Trace('Test/TraceExample06'));
+      segment = new TraceSegment(new Trace('Test/TraceExample06'));
     }).throws();
     var success = new TraceSegment(new Trace('Test/TraceExample07'), 'UnitTest');
     expect(success.name).equal('UnitTest');
@@ -62,7 +65,7 @@ describe("TraceSegment", function () {
 
     before(function () {
       var trace   = new Trace('Test/TraceExample03');
-      var segment = new TraceSegment(new Trace('Test/TraceExample03'), 'UnitTest');
+      var segment = new TraceSegment(trace, 'UnitTest');
       webChild    = segment.addWeb('/test?test1=value1&test2&test3=50&test4=');
 
       trace.setDurationInMillis(1, 0);
@@ -118,6 +121,8 @@ describe("TraceSegment", function () {
     it("should produce JSON that conforms to the collector spec", function () {
       var trace = new Trace('WebTransaction/Uri/test');
       var segment = new TraceSegment(trace, 'DB/select/getSome');
+
+      trace.setDurationInMillis(17, 0);
       segment.setDurationInMillis(14, 3);
       // See documentation on TraceSegment.toJSON for what goes in which field.
       expect(segment.toJSON()).deep.equal([3, 17, 'DB/select/getSome', {}, []]);
