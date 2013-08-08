@@ -3,7 +3,6 @@
 var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
-  , EventEmitter     = require('events').EventEmitter
   , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics'))
   , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
   , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
@@ -46,7 +45,7 @@ describe("Metrics", function () {
     });
 
     it("should pass metric naming rules through for serialization", function () {
-      metrics.measureDurationUnscoped('Test/RenameMe333', 400, 300);
+      metrics.measureDuration('Test/RenameMe333', null, 400, 300);
       var summary = metrics.toJSON();
       expect(JSON.stringify(summary)).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
     });
@@ -62,19 +61,19 @@ describe("Metrics", function () {
   });
 
   it("should measure an unscoped metric", function () {
-    metrics.measureDurationUnscoped('Test/UnscopedMetric', 400, 200);
+    metrics.measureDuration('Test/UnscopedMetric', null, 400, 200);
     expect(JSON.stringify(metrics.toJSON()))
       .equal('[[{"name":"Test/UnscopedMetric"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]');
   });
 
   it("should measure a scoped metric", function () {
-    metrics.measureDurationScoped('Test/ScopedMetric', 'TEST', 400, 200);
+    metrics.measureDuration('Test/ScopedMetric', 'TEST', 400, 200);
     expect(JSON.stringify(metrics.toJSON()))
       .equal('[[{"name":"Test/ScopedMetric","scope":"TEST"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]');
   });
 
   it("should resolve the correctly scoped set of metrics when scope passed", function () {
-    metrics.measureDurationScoped('Apdex/ScopedMetricsTest', 'TEST');
+    metrics.measureDuration('Apdex/ScopedMetricsTest', 'TEST');
     var scoped = metrics.resolveScope('TEST');
 
     expect(scoped['Apdex/ScopedMetricsTest']).an('object');
@@ -88,25 +87,25 @@ describe("Metrics", function () {
   });
 
   it("should return a preëxisting unscoped metric when it's requested", function () {
-    metrics.measureDurationUnscoped('Test/UnscopedMetric', 400, 200);
+    metrics.measureDuration('Test/UnscopedMetric', null, 400, 200);
     expect(metrics.getOrCreateMetric('Test/UnscopedMetric').stats.callCount).equal(1);
   });
 
   it("should return a preëxisting scoped metric when it's requested", function () {
-    metrics.measureDurationScoped('Test/ScopedMetric', 'TEST', 400, 200);
+    metrics.measureDuration('Test/ScopedMetric', 'TEST', 400, 200);
     expect(metrics.getOrCreateMetric('Test/ScopedMetric', 'TEST').stats.callCount).equal(1);
   });
 
   it("should return the unscoped metrics when scope not set", function () {
-    metrics.measureDurationUnscoped('Test/UnscopedMetric', 400, 200);
+    metrics.measureDuration('Test/UnscopedMetric', null, 400, 200);
     expect(Object.keys(metrics.resolveScope()).length).equal(1);
     expect(Object.keys(metrics.scoped).length).equal(0);
   });
 
   it("should serialize unscoped metrics", function () {
-    metrics.measureDurationUnscoped('Test/UnscopedMetric', 400, 200);
-    metrics.measureDurationUnscoped('Test/RenameMe333', 400, 300);
-    metrics.measureDurationScoped('Test/ScopedMetric', 'TEST', 400, 200);
+    metrics.measureDuration('Test/UnscopedMetric', null, 400, 200);
+    metrics.measureDuration('Test/RenameMe333',    null, 400, 300);
+    metrics.measureDuration('Test/ScopedMetric',  'TEST', 400, 200);
 
     expect(JSON.stringify(metrics.toUnscopedData()))
       .equal('[[{"name":"Test/UnscopedMetric"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]],' +
@@ -114,9 +113,9 @@ describe("Metrics", function () {
   });
 
   it("should serialize scoped metrics", function () {
-    metrics.measureDurationUnscoped('Test/UnscopedMetric', 400, 200);
-    metrics.measureDurationScoped('Test/RenameMe333', 'TEST', 400, 300);
-    metrics.measureDurationScoped('Test/ScopedMetric', 'ANOTHER', 400, 200);
+    metrics.measureDuration('Test/UnscopedMetric',    null, 400, 200);
+    metrics.measureDuration('Test/RenameMe333',     'TEST', 400, 300);
+    metrics.measureDuration('Test/ScopedMetric', 'ANOTHER', 400, 200);
 
     expect(JSON.stringify(metrics.toScopedData()))
       .equal('[[{"name":"Test/RenameMe333","scope":"TEST"},' +
@@ -126,9 +125,9 @@ describe("Metrics", function () {
   });
 
   it("should serialize all metrics", function () {
-    metrics.measureDurationUnscoped('Test/UnscopedMetric', 400, 200);
-    metrics.measureDurationUnscoped('Test/RenameMe333', 400, 300);
-    metrics.measureDurationScoped('Test/ScopedMetric', 'TEST', 400, 200);
+    metrics.measureDuration('Test/UnscopedMetric', null, 400, 200);
+    metrics.measureDuration('Test/RenameMe333',    null, 400, 300);
+    metrics.measureDuration('Test/ScopedMetric', 'TEST', 400, 200);
 
     expect(JSON.stringify(metrics.toJSON()))
       .equal('[[{"name":"Test/UnscopedMetric"},' +
@@ -140,16 +139,16 @@ describe("Metrics", function () {
   });
 
   it("should merge multiple sets of metrics", function () {
-    metrics.measureDurationUnscoped('Test/Metrics/Unscoped', 400);
-    metrics.measureDurationUnscoped('Test/Unscoped', 300);
-    metrics.measureDurationScoped('Test/Scoped', 'METRICS', 200);
-    metrics.measureDurationScoped('Test/Scoped', 'MERGE', 100);
+    metrics.measureDuration('Test/Metrics/Unscoped', null, 400);
+    metrics.measureDuration('Test/Unscoped',         null, 300);
+    metrics.measureDuration('Test/Scoped',      'METRICS', 200);
+    metrics.measureDuration('Test/Scoped',        'MERGE', 100);
 
     var other = new Metrics();
-    other.measureDurationUnscoped('Test/Other/Unscoped', 800);
-    other.measureDurationUnscoped('Test/Unscoped', 700);
-    other.measureDurationScoped('Test/Scoped', 'OTHER', 600);
-    other.measureDurationScoped('Test/Scoped', 'MERGE', 500);
+    other.measureDuration('Test/Other/Unscoped', null, 800);
+    other.measureDuration('Test/Unscoped',       null, 700);
+    other.measureDuration('Test/Scoped', 'OTHER', 600);
+    other.measureDuration('Test/Scoped', 'MERGE', 500);
 
     metrics.merge(other);
 
