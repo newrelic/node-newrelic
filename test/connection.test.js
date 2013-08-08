@@ -76,7 +76,7 @@ describe("CollectorConnection", function () {
     it("should send metric data in the expected format", function () {
       // let's try a ludicrously high Apdex T
       var metrics = new Metrics(1);
-      metrics.measureDuration('Test/SampleMetric/all', null, 3, 1);
+      metrics.measureMilliseconds('Test/SampleMetric/all', null, 3, 1);
 
       connection.sendMetricData(12, 1014, metrics.toJSON());
       mockConnection.verify();
