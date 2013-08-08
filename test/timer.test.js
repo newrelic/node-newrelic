@@ -30,9 +30,6 @@ describe('Timer', function () {
     timer.begin();
     timer.end();
     expect(timer.isRunning()).equal(false);
-
-    timer.harvest();
-    expect(timer.isRunning()).equal(false);
   });
 
   it("should know when it hasn't yet been stopped", function () {
@@ -49,14 +46,6 @@ describe('Timer', function () {
     timer.end();
 
     expect(timer.isActive()).equal(false);
-  });
-
-  it("should know when it's been harvested and is dead", function () {
-    var timer = new Timer();
-    timer.begin();
-    timer.harvest();
-
-    expect(function () { timer.harvest(); }).throws(/dead timer/);
   });
 
   it("should return the time elapsed of a running timer", function (done) {
