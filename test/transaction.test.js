@@ -157,8 +157,8 @@ describe("Transaction", function () {
         trans.measureWeb('/test', 200, 55, 100);
 
         var result = [
-          [{name : 'WebTransaction'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name : 'HttpDispatcher'},          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name : 'WebTransaction'},          [1, 0.055,   0.1, 0.055, 0.055, 0.003025]],
+          [{name : 'HttpDispatcher'},          [1, 0.055,   0.1, 0.055, 0.055, 0.003025]],
           [{name : 'WebTransaction/Uri/test'}, [1, 0.055,   0.1, 0.055, 0.055, 0.003025]],
           [{name : 'Apdex/Uri/test'},          [0,     1,     0,  0.05,  0.05,        0]],
           [{name : 'Apdex'},                   [0,     1,     0,  0.05,  0.05,        0]]
@@ -257,5 +257,56 @@ describe("Transaction", function () {
     it("should produce a metrics summary suitable for the collector");
   });
 
-  it("should scope web transactions to their URL");
+  describe("when testing a web request's apdex", function () {
+    it("shouldn't automatically mark ignored status codes as frustrating", function () {
+      // FIXME: probably shouldn't do all this through side effects
+      trans.statusCode = 404;
+      trans._setApdex('Apdex/Uri/test', 30);
+      var result = [
+        [{name : 'Apdex/Uri/test'}, [1, 0, 0, 0.5, 0.5, 0]]
+      ];
+      expect(agent.config.error_collector.ignore_status_codes).deep.equal([404]);
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+    });
+
+    it("should handle ignored codes for the whole transaction", function () {
+      trans.metrics.apdexT = 0.2;
+      trans.measureWeb('/test', 404, 1, 1);
+
+      var result = [
+        [{name : 'WebTransaction'},                [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name : 'HttpDispatcher'},                [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name : 'WebTransaction/StatusCode/404'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name : 'Apdex/StatusCode/404'},          [1,     0,     0,   0.2,   0.2,        0]],
+        [{name : 'Apdex'},                         [1,     0,     0,   0.2,   0.2,        0]]
+      ];
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+    });
+
+    it("should otherwise mark error status codes as frustrating", function () {
+      // FIXME: probably shouldn't do all this through side effects
+      trans.statusCode = 503;
+      trans._setApdex('Apdex/Uri/test', 30);
+      var result = [
+        [{name : 'Apdex/Uri/test'}, [0, 0, 1, 0.5, 0.5, 0]]
+      ];
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+    });
+
+    it("should handle non-ignored codes for the whole transaction", function () {
+      trans.metrics.apdexT = 0.2;
+      trans.measureWeb('/test', 503, 1, 1);
+
+      var result = [
+        [{name : 'WebTransaction'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name : 'HttpDispatcher'},          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name : 'WebTransaction/Uri/test'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name : 'Apdex/Uri/test'},          [0,     0,     1,   0.2,   0.2,        0]],
+        [{name : 'Apdex'},                   [0,     0,     1,   0.2,   0.2,        0]]
+      ];
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+    });
+  });
+
+  it("shouldn't scope web transactions to their URL");
 });
