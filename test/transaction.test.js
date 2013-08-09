@@ -97,7 +97,7 @@ describe("Transaction", function () {
       var tt = new Transaction(agent);
 
       tt.measure('Custom/Test01');
-      should.exist(tt.getMetrics('Custom/Test01'));
+      should.exist(tt.metrics.getMetric('Custom/Test01'));
 
       tt.end();
     });
@@ -112,7 +112,7 @@ describe("Transaction", function () {
       tt.measure(TRACE_NAME, null, SLEEP_DURATION);
       tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5);
 
-      var statistics = tt.getMetrics(TRACE_NAME).stats;
+      var statistics = tt.metrics.getMetric(TRACE_NAME).stats;
       expect(statistics.callCount).to.equal(2);
       expect(statistics.max).above((SLEEP_DURATION - 1) / 1000);
     });
@@ -123,7 +123,7 @@ describe("Transaction", function () {
       tt.measure('Custom/Test16', null, 65);
       tt.end();
 
-      var metrics = tt.getMetrics('Custom/Test16');
+      var metrics = tt.metrics.getMetric('Custom/Test16');
       metrics.stats.total.should.equal(0.065);
     });
   });

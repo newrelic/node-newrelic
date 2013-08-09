@@ -12,7 +12,7 @@ var path            = require('path')
   ;
 
 function checkDatMetric(transaction, name, scope) {
-  var metric = transaction.getMetrics(name, scope);
+  var metric = transaction.metrics.getMetric(name, scope);
 
   expect(metric).instanceof(Metric);
   expect(metric.stats.total).to.equal(0.333);
