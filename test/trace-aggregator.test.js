@@ -19,8 +19,8 @@ describe('TraceAggregator', function () {
   function createTransaction(name, duration) {
     var transaction = new Transaction(agent);
     // gotta create the trace
-    transaction.getTrace();
-    transaction.measureWeb(name, 200, duration);
+    transaction.getTrace().setDurationInMillis(duration);
+    transaction.setWeb(name, 'WebTransaction/Uri' + name, 200);
     transaction.end();
 
     return transaction;
@@ -169,16 +169,14 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
-      , trace       = transaction.getTrace()
       ;
-
-    should.exist(trace);
 
     aggregator.reported = 10; // needed to override "first 5"
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT;
-    transaction.measureWeb('/test', 200, ABOVE_THRESHOLD);
+    transaction.getTrace().setDurationInMillis(ABOVE_THRESHOLD);
+    transaction.setWeb('/test', 'WebTransaction/Uri/test', 200);
 
     aggregator.add(transaction);
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD);
@@ -199,16 +197,14 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
-      , trace       = transaction.getTrace()
       ;
-
-    should.exist(trace);
 
     aggregator.reported = 10; // needed to override "first 5"
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT;
-    transaction.measureWeb('/test', 200, BELOW_THRESHOLD);
+    transaction.getTrace().setDurationInMillis(BELOW_THRESHOLD);
+    transaction.setWeb('/test', 'WebTransaction/Uri/test', 200);
 
     aggregator.add(transaction);
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined);

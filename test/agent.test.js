@@ -214,8 +214,7 @@ describe("the New Relic agent", function () {
       it("should capture the trace off a finished transaction", function (done) {
         var trans = new Transaction(agent);
         // need to initialize the trace
-        trans.getTrace();
-        trans.measureWeb('/ham/update/3', 200, 2100);
+        trans.getTrace().setDurationInMillis(2100);
 
         agent.once('transactionFinished', function () {
           var trace = agent.traces.trace;

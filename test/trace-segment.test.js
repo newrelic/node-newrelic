@@ -4,7 +4,10 @@ var path         = require('path')
   , chai         = require('chai')
   , should       = chai.should()
   , expect       = chai.expect
-  , TraceSegment = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'segment'))
+  , web          = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , TraceSegment = require(path.join(__dirname, '..', 'lib', 'transaction',
+                                     'trace', 'segment'))
   , Trace        = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -26,7 +29,8 @@ describe("TraceSegment", function () {
       segment = new TraceSegment(new Trace('Test/TraceExample08'), 'UnitTest');
     }).not.throws();
 
-    var working = new TraceSegment(new Trace(new Transaction('Test/TraceExample09')), 'UnitTest', function () {
+    var transaction = new Transaction('Test/TraceExample09');
+    var working = new TraceSegment(transaction.getTrace(), 'UnitTest', function () {
       return done();
     });
     working.end();
@@ -51,8 +55,11 @@ describe("TraceSegment", function () {
     expect(segment.timer.isRunning()).equal(true);
   });
 
-  it("should accept a callback that records metrics associated with this segment", function (done) {
-    var segment = new TraceSegment(new Trace(new Transaction('Test/TraceExample10')), 'UnitTest', function (insider) {
+  it("should accept a callback that records metrics associated with this segment",
+     function (done) {
+    var segment = new TraceSegment(new Trace(new Transaction('Test/TraceExample10')),
+                                   'UnitTest',
+                                   function (insider) {
       expect(insider).equal(segment);
       return done();
     });
@@ -61,15 +68,25 @@ describe("TraceSegment", function () {
   });
 
   describe("with children created from URLs", function () {
-    var webChild;
+    var webChild, agent;
 
     before(function () {
-      var trace   = new Trace('Test/TraceExample03');
-      var segment = new TraceSegment(trace, 'UnitTest');
-      webChild    = segment.addWeb('/test?test1=value1&test2&test3=50&test4=');
+      agent = helper.loadMockedAgent();
+
+      var trace   = new Trace(new Transaction(agent))
+        , segment = new TraceSegment(trace, 'UnitTest')
+        , url     = '/test?test1=value1&test2&test3=50&test4='
+        ;
+
+      webChild = segment.add(web.scrubURL(url));
+      web.normalizeAndName(webChild, url, 200);
 
       trace.setDurationInMillis(1, 0);
       webChild.setDurationInMillis(1, 0);
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
     });
 
     it("should return the URL minus any query parameters", function () {
@@ -106,7 +123,7 @@ describe("TraceSegment", function () {
   });
 
   it("should retain any associated SQL statements");
-  it("should allow an arbitrary number of TraceSegments from functions called in the scope of this TraceSegment");
+  it("should allow an arbitrary number of segments in the scope of this segment");
 
   describe("when ended", function () {
     it("should have a ended timer", function () {

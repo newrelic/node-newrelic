@@ -71,7 +71,7 @@ describe("ErrorTracer", function () {
 
   describe("with an internal server error (500) and an exception", function () {
     var agent
-      , scope
+      , scope = 'WebTransaction/Uri/test-request/zxrkbl'
       , error
       ;
 
@@ -84,7 +84,9 @@ describe("ErrorTracer", function () {
         ;
 
       transaction.exceptions.push(exception);
-      scope = transaction.measureWeb('/test-request/zxrkbl', 500, 5, 5);
+      transaction.setWeb('/test-request/zxrkbl',
+                         'WebTransaction/Uri/test-request/zxrkbl',
+                         500);
       transaction.end();
 
       error = service.errors[0];
@@ -128,7 +130,7 @@ describe("ErrorTracer", function () {
 
   describe("with a service unavailable (503) error", function () {
     var agent
-      , scope
+      , scope = 'WebTransaction/Uri/test-request/zxrkbl'
       , error
       ;
 
@@ -137,7 +139,9 @@ describe("ErrorTracer", function () {
       service = agent.errors;
 
       var transaction = new Transaction(agent);
-      scope = transaction.measureWeb('/test-request/zxrkbl', 503, 5, 5);
+      transaction.setWeb('/test-request/zxrkbl',
+                         'WebTransaction/Uri/test-request/zxrkbl',
+                         503);
       transaction.end();
 
       error = service.errors[0];

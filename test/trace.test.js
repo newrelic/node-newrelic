@@ -5,7 +5,9 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
-  , Segment     = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'segment'))
+  , webUtils    = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
+  , Segment     = require(path.join(__dirname, '..', 'lib', 'transaction',
+                                    'trace', 'segment'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -23,8 +25,9 @@ describe('Trace', function () {
 
   it("should always be bound to a transaction", function () {
     // fail
+    var transam;
     expect(function () {
-      var transam = new Trace();
+      transam = new Trace();
     }).throws(/must be associated with a transaction/);
 
     // succeed
@@ -42,19 +45,21 @@ describe('Trace', function () {
     expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws();
   });
 
-  it("should produce a transaction trace in the collector's expected format", function (done) {
+  it("should produce a transaction trace in the collector's expected format",
+     function (done) {
     var DURATION = 33;
     var URL = '/test?test=value';
 
     var transaction = new Transaction(agent);
-    transaction.measureWeb(URL, 200, DURATION);
+    transaction.setWeb(URL, 'WebTransaction/Uri' + URL, 200);
 
     var trace = transaction.getTrace();
     var start = trace.root.timer.start;
     expect(start, "root segment's start time").above(0);
     trace.setDurationInMillis(DURATION, 0);
 
-    var web = trace.addWeb(URL);
+    var web = trace.root.add(webUtils.scrubURL(URL));
+    webUtils.normalizeAndName(web, URL, 200);
     // top-level element will share a duration with the quasi-ROOT node
     web.setDurationInMillis(DURATION, 0);
 
@@ -91,7 +96,7 @@ describe('Trace', function () {
 
     var rootNode = [
       trace.root.timer.start / 1000,
-      {nr_async_wait : true, test : "value"},
+      {test : "value"},
       {}, // FIXME: custom parameters
       rootSegment,
       []  // FIXME: parameter groups
@@ -152,7 +157,8 @@ describe('Trace', function () {
       expect(segment).instanceof(Segment);
     });
 
-    it("should call a callback associated with the segment at creation time", function (done) {
+    it("should call a callback associated with the segment at creation time",
+       function (done) {
       var segment;
       segment = trace.add('Custom/Test18/Child1', function () {
         return done();
@@ -161,7 +167,8 @@ describe('Trace', function () {
       segment.end();
     });
 
-    it("should measure exclusive time vs total time at each level of the graph", function () {
+    it("should measure exclusive time vs total time at each level of the graph",
+       function () {
       var child = trace.add('Custom/Test18/Child1');
 
       trace.setDurationInMillis(42);
@@ -205,7 +212,9 @@ describe('Trace', function () {
       var child2 = trace.add('Custom/Test20/Child2');
       child2.setDurationInMillis(5, now + 5);
 
-      // add another that starts simultaneously with the first range but that extends beyond
+      /* add another that starts simultaneously with the first range but
+       * that extends beyond
+       */
       var child3 = trace.add('Custom/Test20/Child3');
       child3.setDurationInMillis(33, now);
 
