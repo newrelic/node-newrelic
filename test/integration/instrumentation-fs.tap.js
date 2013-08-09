@@ -9,7 +9,7 @@ var path   = require('path')
 
 test("built-in fs module instrumentation should trace the reading of directories",
      function (t) {
-  t.plan(8);
+  t.plan(9);
 
   var agent = helper.instrumentMockedAgent();
 
@@ -30,35 +30,39 @@ test("built-in fs module instrumentation should trace the reading of directories
 
     helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction(), "transaction is now in context");
+
       fs.readdir(TESTDIR, function (error, files) {
         if (error) return t.fail(error);
 
-        t.ok(agent.getTransaction(), "transaction is still in context in callback");
+        var transaction = agent.getTransaction();
+
+        t.ok(transaction, "transaction is still in context in callback");
 
         t.equals(files.length, 3, "all the files show up");
         [FILE1, FILE2, FILE3].forEach(function (filename) {
           t.notEquals(files.indexOf(filename), -1, "only the files show up");
         });
 
-        var stats = agent
-          .getTransaction()
-          .metrics
-          .getOrCreateMetric('Filesystem/ReadDir/' + TESTDIR)
-          .stats;
-        t.equals(stats.callCount, 1, "instrumentation should know method was called");
-
-        var transaction = agent.getTransaction();
         transaction.end();
-        helper.unloadAgent(agent);
+        process.nextTick(function () {
+          var name = 'Filesystem/ReadDir/' + TESTDIR
+            , stats = transaction.metrics.getMetric(name).stats
+            ;
 
-        [FILE1, FILE2, FILE3].forEach(function (filename) {
-          fs.unlinkSync(path.join(TESTDIR, filename));
-        });
+          t.ok(stats, "stats should exist for metric");
+          t.equals(stats.callCount, 1, "instrumentation should know method was called");
 
-        fs.rmdir(TESTDIR, function (error) {
-          if (error) return t.fail(error);
+          helper.unloadAgent(agent);
 
-          return t.end();
+          [FILE1, FILE2, FILE3].forEach(function (filename) {
+            fs.unlinkSync(path.join(TESTDIR, filename));
+          });
+
+          fs.rmdir(TESTDIR, function (error) {
+            if (error) return t.fail(error);
+
+            return t.end();
+          });
         });
       });
     });
