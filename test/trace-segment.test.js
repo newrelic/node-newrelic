@@ -29,11 +29,14 @@ describe("TraceSegment", function () {
       segment = new TraceSegment(new Trace('Test/TraceExample08'), 'UnitTest');
     }).not.throws();
 
-    var transaction = new Transaction('Test/TraceExample09');
-    var working = new TraceSegment(transaction.getTrace(), 'UnitTest', function () {
+    var agent   = helper.loadMockedAgent()
+      , trans   = new Transaction(agent)
+      , working = new TraceSegment(trans.getTrace(), 'UnitTest', function () {
+      helper.unloadAgent(agent);
       return done();
     });
     working.end();
+    trans.end();
   });
 
   it("should be named", function () {
@@ -57,14 +60,16 @@ describe("TraceSegment", function () {
 
   it("should accept a callback that records metrics associated with this segment",
      function (done) {
-    var segment = new TraceSegment(new Trace(new Transaction('Test/TraceExample10')),
-                                   'UnitTest',
-                                   function (insider) {
+    var agent   = helper.loadMockedAgent()
+      , trans   = new Transaction(agent)
+      , segment = new TraceSegment(trans.getTrace(), 'Test', function (insider) {
       expect(insider).equal(segment);
+      helper.unloadAgent(agent);
       return done();
     });
 
     segment.end();
+    trans.end();
   });
 
   describe("with children created from URLs", function () {

@@ -7,7 +7,7 @@ var path   = require('path')
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
-test("built-in http module instrumentation should handle both internal and external requests",
+test("built-in http module instrumentation should handle internal & external requests",
      function (t) {
   t.plan(12);
 
@@ -26,7 +26,8 @@ test("built-in http module instrumentation should handle both internal and exter
     ;
 
   var external = http.createServer(function (request, response) {
-    t.ok(agent.getTransaction(), "should be within the scope of (a different) transaction");
+    t.ok(agent.getTransaction(),
+         "should be within the scope of (a different) transaction");
 
     response.writeHead(200,
                        {'Content-Length' : PAYLOAD.length,
@@ -94,23 +95,31 @@ test("built-in http module instrumentation should handle both internal and exter
       t.equals(response.statusCode, 200, "should successfully fetch the page");
       t.equals(fetchedBody, PAGE, "page shouldn't change");
 
-      var stats = agent.metrics.getOrCreateMetric('WebTransaction/Uri' + TEST_INTERNAL_PATH).stats;
-      t.equals(stats.callCount, 1, "should record unscoped path stats after a normal request");
+      var scope = 'WebTransaction/Uri' + TEST_INTERNAL_PATH
+        , stats = agent.metrics.getOrCreateMetric(scope).stats
+        , found = false
+        ;
 
-      var found = false;
+      t.equals(stats.callCount, 1,
+               "should record unscoped path stats after a normal request");
+
       agent.environment.toJSON().forEach(function (pair) {
         if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true;
       });
       t.ok(found, "should indicate that the http dispatcher is in play");
 
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
-      t.equals(stats.callCount, 2, "should have accounted for all the internal http requests");
+      t.equals(stats.callCount, 2,
+               "should have accounted for all the internal http requests");
 
-      stats = agent.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost' + TEST_EXTERNAL_PATH).stats;
-      t.equals(stats.callCount, 1, "should record outbound HTTP requests in the agent's metrics");
+      stats = agent.metrics.getOrCreateMetric('External/localhost/http', scope).stats;
+      t.equals(stats.callCount, 1,
+               "should record outbound HTTP requests in the agent's metrics");
 
-      stats = transaction.metrics.getOrCreateMetric('External/localhost/http', 'External/localhost' + TEST_EXTERNAL_PATH).stats;
-      t.equals(stats.callCount, 1, "should associate outbound HTTP requests with the inbound transaction");
+      stats = transaction.metrics.getOrCreateMetric('External/localhost/http',
+                                                    scope).stats;
+      t.equals(stats.callCount, 1,
+               "should associate outbound HTTP requests with the inbound transaction");
 
       t.end();
     });
@@ -120,7 +129,8 @@ test("built-in http module instrumentation should handle both internal and exter
     server.listen(TEST_INTERNAL_PORT, TEST_HOST, function () {
       // The transaction doesn't get created until after the instrumented
       // server handler fires.
-      t.notOk(agent.getTransaction(), "transaction hasn't been created until the first request");
+      t.notOk(agent.getTransaction(),
+              "transaction hasn't been created until the first request");
 
       var req = http.request({host   : TEST_HOST,
                               port   : TEST_INTERNAL_PORT,
@@ -164,7 +174,7 @@ test("built-in http module instrumentation shouldn't swallow errors",
     };
 
     http.get(options, function (res) {
-      t.equal(agent.errors.errors.length, 2, "should have recorded an error");
+      t.equal(agent.errors.errors.length, 1, "should have recorded an error");
       t.equal(res.statusCode, 501, "got expected (error) status code");
 
       t.end();

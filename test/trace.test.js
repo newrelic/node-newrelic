@@ -137,10 +137,13 @@ describe('Trace', function () {
   it("should produce human-readable JSON of the entire trace graph");
 
   describe("when inserting segments", function () {
-    var trace;
+    var trace
+      , transaction
+      ;
 
     beforeEach(function () {
-      trace = new Trace(new Transaction(agent));
+      transaction = new Transaction(agent);
+      trace       = transaction.getTrace();
     });
 
     it("should require a name for the new segment", function () {
@@ -157,14 +160,14 @@ describe('Trace', function () {
       expect(segment).instanceof(Segment);
     });
 
-    it("should call a callback associated with the segment at creation time",
+    it("should call a function associated with the segment",
        function (done) {
-      var segment;
-      segment = trace.add('Custom/Test18/Child1', function () {
+      var segment = trace.add('Custom/Test18/Child1', function () {
         return done();
       });
 
       segment.end();
+      transaction.end();
     });
 
     it("should measure exclusive time vs total time at each level of the graph",

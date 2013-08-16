@@ -170,7 +170,7 @@ describe("built-in http module instrumentation", function () {
       var stats = transaction
                     .metrics
                     .getOrCreateMetric('External/localhost/http',
-                                       'External/localhost/status').stats;
+                                       'WebTransaction/Uri/path').stats;
       expect(stats.callCount).equal(1);
     });
 
