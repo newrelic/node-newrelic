@@ -76,14 +76,14 @@ describe("agent instrumentation of Redis", function () {
 
       connection = new FakeConnection();
       mockConnection = sinon.mock(connection);
-      mockConnection.expects('write').withExactArgs('*1\r\n$4\r\ninfo\r\n').once();
 
-      client = new redis.RedisClient(connection);
-      client.port = 8765;
+      client = new redis.RedisClient(connection, {no_ready_check : true});
       client.host = 'fakehost.example.local';
+      client.port = 8765;
     });
 
     afterEach(function () {
+      mockConnection.verify();
       helper.unloadAgent(agent);
     });
 
@@ -109,7 +109,6 @@ describe("agent instrumentation of Redis", function () {
         });
 
         should.exist(connection.on_data);
-        connection.on_data(new Buffer('$21\r\nredis_version:2.6.0\r\n'));
         connection.on_data(new Buffer('+PONG\r\n'));
 
         transaction.end();
@@ -133,7 +132,6 @@ describe("agent instrumentation of Redis", function () {
         client.PING();
 
         should.exist(connection.on_data);
-        connection.on_data(new Buffer('$21\r\nredis_version:2.6.0\r\n'));
         connection.on_data(new Buffer('+PONG\r\n'));
 
         transaction.end();
@@ -165,7 +163,6 @@ describe("agent instrumentation of Redis", function () {
         });
 
         should.exist(connection.on_data);
-        connection.on_data(new Buffer('$21\r\nredis_version:2.6.0\r\n'));
         connection.on_data(new Buffer('+PONG\r\n'));
 
         transaction.end();
@@ -192,7 +189,6 @@ describe("agent instrumentation of Redis", function () {
         client.PING(1, 2);
 
         should.exist(connection.on_data);
-        connection.on_data(new Buffer('$21\r\nredis_version:2.6.0\r\n'));
         connection.on_data(new Buffer('+PONG\r\n'));
 
         transaction.end();
