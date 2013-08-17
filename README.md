@@ -141,8 +141,6 @@ Information about changes to the agent are in NEWS.md.
 * There are irregularities around transaction trace capture and display.
   If you notice missing or incorrect information from transaction traces,
   let us know.
-* External requests (and other calls to modules made as part of a
-  transaction) are not being accurately instrumented in many cases.
 * There are over 20,000 modules on npm. We can only instrument a tiny
   number of them. Even for the modules we support, there are a very
   large number of ways to use them. If you see data you don't expect on
@@ -176,7 +174,6 @@ Information about changes to the agent are in NEWS.md.
 * Better tests for existing instrumentation.
 * Differentiate between HTTP and HTTPS connections.
 * Proxy support.
-* Lots more testing of what the data looks like in RPM.
 
 ### New Relic features available for other platforms not yet in Node.js
 
@@ -184,7 +181,6 @@ Information about changes to the agent are in NEWS.md.
 * custom instrumentation APIs
 * slow SQL traces and explain plans
 * custom parameters
-* supportability metrics
 * garbage collector instrumentation
 * full server-side configuration
 * capacity planning
@@ -195,7 +191,8 @@ Information about changes to the agent are in NEWS.md.
 The New Relic Node.js agent uses code from the following open source projects
 under the following licenses:
 
-  bunyan                http://opensource.org/licenses/MIT
+  bunyan                           http://opensource.org/licenses/MIT
+  continuation-local-storage-glue  http://opensource.org/licenses/BSD-3-Clause
 
 The New Relic Node.js agent itself is free-to-use, proprietary software.
 Please see the full license (found in LICENSE in this distribution) for

@@ -1,3 +1,32 @@
+### v0.10.0 / beta-23 (2013-08-17):
+
+* IMPORTANT. The transaction tracer in this build is COMPLETELY NEW. This means
+  that the agent will probably work just fine under Node 0.8 and newer, but
+  Node versions 0.6 and older are presently unsupported, and support for them
+  may or may not come back. However, the quality of the metrics gathered by the
+  agent is now vastly improved.
+* There are over 100 commits included in this build. Every effort has been made
+  to ensure that we will not crash your applications, but be aware there may be
+  regressions.
+* Substantially more information is displayed by New Relic for slow transaction
+  traces. How this information is displayed is a work in progress, as New Relic
+  works to create a consistent user experience for developers writing both
+  synchronous and asynchronous applications.
+* Most Redis and memcached operations will now provide details on which keys
+  were involved in an operation.
+* The error tracer has been given a new coat of paint as well, and takes better
+  advantage of Node domains, when they're available. Fewer errors should be
+  double-counted, as well.
+* MongoDB instrumentation is substantially improved.
+* Express instrumentation now deals with the removal of the (very helpful)
+  version field from recent versions of Express.
+* Exclusive durations are reported for metrics, improving transaction
+  breakdowns.
+* Several bugs in the communication between the New Relic agent and New Relic's
+  servers have been fixed.
+* Failed connection attempts between the agent and New Relic's servers no longer
+  cause aggregated metrics to be lost, nor will this trigger an agent crash.
+
 ### v0.9.22 / beta-22 (2013-06-11):
 
 * Capture request URL before Express can mess with it.
