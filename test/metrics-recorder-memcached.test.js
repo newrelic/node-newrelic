@@ -93,4 +93,29 @@ describe("recordMemcached", function () {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
   });
+
+  it("should report exclusive time correctly", function () {
+    var root   = trans.getTrace().root
+      , parent = root.add('MemCache/get',     recordMemcached)
+      , child1 = parent.add('MemCache/set',   recordMemcached)
+      , child2 = parent.add('MemCache/clear', recordMemcached)
+      ;
+
+    root.setDurationInMillis(26, 0);
+    parent.setDurationInMillis(26, 0);
+    child1.setDurationInMillis(12, 3);
+    child2.setDurationInMillis(8, 25);
+
+    trans.end();
+
+    var result = [
+      [{name : "MemCache/get"},   [1,0.026,0.013,0.026,0.026,0.000676]],
+      [{name : "MemCache/all"},   [3,0.046,0.033,0.008,0.026,0.000884]],
+      [{name : "MemCache/allWeb"},[3,0.046,0.033,0.008,0.026,0.000884]],
+      [{name : "MemCache/set"},   [1,0.012,0.012,0.012,0.012,0.000144]],
+      [{name : "MemCache/clear"}, [1,0.008,0.008,0.008,0.008,0.000064]]
+    ];
+
+    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+  });
 });

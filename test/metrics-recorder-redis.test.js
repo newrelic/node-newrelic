@@ -93,4 +93,29 @@ describe("recordRedis", function () {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
   });
+
+  it("should report exclusive time correctly", function () {
+    var root   = trans.getTrace().root
+      , parent = root.add('Redis/ladd',     recordRedis)
+      , child1 = parent.add('Redis/blpopr', recordRedis)
+      , child2 = child1.add('Redis/lpop',   recordRedis)
+      ;
+
+    root.setDurationInMillis(26, 0);
+    parent.setDurationInMillis(26, 0);
+    child1.setDurationInMillis(12, 3);
+    child2.setDurationInMillis(8, 11);
+
+    trans.end();
+
+    var result = [
+      [{name : "Redis/ladd"},   [1,0.026,0.014,0.026,0.026,0.000676]],
+      [{name : "Redis/all"},    [3,0.046,0.030,0.008,0.026,0.000884]],
+      [{name : "Redis/allWeb"}, [3,0.046,0.030,0.008,0.026,0.000884]],
+      [{name : "Redis/blpopr"}, [1,0.012,0.008,0.012,0.012,0.000144]],
+      [{name : "Redis/lpop"},   [1,0.008,0.008,0.008,0.008,0.000064]]
+    ];
+
+    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+  });
 });

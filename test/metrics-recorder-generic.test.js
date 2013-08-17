@@ -89,4 +89,27 @@ describe("recordGeneric", function () {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
   });
+
+  it("should report exclusive time correctly", function () {
+    var root   = trans.getTrace().root
+      , parent = root.add('Test/Parent',    recordGeneric)
+      , child1 = parent.add('Test/Child/1', recordGeneric)
+      , child2 = parent.add('Test/Child/2', recordGeneric)
+      ;
+
+    root.setDurationInMillis(26, 0);
+    parent.setDurationInMillis(26, 0);
+    child1.setDurationInMillis(12, 3);
+    child2.setDurationInMillis(8, 17);
+
+    trans.end();
+
+    var result = [
+      [{name : "Test/Parent"},  [1,0.026,0.006,0.026,0.026,0.000676]],
+      [{name : "Test/Child/1"}, [1,0.012,0.012,0.012,0.012,0.000144]],
+      [{name : "Test/Child/2"}, [1,0.008,0.008,0.008,0.008,0.000064]]
+    ];
+
+    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+  });
 });

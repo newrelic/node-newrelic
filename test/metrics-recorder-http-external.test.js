@@ -99,4 +99,32 @@ describe("recordExternal", function () {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
   });
+
+  it("should report exclusive time correctly", function () {
+    var root   = trans.getTrace().root
+      , parent = root.add('/parent',   recordExternal)
+      , child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
+      , child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
+      ;
+
+    root.setDurationInMillis(26, 0);
+    parent.setDurationInMillis(26, 0);
+    child1.setDurationInMillis(12, 3);
+    child2.setDurationInMillis(8, 4);
+
+    trans.end();
+
+    var result = [
+      [{name : "External/test.example.com/http"},   [1,0.026,0.014,0.026,0.026,0.000676]],
+      [{name : "External/all/Other"},               [3,0.046,0.034,0.008,0.026,0.000884]],
+      [{name : "External/test.example.com/all"},    [1,0.026,0.014,0.026,0.026,0.000676]],
+      [{name : "External/all"},                     [3,0.046,0.034,0.008,0.026,0.000884]],
+      [{name : "External/api.twitter.com/https"},   [1,0.012,0.012,0.012,0.012,0.000144]],
+      [{name : "External/api.twitter.com/all"},     [1,0.012,0.012,0.012,0.012,0.000144]],
+      [{name : "External/oauth.facebook.com/http"}, [1,0.008,0.008,0.008,0.008,0.000064]],
+      [{name : "External/oauth.facebook.com/all"},  [1,0.008,0.008,0.008,0.008,0.000064]]
+    ];
+
+    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+  });
 });
