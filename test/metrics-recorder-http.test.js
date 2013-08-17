@@ -56,6 +56,7 @@ describe("recordWeb", function () {
     });
 
     it("should record no metrics", function () {
+      recordWeb(segment, undefined);
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify([]));
     });
   });
