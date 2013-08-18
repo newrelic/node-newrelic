@@ -44,7 +44,7 @@ describe('SQLTrace', function () {
   });
 
   it("should be associated with statistics", function () {
-    expect((new SQLTrace(query, transaction, stats)).stats).deep.equal(stats);
+    expect(new SQLTrace(query, transaction, stats).stats).deep.equal(stats);
   });
 
   it("should throw without a query", function () {
