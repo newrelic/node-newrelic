@@ -102,8 +102,8 @@ describe("the New Relic agent", function () {
       should.exist(agent.traces);
     });
 
-    it("exposes its configured metric normalizer via the default metrics", function () {
-      should.exist(agent.metrics.normalizer);
+    it("exposes its configured metric normalizer directly", function () {
+      should.exist(agent.normalizer);
     });
 
     it("should look up transactions itself", function () {
@@ -183,7 +183,7 @@ describe("the New Relic agent", function () {
         process.nextTick(function () {
           expect(agent.config.apdex_t).equal(0.742);
           expect(agent.metrics.apdexT).equal(0.742);
-          expect(agent.metrics.normalizer.rules).deep.equal([]);
+          expect(agent.normalizer.rules).deep.equal([]);
 
           return done();
         });

@@ -1,13 +1,11 @@
 'use strict';
 
-var path             = require('path')
-  , chai             = require('chai')
-  , expect           = chai.expect
-  , should           = chai.should()
-  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , RenameRules      = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                         'rename-rules'))
-  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
+var path        = require('path')
+  , chai        = require('chai')
+  , expect      = chai.expect
+  , should      = chai.should()
+  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics'))
+  , RenameRules = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
   ;
 
 describe("Metrics", function () {
@@ -35,10 +33,9 @@ describe("Metrics", function () {
   describe("when creating with parameters", function () {
     var TEST_APDEX = 0.4;
     var TEST_RENAMER = new RenameRules([[{name : 'Test/RenameMe333'}, 1337]]);
-    var TEST_NORMALIZER = new MetricNormalizer();
 
     beforeEach(function () {
-      metrics = new Metrics(TEST_APDEX, TEST_RENAMER, TEST_NORMALIZER);
+      metrics = new Metrics(TEST_APDEX, TEST_RENAMER);
     });
 
     it("should pass apdex through to ApdexStats", function () {
@@ -50,10 +47,6 @@ describe("Metrics", function () {
       metrics.measureMilliseconds('Test/RenameMe333', null, 400, 300);
       var summary = JSON.stringify(metrics.toJSON());
       expect(summary).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
-    });
-
-    it("should expose configured normalizer", function () {
-      expect(metrics.normalizer).equal(TEST_NORMALIZER);
     });
   });
 
