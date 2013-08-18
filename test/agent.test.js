@@ -195,14 +195,14 @@ describe("the New Relic agent", function () {
          function (done) {
         var NAME     = 'Custom/Test/events';
         var SCOPE    = 'TEST';
-        var METRICID = 'Test/Rollup';
+        var METRICID = 17;
 
         var testIDs = {};
         testIDs[NAME + ',' + SCOPE] = METRICID;
 
-        agent.metrics.renamer.length.should.equal(0);
+        agent.mapper.length.should.equal(0);
         process.nextTick(function () {
-          agent.metrics.renamer.lookup(NAME, SCOPE).should.equal('Test/Rollup');
+          agent.mapper.lookup(NAME, SCOPE).should.equal(17);
 
           return done();
         });
@@ -258,14 +258,14 @@ describe("the New Relic agent", function () {
     describe("when new metric name -> ID renaming rules may or may not have come in",
              function () {
       it("shouldn't throw if no new rules are received", function () {
-        expect(function () { agent.onNewRenameRules(null); }).not.throws();
+        expect(function () { agent.onNewMappings(null); }).not.throws();
       });
 
       it("shouldn't throw if new rules are received", function () {
         var rules = [[{name : 'Test/RenameMe1'}, 1001],
                      [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]];
 
-        expect(function () { agent.onNewRenameRules(rules); }).not.throws();
+        expect(function () { agent.onNewMappings(rules); }).not.throws();
       });
     });
 

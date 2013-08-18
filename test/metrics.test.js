@@ -1,11 +1,11 @@
 'use strict';
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , should      = chai.should()
-  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , RenameRules = require(path.join(__dirname, '..', 'lib', 'metrics', 'rename-rules'))
+var path         = require('path')
+  , chai         = require('chai')
+  , expect       = chai.expect
+  , should       = chai.should()
+  , Metrics      = require(path.join(__dirname, '..', 'lib', 'metrics'))
+  , MetricMapper = require(path.join(__dirname, '..', 'lib', 'metrics', 'mapper'))
   ;
 
 describe("Metrics", function () {
@@ -25,17 +25,17 @@ describe("Metrics", function () {
       expect(metric.apdexT).equal(0);
     });
 
-    it("should create a blank set of metric renaming rules", function () {
-      expect(metrics.renamer).deep.equal(new RenameRules());
+    it("should create an empty metric mapper", function () {
+      expect(metrics.mapper).deep.equal(new MetricMapper());
     });
   });
 
   describe("when creating with parameters", function () {
     var TEST_APDEX = 0.4;
-    var TEST_RENAMER = new RenameRules([[{name : 'Test/RenameMe333'}, 1337]]);
+    var TEST_MAPPER = new MetricMapper([[{name : 'Test/RenameMe333'}, 1337]]);
 
     beforeEach(function () {
-      metrics = new Metrics(TEST_APDEX, TEST_RENAMER);
+      metrics = new Metrics(TEST_APDEX, TEST_MAPPER);
     });
 
     it("should pass apdex through to ApdexStats", function () {
@@ -43,7 +43,7 @@ describe("Metrics", function () {
       expect(apdex.apdexT).equal(TEST_APDEX);
     });
 
-    it("should pass metric naming rules through for serialization", function () {
+    it("should pass metric mappings through for serialization", function () {
       metrics.measureMilliseconds('Test/RenameMe333', null, 400, 300);
       var summary = JSON.stringify(metrics.toJSON());
       expect(summary).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
@@ -144,12 +144,12 @@ describe("Metrics", function () {
       describe("with ordinary statistics", function () {
         var NAME = 'Agent/Test384'
           , metric
-          , renamer
+          , mapper
           ;
 
         beforeEach(function () {
           metric = metrics.getOrCreateMetric(NAME);
-          renamer = new RenameRules([[{name : NAME}, 1234]]);
+          mapper = new MetricMapper([[{name : NAME}, 1234]]);
         });
 
         it("should get the bare stats right", function () {
@@ -157,8 +157,8 @@ describe("Metrics", function () {
           expect(summary).equal('[{"name":"Agent/Test384"},[0,0,0,0,0,0]]');
         });
 
-        it("should correctly rename metrics given rules", function () {
-          metrics.renamer = renamer;
+        it("should correctly map metrics to IDs given a mapping", function () {
+          metrics.mapper = mapper;
           var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[1234,[0,0,0,0,0,0]]');
         });
@@ -173,13 +173,13 @@ describe("Metrics", function () {
       describe("with apdex statistics", function () {
         var NAME = 'Agent/Test385'
           , metric
-          , renamer
+          , mapper
           ;
 
         beforeEach(function () {
           metrics = new Metrics(0.8);
           metric  = metrics.getOrCreateApdexMetric(NAME);
-          renamer = new RenameRules([[{name : NAME}, 1234]]);
+          mapper  = new MetricMapper([[{name : NAME}, 1234]]);
         });
 
         it("should get the bare stats right", function () {
@@ -187,8 +187,8 @@ describe("Metrics", function () {
           expect(summary).equal('[{"name":"Agent/Test385"},[0,0,0,0.8,0.8,0]]');
         });
 
-        it("should correctly rename metrics given rules", function () {
-          metrics.renamer = renamer;
+        it("should correctly map metrics to IDs given a mapping", function () {
+          metrics.mapper = mapper;
           var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[1234,[0,0,0,0.8,0.8,0]]');
         });

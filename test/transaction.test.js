@@ -76,8 +76,8 @@ describe("Transaction", function () {
       expect(agent.metrics.apdexT).equal(trans.metrics.apdexT);
     });
 
-    it("should have the same metric renaming rules as the agent's", function () {
-      expect(agent.metrics.renamer).equal(trans.metrics.renamer);
+    it("should have the same metrics mapper as the agent's", function () {
+      expect(agent.mapper).equal(trans.metrics.mapper);
     });
   });
 
