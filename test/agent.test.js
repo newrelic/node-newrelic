@@ -202,7 +202,7 @@ describe("the New Relic agent", function () {
 
         agent.mapper.length.should.equal(0);
         process.nextTick(function () {
-          agent.mapper.lookup(NAME, SCOPE).should.equal(17);
+          agent.mapper.map(NAME, SCOPE).should.equal(17);
 
           return done();
         });

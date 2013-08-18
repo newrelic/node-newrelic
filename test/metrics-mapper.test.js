@@ -7,57 +7,69 @@ var path         = require('path')
   ;
 
 describe('MetricMapper', function () {
-  it("shouldn't throw if passed a null set of mappings", function () {
-    var map;
-
-    expect(function () { map = new MetricMapper(); }).not.throws();
-    expect(function () { map.load(null); }).not.throws();
+  it("shouldn't throw if passed null", function () {
+    expect(function () { new MetricMapper().load(null); }).not.throws();
   });
 
-  it("shouldn't throw if passed an undefined set of mappings", function () {
-    var map;
-
-    expect(function () { map = new MetricMapper(); }).not.throws();
-    expect(function () { map.load(undefined); }).not.throws();
+  it("shouldn't throw if passed undefined", function () {
+    expect(function () { new MetricMapper().load(undefined); }).not.throws();
   });
 
   it("shouldn't throw if passed an empty list", function () {
-    var map;
-
-    expect(function () { map = new MetricMapper(); }).not.throws();
-    expect(function () { map.load([]); }).not.throws();
+    expect(function () { new MetricMapper().load([]); }).not.throws();
   });
 
   it("shouldn't throw if passed garbage input", function () {
-    var map;
-
-    expect(function () { map = new MetricMapper(); }).not.throws();
-    expect(function () { map.load({name : 'garbage'}, 1001); }).not.throws();
+    expect(function () {
+      new MetricMapper().load({name : 'garbage'}, 1001);
+    }).not.throws();
   });
 
-  it("should load a set of mappings passed into the constructor", function () {
-    var map = new MetricMapper([[{name : 'Test/RenameMe1'}, 1001],
+  describe("when loading mappings at creation", function () {
+    var mapper;
+
+    before(function () {
+      mapper = new MetricMapper([[{name : 'Test/RenameMe1'}, 1001],
                                  [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]]);
+    });
 
-    expect(map.length).equal(2);
-    expect(Object.keys(map.unscoped).length).equal(1);
-    expect(Object.keys(map.scoped).length).equal(1);
+    it("should have loaded all the mappings", function () {
+      expect(mapper.length).equal(2);
+    });
 
-    expect(map.lookup('Test/RenameMe1')).equal(1001);
-    expect(map.lookup('Test/RenameMe2', 'TEST')).equal(1002);
+    it("should apply mappings", function () {
+      expect(mapper.map('Test/RenameMe1')).equal(1001);
+      expect(mapper.map('Test/RenameMe2', 'TEST')).equal(1002);
+    });
+
+    it("should turn non-mapped metrics into specs", function () {
+      expect(mapper.map('Test/Metric1')).deep.equal({name : 'Test/Metric1'});
+      expect(mapper.map('Test/Metric2', 'TEST'))
+        .deep.equal({name : 'Test/Metric2', scope : 'TEST'});
+    });
   });
 
-  it("should load mappings passed in after creation", function () {
-    var map = new MetricMapper();
+  describe("when adding mappings after creation", function () {
+    var mapper = new MetricMapper();
 
-    map.load([[{name : 'Test/RenameMe1'}, 1001]]);
-    map.load([[{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]]);
+    before(function () {
+      mapper.load([[{name : 'Test/RenameMe1'}, 1001]]);
+      mapper.load([[{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]]);
+    });
 
-    expect(map.length).equal(2);
-    expect(Object.keys(map.unscoped).length).equal(1);
-    expect(Object.keys(map.scoped).length).equal(1);
+    it("should have loaded all the mappings", function () {
+      expect(mapper.length).equal(2);
+    });
 
-    expect(map.lookup('Test/RenameMe1')).equal(1001);
-    expect(map.lookup('Test/RenameMe2', 'TEST')).equal(1002);
+    it("should apply mappings", function () {
+      expect(mapper.map('Test/RenameMe1')).equal(1001);
+      expect(mapper.map('Test/RenameMe2', 'TEST')).equal(1002);
+    });
+
+    it("should turn non-mapped metrics into specs", function () {
+      expect(mapper.map('Test/Metric1')).deep.equal({name : 'Test/Metric1'});
+      expect(mapper.map('Test/Metric2', 'TEST'))
+        .deep.equal({name : 'Test/Metric2', scope : 'TEST'});
+    });
   });
 });
