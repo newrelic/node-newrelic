@@ -143,7 +143,7 @@ describe("Metrics", function () {
         metrics.measureMilliseconds('RenameMe333', null, 400, 300);
         metrics.measureMilliseconds('Test/ScopedMetric', 'TEST', 400, 200);
 
-        expect(JSON.stringify(metrics.toUnscopedData()))
+        expect(JSON.stringify(metrics._toUnscopedData()))
           .equal('[[{"name":"Test/Metric"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]],' +
                   '[{"name":"RenameMe333"},[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]');
       });
@@ -160,19 +160,19 @@ describe("Metrics", function () {
         });
 
         it("should get the bare stats right", function () {
-          var summary = JSON.stringify(metrics.getUnscopedData(NAME));
+          var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[{"name":"Agent/Test384"},[0,0,0,0,0,0]]');
         });
 
         it("should correctly rename metrics given rules", function () {
           metrics.renamer = renamer;
-          var summary = JSON.stringify(metrics.getUnscopedData(NAME));
+          var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[1234,[0,0,0,0,0,0]]');
         });
 
         it("should correctly serialize statistics", function () {
           metric.recordValue(0.3, 0.1);
-          var summary = JSON.stringify(metrics.getUnscopedData(NAME));
+          var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[{"name":"Agent/Test384"},[1,0.3,0.1,0.3,0.3,0.09]]');
         });
       });
@@ -190,19 +190,19 @@ describe("Metrics", function () {
         });
 
         it("should get the bare stats right", function () {
-          var summary = JSON.stringify(metrics.getUnscopedData(NAME));
+          var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[{"name":"Agent/Test385"},[0,0,0,0.8,0.8,0]]');
         });
 
         it("should correctly rename metrics given rules", function () {
           metrics.renamer = renamer;
-          var summary = JSON.stringify(metrics.getUnscopedData(NAME));
+          var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[1234,[0,0,0,0.8,0.8,0]]');
         });
 
         it("should correctly serialize statistics", function () {
           metric.recordValueInMillis(3220);
-          var summary = JSON.stringify(metrics.getUnscopedData(NAME));
+          var summary = JSON.stringify(metrics._getUnscopedData(NAME));
           expect(summary).equal('[{"name":"Agent/Test385"},[0,0,1,0.8,0.8,0]]');
         });
       });
@@ -214,7 +214,7 @@ describe("Metrics", function () {
         metrics.measureMilliseconds('Test/RenameMe333',     'TEST', 400, 300);
         metrics.measureMilliseconds('Test/ScopedMetric', 'ANOTHER', 400, 200);
 
-        expect(JSON.stringify(metrics.toScopedData()))
+        expect(JSON.stringify(metrics._toScopedData()))
           .equal('[[{"name":"Test/RenameMe333","scope":"TEST"},' +
                    '[1,0.4,0.3,0.4,0.4,0.16000000000000003]],' +
                   '[{"name":"Test/ScopedMetric","scope":"ANOTHER"},' +
