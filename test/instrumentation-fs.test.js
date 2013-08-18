@@ -68,9 +68,7 @@ describe("built-in fs module instrumentation", function () {
           var metric = agent.metrics.getMetric('Filesystem/ReadDir/stub');
           should.exist(metric);
 
-          var stats = metric.stats;
-          should.exist(stats);
-          expect(stats.callCount).equal(1);
+          expect(metric.callCount).equal(1);
 
           return done();
         });

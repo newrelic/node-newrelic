@@ -28,7 +28,7 @@ describe("environmental sampler", function () {
   it("should have a rough idea of how much memory Node is using", function () {
     sampler.sampleMemory(agent);
 
-    var stats = agent.metrics.getOrCreateMetric('Memory/Physical').stats;
+    var stats = agent.metrics.getOrCreateMetric('Memory/Physical');
     expect(stats.callCount).equal(1);
     expect(stats.max).above(1); // maybe someday this test will fail
   });
@@ -47,7 +47,7 @@ describe("environmental sampler", function () {
      * greater-than-millisecond accuracy).
      */
     setTimeout(function () {
-      var stats = agent.metrics.getOrCreateMetric('Events/wait').stats;
+      var stats = agent.metrics.getOrCreateMetric('Events/wait');
       expect(stats.callCount).equal(1);
       // process.hrtime will notice the passage of time, but this happens
       // too fast to measure any meaningful latency in versions of Node

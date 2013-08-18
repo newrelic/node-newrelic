@@ -57,21 +57,21 @@ test("agent instrumentation of Express 2", function (t) {
 
         var stats;
 
-        stats = agent.metrics.getMetric('WebTransaction/Uri/test').stats;
+        stats = agent.metrics.getMetric('WebTransaction/Uri/test');
         t.ok(stats, "found unscoped stats for request path");
         t.equal(stats.callCount, 1, "/test was only requested once");
 
-        stats = agent.metrics.getOrCreateApdexMetric('Apdex/Uri/test').stats;
+        stats = agent.metrics.getOrCreateApdexMetric('Apdex/Uri/test');
         t.ok(stats, "found apdex stats for request path");
         t.equal(stats.satisfying, 1, "got satisfactory response time");
         t.equal(stats.tolerating, 0, "got no tolerable requests");
         t.equal(stats.frustrating, 0, "got no frustrating requests");
 
-        stats = agent.metrics.getMetric('WebTransaction').stats;
+        stats = agent.metrics.getMetric('WebTransaction');
         t.ok(stats, "found roll-up statistics for web requests");
         t.equal(stats.callCount, 1, "only one web request was made");
 
-        stats = agent.metrics.getMetric('HttpDispatcher').stats;
+        stats = agent.metrics.getMetric('HttpDispatcher');
         t.ok(stats, "found HTTP dispatcher statistics");
         t.equal(stats.callCount, 1, "only one HTTP-dispatched request was made");
 
@@ -107,7 +107,7 @@ test("agent instrumentation of Express 2", function (t) {
     app.listen(TEST_PORT, TEST_HOST);
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('View/index/Rendering').stats;
+      var stats = agent.metrics.getMetric('View/index/Rendering');
       t.equal(stats.callCount, 1, "should note the view rendering");
     });
 
@@ -205,7 +205,7 @@ test("agent instrumentation of Express 2", function (t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
         t.equals(body, BODY, "response and original page text match");
 
-        var stats = agent.metrics.getMetric('WebTransaction/Uri/test').stats;
+        var stats = agent.metrics.getMetric('WebTransaction/Uri/test');
         t.ok(stats, "Statistics should have been found for request.");
 
         var timing = stats.total * 1000;
@@ -243,7 +243,7 @@ test("agent instrumentation of Express 2", function (t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
         t.equals(body, BODY, "response and original page text match");
 
-        var stats = agent.metrics.getMetric('WebTransaction/Uri/test/ham').stats;
+        var stats = agent.metrics.getMetric('WebTransaction/Uri/test/ham');
         t.ok(stats, "Statistics should have been found for request.");
 
         t.end();

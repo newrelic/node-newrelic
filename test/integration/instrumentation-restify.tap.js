@@ -30,7 +30,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
 
       var metric = agent.metrics.getMetric('WebTransaction/Uri/hello/friend');
       t.ok(metric, "request metrics should have been gathered");
-      t.equals(metric.stats.callCount, 1, "handler should have been called");
+      t.equals(metric.callCount, 1, "handler should have been called");
       t.equals(body, '"hello friend"', "data returned by restify should be as expected");
 
       var found = false;
@@ -85,7 +85,7 @@ test("Restify should still be instrumented when run with SSL", function (t) {
 
         var metric = agent.metrics.getMetric('WebTransaction/Uri/hello/friend');
         t.ok(metric, "request metrics should have been gathered");
-        t.equals(metric.stats.callCount, 1, "handler should have been called");
+        t.equals(metric.callCount, 1, "handler should have been called");
         t.equals(body, '"hello friend"',
                  "data returned by restify should be as expected");
 

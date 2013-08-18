@@ -145,7 +145,7 @@ describe("built-in http module instrumentation", function () {
     });
 
     it("should record unscoped path stats after a normal request", function () {
-      var stats = agent.metrics.getOrCreateMetric('WebTransaction/Uri/path').stats;
+      var stats = agent.metrics.getOrCreateMetric('WebTransaction/Uri/path');
       expect(stats.callCount).equal(1);
     });
 
@@ -161,7 +161,7 @@ describe("built-in http module instrumentation", function () {
 
     it("should record unscoped HTTP dispatcher stats after a normal request",
        function () {
-      var stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
+      var stats = agent.metrics.getOrCreateMetric('HttpDispatcher');
       expect(stats.callCount).equal(2);
     });
 
@@ -170,7 +170,7 @@ describe("built-in http module instrumentation", function () {
       var stats = transaction
                     .metrics
                     .getOrCreateMetric('External/localhost/http',
-                                       'WebTransaction/Uri/path').stats;
+                                       'WebTransaction/Uri/path');
       expect(stats.callCount).equal(1);
     });
 

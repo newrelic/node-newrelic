@@ -152,7 +152,7 @@ describe("the New Relic agent", function () {
               ;
 
             expect(metric, 'is defined').not.equal(undefined);
-            expect(metric.stats.callCount, 'has been incremented').equal(1);
+            expect(metric.callCount, 'has been incremented').equal(1);
 
             return done();
           });

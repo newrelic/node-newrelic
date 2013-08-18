@@ -112,7 +112,7 @@ describe("Transaction", function () {
       tt.measure(TRACE_NAME, null, SLEEP_DURATION);
       tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5);
 
-      var statistics = tt.metrics.getMetric(TRACE_NAME).stats;
+      var statistics = tt.metrics.getMetric(TRACE_NAME);
       expect(statistics.callCount).to.equal(2);
       expect(statistics.max).above((SLEEP_DURATION - 1) / 1000);
     });
@@ -124,7 +124,7 @@ describe("Transaction", function () {
       tt.end();
 
       var metrics = tt.metrics.getMetric('Custom/Test16');
-      metrics.stats.total.should.equal(0.065);
+      metrics.total.should.equal(0.065);
     });
   });
 

@@ -96,7 +96,7 @@ test("built-in http module instrumentation should handle internal & external req
       t.equals(fetchedBody, PAGE, "page shouldn't change");
 
       var scope = 'WebTransaction/Uri' + TEST_INTERNAL_PATH
-        , stats = agent.metrics.getOrCreateMetric(scope).stats
+        , stats = agent.metrics.getOrCreateMetric(scope)
         , found = false
         ;
 
@@ -108,16 +108,15 @@ test("built-in http module instrumentation should handle internal & external req
       });
       t.ok(found, "should indicate that the http dispatcher is in play");
 
-      stats = agent.metrics.getOrCreateMetric('HttpDispatcher').stats;
+      stats = agent.metrics.getOrCreateMetric('HttpDispatcher');
       t.equals(stats.callCount, 2,
                "should have accounted for all the internal http requests");
 
-      stats = agent.metrics.getOrCreateMetric('External/localhost/http', scope).stats;
+      stats = agent.metrics.getOrCreateMetric('External/localhost/http', scope);
       t.equals(stats.callCount, 1,
                "should record outbound HTTP requests in the agent's metrics");
 
-      stats = transaction.metrics.getOrCreateMetric('External/localhost/http',
-                                                    scope).stats;
+      stats = transaction.metrics.getOrCreateMetric('External/localhost/http', scope);
       t.equals(stats.callCount, 1,
                "should associate outbound HTTP requests with the inbound transaction");
 

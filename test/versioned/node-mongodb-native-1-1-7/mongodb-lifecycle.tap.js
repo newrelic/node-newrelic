@@ -35,14 +35,14 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       t.plan(18);
 
       agent.once('transactionFinished', function () {
-        t.equals(agent.metrics.getMetric('Database/all').stats.callCount, 2,
+        t.equals(agent.metrics.getMetric('Database/all').callCount, 2,
                  "should find both operations");
-        t.equals(agent.metrics.getMetric('Database/insert').stats.callCount, 1,
+        t.equals(agent.metrics.getMetric('Database/insert').callCount, 1,
                  "basic insert should be recorded");
-        t.equals(agent.metrics.getMetric('Database/test/insert').stats.callCount, 1,
+        t.equals(agent.metrics.getMetric('Database/test/insert').callCount, 1,
                  "collection insertion should be recorded");
         t.equals(agent.metrics.getMetric('Database/test/insert',
-                                         'MongoDB/test/insert').stats.callCount, 1,
+                                         'MongoDB/test/insert').callCount, 1,
                  "Scoped MongoDB request should be recorded");
       });
 
@@ -109,14 +109,14 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       t.plan(7);
 
       agent.once('transactionFinished', function () {
-        t.equals(agent.metrics.getMetric('Database/all').stats.callCount, 4,
+        t.equals(agent.metrics.getMetric('Database/all').callCount, 4,
                  "should find all operations including cursor");
-        t.equals(agent.metrics.getMetric('Database/insert').stats.callCount, 2,
+        t.equals(agent.metrics.getMetric('Database/insert').callCount, 2,
                  "basic insert should be recorded with cursor");
-        t.equals(agent.metrics.getMetric('Database/test2/insert').stats.callCount, 1,
+        t.equals(agent.metrics.getMetric('Database/test2/insert').callCount, 1,
                  "collection insertion should be recorded from cursor");
         t.equals(agent.metrics.getMetric('Database/test2/insert',
-                                         'MongoDB/test2/insert').stats.callCount, 1,
+                                         'MongoDB/test2/insert').callCount, 1,
                  "Scoped MongoDB request should be recorded from cursor");
       });
 

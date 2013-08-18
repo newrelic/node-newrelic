@@ -46,7 +46,7 @@ test("built-in fs module instrumentation should trace the reading of directories
         transaction.end();
         process.nextTick(function () {
           var name = 'Filesystem/ReadDir/' + TESTDIR
-            , stats = transaction.metrics.getMetric(name).stats
+            , stats = transaction.metrics.getMetric(name)
             ;
 
           t.ok(stats, "stats should exist for metric");

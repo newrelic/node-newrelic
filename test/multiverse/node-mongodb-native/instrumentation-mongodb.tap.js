@@ -11,14 +11,14 @@ var path     = require('path')
 function addMetricsVerifier(t, agent, operation) {
   agent.once('transactionFinished', function () {
     try {
-      t.equals(agent.metrics.getMetric('Database/all').stats.callCount, 1,
+      t.equals(agent.metrics.getMetric('Database/all').callCount, 1,
                "should find all operations");
-      t.equals(agent.metrics.getMetric('Database/' + operation).stats.callCount, 1,
+      t.equals(agent.metrics.getMetric('Database/' + operation).callCount, 1,
                "generic " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('Database/test/' + operation).stats.callCount, 1,
+      t.equals(agent.metrics.getMetric('Database/test/' + operation).callCount, 1,
                "named collection " + operation + " should be recorded");
       t.equals(agent.metrics.getMetric('Database/test/' + operation,
-                                       'MongoDB/test/' + operation).stats.callCount, 1,
+                                       'MongoDB/test/' + operation).callCount, 1,
                "scoped MongoDB request should be recorded");
     }
     catch (error) {
