@@ -10,20 +10,20 @@ var path            = require('path')
   ;
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root.add('MongoDB/find/users');
+  var segment = options.transaction.getTrace().root.add('MongoDB/users/find');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
 
   return segment;
 }
 
-function makeRecorder(operation, model) {
+function makeRecorder(model, operation) {
   var statement = new ParsedStatement(operation, model);
   return statement.recordMetrics.bind(statement);
 }
 
 function recordMongoDB(segment, scope) {
-  makeRecorder('find', 'users')(segment, scope);
+  makeRecorder('users', 'find')(segment, scope);
 }
 
 function record(options) {
@@ -70,7 +70,7 @@ describe("record ParsedStatement with MongoDB", function () {
       recordMongoDB(segment, undefined);
 
       var result = [
-        [{name : "MongoDB/find/users"},  [1,0,0,0,0,0]],
+        [{name : "MongoDB/users/find"},  [1,0,0,0,0,0]],
         [{name : "Database/users/find"}, [1,0,0,0,0,0]],
         [{name : "Database/find"},       [1,0,0,0,0,0]],
         [{name : "Database/all/Other"},  [1,0,0,0,0,0]],
@@ -93,12 +93,12 @@ describe("record ParsedStatement with MongoDB", function () {
       });
 
       var result = [
-        [{name  : "MongoDB/find/users"},      [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "MongoDB/users/find"},      [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/users/find"},     [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/find"},           [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/all/Web"},        [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/all"},            [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "MongoDB/find/users",
+        [{name  : "MongoDB/users/find",
           scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/users/find",
           scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
@@ -110,9 +110,9 @@ describe("record ParsedStatement with MongoDB", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('MongoDB/find/users',     makeRecorder('find', 'users'))
-      , child1 = parent.add('MongoDB/insert/users', makeRecorder('insert', 'users'))
-      , child2 = child1.add('MongoDB/update/cache', makeRecorder('update', 'cache'))
+      , parent = root.add('MongoDB/users/find',     makeRecorder('users', 'find'))
+      , child1 = parent.add('MongoDB/users/insert', makeRecorder('users', 'insert'))
+      , child2 = child1.add('MongoDB/cache/update', makeRecorder('cache', 'update'))
       ;
 
     root.setDurationInMillis(26, 0);
@@ -123,15 +123,15 @@ describe("record ParsedStatement with MongoDB", function () {
     trans.end();
 
     var result = [
-      [{name : "MongoDB/find/users"},    [1,0.026,0.014,0.026,0.026,0.000676]],
+      [{name : "MongoDB/users/find"},    [1,0.026,0.014,0.026,0.026,0.000676]],
       [{name : "Database/users/find"},   [1,0.026,0.014,0.026,0.026,0.000676]],
       [{name : "Database/find"},         [1,0.026,0.014,0.026,0.026,0.000676]],
       [{name : "Database/all/Other"},    [3,0.046,0.029,0.008,0.026,0.000884]],
       [{name : "Database/all"},          [3,0.046,0.029,0.008,0.026,0.000884]],
-      [{name : "MongoDB/insert/users"},  [1,0.012,0.007,0.012,0.012,0.000144]],
+      [{name : "MongoDB/users/insert"},  [1,0.012,0.007,0.012,0.012,0.000144]],
       [{name : "Database/users/insert"}, [1,0.012,0.007,0.012,0.012,0.000144]],
       [{name : "Database/insert"},       [1,0.012,0.007,0.012,0.012,0.000144]],
-      [{name : "MongoDB/update/cache"},  [1,0.008,0.008,0.008,0.008,0.000064]],
+      [{name : "MongoDB/cache/update"},  [1,0.008,0.008,0.008,0.008,0.000064]],
       [{name : "Database/cache/update"}, [1,0.008,0.008,0.008,0.008,0.000064]],
       [{name : "Database/update"},       [1,0.008,0.008,0.008,0.008,0.000064]]
     ];
