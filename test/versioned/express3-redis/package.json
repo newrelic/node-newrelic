@@ -1,5 +1,6 @@
 {
   "name": "express3-redis",
+  "private": true,
   "version": "0.0.0",
   "description": "TT tests for Express 3 with a Redis client",
   "main": "express3-redis-tt.tap.js",
