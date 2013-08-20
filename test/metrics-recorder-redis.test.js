@@ -62,9 +62,9 @@ describe("recordRedis", function () {
       recordRedis(segment, undefined);
 
       var result = [
-        [{name : "Redis/set"},    [1,0,0,0,0,0]],
-        [{name : "Redis/all"},    [1,0,0,0,0,0]],
-        [{name : "Redis/allWeb"}, [1,0,0,0,0,0]]
+        [{name : "Redis/set"},      [1,0,0,0,0,0]],
+        [{name : "Redis/allOther"}, [1,0,0,0,0,0]],
+        [{name : "Redis/all"},      [1,0,0,0,0,0]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -84,8 +84,8 @@ describe("recordRedis", function () {
 
       var result = [
         [{name  : "Redis/set"},               [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Redis/all"},               [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Redis/allWeb"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/all"},               [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Redis/set",
           scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
@@ -109,11 +109,11 @@ describe("recordRedis", function () {
     trans.end();
 
     var result = [
-      [{name : "Redis/ladd"},   [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "Redis/all"},    [3,0.046,0.030,0.008,0.026,0.000884]],
-      [{name : "Redis/allWeb"}, [3,0.046,0.030,0.008,0.026,0.000884]],
-      [{name : "Redis/blpopr"}, [1,0.012,0.008,0.012,0.012,0.000144]],
-      [{name : "Redis/lpop"},   [1,0.008,0.008,0.008,0.008,0.000064]]
+      [{name : "Redis/ladd"},     [1,0.026,0.014,0.026,0.026,0.000676]],
+      [{name : "Redis/allOther"}, [3,0.046,0.030,0.008,0.026,0.000884]],
+      [{name : "Redis/all"},      [3,0.046,0.030,0.008,0.026,0.000884]],
+      [{name : "Redis/blpopr"},   [1,0.012,0.008,0.012,0.012,0.000144]],
+      [{name : "Redis/lpop"},     [1,0.008,0.008,0.008,0.008,0.000064]]
     ];
 
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

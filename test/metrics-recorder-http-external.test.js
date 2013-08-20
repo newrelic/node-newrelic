@@ -67,7 +67,7 @@ describe("recordExternal", function () {
 
       var result = [
         [{name : "External/test.example.com/http"}, [1,0,0,0,0,0]],
-        [{name : "External/all/Other"},             [1,0,0,0,0,0]],
+        [{name : "External/allOther"},              [1,0,0,0,0,0]],
         [{name : "External/test.example.com/all"},  [1,0,0,0,0,0]],
         [{name : "External/all"},                   [1,0,0,0,0,0]]
       ];
@@ -89,7 +89,7 @@ describe("recordExternal", function () {
 
       var result = [
         [{name  : "External/test.example.com/http"}, [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "External/all/Web"},               [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "External/allWeb"},                [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "External/test.example.com/all"},  [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "External/all"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "External/test.example.com/http",
@@ -116,7 +116,7 @@ describe("recordExternal", function () {
 
     var result = [
       [{name : "External/test.example.com/http"},   [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "External/all/Other"},               [3,0.046,0.034,0.008,0.026,0.000884]],
+      [{name : "External/allOther"},                [3,0.046,0.034,0.008,0.026,0.000884]],
       [{name : "External/test.example.com/all"},    [1,0.026,0.014,0.026,0.026,0.000676]],
       [{name : "External/all"},                     [3,0.046,0.034,0.008,0.026,0.000884]],
       [{name : "External/api.twitter.com/https"},   [1,0.012,0.012,0.012,0.012,0.000144]],

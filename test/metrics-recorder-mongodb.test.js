@@ -73,7 +73,7 @@ describe("record ParsedStatement with MongoDB", function () {
         [{name : "MongoDB/users/find"},  [1,0,0,0,0,0]],
         [{name : "Database/users/find"}, [1,0,0,0,0,0]],
         [{name : "Database/find"},       [1,0,0,0,0,0]],
-        [{name : "Database/all/Other"},  [1,0,0,0,0,0]],
+        [{name : "Database/allOther"},   [1,0,0,0,0,0]],
         [{name : "Database/all"},        [1,0,0,0,0,0]]
       ];
 
@@ -96,7 +96,7 @@ describe("record ParsedStatement with MongoDB", function () {
         [{name  : "MongoDB/users/find"},      [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/users/find"},     [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/find"},           [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/all/Web"},        [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/allWeb"},         [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/all"},            [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "MongoDB/users/find",
           scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]],
@@ -126,7 +126,7 @@ describe("record ParsedStatement with MongoDB", function () {
       [{name : "MongoDB/users/find"},    [1,0.026,0.014,0.026,0.026,0.000676]],
       [{name : "Database/users/find"},   [1,0.026,0.014,0.026,0.026,0.000676]],
       [{name : "Database/find"},         [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "Database/all/Other"},    [3,0.046,0.029,0.008,0.026,0.000884]],
+      [{name : "Database/allOther"},     [3,0.046,0.029,0.008,0.026,0.000884]],
       [{name : "Database/all"},          [3,0.046,0.029,0.008,0.026,0.000884]],
       [{name : "MongoDB/users/insert"},  [1,0.012,0.007,0.012,0.012,0.000144]],
       [{name : "Database/users/insert"}, [1,0.012,0.007,0.012,0.012,0.000144]],

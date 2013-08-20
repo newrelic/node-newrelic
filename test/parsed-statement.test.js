@@ -56,7 +56,7 @@ describe("recording database metrics", function () {
     });
 
     it("should find a database rollup metric of type 'Other'", function () {
-      checkDatMetric(metrics, 'Database/all/Other');
+      checkDatMetric(metrics, 'Database/allOther');
     });
   });
 
@@ -87,7 +87,7 @@ describe("recording database metrics", function () {
     });
 
     it("should find an unscoped rollup DB metric of type 'Other'", function () {
-      checkDatMetric(metrics, 'Database/all/Other');
+      checkDatMetric(metrics, 'Database/allOther');
     });
   });
 });

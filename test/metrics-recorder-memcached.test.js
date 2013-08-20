@@ -11,7 +11,7 @@ var path            = require('path')
   ;
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root.add('MemCache/set');
+  var segment = options.transaction.getTrace().root.add('Memcache/set');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
 
@@ -62,9 +62,9 @@ describe("recordMemcached", function () {
       recordMemcached(segment, undefined);
 
       var result = [
-        [{name : "MemCache/set"},    [1,0,0,0,0,0]],
-        [{name : "MemCache/all"},    [1,0,0,0,0,0]],
-        [{name : "MemCache/allWeb"}, [1,0,0,0,0,0]]
+        [{name : "Memcache/set"},      [1,0,0,0,0,0]],
+        [{name : "Memcache/allOther"}, [1,0,0,0,0,0]],
+        [{name : "Memcache/all"},      [1,0,0,0,0,0]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -83,10 +83,10 @@ describe("recordMemcached", function () {
       });
 
       var result = [
-        [{name  : "MemCache/set"},            [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "MemCache/all"},            [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "MemCache/allWeb"},         [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "MemCache/set",
+        [{name  : "Memcache/set"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Memcache/allWeb"},         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Memcache/all"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Memcache/set",
           scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
@@ -96,9 +96,9 @@ describe("recordMemcached", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('MemCache/get',     recordMemcached)
-      , child1 = parent.add('MemCache/set',   recordMemcached)
-      , child2 = parent.add('MemCache/clear', recordMemcached)
+      , parent = root.add('Memcache/get',     recordMemcached)
+      , child1 = parent.add('Memcache/set',   recordMemcached)
+      , child2 = parent.add('Memcache/clear', recordMemcached)
       ;
 
     root.setDurationInMillis(26, 0);
@@ -109,11 +109,11 @@ describe("recordMemcached", function () {
     trans.end();
 
     var result = [
-      [{name : "MemCache/get"},   [1,0.026,0.013,0.026,0.026,0.000676]],
-      [{name : "MemCache/all"},   [3,0.046,0.033,0.008,0.026,0.000884]],
-      [{name : "MemCache/allWeb"},[3,0.046,0.033,0.008,0.026,0.000884]],
-      [{name : "MemCache/set"},   [1,0.012,0.012,0.012,0.012,0.000144]],
-      [{name : "MemCache/clear"}, [1,0.008,0.008,0.008,0.008,0.000064]]
+      [{name : "Memcache/get"},      [1,0.026,0.013,0.026,0.026,0.000676]],
+      [{name : "Memcache/allOther"}, [3,0.046,0.033,0.008,0.026,0.000884]],
+      [{name : "Memcache/all"},      [3,0.046,0.033,0.008,0.026,0.000884]],
+      [{name : "Memcache/set"},      [1,0.012,0.012,0.012,0.012,0.000144]],
+      [{name : "Memcache/clear"},    [1,0.008,0.008,0.008,0.008,0.000064]]
     ];
 
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
