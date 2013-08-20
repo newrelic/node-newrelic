@@ -1,3 +1,13 @@
+### v0.10.1 / beta-24 (2013-08-19):
+
+* The instrumentation for `http` no longer assumes that the hostname for
+  external requests will be named `host` (`hostname` is also allowed, and
+  `http.request()` defaults to `localhost`).
+* The Node agent and New Relic's servers disagreed about what many metrics
+  should be called. The agent was wrong and it regrets the error.
+* Minor tweaks to database instrumentation (MongoDB and MySQL) that could have
+  a small but visible impact on the overview display.
+
 ### v0.10.0 / beta-23 (2013-08-17):
 
 * IMPORTANT. The transaction tracer in this build is COMPLETELY NEW. This means

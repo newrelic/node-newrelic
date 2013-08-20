@@ -130,7 +130,9 @@ Information about changes to the agent are in NEWS.md.
 
 ### Known issues:
 
-* The agent works only with Node.js 0.6 and newer. Certain features rely on
+* The agent works only with Node.js 0.6 and newer (**IMPORTANT**: newer betas
+  depend on Node 0.8, and support for 0.6 may or may not come back by the time
+  version 1.0 of the New Relic agent is released). Certain features rely on
   Node 0.8. Some features may behave differently between 0.8 and 0.10. The
   agent is optimized for newer versions of Node.
 * The metric names displayed in New Relic are a work in progress. The
@@ -149,7 +151,7 @@ Information about changes to the agent are in NEWS.md.
   improve the agent.
 * There is an error tracer in the Node agent, but it's a work in progress.
   In particular, it still does not intercept errors that may already be
-  handled by frameworks. Also, parts of it depend on the new, experimental
+  handled by frameworks. Also, parts of it depend on the
   [domain](http://nodejs.org/api/domain.html) API added in Node 0.8, and
   domain-specific functionality will not work in apps running in
   Node 0.6.x.
