@@ -1,3 +1,11 @@
+### v0.10.2 / beta-25 (2013-08-23):
+
+* Fixed a serious error in how the agent handles communication errors
+  when sending errors to New Relic. If you're running v0.10.0 or v0.10.1,
+  upgrade sooner rather than later, as those versions are losing data.
+* Substantially improved the quality of reporting on errors noticed by the
+  Node agent. Stack traces, scopes, and messages should be much better.
+
 ### v0.10.1 / beta-24 (2013-08-19):
 
 * The instrumentation for `http` no longer assumes that the hostname for
