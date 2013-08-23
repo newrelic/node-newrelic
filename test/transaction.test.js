@@ -32,7 +32,7 @@ describe("Transaction", function () {
   });
 
   it("should be created without an associated trace", function () {
-    expect(trans.trace).equal(undefined);
+    should.not.exist(trans.trace);
   });
 
   it("should create a trace on demand", function () {
@@ -124,7 +124,7 @@ describe("Transaction", function () {
       tt.end();
 
       var metrics = tt.metrics.getMetric('Custom/Test16');
-      metrics.total.should.equal(0.065);
+      expect(metrics.total).equal(0.065);
     });
   });
 

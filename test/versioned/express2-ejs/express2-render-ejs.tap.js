@@ -162,8 +162,8 @@ test("agent instrumentation of Express 2", function (t) {
         var first = errors[0];
         t.ok(first, "have the first error");
 
-        var matcher = /TypeError: Cannot read property 'ohno' of undefined/;
-        t.ok(first[2].match(matcher), "got the expected error");
+        t.equal(first[2], "Cannot read property 'ohno' of undefined",
+                "got the expected error");
 
         t.end();
       });

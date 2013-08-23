@@ -5,14 +5,18 @@ var path                = require('path')
   , expect              = chai.expect
   , should              = chai.should()
   , sinon               = require('sinon')
-  , logger              = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
+  , logger              = require(path.join(__dirname, '..', 'lib',
+                                            'logger')).child({component : 'TEST'})
   , config              = require(path.join(__dirname, '..', 'lib', 'config'))
   , Agent               = require(path.join(__dirname, '..', 'lib', 'agent'))
-  , CollectorConnection = require(path.join(__dirname, '..', 'lib', 'collector', 'connection'))
-  , DataSender          = require(path.join(__dirname, '..', 'lib', 'collector', 'data-sender'))
+  , CollectorConnection = require(path.join(__dirname, '..', 'lib',
+                                            'collector', 'connection'))
+  , DataSender          = require(path.join(__dirname, '..', 'lib',
+                                            'collector', 'data-sender'))
   , ErrorTracer         = require(path.join(__dirname, '..', 'lib', 'error'))
   , Metrics             = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , SQLTrace            = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace', 'sql'))
+  , SQLTrace            = require(path.join(__dirname, '..', 'lib',
+                                            'transaction', 'trace', 'sql'))
   , Stats               = require(path.join(__dirname, '..', 'lib', 'stats'))
   , Transaction         = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -124,7 +128,7 @@ describe("CollectorConnection", function () {
                                        0,
                                        'WebTransaction/StatusCode/400',
                                        'HttpError 400',
-                                       'HttpError 400',
+                                       'Error',
                                        {request_uri : '/test-request/churro'}
                                      ]
                                    ]);
