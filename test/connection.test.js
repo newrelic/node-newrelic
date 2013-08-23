@@ -43,7 +43,6 @@ describe("CollectorConnection", function () {
 
   describe("with a mocked DataSender", function () {
     var connection
-      , mockConnection
       , method
       , uri
       , params
@@ -62,138 +61,209 @@ describe("CollectorConnection", function () {
       connection = new CollectorConnection(agent);
       // agentRunId is set as a side effect of the connect() method.
       connection.agentRunId = SAMPLE_RUN_ID;
-      mockConnection = sinon.mock(connection);
 
-      // replace CollectorConnection.createDataSender
-      var sender = new DataSender(agent.config, SAMPLE_RUN_ID);
-      sender.invokeMethod = function (sMethod, sParams) {
+      // DataSender is created entirely within send(), so mock indirectly
+      sinon.stub(DataSender.prototype, 'invokeMethod', function (sMethod, sData) {
         method = sMethod;
-        uri    = sender.getURL(method);
-        params = sParams;
-      };
+        uri    = this.getURL(method);
+        params = sData;
+      });
+    });
 
-      // replace CollectorConnection.createDataSender
-      mockConnection.expects('createDataSender').once().returns(sender);
+    afterEach(function () {
+      DataSender.prototype.invokeMethod.restore();
     });
 
     // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/MetricDataMethod.html
-    it("should send metric data in the expected format", function () {
-      // let's try a ludicrously high Apdex T
-      var metrics = new Metrics(1);
-      metrics.measureMilliseconds('Test/SampleMetric/all', null, 3, 1);
+    describe("sending metric data", function () {
+      var metrics;
 
-      connection.sendMetricData(12, 1014, metrics.toJSON());
-      mockConnection.verify();
+      beforeEach(function () {
+        // let's try a ludicrously high Apdex T
+        metrics = new Metrics(1);
+        metrics.measureMilliseconds('Test/SampleMetric/all', null, 3, 1);
 
-      expect(method).equal('metric_data');
-      expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
-                                              'metric_data', SAMPLE_RUN_ID));
-      var runId      = params[0]
-        , startTime  = params[1]
-        , endTime    = params[2]
-        , metricData = params[3]
-        ;
-      expect(runId).equal(SAMPLE_RUN_ID);
-      expect(startTime).equal(12);
-      expect(endTime).equal(1014);
-      expect(metricData).deep.equal(metrics.toJSON());
+        connection.sendMetricData(12, 1014, metrics.toJSON());
+      });
+
+      it("should invoke metric_data", function () {
+        expect(method).equal('metric_data');
+      });
+
+      it("should generate the correct URL", function () {
+        expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
+                                                'metric_data', SAMPLE_RUN_ID));
+      });
+
+      it("should put the run ID in the right place", function () {
+        var runId = params[0] ;
+        expect(runId).equal(SAMPLE_RUN_ID);
+      });
+
+      it("should put the harvest cycle start time the right place", function () {
+        var startTime = params[1];
+        expect(startTime).equal(12);
+      });
+
+      it("should put the harvest cycle end time in the right place", function () {
+        var endTime = params[2];
+        expect(endTime).equal(1014);
+      });
+
+      it("should pass along the metrics unmolested", function () {
+        var metricData = params[3];
+        expect(metricData).deep.equal(metrics.toJSON());
+      });
     });
 
     // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/ErrorData.html
-    it("should send traced errors in the expected format", function () {
-      var errors = new ErrorTracer(agent.config);
+    describe("sending error traces", function () {
+      var data;
 
-      var transaction = new Transaction(agent);
-      transaction.setWeb('/test-request/churro', 'WebTransaction/StatusCode/400', 400);
-      transaction.end();
+      beforeEach(function () {
+        var errors = new ErrorTracer(agent.config);
 
-      errors.onTransactionFinished(transaction);
-      connection.sendTracedErrors(errors.errors);
-      mockConnection.verify();
+        var transaction = new Transaction(agent);
+        transaction.setWeb('/test-request/churro', 'WebTransaction/StatusCode/400', 400);
+        transaction.end();
 
-      expect(method).equal('error_data');
-      expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
-                                              'error_data', SAMPLE_RUN_ID));
-      var runId     = params[0]
-        , errorData = params[1]
-        ;
-      expect(runId).equal(SAMPLE_RUN_ID);
-      // 0: ignored
-      // 1: scope
-      // 2: message
-      // 3: message class
-      // 4: params
-      expect(errorData).deep.equal([
-                                     [
-                                       0,
-                                       'WebTransaction/StatusCode/400',
-                                       'HttpError 400',
-                                       'Error',
-                                       {request_uri : '/test-request/churro'}
-                                     ]
-                                   ]);
+        errors.onTransactionFinished(transaction);
+        data = errors.errors;
+        connection.sendTracedErrors(errors.errors);
+      });
+
+      it("should invoke error_data", function () {
+        expect(method).equal('error_data');
+      });
+
+      it("should generate the correct URL", function () {
+        expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
+                                                'error_data', SAMPLE_RUN_ID));
+      });
+
+      it("should put the run ID in the correct place", function () {
+        var runId = params[0];
+        expect(runId).equal(SAMPLE_RUN_ID);
+      });
+
+      it("shouldn't mess with the error trace(s)", function () {
+        var errorData = params[1];
+        // 0: ignored
+        // 1: scope
+        // 2: message
+        // 3: error type
+        // 4: params
+        expect(errorData).deep.equal(
+          [
+            [
+              0,
+              'WebTransaction/StatusCode/400',
+              'HttpError 400',
+              'Error',
+              {request_uri : '/test-request/churro'}
+            ]
+          ]
+        );
+      });
     });
 
-    // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/TransactionSampleData.html
-    it("should send transaction traces in the expected format", function () {
-      var transaction = new Transaction(agent);
-      var parent = transaction.getTrace().add('Express/Uri/test-get');
-      var child = parent.add('MongoDB/insert/user');
-      child.end();
-      parent.end();
-      transaction.getTrace().end();
-      transaction.end();
+    // https://pdx-hudson.datanerd.us/job/collector-master/javadoc/com/nr/collector/methods/TransactionSampleData.html
+    describe("sending transaction traces", function () {
+      var traces;
 
-      var traces = [transaction.getTrace()];
+      beforeEach(function () {
+        var transaction = new Transaction(agent)
+          , parent      = transaction.getTrace().add('Express/Uri/test-get')
+          , child       = parent.add('MongoDB/insert/user')
+          ;
 
-      connection.sendTransactionTraces(traces);
-      mockConnection.verify();
+        child.end();
+        parent.end();
+        transaction.getTrace().end();
+        transaction.end();
 
-      expect(method).equal('transaction_sample_data');
-      expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
-                                              'transaction_sample_data', SAMPLE_RUN_ID));
-      var traceData = params[1];
-      expect(traceData).deep.equal(traces);
+        traces = [transaction.getTrace()];
+
+        connection.sendTransactionTraces(traces);
+      });
+
+      it("should invoke transaction_sample_data", function () {
+        expect(method).equal('transaction_sample_data');
+      });
+
+      it("should generate the correct URL", function () {
+        expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION,
+                                                testLicense,
+                                                'transaction_sample_data',
+                                                SAMPLE_RUN_ID));
+      });
+
+      it("should leave the trace data alone", function () {
+        var traceData = params[1];
+        expect(traceData).deep.equal(traces);
+      });
     });
 
     // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/SqlTraceData.html
-    it("should send SQL trace data in the expected format", function (done) {
-      var sqls = [];
+    describe("sending SQL traces", function () {
+      var sqls;
 
-      var transaction = new Transaction(agent);
-      transaction.setWeb('/bros/steak', 'WebTransaction/Uri/bros/steak', 200);
-      transaction.end();
+      beforeEach(function (done) {
+        sqls = [];
 
-      var trace = new SQLTrace('SELECT dude FROM bro WHERE meat = :ham',
-                               transaction,
-                               new Stats());
-      trace.generateJSON('DB/BroSQL/dudefella', {ham : 'steak'}, function (err, json) {
-        if (err) return done(err);
+        var transaction = new Transaction(agent);
+        transaction.setWeb('/bros/steak', 'WebTransaction/Uri/bros/steak', 200);
+        transaction.end();
 
-        sqls.push(json);
+        var trace = new SQLTrace('SELECT dude FROM bro WHERE meat = :ham',
+                                 transaction,
+                                 new Stats());
 
-        connection.sendSQLTraces(sqls);
-        mockConnection.verify();
+        trace.generateJSON('DB/BroSQL/dudefella', {ham : 'steak'}, function (err, json) {
+          if (err) return done(err);
 
+          sqls.push(json);
+          connection.sendSQLTraces(sqls);
+
+          done();
+        });
+      });
+
+      it("should invoke sql_trace_data", function () {
         expect(method).equal('sql_trace_data');
-        expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
-                                                'sql_trace_data', SAMPLE_RUN_ID));
+      });
+
+      it("should generate the correct URL", function () {
+        expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION,
+                                                testLicense,
+                                                'sql_trace_data',
+                                                SAMPLE_RUN_ID));
+      });
+
+      it("shouldn't mess up the traces", function () {
         var sqlTraces = params;
         expect(sqlTraces).deep.equal(sqls);
-
-        return done();
       });
     });
 
     // https://hudson.newrelic.com/job/collector-master/javadoc/com/nr/collector/methods/Shutdown.html
-    it("should send shutdown command in the expected format", function () {
-      connection.sendShutdown();
-      mockConnection.verify();
+    describe("shutting down", function () {
+      beforeEach(function () {
+        connection.sendShutdown();
+      });
 
-      expect(method).equal('shutdown');
-      expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
-                                              'shutdown', SAMPLE_RUN_ID));
-      should.not.exist(params);
+      it("should invoke shutdown", function () {
+        expect(method).equal('shutdown');
+      });
+
+      it("should generate the correct URL", function () {
+        expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
+                                                'shutdown', SAMPLE_RUN_ID));
+      });
+
+      it("should include no parameters", function () {
+        should.not.exist(params);
+      });
     });
   });
 
