@@ -211,11 +211,11 @@ describe("ErrorTracer", function () {
     });
 
     it("should parse out the first URL parameter", function () {
-      expect(params.test_param).equal('a value');
+      expect(params.request_params.test_param).equal('a value');
     });
 
     it("should parse out the other URL parameter", function () {
-      expect(params.thing).equal(true);
+      expect(params.request_params.thing).equal(true);
     });
   });
 
@@ -371,11 +371,11 @@ describe("ErrorTracer", function () {
     });
 
     it("should parse out the first URL parameter", function () {
-      expect(params.test_param).equal('a value');
+      expect(params.request_params.test_param).equal('a value');
     });
 
     it("should parse out the other URL parameter", function () {
-      expect(params.thing).equal(true);
+      expect(params.request_params.thing).equal(true);
     });
   });
 
@@ -481,11 +481,11 @@ describe("ErrorTracer", function () {
     });
 
     it("should parse out the first URL parameter", function () {
-      expect(params.test_param).equal('a value');
+      expect(params.request_params.test_param).equal('a value');
     });
 
     it("should parse out the other URL parameter", function () {
-      expect(params.thing).equal(true);
+      expect(params.request_params.thing).equal(true);
     });
   });
 
