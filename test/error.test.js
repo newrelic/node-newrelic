@@ -629,6 +629,22 @@ describe("ErrorTracer", function () {
     });
   });
 
+  describe("when merging from failed collector delivery", function () {
+    it("shouldn't crash on null errors", function () {
+      expect(function () { tracer.merge(null); }).not.throws();
+    });
+
+    it("should never merge more than 20 errors", function () {
+      var sample = [0, 'WebTransaction/Uri/*', 'something bad happened', 'Error', {}];
+      var errors = [];
+      for (var i = 0; i < 30; i++) errors.push(sample);
+
+      tracer.merge(errors);
+
+      expect(tracer.errors.length).equal(20);
+    });
+  });
+
   if (dominion.available) {
     describe("when domains are available", function () {
       var mochaHandlers
