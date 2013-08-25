@@ -230,29 +230,41 @@ describe("Metrics", function () {
     });
   });
 
-  it("should merge multiple sets of metrics", function () {
-    metrics.measureMilliseconds('Test/Metrics/Unscoped', null, 400);
-    metrics.measureMilliseconds('Test/Unscoped',         null, 300);
-    metrics.measureMilliseconds('Test/Scoped',      'METRICS', 200);
-    metrics.measureMilliseconds('Test/Scoped',        'MERGE', 100);
+  describe("when merging two metrics collections", function () {
+    var other;
 
-    var other = new Metrics();
-    other.measureMilliseconds('Test/Other/Unscoped', null, 800);
-    other.measureMilliseconds('Test/Unscoped',       null, 700);
-    other.measureMilliseconds('Test/Scoped', 'OTHER', 600);
-    other.measureMilliseconds('Test/Scoped', 'MERGE', 500);
+    beforeEach(function () {
+      metrics.started = 31337;
+      metrics.measureMilliseconds('Test/Metrics/Unscoped', null, 400);
+      metrics.measureMilliseconds('Test/Unscoped',         null, 300);
+      metrics.measureMilliseconds('Test/Scoped',      'METRICS', 200);
+      metrics.measureMilliseconds('Test/Scoped',        'MERGE', 100);
 
-    metrics.merge(other);
+      other = new Metrics();
+      other.started = 1337;
+      other.measureMilliseconds('Test/Other/Unscoped', null, 800);
+      other.measureMilliseconds('Test/Unscoped',       null, 700);
+      other.measureMilliseconds('Test/Scoped', 'OTHER', 600);
+      other.measureMilliseconds('Test/Scoped', 'MERGE', 500);
 
-    // singleton (unmerged) metrics
-    expect(metrics.getOrCreateMetric('Test/Metrics/Unscoped').callCount).equal(1);
-    expect(metrics.getOrCreateMetric('Test/Other/Unscoped').callCount).equal(1);
-    expect(metrics.getOrCreateMetric('Test/Scoped', 'METRICS').callCount).equal(1);
-    expect(metrics.getOrCreateMetric('Test/Scoped', 'OTHER').callCount).equal(1);
+      metrics.merge(other);
+    });
 
-    // merged metrics
-    expect(metrics.getOrCreateMetric('Test/Unscoped').callCount).equal(2);
-    expect(metrics.getOrCreateMetric('Test/Scoped', 'MERGE').callCount).equal(2);
+    it("has all the metrics that were only in one", function () {
+      expect(metrics.getMetric('Test/Metrics/Unscoped').callCount).equal(1);
+      expect(metrics.getMetric('Test/Other/Unscoped').callCount).equal(1);
+      expect(metrics.getMetric('Test/Scoped', 'METRICS').callCount).equal(1);
+      expect(metrics.getMetric('Test/Scoped', 'OTHER').callCount).equal(1);
+    });
+
+    it("merged metrics that were in both", function () {
+      expect(metrics.getMetric('Test/Unscoped').callCount).equal(2);
+      expect(metrics.getMetric('Test/Scoped', 'MERGE').callCount).equal(2);
+    });
+
+    it("kept the earliest creation time", function () {
+      expect(metrics.started).equal(1337);
+    });
   });
 
   it("should not let exclusive duration exceed total duration");

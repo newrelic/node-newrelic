@@ -41,6 +41,10 @@ describe("CollectorConnection", function () {
     , PROTOCOL_VERSION = 9
     ;
 
+  it("starts out disconnected", function () {
+    expect(new CollectorConnection().isConnected()).equal(false);
+  });
+
   describe("with a mocked DataSender", function () {
     var connection
       , method
@@ -81,38 +85,43 @@ describe("CollectorConnection", function () {
       beforeEach(function () {
         // let's try a ludicrously high Apdex T
         metrics = new Metrics(1);
+        metrics.started = 12000;
         metrics.measureMilliseconds('Test/SampleMetric/all', null, 3, 1);
 
-        connection.sendMetricData(12, 1014, metrics.toJSON());
+        connection.sendMetricData(metrics);
       });
 
-      it("should invoke metric_data", function () {
+      it("blows up if invoked without metrics", function () {
+        expect(function () { connection.sendMetricData(null); }).throws();
+      });
+
+      it("invokes metric_data", function () {
         expect(method).equal('metric_data');
       });
 
-      it("should generate the correct URL", function () {
+      it("generates the correct URL", function () {
         expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                                 'metric_data', SAMPLE_RUN_ID));
       });
 
-      it("should put the run ID in the right place", function () {
+      it("puts the run ID in the right place", function () {
         var runId = params[0] ;
         expect(runId).equal(SAMPLE_RUN_ID);
       });
 
-      it("should put the harvest cycle start time the right place", function () {
+      it("puts the harvest cycle start time in the right place", function () {
         var startTime = params[1];
         expect(startTime).equal(12);
       });
 
-      it("should put the harvest cycle end time in the right place", function () {
+      it("puts the harvest cycle end time in the right place", function () {
         var endTime = params[2];
-        expect(endTime).equal(1014);
+        expect(endTime).not.above(Date.now() / 1000);
       });
 
-      it("should pass along the metrics unmolested", function () {
+      it("passes along the metrics unmolested", function () {
         var metricData = params[3];
-        expect(metricData).deep.equal(metrics.toJSON());
+        expect(metricData).deep.equal(metrics);
       });
     });
 
@@ -132,16 +141,20 @@ describe("CollectorConnection", function () {
         connection.sendTracedErrors(errors.errors);
       });
 
-      it("should invoke error_data", function () {
+      it("blows up if invoked without errors", function () {
+        expect(function () { connection.sendTracedErrors(null); }).throws();
+      });
+
+      it("invokes error_data", function () {
         expect(method).equal('error_data');
       });
 
-      it("should generate the correct URL", function () {
+      it("generates the correct URL", function () {
         expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                                 'error_data', SAMPLE_RUN_ID));
       });
 
-      it("should put the run ID in the correct place", function () {
+      it("puts the run ID in the correct place", function () {
         var runId = params[0];
         expect(runId).equal(SAMPLE_RUN_ID);
       });
@@ -187,18 +200,22 @@ describe("CollectorConnection", function () {
         connection.sendTransactionTraces(traces);
       });
 
-      it("should invoke transaction_sample_data", function () {
+      it("blows up if invoked without a trace", function () {
+        expect(function () { connection.sendTransactionTraces(null); }).throws();
+      });
+
+      it("invokes transaction_sample_data", function () {
         expect(method).equal('transaction_sample_data');
       });
 
-      it("should generate the correct URL", function () {
+      it("generates the correct URL", function () {
         expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION,
                                                 testLicense,
                                                 'transaction_sample_data',
                                                 SAMPLE_RUN_ID));
       });
 
-      it("should leave the trace data alone", function () {
+      it("leaves the trace data alone", function () {
         var traceData = params[1];
         expect(traceData).deep.equal(traces);
       });
@@ -229,11 +246,15 @@ describe("CollectorConnection", function () {
         });
       });
 
-      it("should invoke sql_trace_data", function () {
+      it("blows up if invoked without slow SQL", function () {
+        expect(function () { connection.sendSQLTraces(null); }).throws();
+      });
+
+      it("invokes sql_trace_data", function () {
         expect(method).equal('sql_trace_data');
       });
 
-      it("should generate the correct URL", function () {
+      it("generates the correct URL", function () {
         expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION,
                                                 testLicense,
                                                 'sql_trace_data',
@@ -252,23 +273,23 @@ describe("CollectorConnection", function () {
         connection.sendShutdown();
       });
 
-      it("should invoke shutdown", function () {
+      it("invokes shutdown", function () {
         expect(method).equal('shutdown');
       });
 
-      it("should generate the correct URL", function () {
+      it("generates the correct URL", function () {
         expect(uri).equal(generateSubmissionURL(PROTOCOL_VERSION, testLicense,
                                                 'shutdown', SAMPLE_RUN_ID));
       });
 
-      it("should include no parameters", function () {
+      it("includes no parameters", function () {
         should.not.exist(params);
       });
     });
   });
 
   describe("when sent a ForceRestartException by the collector", function () {
-    it("should restart the agent", function (done) {
+    it("restarts the agent", function (done) {
       var invokeMethod = DataSender.prototype.invokeMethod;
 
       agent.once('restart', function () {
@@ -297,13 +318,14 @@ describe("CollectorConnection", function () {
       var connection        = new CollectorConnection(agent);
       connection.agentRunId = SAMPLE_RUN_ID;
       agent.connection      = connection;
+      agent.metrics.measureMilliseconds('Test/Unimportant', 23);
 
-      connection.sendMetricData(0, 1, [1]);
+      connection.sendMetricData(agent.metrics);
     });
   });
 
   describe("when sent a ForceDisconnectException by the collector", function () {
-    it("should shut the agent down", function (done) {
+    it("shuts the agent down", function (done) {
       var invokeMethod = DataSender.prototype.invokeMethod;
 
       agent.once('shutdown', function () {
@@ -331,8 +353,9 @@ describe("CollectorConnection", function () {
       var connection        = new CollectorConnection(agent);
       connection.agentRunId = SAMPLE_RUN_ID;
       agent.connection      = connection;
+      agent.metrics.measureMilliseconds('Test/Unimportant', 23);
 
-      connection.sendMetricData(0, 1, [1]);
+      connection.sendMetricData(agent.metrics);
     });
   });
 });

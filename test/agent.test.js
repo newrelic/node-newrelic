@@ -1,38 +1,38 @@
 'use strict';
 
-var path         = require('path')
-  , chai         = require('chai')
-  , should       = chai.should()
-  , expect       = chai.expect
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
-      .child({component : 'TEST'})
-  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
-  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
+var path                = require('path')
+  , sinon               = require('sinon')
+  , chai                = require('chai')
+  , should              = chai.should()
+  , expect              = chai.expect
+  , helper              = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , configurator        = require(path.join(__dirname, '..', 'lib', 'config'))
+  , logger              = require(path.join(__dirname, '..', 'lib', 'logger'))
+                            .child({component : 'TEST'})
+  , Agent               = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , Transaction         = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , Metrics             = require(path.join(__dirname, '..', 'lib', 'metrics'))
+  , CollectorConnection = require(path.join(__dirname, '..', 'lib',
+                                            'collector', 'connection'))
   ;
 
 describe("the New Relic agent", function () {
   it("accepts a custom configuration as an option passed to the constructor",
      function () {
-    var config = configurator.initialize(logger, {
-      config : {
-        sample : true
-      }
-    });
+    var config = configurator.initialize(logger, {config : {sample : true}});
     var agent = new Agent({config : config});
 
     expect(agent.config.sample).equal(true);
   });
 
-  describe("at connection time", function () {
+  describe("when connecting to the collector", function () {
     var agent;
 
     beforeEach(function () {
       agent = new Agent();
     });
 
-    it("should retry on connection failure", function (done) {
+    it("retries on failure", function (done) {
       // _nextConnectAttempt requires that agent.connection exist
       agent.setupConnection();
 
@@ -43,11 +43,10 @@ describe("the New Relic agent", function () {
 
       agent._nextConnectAttempt(backoff);
 
-      should.exist(agent.connection);
       agent.connection.emit('connectError', 'testConnect', new Error('agent test'));
     });
 
-    it("should give up after retrying 6 times", function (done) {
+    it("gives up after retrying 6 times", function (done) {
       // _nextConnectAttempt requires agent.connection exist
       agent.setupConnection();
 
@@ -59,12 +58,11 @@ describe("the New Relic agent", function () {
 
       agent._nextConnectAttempt(backoff);
 
-      should.exist(agent.connection);
       agent.connection.emit('connectError', 'testConnect', new Error('agent test'));
     });
   });
 
-  describe("when working offline with a mocked service connection", function () {
+  describe("with a stubbed collector connection", function () {
     var agent
       , connection
       ;
@@ -74,7 +72,6 @@ describe("the New Relic agent", function () {
 
       agent.on('connect', function () {
         connection = agent.connection;
-        should.exist(connection);
 
         return done();
       });
@@ -86,41 +83,45 @@ describe("the New Relic agent", function () {
       helper.unloadAgent(agent);
     });
 
-    it("exposes its summary metrics", function () {
-      should.exist(agent.metrics);
-    });
-
-    it("exposes its configuration", function () {
+    it("bootstraps its configuration", function () {
       should.exist(agent.config);
     });
 
-    it("exposes its error service", function () {
+    it("still has a connection, which is stubbed", function () {
+      should.exist(connection);
+    });
+
+    it("has an error tracer", function () {
       should.exist(agent.errors);
     });
 
-    it("exposes its slow trace aggregator", function () {
+    it("uses an aggregator to apply top N slow trace logic", function () {
       should.exist(agent.traces);
     });
 
-    it("exposes its configured metric normalizer directly", function () {
+    it("has a metric normalizer", function () {
       should.exist(agent.normalizer);
     });
 
-    it("should look up transactions itself", function () {
+    it("has a consolidated metrics collection that transactions feed into", function () {
+      should.exist(agent.metrics);
+    });
+
+    it("has a function to look up the active transaction", function () {
       expect(function () { agent.getTransaction(); }).not.throws();
     });
 
-    it("should have debugging configuration by default", function () {
-      expect(agent.config.debug).not.equal(undefined);
+    it("has some debugging configuration by default", function () {
+      should.exist(agent.config.debug);
     });
 
     describe("with debugging configured", function () {
-      it("should have internal instrumentation disabled by default", function () {
+      it("internal instrumentation is disabled by default", function () {
         var debug = agent.config.debug;
         expect(debug.internal_metrics).equal(false);
       });
 
-      it("can be created with internal instrumentation enabled in the configuration",
+      it("internal instrumentation can be configured",
          function () {
         var config = configurator.initialize(logger, {
           config : {debug : {internal_metrics : true}}
@@ -169,7 +170,7 @@ describe("the New Relic agent", function () {
         expect(agent.metrics.apdexT).equal(0.5);
         process.nextTick(function () {
           should.exist(agent.metrics.apdexT);
-          agent.metrics.apdexT.should.equal(0.666);
+          expect(agent.metrics.apdexT).equal(0.666);
 
           return done();
         });
@@ -200,9 +201,9 @@ describe("the New Relic agent", function () {
         var testIDs = {};
         testIDs[NAME + ',' + SCOPE] = METRICID;
 
-        agent.mapper.length.should.equal(0);
+        expect(agent.mapper.length).equal(0);
         process.nextTick(function () {
-          agent.mapper.map(NAME, SCOPE).should.equal(17);
+          expect(agent.mapper.map(NAME, SCOPE)).equal(17);
 
           return done();
         });
@@ -226,13 +227,6 @@ describe("the New Relic agent", function () {
 
         trans.end();
       });
-
-      it("should have three handlers registered for transactionFinished", function () {
-        // one to merge metrics
-        // one to update error counts
-        // one to pass finished traces to the slow trace aggregator
-        agent.listeners('transactionFinished').length.should.equal(3);
-      });
     });
 
     describe("when apdex_t changes", function () {
@@ -255,7 +249,7 @@ describe("the New Relic agent", function () {
       });
     });
 
-    describe("when new metric name -> ID renaming rules may or may not have come in",
+    describe("when new metric name -> ID mappings may or may not have come in",
              function () {
       it("shouldn't throw if no new rules are received", function () {
         expect(function () { agent.onNewMappings(null); }).not.throws();
@@ -291,6 +285,62 @@ describe("the New Relic agent", function () {
         };
 
         expect(function () { agent.onNewNormalizationRules(rules); }).not.throws();
+      });
+    });
+  });
+
+  describe("with a mocked connection", function () {
+    var agent
+      , mock
+      ;
+
+    beforeEach(function () {
+      var connection = new CollectorConnection({
+        config : {applications : function () { return 'none'; }}
+      });
+
+      mock = sinon.mock(connection);
+
+      agent = new Agent({connection : connection});
+      agent.setupConnection();
+      connection.agentRunId = '1337';
+    });
+
+    afterEach(function () {
+      mock.expects('send').once().withArgs('shutdown');
+
+      agent.stop();
+      mock.verify();
+    });
+
+    describe("when sending data to the collector", function () {
+      it("the last reported time is congruent with reality", function () {
+        mock.expects('sendMetricData').once().withExactArgs(agent.metrics);
+
+        agent.submitMetricData();
+      });
+    });
+
+    describe("when harvesting", function () {
+      it("reports the error count", function () {
+        agent.metrics.started = 1337;
+
+        var transaction = new Transaction(agent);
+        transaction.setWeb('/test', 'WebTransaction/Uri/test', 501);
+        agent.errors.add(transaction, new TypeError('no method last on undefined'));
+        agent.errors.add(transaction, new Error('application code error'));
+        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+        transaction.end();
+
+        var metrics = new Metrics(0.5);
+        metrics.started = 1337;
+        metrics.getOrCreateMetric('Errors/all').incrementCallCount(4);
+
+        mock.expects('sendMetricData').once().withArgs(metrics);
+        mock.expects('sendTracedErrors').once();
+        mock.expects('sendTransactionTraces').once();
+
+        agent.harvest();
       });
     });
   });
