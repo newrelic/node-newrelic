@@ -1,3 +1,11 @@
+### v0.10.3 / beta-26 (2013-08-25):
+
+* Fixed a regression in `beta-25` that caused the agent to incorrectly
+  calculate an important timestamp, thus leading to data not showing up
+  in New Relic.
+* Improved in-memory aggregation (when the connection between the agent
+  and New Relic is unavailable or failing).
+
 ### v0.10.2 / beta-25 (2013-08-23):
 
 * Fixed a serious error in how the agent handles communication errors
