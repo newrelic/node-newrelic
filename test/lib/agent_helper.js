@@ -60,6 +60,8 @@ var helper = module.exports = {
    * @returns Agent Agent with a mocked connection method.
    */
   instrumentMockedAgent : function instrumentMockedAgent() {
+    shimmer.debug = true;
+
     var agent = helper.loadMockedAgent();
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
@@ -77,6 +79,7 @@ var helper = module.exports = {
     agent.stop();
     shimmer.unpatchModule();
     shimmer.unwrapAll();
+    shimmer.debug = false;
 
     if (agent === _agent) _agent = null;
   },
