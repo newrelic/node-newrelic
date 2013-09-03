@@ -28,17 +28,21 @@ describe("TraceSegment", function () {
       segment = new TraceSegment(new Trace('Test/TraceExample08'), 'UnitTest');
     }).not.throws();
 
-    var agent   = helper.loadMockedAgent()
-      , trans   = new Transaction(agent)
-      , working = new TraceSegment(trans.getTrace(), 'UnitTest', function () {
+    function callback() {
       helper.unloadAgent(agent);
       return done();
-    });
+    }
+
+    var agent   = helper.loadMockedAgent()
+      , trans   = new Transaction(agent)
+      , working = new TraceSegment(trans.getTrace(), 'UnitTest', callback)
+      ;
+
     working.end();
     trans.end();
   });
 
-  it("should be named", function () {
+  it("has a name", function () {
     var segment;
     expect(function noName() {
       segment = new TraceSegment(new Trace('Test/TraceExample06'));
@@ -47,17 +51,22 @@ describe("TraceSegment", function () {
     expect(success.name).equal('UnitTest');
   });
 
-  it("should have 0 children at creation", function () {
+  it("is created with no children", function () {
     var segment = new TraceSegment(new Trace('Test/TraceExample02'), 'UnitTest');
     expect(segment.children.length).equal(0);
   });
 
-  it("should have a timer", function () {
+  it("has a timer", function () {
+    var segment = new TraceSegment(new Trace('Test/TraceExample03'), 'UnitTest');
+    should.exist(segment.timer);
+  });
+
+  it("starts its timer on creation", function () {
     var segment = new TraceSegment(new Trace('Test/TraceExample03'), 'UnitTest');
     expect(segment.timer.isRunning()).equal(true);
   });
 
-  it("should accept a callback that records metrics associated with this segment",
+  it("accepts a callback that records metrics associated with this segment",
      function (done) {
     var agent   = helper.loadMockedAgent()
       , trans   = new Transaction(agent)
@@ -311,14 +320,14 @@ describe("TraceSegment", function () {
   it("should allow an arbitrary number of segments in the scope of this segment");
 
   describe("when ended", function () {
-    it("should have a ended timer", function () {
+    it("stops its timer", function () {
       var segment = new TraceSegment(new Trace('Test/TraceExample04'), 'UnitTest');
       segment.end();
       expect(segment.timer.isRunning()).equal(false);
     });
 
-    it("should know its exclusive duration");
-    it("should produce human-readable JSON");
+    it("knows its exclusive duration");
+    it("produces human-readable JSON");
 
     it("should produce JSON that conforms to the collector spec", function () {
       var trace = new Trace('WebTransaction/NormalizedUri/*');
@@ -333,7 +342,5 @@ describe("TraceSegment", function () {
                                            {nr_exclusive_duration_millis : 14},
                                            []]);
     });
-
-    it("should record its own metrics onto the trace");
   });
 });
