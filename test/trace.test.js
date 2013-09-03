@@ -78,13 +78,13 @@ describe('Trace', function () {
       0,
       DURATION,
       'ROOT',
-      {nr_async_wait : true},
+      {nr_exclusive_duration_millis : 0},
       [
         [
           0,
           DURATION,
           'WebTransaction/Uri/test',
-          {nr_async_wait : true, test : 'value'},
+          {nr_exclusive_duration_millis : 8, test : 'value'},
           [
             // TODO: ensure that the ordering is correct WRT start time
             db.toJSON(),

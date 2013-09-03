@@ -120,7 +120,13 @@ describe("TraceSegment", function () {
         0,
         1,
         'WebTransaction/Uri/test',
-        {nr_async_wait : true, test1 : 'value1', test2 : true, test3 : '50', test4 : ''},
+        {
+          nr_exclusive_duration_millis : 1,
+          test1 : 'value1',
+          test2 : true,
+          test3 : '50',
+          test4 : ''
+        },
         []
       ];
       expect(webChild.toJSON()).deep.equal(expected);
@@ -150,7 +156,7 @@ describe("TraceSegment", function () {
       expect(segment.toJSON()).deep.equal([3,
                                            17,
                                            'DB/select/getSome',
-                                           {nr_async_wait : true},
+                                           {nr_exclusive_duration_millis : 14},
                                            []]);
     });
 
