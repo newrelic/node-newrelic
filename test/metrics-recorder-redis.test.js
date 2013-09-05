@@ -103,16 +103,16 @@ describe("recordRedis", function () {
 
     root.setDurationInMillis(26, 0);
     parent.setDurationInMillis(26, 0);
-    child1.setDurationInMillis(12, 3);
+    child1.setDurationInMillis(12, 4);
     child2.setDurationInMillis(8, 11);
 
     trans.end();
 
     var result = [
-      [{name : "Redis/ladd"},     [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "Redis/allOther"}, [3,0.046,0.030,0.008,0.026,0.000884]],
-      [{name : "Redis/all"},      [3,0.046,0.030,0.008,0.026,0.000884]],
-      [{name : "Redis/blpopr"},   [1,0.012,0.008,0.012,0.012,0.000144]],
+      [{name : "Redis/ladd"},     [1,0.026,0.011,0.026,0.026,0.000676]],
+      [{name : "Redis/allOther"}, [3,0.046,0.026,0.008,0.026,0.000884]],
+      [{name : "Redis/all"},      [3,0.046,0.026,0.008,0.026,0.000884]],
+      [{name : "Redis/blpopr"},   [1,0.012,0.007,0.012,0.012,0.000144]],
       [{name : "Redis/lpop"},     [1,0.008,0.008,0.008,0.008,0.000064]]
     ];
 

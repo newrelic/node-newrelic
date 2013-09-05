@@ -123,11 +123,11 @@ describe("record ParsedStatement with MongoDB", function () {
     trans.end();
 
     var result = [
-      [{name : "MongoDB/users/find"},    [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "Database/users/find"},   [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "Database/find"},         [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "Database/allOther"},     [3,0.046,0.029,0.008,0.026,0.000884]],
-      [{name : "Database/all"},          [3,0.046,0.029,0.008,0.026,0.000884]],
+      [{name : "MongoDB/users/find"},    [1,0.026,0.011,0.026,0.026,0.000676]],
+      [{name : "Database/users/find"},   [1,0.026,0.011,0.026,0.026,0.000676]],
+      [{name : "Database/find"},         [1,0.026,0.011,0.026,0.026,0.000676]],
+      [{name : "Database/allOther"},     [3,0.046,0.026,0.008,0.026,0.000884]],
+      [{name : "Database/all"},          [3,0.046,0.026,0.008,0.026,0.000884]],
       [{name : "MongoDB/users/insert"},  [1,0.012,0.007,0.012,0.012,0.000144]],
       [{name : "Database/users/insert"}, [1,0.012,0.007,0.012,0.012,0.000144]],
       [{name : "Database/insert"},       [1,0.012,0.007,0.012,0.012,0.000144]],
