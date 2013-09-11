@@ -51,7 +51,8 @@ describe('Trace', function () {
     var URL = '/test?test=value';
 
     var transaction = new Transaction(agent);
-    transaction.setWeb(URL, 'WebTransaction/Uri' + URL, 200);
+    transaction.url  = URL;
+    transaction.verb = 'GET';
 
     var trace = transaction.getTrace();
     var start = trace.root.timer.start;
