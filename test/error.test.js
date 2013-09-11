@@ -597,16 +597,19 @@ describe("ErrorTracer", function () {
   describe("when monitoring function application for errors", function () {
     var agent
       , transaction
+      , mochaHandlers
       ;
 
     beforeEach(function () {
       agent = helper.loadMockedAgent();
       transaction = new Transaction(agent);
+      mochaHandlers = helper.onlyDomains();
     });
 
     afterEach(function () {
       transaction.end();
       helper.unloadAgent(agent);
+      process._events['uncaughtException'] = mochaHandlers;
     });
 
     it("should rethrow the exception", function () {
