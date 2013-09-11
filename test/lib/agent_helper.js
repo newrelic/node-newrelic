@@ -93,6 +93,10 @@ var helper = module.exports = {
    * @param Function callback The function to be run within the transaction.
    */
   runInTransaction : function runInTransaction(agent, callback) {
+    if (!(agent && callback)) {
+      throw new TypeError("Must include both agent and function!");
+    }
+
     return agent.tracer.transactionProxy(function () {
       var transaction = agent.getTransaction();
       callback(transaction);
