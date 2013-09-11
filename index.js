@@ -4,6 +4,7 @@ var path    = require('path')
   , logger  = require(path.join(__dirname, 'lib', 'logger'))
   , shimmer = require(path.join(__dirname, 'lib', 'shimmer'))
   , Agent   = require(path.join(__dirname, 'lib', 'agent'))
+  , API     = require(path.join(__dirname, 'api'))
   ;
 
 try {
@@ -42,7 +43,7 @@ try {
     agent.start();
   }
 
-  module.exports = agent;
+  module.exports = new API(agent);
 }
 catch (error) {
   logger.error(error,
