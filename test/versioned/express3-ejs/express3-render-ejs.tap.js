@@ -57,11 +57,11 @@ test("agent instrumentation of Express 3", function (t) {
 
         var stats;
 
-        stats = agent.metrics.getMetric('WebTransaction/Uri/test');
+        stats = agent.metrics.getMetric('WebTransaction/Controller/Expressjs/test');
         t.ok(stats, "found unscoped stats for request path");
         t.equal(stats.callCount, 1, "/test was only requested once");
 
-        stats = agent.metrics.getOrCreateApdexMetric('Apdex/Uri/test');
+        stats = agent.metrics.getOrCreateApdexMetric('Apdex/Controller/Expressjs/test');
         t.ok(stats, "found apdex stats for request path");
         t.equal(stats.satisfying, 1, "got satisfactory response time");
         t.equal(stats.tolerating, 0, "got no tolerable requests");
@@ -76,7 +76,7 @@ test("agent instrumentation of Express 3", function (t) {
         t.equal(stats.callCount, 1, "only one HTTP-dispatched request was made");
 
         var serialized = JSON.stringify(agent.metrics);
-        t.ok(serialized.match(/WebTransaction\/Uri\/test/),
+        t.ok(serialized.match(/WebTransaction\/Controller\/Expressjs\/test/),
              "serialized metrics as expected");
 
         t.end();
@@ -206,7 +206,7 @@ test("agent instrumentation of Express 3", function (t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
         t.equals(body, BODY, "response and original page text match");
 
-        var stats = agent.metrics.getMetric('WebTransaction/Uri/test');
+        var stats = agent.metrics.getMetric('WebTransaction/Controller/Expressjs/test');
         t.ok(stats, "Statistics should have been found for request.");
 
         var timing = stats.total * 1000;

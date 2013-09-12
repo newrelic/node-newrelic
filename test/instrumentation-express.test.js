@@ -178,6 +178,13 @@ describe("an instrumented Express application", function () {
             return 'rendered';
           },
           send : function () {}
+        },
+        Router : {
+          prototype : {
+            matchRequest : function () {
+              return {path : '/test/:id'};
+            }
+          }
         }
       };
 
@@ -269,6 +276,16 @@ describe("an instrumented Express application", function () {
 
           return done();
         });
+      });
+    });
+
+    it("should set the transaction's scope after matchRequest is called", function () {
+      helper.runInTransaction(agent, function () {
+        var transaction = agent.getTransaction();
+
+        var match = stub.Router.prototype.matchRequest;
+        expect(match()).eql({path : '/test/:id'});
+        expect(transaction.scope).equal('Controller/Expressjs/test/:id');
       });
     });
   });
