@@ -42,9 +42,16 @@ describe("an instrumented Express application", function () {
     before(function () {
       agent = helper.instrumentMockedAgent();
 
+      function Router() {}
+      Router.prototype._match = function () { return {path : '/test/:id'}; };
+
       stub = {
         version : '2.5.3',
-        createServer : function () { return 'server'; }
+        createServer : function () {
+          return {
+            routes : new Router()
+          };
+        }
       };
 
       http = require('http');
@@ -66,7 +73,7 @@ describe("an instrumented Express application", function () {
     });
 
     it("should set dispatcher to Express when a new server is created", function () {
-      expect(stub.createServer()).equal('server');
+      should.exist(stub.createServer().routes.constructor.prototype._match);
 
       var dispatchers = agent.environment.get('Dispatcher');
       expect(dispatchers.length).equal(1);
@@ -74,7 +81,7 @@ describe("an instrumented Express application", function () {
     });
 
     it("should set framework to Express when a new server is created", function () {
-      expect(stub.createServer()).equal('server');
+      should.exist(stub.createServer().routes.constructor.prototype._match);
 
       var frameworks = agent.environment.get('Framework');
       expect(frameworks.length).equal(1);
@@ -155,6 +162,16 @@ describe("an instrumented Express application", function () {
 
           return done();
         });
+      });
+    });
+
+    it("should set the transaction's scope after matchRequest is called", function () {
+      helper.runInTransaction(agent, function () {
+        var transaction = agent.getTransaction();
+
+        var match = stub.createServer().routes._match;
+        expect(match()).eql({path : '/test/:id'});
+        expect(transaction.scope).equal('Controller/Expressjs/test/:id');
       });
     });
   });
