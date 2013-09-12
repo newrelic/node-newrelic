@@ -1,0 +1,19 @@
+{
+  "name": "restify-2-6-0",
+  "version": "0.0.0",
+  "description": "tests for Restify 2.6.0 router introspection",
+  "main": "restify-router.tap.js",
+  "scripts": {
+    "test": "tap restify-router.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "dependencies": {
+    "restify": "2.6.0"
+  },
+  "devDependencies": {
+    "tap": "*",
+    "request": "*"
+  },
+  "private": true
+}
