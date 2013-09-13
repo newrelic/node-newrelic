@@ -43,7 +43,7 @@ describe("the agent configuration", function () {
     expect(function testInitialize() {
       c = config.initialize(logger, {config : {}});
     }).not.throws();
-    c.agent_enabled.should.equal(true);
+    expect(c.agent_enabled).equal(true);
   });
 
   describe("when overriding configuration values via environment variables", function () {
@@ -168,6 +168,36 @@ describe("the agent configuration", function () {
         expect(tc.debug.tracer_tracing).equal(true);
       });
     });
+
+    it("should pick up renaming rules", function () {
+      idempotentEnv(
+        'NEW_RELIC_NAMING_RULES',
+        '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}',
+        function (tc) {
+          should.exist(tc.rules.name);
+          expect(tc.rules.name).eql([
+            {name : 'u', pattern : '^t'},
+            {name : 't', pattern : '^u'},
+          ]);
+        }
+      );
+    });
+
+    it("should pick up ignoring rules", function () {
+      idempotentEnv(
+        'NEW_RELIC_IGNORING_RULES',
+        '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$',
+        function (tc) {
+          should.exist(tc.rules.ignore);
+          expect(tc.rules.ignore).eql([
+            '^/test',
+            '^/no_match',
+            '^/socket\\.io/',
+            '^/api/.*/index$'
+          ]);
+        }
+      );
+    });
   });
 
   describe("with default properties", function () {
@@ -181,60 +211,68 @@ describe("the agent configuration", function () {
     });
 
     it("should have an app name of ['MyApplication']", function () {
-      configuration.app_name.should.eql(['MyApplication']);
+      expect(configuration.app_name).eql(['MyApplication']);
     });
 
     it("should connect to the collector at collector.newrelic.com", function () {
-      configuration.host.should.equal('collector.newrelic.com');
+      expect(configuration.host).equal('collector.newrelic.com');
     });
 
     it("should connect to the collector on port 80", function () {
-      configuration.port.should.equal(80);
+      expect(configuration.port).equal(80);
     });
 
     it("should have no proxy host", function () {
-      configuration.proxy_host.should.equal('');
+      expect(configuration.proxy_host).equal('');
     });
 
     it("should have no proxy port", function () {
-      configuration.proxy_port.should.equal('');
+      expect(configuration.proxy_port).equal('');
     });
 
     it("should log at the info level", function () {
-      configuration.logging.level.should.equal('info');
+      expect(configuration.logging.level).equal('info');
     });
 
     it("should have a log filepath of process.cwd + newrelic_agent.log", function () {
       var logPath = path.join(process.cwd(), 'newrelic_agent.log');
-      configuration.logging.filepath.should.equal(logPath);
+      expect(configuration.logging.filepath).equal(logPath);
     });
 
     it("should enable the agent", function () {
-      configuration.agent_enabled.should.equal(true);
+      expect(configuration.agent_enabled).equal(true);
     });
 
     it("should have an apdexT of 0.5", function () {
-      configuration.apdex_t.should.equal(0.5);
+      expect(configuration.apdex_t).equal(0.5);
     });
 
     it("should enable the error collector", function () {
-      configuration.error_collector.enabled.should.equal(true);
+      expect(configuration.error_collector.enabled).equal(true);
     });
 
     it("should ignore status code 404", function () {
-      configuration.error_collector.ignore_status_codes.should.eql([404]);
+      expect(configuration.error_collector.ignore_status_codes).eql([404]);
     });
 
     it("should enable the transaction tracer", function () {
-      configuration.transaction_tracer.enabled.should.equal(true);
+      expect(configuration.transaction_tracer.enabled).equal(true);
     });
 
     it("should set the transaction tracer threshold to 'apdex_f'", function () {
-      configuration.transaction_tracer.trace_threshold.should.equal('apdex_f');
+      expect(configuration.transaction_tracer.trace_threshold).equal('apdex_f');
     });
 
     it("should collect one slow transaction trace per harvest cycle", function () {
-      configuration.transaction_tracer.top_n.should.equal(1);
+      expect(configuration.transaction_tracer.top_n).equal(1);
+    });
+
+    it("should have no naming rules", function () {
+      expect(configuration.rules.name.length).equal(0);
+    });
+
+    it("should have no ignoring rules", function () {
+      expect(configuration.rules.ignore.length).equal(0);
     });
   });
 
@@ -300,7 +338,7 @@ describe("the agent configuration", function () {
 
     it("should export the home directory on the resulting object", function () {
       var configuration = config.initialize(logger);
-      configuration.newrelic_home.should.equal(DESTDIR);
+      expect(configuration.newrelic_home).equal(DESTDIR);
     });
 
     it("should ignore the configuration file completely when so directed", function () {

@@ -90,11 +90,12 @@ API.prototype.nameController = function (name, action) {
 /**
  * If the URL for a transaction matches the provided pattern, name the
  * transaction with the provided name. If there are capture groups in the
- * pattern (which is a standard JavaScript regular expression), then the
- * substring matches ($1, $2, etc.) are replaced in the name string. BE CAREFUL
- * WHEN USING SUBSTITUTION. If the replacement substrings are highly variable
- * (i.e. are identifiers, GUIDs, or timestamps), the rule will generate too
- * many metrics and potentially get your application blacklisted by New Relic.
+ * pattern (which is a standard JavaScript regular expression, and can be
+ * passed as either a RegExp or a string), then the substring matches ($1, $2,
+ * etc.) are replaced in the name string. BE CAREFUL WHEN USING SUBSTITUTION.
+ * If the replacement substrings are highly variable (i.e. are identifiers,
+ * GUIDs, or timestamps), the rule will generate too many metrics and
+ * potentially get your application blacklisted by New Relic.
  *
  * An example of a good rule with replacements:
  *
@@ -108,8 +109,8 @@ API.prototype.nameController = function (name, action) {
  * Keep in mind that the original URL and any query parameters will be sent
  * along with the request, so slow transactions will still be identifiable.
  *
- * Naming rules can not be removed once added. They can also be added
- * to the configuration. See configuration documentation for details.
+ * Naming rules can not be removed once added. They can also be added via the
+ * agent's configuration. See configuration documentation for details.
  *
  * @param {RegExp} pattern The pattern to rename (with capture groups).
  * @param {string} name    The name to use for the transaction.
@@ -121,10 +122,11 @@ API.prototype.addNamingRule = function (pattern, name) {
 };
 
 /**
- * If the URL for a transaction matches the provided pattern, ignore the transaction
- * attached to that URL. Useful for filtering socket.io connections and other
- * long-polling requests out of your agents to keep them from distorting an app's
- * apdex or mean response time.
+ * If the URL for a transaction matches the provided pattern, ignore the
+ * transaction attached to that URL. Useful for filtering socket.io connections
+ * and other long-polling requests out of your agents to keep them from
+ * distorting an app's apdex or mean response time. Pattern may be a (standard
+ * JavaScript) RegExp or a string.
  *
  * Example:
  *

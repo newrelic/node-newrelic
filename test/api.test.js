@@ -323,7 +323,7 @@ describe("the New Relic agent API", function () {
     it("applies a regex pattern with capture groups correctly", function (done) {
       var segment;
 
-      api.addNamingRule('^/test/(.*)/(.*)', 'Test/$2');
+      api.addNamingRule(/^\/test\/(.*)\/(.*)/, 'Test/$2');
 
       agent.on('transactionFinished', function (transaction) {
         web.normalizeAndName(segment, '/test/31337/related', 200);

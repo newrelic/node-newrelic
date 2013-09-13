@@ -164,6 +164,46 @@ describe("the New Relic agent", function () {
       });
     });
 
+    describe("with naming rules configured", function () {
+      var configured;
+      beforeEach(function () {
+        var config = configurator.initialize(logger, {
+          config : {rules : {name : [
+            {pattern : '^/t',  name : 'u'},
+            {pattern : /^\/u/, name : 't'}
+          ]}}
+        });
+        configured = new Agent({config : config});
+      });
+
+      it("loads the rules", function () {
+        var rules = configured.normalizer.rules;
+        expect(rules.length).equal(2);
+        // because of unshift, rules are in reverse of config order
+        expect(rules[0].pattern.source).equal('^\\/u');
+        expect(rules[1].pattern.source).equal('^/t');
+      });
+    });
+
+    describe("with ignoring rules configured", function () {
+      var configured;
+      beforeEach(function () {
+        var config = configurator.initialize(logger, {
+          config : {rules : {ignore : [
+            /^\/ham_snadwich\/ignore/
+          ]}}
+        });
+        configured = new Agent({config : config});
+      });
+
+      it("loads the rules", function () {
+        var rules = configured.normalizer.rules;
+        expect(rules.length).equal(1);
+        expect(rules[0].pattern.source).equal('^\\/ham_snadwich\\/ignore');
+        expect(rules[0].ignore).equal(true);
+      });
+    });
+
     describe("when handling events", function () {
       it("should update the metrics' apdex tolerating value when configuration changes",
          function (done) {
