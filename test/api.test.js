@@ -25,17 +25,27 @@ describe("the New Relic agent API", function () {
     helper.unloadAgent(agent);
   });
 
-  it("exports a transaction naming method", function () {
+  it("exports a transaction naming function", function () {
     should.exist(api.nameTransaction);
     expect(api.nameTransaction).a('function');
   });
 
-  it("exports a controller naming method", function () {
+  it("exports a controller naming function", function () {
     should.exist(api.nameController);
     expect(api.nameController).a('function');
   });
 
-  describe("with explicit transaction naming", function () {
+  it("exports a function for adding naming rules", function () {
+    should.exist(api.addNamingRule);
+    expect(api.addNamingRule).a('function');
+  });
+
+  it("exports a function for ignoring certain URLs", function () {
+    should.exist(api.addIgnoringRule);
+    expect(api.addIgnoringRule).a('function');
+  });
+
+  describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment
         , transaction
@@ -56,7 +66,7 @@ describe("the New Relic agent API", function () {
           segment = state.getSegment().add(NAME);
 
           // HTTP instrumentation sets URL as soon as it knows it
-          transaction.url = '/test/path/31337';
+          transaction.url = URL;
           transaction.verb = 'POST';
 
           // NAME THE TRANSACTION
@@ -94,7 +104,7 @@ describe("the New Relic agent API", function () {
         var state = agent.getState();
 
         segment          = state.getSegment().add(NAME);
-        transaction.url  = '/test/path/31337';
+        transaction.url  = URL;
         transaction.verb = 'GET';
 
         // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
@@ -108,7 +118,7 @@ describe("the New Relic agent API", function () {
     });
   });
 
-  describe("with explicit controller naming", function () {
+  describe("when explicitly naming controllers", function () {
     describe("in the simplest case", function () {
       var segment
         , transaction
@@ -129,7 +139,7 @@ describe("the New Relic agent API", function () {
           segment = state.getSegment().add(NAME);
 
           // HTTP instrumentation sets URL as soon as it knows it
-          transaction.url = '/test/path/31337';
+          transaction.url = URL;
           transaction.verb = 'POST';
 
           // NAME THE CONTROLLER
@@ -167,7 +177,7 @@ describe("the New Relic agent API", function () {
         var state   = agent.getState();
         segment = state.getSegment().add(NAME);
 
-        transaction.url = '/test/path/31337';
+        transaction.url = URL;
 
         // SET THE ACTION
         transaction.verb = 'DELETE';
@@ -194,7 +204,7 @@ describe("the New Relic agent API", function () {
         var state = agent.getState();
 
         segment          = state.getSegment().add(NAME);
-        transaction.url  = '/test/path/31337';
+        transaction.url  = URL;
         transaction.verb = 'GET';
 
         // NAME THE CONTROLLER AND ACTION
@@ -219,7 +229,7 @@ describe("the New Relic agent API", function () {
         var state = agent.getState();
 
         segment          = state.getSegment().add(NAME);
-        transaction.url  = '/test/path/31337';
+        transaction.url  = URL;
         transaction.verb = 'GET';
 
         // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
@@ -227,6 +237,190 @@ describe("the New Relic agent API", function () {
         api.nameController('Test', 'update');
         api.nameController('Test', 'delete');
         api.nameController('Test', 'list');
+
+        transaction.end();
+      });
+    });
+  });
+
+  describe("when handed a new naming rule", function () {
+    it("should add it to the agent's normalizer", function () {
+      expect(agent.normalizer.rules.length).equal(0);
+      api.addNamingRule('^/simple.*', 'API');
+      expect(agent.normalizer.rules.length).equal(1);
+    });
+
+    describe("in the base case", function () {
+      var mine;
+      beforeEach(function () {
+        agent.normalizer.load({
+          url_rules : [
+            {each_segment : true, eval_order : 0, terminate_chain : false,
+             match_expression : '^(test_match_nothing)$',
+             replace_all : false, ignore : false, replacement : '\\1'},
+            {each_segment : true, eval_order : 1, terminate_chain : false,
+             match_expression : '^[0-9][0-9a-f_,.-]*$',
+             replace_all : false, ignore : false, replacement : '*'},
+            {each_segment : false, eval_order : 2, terminate_chain : false,
+             match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+             replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+          ]
+        });
+
+        api.addNamingRule('^/test/.*', 'Test');
+        mine = agent.normalizer.rules[0];
+      });
+
+      it("should add it to the agent's normalizer", function () {
+        expect(agent.normalizer.rules.length).equal(4);
+      });
+
+      it("should leave the passed-in pattern alone", function () {
+        expect(mine.pattern.source).equal('^/test/.*');
+      });
+
+      it("should have the correct replacement", function () {
+        expect(mine.replacement).equal('/Test');
+      });
+
+      it("should set it to highest precedence", function () {
+        expect(mine.precedence).equal(0);
+      });
+
+      it("should end further normalization", function () {
+        expect(mine.isTerminal).equal(true);
+      });
+
+      it("should only apply it to the whole URL", function () {
+        expect(mine.eachSegment).equal(false);
+      });
+    });
+
+    it("applies a string pattern correctly", function (done) {
+      var segment;
+
+      api.addNamingRule('^/test/.*', 'Test');
+
+      agent.on('transactionFinished', function (transaction) {
+        web.normalizeAndName(segment, URL, 200);
+
+        expect(transaction.scope).equal('WebTransaction/NormalizedUri/Test');
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        var state = agent.getState();
+
+        segment          = state.getSegment().add(NAME);
+        transaction.url  = URL;
+        transaction.verb = 'GET';
+
+        transaction.end();
+      });
+    });
+
+    it("applies a regex pattern with capture groups correctly", function (done) {
+      var segment;
+
+      api.addNamingRule('^/test/(.*)/(.*)', 'Test/$2');
+
+      agent.on('transactionFinished', function (transaction) {
+        web.normalizeAndName(segment, '/test/31337/related', 200);
+
+        expect(transaction.scope).equal('WebTransaction/NormalizedUri/Test/related');
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        var state = agent.getState();
+
+        segment          = state.getSegment().add(NAME);
+        transaction.url  = '/test/31337/related';
+        transaction.verb = 'GET';
+
+        transaction.end();
+      });
+    });
+  });
+
+  describe("when handed a new pattern to ignore", function () {
+    it("should add it to the agent's normalizer", function () {
+      expect(agent.normalizer.rules.length).equal(0);
+      api.addIgnoringRule('^/simple.*');
+      expect(agent.normalizer.rules.length).equal(1);
+    });
+
+    describe("in the base case", function () {
+      var mine;
+      beforeEach(function () {
+        agent.normalizer.load({
+          url_rules : [
+            {each_segment : true, eval_order : 0, terminate_chain : false,
+             match_expression : '^(test_match_nothing)$',
+             replace_all : false, ignore : false, replacement : '\\1'},
+            {each_segment : true, eval_order : 1, terminate_chain : false,
+             match_expression : '^[0-9][0-9a-f_,.-]*$',
+             replace_all : false, ignore : false, replacement : '*'},
+            {each_segment : false, eval_order : 2, terminate_chain : false,
+             match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+             replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+          ]
+        });
+
+        api.addIgnoringRule('^/test/.*');
+        mine = agent.normalizer.rules[0];
+      });
+
+      it("should add it to the agent's normalizer", function () {
+        expect(agent.normalizer.rules.length).equal(4);
+      });
+
+      it("should leave the passed-in pattern alone", function () {
+        expect(mine.pattern.source).equal('^/test/.*');
+      });
+
+      it("should have the correct replacement", function () {
+        expect(mine.replacement).equal('$0');
+      });
+
+      it("should set it to highest precedence", function () {
+        expect(mine.precedence).equal(0);
+      });
+
+      it("should end further normalization", function () {
+        expect(mine.isTerminal).equal(true);
+      });
+
+      it("should only apply it to the whole URL", function () {
+        expect(mine.eachSegment).equal(false);
+      });
+
+      it("should ignore transactions related to that URL", function () {
+        expect(mine.ignore).equal(true);
+      });
+    });
+
+    it("applies a string pattern correctly", function (done) {
+      var segment;
+
+      api.addIgnoringRule('^/test/.*');
+
+      agent.on('transactionFinished', function (transaction) {
+        web.normalizeAndName(segment, URL, 200);
+
+        expect(transaction.ignore).equal(true);
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        var state = agent.getState();
+
+        segment          = state.getSegment().add(NAME);
+        transaction.url  = URL;
+        transaction.verb = 'GET';
 
         transaction.end();
       });
