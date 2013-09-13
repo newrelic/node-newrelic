@@ -93,15 +93,15 @@ describe("record ParsedStatement with MongoDB", function () {
       });
 
       var result = [
-        [{name  : "MongoDB/users/find"},      [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/users/find"},     [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/find"},           [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/allWeb"},         [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/all"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "MongoDB/users/find"},             [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/users/find"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/find"},                  [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/allWeb"},                [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/all"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "MongoDB/users/find",
-          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]],
+          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/users/find",
-          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

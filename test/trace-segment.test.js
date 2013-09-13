@@ -95,7 +95,7 @@ describe("TraceSegment", function () {
     });
 
     it("should return the URL minus any query parameters", function () {
-      expect(webChild.name).equal('WebTransaction/Uri/test');
+      expect(webChild.name).equal('WebTransaction/NormalizedUri/*');
     });
 
     it("should have parameters on the child segment", function () {
@@ -119,7 +119,7 @@ describe("TraceSegment", function () {
       var expected = [
         0,
         1,
-        'WebTransaction/Uri/test',
+        'WebTransaction/NormalizedUri/*',
         {
           nr_exclusive_duration_millis : 1,
           test1 : 'value1',
@@ -147,7 +147,7 @@ describe("TraceSegment", function () {
     it("should produce human-readable JSON");
 
     it("should produce JSON that conforms to the collector spec", function () {
-      var trace = new Trace('WebTransaction/Uri/test');
+      var trace = new Trace('WebTransaction/NormalizedUri/*');
       var segment = new TraceSegment(trace, 'DB/select/getSome');
 
       trace.setDurationInMillis(17, 0);

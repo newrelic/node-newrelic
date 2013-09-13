@@ -81,9 +81,9 @@ describe("recordGeneric", function () {
       });
 
       var result = [
-        [{name  : "placeholder"},             [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "placeholder"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "placeholder",
-          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/NormalizedUri/*"},[1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

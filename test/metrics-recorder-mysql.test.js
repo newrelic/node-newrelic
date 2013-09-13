@@ -93,15 +93,15 @@ describe("record ParsedStatement with MySQL", function () {
       });
 
       var result = [
-        [{name  : "MySQL/users/select"},      [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/users/select"},   [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/select"},         [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/allWeb"},         [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/all"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "MySQL/users/select"},             [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/users/select"},          [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/select"},                [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/allWeb"},                [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Database/all"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "MySQL/users/select",
-          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]],
+          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Database/users/select",
-          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

@@ -83,11 +83,11 @@ describe("recordRedis", function () {
       });
 
       var result = [
-        [{name  : "Redis/set"},               [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Redis/allWeb"},            [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Redis/all"},               [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/set"},                      [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/allWeb"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/all"},                      [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Redis/set",
-          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

@@ -84,7 +84,7 @@ describe('Trace', function () {
         [
           0,
           DURATION,
-          'WebTransaction/Uri/test',
+          'WebTransaction/NormalizedUri/*',
           {nr_exclusive_duration_millis : 8, test : 'value'},
           [
             // TODO: ensure that the ordering is correct WRT start time
@@ -110,7 +110,7 @@ describe('Trace', function () {
       var expected = [
         0,
         DURATION,
-        'WebTransaction/Uri/test',  // scope
+        'WebTransaction/NormalizedUri/*',  // scope
         '/test',                    // URI path
         encoded, // compressed segment / segment data
         '',                         // FIXME: depends on RUM token in session

@@ -97,12 +97,12 @@ test("built-in http instrumentation should handle internal & external requests",
       t.equals(response.statusCode, 200, "should successfully fetch the page");
       t.equals(fetchedBody, PAGE, "page shouldn't change");
 
-      var scope = 'WebTransaction/Uri' + TEST_INTERNAL_PATH
+      var scope = 'WebTransaction/NormalizedUri/*'
         , stats = agent.metrics.getOrCreateMetric(scope)
         , found = false
         ;
 
-      t.equals(stats.callCount, 1,
+      t.equals(stats.callCount, 2,
                "should record unscoped path stats after a normal request");
 
       agent.environment.toJSON().forEach(function (pair) {

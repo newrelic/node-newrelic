@@ -245,7 +245,7 @@ test("agent instrumentation of Express 3", function (t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request");
         t.equals(body, BODY, "response and original page text match");
 
-        var stats = agent.metrics.getMetric('WebTransaction/Uri/test/ham');
+        var stats = agent.metrics.getMetric('WebTransaction/NormalizedUri/*');
         t.ok(stats, "Statistics should have been found for request.");
 
         t.end();
