@@ -3,76 +3,78 @@
 var path       = require('path')
   , chai       = require('chai')
   , expect     = chai.expect
+  , should     = chai.should()
   , Normalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
   ;
 
 describe ("MetricNormalizer", function () {
+  var normalizer;
+
+  beforeEach(function () {
+    normalizer = new Normalizer();
+  });
+
   it("shouldn't throw when instantiated without any rules", function () {
-    var normalizer;
     expect(function () { normalizer = new Normalizer(); }).not.throws();
   });
 
   it("should normalize even without any rules set", function () {
     expect(function () {
-      expect(new Normalizer().normalize('/sample')).eql({name : '/sample'});
+      expect(normalizer.normalize('/sample')).equal('NormalizedUri/*');
     }).not.throws();
   });
 
   it("should normalize with an empty rule set", function () {
     expect(function () {
-      var normalizer = new Normalizer();
       normalizer.load({url_rules : []});
 
-      expect(normalizer.normalize('/sample')).eql({name : '/sample'});
+      expect(normalizer.normalize('/sample')).equal('NormalizedUri/*');
     }).not.throws();
   });
 
   describe("with rules captured from the staging collector on 2012-08-29",
            function () {
-    var sample = {
-      url_rules : [
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^(test_match_nothing)$',
-         replace_all : false, ignore : false, replacement : '\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all : false, ignore : false, replacement : '/*.\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^(test_match_nothing)$',
-         replace_all : false, ignore : false, replacement : '\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^(test_match_nothing)$',
-         replace_all : false, ignore : false, replacement : '\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all : false, ignore : false, replacement : '/*.\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all : false, ignore : false, replacement : '/*.\\1'},
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : '^[0-9][0-9a-f_,.-]*$',
-         replace_all : false, ignore : false, replacement : '*'},
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : '^[0-9][0-9a-f_,.-]*$',
-         replace_all : false, ignore : false, replacement : '*'},
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : '^[0-9][0-9a-f_,.-]*$',
-         replace_all : false, ignore : false, replacement : '*'},
-        {each_segment : false, eval_order : 2, terminate_chain : false,
-         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
-        {each_segment : false, eval_order : 2, terminate_chain : false,
-         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
-        {each_segment : false, eval_order : 2, terminate_chain : false,
-         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
-      ]
-    };
-
-    it("shouldn't throw when instantiated with a full set of rules", function () {
-      var normalizer;
-      expect(function () { normalizer = new Normalizer(sample); }).not.throws();
+    beforeEach(function () {
+      normalizer.load({
+        url_rules : [
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '^(test_match_nothing)$',
+           replace_all : false, ignore : false, replacement : '\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+           replace_all : false, ignore : false, replacement : '/*.\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '^(test_match_nothing)$',
+           replace_all : false, ignore : false, replacement : '\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '^(test_match_nothing)$',
+           replace_all : false, ignore : false, replacement : '\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+           replace_all : false, ignore : false, replacement : '/*.\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+           replace_all : false, ignore : false, replacement : '/*.\\1'},
+          {each_segment : true, eval_order : 1, terminate_chain : false,
+           match_expression : '^[0-9][0-9a-f_,.-]*$',
+           replace_all : false, ignore : false, replacement : '*'},
+          {each_segment : true, eval_order : 1, terminate_chain : false,
+           match_expression : '^[0-9][0-9a-f_,.-]*$',
+           replace_all : false, ignore : false, replacement : '*'},
+          {each_segment : true, eval_order : 1, terminate_chain : false,
+           match_expression : '^[0-9][0-9a-f_,.-]*$',
+           replace_all : false, ignore : false, replacement : '*'},
+          {each_segment : false, eval_order : 2, terminate_chain : false,
+           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+           replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
+          {each_segment : false, eval_order : 2, terminate_chain : false,
+           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+           replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
+          {each_segment : false, eval_order : 2, terminate_chain : false,
+           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+           replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+        ]
+      });
     });
 
     it("should eliminate duplicate rules as part of loading them", function () {
@@ -91,52 +93,36 @@ describe ("MetricNormalizer", function () {
          pattern: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'}
       ];
 
-      var normalizer = new Normalizer(sample);
       expect(normalizer.rules.map(function (r) { return r.toJSON(); })).eql(reduced);
     });
 
     it("should normalize a JPEGgy URL", function () {
-      expect(new Normalizer(sample).normalize('/excessivity.jpeg')).eql({
-        name       : '/excessivity.jpeg',
-        normalized : '/*.jpeg',
-        terminal   : true
-      });
+      expect(normalizer.normalize('/excessivity.jpeg')).equal('NormalizedUri/*.jpeg');
     });
 
     it("should normalize a JPGgy URL", function () {
-      expect(new Normalizer(sample).normalize('/excessivity.jpg')).eql({
-        name       : '/excessivity.jpg',
-        normalized : '/*.jpg',
-        terminal   : true
-      });
+      expect(normalizer.normalize('/excessivity.jpg')).equal('NormalizedUri/*.jpg');
     });
 
     it("should normalize a CSS URL", function () {
-      expect(new Normalizer(sample).normalize('/style.css')).eql({
-        name       : '/style.css',
-        normalized : '/*.css',
-        terminal   : true
-      });
+      expect(normalizer.normalize('/style.css')).eql('NormalizedUri/*.css');
     });
   });
 
   it("should correctly ignore a matching name", function () {
-    var sample = {
+    normalizer.load({
       url_rules : [
         {each_segment : false, eval_order : 0, terminate_chain : true,
          match_expression : '^/long_polling$',
          replace_all : false, ignore : true, replacement : '*'}
       ]
-    };
-
-    expect(new Normalizer(sample).normalize('/long_polling')).eql({
-      name     : '/long_polling',
-      ignore   : true
     });
+
+    should.not.exist(normalizer.normalize('/long_polling'));
   });
 
   it("should apply rules by precedence", function () {
-    var sample = {
+    normalizer.load({
       url_rules : [
         {each_segment : true, eval_order : 1, terminate_chain : false,
          match_expression : 'mochi',
@@ -145,16 +131,14 @@ describe ("MetricNormalizer", function () {
          match_expression : '/rice$',
          replace_all : false, ignore : false, replacement : '/mochi'}
       ]
-    };
-
-    expect(new Normalizer(sample).normalize('/rice/is/not/rice')).eql({
-      name       : '/rice/is/not/rice',
-      normalized : '/rice/is/not/millet'
     });
+
+    expect(normalizer.normalize('/rice/is/not/rice'))
+      .equal('NormalizedUri/rice/is/not/millet');
   });
 
   it("should terminate when indicated by rule", function () {
-    var sample = {
+    normalizer.load({
       url_rules : [
         {each_segment : true, eval_order : 1, terminate_chain : false,
          match_expression : 'mochi',
@@ -163,12 +147,29 @@ describe ("MetricNormalizer", function () {
          match_expression : '/rice$',
          replace_all : false, ignore : false, replacement : '/mochi'}
       ]
-    };
+    });
 
-    expect(new Normalizer(sample).normalize('/rice/is/not/rice')).eql({
-      name       : '/rice/is/not/rice',
-      normalized : '/rice/is/not/mochi',
-      terminal   : true
+    expect(normalizer.normalize('/rice/is/not/rice'))
+      .equal('NormalizedUri/rice/is/not/mochi');
+  });
+
+  describe("when calling addSimple", function () {
+    it("won't crash with no parameters", function () {
+      expect(function () { normalizer.addSimple(); }).not.throws();
+    });
+
+    it("won't crash when name isn't passed", function () {
+      expect(function () { normalizer.addSimple('^t'); }).not.throws();
+    });
+
+    it("will ignore matches when name isn't passed", function () {
+      normalizer.addSimple('^t');
+      expect(normalizer.rules[0].ignore).equal(true);
+    });
+
+    it("will create rename rules that work properly", function () {
+      normalizer.addSimple('^/t(.*)$', 'w$1');
+      expect(normalizer.normalize('/test')).equal('NormalizedUri/west');
     });
   });
 });
