@@ -4,7 +4,6 @@ var path         = require('path')
   , chai         = require('chai')
   , should       = chai.should()
   , expect       = chai.expect
-  , web          = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , TraceSegment = require(path.join(__dirname, '..', 'lib', 'transaction',
                                      'trace', 'segment'))
@@ -78,13 +77,14 @@ describe("TraceSegment", function () {
     before(function () {
       agent = helper.loadMockedAgent();
 
-      var trace   = new Trace(new Transaction(agent))
-        , segment = new TraceSegment(trace, 'UnitTest')
-        , url     = '/test?test1=value1&test2&test3=50&test4='
+      var transaction = new Transaction(agent)
+        , trace       = new Trace(transaction)
+        , segment     = new TraceSegment(trace, 'UnitTest')
+        , url         = '/test?test1=value1&test2&test3=50&test4='
         ;
 
-      webChild = segment.add(web.scrubURL(url));
-      web.normalizeAndName(webChild, url, 200);
+      webChild = segment.add(url);
+      transaction.setScope(webChild, url, 200);
 
       trace.setDurationInMillis(1, 0);
       webChild.setDurationInMillis(1, 0);

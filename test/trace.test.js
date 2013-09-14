@@ -5,7 +5,6 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
   , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
-  , webUtils    = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
   , Segment     = require(path.join(__dirname, '..', 'lib', 'transaction',
                                     'trace', 'segment'))
   , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
@@ -59,8 +58,8 @@ describe('Trace', function () {
     expect(start, "root segment's start time").above(0);
     trace.setDurationInMillis(DURATION, 0);
 
-    var web = trace.root.add(webUtils.scrubURL(URL));
-    webUtils.normalizeAndName(web, URL, 200);
+    var web = trace.root.add(URL);
+    transaction.setScope(web, URL, 200);
     // top-level element will share a duration with the quasi-ROOT node
     web.setDurationInMillis(DURATION, 0);
 

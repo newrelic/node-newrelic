@@ -4,7 +4,6 @@ var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , web             = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
   , ParsedStatement = require(path.join(__dirname, '..', 'lib', 'db', 'parsed-statement'))
   , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -29,11 +28,11 @@ function recordMySQL(segment, scope) {
 function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT;
 
-  var segment = makeSegment(options)
-    , root    = options.transaction.getTrace().root
+  var segment     = makeSegment(options)
+    , transaction = options.transaction
     ;
 
-  web.normalizeAndName(root, options.url, options.code);
+  transaction.setScope(transaction.getTrace().root, options.url, options.code);
   recordMySQL(segment, options.transaction.scope);
 }
 

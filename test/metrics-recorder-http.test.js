@@ -4,7 +4,6 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , web         = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
   , recordWeb   = require(path.join(__dirname, '..', 'lib', 'metrics',
                                     'recorders', 'http'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
@@ -21,8 +20,11 @@ function makeSegment(options) {
 function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT;
 
-  var segment = makeSegment(options);
-  web.normalizeAndName(segment, options.url, options.code);
+  var segment     = makeSegment(options)
+    , transaction = options.transaction
+    ;
+
+  transaction.setScope(segment, options.url, options.code);
   recordWeb(segment, options.transaction.scope);
 }
 

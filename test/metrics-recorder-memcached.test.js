@@ -4,7 +4,6 @@ var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , web             = require(path.join(__dirname, '..', 'lib', 'transaction', 'web'))
   , recordMemcached = require(path.join(__dirname, '..', 'lib', 'metrics',
                                         'recorders', 'memcached'))
   , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
@@ -21,11 +20,11 @@ function makeSegment(options) {
 function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT;
 
-  var segment = makeSegment(options)
-    , root    = options.transaction.getTrace().root
+  var segment     = makeSegment(options)
+    , transaction = options.transaction
     ;
 
-  web.normalizeAndName(root, options.url, options.code);
+  transaction.setScope(transaction.getTrace().root, options.url, options.code);
   recordMemcached(segment, options.transaction.scope);
 }
 
