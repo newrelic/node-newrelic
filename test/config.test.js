@@ -198,6 +198,14 @@ describe("the agent configuration", function () {
         }
       );
     });
+
+    it("should pick up whether URL backstop has been turned off",
+       function () {
+      idempotentEnv('NEW_RELIC_ENFORCE_BACKSTOP', 'f', function (tc) {
+        should.exist(tc.enforce_backstop);
+        expect(tc.enforce_backstop).equal(false);
+      });
+    });
   });
 
   describe("with default properties", function () {
@@ -273,6 +281,10 @@ describe("the agent configuration", function () {
 
     it("should have no ignoring rules", function () {
       expect(configuration.rules.ignore.length).equal(0);
+    });
+
+    it("should enforce URL backstop", function () {
+      expect(configuration.enforce_backstop).equal(true);
     });
   });
 

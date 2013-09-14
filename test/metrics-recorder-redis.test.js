@@ -36,6 +36,8 @@ describe("recordRedis", function () {
 
   beforeEach(function () {
     agent = helper.loadMockedAgent();
+    // here to test that the backstop override is working as expected
+    agent.normalizer.backstop = false;
     trans = new Transaction(agent);
   });
 
@@ -83,11 +85,11 @@ describe("recordRedis", function () {
       });
 
       var result = [
-        [{name  : "Redis/set"},                      [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Redis/allWeb"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Redis/all"},                      [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/set"},               [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/allWeb"},            [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Redis/all"},               [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Redis/set",
-          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/Uri/test"}, [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
