@@ -24,7 +24,8 @@ function record(options) {
     , transaction = options.transaction
     ;
 
-  transaction.setScope(segment, options.url, options.code);
+  transaction.setScope(options.url, options.code);
+  segment.markAsWeb(options.url, transaction);
   recordWeb(segment, options.transaction.scope);
 }
 

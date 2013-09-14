@@ -24,7 +24,7 @@ function record(options) {
     , transaction = options.transaction
     ;
 
-  transaction.setScope(transaction.getTrace().root, options.url, options.code);
+  transaction.setScope(options.url, options.code);
   recordGeneric(segment, options.transaction.scope);
 }
 

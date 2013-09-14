@@ -28,7 +28,7 @@ function record(options) {
     , transaction = options.transaction
     ;
 
-  transaction.setScope(segment, options.url, options.code);
+  transaction.setScope(options.url, options.code);
   recordExternal(segment, options.transaction.scope);
 }
 

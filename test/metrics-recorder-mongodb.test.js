@@ -30,10 +30,9 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    , root        = options.transaction.getTrace().root
     ;
 
-  transaction.setScope(root, options.url, options.code);
+  transaction.setScope(options.url, options.code);
   recordMongoDB(segment, options.transaction.scope);
 }
 

@@ -59,7 +59,8 @@ describe('Trace', function () {
     trace.setDurationInMillis(DURATION, 0);
 
     var web = trace.root.add(URL);
-    transaction.setScope(web, URL, 200);
+    transaction.setScope(URL, 200);
+    web.markAsWeb(URL, transaction);
     // top-level element will share a duration with the quasi-ROOT node
     web.setDurationInMillis(DURATION, 0);
 
