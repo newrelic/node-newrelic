@@ -133,7 +133,9 @@ describe("CollectorConnection", function () {
         var errors = new ErrorTracer(agent.config);
 
         var transaction = new Transaction(agent);
-        transaction.setWeb('/test-request/churro', 'WebTransaction/StatusCode/400', 400);
+        transaction.url = '/test-request/churro';
+        transaction.scope = 'WebTransaction/StatusCode/400';
+        transaction.statusCode = 400;
         transaction.end();
 
         errors.onTransactionFinished(transaction);
@@ -229,7 +231,9 @@ describe("CollectorConnection", function () {
         sqls = [];
 
         var transaction = new Transaction(agent);
-        transaction.setWeb('/bros/steak', 'WebTransaction/Uri/bros/steak', 200);
+        transaction.url = '/bros/steak';
+        transaction.scope = 'WebTransaction/Uri/bros/steak';
+        transaction.statusCode = 200;
         transaction.end();
 
         var trace = new SQLTrace('SELECT dude FROM bro WHERE meat = :ham',

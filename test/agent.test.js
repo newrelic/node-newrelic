@@ -366,7 +366,7 @@ describe("the New Relic agent", function () {
         agent.metrics.started = 1337;
 
         var transaction = new Transaction(agent);
-        transaction.setWeb('/test', 'WebTransaction/Uri/test', 501);
+        transaction.statusCode = 501;
         agent.errors.add(transaction, new TypeError('no method last on undefined'));
         agent.errors.add(transaction, new Error('application code error'));
         agent.errors.add(transaction, new RangeError('stack depth exceeded'));

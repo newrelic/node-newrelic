@@ -20,11 +20,12 @@ describe('SQLTrace', function () {
     ;
 
   before(function () {
-    agent       = helper.loadMockedAgent();
-    query       = "SELECT age, risk_index FROM expectancies WHERE beneficiary_id = ?";
-    stats       = new Stats();
+    agent = helper.loadMockedAgent();
+    query = "SELECT age, risk_index FROM expectancies WHERE beneficiary_id = ?";
+    stats = new Stats();
     transaction = new Transaction(agent);
-    transaction.setWeb("/getBeneficiary", null, 200);
+    transaction.url = '/getBeneficiary';
+    transaction.statusCode = 200;
   });
 
   after(function () {

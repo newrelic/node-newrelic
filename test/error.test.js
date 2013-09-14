@@ -504,9 +504,9 @@ describe("ErrorTracer", function () {
         ;
 
       transaction.exceptions.push(exception);
-      transaction.setWeb('/test-request/zxrkbl',
-                         'WebTransaction/Uri/test-request/zxrkbl',
-                         500);
+      transaction.url = '/test-request/zxrkbl';
+      transaction.scope = 'WebTransaction/Uri/test-request/zxrkbl';
+      transaction.statusCode = 500;
       transaction.end();
 
       error = tracer.errors[0];
@@ -557,9 +557,9 @@ describe("ErrorTracer", function () {
       tracer = agent.errors;
 
       var transaction = new Transaction(agent);
-      transaction.setWeb('/test-request/zxrkbl',
-                         'WebTransaction/Uri/test-request/zxrkbl',
-                         503);
+      transaction.url = '/test-request/zxrkbl';
+      transaction.scope = 'WebTransaction/Uri/test-request/zxrkbl';
+      transaction.statusCode = 503;
       transaction.end();
 
       error = tracer.errors[0];
