@@ -382,6 +382,44 @@ describe("the New Relic agent", function () {
 
         agent.harvest();
       });
+
+      it("doesn't try to send errors when error tracer disabled", function () {
+        var transaction = new Transaction(agent);
+        transaction.statusCode = 501;
+        agent.errors.add(transaction, new TypeError('no method last on undefined'));
+        agent.errors.add(transaction, new Error('application code error'));
+        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+        transaction.end();
+
+        mock.expects('sendMetricData').once();
+        mock.expects('sendTracedErrors').never();
+        mock.expects('sendTransactionTraces').once();
+
+        // do this here so error traces get collected but not sent
+        agent.config.error_collector.enabled = false;
+
+        agent.harvest();
+        agent.config.error_collector.enabled = true;
+      });
+
+      it("doesn't try to send slow traces when transaction tracer disabled", function () {
+        var transaction = new Transaction(agent);
+        transaction.setName('/test/path/31337', 501);
+        agent.errors.add(transaction, new TypeError('no method last on undefined'));
+        agent.errors.add(transaction, new Error('application code error'));
+        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+        transaction.end();
+
+        mock.expects('sendMetricData').once();
+        mock.expects('sendTracedErrors').once();
+        mock.expects('sendTransactionTraces').never();
+
+        // do this here so slow trace gets collected but not sent
+        agent.config.transaction_tracer.enabled = false;
+
+        agent.harvest();
+        agent.config.transaction_tracer.enabled = true;
+      });
     });
   });
 });
