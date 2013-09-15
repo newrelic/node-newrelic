@@ -24,7 +24,7 @@ describe("ErrorTracer", function () {
 
   it("shouldn't gather errors if it's switched off", function () {
     var error = new Error('this error will never be seen');
-    tracer.config.error_collector.enabled = false;
+    config.config.error_collector.enabled = false;
 
     expect(tracer.errorCount).equal(0);
     expect(tracer.errors.length).equal(0);
@@ -34,7 +34,7 @@ describe("ErrorTracer", function () {
     expect(tracer.errorCount).equal(1);
     expect(tracer.errors.length).equal(0);
 
-    tracer.config.error_collector.enabled = true;
+    config.config.error_collector.enabled = true;
   });
 
   it("should retain a maximum of 20 errors to send", function () {
