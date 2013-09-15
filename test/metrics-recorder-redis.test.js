@@ -36,7 +36,7 @@ describe("recordRedis", function () {
   beforeEach(function () {
     agent = helper.loadMockedAgent();
     // here to test that the backstop override is working as expected
-    agent.normalizer.backstop = false;
+    agent.config.enforce_backstop = false;
     trans = new Transaction(agent);
   });
 

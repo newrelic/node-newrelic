@@ -11,11 +11,12 @@ describe ("MetricNormalizer", function () {
   var normalizer;
 
   beforeEach(function () {
-    normalizer = new Normalizer();
+    var config = {enforce_backstop : true};
+    normalizer = new Normalizer(config);
   });
 
-  it("shouldn't throw when instantiated without any rules", function () {
-    expect(function () { normalizer = new Normalizer(); }).not.throws();
+  it("should throw when instantiated without onfig", function () {
+    expect(function () { normalizer = new Normalizer(); }).throws();
   });
 
   it("should normalize even without any rules set", function () {
