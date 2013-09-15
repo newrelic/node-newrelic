@@ -50,6 +50,13 @@ describe('TraceAggregator', function () {
     expect(function () { aggregator = new TraceAggregator(config); }).not.throws();
   });
 
+  it("shouldn't collect a trace if the tracer is disabled", function () {
+    agent.config.transaction_tracer.enabled = false;
+    agent.traces.add(createTransaction('/test', 3000));
+
+    expect(agent.traces.trace).equal(null);
+  });
+
   describe("with top n support", function () {
     var config;
 
@@ -71,7 +78,7 @@ describe('TraceAggregator', function () {
       expect(aggregator.capacity).equal(TOP_N);
     });
 
-    it("should trackthe slowest transaction in a harvest period if top_n is undefined",
+    it("should track the slowest transaction in a harvest period if top_n is undefined",
        function () {
       var aggregator = new TraceAggregator(config);
 
