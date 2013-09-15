@@ -31,10 +31,6 @@ describe("Transaction", function () {
     }).throws(/must be bound to the agent/);
   });
 
-  it("should be created without an associated trace", function () {
-    should.not.exist(trans.trace);
-  });
-
   it("should create a trace on demand", function () {
     var trace = trans.getTrace();
     expect(trace).instanceOf(Trace);
@@ -64,6 +60,52 @@ describe("Transaction", function () {
     });
 
     trans.end();
+  });
+
+  describe("upon creation", function () {
+    it("should have an ID", function () {
+      expect(trans.id).above(0);
+    });
+
+    it("should have associated metrics", function () {
+      should.exist(trans.metrics);
+    });
+
+    it("should be timing its duration", function () {
+      return expect(trans.timer.isActive()).true;
+    });
+
+    it("should be created without an associated trace", function () {
+      expect(trans.trace).equal(null);
+    });
+
+    it("should have no associated URL (for hidden class)", function () {
+      expect(trans.url).equal(null);
+    });
+
+    it("should have no name set (for hidden class)", function () {
+      expect(trans.name).equal(null);
+    });
+
+    it("should have no PARTIAL name set (for hidden class)", function () {
+      expect(trans.partialName).equal(null);
+    });
+
+    it("should have no HTTP status code set (for hidden class)", function () {
+      expect(trans.statusCode).equal(null);
+    });
+
+    it("should have no error attached (for hidden class)", function () {
+      expect(trans.error).equal(null);
+    });
+
+    it("should have no HTTP method / verb set (for hidden class)", function () {
+      expect(trans.verb).equal(null);
+    });
+
+    it("should not be ignored by default (for hidden class)", function () {
+      return expect(trans.ignore).false;
+    });
   });
 
   describe("with associated metrics", function () {
@@ -137,6 +179,12 @@ describe("Transaction", function () {
 
     it("should throw when called with no parameters", function () {
       expect(function () { trans.setName(); }).throws();
+    });
+
+    it("should ignore a transaction when told to by a rule", function () {
+      agent.normalizer.addSimple('^/test/');
+      trans.setName('/test/string?do=thing&another=thing', 200);
+      return expect(trans.ignore).true;
     });
 
     describe("with no partial name set", function () {
@@ -246,7 +294,6 @@ describe("Transaction", function () {
   it("shouldn't scope web transactions to their URL", function () {
     var trans = new Transaction(agent);
     trans.setName('/test/1337?action=edit', 200);
-    console.log(trans.name);
     expect(trans.name).not.equal('/test/1337?action=edit');
     expect(trans.name).not.equal('WebTransaction/Uri/test/1337');
   });

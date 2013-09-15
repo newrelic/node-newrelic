@@ -3,7 +3,6 @@
 var path       = require('path')
   , chai       = require('chai')
   , expect     = chai.expect
-  , should     = chai.should()
   , Normalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
   ;
 
@@ -15,7 +14,7 @@ describe ("MetricNormalizer", function () {
     normalizer = new Normalizer(config);
   });
 
-  it("should throw when instantiated without onfig", function () {
+  it("should throw when instantiated without config", function () {
     expect(function () { normalizer = new Normalizer(); }).throws();
   });
 
@@ -119,7 +118,7 @@ describe ("MetricNormalizer", function () {
       ]
     });
 
-    should.not.exist(normalizer.normalize('/long_polling'));
+    return expect(normalizer.normalize('/long_polling')).empty;
   });
 
   it("should apply rules by precedence", function () {
