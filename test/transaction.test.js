@@ -128,10 +128,126 @@ describe("Transaction", function () {
     });
   });
 
+  describe("when being named", function () {
+    var trans;
+
+    beforeEach(function () {
+      trans = new Transaction(agent);
+    });
+
+    it("should throw when called with no parameters", function () {
+      expect(function () { trans.setName(); }).throws();
+    });
+
+    describe("with no partial name set", function () {
+      it("produces a normalized (backstopped) name when status is 200", function () {
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.name).equal('WebTransaction/NormalizedUri/*');
+      });
+
+      it("produces a normalized partial name when status is 200", function () {
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.partialName).equal('NormalizedUri/*');
+      });
+
+      it("passes through status code when status is 200", function () {
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.statusCode).equal(200);
+      });
+
+      it("produces an error name when status is 404", function () {
+        trans.setName('/test/string?do=thing&another=thing', 404);
+        expect(trans.name).equal('WebTransaction/Uri/404/*');
+      });
+
+      it("produces an error partial name when status is 404", function () {
+        trans.setName('/test/string?do=thing&another=thing', 404);
+        expect(trans.partialName).equal('Uri/404/*');
+      });
+
+      it("passes through status code when status is 404", function () {
+        trans.setName('/test/string?do=thing&another=thing', 404);
+        expect(trans.statusCode).equal(404);
+      });
+
+      it("produces an error name when status is 501", function () {
+        trans.setName('/test/string?do=thing&another=thing', 501);
+        expect(trans.name).equal('WebTransaction/Uri/501/*');
+      });
+
+      it("produces an error partial name when status is 501", function () {
+        trans.setName('/test/string?do=thing&another=thing', 501);
+        expect(trans.partialName).equal('Uri/501/*');
+      });
+
+      it("passes through status code when status is 501", function () {
+        trans.setName('/test/string?do=thing&another=thing', 501);
+        expect(trans.statusCode).equal(501);
+      });
+    });
+
+    describe("with a custom partial name set", function () {
+      beforeEach(function () {
+        trans.partialName = 'Custom/test';
+      });
+
+      it("produces a custom name when status is 200", function () {
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.name).equal('WebTransaction/Custom/test');
+      });
+
+      it("produces a partial name when status is 200", function () {
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.partialName).equal('Custom/test');
+      });
+
+      it("passes through status code when status is 200", function () {
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.statusCode).equal(200);
+      });
+
+      it("produces an error name when status is 404", function () {
+        trans.setName('/test/string?do=thing&another=thing', 404);
+        expect(trans.name).equal('WebTransaction/Uri/404/*');
+      });
+
+      it("produces an error partial name when status is 404", function () {
+        trans.setName('/test/string?do=thing&another=thing', 404);
+        expect(trans.partialName).equal('Uri/404/*');
+      });
+
+      it("passes through status code when status is 404", function () {
+        trans.setName('/test/string?do=thing&another=thing', 404);
+        expect(trans.statusCode).equal(404);
+      });
+
+      it("produces an error name when status is 501", function () {
+        trans.setName('/test/string?do=thing&another=thing', 501);
+        expect(trans.name).equal('WebTransaction/Uri/501/*');
+      });
+
+      it("produces an error partial name when status is 501", function () {
+        trans.setName('/test/string?do=thing&another=thing', 501);
+        expect(trans.partialName).equal('Uri/501/*');
+      });
+
+      it("passes through status code when status is 501", function () {
+        trans.setName('/test/string?do=thing&another=thing', 501);
+        expect(trans.statusCode).equal(501);
+      });
+    });
+  });
+
   describe("when producing a summary of the whole transaction", function () {
     it("should produce a human-readable summary");
     it("should produce a metrics summary suitable for the collector");
   });
 
-  it("shouldn't scope web transactions to their URL");
+  it("shouldn't scope web transactions to their URL", function () {
+    var trans = new Transaction(agent);
+    trans.setName('/test/1337?action=edit', 200);
+    console.log(trans.name);
+    expect(trans.name).not.equal('/test/1337?action=edit');
+    expect(trans.name).not.equal('WebTransaction/Uri/test/1337');
+  });
 });

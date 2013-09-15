@@ -191,7 +191,7 @@ describe("ErrorTracer", function () {
     });
 
     it("should have the URL's scope", function () {
-      expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*');
+      expect(errorJSON[1]).equal('WebTransaction/Uri/501/*');
     });
 
     it("should have an HTTP status code message", function () {
@@ -350,7 +350,7 @@ describe("ErrorTracer", function () {
     });
 
     it("should have the URL's scope", function () {
-      expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*');
+      expect(errorJSON[1]).equal('WebTransaction/Uri/500/*');
     });
 
     it("should fish the message out of the exception", function () {
@@ -461,7 +461,7 @@ describe("ErrorTracer", function () {
     });
 
     it("should have the transaction's name", function () {
-      expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*');
+      expect(errorJSON[1]).equal('WebTransaction/Uri/500/*');
     });
 
     it("should turn the string into the message", function () {

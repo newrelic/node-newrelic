@@ -229,13 +229,13 @@ describe("recordWeb", function () {
         });
 
         var result = [
-          [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-          [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-          [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-          [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'WebTransaction/NormalizedUri/*',
-            scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
+          [{name  : 'WebTransaction'},           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name  : 'HttpDispatcher'},           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name  : 'WebTransaction/Uri/500/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name  : 'Apdex/Uri/500/*'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'Apdex'},                    [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'WebTransaction/Uri/500/*',
+            scope : 'WebTransaction/Uri/500/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
         ];
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
@@ -297,13 +297,13 @@ describe("recordWeb", function () {
       });
 
       var result = [
-        [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-        [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-        [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-        [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,   0.2,   0.2,        0]],
-        [{name  : 'Apdex'},                          [0,     0,     1,   0.2,   0.2,        0]],
-        [{name  : 'WebTransaction/NormalizedUri/*',
-          scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
+        [{name  : 'WebTransaction'},           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'HttpDispatcher'},           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'WebTransaction/Uri/503/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'Apdex/Uri/503/*'},          [0,     0,     1,   0.2,   0.2,        0]],
+        [{name  : 'Apdex'},                    [0,     0,     1,   0.2,   0.2,        0]],
+        [{name  : 'WebTransaction/Uri/503/*',
+          scope : 'WebTransaction/Uri/503/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
       ];
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
