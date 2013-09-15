@@ -163,13 +163,13 @@ describe("recordWeb", function () {
         });
 
         var result = [
-          [{name  : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'WebTransaction/StatusCode/404'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'Apdex/StatusCode/404'},          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'Apdex'},                         [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'WebTransaction/StatusCode/404',
-            scope : 'WebTransaction/StatusCode/404'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
+          [{name  : 'WebTransaction'},           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'HttpDispatcher'},           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransaction/Uri/404/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'Apdex/Uri/404/*'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'Apdex'},                    [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'WebTransaction/Uri/404/*',
+            scope : 'WebTransaction/Uri/404/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
         ];
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
@@ -185,13 +185,13 @@ describe("recordWeb", function () {
         });
 
         var result = [
-          [{name  : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'WebTransaction/StatusCode/400'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'Apdex/StatusCode/400'},          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'Apdex'},                         [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'WebTransaction/StatusCode/400',
-            scope : 'WebTransaction/StatusCode/400'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
+          [{name  : 'WebTransaction'},           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'HttpDispatcher'},           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransaction/Uri/400/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'Apdex/Uri/400/*'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'Apdex'},                    [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'WebTransaction/Uri/400/*',
+            scope : 'WebTransaction/Uri/400/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
         ];
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
@@ -207,13 +207,13 @@ describe("recordWeb", function () {
         });
 
         var result = [
-          [{name  : 'WebTransaction'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'HttpDispatcher'},                [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'WebTransaction/StatusCode/414'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
-          [{name  : 'Apdex/StatusCode/414'},          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'Apdex'},                         [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'WebTransaction/StatusCode/414',
-            scope : 'WebTransaction/StatusCode/414'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
+          [{name  : 'WebTransaction'},           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'HttpDispatcher'},           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransaction/Uri/414/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'Apdex/Uri/414/*'},          [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'Apdex'},                    [0,     0,     1,  0.01,  0.01,        0]],
+          [{name  : 'WebTransaction/Uri/414/*',
+            scope : 'WebTransaction/Uri/414/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
         ];
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
       });
@@ -265,13 +265,13 @@ describe("recordWeb", function () {
       });
 
       var result = [
-        [{name  : 'WebTransaction'},                [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-        [{name  : 'HttpDispatcher'},                [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-        [{name  : 'WebTransaction/StatusCode/404'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-        [{name  : 'Apdex/StatusCode/404'},          [1,     0,     0,   0.2,   0.2,        0]],
-        [{name  : 'Apdex'},                         [1,     0,     0,   0.2,   0.2,        0]],
-        [{name  : 'WebTransaction/StatusCode/404',
-          scope : 'WebTransaction/StatusCode/404'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
+        [{name  : 'WebTransaction'},           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'HttpDispatcher'},           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'WebTransaction/Uri/404/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'Apdex/Uri/404/*'},          [1,     0,     0,   0.2,   0.2,        0]],
+        [{name  : 'Apdex'},                    [1,     0,     0,   0.2,   0.2,        0]],
+        [{name  : 'WebTransaction/Uri/404/*',
+          scope : 'WebTransaction/Uri/404/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
       ];
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
