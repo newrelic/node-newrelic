@@ -21,7 +21,7 @@ describe('TraceAggregator', function () {
     // gotta create the trace
     transaction.getTrace().setDurationInMillis(duration);
     transaction.url = name;
-    transaction.scope = 'WebTransaction/Uri' + name;
+    transaction.name = 'WebTransaction/Uri' + name;
     transaction.statusCode = 200;
     transaction.end();
 
@@ -86,7 +86,7 @@ describe('TraceAggregator', function () {
       expect(aggregator.capacity).equal(1);
     });
 
-    it("should only save a trace for an existing scope if new one is slower",
+    it("should only save a trace for an existing name if new one is slower",
        function () {
       var URI = '/simple';
       var aggregator  = new TraceAggregator(config);
@@ -103,7 +103,7 @@ describe('TraceAggregator', function () {
              'higher value').equal(4000);
     });
 
-    it("should only track transactions for the top N scopes", function (done) {
+    it("should only track transactions for the top N names", function (done) {
       config.transaction_tracer.top_n = 5;
       var aggregator = new TraceAggregator(config);
       aggregator.reported = 10; // needed to override "first 5"
@@ -179,7 +179,7 @@ describe('TraceAggregator', function () {
     transaction.metrics.apdexT = APDEXT;
     transaction.getTrace().setDurationInMillis(ABOVE_THRESHOLD);
     transaction.url = '/test';
-    transaction.scope = 'WebTransaction/Uri/test';
+    transaction.name = 'WebTransaction/Uri/test';
     transaction.statusCode = 200;
 
     aggregator.add(transaction);
@@ -209,7 +209,7 @@ describe('TraceAggregator', function () {
     transaction.metrics.apdexT = APDEXT;
     transaction.getTrace().setDurationInMillis(BELOW_THRESHOLD);
     transaction.url = '/test';
-    transaction.scope = 'WebTransaction/Uri/test';
+    transaction.name = 'WebTransaction/Uri/test';
     transaction.statusCode = 200;
 
     aggregator.add(transaction);

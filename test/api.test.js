@@ -54,7 +54,7 @@ describe("the New Relic agent API", function () {
         agent.on('transactionFinished', function (t) {
           // grab transaction
           transaction = t;
-          transaction.setScope(URL, 200);
+          transaction.setName(URL, 200);
           segment.markAsWeb(URL, transaction);
           done();
         });
@@ -76,8 +76,8 @@ describe("the New Relic agent API", function () {
         });
       });
 
-      it("sets the transaction scope to the custom name", function () {
-        expect(transaction.scope).equal('WebTransaction/Custom/Test');
+      it("sets the transaction name to the custom name", function () {
+        expect(transaction.name).equal('WebTransaction/Custom/Test');
       });
 
       it("names the web trace segment after the custom name", function () {
@@ -93,9 +93,9 @@ describe("the New Relic agent API", function () {
       var segment;
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope(URL, 200);
+        transaction.setName(URL, 200);
 
-        expect(transaction.scope).equal('WebTransaction/Custom/List');
+        expect(transaction.name).equal('WebTransaction/Custom/List');
 
         done();
       });
@@ -128,7 +128,7 @@ describe("the New Relic agent API", function () {
         agent.on('transactionFinished', function (t) {
           // grab transaction
           transaction = t;
-          t.setScope(URL, 200);
+          t.setName(URL, 200);
           segment.markAsWeb(URL, transaction);
           done();
         });
@@ -150,8 +150,8 @@ describe("the New Relic agent API", function () {
         });
       });
 
-      it("sets the controller in the transaction scope", function () {
-        expect(transaction.scope).equal('WebTransaction/Controller/Test/POST');
+      it("sets the controller in the transaction name", function () {
+        expect(transaction.name).equal('WebTransaction/Controller/Test/POST');
       });
 
       it("names the web trace segment after the controller", function () {
@@ -167,9 +167,9 @@ describe("the New Relic agent API", function () {
       var segment;
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope(URL, 200);
+        transaction.setName(URL, 200);
 
-        expect(transaction.scope).equal('WebTransaction/Controller/Test/DELETE');
+        expect(transaction.name).equal('WebTransaction/Controller/Test/DELETE');
 
         done();
       });
@@ -194,9 +194,9 @@ describe("the New Relic agent API", function () {
       var segment;
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope(URL, 200);
+        transaction.setName(URL, 200);
 
-        expect(transaction.scope).equal('WebTransaction/Controller/Test/index');
+        expect(transaction.name).equal('WebTransaction/Controller/Test/index');
 
         done();
       });
@@ -219,9 +219,9 @@ describe("the New Relic agent API", function () {
       var segment;
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope(URL, 200);
+        transaction.setName(URL, 200);
 
-        expect(transaction.scope).equal('WebTransaction/Controller/Test/list');
+        expect(transaction.name).equal('WebTransaction/Controller/Test/list');
 
         done();
       });
@@ -303,9 +303,9 @@ describe("the New Relic agent API", function () {
       api.addNamingRule('^/test/.*', 'Test');
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope(URL, 200);
+        transaction.setName(URL, 200);
 
-        expect(transaction.scope).equal('WebTransaction/NormalizedUri/Test');
+        expect(transaction.name).equal('WebTransaction/NormalizedUri/Test');
 
         done();
       });
@@ -327,9 +327,9 @@ describe("the New Relic agent API", function () {
       api.addNamingRule(/^\/test\/(.*)\/(.*)/, 'Test/$2');
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope('/test/31337/related', 200);
+        transaction.setName('/test/31337/related', 200);
 
-        expect(transaction.scope).equal('WebTransaction/NormalizedUri/Test/related');
+        expect(transaction.name).equal('WebTransaction/NormalizedUri/Test/related');
 
         done();
       });
@@ -409,7 +409,7 @@ describe("the New Relic agent API", function () {
       api.addIgnoringRule('^/test/.*');
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setScope(URL, 200);
+        transaction.setName(URL, 200);
 
         expect(transaction.ignore).equal(true);
 

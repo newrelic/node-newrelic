@@ -134,7 +134,7 @@ describe("CollectorConnection", function () {
 
         var transaction = new Transaction(agent);
         transaction.url = '/test-request/churro';
-        transaction.scope = 'WebTransaction/StatusCode/400';
+        transaction.name = 'WebTransaction/StatusCode/400';
         transaction.statusCode = 400;
         transaction.end();
 
@@ -164,7 +164,7 @@ describe("CollectorConnection", function () {
       it("shouldn't mess with the error trace(s)", function () {
         var errorData = params[1];
         // 0: ignored
-        // 1: scope
+        // 1: name
         // 2: message
         // 3: error type
         // 4: params
@@ -232,7 +232,7 @@ describe("CollectorConnection", function () {
 
         var transaction = new Transaction(agent);
         transaction.url = '/bros/steak';
-        transaction.scope = 'WebTransaction/Uri/bros/steak';
+        transaction.name = 'WebTransaction/Uri/bros/steak';
         transaction.statusCode = 200;
         transaction.end();
 

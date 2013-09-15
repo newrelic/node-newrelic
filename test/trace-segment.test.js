@@ -84,7 +84,7 @@ describe("TraceSegment", function () {
         ;
 
       webChild = segment.add(url);
-      transaction.setScope(url, 200);
+      transaction.setName(url, 200);
       webChild.markAsWeb(url, transaction);
 
       trace.setDurationInMillis(1, 0);

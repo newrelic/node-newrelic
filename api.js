@@ -43,7 +43,7 @@ API.prototype.nameTransaction = function (name) {
     return;
   }
 
-  transaction.partialScope = NAMES.CUSTOM + '/' + name;
+  transaction.partialName = NAMES.CUSTOM + '/' + name;
 };
 
 /**
@@ -84,7 +84,7 @@ API.prototype.nameController = function (name, action) {
   }
 
   action = action || transaction.verb || 'GET';
-  transaction.partialScope = NAMES.CONTROLLER + '/' + name + '/' + action;
+  transaction.partialName = NAMES.CONTROLLER + '/' + name + '/' + action;
 };
 
 /**

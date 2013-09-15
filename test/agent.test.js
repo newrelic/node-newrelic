@@ -374,7 +374,7 @@ describe("the New Relic agent", function () {
 
         var metrics = new Metrics(0.5);
         metrics.started = 1337;
-        metrics.getOrCreateMetric('Errors/all').incrementCallCount(4);
+        metrics.getOrCreateMetric('Errors/all').incrementCallCount(3);
 
         mock.expects('sendMetricData').once().withArgs(metrics);
         mock.expects('sendTracedErrors').once();

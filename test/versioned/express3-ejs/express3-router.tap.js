@@ -22,8 +22,8 @@ test("Express 3 router introspection", function (t) {
   });
 
   agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.scope, 'WebTransaction/Controller/Expressjs/test/:id',
-            "transaction has expected scope");
+    t.equal(transaction.name, 'WebTransaction/Controller/Expressjs/test/:id',
+            "transaction has expected name");
     t.equal(transaction.url, '/test/31337', "URL is left alone");
     t.equal(transaction.statusCode, 200, "status code is OK");
     t.equal(transaction.verb, 'GET', "HTTP method is GET");
@@ -31,7 +31,7 @@ test("Express 3 router introspection", function (t) {
 
     var web = transaction.trace.root.children[0];
     t.ok(web, "trace has web segment");
-    t.equal(web.name, transaction.scope, "segment name and transaction scope match");
+    t.equal(web.name, transaction.name, "segment name and transaction name match");
     t.equal(web.partialName, 'Controller/Expressjs/test/:id',
             "should have partial name for apdex");
     t.equal(web.parameters.id, '31337', "namer gets parameters out of route");

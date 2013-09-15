@@ -24,8 +24,8 @@ function record(options) {
     , transaction = options.transaction
     ;
 
-  transaction.setScope(options.url, options.code);
-  recordRedis(segment, options.transaction.scope);
+  transaction.setName(options.url, options.code);
+  recordRedis(segment, options.transaction.name);
 }
 
 describe("recordRedis", function () {

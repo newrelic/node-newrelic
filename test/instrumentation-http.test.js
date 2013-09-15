@@ -174,7 +174,6 @@ describe("built-in http module instrumentation", function () {
       expect(stats.callCount).equal(1);
     });
 
-    it("shouldn't record transactions for requests for favicon.ico");
     it("should capture metrics for the last byte to exit as part of a response");
     it("should capture metrics for the last byte to enter as part of a request");
   });

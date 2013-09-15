@@ -32,8 +32,8 @@ function record(options) {
     , transaction = options.transaction
     ;
 
-  transaction.setScope(options.url, options.code);
-  recordMySQL(segment, options.transaction.scope);
+  transaction.setName(options.url, options.code);
+  recordMySQL(segment, options.transaction.name);
 }
 
 describe("record ParsedStatement with MySQL", function () {

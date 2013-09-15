@@ -57,7 +57,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
             var transaction = agent.getTransaction();
             t.ok(transaction, "transaction should be visible");
             // hardcode this because we're creating the transactional scope ourselves
-            transaction.scope = 'MongoDB/test/insert';
+            transaction.name = 'MongoDB/test/insert';
 
             var hunx = {id : 1, hamchunx : "verbloks"};
             collection.insert(hunx, function insertCallback(error) {
@@ -128,7 +128,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
           helper.runInTransaction(agent, function transactionInScope(transaction) {
             // hardcode this because we're creating the transactional scope ourselves
-            transaction.scope = 'MongoDB/test2/insert';
+            transaction.name = 'MongoDB/test2/insert';
             var hunx = {id : 1, hamchunx : "verbloks"};
             collection.insert(hunx, function () {
               var cursor = collection.find({id : 1});
