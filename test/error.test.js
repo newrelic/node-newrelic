@@ -191,7 +191,7 @@ describe("ErrorTracer", function () {
     });
 
     it("should have the URL's scope", function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/test_action.json');
+      expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*');
     });
 
     it("should have an HTTP status code message", function () {
@@ -350,7 +350,7 @@ describe("ErrorTracer", function () {
     });
 
     it("should have the URL's scope", function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/test_action.json');
+      expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*');
     });
 
     it("should fish the message out of the exception", function () {
@@ -460,8 +460,8 @@ describe("ErrorTracer", function () {
       expect(errorJSON[0]).equal(0);
     });
 
-    it("should have the URL's scope", function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/test_action.json');
+    it("should have the transaction's name", function () {
+      expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*');
     });
 
     it("should turn the string into the message", function () {
@@ -491,7 +491,7 @@ describe("ErrorTracer", function () {
 
   describe("with an internal server error (500) and an exception", function () {
     var agent
-      , scope = 'WebTransaction/Uri/test-request/zxrkbl'
+      , name = 'WebTransaction/Uri/test-request/zxrkbl'
       , error
       ;
 
@@ -505,7 +505,7 @@ describe("ErrorTracer", function () {
 
       transaction.exceptions.push(exception);
       transaction.url = '/test-request/zxrkbl';
-      transaction.scope = 'WebTransaction/Uri/test-request/zxrkbl';
+      transaction.name = 'WebTransaction/Uri/test-request/zxrkbl';
       transaction.statusCode = 500;
       transaction.end();
 
@@ -516,10 +516,10 @@ describe("ErrorTracer", function () {
       helper.unloadAgent(agent);
     });
 
-    it("should associate errors with the transaction's scope", function () {
-      var errorScope = error[1];
+    it("should associate errors with the transaction's name", function () {
+      var errorName = error[1];
 
-      expect(errorScope).equal(scope);
+      expect(errorName).equal(name);
     });
 
     it("should associate errors with a message", function () {
@@ -548,7 +548,7 @@ describe("ErrorTracer", function () {
 
   describe("with a tracer unavailable (503) error", function () {
     var agent
-      , scope = 'WebTransaction/Uri/test-request/zxrkbl'
+      , name = 'WebTransaction/Uri/test-request/zxrkbl'
       , error
       ;
 
@@ -558,7 +558,7 @@ describe("ErrorTracer", function () {
 
       var transaction = new Transaction(agent);
       transaction.url = '/test-request/zxrkbl';
-      transaction.scope = 'WebTransaction/Uri/test-request/zxrkbl';
+      transaction.name = 'WebTransaction/Uri/test-request/zxrkbl';
       transaction.statusCode = 503;
       transaction.end();
 
@@ -569,10 +569,10 @@ describe("ErrorTracer", function () {
       helper.unloadAgent(agent);
     });
 
-    it("should associate errors with the transaction's scope", function () {
-      var errorScope = error[1];
+    it("should associate errors with the transaction's name", function () {
+      var errorName = error[1];
 
-      expect(errorScope).equal(scope);
+      expect(errorName).equal(name);
     });
 
     it("should associate errors with a message", function () {
@@ -726,7 +726,7 @@ describe("ErrorTracer", function () {
           expect(json[0]).equal(0);
         });
 
-        it("should have the default scope", function () {
+        it("should have the default name", function () {
           expect(json[1]).equal('WebTransaction/Uri/*');
         });
 
