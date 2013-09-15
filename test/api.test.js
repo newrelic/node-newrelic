@@ -55,7 +55,7 @@ describe("the New Relic agent API", function () {
           // grab transaction
           transaction = t;
           transaction.setName(URL, 200);
-          segment.markAsWeb(URL, transaction);
+          segment.markAsWeb(URL);
           done();
         });
 
@@ -129,7 +129,7 @@ describe("the New Relic agent API", function () {
           // grab transaction
           transaction = t;
           t.setName(URL, 200);
-          segment.markAsWeb(URL, transaction);
+          segment.markAsWeb(URL);
           done();
         });
 

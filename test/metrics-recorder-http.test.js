@@ -25,7 +25,7 @@ function record(options) {
     ;
 
   transaction.setName(options.url, options.code);
-  segment.markAsWeb(options.url, transaction);
+  segment.markAsWeb(options.url);
   recordWeb(segment, options.transaction.name);
 }
 

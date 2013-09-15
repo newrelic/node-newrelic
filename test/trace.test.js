@@ -60,7 +60,7 @@ describe('Trace', function () {
 
     var web = trace.root.add(URL);
     transaction.setName(URL, 200);
-    web.markAsWeb(URL, transaction);
+    web.markAsWeb(URL);
     // top-level element will share a duration with the quasi-ROOT node
     web.setDurationInMillis(DURATION, 0);
 
