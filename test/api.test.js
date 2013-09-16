@@ -246,15 +246,15 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new naming rule", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.normalizer.rules.length).equal(0);
+      expect(agent.urlNormalizer.rules.length).equal(0);
       api.addNamingRule('^/simple.*', 'API');
-      expect(agent.normalizer.rules.length).equal(1);
+      expect(agent.urlNormalizer.rules.length).equal(1);
     });
 
     describe("in the base case", function () {
       var mine;
       beforeEach(function () {
-        agent.normalizer.load([
+        agent.urlNormalizer.load([
           {each_segment : true, eval_order : 0, terminate_chain : false,
            match_expression : '^(test_match_nothing)$',
            replace_all : false, ignore : false, replacement : '\\1'},
@@ -267,11 +267,11 @@ describe("the New Relic agent API", function () {
         ]);
 
         api.addNamingRule('^/test/.*', 'Test');
-        mine = agent.normalizer.rules[0];
+        mine = agent.urlNormalizer.rules[0];
       });
 
       it("should add it to the agent's normalizer", function () {
-        expect(agent.normalizer.rules.length).equal(4);
+        expect(agent.urlNormalizer.rules.length).equal(4);
       });
 
       it("should leave the passed-in pattern alone", function () {
@@ -346,15 +346,15 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new pattern to ignore", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.normalizer.rules.length).equal(0);
+      expect(agent.urlNormalizer.rules.length).equal(0);
       api.addIgnoringRule('^/simple.*');
-      expect(agent.normalizer.rules.length).equal(1);
+      expect(agent.urlNormalizer.rules.length).equal(1);
     });
 
     describe("in the base case", function () {
       var mine;
       beforeEach(function () {
-        agent.normalizer.load([
+        agent.urlNormalizer.load([
           {each_segment : true, eval_order : 0, terminate_chain : false,
            match_expression : '^(test_match_nothing)$',
            replace_all : false, ignore : false, replacement : '\\1'},
@@ -367,11 +367,11 @@ describe("the New Relic agent API", function () {
         ]);
 
         api.addIgnoringRule('^/test/.*');
-        mine = agent.normalizer.rules[0];
+        mine = agent.urlNormalizer.rules[0];
       });
 
       it("should add it to the agent's normalizer", function () {
-        expect(agent.normalizer.rules.length).equal(4);
+        expect(agent.urlNormalizer.rules.length).equal(4);
       });
 
       it("should leave the passed-in pattern alone", function () {

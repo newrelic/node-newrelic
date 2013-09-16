@@ -118,7 +118,7 @@ API.prototype.nameController = function (name, action) {
 API.prototype.addNamingRule = function (pattern, name) {
   if (!name) return logger.error("Simple naming rules require a replacement name.");
 
-  this.agent.normalizer.addSimple(pattern, name);
+  this.agent.urlNormalizer.addSimple(pattern, name);
 };
 
 /**
@@ -137,7 +137,7 @@ API.prototype.addNamingRule = function (pattern, name) {
 API.prototype.addIgnoringRule = function (pattern) {
   if (!pattern) return logger.error("Must include a URL pattern to ignore.");
 
-  this.agent.normalizer.addSimple(pattern, null);
+  this.agent.urlNormalizer.addSimple(pattern, null);
 };
 
 module.exports = API;

@@ -11,11 +11,16 @@ describe ("MetricNormalizer", function () {
 
   beforeEach(function () {
     var config = {enforce_backstop : true};
-    normalizer = new Normalizer(config);
+    normalizer = new Normalizer(config, 'test');
   });
 
   it("should throw when instantiated without config", function () {
     expect(function () { normalizer = new Normalizer(); }).throws();
+  });
+
+  it("should throw when instantiated without type", function () {
+    var config = {enforce_backstop : true};
+    expect(function () { normalizer = new Normalizer(config); }).throws();
   });
 
   it("should normalize even without any rules set", function () {

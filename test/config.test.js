@@ -410,10 +410,19 @@ describe("the agent configuration", function () {
       expect(config.transaction_tracer.transaction_threshold).equal(0.75);
     });
 
-    it("should map the product level to a human-readable string");
-    it("should map URL rules to the URL normalizer");
+    it("should map URL rules to the URL normalizer", function (done) {
+      config.on('url_rules', function (rules) {
+        expect(rules).eql([{name : 'sample_rule'}]);
+        done();
+      });
+
+      config.onConnect({'url_rules' : [{name : 'sample_rule'}]});
+    });
+
     it("should map metric rules to the metric name normalizer");
     it("should map transaction rules to the transaction name normalizer");
+
+    it("should map the product level to a human-readable string");
     it("should configure param capture (capture_params)");
 
     it("shouldn't blow up when sampling_rate is received", function () {

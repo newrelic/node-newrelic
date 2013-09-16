@@ -182,7 +182,7 @@ describe("Transaction", function () {
     });
 
     it("should ignore a transaction when told to by a rule", function () {
-      agent.normalizer.addSimple('^/test/');
+      agent.urlNormalizer.addSimple('^/test/');
       trans.setName('/test/string?do=thing&another=thing', 200);
       return expect(trans.ignore).true;
     });
