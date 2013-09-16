@@ -380,11 +380,10 @@ describe("the agent configuration", function () {
       expect(config.run_id).equal(1234);
     });
 
-    it("should emit an event when harvest interval is changed");
-    it("should disable the transaction tracer when the server says to (collect_traces)");
-    it("should disable the transaction tracer when the server says to (transaction_tracer.enabled)");
-    it("should disable the error tracer when the server says to (collect_errors)");
-    it("should disable the error tracer when the server says to (error_collector.enabled)");
+    it("should change collect_traces when told to");
+    it("should disable the transaction tracer when told to (transaction_tracer.enabled)");
+    it("should change collect_errors when told to");
+    it("should disable the error tracer when told to (error_collector.enabled)");
     it("should map transaction_tracer.transaction_threshold correctly");
     it("should map the product level to a human-readable string");
     it("should map URL rules to the URL normalizer");
@@ -402,8 +401,31 @@ describe("the agent configuration", function () {
     it("shouldn't blow up when slow_sql.enabled is received");
     it("shouldn't blow up when rum.load_episodes_file is received");
 
-    describe("when apdexT comes in", function () {
-      it("should emit an apdexT event when apdex_t changes", function (done) {
+    describe("when data_report_period is set", function () {
+      it("should emit data_report_period when harvest interval is changed",
+         function (done) {
+        config.once('data_report_period', function (harvestInterval) {
+          expect(harvestInterval).equal(45);
+
+          done();
+        });
+
+        config.onConnect({'data_report_period' : 45});
+      });
+
+      it("should update data_report_period only when it is changed", function () {
+        expect(config.data_report_period).equal(60);
+
+        config.once('data_report_period', function () {
+          throw new Error('should never get here');
+        });
+
+        config.onConnect({'data_report_period' : 60});
+      });
+    });
+
+    describe("when apdex_t is set", function () {
+      it("should emit 'apdex_t' when apdex_t changes", function (done) {
         config.once('apdex_t', function (apdexT) {
           expect(apdexT).equal(0.75);
 
@@ -413,15 +435,14 @@ describe("the agent configuration", function () {
         config.onConnect({'apdex_t' : 0.75});
       });
 
-      it("should update its apdexT only when it has changed", function (done) {
+      it("should update its apdex_t only when it has changed", function () {
         expect(config.apdex_t).equal(0.5);
 
         config.once('apdex_t', function () {
-          done(new Error('should never get here'));
+          throw new Error('should never get here');
         });
 
         config.onConnect({'apdex_t' : 0.5});
-        done();
       });
     });
   });
