@@ -22,7 +22,7 @@ describe("ErrorTracer", function () {
     tracer = new ErrorTracer(config.config);
   });
 
-  it("shouldn't gather errors if it's switched off", function () {
+  it("shouldn't gather errors if it's switched off by config", function () {
     var error = new Error('this error will never be seen');
     config.config.error_collector.enabled = false;
 
@@ -35,6 +35,21 @@ describe("ErrorTracer", function () {
     expect(tracer.errors.length).equal(0);
 
     config.config.error_collector.enabled = true;
+  });
+
+  it("shouldn't gather errors if it's switched off by config", function () {
+    var error = new Error('this error will never be seen');
+    config.config.collect_errors = false;
+
+    expect(tracer.errorCount).equal(0);
+    expect(tracer.errors.length).equal(0);
+
+    tracer.add(null, error);
+
+    expect(tracer.errorCount).equal(1);
+    expect(tracer.errors.length).equal(0);
+
+    config.config.collect_errors = true;
   });
 
   it("should retain a maximum of 20 errors to send", function () {

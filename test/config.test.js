@@ -381,6 +381,7 @@ describe("the agent configuration", function () {
     });
 
     it("should change collect_traces when told to", function () {
+      expect(config.collect_traces).equal(true);
       config.onConnect({'collect_traces' : false});
       expect(config.collect_traces).equal(false);
     });
@@ -390,7 +391,12 @@ describe("the agent configuration", function () {
       expect(config.transaction_tracer.enabled).equal(false);
     });
 
-    it("should change collect_errors when told to");
+    it("should change collect_errors when told to", function () {
+      expect(config.collect_errors).equal(true);
+      config.onConnect({'collect_errors' : false});
+      expect(config.collect_errors).equal(false);
+    });
+
     it("should disable the error tracer when told to (error_collector.enabled)");
     it("should map transaction_tracer.transaction_threshold correctly");
     it("should map the product level to a human-readable string");

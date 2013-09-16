@@ -395,6 +395,25 @@ describe("the New Relic agent", function () {
         agent.config.error_collector.enabled = true;
       });
 
+      it("doesn't try to send errors when server disables collect_errors", function () {
+        var transaction = new Transaction(agent);
+        transaction.statusCode = 501;
+        agent.errors.add(transaction, new TypeError('no method last on undefined'));
+        agent.errors.add(transaction, new Error('application code error'));
+        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+        transaction.end();
+
+        mock.expects('sendMetricData').once();
+        mock.expects('sendTracedErrors').never();
+        mock.expects('sendTransactionTraces').once();
+
+        // do this here so error traces get collected but not sent
+        agent.config.onConnect({collect_errors : false});
+
+        agent.harvest();
+        agent.config.error_collector.enabled = true;
+      });
+
       it("doesn't try to send transaction traces when transaction tracer disabled",
          function () {
         var transaction = new Transaction(agent);
