@@ -7,7 +7,7 @@ var path   = require('path')
   , fs     = require('fs')
   , logger = require(path.join(__dirname, '..',
                                'lib', 'logger')).child({component : 'TEST'})
-  , config = require(path.join(__dirname, '..', 'lib', 'config'))
+  , Config = require(path.join(__dirname, '..', 'lib', 'config'))
   ;
 
 function idempotentEnv(name, value, callback) {
@@ -21,7 +21,7 @@ function idempotentEnv(name, value, callback) {
 
   process.env[name] = value;
   try {
-    var tc = config.initialize(logger);
+    var tc = Config.initialize(logger);
     callback(tc);
   }
   catch (error) {
@@ -41,7 +41,7 @@ describe("the agent configuration", function () {
   it("should handle a directly passed minimal configuration", function () {
     var c;
     expect(function testInitialize() {
-      c = config.initialize(logger, {config : {}});
+      c = Config.initialize(logger, {config : {}});
     }).not.throws();
     expect(c.agent_enabled).equal(true);
   });
@@ -212,7 +212,7 @@ describe("the agent configuration", function () {
     var configuration;
 
     before(function () {
-      configuration = config.initialize(logger, {config : {}});
+      configuration = Config.initialize(logger, {config : {}});
 
       // ensure environment is clean
       delete configuration.newrelic_home;
@@ -345,11 +345,11 @@ describe("the agent configuration", function () {
     });
 
     it("should load the configuration", function () {
-      expect(function () { config.initialize(logger); }).not.throws();
+      expect(function () { Config.initialize(logger); }).not.throws();
     });
 
     it("should export the home directory on the resulting object", function () {
-      var configuration = config.initialize(logger);
+      var configuration = Config.initialize(logger);
       expect(configuration.newrelic_home).equal(DESTDIR);
     });
 
@@ -359,12 +359,52 @@ describe("the agent configuration", function () {
 
       var configuration;
       expect(function envTest() {
-        configuration = config.initialize(logger);
+        configuration = Config.initialize(logger);
       }).not.throws();
 
       should.not.exist(configuration.newrelic_home);
       expect(configuration.error_collector &&
              configuration.error_collector.enabled).equal(true);
+    });
+  });
+
+  describe("when handling a response from the collector", function () {
+    var config;
+
+    beforeEach(function () {
+      config = new Config();
+    });
+
+    it("should set a run ID when one is received", function () {
+      config.onConnect({'agent_run_id' : 1234});
+      expect(config.run_id).equal(1234);
+    });
+
+    it("should emit an event when harvest interval is changed");
+    it("should disable the transaction tracer when the server says to (collect_traces)");
+    it("should disable the transaction tracer when the server says to (transaction_tracer.enabled)");
+    it("should disable the error tracer when the server says to (collect_errors)");
+    it("should disable the error tracer when the server says to (error_collector.enabled)");
+    it("should map transaction_tracer.transaction_threshold correctly");
+    it("should map the product level to a human-readable string");
+    it("should map URL rules to the URL normalizer");
+    it("should map metric rules to the metric name normalizer");
+    it("should map transaction rules to the transaction name normalizer");
+    it("should configure param capture (capture_params)");
+
+    it("shouldn't blow up when cross_process_id is received");
+    it("shouldn't blow up when cross_application_tracing is received");
+    it("shouldn't blow up when encoding_key is received");
+    it("shouldn't blow up when trusted_account_ids is received");
+    it("shouldn't blow up when high_security is received");
+    it("shouldn't blow up when ssl is received");
+    it("shouldn't blow up when transaction_tracer.record_sql is received");
+    it("shouldn't blow up when slow_sql.enabled is received");
+    it("shouldn't blow up when rum.load_episodes_file is received");
+
+    describe("when apdexT comes in", function () {
+      it("should update its apdexT only when it's changed");
+      it("should emit an apdexT event when apdex_t changes");
     });
   });
 });
