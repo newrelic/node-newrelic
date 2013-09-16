@@ -17,7 +17,10 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
           'app_name'    : 'node.js Tests',
           'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
           'host'        : 'staging-collector.newrelic.com',
-          'port'        : 80
+          'port'        : 80,
+          'logging'     : {
+            'level' : 'trace'
+          }
         }
       })
     , agent = new Agent({config : config})

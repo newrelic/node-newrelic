@@ -416,15 +416,65 @@ describe("the agent configuration", function () {
     it("should map transaction rules to the transaction name normalizer");
     it("should configure param capture (capture_params)");
 
-    it("shouldn't blow up when cross_process_id is received");
-    it("shouldn't blow up when cross_application_tracing is received");
-    it("shouldn't blow up when encoding_key is received");
-    it("shouldn't blow up when trusted_account_ids is received");
-    it("shouldn't blow up when high_security is received");
-    it("shouldn't blow up when ssl is received");
-    it("shouldn't blow up when transaction_tracer.record_sql is received");
-    it("shouldn't blow up when slow_sql.enabled is received");
-    it("shouldn't blow up when rum.load_episodes_file is received");
+    it("shouldn't blow up when sample_rate is received", function () {
+      expect(function () {
+        config.onConnect({'sample_rate' : 0});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when cross_process_id is received", function () {
+      expect(function () {
+        config.onConnect({'cross_process_id' : 'junk'});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when cross_application_tracing is received", function () {
+      expect(function () {
+        config.onConnect({'cross_application_tracing' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when encoding_key is received", function () {
+      expect(function () {
+        config.onConnect({'encoding_key' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when trusted_account_ids is received", function () {
+      expect(function () {
+        config.onConnect({'trusted_account_ids' : [1, 2, 3]});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when high_security is received", function () {
+      expect(function () {
+        config.onConnect({'high_security' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when ssl is received", function () {
+      expect(function () {
+        config.onConnect({'ssl' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when transaction_tracer.record_sql is received", function () {
+      expect(function () {
+        config.onConnect({'transaction_tracer.record_sql' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when slow_sql.enabled is received", function () {
+      expect(function () {
+        config.onConnect({'slow_sql.enabled' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when rum.load_episodes_file is received", function () {
+      expect(function () {
+        config.onConnect({'rum.load_episodes_file' : true});
+      }).not.throws();
+    });
 
     describe("when data_report_period is set", function () {
       it("should emit data_report_period when harvest interval is changed",
