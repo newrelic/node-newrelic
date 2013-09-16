@@ -409,7 +409,7 @@ describe("the New Relic agent", function () {
         mock.expects('sendTransactionTraces').never();
 
         // do this here so slow trace gets collected but not sent
-        agent.config.transaction_tracer.enabled = false;
+        agent.config.onConnect({'transaction_tracer.enabled' : false});
 
         agent.harvest();
         agent.config.transaction_tracer.enabled = true;

@@ -385,7 +385,11 @@ describe("the agent configuration", function () {
       expect(config.collect_traces).equal(false);
     });
 
-    it("should disable the transaction tracer when told to (transaction_tracer.enabled)");
+    it("should disable the transaction tracer when told to", function () {
+      config.onConnect({'transaction_tracer.enabled' : false});
+      expect(config.transaction_tracer.enabled).equal(false);
+    });
+
     it("should change collect_errors when told to");
     it("should disable the error tracer when told to (error_collector.enabled)");
     it("should map transaction_tracer.transaction_threshold correctly");
