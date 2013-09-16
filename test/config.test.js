@@ -438,7 +438,12 @@ describe("the agent configuration", function () {
       config.onConnect({'transaction_name_rules' : [{name : 'sample_rule'}]});
     });
 
-    it("should map the product level to a human-readable string");
+    it("should log the product level", function () {
+      expect(config.product_level).equal(0);
+      config.onConnect({'product_level' : 30});
+      expect(config.product_level).equal(30);
+    });
+
     it("should configure param capture (capture_params)");
 
     it("shouldn't blow up when sampling_rate is received", function () {
