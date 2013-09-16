@@ -142,14 +142,14 @@ describe("the agent configuration", function () {
 
     it("should pick up the transaction trace threshold", function () {
       idempotentEnv('NEW_RELIC_TRACER_THRESHOLD', 0.02, function (tc) {
-        should.exist(tc.transaction_tracer.trace_threshold);
-        expect(tc.transaction_tracer.trace_threshold).equal('0.02');
+        should.exist(tc.transaction_tracer.transaction_threshold);
+        expect(tc.transaction_tracer.transaction_threshold).equal('0.02');
       });
     });
 
     it("should pick up the transaction trace Top N scale", function () {
       idempotentEnv('NEW_RELIC_TRACER_TOP_N', 20, function (tc) {
-        should.exist(tc.transaction_tracer.trace_threshold);
+        should.exist(tc.transaction_tracer.top_n);
         expect(tc.transaction_tracer.top_n).equal('20');
       });
     });
@@ -268,7 +268,7 @@ describe("the agent configuration", function () {
     });
 
     it("should set the transaction tracer threshold to 'apdex_f'", function () {
-      expect(configuration.transaction_tracer.trace_threshold).equal('apdex_f');
+      expect(configuration.transaction_tracer.transaction_threshold).equal('apdex_f');
     });
 
     it("should collect one slow transaction trace per harvest cycle", function () {
@@ -404,7 +404,12 @@ describe("the agent configuration", function () {
       expect(config.error_collector.enabled).equal(false);
     });
 
-    it("should map transaction_tracer.transaction_threshold correctly");
+    it("should map transaction_tracer.transaction_threshold correctly", function () {
+      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f');
+      config.onConnect({'transaction_tracer.transaction_threshold' : 0.75});
+      expect(config.transaction_tracer.transaction_threshold).equal(0.75);
+    });
+
     it("should map the product level to a human-readable string");
     it("should map URL rules to the URL normalizer");
     it("should map metric rules to the metric name normalizer");

@@ -238,8 +238,8 @@ describe('TraceAggregator', function () {
     var config = configurator.initialize(logger, {
       config : {
         transaction_tracer : {
-          enabled         : true,
-          trace_threshold : THRESHOLD
+          enabled               : true,
+          transaction_threshold : THRESHOLD
         }
       }
     });
@@ -259,8 +259,8 @@ describe('TraceAggregator', function () {
     var config = configurator.initialize(logger, {
       config : {
         transaction_tracer : {
-          enabled         : true,
-          trace_threshold : THRESHOLD
+          enabled               : true,
+          transaction_threshold : THRESHOLD
         }
       }
     });
