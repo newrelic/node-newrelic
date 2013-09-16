@@ -428,7 +428,15 @@ describe("the agent configuration", function () {
       config.onConnect({'metric_name_rules' : [{name : 'sample_rule'}]});
     });
 
-    it("should map transaction rules to the transaction name normalizer");
+    it("should map transaction naming rules to the transaction name normalizer",
+       function (done) {
+      config.on('transaction_name_rules', function (rules) {
+        expect(rules).eql([{name : 'sample_rule'}]);
+        done();
+      });
+
+      config.onConnect({'transaction_name_rules' : [{name : 'sample_rule'}]});
+    });
 
     it("should map the product level to a human-readable string");
     it("should configure param capture (capture_params)");

@@ -181,8 +181,14 @@ describe("Transaction", function () {
       expect(function () { trans.setName(); }).throws();
     });
 
-    it("should ignore a transaction when told to by a rule", function () {
+    it("should ignore a URL when told to by a rule", function () {
       agent.urlNormalizer.addSimple('^/test/');
+      trans.setName('/test/string?do=thing&another=thing', 200);
+      return expect(trans.ignore).true;
+    });
+
+    it("should ignore a transaction when told to by a rule", function () {
+      agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri');
       trans.setName('/test/string?do=thing&another=thing', 200);
       return expect(trans.ignore).true;
     });
@@ -249,6 +255,15 @@ describe("Transaction", function () {
         expect(trans.partialName).equal('Custom/test');
       });
 
+      it("should rename a transaction when told to by a rule", function () {
+        agent.transactionNameNormalizer.addSimple(
+          '^(WebTransaction/Custom)/test$',
+          '$1/*'
+        );
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        expect(trans.name).equal('WebTransaction/Custom/*');
+      });
+
       it("passes through status code when status is 200", function () {
         trans.setName('/test/string?do=thing&another=thing', 200);
         expect(trans.statusCode).equal(200);
@@ -282,6 +297,12 @@ describe("Transaction", function () {
       it("passes through status code when status is 501", function () {
         trans.setName('/test/string?do=thing&another=thing', 501);
         expect(trans.statusCode).equal(501);
+      });
+
+      it("should ignore a transaction when told to by a rule", function () {
+        agent.transactionNameNormalizer.addSimple('^WebTransaction/Custom/test$');
+        trans.setName('/test/string?do=thing&another=thing', 200);
+        return expect(trans.ignore).true;
       });
     });
   });

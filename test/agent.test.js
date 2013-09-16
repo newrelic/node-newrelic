@@ -107,6 +107,10 @@ describe("the New Relic agent", function () {
       should.exist(agent.metricNameNormalizer);
     });
 
+    it("has a transaction name normalizer", function () {
+      should.exist(agent.transactionNameNormalizer);
+    });
+
     it("has a consolidated metrics collection that transactions feed into", function () {
       should.exist(agent.metrics);
     });
