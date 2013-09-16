@@ -387,6 +387,7 @@ describe("the agent configuration", function () {
     });
 
     it("should disable the transaction tracer when told to", function () {
+      expect(config.transaction_tracer.enabled).equal(true);
       config.onConnect({'transaction_tracer.enabled' : false});
       expect(config.transaction_tracer.enabled).equal(false);
     });
@@ -397,7 +398,12 @@ describe("the agent configuration", function () {
       expect(config.collect_errors).equal(false);
     });
 
-    it("should disable the error tracer when told to (error_collector.enabled)");
+    it("should disable the error tracer when told to", function () {
+      expect(config.error_collector.enabled).equal(true);
+      config.onConnect({'error_collector.enabled' : false});
+      expect(config.error_collector.enabled).equal(false);
+    });
+
     it("should map transaction_tracer.transaction_threshold correctly");
     it("should map the product level to a human-readable string");
     it("should map URL rules to the URL normalizer");

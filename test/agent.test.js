@@ -389,7 +389,7 @@ describe("the New Relic agent", function () {
         mock.expects('sendTransactionTraces').once();
 
         // do this here so error traces get collected but not sent
-        agent.config.error_collector.enabled = false;
+        agent.config.onConnect({'error_collector.enabled' : false});
 
         agent.harvest();
         agent.config.error_collector.enabled = true;
