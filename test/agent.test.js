@@ -215,14 +215,13 @@ describe("the New Relic agent", function () {
           return done();
         });
 
-        agent.config.emit('change', {'apdex_t' : 0.666});
+        agent.config.emit('apdex_t', 0.666);
       });
 
       it("should reset the configuration and metrics normalizer on connection",
          function (done) {
         expect(agent.config.apdex_t).equal(0.5);
         process.nextTick(function () {
-          expect(agent.config.apdex_t).equal(0.742);
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.normalizer.rules).deep.equal([]);
 
@@ -272,18 +271,10 @@ describe("the New Relic agent", function () {
     describe("when apdex_t changes", function () {
       var APDEX_T = 0.9876;
 
-      it("should update its own apdexT", function () {
-        expect(agent.apdexT).not.equal(APDEX_T);
-
-        agent.onApdexTChange({apdex_t : APDEX_T});
-
-        expect(agent.apdexT).equal(APDEX_T);
-      });
-
       it("should update the current metrics collection's apdexT", function () {
         expect(agent.metrics.apdexT).not.equal(APDEX_T);
 
-        agent.onApdexTChange({apdex_t : APDEX_T});
+        agent.onApdexTChange(APDEX_T);
 
         expect(agent.metrics.apdexT).equal(APDEX_T);
       });

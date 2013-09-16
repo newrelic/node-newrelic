@@ -315,7 +315,7 @@ describe('TraceAggregator', function () {
   });
 
   it("should always report slow traces until 5 have been sent", function (done) {
-    agent.apdexT = 0;
+    agent.config.apdex_t = 0;
     var config = configurator.initialize(logger, {
       config : {
         apdex_t : 0,

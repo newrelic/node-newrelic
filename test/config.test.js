@@ -403,8 +403,26 @@ describe("the agent configuration", function () {
     it("shouldn't blow up when rum.load_episodes_file is received");
 
     describe("when apdexT comes in", function () {
-      it("should update its apdexT only when it's changed");
-      it("should emit an apdexT event when apdex_t changes");
+      it("should emit an apdexT event when apdex_t changes", function (done) {
+        config.once('apdex_t', function (apdexT) {
+          expect(apdexT).equal(0.75);
+
+          done();
+        });
+
+        config.onConnect({'apdex_t' : 0.75});
+      });
+
+      it("should update its apdexT only when it has changed", function (done) {
+        expect(config.apdex_t).equal(0.5);
+
+        config.once('apdex_t', function () {
+          done(new Error('should never get here'));
+        });
+
+        config.onConnect({'apdex_t' : 0.5});
+        done();
+      });
     });
   });
 });

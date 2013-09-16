@@ -41,7 +41,7 @@ test("agent instrumentation of Express 3", function (t) {
     });
 
     // set apdexT so apdex stats will be recorded
-    agent.apdexT = 1;
+    agent.config.apdex_t = 1;
 
     app.get(TEST_PATH, function (req, res) {
       res.send({yep : true});
