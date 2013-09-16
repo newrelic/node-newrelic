@@ -395,7 +395,8 @@ describe("the New Relic agent", function () {
         agent.config.error_collector.enabled = true;
       });
 
-      it("doesn't try to send slow traces when transaction tracer disabled", function () {
+      it("doesn't try to send transaction traces when transaction tracer disabled",
+         function () {
         var transaction = new Transaction(agent);
         transaction.setName('/test/path/31337', 501);
         agent.errors.add(transaction, new TypeError('no method last on undefined'));
@@ -409,6 +410,26 @@ describe("the New Relic agent", function () {
 
         // do this here so slow trace gets collected but not sent
         agent.config.transaction_tracer.enabled = false;
+
+        agent.harvest();
+        agent.config.transaction_tracer.enabled = true;
+      });
+
+      it("doesn't try to send transaction traces when server disables collect_traces",
+         function () {
+        var transaction = new Transaction(agent);
+        transaction.setName('/test/path/31337', 501);
+        agent.errors.add(transaction, new TypeError('no method last on undefined'));
+        agent.errors.add(transaction, new Error('application code error'));
+        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+        transaction.end();
+
+        mock.expects('sendMetricData').once();
+        mock.expects('sendTracedErrors').once();
+        mock.expects('sendTransactionTraces').never();
+
+        // set this here so slow trace gets collected but not sent
+        agent.config.onConnect({collect_traces : false});
 
         agent.harvest();
         agent.config.transaction_tracer.enabled = true;

@@ -57,6 +57,13 @@ describe('TraceAggregator', function () {
     expect(agent.traces.trace).equal(null);
   });
 
+  it("shouldn't collect a trace if collect_traces is false", function () {
+    agent.config.collect_traces = false;
+    agent.traces.add(createTransaction('/test', 3000));
+
+    expect(agent.traces.trace).equal(null);
+  });
+
   describe("with top n support", function () {
     var config;
 

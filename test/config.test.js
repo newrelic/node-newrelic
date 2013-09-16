@@ -380,7 +380,11 @@ describe("the agent configuration", function () {
       expect(config.run_id).equal(1234);
     });
 
-    it("should change collect_traces when told to");
+    it("should change collect_traces when told to", function () {
+      config.onConnect({'collect_traces' : false});
+      expect(config.collect_traces).equal(false);
+    });
+
     it("should disable the transaction tracer when told to (transaction_tracer.enabled)");
     it("should change collect_errors when told to");
     it("should disable the error tracer when told to (error_collector.enabled)");
