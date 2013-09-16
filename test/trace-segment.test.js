@@ -134,6 +134,114 @@ describe("TraceSegment", function () {
     });
   });
 
+  describe("with capture_params disabled", function () {
+    var webChild, agent;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      agent.config.onConnect({capture_params : false});
+
+      var transaction = new Transaction(agent)
+        , trace       = new Trace(transaction)
+        , segment     = new TraceSegment(trace, 'UnitTest')
+        , url         = '/test?test1=value1&test2&test3=50&test4='
+        ;
+
+      webChild = segment.add(url);
+      transaction.setName(url, 200);
+      webChild.markAsWeb(url);
+
+      trace.setDurationInMillis(1, 0);
+      webChild.setDurationInMillis(1, 0);
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("should return the URL minus any query parameters", function () {
+      expect(webChild.name).equal('WebTransaction/NormalizedUri/*');
+    });
+
+    it("should have parameters on the child segment", function () {
+      expect(webChild.parameters).eql({nr_exclusive_duration_millis : null});
+    });
+
+    it("should serialize the segment without the parameters", function () {
+      var expected = [
+        0,
+        1,
+        'WebTransaction/NormalizedUri/*',
+        {nr_exclusive_duration_millis : 1},
+        []
+      ];
+      expect(webChild.toJSON()).deep.equal(expected);
+    });
+  });
+
+  describe("with capture_params enabled and ignored_params set", function () {
+    var webChild, agent;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      agent.config.ignored_params = ['test1', 'test4'];
+
+      var transaction = new Transaction(agent)
+        , trace       = new Trace(transaction)
+        , segment     = new TraceSegment(trace, 'UnitTest')
+        , url         = '/test?test1=value1&test2&test3=50&test4='
+        ;
+
+      webChild = segment.add(url);
+      transaction.setName(url, 200);
+      webChild.markAsWeb(url);
+
+      trace.setDurationInMillis(1, 0);
+      webChild.setDurationInMillis(1, 0);
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("should return the URL minus any query parameters", function () {
+      expect(webChild.name).equal('WebTransaction/NormalizedUri/*');
+    });
+
+    it("should have parameters on the child segment", function () {
+      should.exist(webChild.parameters);
+    });
+
+    it("should have filtered the parameters that were passed in the query string",
+       function () {
+      should.not.exist(webChild.parameters.test1);
+      expect(webChild.parameters.test3).equal('50');
+    });
+
+    it("should set bare parameters to true (as in present)", function () {
+      expect(webChild.parameters.test2).equal(true);
+    });
+
+    it("should not have filtered parameter", function () {
+      should.not.exist(webChild.parameters.test4);
+    });
+
+    it("should serialize the segment with the parameters", function () {
+      var expected = [
+        0,
+        1,
+        'WebTransaction/NormalizedUri/*',
+        {
+          nr_exclusive_duration_millis : 1,
+          test2 : true,
+          test3 : '50'
+        },
+        []
+      ];
+      expect(webChild.toJSON()).deep.equal(expected);
+    });
+  });
+
   it("should retain any associated SQL statements");
   it("should allow an arbitrary number of segments in the scope of this segment");
 

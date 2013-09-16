@@ -234,6 +234,42 @@ describe("ErrorTracer", function () {
     });
   });
 
+  describe("with capture_params disabled", function () {
+    var agent = helper.loadMockedAgent();
+    agent.config.onConnect({capture_params : false});
+    var tracer = agent.errors;
+
+    var transaction = new Transaction(agent);
+    transaction.statusCode = 501;
+
+    transaction.url = '/test_action.json?test_param=a%20value&thing';
+
+    tracer.add(transaction, null);
+    var errorJSON = tracer.errors[0];
+    var params = errorJSON[4];
+
+    should.not.exist(params.request_params);
+    helper.unloadAgent(agent);
+  });
+
+  describe("with capture_params enabled and ignored_params set", function () {
+    var agent = helper.loadMockedAgent();
+    agent.config.ignored_params = ['thing'];
+    var tracer = agent.errors;
+
+    var transaction = new Transaction(agent);
+    transaction.statusCode = 501;
+
+    transaction.url = '/test_action.json?test_param=a%20value&thing';
+
+    tracer.add(transaction, null);
+    var errorJSON = tracer.errors[0];
+    var params = errorJSON[4];
+
+    expect(params.request_params).eql({test_param : 'a value'});
+    helper.unloadAgent(agent);
+  });
+
   describe("with a thrown TypeError object and no transaction", function () {
     var agent
       , tracer

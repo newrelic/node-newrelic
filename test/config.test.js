@@ -118,6 +118,20 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should pick up whether to capture request parameters", function () {
+      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'no', function (tc) {
+        should.exist(tc.capture_params);
+        expect(tc.capture_params).equal(false);
+      });
+    });
+
+    it("should pick up ignored request parameters", function () {
+      idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function (tc) {
+        should.exist(tc.ignored_params);
+        expect(tc.ignored_params).eql(['one', 'two', 'three']);
+      });
+    });
+
     it("should pick up whether the error collector is enabled", function () {
       idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ENABLED', 'NO', function (tc) {
         should.exist(tc.error_collector.enabled);
@@ -444,7 +458,17 @@ describe("the agent configuration", function () {
       expect(config.product_level).equal(30);
     });
 
-    it("should configure param capture (capture_params)");
+    it("should configure param capture", function () {
+      expect(config.capture_params).equal(true);
+      config.onConnect({'capture_params' : false});
+      expect(config.capture_params).equal(false);
+    });
+
+    it("should configure ignored params", function () {
+      expect(config.ignored_params).eql([]);
+      config.onConnect({'ignored_params' : ['a', 'b']});
+      expect(config.ignored_params).eql(['a', 'b']);
+    });
 
     it("shouldn't blow up when sampling_rate is received", function () {
       expect(function () {
