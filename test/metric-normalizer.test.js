@@ -11,7 +11,7 @@ describe ("MetricNormalizer", function () {
 
   beforeEach(function () {
     var config = {enforce_backstop : true};
-    normalizer = new Normalizer(config, 'test');
+    normalizer = new Normalizer(config, 'URL');
   });
 
   it("should throw when instantiated without config", function () {
@@ -165,7 +165,7 @@ describe ("MetricNormalizer", function () {
     });
 
     it("will create rename rules that work properly", function () {
-      normalizer.addSimple('^/t(.*)$', 'w$1');
+      normalizer.addSimple('^/t(.*)$', '/w$1');
       expect(normalizer.normalize('/test')).equal('NormalizedUri/west');
     });
   });

@@ -84,7 +84,7 @@ describe("CollectorConnection", function () {
 
       beforeEach(function () {
         // let's try a ludicrously high Apdex T
-        metrics = new Metrics(1);
+        metrics = new Metrics(1, agent.mapper, agent.metricNameNormalizer);
         metrics.started = 12000;
         metrics.measureMilliseconds('Test/SampleMetric/all', null, 3, 1);
 

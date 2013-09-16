@@ -118,7 +118,7 @@ API.prototype.nameController = function (name, action) {
 API.prototype.addNamingRule = function (pattern, name) {
   if (!name) return logger.error("Simple naming rules require a replacement name.");
 
-  this.agent.urlNormalizer.addSimple(pattern, name);
+  this.agent.urlNormalizer.addSimple(pattern, '/' + name);
 };
 
 /**

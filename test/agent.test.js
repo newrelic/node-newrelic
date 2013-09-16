@@ -103,6 +103,10 @@ describe("the New Relic agent", function () {
       should.exist(agent.urlNormalizer);
     });
 
+    it("has a metric name normalizer", function () {
+      should.exist(agent.metricNameNormalizer);
+    });
+
     it("has a consolidated metrics collection that transactions feed into", function () {
       should.exist(agent.metrics);
     });
@@ -340,7 +344,7 @@ describe("the New Relic agent", function () {
         agent.errors.add(transaction, new RangeError('stack depth exceeded'));
         transaction.end();
 
-        var metrics = new Metrics(0.5);
+        var metrics = new Metrics(0.5, agent.mapper, agent.metricNameNormalizer);
         metrics.started = 1337;
         metrics.getOrCreateMetric('Errors/all').incrementCallCount(3);
 

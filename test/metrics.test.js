@@ -1,41 +1,78 @@
 'use strict';
 
-var path         = require('path')
-  , chai         = require('chai')
-  , expect       = chai.expect
-  , should       = chai.should()
-  , Metrics      = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , MetricMapper = require(path.join(__dirname, '..', 'lib', 'metrics', 'mapper'))
+var path             = require('path')
+  , chai             = require('chai')
+  , expect           = chai.expect
+  , should           = chai.should()
+  , helper           = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics'))
+  , MetricMapper     = require(path.join(__dirname, '..', 'lib', 'metrics', 'mapper'))
+  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
   ;
 
 describe("Metrics", function () {
-  var metrics;
+  var metrics
+    , agent
+    ;
 
   beforeEach(function () {
-    metrics = new Metrics();
+    agent = helper.loadMockedAgent();
+    metrics = new Metrics(
+      agent.config.apdex_t,
+      agent.mapper,
+      agent.metricNameNormalizer
+    );
   });
 
-  describe("when creating from defaults", function () {
-    it("should set apdexT to 0", function () {
-      expect(metrics.apdexT).equal(0);
+  afterEach(function () {
+    helper.unloadAgent(agent);
+  });
+
+  describe("when creating", function () {
+    it("should throw if apdexT isn't set", function () {
+      expect(function () {
+        metrics = new Metrics(
+          undefined,
+          agent.mapper,
+          agent.metricNameNormalizer
+        );
+      }).throws();
     });
 
-    it("should return apdex summaries with an apdexT of 0", function () {
+    it("should throw if no name -> ID mapper is provided", function () {
+      expect(function () {
+        metrics = new Metrics(
+          agent.config.apdex_t,
+          undefined,
+          agent.metricNameNormalizer
+        );
+      }).throws();
+    });
+
+    it("should throw if no metric name normalizer is provided", function () {
+      expect(function () {
+        metrics = new Metrics(
+          agent.config.apdex_t,
+          agent.mapper,
+          undefined
+        );
+      }).throws();
+    });
+
+    it("should return apdex summaries with an apdexT same as config's", function () {
       var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest');
-      expect(metric.apdexT).equal(0);
-    });
-
-    it("should create an empty metric mapper", function () {
-      expect(metrics.mapper).deep.equal(new MetricMapper());
+      expect(metric.apdexT).equal(agent.config.apdex_t);
     });
   });
 
   describe("when creating with parameters", function () {
     var TEST_APDEX = 0.4;
-    var TEST_MAPPER = new MetricMapper([[{name : 'Test/RenameMe333'}, 1337]]);
+    var TEST_MAPPER = new MetricMapper([[{name : 'Renamed/333'}, 1337]]);
+    var TEST_NORMALIZER = new MetricNormalizer({enforce_backstop : true}, 'metric name');
 
     beforeEach(function () {
-      metrics = new Metrics(TEST_APDEX, TEST_MAPPER);
+      TEST_NORMALIZER.addSimple(/^Test\/RenameMe(.*)$/, 'Renamed/$1');
+      metrics = new Metrics(TEST_APDEX, TEST_MAPPER, TEST_NORMALIZER);
     });
 
     it("should pass apdex through to ApdexStats", function () {
@@ -177,7 +214,7 @@ describe("Metrics", function () {
           ;
 
         beforeEach(function () {
-          metrics = new Metrics(0.8);
+          metrics = new Metrics(0.8, new MetricMapper(), agent.metricNameNormalizer);
           metric  = metrics.getOrCreateApdexMetric(NAME);
           mapper  = new MetricMapper([[{name : NAME}, 1234]]);
         });
@@ -240,7 +277,11 @@ describe("Metrics", function () {
       metrics.measureMilliseconds('Test/Scoped',      'METRICS', 200);
       metrics.measureMilliseconds('Test/Scoped',        'MERGE', 100);
 
-      other = new Metrics();
+      other = new Metrics(
+        agent.config.apdex_t,
+        agent.mapper,
+        agent.metricNameNormalizer
+      );
       other.started = 1337;
       other.measureMilliseconds('Test/Other/Unscoped', null, 800);
       other.measureMilliseconds('Test/Unscoped',       null, 700);
