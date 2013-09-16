@@ -26,7 +26,7 @@ describe ("MetricNormalizer", function () {
 
   it("should normalize with an empty rule set", function () {
     expect(function () {
-      normalizer.load({url_rules : []});
+      normalizer.load([]);
 
       expect(normalizer.normalize('/sample')).equal('NormalizedUri/*');
     }).not.throws();
@@ -35,46 +35,44 @@ describe ("MetricNormalizer", function () {
   describe("with rules captured from the staging collector on 2012-08-29",
            function () {
     beforeEach(function () {
-      normalizer.load({
-        url_rules : [
-          {each_segment : false, eval_order : 0, terminate_chain : true,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : false, eval_order : 0, terminate_chain : true,
-           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-           replace_all : false, ignore : false, replacement : '/*.\\1'},
-          {each_segment : false, eval_order : 0, terminate_chain : true,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : false, eval_order : 0, terminate_chain : true,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : false, eval_order : 0, terminate_chain : true,
-           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-           replace_all : false, ignore : false, replacement : '/*.\\1'},
-          {each_segment : false, eval_order : 0, terminate_chain : true,
-           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-           replace_all : false, ignore : false, replacement : '/*.\\1'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
-        ]
-      });
+      normalizer.load([
+        {each_segment : false, eval_order : 0, terminate_chain : true,
+         match_expression : '^(test_match_nothing)$',
+         replace_all : false, ignore : false, replacement : '\\1'},
+        {each_segment : false, eval_order : 0, terminate_chain : true,
+         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+         replace_all : false, ignore : false, replacement : '/*.\\1'},
+        {each_segment : false, eval_order : 0, terminate_chain : true,
+         match_expression : '^(test_match_nothing)$',
+         replace_all : false, ignore : false, replacement : '\\1'},
+        {each_segment : false, eval_order : 0, terminate_chain : true,
+         match_expression : '^(test_match_nothing)$',
+         replace_all : false, ignore : false, replacement : '\\1'},
+        {each_segment : false, eval_order : 0, terminate_chain : true,
+         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+         replace_all : false, ignore : false, replacement : '/*.\\1'},
+        {each_segment : false, eval_order : 0, terminate_chain : true,
+         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+         replace_all : false, ignore : false, replacement : '/*.\\1'},
+        {each_segment : true, eval_order : 1, terminate_chain : false,
+         match_expression : '^[0-9][0-9a-f_,.-]*$',
+         replace_all : false, ignore : false, replacement : '*'},
+        {each_segment : true, eval_order : 1, terminate_chain : false,
+         match_expression : '^[0-9][0-9a-f_,.-]*$',
+         replace_all : false, ignore : false, replacement : '*'},
+        {each_segment : true, eval_order : 1, terminate_chain : false,
+         match_expression : '^[0-9][0-9a-f_,.-]*$',
+         replace_all : false, ignore : false, replacement : '*'},
+        {each_segment : false, eval_order : 2, terminate_chain : false,
+         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+         replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
+        {each_segment : false, eval_order : 2, terminate_chain : false,
+         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+         replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
+        {each_segment : false, eval_order : 2, terminate_chain : false,
+         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+         replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+      ]);
     });
 
     it("should eliminate duplicate rules as part of loading them", function () {
@@ -110,44 +108,38 @@ describe ("MetricNormalizer", function () {
   });
 
   it("should correctly ignore a matching name", function () {
-    normalizer.load({
-      url_rules : [
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^/long_polling$',
-         replace_all : false, ignore : true, replacement : '*'}
-      ]
-    });
+    normalizer.load([
+      {each_segment : false, eval_order : 0, terminate_chain : true,
+       match_expression : '^/long_polling$',
+       replace_all : false, ignore : true, replacement : '*'}
+    ]);
 
     return expect(normalizer.normalize('/long_polling')).empty;
   });
 
   it("should apply rules by precedence", function () {
-    normalizer.load({
-      url_rules : [
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : 'mochi',
-         replace_all : false, ignore : false, replacement : 'millet'},
-        {each_segment : false, eval_order : 0, terminate_chain : false,
-         match_expression : '/rice$',
-         replace_all : false, ignore : false, replacement : '/mochi'}
-      ]
-    });
+    normalizer.load([
+      {each_segment : true, eval_order : 1, terminate_chain : false,
+       match_expression : 'mochi',
+       replace_all : false, ignore : false, replacement : 'millet'},
+      {each_segment : false, eval_order : 0, terminate_chain : false,
+       match_expression : '/rice$',
+       replace_all : false, ignore : false, replacement : '/mochi'}
+    ]);
 
     expect(normalizer.normalize('/rice/is/not/rice'))
       .equal('NormalizedUri/rice/is/not/millet');
   });
 
   it("should terminate when indicated by rule", function () {
-    normalizer.load({
-      url_rules : [
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : 'mochi',
-         replace_all : false, ignore : false, replacement : 'millet'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '/rice$',
-         replace_all : false, ignore : false, replacement : '/mochi'}
-      ]
-    });
+    normalizer.load([
+      {each_segment : true, eval_order : 1, terminate_chain : false,
+       match_expression : 'mochi',
+       replace_all : false, ignore : false, replacement : 'millet'},
+      {each_segment : false, eval_order : 0, terminate_chain : true,
+       match_expression : '/rice$',
+       replace_all : false, ignore : false, replacement : '/mochi'}
+    ]);
 
     expect(normalizer.normalize('/rice/is/not/rice'))
       .equal('NormalizedUri/rice/is/not/mochi');

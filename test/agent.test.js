@@ -301,19 +301,17 @@ describe("the New Relic agent", function () {
       });
 
       it("shouldn't throw if new rules are received", function () {
-        var rules = {
-          url_rules : [
-            {each_segment : false, eval_order : 0, terminate_chain : true,
-             match_expression : '^(test_match_nothing)$',
-             replace_all : false, ignore : false, replacement : '\\1'},
-            {each_segment : false, eval_order : 0, terminate_chain : true,
-             match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-             replace_all : false, ignore : false, replacement : '/*.\\1'},
-            {each_segment : false, eval_order : 0, terminate_chain : true,
-             match_expression : '^(test_match_nothing)$',
-             replace_all : false, ignore : false, replacement : '\\1'}
-          ]
-        };
+        var rules = [
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '^(test_match_nothing)$',
+           replace_all : false, ignore : false, replacement : '\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+           replace_all : false, ignore : false, replacement : '/*.\\1'},
+          {each_segment : false, eval_order : 0, terminate_chain : true,
+           match_expression : '^(test_match_nothing)$',
+           replace_all : false, ignore : false, replacement : '\\1'}
+        ];
 
         expect(function () { agent.onNewNormalizationRules(rules); }).not.throws();
       });

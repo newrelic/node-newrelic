@@ -416,9 +416,9 @@ describe("the agent configuration", function () {
     it("should map transaction rules to the transaction name normalizer");
     it("should configure param capture (capture_params)");
 
-    it("shouldn't blow up when sample_rate is received", function () {
+    it("shouldn't blow up when sampling_rate is received", function () {
       expect(function () {
-        config.onConnect({'sample_rate' : 0});
+        config.onConnect({'sampling_rate' : 0});
       }).not.throws();
     });
 
