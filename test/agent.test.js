@@ -336,14 +336,16 @@ describe("the New Relic agent", function () {
 
     beforeEach(function () {
       var connection = new CollectorConnection({
-        config : {applications : function () { return 'none'; }}
+        config : {
+          applications : function () { return 'none'; },
+          run_id : '1337'
+        }
       });
 
       mock = sinon.mock(connection);
 
       agent = new Agent({connection : connection});
       agent.setupConnection();
-      connection.agentRunId = '1337';
     });
 
     afterEach(function () {

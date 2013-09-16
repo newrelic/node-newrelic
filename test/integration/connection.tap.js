@@ -63,7 +63,7 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
       t.ok(handshakeResponseCalled, "already fetched agent configuration when connected");
       t.ok(configUpdated, "configuration updated at connect time");
       t.ok(response, "agent configuration made it through to the connect event");
-      t.ok(connection.agentRunId, "agent run ID is set after connect");
+      t.ok(agent.config.run_id, "agent run ID is set after connect");
 
       connected = true;
       agent.stop();
@@ -92,7 +92,7 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
       t.ok(connected, "already connected at close time");
       t.ok(ended, "already ended at close time");
       t.ok(shutDown, "shutdown happened at close time");
-      t.notOk(connection.agentRunId, "agent run ID is cleared after close");
+      t.notOk(agent.config.run_id, "agent run ID is cleared after close");
       t.notOk(closed, "connection closed only once");
       closed = true;
 

@@ -42,7 +42,7 @@ describe("CollectorConnection", function () {
     ;
 
   it("starts out disconnected", function () {
-    expect(new CollectorConnection().isConnected()).equal(false);
+    expect(new CollectorConnection(new Agent()).isConnected()).equal(false);
   });
 
   describe("with a mocked DataSender", function () {
@@ -59,12 +59,12 @@ describe("CollectorConnection", function () {
           'app_name'    : 'node.js Tests',
           'license_key' : testLicense,
           'host'        : collectorHost,
-          'port'        : 80
+          'port'        : 80,
+          // run_id is set as a side effect of the connect() method.
+          'run_id'      : SAMPLE_RUN_ID
         }
       });
       connection = new CollectorConnection(agent);
-      // agentRunId is set as a side effect of the connect() method.
-      connection.agentRunId = SAMPLE_RUN_ID;
 
       // DataSender is created entirely within send(), so mock indirectly
       sinon.stub(DataSender.prototype, 'invokeMethod', function (sMethod, sData) {
@@ -319,9 +319,9 @@ describe("CollectorConnection", function () {
         }
       };
 
-      var connection        = new CollectorConnection(agent);
-      connection.agentRunId = SAMPLE_RUN_ID;
-      agent.connection      = connection;
+      var connection      = new CollectorConnection(agent);
+      agent.connection    = connection;
+      agent.config.run_id = SAMPLE_RUN_ID;
       agent.metrics.measureMilliseconds('Test/Unimportant', 23);
 
       connection.sendMetricData(agent.metrics);
@@ -355,8 +355,8 @@ describe("CollectorConnection", function () {
       };
 
       var connection        = new CollectorConnection(agent);
-      connection.agentRunId = SAMPLE_RUN_ID;
       agent.connection      = connection;
+      agent.config.run_id = SAMPLE_RUN_ID;
       agent.metrics.measureMilliseconds('Test/Unimportant', 23);
 
       connection.sendMetricData(agent.metrics);
