@@ -12,7 +12,7 @@ var path    = require('path')
  * CONSTANTS
  *
  */
-var METRIC = 'WebTransaction/Restify/hello/:name';
+var METRIC = 'WebTransaction/Restify/GET#/hello/:name';
 
 
 test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",

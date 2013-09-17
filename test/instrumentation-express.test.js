@@ -168,10 +168,11 @@ describe("an instrumented Express application", function () {
     it("should set the transaction's scope after matchRequest is called", function () {
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
+        transaction.verb = 'POST';
 
         var match = stub.createServer().routes._match;
         expect(match()).eql({path : '/test/:id'});
-        expect(transaction.partialName).equal('Expressjs/test/:id');
+        expect(transaction.partialName).equal('Expressjs/POST#/test/:id');
       });
     });
   });
@@ -199,7 +200,7 @@ describe("an instrumented Express application", function () {
         Router : {
           prototype : {
             matchRequest : function () {
-              return {path : '/test/:id'};
+              return {path : 'test/:id'};
             }
           }
         }
@@ -299,10 +300,11 @@ describe("an instrumented Express application", function () {
     it("should set the transaction's scope after matchRequest is called", function () {
       helper.runInTransaction(agent, function () {
         var transaction = agent.getTransaction();
+        transaction.verb = 'GET';
 
         var match = stub.Router.prototype.matchRequest;
-        expect(match()).eql({path : '/test/:id'});
-        expect(transaction.partialName).equal('Expressjs/test/:id');
+        expect(match()).eql({path : 'test/:id'});
+        expect(transaction.partialName).equal('Expressjs/GET#test/:id');
       });
     });
   });

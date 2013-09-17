@@ -218,8 +218,6 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
     , request      = require('request')
     ;
 
-  // redis.debug_mode = true;
-
   var self = this;
   helper.bootstrapRedis(function (error, service) {
     if (error) {
@@ -252,7 +250,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
         var web = trace.root.children[0] || {};
         children = web.children || [];
-        t.equal(web.name, 'WebTransaction/Expressjs/:id',
+        t.equal(web.name, 'WebTransaction/Expressjs/GET#/:id',
                 "first segment is web transaction");
         t.equal(web.children.length, 1, "only one child of root node");
 
