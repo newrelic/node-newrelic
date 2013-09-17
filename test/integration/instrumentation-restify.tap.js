@@ -12,7 +12,7 @@ var path    = require('path')
  * CONSTANTS
  *
  */
-var CONTROLLER = 'WebTransaction/Controller/Restify/hello/:name';
+var METRIC = 'WebTransaction/Restify/hello/:name';
 
 
 test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
@@ -36,7 +36,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
       if (error) return t.fail(error);
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request");
 
-      var metric = agent.metrics.getMetric(CONTROLLER);
+      var metric = agent.metrics.getMetric(METRIC);
       t.ok(metric, "request metrics should have been gathered");
       t.equals(metric.callCount, 1, "handler should have been called");
       t.equals(body, '"hello friend"', "data returned by restify should be as expected");
@@ -91,7 +91,7 @@ test("Restify should still be instrumented when run with SSL", function (t) {
         t.notOk(agent.getTransaction(),
                 "transaction shouldn't leak into external request");
 
-        var metric = agent.metrics.getMetric(CONTROLLER);
+        var metric = agent.metrics.getMetric(METRIC);
         t.ok(metric, "request metrics should have been gathered");
         t.equals(metric.callCount, 1, "handler should have been called");
         t.equals(body, '"hello friend"',

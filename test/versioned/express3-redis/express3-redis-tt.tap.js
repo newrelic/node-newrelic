@@ -252,7 +252,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
         var web = trace.root.children[0] || {};
         children = web.children || [];
-        t.equal(web.name, 'WebTransaction/Controller/Expressjs/:id',
+        t.equal(web.name, 'WebTransaction/Expressjs/:id',
                 "first segment is web transaction");
         t.equal(web.children.length, 1, "only one child of root node");
 
