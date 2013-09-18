@@ -135,6 +135,69 @@ describe("TraceSegment", function () {
     });
   });
 
+  describe("with parameters parsed out by framework", function () {
+    var webChild, agent;
+
+    before(function () {
+      agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
+
+      var transaction = new Transaction(agent)
+        , trace       = new Trace(transaction)
+        , segment     = new TraceSegment(trace, 'UnitTest')
+        , url         = '/test'
+        , params;
+
+      // Express uses positional parameters sometimes
+      params = ['first', 'another'];
+      params.test3 = '50';
+
+      webChild = segment.add(url);
+      transaction.setName(url, 200);
+      webChild.markAsWeb(url, params);
+
+      trace.setDurationInMillis(1, 0);
+      webChild.setDurationInMillis(1, 0);
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("should return the URL minus any query parameters", function () {
+      expect(webChild.name).equal('WebTransaction/NormalizedUri/*');
+    });
+
+    it("should have parameters on the child segment", function () {
+      should.exist(webChild.parameters);
+    });
+
+    it("should have the positional parameters from the params array", function () {
+      expect(webChild.parameters[0]).equal('first');
+      expect(webChild.parameters[1]).equal('another');
+    });
+
+    it("should have the named parameter from the params array", function () {
+      expect(webChild.parameters.test3).equal('50');
+    });
+
+    it("should serialize the segment with the parameters", function () {
+      var expected = [
+        0,
+        1,
+        'WebTransaction/NormalizedUri/*',
+        {
+          nr_exclusive_duration_millis : 1,
+          0     : 'first',
+          1     : 'another',
+          test3 : '50',
+        },
+        []
+      ];
+      expect(webChild.toJSON()).deep.equal(expected);
+    });
+  });
+
   describe("with capture_params disabled", function () {
     var webChild, agent;
 
