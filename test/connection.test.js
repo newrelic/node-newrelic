@@ -38,7 +38,7 @@ describe("CollectorConnection", function () {
 
   // CONSTANTS
   var SAMPLE_RUN_ID = 101010101
-    , PROTOCOL_VERSION = 9
+    , PROTOCOL_VERSION = 11
     ;
 
   it("starts out disconnected", function () {
