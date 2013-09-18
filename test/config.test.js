@@ -507,6 +507,13 @@ describe("the agent configuration", function () {
       expect(config.ignored_params).eql(['a', 'b']);
     });
 
+    it("should configure ignored params without stomping local config", function () {
+      config.ignored_params = ['b', 'c'];
+
+      config.onConnect({'ignored_params' : ['a', 'b']});
+      expect(config.ignored_params).eql(['b', 'c', 'a']);
+    });
+
     it("shouldn't blow up when sampling_rate is received", function () {
       expect(function () {
         config.onConnect({'sampling_rate' : 0});
