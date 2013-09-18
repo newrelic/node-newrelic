@@ -76,6 +76,7 @@ describe("TraceSegment", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
 
       var transaction = new Transaction(agent)
         , trace       = new Trace(transaction)
@@ -139,7 +140,7 @@ describe("TraceSegment", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      agent.config.onConnect({capture_params : false});
+      agent.config.capture_params = false;
 
       var transaction = new Transaction(agent)
         , trace       = new Trace(transaction)
@@ -184,6 +185,7 @@ describe("TraceSegment", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
       agent.config.ignored_params = ['test1', 'test4'];
 
       var transaction = new Transaction(agent)

@@ -119,9 +119,9 @@ describe("the agent configuration", function () {
     });
 
     it("should pick up whether to capture request parameters", function () {
-      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'no', function (tc) {
+      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'yes', function (tc) {
         should.exist(tc.capture_params);
-        expect(tc.capture_params).equal(false);
+        expect(tc.capture_params).equal(true);
       });
     });
 
@@ -459,9 +459,9 @@ describe("the agent configuration", function () {
     });
 
     it("should configure param capture", function () {
-      expect(config.capture_params).equal(true);
-      config.onConnect({'capture_params' : false});
       expect(config.capture_params).equal(false);
+      config.onConnect({'capture_params' : true});
+      expect(config.capture_params).equal(true);
     });
 
     it("should configure ignored params", function () {

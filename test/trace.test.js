@@ -48,6 +48,7 @@ describe('Trace', function () {
      function (done) {
     var DURATION = 33;
     var URL = '/test?test=value';
+    agent.config.capture_params = true;
 
     var transaction = new Transaction(agent);
     transaction.url  = URL;

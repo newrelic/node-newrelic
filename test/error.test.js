@@ -181,6 +181,7 @@ describe("ErrorTracer", function () {
 
     beforeEach(function () {
       agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
       tracer = agent.errors;
 
       var transaction = new Transaction(agent);
@@ -236,7 +237,7 @@ describe("ErrorTracer", function () {
 
   describe("with capture_params disabled", function () {
     var agent = helper.loadMockedAgent();
-    agent.config.onConnect({capture_params : false});
+    agent.config.capture_params = false;
     var tracer = agent.errors;
 
     var transaction = new Transaction(agent);
@@ -254,6 +255,7 @@ describe("ErrorTracer", function () {
 
   describe("with capture_params enabled and ignored_params set", function () {
     var agent = helper.loadMockedAgent();
+    agent.config.capture_params = true;
     agent.config.ignored_params = ['thing'];
     var tracer = agent.errors;
 
@@ -375,6 +377,7 @@ describe("ErrorTracer", function () {
 
     beforeEach(function () {
       agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
       tracer = agent.errors;
 
       var transaction = new Transaction(agent)
@@ -486,6 +489,7 @@ describe("ErrorTracer", function () {
 
     beforeEach(function () {
       agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
       tracer = agent.errors;
 
       var transaction = new Transaction(agent)
