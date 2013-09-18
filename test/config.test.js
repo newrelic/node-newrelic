@@ -104,6 +104,13 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should pick up whether server-side config is enabled", function () {
+      idempotentEnv('NEW_RELIC_IGNORE_SERVER_CONFIGURATION', 'yeah', function (tc) {
+        should.exist(tc.ignore_server_configuration);
+        expect(tc.ignore_server_configuration).equal(true);
+      });
+    });
+
     it("should pick up whether the agent is enabled", function () {
       idempotentEnv('NEW_RELIC_ENABLED', 0, function (tc) {
         should.exist(tc.agent_enabled);
@@ -236,6 +243,10 @@ describe("the agent configuration", function () {
       expect(configuration.app_name).eql(['MyApplication']);
     });
 
+    it("should have no license key", function () {
+      expect(configuration.license_key).equal('');
+    });
+
     it("should connect to the collector at collector.newrelic.com", function () {
       expect(configuration.host).equal('collector.newrelic.com');
     });
@@ -252,13 +263,8 @@ describe("the agent configuration", function () {
       expect(configuration.proxy_port).equal('');
     });
 
-    it("should log at the info level", function () {
-      expect(configuration.logging.level).equal('info');
-    });
-
-    it("should have a log filepath of process.cwd + newrelic_agent.log", function () {
-      var logPath = path.join(process.cwd(), 'newrelic_agent.log');
-      expect(configuration.logging.filepath).equal(logPath);
+    it("should not ignore server-side configuration", function () {
+      expect(configuration.ignore_server_configuration).equal(false);
     });
 
     it("should enable the agent", function () {
@@ -267,6 +273,23 @@ describe("the agent configuration", function () {
 
     it("should have an apdexT of 0.5", function () {
       expect(configuration.apdex_t).equal(0.5);
+    });
+
+    it("should not capture request parameters", function () {
+      expect(configuration.capture_params).equal(false);
+    });
+
+    it("should have no ignored request parameters", function () {
+      expect(configuration.ignored_params).eql([]);
+    });
+
+    it("should log at the info level", function () {
+      expect(configuration.logging.level).equal('info');
+    });
+
+    it("should have a log filepath of process.cwd + newrelic_agent.log", function () {
+      var logPath = path.join(process.cwd(), 'newrelic_agent.log');
+      expect(configuration.logging.filepath).equal(logPath);
     });
 
     it("should enable the error collector", function () {
@@ -287,6 +310,14 @@ describe("the agent configuration", function () {
 
     it("should collect one slow transaction trace per harvest cycle", function () {
       expect(configuration.transaction_tracer.top_n).equal(1);
+    });
+
+    it("should not debug internal metrics", function () {
+      expect(configuration.debug.internal_metrics).equal(false);
+    });
+
+    it("REALLY should not trace the transaction tracer", function () {
+      expect(configuration.debug.tracer_tracing).equal(false);
     });
 
     it("should have no naming rules", function () {
@@ -382,19 +413,19 @@ describe("the agent configuration", function () {
     });
   });
 
-  describe("when handling a response from the collector", function () {
+  describe("when receiving server-side configuration", function () {
     var config;
 
     beforeEach(function () {
       config = new Config();
     });
 
-    it("should set a run ID when one is received", function () {
+    it("should set the agent run ID", function () {
       config.onConnect({'agent_run_id' : 1234});
       expect(config.run_id).equal(1234);
     });
 
-    it("should change collect_traces when told to", function () {
+    it("should always respect collect_traces", function () {
       expect(config.collect_traces).equal(true);
       config.onConnect({'collect_traces' : false});
       expect(config.collect_traces).equal(false);
@@ -406,7 +437,7 @@ describe("the agent configuration", function () {
       expect(config.transaction_tracer.enabled).equal(false);
     });
 
-    it("should change collect_errors when told to", function () {
+    it("should always respect collect_errors", function () {
       expect(config.collect_errors).equal(true);
       config.onConnect({'collect_errors' : false});
       expect(config.collect_errors).equal(false);
@@ -418,7 +449,13 @@ describe("the agent configuration", function () {
       expect(config.error_collector.enabled).equal(false);
     });
 
-    it("should map transaction_tracer.transaction_threshold correctly", function () {
+    it("should set apdex_t", function () {
+      expect(config.apdex_t).equal(0.5);
+      config.onConnect({'apdex_t' : 0.05});
+      expect(config.apdex_t).equal(0.05);
+    });
+
+    it("should map transaction_tracer.transaction_threshold", function () {
       expect(config.transaction_tracer.transaction_threshold).equal('apdex_f');
       config.onConnect({'transaction_tracer.transaction_threshold' : 0.75});
       expect(config.transaction_tracer.transaction_threshold).equal(0.75);
@@ -531,7 +568,7 @@ describe("the agent configuration", function () {
     });
 
     describe("when data_report_period is set", function () {
-      it("should emit data_report_period when harvest interval is changed",
+      it("should emit 'data_report_period' when harvest interval is changed",
          function (done) {
         config.once('data_report_period', function (harvestInterval) {
           expect(harvestInterval).equal(45);
@@ -573,6 +610,169 @@ describe("the agent configuration", function () {
 
         config.onConnect({'apdex_t' : 0.5});
       });
+    });
+  });
+
+  describe("when receiving server-side configuration while it's disabled", function () {
+    var config;
+
+    beforeEach(function () {
+      config = new Config();
+      config.ignore_server_configuration = true;
+    });
+
+    it("should still set agent_run_id", function () {
+      config.onConnect({'agent_run_id' : 1234});
+      expect(config.run_id).equal(1234);
+    });
+
+    it("should always respect collect_traces", function () {
+      expect(config.collect_traces).equal(true);
+      config.onConnect({'collect_traces' : false});
+      expect(config.collect_traces).equal(false);
+    });
+
+    it("should always respect collect_errors", function () {
+      expect(config.collect_errors).equal(true);
+      config.onConnect({'collect_errors' : false});
+      expect(config.collect_errors).equal(false);
+    });
+
+    it("should still log product_level", function () {
+      expect(config.product_level).equal(0);
+      config.onConnect({'product_level' : 30});
+      expect(config.product_level).equal(30);
+    });
+
+    it("should still pass url_rules to the URL normalizer", function (done) {
+      config.on('url_rules', function (rules) {
+        expect(rules).eql([{name : 'sample_rule'}]);
+        done();
+      });
+
+      config.onConnect({'url_rules' : [{name : 'sample_rule'}]});
+    });
+
+    it("should still pass metric_name_rules to the metric name normalizer",
+       function (done) {
+      config.on('metric_name_rules', function (rules) {
+        expect(rules).eql([{name : 'sample_rule'}]);
+        done();
+      });
+
+      config.onConnect({'metric_name_rules' : [{name : 'sample_rule'}]});
+    });
+
+    it("should still pass transaction_name_rules to the transaction name normalizer",
+       function (done) {
+      config.on('transaction_name_rules', function (rules) {
+        expect(rules).eql([{name : 'sample_rule'}]);
+        done();
+      });
+
+      config.onConnect({'transaction_name_rules' : [{name : 'sample_rule'}]});
+    });
+
+    it("shouldn't configure apdex_t", function () {
+      expect(config.apdex_t).equal(0.5);
+      config.onConnect({'apdex_t' : 0.05});
+      expect(config.apdex_t).equal(0.5);
+    });
+
+    it("shouldn't configure data_report_period", function () {
+      expect(config.data_report_period).equal(60);
+      config.onConnect({'data_report_period' : 45});
+      expect(config.data_report_period).equal(60);
+    });
+
+    it("shouldn't configure transaction_tracer.enabled", function () {
+      expect(config.transaction_tracer.enabled).equal(true);
+      config.onConnect({'transaction_tracer.enabled' : false});
+      expect(config.transaction_tracer.enabled).equal(true);
+    });
+
+    it("shouldn't configure error_tracer.enabled", function () {
+      expect(config.error_collector.enabled).equal(true);
+      config.onConnect({'error_collector.enabled' : false});
+      expect(config.error_collector.enabled).equal(true);
+    });
+
+    it("shouldn't configure transaction_tracer.transaction_threshold", function () {
+      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f');
+      config.onConnect({'transaction_tracer.transaction_threshold' : 0.75});
+      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f');
+    });
+
+    it("shouldn't configure capture_params", function () {
+      expect(config.capture_params).equal(false);
+      config.onConnect({'capture_params' : true});
+      expect(config.capture_params).equal(false);
+    });
+
+    it("shouldn't configure ignored_params", function () {
+      expect(config.ignored_params).eql([]);
+      config.onConnect({'ignored_params' : ['a', 'b']});
+      expect(config.ignored_params).eql([]);
+    });
+
+    it("should ignore sampling_rate", function () {
+      expect(function () {
+        config.onConnect({'sampling_rate' : 0});
+      }).not.throws();
+    });
+
+    it("should ignore cross_process_id", function () {
+      expect(function () {
+        config.onConnect({'cross_process_id' : 'junk'});
+      }).not.throws();
+    });
+
+    it("should ignore cross_application_tracing", function () {
+      expect(function () {
+        config.onConnect({'cross_application_tracing' : true});
+      }).not.throws();
+    });
+
+    it("should ignore encoding_key", function () {
+      expect(function () {
+        config.onConnect({'encoding_key' : true});
+      }).not.throws();
+    });
+
+    it("should ignore trusted_account_ids", function () {
+      expect(function () {
+        config.onConnect({'trusted_account_ids' : [1, 2, 3]});
+      }).not.throws();
+    });
+
+    it("should ignore high_security", function () {
+      expect(function () {
+        config.onConnect({'high_security' : true});
+      }).not.throws();
+    });
+
+    it("should ignore ssl", function () {
+      expect(function () {
+        config.onConnect({'ssl' : true});
+      }).not.throws();
+    });
+
+    it("should ignore transaction_tracer.record_sql", function () {
+      expect(function () {
+        config.onConnect({'transaction_tracer.record_sql' : true});
+      }).not.throws();
+    });
+
+    it("should ignore slow_sql.enabled", function () {
+      expect(function () {
+        config.onConnect({'slow_sql.enabled' : true});
+      }).not.throws();
+    });
+
+    it("should ignore rum.load_episodes_file", function () {
+      expect(function () {
+        config.onConnect({'rum.load_episodes_file' : true});
+      }).not.throws();
     });
   });
 });
