@@ -29,6 +29,14 @@ try {
    * configuration.
    */
   if (agent.config) {
+    if (agent.config.applications().length < 1) {
+      console.error("New Relic requires that you name this application!");
+      console.error("Set app_name in your newrelic.js file or set environment variable");
+      console.error("NEW_RELIC_APP_NAME. Not starting!");
+      logger.error("No application name set. Not starting!");
+      return;
+    }
+
     /* In order to ensure all user code is using instrumented versions of
      * modules, instrumentation must be loaded at startup regardless of whether
      * or not the agent is enabled in the config. It should be possible for
