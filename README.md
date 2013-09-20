@@ -284,14 +284,15 @@ environment variables take precedence.
 
 Here's the list of the most important variables and their values:
 
-* `NEW_RELIC_LICENSE_KEY`: Your New Relic license key.
+* `NEW_RELIC_LICENSE_KEY`: Your New Relic license key. This is a required
+  setting with no default value.
+* `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
+  New Relic's servers. This value can be also be a comma-delimited list of
+  names. This is a required setting with no default value.
 * `NEW_RELIC_NO_CONFIG_FILE`: Inhibit loading of the configuration file
   altogether. Use with care. This presumes that all important configuration
   will be available via environment variables, and some log messages
   assume that a config file exists.
-* `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
-  New Relic's servers. This value can be also be a comma-delimited list of
-  names.
 * `NEW_RELIC_HOME`: path to the directory in which you've placed newrelic.js.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including
   the filename. The agent will shut down the process if it can't create
@@ -307,26 +308,45 @@ For completeness, here's the rest of the list:
 
 * `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
   temporarily disabling the agent while debugging other issues with your
-  code.
+  code. It doesn't prevent the agent from bootstrapping its instrumentation
+  or setting up all its pieces, it just prevents it from starting up or
+  connecting to New Relic's servers. Defaults to true.
 * `NEW_RELIC_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within
-  your application. Values are `true` or `false`.
+  your application. Values are `true` or `false`. Defaults to true.
 * `NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES`: Comma-delimited list of HTTP
-  status codes to ignore. Maybe you don't care if payment is required?
+  status codes to ignore. Maybe you don't care if payment is required? Defaults
+  to ignoring 404.
+* `NEW_RELIC_IGNORE_SERVER_CONFIGURATION`: Whether to ignore server-side
+  configuration for this application. Defaults to false.
 * `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow
-  transaction traces to New Relic. Values are `true` or `false`.
-* `NEW_RELIC_TRACER_THRESHOLD`: Millisecond duration at which
-  a transaction trace will count as slow and be sent to New Relic. Can
-  also be set to `apdex_f`, at which point it will set the trace threshold
-  to 4 times the current ApdexT.
+  transaction traces to New Relic. Values are `true` or `false`. Defaults to
+  true.
+* `NEW_RELIC_TRACER_THRESHOLD`: Duration (in seconds) at which a transaction
+  trace will count as slow and be sent to New Relic. Can also be set to
+  `apdex_f`, at which point it will set the trace threshold to 4 times the
+  current ApdexT.
+* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value.
+  This is more often than not set from the server. Defaults to 0.5.
+* `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on
+  slow transaction or error traces. Defaults to false.
+* `NEW_RELIC_IGNORED_PARAMS`: Some parameters may contain sensitive
+  values you don't want being sent out of your application. This setting
+  is a comma-delimited list of names of parameters to ignore. Defaults to
+  empty.
+* `NEW_RELIC_NAMING_RULES`: A list of comma-delimited JSON object literals:
+  `NEW_RELIC_NAMING_RULES='{"pattern":"^t","name":"u"},{"pattern":"^u","name":"t"}'`
+  See the section on request and transaction naming for details. Defaults to
+  empty.
+* `NEW_RELIC_IGNORING_RULES`: A list of comma-delimited patterns:
+  `NEW_RELIC_IGNORING_RULES='^/socket\.io/\*/xhr-polling,ignore_me'` Note that
+  currently there is no way to escape commas in patterns. Defaults to empty.
 * `NEW_RELIC_TRACER_TOP_N`: Number of transaction traces to send to New
   Relic on each 60-second harvest cycle. Defaults to 1. This can lead
   to noisy transaction traces and should be used with care.
-* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value.
-  This is more often than not set from the server.
 * `NEW_RELIC_HOST`: Hostname for the New Relic collector proxy. You
   shouldn't need to change this.
 * `NEW_RELIC_PORT`: Port number on which the New Relic collector proxy
-  will be listening.
+  will be listening. You shouldn't need to change this either.
 * `NEW_RELIC_DEBUG_METRICS`: Whether to collect internal supportability
   metrics for the agent. Don't mess with this unless New Relic asks you to.
 * `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
@@ -382,8 +402,8 @@ Information about changes to the agent are in NEWS.md.
 The New Relic Node.js agent uses code from the following open source projects
 under the following licenses:
 
-    bunyan                           http://opensource.org/licenses/MIT
-    continuation-local-storage-glue  http://opensource.org/licenses/BSD-3-Clause
+    bunyan                      http://opensource.org/licenses/MIT
+    continuation-local-storage  http://opensource.org/licenses/BSD-3-Clause
 
 The New Relic Node.js agent itself is free-to-use, proprietary software.
 Please see the full license (found in LICENSE in this distribution) for

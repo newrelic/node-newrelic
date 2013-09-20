@@ -1,3 +1,36 @@
+### v0.11.0 / beta-27 (2013-09-20):
+
+* IMPORTANT. There have been MAJOR CHANGES in how requests are named for
+  display and aggregation in the New Relic user interface. Read the section in
+  the README on transactions and request naming for details. For good measure,
+  read it twice. If your requests are all still ending up named `/*`, read
+  it a third time. This is **especially** true if you're not using Express
+  or Restify, in which case you will almost certainly want to make changes
+  in how you configure New Relic.
+* IMPORTANT. New Relic for Node.js now supports the full range of server-side
+  configuration options offered by the New Relic web interface. By default,
+  server-side settings will override the settings in your configuration file
+  (or environment variables). You can disable server-side configuration by
+  setting `ignore_server_configuration` to `true` in your configuration file
+  (or setting `NEW_RELIC_IGNORE_SERVER_CONFIGURATION` to 'true').
+* BREAKING CHANGE: The New Relic module now exports an API to be used for
+  naming transactions and for adding URL to transaction name mapping rules. If
+  you were using `require('newrelic')` as an interface to the agent's
+  configuration or its internals, you'll need to fix your code (also you
+  probably shouldn't have been doing that).
+* BREAKING CHANGE: The configuration parameter
+  `transaction_tracer.trace_threshold` has been renamed
+  `transaction_tracer.transaction_threshold` to make it consistent with New
+  Relic's other agents.
+* Applications using the Express or Restify routers will now have their
+  requests named after the matching routes. These names can be overridden
+  but the transaction-naming API.
+* There are new configuration parameters for adding rules for naming or
+  ignoring requests. The README has a good example for how to keep socket.io
+  from blowing out your average response time. You should read it!
+* Tweaked the calculation of exclusive time in transaction traces, which
+  should make more of the transaction trace detail pages make sense.
+
 ### v0.10.3 / beta-26 (2013-08-25):
 
 * Fixed a regression in `beta-25` that caused the agent to incorrectly
