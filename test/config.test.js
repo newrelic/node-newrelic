@@ -240,7 +240,7 @@ describe("the agent configuration", function () {
     });
 
     it("should have an app name of ['MyApplication']", function () {
-      expect(configuration.app_name).eql(['MyApplication']);
+      expect(configuration.applications()).eql(['MyApplication']);
     });
 
     it("should have no license key", function () {
