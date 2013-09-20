@@ -1,34 +1,43 @@
-# New Relic Node.js agent
+# New Relic for Node.js
 
-## Support
-
-*IMPORTANT*: New Relic for Node.js is currently in closed beta and is
-*UNSUPPORTED*. Customers who tried it out during the open beta period are
-welcome to continue using it and will receive ongoing limited technical
-support, but any new deployments will not receive technical support.
-
-Why? Because we've learned a *ton* during the beta and now we're heads down
-working on some major improvements and addressing qualities issues that
-prevented us from a 1.0 release.
-
-We're just as eager as you are to see Node + New Relic live happily ever
-after and we're 100% committed to it. We expect to open up a new beta in the
-coming months. If you'd like to know when the new beta is ready, please
-[sign up](http://try.newrelic.com/nodejs) to be notified.
-
-## Overview
+**NOTE:** If you've used previous versions of New Relic for Node.js, you should
+read the section on [transactions and request
+naming](#transactions-and-request-naming), and some important things have
+changed in the [configuration](#configuring-the-agent), so you'll want to read
+that section again as well.
 
 This package instruments your application for performance monitoring
 with [New Relic](http://newrelic.com).
 
-This is an *UNSUPPORTED* beta release. It has known issues that may
-affect your application's stability. You should probably try it in your
-staging or development environment first to see how it works for you.
+This is a **beta release**. It has known issues that may affect your
+application's stability. You should try it in your staging or development
+environment first to verify it works for you.
 
 Make sure you have a [New Relic account](http://newrelic.com) before
 starting. To see all the features, such as slow transaction traces, you will
 need a New Relic Pro subscription. Contact your New Relic representative to
 request a Pro Trial subscription during your beta testing.
+
+## Table of contents
+
+* [Support](#support)
+* [Getting started](#getting-started)
+* [Transactions and request naming](#transactions-and-request-naming)
+* [Configuration](#configuring-the-agent)
+* [Known issues](#known-issues)
+
+## Support
+
+New Relic for Node.js is currently in beta and has only limited support.
+Customers who tried it out during the open beta period are welcome to continue
+using it and will receive support, but any new deployments may not receive
+technical support, or receive only limited assistance. We're very close to a
+wider public release, but we're not quite there yet!
+
+We're just as eager as you are to see Node and New Relic live happily ever
+after and we're 100% committed to it. We expect to open up a new beta very
+soon. If you'd like to know when the agent is ready for release, please [sign
+up](http://try.newrelic.com/nodejs) to be notified.
 
 ## Getting started
 
@@ -58,6 +67,206 @@ its log to a file named `newrelic_agent.log` in the application directory. If
 the agent doesn't send data or crashes your app, the log can help New Relic
 determine what went wrong, so be sure to send it along with any bug reports
 or support requests.
+
+## Transactions and request naming
+
+In order to get the most value out of the New Relic agent for Node.js, you may
+have to do a little work to help us figure out how your application is
+structured. New Relic works on the assumption that it can group requests to
+your application into transactions, which are defined by giving one or more
+request paths a name. These names are used to visualize where your app is
+spending its time (in transaction breakdowns), to identify slow requests, and
+to group scoped metrics, to tell you which portions of your application are,
+for example, suffering from slow database performance.
+
+If you're using Express or Restify with their default routers and are satisfied
+with your application being represented by those frameworks' route names, you
+may not need to do anything. However, if you want more specific names than are
+provided by your framework, you may want to use one or more of the tools
+described further on.
+
+The simplest way to tell that you need to read further in this document is if
+you feel too many of your requests are being lumped together under the
+catch-all name `/*`. All requests that aren't otherwise named by the agent will
+end up grouped under `/*`.
+
+### Background
+
+If you've been working with Node for a while, you're probably accustomed to
+thinking of your application's requests in terms of raw URLs. One of the great
+things about Node is that it makes it so easy and simple to work with HTTP, and
+that extends to things like parsing URLs and creating your own strategies for
+naming and routing requests for services like RESTful APIs. This presents a
+challenge for us, because we need to keep the number of names we're tracking
+small enough that we can keep the New Relic user experience snappy, and also so
+we don't overwhelm you with so much data that it's difficult for you to see the
+problem spots in your applications. URLs are not a good fit for how New Relic
+sees performance.
+
+Another of Node's great strengths is that it provides a lot of tools that build
+on top of the `http` module to simplify writing web services. Unfortunately,
+that variety greatly complicates things for us, with our limited resources, and
+so we offer a few different tools to help you give us the information we need
+to provide you useful metrics about your application:
+
+* we can read the route names from the Express and Restify routers, if you're
+  using them (and as said above, for many of you, this may be all you need)
+* we offer an API for naming the current request, either with simple names or,
+  if you prefer, grouped into controllers with actions
+* and we support rules stored in your agent's configuration that can mark
+  requests to be renamed or ignored based on regular expressions matched
+  against the request's raw URLs (also available as API calls)
+
+Let's go through those tools one at a time.
+
+### Router introspection
+
+Express is the most popular web framework in use within the Node community, and
+a number of important services are also using Restify. Both frameworks map
+routes to handlers, and both use a similar pattern to do so: they match one or
+more HTTP methods (e.g. `GET` or the ever-popular `OPTIONS` – let's hear it
+for CORS) along with a potentially parameterized path (e.g. `/user/:id`) or a
+regular expression (e.g.  `/^/user/([-0-9a-f]+)$/`). The New Relic agent will
+capture both those pieces of information in the request name. If you have
+support for slow transaction traces and have enabled `capture_params`, the
+transaction trace will also have the request's parameters and their values
+attached to it.
+
+The only important thing to know about New Relic's support for Express and
+Restify is that if you're dissatisfied with the names it comes up with, you can
+use the API calls described below to come up with more descriptive names. Also,
+if you use a different web framework or router and would like to see support
+for it added, please let us know.
+
+### The request naming API
+
+The API is what's handed back from `require('newrelic')`, so
+
+```javascript
+var newrelic = require('newrelic');
+```
+
+is all you need. Please note that you still need to ensure that loading the New
+Relic module is the first thing your application does, as it needs to bootstrap
+itself before the rest of your application loads, but you can safely require
+the module from multiple modules in your application – it will only initialize
+itself once.
+
+#### newrelic.setTransactionName(name)
+
+Name the current request. You can call this function anywhere within the
+context of an HTTP request handler, at any time after handling of the request
+has started, but before the request has finished. A good rule of thumb is that
+if the request and response objects are in scope, you can set the name.
+
+Explicitly calling `newrelic.setTransactionName()` will override any names set
+by Express or Restify routes. Calls to `newrelic.setTransactionName()` and
+`newrelic.setControllerName()` will overwrite each other. The last one to run
+before the request ends wins.
+
+**VERY IMPORTANT NOTE:** Do not include highly variable information like GUIDs,
+numerical IDs, or timestamps in the request names you create. If your request
+is slow enough to generate a transaction trace, that trace will contain the
+original URL. If you enable parameter capture, the parameters will also be
+attached to the trace. The request names are used to group requests for New
+Relic's many charts and tables, and those visualizations' value drops as the
+number of different request names increases. If you have 50 or so different
+transaction names, you're probably pushing it. If you have more than a couple
+hundred, you need to rethink your naming strategy.
+
+#### newrelic.setControllerName(name, [action])
+
+Name the current request using a controller-style pattern, optionally including
+the current controller action. If the action is omitted, New Relic will include
+the HTTP method (e.g. `GET`, `POST`) as the action. The rules for when you can
+call `newrelic.setControllerName()` are the same as they are for
+`newrelic.setTransactionName()`.
+
+Explicitly calling `newrelic.setControllerName()` will override any names set
+by Express or Restify routes. Calls to `newrelic.setTransactionName()` and
+`newrelic.setControllerName()` will overwrite each other. The last one to run
+before the request ends wins.
+
+See the above note on `newrelic.setTransactionName()`, which also applies to
+this function.
+
+### Rules for naming and ignoring requests
+
+If you don't feel like putting calls to the New Relic module directly into your
+application code, you can use pattern-based rules to name requests. There are
+two sets of rules: one for renaming requests, and one to mark requests to be
+ignored by New Relic's instrumentation.
+
+If you're using socket.io, you will have a use case for ignoring rules right
+out of the box. You'll probably want to add a rule like the following:
+
+```javascript
+// newrelic.js
+exports.config = {
+  // other configuration
+  rules : {
+    ignore : [
+      '^/socket.io/\*/xhr-polling'
+    }
+  }
+};
+```
+
+This will keep socket.io long-polling from dominating your response-time
+metrics and blowing out the apdex metrics for your application.
+
+#### rules.name
+
+A list of rules of the format `{pattern : "pattern", name : "name"}` for
+matching incoming request URLs to `pattern` and naming the matching New Relic
+transactions `name`. The pattern can be set as either a string or a JavaScript
+regular expression literal. Both pattern and name are required. Additional
+attributes are ignored.
+
+Can also be set via the environment variable `NEW_RELIC_NAMING_RULES`, with
+multiple rules passed in as a list of comma-delimited JSON object literals:
+`NEW_RELIC_NAMING_RULES='{"pattern":"^t","name":"u"},{"pattern":"^u","name":"t"}'`
+
+#### rules.ignore
+
+A list of patterns for matching incoming request URLs to be ignored. Patterns
+may be strings or regular expressions.
+
+Can also be set via the environment variable `NEW_RELIC_IGNORING_RULES`, with
+multiple rules passed in as a list of comma-delimited patterns:
+`NEW_RELIC_IGNORING_RULES='^/socket\.io/\*/xhr-polling,ignore_me'` Note that
+currently there is no way to escape commas in patterns.
+
+### API for adding naming and ignoring rules
+
+#### newrelic.addNamingRule(pattern, name)
+
+Programmatic version of `rules.name` above. Naming rules can not be removed
+once added. They can also be added via the agent's configuration. Both
+parameters are mandatory.
+
+#### newrelic.addIgnoringRule(pattern)
+
+Programmatic version of `rules.ignore` above. Ignoring rules can not be removed
+once added. They can also be added via the agent's configuration. Both
+parameters are mandatory.
+
+### The fine print
+
+This is the Node-specific version of New Relic's transaction naming API
+documentation. The naming API exists to help us deal with the very real problem
+that trying to handle too many metrics will make New Relic slow for everybody,
+not just the account with too many metrics. If, in conversation with New Relic
+Support, you see discussion of "metric explosion", this is what they're talking
+about.
+
+While we have a variety of strategies for dealing with these issues, the most
+severe is simply to blacklist offending applications. The main reason for you
+to be careful in using our request-naming tools is to prevent that from
+happening to your applications. We will do everything in our power to ensure
+that you have a good experience with New Relic even if your application is
+causing us trouble, but sometimes this will require manual intervention on the
+part of our team, and this can take a little while.
 
 ## Configuring the agent
 
@@ -130,16 +339,11 @@ Information about changes to the agent are in NEWS.md.
 
 ### Known issues:
 
-* The agent works only with Node.js 0.6 and newer (**IMPORTANT**: newer betas
+* The agent works only with Node.js 0.6 and newer ( **IMPORTANT**: newer betas
   depend on Node 0.8, and support for 0.6 may or may not come back by the time
   version 1.0 of the New Relic agent is released). Certain features rely on
   Node 0.8. Some features may behave differently between 0.8 and 0.10. The
   agent is optimized for newer versions of Node.
-* The metric names displayed in New Relic are a work in progress. The
-  flexibility of Node's HTTP handling and routing presents unique
-  challenges to the New Relic data model. We're working on a set of
-  strategies to improve how metrics are named, but be aware that metric
-  names may change over time as these strategies are implemented.
 * There are irregularities around transaction trace capture and display.
   If you notice missing or incorrect information from transaction traces,
   let us know.
@@ -167,16 +371,6 @@ Information about changes to the agent are in NEWS.md.
   open its own connection to New Relic's servers, and will incur its own
   overhead costs.
 
-### To do:
-
-* Additional third-party instrumentation:
-    1. PostgreSQL (probably not pre-GA)
-    2. CouchDB (not pre-GA)
-* Log rotation for the agent log.
-* Better tests for existing instrumentation.
-* Differentiate between HTTP and HTTPS connections.
-* Proxy support.
-
 ### New Relic features available for other platforms not yet in Node.js
 
 * Real User Monitoring (RUM)
@@ -184,7 +378,6 @@ Information about changes to the agent are in NEWS.md.
 * slow SQL traces and explain plans
 * custom parameters
 * garbage collector instrumentation
-* full server-side configuration
 * capacity planning
 * thread profiling
 
@@ -193,8 +386,8 @@ Information about changes to the agent are in NEWS.md.
 The New Relic Node.js agent uses code from the following open source projects
 under the following licenses:
 
-  bunyan                           http://opensource.org/licenses/MIT
-  continuation-local-storage-glue  http://opensource.org/licenses/BSD-3-Clause
+    bunyan                           http://opensource.org/licenses/MIT
+    continuation-local-storage-glue  http://opensource.org/licenses/BSD-3-Clause
 
 The New Relic Node.js agent itself is free-to-use, proprietary software.
 Please see the full license (found in LICENSE in this distribution) for
