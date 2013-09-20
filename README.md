@@ -359,14 +359,10 @@ Information about changes to the agent are in NEWS.md.
   [domain](http://nodejs.org/api/domain.html) API added in Node 0.8, and
   domain-specific functionality will not work in apps running in
   Node 0.6.x.
-* The CPU and memory overhead incurred by the Node agent is relatively
-  minor (~1-10%, depending on how much of the instrumentation your
-  apps end up using), but may not be appropriate for production use.
-  In particular, GC activity is significantly increased due to the
-  large number of ephemeral objects created by metrics gathering. For
-  now, be judicious about which production apps you install the agent in.
-  It may not be appropriate for latency-sensitive or high-throughput
-  applications.
+* The CPU and memory overhead incurred by the Node agent is relatively minor
+  (~1-10%, depending on how much of the instrumentation your apps end up
+  using).  GC activity is significantly increased while the agent is active,
+  due to the large number of ephemeral objects created by metrics gathering.
 * When using Node's included clustering support, each worker process will
   open its own connection to New Relic's servers, and will incur its own
   overhead costs.
