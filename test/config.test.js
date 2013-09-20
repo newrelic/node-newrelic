@@ -239,8 +239,12 @@ describe("the agent configuration", function () {
       delete configuration.newrelic_home;
     });
 
-    it("should have an app name of ['MyApplication']", function () {
-      expect(configuration.applications()).eql(['MyApplication']);
+    it("should have no application name", function () {
+      expect(configuration.app_name).eql([]);
+    });
+
+    it("should return no application name", function () {
+      expect(configuration.applications()).eql([]);
     });
 
     it("should have no license key", function () {
