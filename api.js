@@ -25,7 +25,7 @@ function API(agent) {
  * @param {string} name The name you want to give the web request in the New
  *                      Relic UI. Will be prefixed with 'Custom/' when sent.
  */
-API.prototype.nameTransaction = function (name) {
+API.prototype.setTransactionName = function (name) {
   var transaction = this.agent.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found when setting name to '%s'.", name);
@@ -33,11 +33,11 @@ API.prototype.nameTransaction = function (name) {
 
   if (!name) {
     if (transaction && transaction.url) {
-      logger.error("Must include controller name in nameTransaction call for URL %s.",
+      logger.error("Must include name in setTransactionName call for URL %s.",
                    transaction.url);
     }
     else {
-      logger.error("Must include controller name in nameTransaction call.");
+      logger.error("Must include name in setTransactionName call.");
     }
 
     return;
@@ -65,7 +65,7 @@ API.prototype.nameTransaction = function (name) {
  * @param {string} action The action being invoked on the controller. Defaults
  *                        to the HTTP method used for the request.
  */
-API.prototype.nameController = function (name, action) {
+API.prototype.setControllerName = function (name, action) {
   var transaction = this.agent.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found when setting controller to %s.", name);
@@ -73,11 +73,11 @@ API.prototype.nameController = function (name, action) {
 
   if (!name) {
     if (transaction && transaction.url) {
-      logger.error("Must include controller name in nameController call for URL %s.",
+      logger.error("Must include name in setControllerName call for URL %s.",
                    transaction.url);
     }
     else {
-      logger.error("Must include controller name in nameController call.");
+      logger.error("Must include name in setControllerName call.");
     }
 
     return;

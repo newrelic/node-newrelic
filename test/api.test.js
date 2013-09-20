@@ -25,13 +25,13 @@ describe("the New Relic agent API", function () {
   });
 
   it("exports a transaction naming function", function () {
-    should.exist(api.nameTransaction);
-    expect(api.nameTransaction).a('function');
+    should.exist(api.setTransactionName);
+    expect(api.setTransactionName).a('function');
   });
 
   it("exports a controller naming function", function () {
-    should.exist(api.nameController);
-    expect(api.nameController).a('function');
+    should.exist(api.setControllerName);
+    expect(api.setControllerName).a('function');
   });
 
   it("exports a function for adding naming rules", function () {
@@ -70,7 +70,7 @@ describe("the New Relic agent API", function () {
           transaction.verb = 'POST';
 
           // NAME THE TRANSACTION
-          api.nameTransaction('Test');
+          api.setTransactionName('Test');
 
           transaction.end();
         });
@@ -108,10 +108,10 @@ describe("the New Relic agent API", function () {
         transaction.verb = 'GET';
 
         // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
-        api.nameTransaction('Index');
-        api.nameTransaction('Update');
-        api.nameTransaction('Delete');
-        api.nameTransaction('List');
+        api.setTransactionName('Index');
+        api.setTransactionName('Update');
+        api.setTransactionName('Delete');
+        api.setTransactionName('List');
 
         transaction.end();
       });
@@ -144,7 +144,7 @@ describe("the New Relic agent API", function () {
           transaction.verb = 'POST';
 
           // NAME THE CONTROLLER
-          api.nameController('Test');
+          api.setControllerName('Test');
 
           transaction.end();
         });
@@ -184,7 +184,7 @@ describe("the New Relic agent API", function () {
         transaction.verb = 'DELETE';
 
         // NAME THE CONTROLLER
-        api.nameController('Test');
+        api.setControllerName('Test');
 
         transaction.end();
       });
@@ -209,7 +209,7 @@ describe("the New Relic agent API", function () {
         transaction.verb = 'GET';
 
         // NAME THE CONTROLLER AND ACTION
-        api.nameController('Test', 'index');
+        api.setControllerName('Test', 'index');
 
         transaction.end();
       });
@@ -234,10 +234,10 @@ describe("the New Relic agent API", function () {
         transaction.verb = 'GET';
 
         // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
-        api.nameController('Test', 'index');
-        api.nameController('Test', 'update');
-        api.nameController('Test', 'delete');
-        api.nameController('Test', 'list');
+        api.setControllerName('Test', 'index');
+        api.setControllerName('Test', 'update');
+        api.setControllerName('Test', 'delete');
+        api.setControllerName('Test', 'list');
 
         transaction.end();
       });
