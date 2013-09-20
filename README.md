@@ -347,12 +347,12 @@ Information about changes to the agent are in NEWS.md.
 * There are irregularities around transaction trace capture and display.
   If you notice missing or incorrect information from transaction traces,
   let us know.
-* There are over 20,000 modules on npm. We can only instrument a tiny
-  number of them. Even for the modules we support, there are a very
-  large number of ways to use them. If you see data you don't expect on
-  New Relic and have the time to produce a reduced version of the code
-  that is producing the strange data, it will gratefully be used to
-  improve the agent.
+* There are <del>over 20,000</del> <del>30,000</del> <del>40,000</del> <ins>*A
+  LOT* of</ins> modules on npm. We can only instrument a tiny number of them.
+  Even for the modules we support, there are a very large number of ways to use
+  them. If you see data you don't expect on New Relic and have the time to
+  produce a reduced version of the code that is producing the strange data, it
+  will be used to improve the agent and you will have the Node team's gratitude.
 * There is an error tracer in the Node agent, but it's a work in progress.
   In particular, it still does not intercept errors that may already be
   handled by frameworks. Also, parts of it depend on the
