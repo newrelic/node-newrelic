@@ -340,9 +340,9 @@ For completeness, here's the rest of the list:
 * `NEW_RELIC_IGNORING_RULES`: A list of comma-delimited patterns:
   `NEW_RELIC_IGNORING_RULES='^/socket\.io/\*/xhr-polling,ignore_me'` Note that
   currently there is no way to escape commas in patterns. Defaults to empty.
-* `NEW_RELIC_TRACER_TOP_N`: Number of transaction traces to send to New
-  Relic on each 60-second harvest cycle. Defaults to 1. This can lead
-  to noisy transaction traces and should be used with care.
+* `NEW_RELIC_TRACER_TOP_N`: How many different named requests to track for
+  transaction tracing. See the description in `lib/config.default.js`, as this
+  feature is exceedingly hard to summarize.
 * `NEW_RELIC_HOST`: Hostname for the New Relic collector proxy. You
   shouldn't need to change this.
 * `NEW_RELIC_PORT`: Port number on which the New Relic collector proxy
