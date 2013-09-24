@@ -247,6 +247,10 @@ describe("the agent configuration", function () {
       expect(configuration.applications()).eql([]);
     });
 
+    it("should have no application ID", function () {
+      expect(configuration.application_id).eql(null);
+    });
+
     it("should have no license key", function () {
       expect(configuration.license_key).equal('');
     });
@@ -429,6 +433,11 @@ describe("the agent configuration", function () {
       expect(config.run_id).equal(1234);
     });
 
+    it("should set the application ID", function () {
+      config.onConnect({'application_id' : 76543});
+      expect(config.application_id).equal(76543);
+    });
+
     it("should always respect collect_traces", function () {
       expect(config.collect_traces).equal(true);
       config.onConnect({'collect_traces' : false});
@@ -538,7 +547,7 @@ describe("the agent configuration", function () {
 
     it("shouldn't blow up when encoding_key is received", function () {
       expect(function () {
-        config.onConnect({'encoding_key' : true});
+        config.onConnect({'encoding_key' : 'hamsnadwich'});
       }).not.throws();
     });
 
@@ -575,6 +584,48 @@ describe("the agent configuration", function () {
     it("shouldn't blow up when rum.load_episodes_file is received", function () {
       expect(function () {
         config.onConnect({'rum.load_episodes_file' : true});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when beacon is received", function () {
+      expect(function () {
+        config.onConnect({'beacon' : 'beacon-0.newrelic.com'});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when beacon is received", function () {
+      expect(function () {
+        config.onConnect({'error_beacon' : null});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when js_agent_file is received", function () {
+      expect(function () {
+        config.onConnect({'js_agent_file' : 'jxc4afffef.js'});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when js_agent_loader_file is received", function () {
+      expect(function () {
+        config.onConnect({'js_agent_loader_file' : 'nr-js-bootstrap.js'});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when episodes_file is received", function () {
+      expect(function () {
+        config.onConnect({'episodes_file' : 'js-agent.newrelic.com/nr-100.js'});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when episodes_url is received", function () {
+      expect(function () {
+        config.onConnect({'episodes_url' : 'https://js-agent.newrelic.com/nr-100.js'});
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when browser_key is received", function () {
+      expect(function () {
+        config.onConnect({'browser_key' : 'beefchunx'});
       }).not.throws();
     });
 
