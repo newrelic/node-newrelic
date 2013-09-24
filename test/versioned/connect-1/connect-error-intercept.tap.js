@@ -33,8 +33,8 @@ test("intercepting errors with connect 1", function (t) {
     var wrapNop = app.stack[0];
     t.equal(wrapNop.route, '', "nop handler defaults to all routes");
     t.ok(wrapNop.handle, "have nop handle passed above");
-    t.equal(wrapNop.handle.name, 'wrappedConnectHandle', "nop is wrapped");
-    t.equal(wrapNop.handle.__NR_original, nop, "found nop in wrapper");
+    t.equal(wrapNop.handle.name, 'nop', "nop's name is unchanged");
+    t.equal(wrapNop.handle.__NR_original, nop, "nop is wrapped");
 
     // implementation detail: the sentinel
     var interceptor = app.stack[1];
