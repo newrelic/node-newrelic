@@ -26,7 +26,7 @@ function API(agent) {
  *                      Relic UI. Will be prefixed with 'Custom/' when sent.
  */
 API.prototype.setTransactionName = function (name) {
-  var transaction = this.agent.getTransaction();
+  var transaction = this.agent.tracer.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found when setting name to '%s'.", name);
   }
@@ -66,7 +66,7 @@ API.prototype.setTransactionName = function (name) {
  *                        to the HTTP method used for the request.
  */
 API.prototype.setControllerName = function (name, action) {
-  var transaction = this.agent.getTransaction();
+  var transaction = this.agent.tracer.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found when setting controller to %s.", name);
   }

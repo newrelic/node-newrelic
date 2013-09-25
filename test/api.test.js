@@ -61,7 +61,7 @@ describe("the New Relic agent API", function () {
 
         helper.runInTransaction(agent, function (transaction) {
           // set up web segment
-          var state = agent.getState();
+          var state = agent.tracer.getState();
           // grab segment
           segment = state.getSegment().add(NAME);
 
@@ -101,7 +101,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.getState();
+        var state = agent.tracer.getState();
 
         segment          = state.getSegment().add(NAME);
         transaction.url  = URL;
@@ -135,7 +135,7 @@ describe("the New Relic agent API", function () {
 
         helper.runInTransaction(agent, function (transaction) {
           // set up web segment
-          var state = agent.getState();
+          var state = agent.tracer.getState();
           // grab segment
           segment = state.getSegment().add(NAME);
 
@@ -175,7 +175,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state   = agent.getState();
+        var state   = agent.tracer.getState();
         segment = state.getSegment().add(NAME);
 
         transaction.url = URL;
@@ -202,7 +202,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.getState();
+        var state = agent.tracer.getState();
 
         segment          = state.getSegment().add(NAME);
         transaction.url  = URL;
@@ -227,7 +227,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.getState();
+        var state = agent.tracer.getState();
 
         segment          = state.getSegment().add(NAME);
         transaction.url  = URL;
@@ -309,7 +309,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.getState();
+        var state = agent.tracer.getState();
 
         segment          = state.getSegment().add(NAME);
         transaction.url  = URL;
@@ -333,7 +333,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.getState();
+        var state = agent.tracer.getState();
 
         segment          = state.getSegment().add(NAME);
         transaction.url  = '/test/31337/related';
@@ -413,7 +413,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.getState();
+        var state = agent.tracer.getState();
 
         segment          = state.getSegment().add(NAME);
         transaction.url  = URL;

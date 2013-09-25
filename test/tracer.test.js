@@ -41,4 +41,17 @@ describe('Tracer', function () {
       });
     });
   });
+
+  describe("when a transaction is created inside a transaction", function () {
+    it("should reuse the existing transaction instead of nesting", function () {
+      helper.runInTransaction(agent, function (trans) {
+        var outer = trans.id;
+        helper.runInTransaction(agent, function (trans) {
+          var inner = trans.id;
+
+          expect(inner).equal(outer);
+        });
+      });
+    });
+  });
 });
