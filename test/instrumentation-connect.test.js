@@ -1,5 +1,3 @@
-'use strict';
-
 var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
@@ -11,6 +9,9 @@ function nextulator(req, res, next) { return next(); }
 
 describe("an instrumented Connect stack", function () {
   describe("shouldn't cause bootstrapping to fail", function () {
+    // testing some stuff further down that needs to be non-strict
+    'use strict';
+
     var agent
       , initialize
       ;
@@ -126,6 +127,32 @@ describe("an instrumented Connect stack", function () {
       should.exist(app.stack[2].handle);
       expect(app.stack[2].handle.name).equal('sentinel');
     });
+
+    it("shouldn't barf on functions with ES5 future reserved keyword names", function () {
+      // doin this on porpoise
+      // jshint -W024
+      function static(req, res, next) {
+        return next();
+      }
+
+      app.stack = [];
+
+      expect(function () { app.use.call(app, '/', static); }).not.throws();
+    });
+
+    it("should mangle function names with a reserved keyword name", function () {
+      // doin this on porpoise
+      // jshint -W024
+      function static(req, res, next) {
+        return next();
+      }
+
+      app.stack = [];
+
+      app.use.call(app, '/', static);
+
+      expect(app.stack[0].handle.name).equal('static_');
+    });
   });
 
   describe("for Connect 2 (stubbed)", function () {
@@ -218,6 +245,32 @@ describe("an instrumented Connect stack", function () {
       expect(app.stack.length).equal(6);
       should.exist(app.stack[2].handle);
       expect(app.stack[2].handle.name).equal('sentinel');
+    });
+
+    it("shouldn't barf on functions with ES5 future reserved keyword names", function () {
+      // doin this on porpoise
+      // jshint -W024
+      function static(req, res, next) {
+        return next();
+      }
+
+      app.stack = [];
+
+      expect(function () { app.use.call(app, '/', static); }).not.throws();
+    });
+
+    it("should mangle function names with a reserved keyword name", function () {
+      // doin this on porpoise
+      // jshint -W024
+      function static(req, res, next) {
+        return next();
+      }
+
+      app.stack = [];
+
+      app.use.call(app, '/', static);
+
+      expect(app.stack[0].handle.name).equal('static_');
     });
   });
 });
