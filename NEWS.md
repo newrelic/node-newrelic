@@ -1,3 +1,13 @@
+### v0.11.1 / beta-28 (2013-09-24);
+
+* Prevent requests from being double-counted by changing the tracer to
+  always reuse existing transactions rather than trying to nest them.
+* Changed the Connect instrumentation to preserve the names of middleware
+  functions after wrapping them. If you need this change, you should
+  probably change your code so you don't need it anymore.
+* Added a bunch of server-side configuration options that are known but
+  unsupported to the agent.
+
 ### v0.11.0 / beta-27 (2013-09-20):
 
 * IMPORTANT. There have been MAJOR CHANGES in how requests are named for
