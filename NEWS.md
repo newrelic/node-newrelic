@@ -1,3 +1,15 @@
+### v0.11.2 / beta-29 (2013-09-25);
+
+* Fixed a bug with the Connect instrumentation that would cause it to
+  crash when using Connect's static middleware in strict mode. Using
+  ES5 future reserved keywords for function names is a bad idea, and
+  this is why, but static's name is highly unlikely to change. For
+  those of you who are examining the state of your middleware stack after
+  configuring it, you probably shouldn't be doing that, but if you run into
+  problems with the New Relic agent installed, try changing your test to use
+  `name.indexOf('whatever') === 0` as the predicate instead of
+  `name === 'whatever'`.
+
 ### v0.11.1 / beta-28 (2013-09-24);
 
 * Prevent requests from being double-counted by changing the tracer to
