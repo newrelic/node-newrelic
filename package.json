@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "bunyan": "0.14.6",
-    "continuation-local-storage": "2.1.2"
+    "continuation-local-storage": "2.2.0"
   },
   "bundledDependencies": [
     "bunyan",
