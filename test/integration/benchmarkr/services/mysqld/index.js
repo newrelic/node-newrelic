@@ -9,13 +9,22 @@ var fs      = require('fs')
 
 var MYSQL_LOG_REGEXP = /^([0-9]+) [0-9:]+/;
 
+function slice(args) {
+  // Array.prototype.slice on arguments arraylike is expensive
+  var l = args.length, a = [], i;
+  for (i = 0; i < l; i++) {
+    a[i] = args[i];
+  }
+  return a;
+}
+
 module.exports = function setup(options, imports, register) {
   var dbpath = options.dbpath
     , logger = options.logger
     ;
 
   function run() {
-    var commands = Array.prototype.slice.call(arguments);
+    var commands = slice(arguments);
     return commands.reduce(
       function (last, next) { return last.then(next); },
       Q.resolve()

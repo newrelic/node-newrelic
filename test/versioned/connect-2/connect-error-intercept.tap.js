@@ -103,7 +103,7 @@ test("intercepting errors with connect 2", function (t) {
         stubRes.headers[name] = value;
       },
       end : function () {
-        stubRes._end = Array.prototype.slice(arguments);
+        stubRes._end = agent.tracer.slice(arguments);
       }
     };
 
