@@ -2,24 +2,24 @@
 
 var path     = require('path')
   , trycatch = require('trycatch')
-  , tap      = require('tap')
-  , test     = tap.test
+  , test     = require('tap').test
   , helper   = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   ;
 
-// +4 asserts
+// +5 asserts
 function addMetricsVerifier(t, agent, operation) {
   agent.once('transactionFinished', function () {
     try {
       t.equals(agent.metrics.getMetric('Database/all').callCount, 1,
                "should find all operations");
+      t.equals(agent.metrics.getMetric('Database/allOther').callCount, 1,
+               "should find all operations");
       t.equals(agent.metrics.getMetric('Database/' + operation).callCount, 1,
                "generic " + operation + " should be recorded");
       t.equals(agent.metrics.getMetric('Database/test/' + operation).callCount, 1,
                "named collection " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('Database/test/' + operation,
-                                       'MongoDB/test/' + operation).callCount, 1,
-               "scoped MongoDB request should be recorded");
+      t.equals(agent.metrics.getMetric('MongoDB/test/' + operation).callCount, 1,
+               "MongoDB " + operation + " should be recorded");
     }
     catch (error) {
       t.fail(error);
@@ -48,18 +48,19 @@ function verifyTrace(t, transaction, operation) {
   }
 }
 
-// +4 asserts
+// +5 asserts
 function verifyNoStats(t, agent, operation) {
   try {
     t.notOk(agent.metrics.getMetric('Database/all'),
             "should find no operations");
+    t.notOk(agent.metrics.getMetric('Database/allOther'),
+            "should find no other operations");
     t.notOk(agent.metrics.getMetric('Database/' + operation),
             "generic " + operation + " should not be recorded");
     t.notOk(agent.metrics.getMetric('Database/test/' + operation),
             "named collection " + operation + " should not be recorded");
-    t.notOk(agent.metrics.getMetric('Database/test/' + operation,
-                                    'MongoDB/test/' + operation),
-             "scoped MongoDB request should not be recorded");
+    t.notOk(agent.metrics.getMetric('Database/test/' + operation),
+             "MongoDB " + operation + " should not be recorded");
   }
   catch (error) {
     t.fail(error);
@@ -132,7 +133,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'insert');
@@ -152,7 +153,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(9);
+          t.plan(10);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'insert');
@@ -173,7 +174,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             var hunx = {id : 3, hamchunx : "caramel"};
@@ -191,7 +192,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(4);
+          t.plan(5);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             var hanx = {id : 4, feeblers : "charimanley"};
@@ -213,7 +214,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
@@ -232,7 +233,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with Cursor", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
@@ -256,7 +257,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             collection.find({id : 1337}, function (error, result) {
@@ -272,7 +273,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with Cursor", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             var cursor = collection.find({id : 1337});
@@ -297,7 +298,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
@@ -322,7 +323,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             collection.findOne({id : 1337}, function (error, result) {
@@ -348,10 +349,10 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(12);
+          t.plan(13);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
-            addMetricsVerifier(t, agent, 'find');
+            addMetricsVerifier(t, agent, 'findAndModify');
 
             collection.findAndModify({feeblers : {$exists : true}},
                                      [['id', 1]],
@@ -367,7 +368,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               transaction.end();
 
-              verifyTrace(t, transaction, 'find');
+              verifyTrace(t, transaction, 'findAndModify');
             });
           });
         });
@@ -379,7 +380,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(7);
+          t.plan(8);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             collection.findAndModify({hamchunx : {$exists : true}},
@@ -393,7 +394,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               t.ok(doc, "should have gotten back the modified document");
               t.ok(doc.__findAndModify, "have evidence of modification");
 
-              verifyNoStats(t, agent, 'find');
+              verifyNoStats(t, agent, 'findAndModify');
             });
           });
         });
@@ -409,7 +410,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(12);
+          t.plan(18);
 
           var current = this;
           runWithDB(current, t, function (collection) {
@@ -418,8 +419,6 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               if (error) { t.fail(error); return t.end(); }
 
               runWithTransaction(current, t, function (agent, collection, transaction) {
-                addMetricsVerifier(t, agent, 'find');
-
                 collection.findAndRemove({bornToDie : {$exists : true}},
                                          [['id', 1]],
                                          function (error, doc) {
@@ -432,7 +431,39 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                   transaction.end();
 
-                  verifyTrace(t, transaction, 'find');
+                  var metrics = agent.metrics;
+                  t.equals(metrics.getMetric('Database/all').callCount, 2,
+                           "should find all operations");
+                  t.equals(metrics.getMetric('Database/allOther').callCount, 2,
+                           "should find all operations");
+                  t.equals(metrics.getMetric('Database/findAndRemove').callCount, 1,
+                           "generic findAndRemove should be recorded");
+                  t.equals(metrics.getMetric('Database/findAndModify').callCount, 1,
+                           "generic findAndModify should be recorded");
+                  t.equals(metrics.getMetric('Database/test/findAndRemove').callCount, 1,
+                           "named collection findAndRemove should be recorded");
+                  t.equals(metrics.getMetric('Database/test/findAndModify').callCount, 1,
+                           "named collection findAndModify should be recorded");
+                  t.equals(metrics.getMetric('MongoDB/test/findAndRemove').callCount, 1,
+                           "MongoDB findAndRemove should be recorded");
+                  t.equals(metrics.getMetric('MongoDB/test/findAndModify').callCount, 1,
+                           "MongoDB findAndModify should be recorded");
+
+                  var trace = transaction.getTrace();
+                  t.ok(trace, "trace should exist.");
+                  t.ok(trace.root, "root element should exist.");
+                  t.equals(trace.root.children.length, 1,
+                           "should be two children.");
+
+                  var segment = trace.root.children[0];
+                  t.ok(segment, "trace segment for findAndRemove should exist");
+                  t.equals(segment.name, 'MongoDB/test/findAndRemove',
+                           "should register the findAndRemove");
+
+                  segment = segment.children[0];
+                  t.ok(segment, "trace segment for findAndModify should exist");
+                  t.equals(segment.name, 'MongoDB/test/findAndModify',
+                           "should register the findAndModify");
                 });
               });
             });
@@ -446,7 +477,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(7);
+          t.plan(8);
 
           var current = this;
           runWithDB(current, t, function (collection) {
@@ -482,7 +513,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'update');
@@ -505,11 +536,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(14);
+          t.plan(20);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
-            addMetricsVerifier(t, agent, 'update');
-
             collection.update({feeblers : {$exists : true}},
                               {$set : {__updatedWith : 'yup'}});
 
@@ -527,7 +556,38 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                 transaction.end();
 
-                verifyTrace(t, transaction, 'update');
+                t.equals(agent.metrics.getMetric('Database/all').callCount, 2,
+                         "should find all operations");
+                t.equals(agent.metrics.getMetric('Database/allOther').callCount, 2,
+                         "should find all operations");
+                t.equals(agent.metrics.getMetric('Database/update').callCount, 1,
+                         "generic update should be recorded");
+                t.equals(agent.metrics.getMetric('Database/find').callCount, 1,
+                         "generic find should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/update').callCount, 1,
+                         "named collection update should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/find').callCount, 1,
+                         "named collection find should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/update').callCount, 1,
+                         "MongoDB update should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/find').callCount, 1,
+                         "MongoDB find should be recorded");
+
+                var trace = transaction.getTrace();
+                t.ok(trace, "trace should exist.");
+                t.ok(trace.root, "root element should exist.");
+                t.equals(trace.root.children.length, 2,
+                         "should be two children.");
+
+                var segment = trace.root.children[0];
+                t.ok(segment, "trace segment for update should exist");
+                t.equals(segment.name, 'MongoDB/test/update',
+                         "should register the update");
+
+                segment = trace.root.children[1];
+                t.ok(segment, "trace segment for find should exist");
+                t.equals(segment.name, 'MongoDB/test/find',
+                         "should register the find");
               });
             }, 100);
           });
@@ -538,7 +598,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             collection.update({hamchunx : {$exists : true}},
@@ -556,9 +616,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(9);
+          t.plan(10);
 
-          runWithTransaction(this, t, function (agent, collection) {
+          runWithoutTransaction(this, t, function (agent, collection) {
             collection.update({hamchunx : {$exists : true}},
                               {$set : {__updatedWithout : 'yup'}});
 
@@ -588,11 +648,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(13);
+          t.plan(19);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
-            addMetricsVerifier(t, agent, 'insert');
-
             var saved = {id : 999, oneoff : 'broccoli', __saved : true};
             collection.save(saved, function (error, result) {
               if (error) { t.fail(error); return t.end(); }
@@ -605,17 +663,47 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               transaction.end();
 
-              verifyTrace(t, transaction, 'insert');
+              var metrics = agent.metrics;
+              t.equals(metrics.getMetric('Database/all').callCount, 2,
+                       "should find all operations");
+              t.equals(metrics.getMetric('Database/allOther').callCount, 2,
+                       "should find all operations");
+              t.equals(metrics.getMetric('Database/save').callCount, 1,
+                       "generic save should be recorded");
+              t.equals(metrics.getMetric('Database/insert').callCount, 1,
+                       "generic insert should be recorded");
+              t.equals(metrics.getMetric('Database/test/save').callCount, 1,
+                       "named collection save should be recorded");
+              t.equals(metrics.getMetric('Database/test/insert').callCount, 1,
+                       "named collection insert should be recorded");
+              t.equals(metrics.getMetric('MongoDB/test/save').callCount, 1,
+                       "MongoDB save should be recorded");
+              t.equals(metrics.getMetric('MongoDB/test/insert').callCount, 1,
+                       "MongoDB insert should be recorded");
+
+              var trace = transaction.getTrace();
+              t.ok(trace, "trace should exist.");
+              t.ok(trace.root, "root element should exist.");
+              t.equals(trace.root.children.length, 1,
+                       "should be two children.");
+
+              var segment = trace.root.children[0];
+              t.ok(segment, "trace segment for save should exist");
+              t.equals(segment.name, 'MongoDB/test/save',
+                       "should register the save");
+
+              segment = segment.children[0];
+              t.ok(segment, "trace segment for insert should exist");
+              t.equals(segment.name, 'MongoDB/test/insert',
+                       "should register the insert");
             });
           });
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(8);
+          t.plan(24);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
-            addMetricsVerifier(t, agent, 'insert');
-
             var saved = {id : 555, oneoff : 'radishes', __saved : true};
             collection.save(saved);
 
@@ -630,7 +718,51 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                 transaction.end();
 
-                verifyTrace(t, transaction, 'insert');
+                t.equals(agent.metrics.getMetric('Database/all').callCount, 3,
+                         "should find all operations");
+                t.equals(agent.metrics.getMetric('Database/allOther').callCount, 3,
+                         "should find all operations");
+                t.equals(agent.metrics.getMetric('Database/save').callCount, 1,
+                         "generic save should be recorded");
+                t.equals(agent.metrics.getMetric('Database/insert').callCount, 1,
+                         "generic insert should be recorded");
+                t.equals(agent.metrics.getMetric('Database/find').callCount, 1,
+                         "generic find should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/save').callCount, 1,
+                         "named collection save should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/insert').callCount, 1,
+                         "named collection insert should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/find').callCount, 1,
+                         "named collection find should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/save').callCount, 1,
+                         "MongoDB save should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/insert').callCount, 1,
+                         "MongoDB insert should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/find').callCount, 1,
+                         "MongoDB find should be recorded");
+
+                var trace = transaction.getTrace();
+                t.ok(trace, "trace should exist.");
+                t.ok(trace.root, "root element should exist.");
+                t.equals(trace.root.children.length, 2,
+                         "should be two children.");
+
+                var segment = trace.root.children[0];
+                t.ok(segment, "trace segment for save should exist");
+                t.equals(segment.name, 'MongoDB/test/save',
+                         "should register the save");
+                t.equals(segment.children.length, 1,
+                         "should have one child");
+
+                segment = segment.children[0];
+                t.ok(segment, "trace segment for insert should exist");
+                t.equals(segment.name, 'MongoDB/test/insert',
+                         "should register the insert");
+
+                segment = trace.root.children[1];
+                t.ok(segment, "trace segment for find should exist");
+                t.equals(segment.name, 'MongoDB/test/find',
+                         "should register the find");
               });
             }, 100);
           });
@@ -641,7 +773,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(8);
+          t.plan(9);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             var saved = {id : 888, oneoff : 'daikon', __saved : true};
@@ -659,9 +791,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(7);
+          t.plan(8);
 
-          runWithTransaction(this, t, function (agent, collection) {
+          runWithoutTransaction(this, t, function (agent, collection) {
             var saved = {id : 444, oneoff : 'radicchio', __saved : true};
             collection.save(saved);
 
@@ -688,7 +820,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'count');
@@ -714,7 +846,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             collection.count(function (error, count) {
@@ -738,13 +870,13 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("inside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(11);
+        t.test("with callback", {timeout : 5000}, function (t) {
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'remove');
 
-            collection.remove({id: 1}, function (error, removed) {
+            collection.remove({id : 1}, {w : 1}, function (error, removed) {
               if (error) { t.fail(error); return t.end(); }
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -759,11 +891,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(11);
+          t.plan(17);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
-            addMetricsVerifier(t, agent, 'remove');
-
             collection.remove({id : 2});
             setTimeout(function () {
               collection.count({id : 2}, function (error, nope) {
@@ -775,7 +905,38 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                 transaction.end();
 
-                verifyTrace(t, transaction, 'remove');
+                t.equals(agent.metrics.getMetric('Database/all').callCount, 2,
+                         "should find all operations");
+                t.equals(agent.metrics.getMetric('Database/allOther').callCount, 2,
+                         "should find all operations");
+                t.equals(agent.metrics.getMetric('Database/remove').callCount, 1,
+                         "generic remove should be recorded");
+                t.equals(agent.metrics.getMetric('Database/count').callCount, 1,
+                         "generic count should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/remove').callCount, 1,
+                         "named collection remove should be recorded");
+                t.equals(agent.metrics.getMetric('Database/test/count').callCount, 1,
+                         "named collection count should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/remove').callCount, 1,
+                         "MongoDB remove should be recorded");
+                t.equals(agent.metrics.getMetric('MongoDB/test/count').callCount, 1,
+                         "MongoDB count should be recorded");
+
+                var trace = transaction.getTrace();
+                t.ok(trace, "trace should exist.");
+                t.ok(trace.root, "root element should exist.");
+                t.equals(trace.root.children.length, 2,
+                         "should be two children.");
+
+                var segment = trace.root.children[0];
+                t.ok(segment, "trace segment for remove should exist");
+                t.equals(segment.name, 'MongoDB/test/remove',
+                         "should register the remove");
+
+                segment = trace.root.children[1];
+                t.ok(segment, "trace segment for count should exist");
+                t.equals(segment.name, 'MongoDB/test/count',
+                         "should register the count");
               });
             });
           });
@@ -785,11 +946,11 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.test("outside transaction", function (t) {
         t.plan(2);
 
-        t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(6);
+        t.test("with callback", {timeout : 5000}, function (t) {
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
-            collection.remove({id : 3}, function (error, removed) {
+            collection.remove({id : 3}, {w : 1}, function (error, removed) {
               if (error) { t.fail(error); return t.end(); }
               t.notOk(agent.getTransaction(), "should have no transaction");
 
@@ -801,7 +962,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(6);
+          t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
             collection.remove({id : 4});
