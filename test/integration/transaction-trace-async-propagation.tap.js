@@ -196,8 +196,9 @@ test("asynchronous state propagation", function (t) {
     });
 
     function handler(id) {
-      t.ok(agent.getTransaction(), "transaction should be visible");
-      t.equal(agent.getTransaction().id, id, "transaction matches");
+      var transaction = agent.getTransaction();
+      t.ok(transaction, "transaction should be visible");
+      t.equal((transaction || {}).id, id, "transaction matches");
     }
 
     t.notOk(agent.getTransaction(), "transaction should not yet be visible");
