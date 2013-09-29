@@ -62,7 +62,8 @@ describe("built-in http module instrumentation", function () {
       });
 
       var server = http.createServer(function (request, response) {
-        should.exist(agent.getTransaction());
+        transaction = agent.getTransaction();
+        should.exist(transaction);
 
         var req = http.request({port : 8321,
                                 host : 'localhost',
@@ -72,9 +73,6 @@ describe("built-in http module instrumentation", function () {
             if (requestResponse.statusCode !== 200) {
               return done(requestResponse.statusCode);
             }
-
-            transaction = agent.getTransaction();
-            should.exist(transaction);
 
             requestResponse.setEncoding('utf8');
             requestResponse.on('data', function (data) {

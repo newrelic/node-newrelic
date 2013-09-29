@@ -11,7 +11,7 @@ var path       = require('path')
 
 test("built-in http instrumentation should handle internal & external requests",
      function (t) {
-  t.plan(12);
+  t.plan(11);
 
   var agent = helper.instrumentMockedAgent();
 
@@ -28,9 +28,6 @@ test("built-in http instrumentation should handle internal & external requests",
     ;
 
   var external = http.createServer(function (request, response) {
-    t.ok(agent.getTransaction(),
-         "should be within the scope of (a different) transaction");
-
     response.writeHead(200,
                        {'Content-Length' : PAYLOAD.length,
                         'Content-Type'   : 'application/json'});
@@ -41,11 +38,10 @@ test("built-in http instrumentation should handle internal & external requests",
   var transaction;
   var internalResponseHandler = function (response) {
     return function (requestResponse) {
-      if (requestResponse.statusCode !== 200) return t.fail(requestResponse.statusCode);
-
-      // save for later assertions
       transaction = agent.getTransaction();
       t.ok(transaction, "handler is part of transaction");
+
+      if (requestResponse.statusCode !== 200) return t.fail(requestResponse.statusCode);
 
       requestResponse.setEncoding('utf8');
       requestResponse.on('data', function (data) {
@@ -90,7 +86,7 @@ test("built-in http instrumentation should handle internal & external requests",
     // this is where execution ends up -- test asserts go here
     response.on('end', function () {
       if (!transaction) {
-        t.bailout("Transaction wasn't set by response handler");
+        t.fail("Transaction wasn't set by response handler");
         return this.end();
       }
 
