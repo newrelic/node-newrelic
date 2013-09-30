@@ -109,7 +109,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       t.plan(7);
 
       agent.once('transactionFinished', function () {
-        t.equals(agent.metrics.getMetric('Database/all').callCount, 4,
+        t.equals(agent.metrics.getMetric('Database/all').callCount, 3,
                  "should find all operations including cursor");
         t.equals(agent.metrics.getMetric('Database/insert').callCount, 2,
                  "basic insert should be recorded with cursor");
@@ -117,7 +117,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
                  "collection insertion should be recorded from cursor");
         t.equals(agent.metrics.getMetric('Database/test2/insert',
                                          'MongoDB/test2/insert').callCount, 1,
-                 "Scoped MongoDB request should be recorded from cursor");
+                 "scoped MongoDB request should be recorded from cursor");
       });
 
       db.open(function (error, db) {
@@ -137,8 +137,8 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
               cursor.toArray(function (error, results) {
                 if (error) return t.fail(error);
 
-                t.equals(results.length, 1, "Should be one result.");
-                t.equals(results[0].hamchunx, 'verbloks', "Driver should still work.");
+                t.equals(results.length, 1, "should be one result");
+                t.equals(results[0].hamchunx, 'verbloks', "driver should still work");
 
                 transaction.end();
 
