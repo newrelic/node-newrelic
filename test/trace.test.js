@@ -98,11 +98,8 @@ describe('Trace', function () {
 
     var rootNode = [
       trace.root.timer.start / 1000,
-      {
-        nr_flatten_leading : false,
-        test               : "value"
-      },
-      {}, // FIXME: custom parameters
+      {test : "value"},
+      {nr_flatten_leading : false},
       rootSegment,
       []  // FIXME: parameter groups
     ];
