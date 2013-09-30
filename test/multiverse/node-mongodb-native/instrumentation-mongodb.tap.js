@@ -172,7 +172,7 @@ function runWithTransaction(context, t, callback) {
 }
 
 test("agent instrumentation of node-mongodb-native", function (t) {
-  t.plan(9);
+  t.plan(15);
 
   var toplevel = this;
   helper.bootstrapMongoDB(function (error, app) {
@@ -784,6 +784,313 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.comment("count requires a callback");
+      });
+    });
+
+    t.test("distinct", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'distinct');
+
+            collection.distinct('id', function (error, distinctSet) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(distinctSet.length, 8, "should have found 8 documents");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'distinct');
+            });
+          });
+        });
+
+        t.comment("distinct requires a callback");
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.distinct('id', function (error, distinctSet) {
+              if (error) { t.fail(error); return t.end(); }
+              t.notOk(agent.getTransaction(), "should have no transaction");
+
+              t.equal(distinctSet.length, 8, "should have found 8 documents");
+
+              verifyNoStats(t, agent, 'distinct');
+            });
+          });
+        });
+
+        t.comment("distinct requires a callback");
+      });
+    });
+
+    t.test("createIndex", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'createIndex');
+
+            collection.createIndex('id', function (error, name) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(name, 'id_1', "should have created an index");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'createIndex');
+            });
+          });
+        });
+
+        t.comment("createIndex requires a callback");
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.createIndex('id', function (error, name) {
+              if (error) { t.fail(error); return t.end(); }
+              t.notOk(agent.getTransaction(), "should have no transaction");
+
+              t.equal(name, 'id_1', "should have created another index");
+
+              verifyNoStats(t, agent, 'createIndex');
+            });
+          });
+        });
+
+        t.comment("createIndex requires a callback");
+      });
+    });
+
+    t.test("ensureIndex", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'ensureIndex');
+
+            collection.ensureIndex('id', function (error, name) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(name, 'id_1', "should have found an index");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'ensureIndex');
+            });
+          });
+        });
+
+        t.comment("ensureIndex requires a callback");
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.ensureIndex('id', function (error, name) {
+              if (error) { t.fail(error); return t.end(); }
+              t.notOk(agent.getTransaction(), "should have no transaction");
+
+              t.equal(name, 'id_1', "should have created another index");
+
+              verifyNoStats(t, agent, 'ensureIndex');
+            });
+          });
+        });
+
+        t.comment("ensureIndex requires a callback");
+      });
+    });
+
+    t.test("reIndex", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'reIndex');
+
+            collection.reIndex(function (error, result) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(result, true, "should have found an index");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'reIndex');
+            });
+          });
+        });
+
+        t.comment("reIndex requires a callback");
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.reIndex(function (error, result) {
+              if (error) { t.fail(error); return t.end(); }
+              t.notOk(agent.getTransaction(), "should have no transaction");
+
+              t.equal(result, true, "should have created another index");
+
+              verifyNoStats(t, agent, 'reIndex');
+            });
+          });
+        });
+
+        t.comment("reIndex requires a callback");
+      });
+    });
+
+    t.test("dropIndex", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'dropIndex');
+
+            collection.dropIndex('id_1', function (error, result) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(result.nIndexesWas, 2, "should have dropped an index");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'dropIndex');
+            });
+          });
+        });
+
+        t.comment("dropIndex requires a callback");
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.dropIndex('id_1', function (error) {
+              t.notOk(agent.getTransaction(), "should have no transaction");
+
+              t.equal(error.message, 'index not found',
+                      "shouldn't have found index to drop");
+
+              verifyNoStats(t, agent, 'dropIndex');
+            });
+          });
+        });
+
+        t.comment("dropIndex requires a callback");
+      });
+    });
+
+    t.test("dropAllIndexes", function (t) {
+      t.plan(2);
+
+      t.test("inside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'dropAllIndexes');
+
+            collection.dropAllIndexes(function (error, result) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              t.equal(result, true, "should have dropped the indexes");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'dropAllIndexes');
+            });
+          });
+        });
+
+        t.comment("dropAllIndexes requires a callback");
+      });
+
+      t.test("outside transaction", function (t) {
+        t.plan(2);
+
+        t.test("with callback", {timeout : 1000}, function (t) {
+          t.plan(7);
+
+          runWithoutTransaction(this, t, function (agent, collection) {
+            collection.dropAllIndexes(function (error, result) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.notOk(agent.getTransaction(), "should have no transaction");
+
+              t.equal(result, true, "should have dropped all those no indexes");
+
+              verifyNoStats(t, agent, 'dropAllIndexes');
+            });
+          });
+        });
+
+        t.comment("dropAllIndexes requires a callback");
       });
     });
 
