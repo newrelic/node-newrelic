@@ -169,9 +169,9 @@ describe("the agent configuration", function () {
     });
 
     it("should pick up the transaction trace Top N scale", function () {
-      idempotentEnv('NEW_RELIC_TRACER_TOP_N', 20, function (tc) {
+      idempotentEnv('NEW_RELIC_TRACER_TOP_N', 5, function (tc) {
         should.exist(tc.transaction_tracer.top_n);
-        expect(tc.transaction_tracer.top_n).equal('20');
+        expect(tc.transaction_tracer.top_n).equal('5');
       });
     });
 
@@ -317,7 +317,7 @@ describe("the agent configuration", function () {
     });
 
     it("should collect one slow transaction trace per harvest cycle", function () {
-      expect(configuration.transaction_tracer.top_n).equal(1);
+      expect(configuration.transaction_tracer.top_n).equal(20);
     });
 
     it("should not debug internal metrics", function () {
