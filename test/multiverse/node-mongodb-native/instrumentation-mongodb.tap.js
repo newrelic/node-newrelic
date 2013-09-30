@@ -355,7 +355,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           t.plan(13);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
-            addMetricsVerifier(t, agent, 'find');
+            addMetricsVerifier(t, agent, 'findOne');
 
             collection.findOne({id : 1337}, function (error, result) {
               if (error) { t.fail(error); return t.end(); }
@@ -365,7 +365,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               transaction.end();
 
-              verifyTrace(t, transaction, 'find');
+              verifyTrace(t, transaction, 'findOne');
             });
           });
         });
