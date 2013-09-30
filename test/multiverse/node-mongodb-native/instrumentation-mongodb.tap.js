@@ -410,7 +410,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(18);
+          t.plan(14);
 
           var current = this;
           runWithDB(current, t, function (collection) {
@@ -432,38 +432,28 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                   transaction.end();
 
                   var metrics = agent.metrics;
-                  t.equals(metrics.getMetric('Database/all').callCount, 2,
+                  t.equals(metrics.getMetric('Database/all').callCount, 1,
                            "should find all operations");
-                  t.equals(metrics.getMetric('Database/allOther').callCount, 2,
+                  t.equals(metrics.getMetric('Database/allOther').callCount, 1,
                            "should find all operations");
                   t.equals(metrics.getMetric('Database/findAndRemove').callCount, 1,
                            "generic findAndRemove should be recorded");
-                  t.equals(metrics.getMetric('Database/findAndModify').callCount, 1,
-                           "generic findAndModify should be recorded");
                   t.equals(metrics.getMetric('Database/test/findAndRemove').callCount, 1,
                            "named collection findAndRemove should be recorded");
-                  t.equals(metrics.getMetric('Database/test/findAndModify').callCount, 1,
-                           "named collection findAndModify should be recorded");
                   t.equals(metrics.getMetric('MongoDB/test/findAndRemove').callCount, 1,
                            "MongoDB findAndRemove should be recorded");
-                  t.equals(metrics.getMetric('MongoDB/test/findAndModify').callCount, 1,
-                           "MongoDB findAndModify should be recorded");
 
                   var trace = transaction.getTrace();
                   t.ok(trace, "trace should exist.");
                   t.ok(trace.root, "root element should exist.");
-                  t.equals(trace.root.children.length, 1,
-                           "should be two children.");
+                  t.equals(trace.root.children.length, 1, "should be one child.");
 
                   var segment = trace.root.children[0];
                   t.ok(segment, "trace segment for findAndRemove should exist");
                   t.equals(segment.name, 'MongoDB/test/findAndRemove',
                            "should register the findAndRemove");
-
-                  segment = segment.children[0];
-                  t.ok(segment, "trace segment for findAndModify should exist");
-                  t.equals(segment.name, 'MongoDB/test/findAndModify',
-                           "should register the findAndModify");
+                  t.equals(segment.children.length, 0,
+                           "findAndRemove has no children");
                 });
               });
             });
@@ -648,7 +638,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 1000}, function (t) {
-          t.plan(19);
+          t.plan(15);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             var saved = {id : 999, oneoff : 'broccoli', __saved : true};
@@ -664,44 +654,35 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               transaction.end();
 
               var metrics = agent.metrics;
-              t.equals(metrics.getMetric('Database/all').callCount, 2,
+              t.equals(metrics.getMetric('Database/all').callCount, 1,
                        "should find all operations");
-              t.equals(metrics.getMetric('Database/allOther').callCount, 2,
+              t.equals(metrics.getMetric('Database/allOther').callCount, 1,
                        "should find all operations");
               t.equals(metrics.getMetric('Database/save').callCount, 1,
                        "generic save should be recorded");
-              t.equals(metrics.getMetric('Database/insert').callCount, 1,
-                       "generic insert should be recorded");
               t.equals(metrics.getMetric('Database/test/save').callCount, 1,
                        "named collection save should be recorded");
-              t.equals(metrics.getMetric('Database/test/insert').callCount, 1,
-                       "named collection insert should be recorded");
               t.equals(metrics.getMetric('MongoDB/test/save').callCount, 1,
                        "MongoDB save should be recorded");
-              t.equals(metrics.getMetric('MongoDB/test/insert').callCount, 1,
-                       "MongoDB insert should be recorded");
 
               var trace = transaction.getTrace();
               t.ok(trace, "trace should exist.");
               t.ok(trace.root, "root element should exist.");
               t.equals(trace.root.children.length, 1,
-                       "should be two children.");
+                       "should be one child.");
 
               var segment = trace.root.children[0];
               t.ok(segment, "trace segment for save should exist");
               t.equals(segment.name, 'MongoDB/test/save',
                        "should register the save");
-
-              segment = segment.children[0];
-              t.ok(segment, "trace segment for insert should exist");
-              t.equals(segment.name, 'MongoDB/test/insert',
-                       "should register the insert");
+              t.equals(segment.children.length, 0,
+                       "save should have no children");
             });
           });
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(24);
+          t.plan(20);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             var saved = {id : 555, oneoff : 'radishes', __saved : true};
@@ -718,51 +699,37 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                 transaction.end();
 
-                t.equals(agent.metrics.getMetric('Database/all').callCount, 3,
+                t.equals(agent.metrics.getMetric('Database/all').callCount, 2,
                          "should find all operations");
-                t.equals(agent.metrics.getMetric('Database/allOther').callCount, 3,
+                t.equals(agent.metrics.getMetric('Database/allOther').callCount, 2,
                          "should find all operations");
                 t.equals(agent.metrics.getMetric('Database/save').callCount, 1,
                          "generic save should be recorded");
-                t.equals(agent.metrics.getMetric('Database/insert').callCount, 1,
-                         "generic insert should be recorded");
                 t.equals(agent.metrics.getMetric('Database/find').callCount, 1,
                          "generic find should be recorded");
                 t.equals(agent.metrics.getMetric('Database/test/save').callCount, 1,
                          "named collection save should be recorded");
-                t.equals(agent.metrics.getMetric('Database/test/insert').callCount, 1,
-                         "named collection insert should be recorded");
                 t.equals(agent.metrics.getMetric('Database/test/find').callCount, 1,
                          "named collection find should be recorded");
                 t.equals(agent.metrics.getMetric('MongoDB/test/save').callCount, 1,
                          "MongoDB save should be recorded");
-                t.equals(agent.metrics.getMetric('MongoDB/test/insert').callCount, 1,
-                         "MongoDB insert should be recorded");
                 t.equals(agent.metrics.getMetric('MongoDB/test/find').callCount, 1,
                          "MongoDB find should be recorded");
 
                 var trace = transaction.getTrace();
                 t.ok(trace, "trace should exist.");
                 t.ok(trace.root, "root element should exist.");
-                t.equals(trace.root.children.length, 2,
-                         "should be two children.");
+                t.equals(trace.root.children.length, 2, "should be two children.");
 
                 var segment = trace.root.children[0];
                 t.ok(segment, "trace segment for save should exist");
-                t.equals(segment.name, 'MongoDB/test/save',
-                         "should register the save");
-                t.equals(segment.children.length, 1,
-                         "should have one child");
-
-                segment = segment.children[0];
-                t.ok(segment, "trace segment for insert should exist");
-                t.equals(segment.name, 'MongoDB/test/insert',
-                         "should register the insert");
+                t.equals(segment.name, 'MongoDB/test/save', "should register the save");
+                t.equals(segment.children.length, 0, "should have no children");
 
                 segment = trace.root.children[1];
                 t.ok(segment, "trace segment for find should exist");
-                t.equals(segment.name, 'MongoDB/test/find',
-                         "should register the find");
+                t.equals(segment.name, 'MongoDB/test/find', "should register the find");
+                t.equals(segment.children.length, 0, "should have no children");
               });
             }, 100);
           });

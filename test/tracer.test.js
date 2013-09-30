@@ -54,4 +54,28 @@ describe('Tracer', function () {
       });
     });
   });
+
+  describe("when setting the current segment type", function () {
+    it("it's set for the rest of the current tick", function () {
+      tracer.setCurrentSegmentType('TEST1');
+
+      expect(tracer.isCurrentSegmentType('TEST1')).equal(true);
+    });
+
+    it("it's not set in the future", function (done) {
+      tracer.setCurrentSegmentType('TEST2');
+      setTimeout(function () {
+        expect(tracer.isCurrentSegmentType('TEST2')).equal(false);
+
+        done();
+      });
+    });
+
+    it("doesn't false positive when segment type has changed", function () {
+      tracer.setCurrentSegmentType('TEST3');
+      tracer.setCurrentSegmentType('nope');
+
+      expect(tracer.isCurrentSegmentType('TEST3')).equal(false);
+    });
+  });
 });

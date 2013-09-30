@@ -12,7 +12,8 @@
     "mongodb": "1.1.7"
   },
   "devDependencies": {
-    "tap": "*"
+    "tap": "*",
+    "trycatch": "*"
   },
   "private": true
 }
