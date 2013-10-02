@@ -1,4 +1,22 @@
-### v0.11.2 / beta-29 (2013-09-25);
+### v0.11.3 / beta-30 (2013-10-01):
+
+* Rewrote the MongoDB instrumentation. Big thanks to Jeff Howell at Kabam for
+  demonstrating a much more reliable and simple approach than what we had
+  before! Also expanded the number of MongoDB methods instrumented to include
+  more of the common operations and indexing operations.
+* Changed the default value of the `top_n` configuration parameter. Read the
+  documentation in `lib/config.default.js` for the details (we've taken another
+  run at making the docs for `top_n` easier to understand), but the upshot is
+  that by default you should see a greater diversity of slow transaction traces
+  now.
+* Closed a hole in the transaction tracer related to Connect and Express-style
+  middleware chains.
+* Fixed issues identified by testing against various versions of 0.11 and
+  master.
+* Added guidelines for contributing to the module. Read CONTRIBUTING.md
+  for details.
+
+### v0.11.2 / beta-29 (2013-09-25):
 
 * Fixed a bug with the Connect instrumentation that would cause it to
   crash when using Connect's static middleware in strict mode. Using
@@ -10,7 +28,7 @@
   `name.indexOf('whatever') === 0` as the predicate instead of
   `name === 'whatever'`.
 
-### v0.11.1 / beta-28 (2013-09-24);
+### v0.11.1 / beta-28 (2013-09-24):
 
 * Prevent requests from being double-counted by changing the tracer to
   always reuse existing transactions rather than trying to nest them.

@@ -24,6 +24,7 @@ request a Pro Trial subscription during your beta testing.
 * [Getting started](#getting-started)
 * [Transactions and request naming](#transactions-and-request-naming)
 * [Configuration](#configuring-the-agent)
+* [Contributions](#contributions)
 * [Known issues](#known-issues)
 
 ## Support
@@ -354,17 +355,27 @@ For completeness, here's the rest of the list:
   internal operation. You're welcome to enable it, but it's unlikely to be
   edifying unless you're a New Relic Node.js engineer.
 
+## Contributions
+
+We owe a debt to all of the beta testers who have provided us with feedback,
+and in some cases significant pieces of code. (If you wish to contribute,
+please see CONTRIBUTING.md in this package.) In particular, we're indebted
+to these people:
+
+* Hernan Silberman, for his work on the memcached instrumentation
+* Jeff Howell &lt;jhowell@kabam.com&gt;, for coming up with a much
+  simpler way to instrument node-mongodb-native.
+
 ## Recent changes
 
 Information about changes to the agent are in NEWS.md.
 
 ### Known issues:
 
-* The agent works only with Node.js 0.6 and newer ( **IMPORTANT**: newer betas
-  depend on Node 0.8, and support for 0.6 may or may not come back by the time
-  version 1.0 of the New Relic agent is released). Certain features rely on
-  Node 0.8. Some features may behave differently between 0.8 and 0.10. The
-  agent is optimized for newer versions of Node.
+* The agent is only supported on Node.js 0.8 and newer. Some features may
+  behave differently between 0.8 and 0.10. The agent has been tested but not
+  extensively so on Node 0.11. The agent is optimized for newer versions of
+  Node.
 * There are irregularities around transaction trace capture and display.
   If you notice missing or incorrect information from transaction traces,
   let us know.
@@ -374,12 +385,6 @@ Information about changes to the agent are in NEWS.md.
   them. If you see data you don't expect on New Relic and have the time to
   produce a reduced version of the code that is producing the strange data, it
   will be used to improve the agent and you will have the Node team's gratitude.
-* There is an error tracer in the Node agent, but it's a work in progress.
-  In particular, it still does not intercept errors that may already be
-  handled by frameworks. Also, parts of it depend on the
-  [domain](http://nodejs.org/api/domain.html) API added in Node 0.8, and
-  domain-specific functionality will not work in apps running in
-  Node 0.6.x.
 * The CPU and memory overhead incurred by the Node agent is relatively minor
   (~1-10%, depending on how much of the instrumentation your apps end up
   using).  GC activity is significantly increased while the agent is active,
