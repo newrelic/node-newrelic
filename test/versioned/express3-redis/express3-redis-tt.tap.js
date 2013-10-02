@@ -210,7 +210,7 @@ function makeCookie() {
  **
  **/
 test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
-  t.plan(7);
+  t.plan(35);
 
   var agent        = helper.instrumentMockedAgent()
     , redis        = require('redis')
@@ -244,20 +244,95 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
       }
 
       agent.on('transactionFinished', function verifier(transaction) {
+        var key;
         var trace = transaction.getTrace();
         var children = trace.root.children || [];
-        t.equal(trace.root.children.length, 1, "only one child of root node");
+        t.equal(trace.root.children.length, 1, "root has one child");
 
         var web = trace.root.children[0] || {};
         children = web.children || [];
         t.equal(web.name, 'WebTransaction/Expressjs/GET#/:id',
                 "first segment is web transaction");
-        t.equal(web.children.length, 1, "only one child of root node");
+        t.equal(web.children.length, 2, "web node has two children");
 
         var get = children[0] || {};
-        t.equal(get.name, 'Redis/get', "second segment is Redis fetch");
-        t.equal(get.parameters.key, '["sess:' + SESSION_ID + '"]',
+        key = (get.parameters || {}).key;
+        t.equal(get.name, 'Redis/get', "first child segment is get");
+        t.equal(key, '["sess:' + SESSION_ID + '"]',
                 "operation is session load");
+        t.equal((get.children || {}).length, 0, "get has no children");
+
+        var hgetall = children[1] || {};
+        key = (hgetall.parameters || {}).key;
+        children = hgetall.children || [];
+        t.equal(hgetall.name, 'Redis/hgetall', "second child segment is hgetall");
+        t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
+                "operation is room info load");
+        t.equal(children.length, 1, "hgetall has one child");
+
+        var smembers = children[0] || {};
+        key = (smembers.parameters || {}).key;
+        children = smembers.children || [];
+        t.equal(smembers.name, 'Redis/smembers', "hgetall child is smembers");
+        t.equal(key, '["rooms:' + ROOM_ID + ':online"]',
+                "operation is load set of online users");
+        t.equal(children.length, 4, "smembers has four children");
+
+        // Redis roundtrip isn't deterministic
+        var users = /\[\"users:twitter:(drugleaf|othiym23|izs):status\"\]/;
+
+        get = children[0] || {};
+        key = (get.parameters || {}).key;
+        t.equal(get.name, 'Redis/get', "first smembers child is get");
+        t.like(key, users, "fetched status of user");
+        t.equal((get.children || {}).length, 0, "get has no children");
+
+        get = children[1] || {};
+        key = (get.parameters || {}).key;
+        t.equal(get.name, 'Redis/get', "second smembers child is get");
+        t.like(key, users, "fetched status of user");
+        t.equal((get.children || {}).length, 0, "get has no children");
+
+        get = children[2] || {};
+        key = (get.parameters || {}).key;
+        t.equal(get.name, 'Redis/get', "third smembers child is get");
+        t.like(key, users, "fetched status of user");
+        t.equal((get.children || {}).length, 0, "get has no children");
+
+        smembers = children[3] || {};
+        key = (smembers.parameters || {}).key;
+        children = smembers.children || [];
+        t.equal(smembers.name, 'Redis/smembers', "fourth child is smembers");
+        t.equal(key, '["test:public:rooms"]',
+                "operation is load set of public rooms");
+        t.equal(children.length, 1, "smembers has one child");
+
+        hgetall = children[0] || {};
+        key = (hgetall.parameters || {}).key;
+        children = hgetall.children || [];
+        t.equal(hgetall.name, 'Redis/hgetall', "child segment is hgetall");
+        t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
+                "operation is room info load");
+        t.equal(children.length, 1, "hgetall has one child");
+
+        get = children[0] || {};
+        key = (get.parameters || {}).key;
+        children = get.children || [];
+        t.equal(get.name, 'Redis/get', "first hgetall child is get");
+        t.equal(key, '["users:twitter:othiym23:status"]',
+                "fetched status of othiym23");
+        t.equal(children.length, 2, "get has two children");
+
+        var view = children[0] || {};
+        t.equal(view.name, 'View/room/Rendering', "first child is render of room view");
+        t.equal((view.children || {}).length, 0, "view has no children");
+
+        var setex = children[1] || {};
+        key = (setex.parameters || {}).key;
+        t.equal(setex.name, 'Redis/setex', "second child is setex");
+        t.equal(key, '["sess:' + SESSION_ID + '"]',
+                "updated session status");
+        t.equal((setex.children || {}).length, 0, "setex has no children");
       });
 
       var jar = request.jar();
