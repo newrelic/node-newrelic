@@ -363,8 +363,9 @@ please see CONTRIBUTING.md in this package.) In particular, we're indebted
 to these people:
 
 * Hernan Silberman, for his work on the memcached instrumentation
-* Jeff Howell &lt;jhowell@kabam.com&gt;, for coming up with a much
-  simpler way to instrument node-mongodb-native.
+* Jeff Howell &lt;jhowell@kabam.com&gt;, for coming up with a much simpler way
+  to instrument node-mongodb-native, as well as pointing out a problem with the
+  Connect instrumentation.
 
 ## Recent changes
 

@@ -1,3 +1,9 @@
+### v0.11.4 / beta-31 (2013-10-01):
+
+* Fixed an error in the Connect and Express middleware instrumentation. Another
+  tip of the hat to Jeff Howell at Kabam for identifying this problem and
+  pointing to a solution!
+
 ### v0.11.3 / beta-30 (2013-10-01):
 
 * Rewrote the MongoDB instrumentation. Big thanks to Jeff Howell at Kabam for
