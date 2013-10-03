@@ -1,3 +1,20 @@
+### v0.11.5 / beta-32 (2013-10-03):
+
+* Fixed a major issue in the transaction tracer that affected users of certain
+  Express middleware plugins. HUGE thanks to Nicolas Laplante for his
+  assistance in isolating and reproducing the bug, and also to the denizens of
+  #libuv for eyeballing my various unsuccessful attempts at a fix.
+* Fixed another issue in the tracer where certain objects were being wrapped
+  too many times. Thanks to José F. Romaniello for confirming the fix.
+* Changed how requests handled by Express and Restify routes are named. This
+  change is being rolled out both in this module and on the New Relic website,
+  so there is a chance you will see the same route (or very similiar routes)
+  show up twice in aggregated metrics.
+* Dropped the default apdex tolerating value from 500 milliseconds to 100
+  milliseconds. This means that transactions slower than 400 milliseconds will
+  generate slow transaction traces. Read the documentation in README.md on
+  `apdex_t` and `apdex_f` for further details.
+
 ### v0.11.4 / beta-31 (2013-10-01):
 
 * Fixed an error in the Connect and Express middleware instrumentation. Another
