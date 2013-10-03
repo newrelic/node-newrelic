@@ -326,8 +326,8 @@ For completeness, here's the rest of the list:
   trace will count as slow and be sent to New Relic. Can also be set to
   `apdex_f`, at which point it will set the trace threshold to 4 times the
   current ApdexT.
-* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value.
-  This is more often than not set from the server. Defaults to 0.5.
+* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value in
+  seconds.  This is more often than not set from the server. Defaults to 0.100.
 * `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on
   slow transaction or error traces. Defaults to false.
 * `NEW_RELIC_IGNORED_PARAMS`: Some parameters may contain sensitive

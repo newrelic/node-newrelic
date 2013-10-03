@@ -279,8 +279,8 @@ describe("the agent configuration", function () {
       expect(configuration.agent_enabled).equal(true);
     });
 
-    it("should have an apdexT of 0.5", function () {
-      expect(configuration.apdex_t).equal(0.5);
+    it("should have an apdexT of 0.1", function () {
+      expect(configuration.apdex_t).equal(0.1);
     });
 
     it("should not capture request parameters", function () {
@@ -463,7 +463,7 @@ describe("the agent configuration", function () {
     });
 
     it("should set apdex_t", function () {
-      expect(config.apdex_t).equal(0.5);
+      expect(config.apdex_t).equal(0.1);
       config.onConnect({'apdex_t' : 0.05});
       expect(config.apdex_t).equal(0.05);
     });
@@ -664,13 +664,13 @@ describe("the agent configuration", function () {
       });
 
       it("should update its apdex_t only when it has changed", function () {
-        expect(config.apdex_t).equal(0.5);
+        expect(config.apdex_t).equal(0.1);
 
         config.once('apdex_t', function () {
           throw new Error('should never get here');
         });
 
-        config.onConnect({'apdex_t' : 0.5});
+        config.onConnect({'apdex_t' : 0.1});
       });
     });
   });
@@ -736,9 +736,9 @@ describe("the agent configuration", function () {
     });
 
     it("shouldn't configure apdex_t", function () {
-      expect(config.apdex_t).equal(0.5);
+      expect(config.apdex_t).equal(0.1);
       config.onConnect({'apdex_t' : 0.05});
-      expect(config.apdex_t).equal(0.5);
+      expect(config.apdex_t).equal(0.1);
     });
 
     it("shouldn't configure data_report_period", function () {

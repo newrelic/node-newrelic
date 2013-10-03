@@ -215,7 +215,7 @@ describe("the New Relic agent", function () {
     describe("when handling events", function () {
       it("should update the metrics' apdex tolerating value when configuration changes",
          function (done) {
-        expect(agent.metrics.apdexT).equal(0.5);
+        expect(agent.metrics.apdexT).equal(0.1);
         process.nextTick(function () {
           should.exist(agent.metrics.apdexT);
           expect(agent.metrics.apdexT).equal(0.666);
@@ -228,7 +228,7 @@ describe("the New Relic agent", function () {
 
       it("should reset the configuration and metrics normalizer on connection",
          function (done) {
-        expect(agent.config.apdex_t).equal(0.5);
+        expect(agent.config.apdex_t).equal(0.1);
         process.nextTick(function () {
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
@@ -348,7 +348,7 @@ describe("the New Relic agent", function () {
         agent.errors.add(transaction, new RangeError('stack depth exceeded'));
         transaction.end();
 
-        var metrics = new Metrics(0.5, agent.mapper, agent.metricNameNormalizer);
+        var metrics = new Metrics(0.1, agent.mapper, agent.metricNameNormalizer);
         metrics.started = 1337;
         metrics.getOrCreateMetric('Errors/all').incrementCallCount(3);
 

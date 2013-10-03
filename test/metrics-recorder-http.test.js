@@ -248,7 +248,7 @@ describe("recordWeb", function () {
       trans.statusCode = 404;
       trans._setApdex('Apdex/Uri/test', 30);
       var result = [
-        [{name : 'Apdex/Uri/test'}, [1, 0, 0, 0.5, 0.5, 0]]
+        [{name : 'Apdex/Uri/test'}, [1, 0, 0, 0.1, 0.1, 0]]
       ];
       expect(agent.config.error_collector.ignore_status_codes).deep.equal([404]);
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -281,7 +281,7 @@ describe("recordWeb", function () {
       trans.statusCode = 503;
       trans._setApdex('Apdex/Uri/test', 30);
       var result = [
-        [{name : 'Apdex/Uri/test'}, [0, 0, 1, 0.5, 0.5, 0]]
+        [{name : 'Apdex/Uri/test'}, [0, 0, 1, 0.1, 0.1, 0]]
       ];
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
