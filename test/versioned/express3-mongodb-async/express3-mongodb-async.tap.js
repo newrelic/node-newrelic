@@ -202,7 +202,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
         t.equal(children.length, 1, "only one child of root node");
 
         var web = children[0] || {};
-        t.equal(web.name, 'WebTransaction/Expressjs/POST#/async/:id',
+        t.equal(web.name, 'WebTransaction/Expressjs/POST//async/:id',
                 "first segment is web transaction");
 
         children = web.children || [];

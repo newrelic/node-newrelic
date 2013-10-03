@@ -172,7 +172,7 @@ describe("an instrumented Express application", function () {
 
         var match = stub.createServer().routes._match;
         expect(match()).eql({path : '/test/:id'});
-        expect(transaction.partialName).equal('Expressjs/POST#/test/:id');
+        expect(transaction.partialName).equal('Expressjs/POST//test/:id');
       });
     });
   });
@@ -304,7 +304,7 @@ describe("an instrumented Express application", function () {
 
         var match = stub.Router.prototype.matchRequest;
         expect(match()).eql({path : 'test/:id'});
-        expect(transaction.partialName).equal('Expressjs/GET#test/:id');
+        expect(transaction.partialName).equal('Expressjs/GET/test/:id');
       });
     });
   });

@@ -22,7 +22,7 @@ test("Express 3 router introspection", function (t) {
   });
 
   agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Expressjs/GET#/test/:id',
+    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//test/:id',
             "transaction has expected name");
     t.equal(transaction.url, '/test/31337', "URL is left alone");
     t.equal(transaction.statusCode, 200, "status code is OK");
@@ -32,7 +32,7 @@ test("Express 3 router introspection", function (t) {
     var web = transaction.trace.root.children[0];
     t.ok(web, "trace has web segment");
     t.equal(web.name, transaction.name, "segment name and transaction name match");
-    t.equal(web.partialName, 'Expressjs/GET#/test/:id',
+    t.equal(web.partialName, 'Expressjs/GET//test/:id',
             "should have partial name for apdex");
     t.equal(web.parameters.id, '31337', "namer gets parameters out of route");
   });
