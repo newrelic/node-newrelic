@@ -55,7 +55,6 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
 
       server.close(function () {
         helper.unloadAgent(agent);
-        t.end();
       });
     });
   });
