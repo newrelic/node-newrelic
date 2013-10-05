@@ -110,11 +110,12 @@ test("built-in http instrumentation should handle internal & external requests",
       t.equals(stats.callCount, 2,
                "should have accounted for all the internal http requests");
 
-      stats = agent.metrics.getOrCreateMetric('External/localhost/http', scope);
+      stats = agent.metrics.getOrCreateMetric('External/localhost:8321/http', scope);
       t.equals(stats.callCount, 1,
                "should record outbound HTTP requests in the agent's metrics");
 
-      stats = transaction.metrics.getOrCreateMetric('External/localhost/http', scope);
+      stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/http',
+                                                    scope);
       t.equals(stats.callCount, 1,
                "should associate outbound HTTP requests with the inbound transaction");
 
