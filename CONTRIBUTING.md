@@ -57,7 +57,7 @@ tests if all of the unit tests pass.
 If you don't feel like dealing with the hassle of installing the servers, just
 the unit tests can be run with:
 
-    make units
+    make unit
 
 ### Writing tests
 
