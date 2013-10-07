@@ -21,7 +21,7 @@ CASERIAL     = test/lib/ca-serial
 CERTIFICATE  = test/lib/self-signed-test-certificate.crt
 SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
-.PHONY: all build test-cov test clean notes pending pending-core
+.PHONY: all build test-cov test clean notes pending pending-core test-clean
 .PHONY: unit integration ssl
 .PHONY: sub_node_modules $(SUBNPM)
 
@@ -40,6 +40,11 @@ build: clean node_modules
 	@echo "Currently using node $(NODE_VERSION)."
 
 test: unit integration
+
+test-clean:
+	rm -rf test/integration/test-mongodb
+	rm -rf test/integration/test-mysql
+	rm newrelic_agent.log
 
 unit: node_modules
 	@rm -f newrelic_agent.log
