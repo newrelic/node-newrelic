@@ -5,6 +5,8 @@ var path                = require('path')
   , sinon               = require('sinon')
   , architect           = require('architect')
   , wrench              = require('wrench')
+  , logger              = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
+                            .child({component : 'agent_helper'})
   , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib',
@@ -37,16 +39,19 @@ var helper = module.exports = {
     if (!options) options = {};
     if (_agent) throw _agent.__created;
 
-    var connection = new CollectorConnection({
-      config : {
-        applications : function () { return 'none'; }
-      }
-    });
+    // agent needs a "real" configuration
+    var configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
+      , config       = configurator.initialize(logger)
+      ;
+    // stub applications
+    config.applications = function fakedApplications() { return 'none'; };
+
+    var connection = new CollectorConnection({ config : config });
 
     sinon.stub(connection, 'connect');
     options.connection = connection;
 
-    _agent = new Agent(options);
+    _agent = new Agent(config, options);
     _agent.__created = new Error("Only one agent at a time! This one was created at:");
     _agent.setupConnection();
 

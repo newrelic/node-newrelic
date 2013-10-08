@@ -1,17 +1,20 @@
 'use strict';
 
-var path    = require('path')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , sampler = require(path.join(__dirname, '..', 'lib', 'sampler'))
-  , Agent   = require(path.join(__dirname, '..', 'lib', 'agent'))
+var path         = require('path')
+  , chai         = require('chai')
+  , expect       = chai.expect
+  , logger       = require(path.join(__dirname, '..', 'lib',
+                                     'logger')).child({component : 'TEST'})
+  , configurator = require(path.join(__dirname, '..', 'lib', 'config.js'))
+  , sampler      = require(path.join(__dirname, '..', 'lib', 'sampler'))
+  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
   ;
 
 describe("environmental sampler", function () {
   var agent;
 
   beforeEach(function () {
-    agent = new Agent();
+    agent = new Agent(configurator.initialize(logger));
   });
 
   afterEach(function (){
