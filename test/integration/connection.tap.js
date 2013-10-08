@@ -23,7 +23,7 @@ test("CollectorConnection should connect to staging-collector.newrelic.com",
           }
         }
       })
-    , agent = new Agent({config : config})
+    , agent = new Agent(config)
     ;
 
   agent.on('connect', function () {

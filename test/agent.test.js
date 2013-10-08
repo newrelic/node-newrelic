@@ -17,10 +17,10 @@ var path                = require('path')
   ;
 
 describe("the New Relic agent", function () {
-  it("accepts a custom configuration as an option passed to the constructor",
+  it("requires the configuration be passed to the constructor",
      function () {
     var config = configurator.initialize(logger, {config : {sample : true}});
-    var agent = new Agent({config : config});
+    var agent = new Agent(config);
 
     expect(agent.config.sample).equal(true);
   });
@@ -29,7 +29,8 @@ describe("the New Relic agent", function () {
     var agent;
 
     beforeEach(function () {
-      agent = new Agent();
+      var config = configurator.initialize(logger, {config : {sample : true}});
+      agent = new Agent(config);
     });
 
     it("retries on failure", function (done) {
@@ -134,7 +135,7 @@ describe("the New Relic agent", function () {
         var config = configurator.initialize(logger, {
           config : {debug : {internal_metrics : true}}
         });
-        var debugged = new Agent({config : config});
+        var debugged = new Agent(config);
 
         var debug = debugged.config.debug;
         expect(debug.internal_metrics).equal(true);
@@ -147,7 +148,7 @@ describe("the New Relic agent", function () {
           var config = configurator.initialize(logger, {
             config : {debug : {internal_metrics : true}}
           });
-          debugged = new Agent({config : config});
+          debugged = new Agent(config);
         });
 
         it("should have an object for tracking internal metrics", function () {
@@ -181,7 +182,7 @@ describe("the New Relic agent", function () {
             {pattern : /^\/u/, name : 't'}
           ]}}
         });
-        configured = new Agent({config : config});
+        configured = new Agent(config);
       });
 
       it("loads the rules", function () {
@@ -201,7 +202,7 @@ describe("the New Relic agent", function () {
             /^\/ham_snadwich\/ignore/
           ]}}
         });
-        configured = new Agent({config : config});
+        configured = new Agent(config);
       });
 
       it("loads the rules", function () {
@@ -318,7 +319,8 @@ describe("the New Relic agent", function () {
 
       mock = sinon.mock(connection);
 
-      agent = new Agent({connection : connection});
+      var config = configurator.initialize(logger, {config : {sample : true}});
+      agent = new Agent(config, {connection : connection});
       agent.setupConnection();
     });
 

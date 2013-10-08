@@ -1,11 +1,14 @@
 'use strict';
 
-var path        = require('path')
-  , test        = require('tap').test
-  , nock        = require('nock')
-  , dns         = require ('dns')
-  , Agent       = require(path.join(__dirname, '..', '..', 'lib', 'agent.js'))
-  , Transaction = require(path.join(__dirname, '..', '..', 'lib', 'transaction.js'))
+var path         = require('path')
+  , test         = require('tap').test
+  , nock         = require('nock')
+  , dns          = require ('dns')
+  , logger       = require(path.join(__dirname, '..', '..', 'lib',
+                                     'logger')).child({component : 'TEST'})
+  , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config.js'))
+  , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent.js'))
+  , Transaction  = require(path.join(__dirname, '..', '..', 'lib', 'transaction.js'))
   ;
 
 test("harvesting with a mocked collector that returns 415 after connect", function (t) {
@@ -19,7 +22,7 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
 
     var RUN_ID      = 1337
       , url         = 'http://' + collector
-      , agent       = new Agent()
+      , agent       = new Agent(configurator.initialize(logger))
       , transaction = new Transaction(agent)
       ;
 
@@ -90,7 +93,7 @@ test("discarding metrics and errors after a 415", function (t) {
 
     var RUN_ID      = 1338
       , url         = 'http://' + collector
-      , agent       = new Agent()
+      , agent       = new Agent(configurator.initialize(logger))
       , transaction = new Transaction(agent)
       ;
 

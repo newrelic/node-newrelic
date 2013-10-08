@@ -7,7 +7,7 @@ var path                = require('path')
   , sinon               = require('sinon')
   , logger              = require(path.join(__dirname, '..', 'lib',
                                             'logger')).child({component : 'TEST'})
-  , config              = require(path.join(__dirname, '..', 'lib', 'config'))
+  , configurator        = require(path.join(__dirname, '..', 'lib', 'config'))
   , Agent               = require(path.join(__dirname, '..', 'lib', 'agent'))
   , CollectorConnection = require(path.join(__dirname, '..', 'lib',
                                             'collector', 'connection'))
@@ -31,18 +31,26 @@ function generateSubmissionURL(protocolVersion, key, method, runId) {
 }
 
 describe("CollectorConnection", function () {
-  var agent
-    , testLicense   = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
-    , collectorHost = 'staging-collector.newrelic.com'
-    ;
-
   // CONSTANTS
   var SAMPLE_RUN_ID = 101010101
     , PROTOCOL_VERSION = 11
     ;
 
+  var agent
+    , testLicense   = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
+    , collectorHost = 'staging-collector.newrelic.com'
+    , config        = configurator.initialize(logger, {
+        'config' : {
+          'app_name'    : 'node.js Tests',
+          'license_key' : testLicense,
+          'host'        : collectorHost,
+          'port'        : 80
+        }
+      })
+    ;
+
   it("starts out disconnected", function () {
-    expect(new CollectorConnection(new Agent()).isConnected()).equal(false);
+    expect(new CollectorConnection(new Agent(config)).isConnected()).equal(false);
   });
 
   describe("with a mocked DataSender", function () {
@@ -53,8 +61,7 @@ describe("CollectorConnection", function () {
       ;
 
     beforeEach(function () {
-      agent = new Agent();
-      agent.config = config.initialize(logger, {
+      agent = new Agent(configurator.initialize(logger, {
         'config' : {
           'app_name'    : 'node.js Tests',
           'license_key' : testLicense,
@@ -63,7 +70,7 @@ describe("CollectorConnection", function () {
           // run_id is set as a side effect of the connect() method.
           'run_id'      : SAMPLE_RUN_ID
         }
-      });
+      }));
       connection = new CollectorConnection(agent);
 
       // DataSender is created entirely within send(), so mock indirectly
@@ -130,7 +137,7 @@ describe("CollectorConnection", function () {
       var data;
 
       beforeEach(function () {
-        var errors = new ErrorTracer(agent.config);
+        var errors = new ErrorTracer(config);
 
         var transaction = new Transaction(agent);
         transaction.url = '/test-request/churro';
