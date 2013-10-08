@@ -7,7 +7,7 @@ var path   = require('path')
   ;
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
-     {timeout : 5000},
+     {timeout : 15000},
      function (t) {
   t.plan(2);
 
