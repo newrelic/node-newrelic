@@ -1,7 +1,7 @@
 'use strict';
 
 var path    = require('path')
-  , logger  = require(path.join(__dirname, 'lib', 'logger'))
+  , logger  = require(path.join(__dirname, 'lib', 'logger.js'))
   , message
   , agent
   ;
@@ -25,7 +25,7 @@ try {
   /* Loading the configuration can throw if a configuration file isn't found and
    * the environment variable NEW_RELIC_NO_CONFIG_FILE isn't set.
    */
-  var config = require(path.join(__dirname, 'lib', 'config')).initialize(logger);
+  var config = require(path.join(__dirname, 'lib', 'config.js')).initialize(logger);
   if (!config.agent_enabled) {
     logger.info("Agent not enabled in configuration; not starting.");
   }
@@ -37,9 +37,8 @@ try {
      * multiple times, with undefined results. New Relic's instrumentation
      * can't be enabled or disabled without an application restart.
      */
-    var Agent  = require(path.join(__dirname, 'lib', 'agent'))
-      , agent  = new Agent(config)
-      ;
+    var Agent = require(path.join(__dirname, 'lib', 'agent.js'));
+    agent = new Agent(config);
 
     if (agent.config.applications().length < 1) {
       message = "New Relic requires that you name this application!\n" +
@@ -50,7 +49,7 @@ try {
       throw new Error(message);
     }
 
-    var shimmer = require(path.join(__dirname, 'lib', 'shimmer'));
+    var shimmer = require(path.join(__dirname, 'lib', 'shimmer.js'));
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
 
@@ -64,7 +63,11 @@ catch (error) {
   console.error(error.stack);
 }
 
+var API;
 if (agent) {
-  var API = require(path.join(__dirname, 'api'));
-  module.exports = new API(agent);
+  API = require(path.join(__dirname, 'api.js'));
 }
+else {
+  API = require(path.join(__dirname, 'stub_api.js'));
+}
+module.exports = new API(agent);
