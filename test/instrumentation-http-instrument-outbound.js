@@ -6,7 +6,7 @@ var path   = require('path')
   , expect = chai.expect
   , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
   , NAMES  = require(path.join(__dirname, '..', 'lib', 'metrics', 'names.js'))
-  , instrumentOutbound = require(path.join(__dirname, '..', 'lib', 'transaction', 
+  , instrumentOutbound = require(path.join(__dirname, '..', 'lib', 'transaction',
                                            'tracer', 'instrumentation', 'outbound.js'))
   ;
 
@@ -30,24 +30,38 @@ describe("instrumentOutbound", function () {
       var path  = '/asdf'
         , name  = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
         ;
-      
+
       req.path  = '/asdf?a=b&another=yourself&thing&grownup=true';
       instrumentOutbound(agent, req, HOSTNAME, PORT);
       expect(transaction.getTrace().root.children[0].name).equal(name);
     });
   });
-  
-  it("should not accept an undefined path", function () {
+
+  it("should save query parameters from path if capture is defined", function () {
     var req  = new events.EventEmitter();
     helper.runInTransaction(agent, function (transaction) {
-      var name  = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/';
-      
+      agent.config.capture_params = true;
+      req.path  = '/asdf?a=b&another=yourself&thing&grownup=true';
+      instrumentOutbound(agent, req, HOSTNAME, PORT);
+      expect(transaction.getTrace().root.children[0].parameters).deep.equal({
+        "a"                            : "b",
+        "nr_exclusive_duration_millis" : null,
+        "another"                      : "yourself",
+        "thing"                        : true,
+        "grownup"                      : "true"
+      });
+    });
+  });
+
+  it("should not accept an undefined path", function () {
+    var req  = new events.EventEmitter();
+    helper.runInTransaction(agent, function () {
       expect(function () {
         instrumentOutbound(agent, req, HOSTNAME, PORT);
       }).to.throw(Error);
     });
   });
-  
+
   it("should accept a simple path with no parameters", function () {
     var req  = new events.EventEmitter();
     helper.runInTransaction(agent, function (transaction) {
@@ -74,7 +88,7 @@ describe("instrumentOutbound", function () {
     var req  = new events.EventEmitter()
       , undef
       ;
-    
+
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic';
       expect(function TestUndefinedHostname() {
@@ -86,7 +100,7 @@ describe("instrumentOutbound", function () {
   it("should throw if hostname is null", function () {
     var req  = new events.EventEmitter()
       ;
-    
+
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic';
       expect(function TestUndefinedHostname() {
@@ -109,7 +123,7 @@ describe("instrumentOutbound", function () {
     var req  = new events.EventEmitter()
       , undef
       ;
-    
+
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic';
       expect(function TestUndefinedHostname() {
@@ -117,5 +131,5 @@ describe("instrumentOutbound", function () {
       }).to.throw(Error);
     });
   });
-  
+
 });
