@@ -1,3 +1,21 @@
+### v0.11.6 / beta-33 (2013-10-08):
+
+* Changed the module to not load the instrumentation *at all* if the agent is
+  disabled via configuration. This will keep the module from leaking any
+  resources when it's disabled.
+* The agent used to include query parameters in the name for outbound requests,
+  making for unwieldy-looking trace segments.  Those parameters are now
+  stripped off, and if `capture_params` (and `ignored_params`) are enabled,
+  parameters will be captured for (nicely-formatted) display.
+* Added a stubbed API so that when the agent is disabled, calls to the New
+  Relic API will not throw. Add naming calls to your code with impunity!
+* The module now looks in many more places for `newrelic.js` before complaining
+  that it can't be found. In order, it looks in the current working directory,
+  the directory of the Node process's main module (normally whatever file you
+  pass to node on the command line), the directory pointed to by the
+  environment variable `NEW_RELIC_HOME`, the current process's `$HOME`, and the
+  directory above the node_modules directory where `newrelic` is installed.
+
 ### v0.11.5 / beta-32 (2013-10-03):
 
 * Fixed a major issue in the transaction tracer that affected users of certain
