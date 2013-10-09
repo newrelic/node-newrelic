@@ -1,10 +1,11 @@
 'use strict';
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+var path         = require('path')
+  , chai         = require('chai')
+  , should       = chai.should()
+  , expect       = chai.expect
+  , EventEmitter = require('events').EventEmitter
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   ;
 
 describe("built-in http module instrumentation", function () {
@@ -39,6 +40,50 @@ describe("built-in http module instrumentation", function () {
 
     it("when passed an empty module", function () {
       expect(function () { initialize(agent, {}); }).not.throws();
+    });
+  });
+
+  describe("with outbound request mocked", function () {
+    var agent
+      , http
+      , options
+      , callback
+      ;
+
+    beforeEach(function () {
+      agent = helper.loadMockedAgent();
+      var initialize = require(path.join(__dirname, '..', 'lib',
+                                        'instrumentation', 'core', 'http'));
+      http = {
+        request : function request(_options, _callback) {
+          options  = _options;
+          callback = _callback;
+
+          var requested = new EventEmitter();
+          requested.path = '/TEST';
+          if (options.path) requested.path = options.path;
+
+          return requested;
+        }
+      };
+
+      initialize(agent, http);
+    });
+
+    afterEach(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("shouldn't crash when called with undefined host", function () {
+      helper.runInTransaction(agent, function () {
+        expect(function () { http.request({port : 80}); }).not.throws();
+      });
+    });
+
+    it("shouldn't crash when called with undefined port", function () {
+      helper.runInTransaction(agent, function () {
+        expect(function () { http.request({host : 'localhost'}); }).not.throws();
+      });
     });
   });
 
