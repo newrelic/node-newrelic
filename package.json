@@ -12,6 +12,11 @@
       "name": "Forrest L Norvell",
       "email": "forrest@newrelic.com",
       "web": "http://newrelic.com/"
+    },
+    {
+      "name": "Jacob Groundwater",
+      "email": "jacob@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
