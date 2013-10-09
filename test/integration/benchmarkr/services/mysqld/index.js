@@ -91,7 +91,7 @@ module.exports = function setup(options, imports, register) {
     init.on('error', function (err) {
       logger.error(err);
     });
-    
+
     init.on('exit', function () {
       logger.info("MySQL data directory bootstrapped.");
 
