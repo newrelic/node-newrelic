@@ -1,6 +1,7 @@
 'use strict';
 
 var path   = require('path')
+  , http   = require('http')
   , events = require('events')
   , chai   = require('chai')
   , expect = chai.expect
@@ -22,6 +23,39 @@ describe("instrumentOutbound", function () {
 
   after(function () {
     helper.unloadAgent(agent);
+  });
+
+  describe("when working with http.createClient", function () {
+    before(function () {
+      // capture the deprecation warning here
+      http.createClient();
+    });
+
+    function test(expectedPort, expectedHost, port, host) {
+      var client = http.createClient(port,host);
+      expect(client.port).equal(expectedPort);
+      expect(client.host).equal(expectedHost);
+    }
+
+    it("should provide default port and hostname", function () {
+      test(80, 'localhost');
+    });
+
+    it("should accept port and provide default hostname", function () {
+      test(8080, 'localhost', 8080);
+    });
+
+    it("should accept port and hostname", function () {
+      test(8080, 'me', 8080, 'me');
+    });
+
+    it("should set default port on null port", function () {
+      test(80, 'me', null, 'me');
+    });
+
+    it("should provide default port and hostname on nulls", function () {
+      test(80, 'localhost', null, null);
+    });
   });
 
   it("should strip query parameters from path in transaction trace segment", function () {
