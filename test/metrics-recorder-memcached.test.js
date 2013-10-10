@@ -1,12 +1,12 @@
 'use strict';
 
-var path            = require('path')
-  , chai            = require('chai')
-  , expect          = chai.expect
-  , helper          = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , recordDatastore = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                        'recorders', 'datastore.js'))
-  , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
+var path           = require('path')
+  , chai           = require('chai')
+  , expect         = chai.expect
+  , helper         = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , recordMemcache = require(path.join(__dirname, '..', 'lib', 'metrics',
+                                        'recorders', 'memcached.js'))
+  , Transaction    = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
 function makeSegment(options) {
@@ -14,6 +14,8 @@ function makeSegment(options) {
                   .add('Datastore/operation/Memcache/set');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
+  segment.host = 'localhost';
+  segment.port = 11211;
 
   return segment;
 }
@@ -26,7 +28,7 @@ function record(options) {
     ;
 
   transaction.setName(options.url, options.code);
-  recordDatastore(segment, options.transaction.name);
+  recordMemcache(segment, options.transaction.name);
 }
 
 describe("recordMemcached", function () {
@@ -55,16 +57,17 @@ describe("recordMemcached", function () {
     });
 
     it("shouldn't crash on recording", function () {
-      expect(function () { recordDatastore(segment, undefined); }).not.throws();
+      expect(function () { recordMemcache(segment, undefined); }).not.throws();
     });
 
     it("should record no scoped metrics", function () {
-      recordDatastore(segment, undefined);
+      recordMemcache(segment, undefined);
 
       var result = [
-        [{name : "Datastore/operation/Memcache/set"}, [1,0,0,0,0,0]],
-        [{name : "Datastore/allOther"},               [1,0,0,0,0,0]],
-        [{name : "Datastore/all"},                    [1,0,0,0,0,0]]
+        [{name : "Datastore/operation/Memcache/set"},            [1,0,0,0,0,0]],
+        [{name : "Datastore/allOther"},                          [1,0,0,0,0,0]],
+        [{name : "Datastore/all"},                               [1,0,0,0,0,0]],
+        [{name : "Datastore/instance/Memcache/localhost:11211"}, [1,0,0,0,0,0]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -89,6 +92,8 @@ describe("recordMemcached", function () {
          [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Datastore/all"},
          [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/instance/Memcache/localhost:11211"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Datastore/operation/Memcache/set",
           scope : "WebTransaction/NormalizedUri/*"},
          [1,0.026,0.002,0.026,0.026,0.000676]]
@@ -100,9 +105,9 @@ describe("recordMemcached", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('Datastore/operation/Memcache/get',     recordDatastore)
-      , child1 = parent.add('Datastore/operation/Memcache/set',   recordDatastore)
-      , child2 = parent.add('Datastore/operation/Memcache/clear', recordDatastore)
+      , parent = root.add('Datastore/operation/Memcache/get',     recordMemcache)
+      , child1 = parent.add('Datastore/operation/Memcache/set',   recordMemcache)
+      , child2 = parent.add('Datastore/operation/Memcache/clear', recordMemcache)
       ;
 
     root.setDurationInMillis(26, 0);
