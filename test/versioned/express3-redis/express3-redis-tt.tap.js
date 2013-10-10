@@ -257,7 +257,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
         var get = children[0] || {};
         key = (get.parameters || {}).key;
-        t.equal(get.name, 'Redis/get', "first child segment is get");
+        t.equal(get.name, 'Datastore/operation/Redis/get', "first child segment is get");
         t.equal(key, '["sess:' + SESSION_ID + '"]',
                 "operation is session load");
         t.equal((get.children || {}).length, 0, "get has no children");
@@ -265,7 +265,8 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         var hgetall = children[1] || {};
         key = (hgetall.parameters || {}).key;
         children = hgetall.children || [];
-        t.equal(hgetall.name, 'Redis/hgetall', "second child segment is hgetall");
+        t.equal(hgetall.name, 'Datastore/operation/Redis/hgetall',
+                "second child segment is hgetall");
         t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
                 "operation is room info load");
         t.equal(children.length, 1, "hgetall has one child");
@@ -273,7 +274,8 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         var smembers = children[0] || {};
         key = (smembers.parameters || {}).key;
         children = smembers.children || [];
-        t.equal(smembers.name, 'Redis/smembers', "hgetall child is smembers");
+        t.equal(smembers.name, 'Datastore/operation/Redis/smembers',
+                "hgetall child is smembers");
         t.equal(key, '["rooms:' + ROOM_ID + ':online"]',
                 "operation is load set of online users");
         t.equal(children.length, 4, "smembers has four children");
@@ -283,26 +285,30 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
         get = children[0] || {};
         key = (get.parameters || {}).key;
-        t.equal(get.name, 'Redis/get', "first smembers child is get");
+        t.equal(get.name, 'Datastore/operation/Redis/get',
+                "first smembers child is get");
         t.like(key, users, "fetched status of user");
         t.equal((get.children || {}).length, 0, "get has no children");
 
         get = children[1] || {};
         key = (get.parameters || {}).key;
-        t.equal(get.name, 'Redis/get', "second smembers child is get");
+        t.equal(get.name, 'Datastore/operation/Redis/get',
+                "second smembers child is get");
         t.like(key, users, "fetched status of user");
         t.equal((get.children || {}).length, 0, "get has no children");
 
         get = children[2] || {};
         key = (get.parameters || {}).key;
-        t.equal(get.name, 'Redis/get', "third smembers child is get");
+        t.equal(get.name, 'Datastore/operation/Redis/get',
+                "third smembers child is get");
         t.like(key, users, "fetched status of user");
         t.equal((get.children || {}).length, 0, "get has no children");
 
         smembers = children[3] || {};
         key = (smembers.parameters || {}).key;
         children = smembers.children || [];
-        t.equal(smembers.name, 'Redis/smembers', "fourth child is smembers");
+        t.equal(smembers.name, 'Datastore/operation/Redis/smembers',
+                "fourth child is smembers");
         t.equal(key, '["test:public:rooms"]',
                 "operation is load set of public rooms");
         t.equal(children.length, 1, "smembers has one child");
@@ -310,7 +316,8 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         hgetall = children[0] || {};
         key = (hgetall.parameters || {}).key;
         children = hgetall.children || [];
-        t.equal(hgetall.name, 'Redis/hgetall', "child segment is hgetall");
+        t.equal(hgetall.name, 'Datastore/operation/Redis/hgetall',
+                "child segment is hgetall");
         t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
                 "operation is room info load");
         t.equal(children.length, 1, "hgetall has one child");
@@ -318,7 +325,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         get = children[0] || {};
         key = (get.parameters || {}).key;
         children = get.children || [];
-        t.equal(get.name, 'Redis/get', "first hgetall child is get");
+        t.equal(get.name, 'Datastore/operation/Redis/get', "first hgetall child is get");
         t.equal(key, '["users:twitter:othiym23:status"]',
                 "fetched status of othiym23");
         t.equal(children.length, 2, "get has two children");
@@ -329,7 +336,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
         var setex = children[1] || {};
         key = (setex.parameters || {}).key;
-        t.equal(setex.name, 'Redis/setex', "second child is setex");
+        t.equal(setex.name, 'Datastore/operation/Redis/setex', "second child is setex");
         t.equal(key, '["sess:' + SESSION_ID + '"]',
                 "updated session status");
         t.equal((setex.children || {}).length, 0, "setex has no children");
