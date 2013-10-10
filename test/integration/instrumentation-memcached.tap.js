@@ -54,7 +54,8 @@ test("memcached instrumentation should find memcached calls in the transaction t
 
           var setSegment = trace.root.children[0];
           t.ok(setSegment, "trace segment for set should exist");
-          t.equals(setSegment.name, "Memcache/set", "should register the set");
+          t.equals(setSegment.name, "Datastore/operation/Memcache/set",
+                   "should register the set");
           t.equals(setSegment.parameters.key, "[\"testkey\"]",
                    "should have the set key as a parameter");
           t.equals(setSegment.children.length, 1,
@@ -62,7 +63,8 @@ test("memcached instrumentation should find memcached calls in the transaction t
 
           var getSegment = setSegment.children[0];
           t.ok(getSegment, "trace segment for get should exist");
-          t.equals(getSegment.name, "Memcache/get", "should register the get");
+          t.equals(getSegment.name, "Datastore/operation/Memcache/get",
+                   "should register the get");
           t.equals(getSegment.parameters.key, "[\"testkey\"]",
                    "should have the get key as a parameter");
           t.equals(getSegment.children.length, 0,
@@ -96,14 +98,16 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "there should be only one child of the root");
 
           var setSegment = trace.root.children[0];
-          t.equals(setSegment.name, "Memcache/set", "should register the set");
+          t.equals(setSegment.name, "Datastore/operation/Memcache/set",
+                   "should register the set");
           t.equals(setSegment.parameters.key, "[\"otherkey\"]",
                    "should have the set key as a parameter");
           t.equals(setSegment.children.length, 1,
                    "set should have an only child");
 
           var getSegment = setSegment.children[0];
-          t.equals(getSegment.name, "Memcache/get", "should register the get");
+          t.equals(getSegment.name, "Datastore/operation/Memcache/get",
+                   "should register the get");
           t.equals(getSegment.parameters.key, "[\"testkey\",\"otherkey\"]",
                    "should have the multiple keys fetched as a parameter");
           t.equals(getSegment.children.length, 0,
