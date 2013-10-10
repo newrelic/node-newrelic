@@ -3,10 +3,10 @@
 var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
-  , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , recordMemcached = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                        'recorders', 'memcached'))
-  , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper          = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , recordDatastore = require(path.join(__dirname, '..', 'lib', 'metrics',
+                                        'recorders', 'datastore.js'))
+  , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
 function makeSegment(options) {
@@ -26,7 +26,7 @@ function record(options) {
     ;
 
   transaction.setName(options.url, options.code);
-  recordMemcached(segment, options.transaction.name);
+  recordDatastore(segment, options.transaction.name);
 }
 
 describe("recordMemcached", function () {
@@ -55,11 +55,11 @@ describe("recordMemcached", function () {
     });
 
     it("shouldn't crash on recording", function () {
-      expect(function () { recordMemcached(segment, undefined); }).not.throws();
+      expect(function () { recordDatastore(segment, undefined); }).not.throws();
     });
 
     it("should record no scoped metrics", function () {
-      recordMemcached(segment, undefined);
+      recordDatastore(segment, undefined);
 
       var result = [
         [{name : "Datastore/operation/Memcache/set"}, [1,0,0,0,0,0]],
@@ -100,9 +100,9 @@ describe("recordMemcached", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('Datastore/operation/Memcache/get',     recordMemcached)
-      , child1 = parent.add('Datastore/operation/Memcache/set',   recordMemcached)
-      , child2 = parent.add('Datastore/operation/Memcache/clear', recordMemcached)
+      , parent = root.add('Datastore/operation/Memcache/get',     recordDatastore)
+      , child1 = parent.add('Datastore/operation/Memcache/set',   recordDatastore)
+      , child2 = parent.add('Datastore/operation/Memcache/clear', recordDatastore)
       ;
 
     root.setDurationInMillis(26, 0);

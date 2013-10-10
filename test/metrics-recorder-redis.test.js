@@ -3,10 +3,10 @@
 var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , recordRedis = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                    'recorders', 'redis'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper      = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , recordDatastore = require(path.join(__dirname, '..', 'lib', 'metrics',
+                                        'recorders', 'datastore.js'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
 function makeSegment(options) {
@@ -25,7 +25,7 @@ function record(options) {
     ;
 
   transaction.setName(options.url, options.code);
-  recordRedis(segment, options.transaction.name);
+  recordDatastore(segment, options.transaction.name);
 }
 
 describe("recordRedis", function () {
@@ -56,11 +56,11 @@ describe("recordRedis", function () {
     });
 
     it("shouldn't crash on recording", function () {
-      expect(function () { recordRedis(segment, undefined); }).not.throws();
+      expect(function () { recordDatastore(segment, undefined); }).not.throws();
     });
 
     it("should record no scoped metrics", function () {
-      recordRedis(segment, undefined);
+      recordDatastore(segment, undefined);
 
       var result = [
         [{name : "Datastore/operation/Redis/set"}, [1,0,0,0,0,0]],
@@ -97,9 +97,9 @@ describe("recordRedis", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('Datastore/operation/Redis/ladd',     recordRedis)
-      , child1 = parent.add('Datastore/operation/Redis/blpopr', recordRedis)
-      , child2 = child1.add('Datastore/operation/Redis/lpop',   recordRedis)
+      , parent = root.add('Datastore/operation/Redis/ladd',     recordDatastore)
+      , child1 = parent.add('Datastore/operation/Redis/blpopr', recordDatastore)
+      , child2 = child1.add('Datastore/operation/Redis/lpop',   recordDatastore)
       ;
 
     root.setDurationInMillis(26, 0);
