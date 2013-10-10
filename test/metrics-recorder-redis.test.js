@@ -4,8 +4,8 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , helper      = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , recordDatastore = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                        'recorders', 'datastore.js'))
+  , recordRedis = require(path.join(__dirname, '..', 'lib', 'metrics',
+                                    'recorders', 'redis.js'))
   , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
@@ -13,6 +13,8 @@ function makeSegment(options) {
   var segment = options.transaction.getTrace().root.add('Datastore/operation/Redis/set');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
+  segment.host = '127.0.0.1';
+  segment.port = 6379;
 
   return segment;
 }
@@ -25,7 +27,7 @@ function record(options) {
     ;
 
   transaction.setName(options.url, options.code);
-  recordDatastore(segment, options.transaction.name);
+  recordRedis(segment, options.transaction.name);
 }
 
 describe("recordRedis", function () {
@@ -56,16 +58,17 @@ describe("recordRedis", function () {
     });
 
     it("shouldn't crash on recording", function () {
-      expect(function () { recordDatastore(segment, undefined); }).not.throws();
+      expect(function () { recordRedis(segment, undefined); }).not.throws();
     });
 
     it("should record no scoped metrics", function () {
-      recordDatastore(segment, undefined);
+      recordRedis(segment, undefined);
 
       var result = [
-        [{name : "Datastore/operation/Redis/set"}, [1,0,0,0,0,0]],
-        [{name : "Datastore/allOther"},            [1,0,0,0,0,0]],
-        [{name : "Datastore/all"},                 [1,0,0,0,0,0]]
+        [{name : "Datastore/operation/Redis/set"},           [1,0,0,0,0,0]],
+        [{name : "Datastore/allOther"},                      [1,0,0,0,0,0]],
+        [{name : "Datastore/all"},                           [1,0,0,0,0,0]],
+        [{name : "Datastore/instance/Redis/127.0.0.1:6379"}, [1,0,0,0,0,0]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -84,11 +87,16 @@ describe("recordRedis", function () {
       });
 
       var result = [
-        [{name  : "Datastore/operation/Redis/set"}, [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Datastore/allWeb"},              [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Datastore/all"},                 [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Datastore/operation/Redis/set",
-          scope : "WebTransaction/Uri/test"},       [1,0.026,0.002,0.026,0.026,0.000676]]
+        [{name  : "Datastore/operation/Redis/set"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/allWeb"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/all"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/instance/Redis/127.0.0.1:6379"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/operation/Redis/set", scope : "WebTransaction/Uri/test"},
+         [1,0.026,0.002,0.026,0.026,0.000676]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -97,9 +105,9 @@ describe("recordRedis", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('Datastore/operation/Redis/ladd',     recordDatastore)
-      , child1 = parent.add('Datastore/operation/Redis/blpopr', recordDatastore)
-      , child2 = child1.add('Datastore/operation/Redis/lpop',   recordDatastore)
+      , parent = root.add('Datastore/operation/Redis/ladd',     recordRedis)
+      , child1 = parent.add('Datastore/operation/Redis/blpopr', recordRedis)
+      , child2 = child1.add('Datastore/operation/Redis/lpop',   recordRedis)
       ;
 
     root.setDurationInMillis(26, 0);
