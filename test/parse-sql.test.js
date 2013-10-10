@@ -1,16 +1,15 @@
 'use strict';
 
-var path        = require('path')
-  , chai        = require('chai')
-  , util        = require('util')
-  , should      = chai.should()
-  , parseSql    = require(path.join(__dirname, '..', 'lib', 'db', 'parse-sql'))
+var path     = require('path')
+  , chai     = require('chai')
+  , should   = chai.should()
+  , parseSql = require(path.join(__dirname, '..', 'lib', 'db', 'parse-sql'))
   ;
 
 describe('database query parser', function () {
   describe('SELECT DML', function () {
     it("should parse a simple query", function () {
-      var ps = parseSql("Select * from dude");
+      var ps = parseSql('NoSQL', "Select * from dude");
       should.exist(ps);
 
       should.exist(ps.operation);
@@ -21,7 +20,7 @@ describe('database query parser', function () {
     });
 
     it("should parse another simple query", function () {
-      var ps = parseSql("Select * from transaction_traces_12");
+      var ps = parseSql('NoSQL', "Select * from transaction_traces_12");
       should.exist(ps);
 
       should.exist(ps.operation);
@@ -34,7 +33,7 @@ describe('database query parser', function () {
 
   describe('DELETE DML', function () {
     it("should parse a simple command", function () {
-      var ps = parseSql("DELETE\nfrom dude");
+      var ps = parseSql('NoSQL', "DELETE\nfrom dude");
       should.exist(ps);
 
       should.exist(ps.operation);
@@ -45,7 +44,7 @@ describe('database query parser', function () {
     });
 
     it("should parse a command with conditions", function () {
-      var ps = parseSql("DELETE\nfrom dude where name = 'man'");
+      var ps = parseSql('NoSQL', "DELETE\nfrom dude where name = 'man'");
       should.exist(ps);
 
       should.exist(ps.operation);
@@ -58,7 +57,7 @@ describe('database query parser', function () {
 
   describe('UPDATE DML', function () {
     it("should parse a command with gratuitous white space and conditions", function () {
-      var ps = parseSql("  update test set value = 1 where id = 12");
+      var ps = parseSql('NoSQL', "  update test set value = 1 where id = 12");
       should.exist(ps);
 
       should.exist(ps.operation);
@@ -71,7 +70,7 @@ describe('database query parser', function () {
 
   describe('INSERT DML', function () {
     it("should parse a command with a subquery", function () {
-      var ps = parseSql("  insert into\ntest\nselect * from dude");
+      var ps = parseSql('NoSQL', "  insert into\ntest\nselect * from dude");
       should.exist(ps);
 
       should.exist(ps.operation);
@@ -83,8 +82,8 @@ describe('database query parser', function () {
   });
 
   describe('invalid DML', function () {
-    it("should return 'unknown' for operation and model when handed garbage", function () {
-      var ps = parseSql("  bulge into\ndudes\nselect * from dude");
+    it("should return 'unknown' when handed garbage", function () {
+      var ps = parseSql('NoSQL', "  bulge into\ndudes\nselect * from dude");
       should.exist(ps);
 
       should.exist(ps.operation);

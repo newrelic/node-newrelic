@@ -161,7 +161,8 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
         var selectSegment = trace.root.children[0];
         t.ok(selectSegment, "trace segment for first SELECT should exist");
-        t.equals(selectSegment.name, "Database/agent_integration.test/select",
+        t.equals(selectSegment.name,
+                 "Datastore/statement/MySQL/agent_integration.test/select",
                  "should register as SELECT");
         t.equals(selectSegment.children.length, 0, "SELECT should have no children");
 

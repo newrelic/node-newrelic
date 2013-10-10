@@ -27,7 +27,7 @@ describe("recording database metrics", function () {
 
   describe("on scoped transactions with parsed statements", function () {
     before(function () {
-      var ps          = new ParsedStatement('select', 'test_collection')
+      var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
         , transaction = new Transaction(agent)
         , segment     = transaction.getTrace().add('test')
         ;
@@ -40,29 +40,29 @@ describe("recording database metrics", function () {
     });
 
     it("should find a scoped metric on the table and operation", function () {
-      checkDatMetric(metrics, 'Database/test_collection/select', 'TEST');
+      checkDatMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST');
     });
 
     it("should find an unscoped metric on the table and operation", function () {
-      checkDatMetric(metrics, 'Database/test_collection/select');
+      checkDatMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select');
     });
 
     it("should find an unscoped rollup metric on the operation", function () {
-      checkDatMetric(metrics, 'Database/select');
+      checkDatMetric(metrics, 'Datastore/operation/NoSQL/select');
     });
 
     it("should find a database rollup metric", function () {
-      checkDatMetric(metrics, 'Database/all');
+      checkDatMetric(metrics, 'Datastore/all');
     });
 
     it("should find a database rollup metric of type 'Other'", function () {
-      checkDatMetric(metrics, 'Database/allOther');
+      checkDatMetric(metrics, 'Datastore/allOther');
     });
   });
 
   describe("on unscoped transactions with parsed statements", function () {
     before(function () {
-      var ps          = new ParsedStatement('select', 'test_collection')
+      var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
         , transaction = new Transaction(agent)
         , segment     = transaction.getTrace().add('test')
         ;
@@ -75,19 +75,19 @@ describe("recording database metrics", function () {
     });
 
     it("should find an unscoped metric on the table and operation", function () {
-      checkDatMetric(metrics, 'Database/test_collection/select');
+      checkDatMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select');
     });
 
     it("should find an unscoped rollup metric on the operation", function () {
-      checkDatMetric(metrics, 'Database/select');
+      checkDatMetric(metrics, 'Datastore/operation/NoSQL/select');
     });
 
     it("should find an unscoped rollup DB metric", function () {
-      checkDatMetric(metrics, 'Database/all');
+      checkDatMetric(metrics, 'Datastore/all');
     });
 
     it("should find an unscoped rollup DB metric of type 'Other'", function () {
-      checkDatMetric(metrics, 'Database/allOther');
+      checkDatMetric(metrics, 'Datastore/allOther');
     });
   });
 });
