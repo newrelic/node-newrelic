@@ -12,6 +12,8 @@ function makeSegment(options) {
   var segment = options.transaction.getTrace().root.add('MongoDB/users/find');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
+  segment.host = 'localhost';
+  segment.port = 27017;
 
   return segment;
 }
@@ -76,6 +78,8 @@ describe("record ParsedStatement with MongoDB", function () {
         [{name : "Datastore/allOther"},
          [1,0,0,0,0,0]],
         [{name : "Datastore/all"},
+         [1,0,0,0,0,0]],
+        [{name : "Datastore/instance/MongoDB/localhost:27017"},
          [1,0,0,0,0,0]]
       ];
 
@@ -102,6 +106,8 @@ describe("record ParsedStatement with MongoDB", function () {
         [{name  : "Datastore/allWeb"},
          [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Datastore/all"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name : "Datastore/instance/MongoDB/localhost:27017"},
          [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Datastore/statement/MongoDB/users/find",
           scope : "WebTransaction/NormalizedUri/*"},

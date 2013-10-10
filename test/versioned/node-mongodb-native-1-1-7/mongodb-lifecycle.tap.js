@@ -115,7 +115,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     });
 
     t.test("with a Cursor", function (t) {
-      t.plan(7);
+      t.plan(8);
 
       agent.once('transactionFinished', function () {
         t.equals(
@@ -138,6 +138,12 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
                                   'Datastore/statement/MongoDB/test2/insert').callCount,
           1,
           "scoped MongoDB request should be recorded from cursor"
+        );
+        var instance = 'Datastore/instance/MongoDB/localhost:27017';
+        t.equals(
+          agent.metrics.getMetric(instance).callCount,
+          3,
+          "number of calls to the local MongoDB instance should be recorded"
         );
       });
 
