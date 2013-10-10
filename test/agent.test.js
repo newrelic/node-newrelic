@@ -340,6 +340,22 @@ describe("the New Relic agent", function () {
     });
 
     describe("when harvesting", function () {
+      it("sends transactions to the new error handler after harvest", function (done) {
+        agent.metrics.started = 1337;
+
+        agent.harvest();
+
+        var transaction = new Transaction(agent);
+        agent.errors = {
+          onTransactionFinished : function (t) {
+            expect(t).equal(transaction);
+            return done();
+          }
+        };
+
+        agent.emit('transactionFinished', transaction);
+      });
+
       it("reports the error count", function () {
         agent.metrics.started = 1337;
 
