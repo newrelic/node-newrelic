@@ -13,6 +13,8 @@ function makeSegment(options) {
                   .add('Datastore/statement/MySQL/users/select');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
+  segment.host = 'localhost';
+  segment.port = 3306;
 
   return segment;
 }
@@ -77,6 +79,8 @@ describe("record ParsedStatement with MySQL", function () {
         [{name : "Datastore/allOther"},
          [1,0,0,0,0,0]],
         [{name : "Datastore/all"},
+         [1,0,0,0,0,0]],
+        [{name : "Datastore/instance/MySQL/localhost:3306"},
          [1,0,0,0,0,0]]
       ];
 
@@ -103,6 +107,8 @@ describe("record ParsedStatement with MySQL", function () {
         [{name  : "Datastore/allWeb"},
          [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Datastore/all"},
+        [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/instance/MySQL/localhost:3306"},
         [1,0.026,0.002,0.026,0.026,0.000676]],
         [{name  : "Datastore/statement/MySQL/users/select",
           scope : "WebTransaction/NormalizedUri/*"},
