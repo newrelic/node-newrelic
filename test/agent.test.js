@@ -19,10 +19,10 @@ var path                = require('path')
 describe("the New Relic agent", function () {
   it("requires the configuration be passed to the constructor",
      function () {
-    var config = configurator.initialize(logger, {config : {sample : true}});
+    var config = configurator.initialize(logger, {config : {agent_enabled : false}});
     var agent = new Agent(config);
 
-    expect(agent.config.sample).equal(true);
+    expect(agent.config.agent_enabled).equal(false);
   });
 
   describe("when connecting to the collector", function () {

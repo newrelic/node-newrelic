@@ -21,11 +21,8 @@ function idempotentEnv(name, value, callback) {
 
   process.env[name] = value;
   try {
-    var tc = Config.initialize(logger);
+    var tc = Config.initialize(logger, {config : {}});
     callback(tc);
-  }
-  catch (error) {
-    throw error;
   }
   finally {
     if (is) {
@@ -338,6 +335,18 @@ describe("the agent configuration", function () {
 
     it("should enforce URL backstop", function () {
       expect(configuration.enforce_backstop).equal(true);
+    });
+
+    it("should allow passed-in config to override errors ignored", function () {
+      configuration = Config.initialize(logger, {
+        config : {
+          error_collector : {
+            ignore_status_codes : []
+          }
+        }
+      });
+
+      expect(configuration.error_collector.ignore_status_codes).eql([]);
     });
   });
 
