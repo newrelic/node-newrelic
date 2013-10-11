@@ -1,3 +1,26 @@
+### v0.11.7 / beta-34 (2013-10-11):
+
+* The last build of the agent had a flaw in how it dealt with outbound requests
+  that made it way too stringent about dealing with default ports. It is now
+  more sane about defaults.
+* The behavior of configuration precedence is slightly different now.
+  Previously, if there were list values set in the defaults, configuration
+  file, environment variables, or server-side configuration, they would be
+  concatenated instead of being overwritten.  This made it impossible to
+  override some of the defaults (most notably, it was impossible to not ignore
+  HTTP status code 404 in the error tracer), so now the configuration file will
+  overwrite the defaults, and environment variables will overwrite the
+  configuration file.  Values sent by New Relic will still be concatenated
+  instead of overwriting, though (again, this only affects configuration
+  variables with list values). Thanks to GitHub user grovr for identifying
+  the problem!
+* The error tracer will collect errors off transactions after the first harvest
+  cycle (thanks to GitHub user grovr for identifying this issue).
+* `cluster` users will no longer see occasional crashes due to New Relic's
+  instrumentation.
+* Fixed a few minor documentation errors that made it tough to use the
+  suggested ignoring rules for socket.io transactions.
+
 ### v0.11.6 / beta-33 (2013-10-08):
 
 * Changed the module to not load the instrumentation *at all* if the agent is
