@@ -1,11 +1,11 @@
 {
   "name": "newrelic",
-  "version": "0.11.7",
+  "version": "0.11.8",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "licenses" : [
+  "licenses": [
     {
-      "type" : "proprietary",
-      "url" : "https://raw.github.com/newrelic/node-newrelic/master/LICENSE"
+      "type": "proprietary",
+      "url": "https://raw.github.com/newrelic/node-newrelic/master/LICENSE"
     }
   ],
   "contributors": [
