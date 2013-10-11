@@ -5,7 +5,7 @@ var path    = require('path')
   , RealAPI = require(path.join(__dirname, 'api.js'))
   ;
 
-function stubFunction (original, name) {
+function stubFunction (name) {
   // jshint -W061
   return eval("(function () {return function " + name + "() {" +
               "logger.debug('Not calling " + name + " because New Relic is disabled.');" +
@@ -23,7 +23,7 @@ var keys   = Object.keys(RealAPI.prototype)
  */
 for (var i = 0; i < length; i++) {
   var name = keys[i];
-  Stub.prototype[name] = stubFunction(RealAPI.prototype[name], name);
+  Stub.prototype[name] = stubFunction(name);
 }
 
 module.exports = Stub;
