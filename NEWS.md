@@ -1,3 +1,8 @@
+### v0.11.8 / beta-35 (2013-10-11):
+
+* Added a license entry to package.json.
+* Due to an npm bug, the module package got huge. This one is much smaller.
+
 ### v0.11.7 / beta-34 (2013-10-11):
 
 * The last build of the agent had a flaw in how it dealt with outbound requests
