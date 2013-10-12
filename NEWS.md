@@ -1,3 +1,14 @@
+### v0.11.9 / beta-36 (2013-10-12):
+
+* Fixed a crash in the tracer that could turn a recoverable application error
+  into an unrecoverable process crash. Mea culpa, our apologies for the
+  inconvenience if you ran into this. In our defence, the errors we're running
+  into are getting ever more exotic as we get most of the common stuff nailed
+  down.
+* Added the ability to use the preconfigured Azure Web Server name as the
+  application name for a Node app. Thanks to New Relic .NET engineer Nick Floyd
+  for the suggestion.
+
 ### v0.11.8 / beta-35 (2013-10-11):
 
 * Added a license entry to package.json.
