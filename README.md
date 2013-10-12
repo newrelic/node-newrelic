@@ -289,7 +289,10 @@ Here's the list of the most important variables and their values:
   setting with no default value.
 * `NEW_RELIC_APP_NAME`: The name of this application, for reporting to
   New Relic's servers. This value can be also be a comma-delimited list of
-  names. This is a required setting with no default value.
+  names. This is a required setting with no default value. (NOTE: as a
+  convenience to Azure users, the agent will use `APP_POOL_ID` as the
+  application name if it's set, so you can use the name you chose for
+  your Azure Web Server without setting it twice.)
 * `NEW_RELIC_NO_CONFIG_FILE`: Inhibit loading of the configuration file
   altogether. Use with care. This presumes that all important configuration
   will be available via environment variables, and some log messages

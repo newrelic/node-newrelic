@@ -224,6 +224,13 @@ describe("the agent configuration", function () {
         expect(tc.enforce_backstop).equal(false);
       });
     });
+
+    it("should pick app name from APP_POOL_ID", function () {
+      idempotentEnv('APP_POOL_ID', 'Simple Azure app', function (tc) {
+        should.exist(tc.app_name);
+        expect(tc.applications()).eql(['Simple Azure app']);
+      });
+    });
   });
 
   describe("with default properties", function () {
