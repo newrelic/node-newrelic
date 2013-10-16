@@ -1,3 +1,17 @@
+### v0.12.0 / beta-37 (2013-10-16):
+
+* Changed how MongoDB, MySQL, memcached, and Redis metrics are reported to New
+  Relic. This is part of a larger effort to make the Monitoring > Database tab
+  of the New Relic UI more useful for Node developers. There will be a brief
+  period where your dashboards will have both the old and new metrics, which
+  could lead to some temporary duplication or metric names. These "duplicates"
+  will gradually stop showing up as the reporting windows containing the old
+  metric names expire. Be sure to let us know if you have strong feelings one
+  way or another about this change, as it's a work in progress.
+* Updated the module's dependencies to fix another subtle bug in how
+  error-handling works in Node 0.8.x. This should resolve the errors some users
+  were seeing.
+
 ### v0.11.9 / beta-36 (2013-10-12):
 
 * Fixed a crash in the tracer that could turn a recoverable application error
