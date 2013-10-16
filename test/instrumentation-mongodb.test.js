@@ -109,7 +109,7 @@ describe("agent instrumentation of MongoDB", function () {
         , parent = root.children[0]
         ;
 
-      expect(parent.name).equal('MongoDB/test/findAndRemove');
+      expect(parent.name).equal('Datastore/statement/MongoDB/test/findAndRemove');
     });
 
     it("should have no child segments under the parent", function () {
@@ -127,12 +127,16 @@ describe("agent instrumentation of MongoDB", function () {
 
     it("should have recorded only one database call", function () {
       var metrics = transaction.metrics;
-      expect(metrics.getMetric('Database/all').callCount).equal(1);
+      expect(metrics.getMetric('Datastore/all').callCount).equal(1);
     });
 
     it("should have that call be the findAndRemove", function () {
-      var metrics = transaction.metrics;
-      expect(metrics.getMetric('MongoDB/test/findAndRemove').callCount).equal(1);
+      var metrics = transaction.metrics
+        , metric  = metrics.getMetric('Datastore/statement/MongoDB/test/findAndRemove')
+        ;
+
+      should.exist(metric);
+      expect(metric.callCount).equal(1);
     });
   });
 });

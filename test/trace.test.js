@@ -65,10 +65,10 @@ describe('Trace', function () {
     // top-level element will share a duration with the quasi-ROOT node
     web.setDurationInMillis(DURATION, 0);
 
-    var db = web.add('DB/select/getSome');
+    var db = web.add('Database/statement/AntiSQL/select/getSome');
     db.setDurationInMillis(14, 3);
 
-    var memcache = web.add('Memcache/lookup/user/13');
+    var memcache = web.add('Datastore/operation/Memcache/lookup');
     memcache.setDurationInMillis(20, 8);
 
     /*

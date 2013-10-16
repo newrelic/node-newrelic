@@ -91,7 +91,7 @@ describe("agent instrumentation of Redis", function () {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once();
 
       agent.once('transactionFinished', function (transaction) {
-        var stats = transaction.metrics.getMetric('Redis/ping');
+        var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping');
         expect(stats.callCount).equal(1);
 
         return done();
@@ -119,7 +119,7 @@ describe("agent instrumentation of Redis", function () {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once();
 
       agent.once('transactionFinished', function (transaction) {
-        var stats = transaction.metrics.getMetric('Redis/ping');
+        var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping');
         expect(stats.callCount).equal(1);
 
         return done();
@@ -145,7 +145,7 @@ describe("agent instrumentation of Redis", function () {
         .once();
 
       agent.once('transactionFinished', function (transaction) {
-        var stats = transaction.metrics.getMetric('Redis/ping');
+        var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping');
         expect(stats.callCount).equal(1);
 
         return done();
@@ -176,7 +176,7 @@ describe("agent instrumentation of Redis", function () {
         .once();
 
       agent.once('transactionFinished', function (transaction) {
-        var stats = transaction.metrics.getMetric('Redis/ping');
+        var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping');
         expect(stats.callCount).equal(1);
 
         return done();

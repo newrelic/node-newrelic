@@ -9,15 +9,18 @@ var path            = require('path')
   ;
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root.add('MySQL/users/select');
+  var segment = options.transaction.getTrace().root
+                  .add('Datastore/statement/MySQL/users/select');
   segment.setDurationInMillis(options.duration);
   segment._setExclusiveDurationInMillis(options.exclusive);
+  segment.host = 'localhost';
+  segment.port = 3306;
 
   return segment;
 }
 
 function makeRecorder(model, operation) {
-  var statement = new ParsedStatement(operation, model);
+  var statement = new ParsedStatement('MySQL', operation, model);
   return statement.recordMetrics.bind(statement);
 }
 
@@ -69,11 +72,16 @@ describe("record ParsedStatement with MySQL", function () {
       recordMySQL(segment, undefined);
 
       var result = [
-        [{name : "MySQL/users/select"},    [1,0,0,0,0,0]],
-        [{name : "Database/users/select"}, [1,0,0,0,0,0]],
-        [{name : "Database/select"},       [1,0,0,0,0,0]],
-        [{name : "Database/allOther"},     [1,0,0,0,0,0]],
-        [{name : "Database/all"},          [1,0,0,0,0,0]]
+        [{name : "Datastore/statement/MySQL/users/select"},
+         [1,0,0,0,0,0]],
+        [{name : "Datastore/operation/MySQL/select"},
+         [1,0,0,0,0,0]],
+        [{name : "Datastore/allOther"},
+         [1,0,0,0,0,0]],
+        [{name : "Datastore/all"},
+         [1,0,0,0,0,0]],
+        [{name : "Datastore/instance/MySQL/localhost:3306"},
+         [1,0,0,0,0,0]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -92,15 +100,19 @@ describe("record ParsedStatement with MySQL", function () {
       });
 
       var result = [
-        [{name  : "MySQL/users/select"},             [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/users/select"},          [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/select"},                [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/allWeb"},                [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/all"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "MySQL/users/select",
-          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "Database/users/select",
-          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+        [{name  : "Datastore/statement/MySQL/users/select"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/operation/MySQL/select"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/allWeb"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/all"},
+        [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/instance/MySQL/localhost:3306"},
+        [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "Datastore/statement/MySQL/users/select",
+          scope : "WebTransaction/NormalizedUri/*"},
+         [1,0.026,0.002,0.026,0.026,0.000676]],
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -109,9 +121,12 @@ describe("record ParsedStatement with MySQL", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.getTrace().root
-      , parent = root.add('MySQL/users/select',   makeRecorder('users', 'select'))
-      , child1 = parent.add('MySQL/users/insert', makeRecorder('users', 'insert'))
-      , child2 = child1.add('MySQL/cache/update', makeRecorder('cache', 'update'))
+      , parent = root.add('Datastore/statement/MySQL/users/select',
+                          makeRecorder('users', 'select'))
+      , child1 = parent.add('Datastore/statement/MySQL/users/insert',
+                            makeRecorder('users', 'insert'))
+      , child2 = child1.add('Datastore/statement/MySQL/cache/update',
+                            makeRecorder('cache', 'update'))
       ;
 
     root.setDurationInMillis(26, 0);
@@ -122,17 +137,22 @@ describe("record ParsedStatement with MySQL", function () {
     trans.end();
 
     var result = [
-      [{name : "MySQL/users/select"},    [1,0.026,0.011,0.026,0.026,0.000676]],
-      [{name : "Database/users/select"}, [1,0.026,0.011,0.026,0.026,0.000676]],
-      [{name : "Database/select"},       [1,0.026,0.011,0.026,0.026,0.000676]],
-      [{name : "Database/allOther"},     [3,0.046,0.026,0.008,0.026,0.000884]],
-      [{name : "Database/all"},          [3,0.046,0.026,0.008,0.026,0.000884]],
-      [{name : "MySQL/users/insert"},    [1,0.012,0.007,0.012,0.012,0.000144]],
-      [{name : "Database/users/insert"}, [1,0.012,0.007,0.012,0.012,0.000144]],
-      [{name : "Database/insert"},       [1,0.012,0.007,0.012,0.012,0.000144]],
-      [{name : "MySQL/cache/update"},    [1,0.008,0.008,0.008,0.008,0.000064]],
-      [{name : "Database/cache/update"}, [1,0.008,0.008,0.008,0.008,0.000064]],
-      [{name : "Database/update"},       [1,0.008,0.008,0.008,0.008,0.000064]]
+      [{name : "Datastore/statement/MySQL/users/select"},
+       [1,0.026,0.011,0.026,0.026,0.000676]],
+      [{name : "Datastore/operation/MySQL/select"},
+       [1,0.026,0.011,0.026,0.026,0.000676]],
+      [{name : "Datastore/allOther"},
+       [3,0.046,0.026,0.008,0.026,0.000884]],
+      [{name : "Datastore/all"},
+       [3,0.046,0.026,0.008,0.026,0.000884]],
+      [{name : "Datastore/statement/MySQL/users/insert"},
+       [1,0.012,0.007,0.012,0.012,0.000144]],
+      [{name : "Datastore/operation/MySQL/insert"},
+       [1,0.012,0.007,0.012,0.012,0.000144]],
+      [{name : "Datastore/statement/MySQL/cache/update"},
+       [1,0.008,0.008,0.008,0.008,0.000064]],
+      [{name : "Datastore/operation/MySQL/update"},
+       [1,0.008,0.008,0.008,0.008,0.000064]]
     ];
 
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

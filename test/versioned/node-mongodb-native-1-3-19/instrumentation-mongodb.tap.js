@@ -10,16 +10,31 @@ var path     = require('path')
 function addMetricsVerifier(t, agent, operation) {
   agent.once('transactionFinished', function () {
     try {
-      t.equals(agent.metrics.getMetric('Database/all').callCount, 1,
-               "should find all operations");
-      t.equals(agent.metrics.getMetric('Database/allOther').callCount, 1,
-               "should find all operations");
-      t.equals(agent.metrics.getMetric('Database/' + operation).callCount, 1,
-               "generic " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('Database/test/' + operation).callCount, 1,
-               "named collection " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('MongoDB/test/' + operation).callCount, 1,
-               "MongoDB " + operation + " should be recorded");
+      t.equals(
+        agent.metrics.getMetric('Datastore/all').callCount,
+        1,
+        "should find all operations"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/allOther').callCount,
+        1,
+        "should find all operations"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/operation/MongoDB/' + operation).callCount,
+        1,
+        "generic " + operation + " should be recorded"
+      );
+      t.equals(
+       agent.metrics.getMetric('Datastore/statement/MongoDB/test/' + operation).callCount,
+       1,
+       "named collection " + operation + " should be recorded"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/instance/MongoDB/localhost:27017').callCount,
+        1,
+        "should find all calls to the local instance"
+      );
     }
     catch (error) {
       t.fail(error);
@@ -28,26 +43,45 @@ function addMetricsVerifier(t, agent, operation) {
   });
 }
 
-// +8 asserts
+// +7 asserts
 function addMetricsVerifierNoCallback(t, agent, operation, verifier) {
   agent.once('transactionFinished', function () {
     try {
-      t.equals(agent.metrics.getMetric('Database/all').callCount, 2,
-               "should find all operations");
-      t.equals(agent.metrics.getMetric('Database/allOther').callCount, 2,
-               "should find all operations");
-      t.equals(agent.metrics.getMetric('Database/' + operation).callCount, 1,
-               "generic " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('Database/' + verifier).callCount, 1,
-               "generic " + verifier + " should be recorded");
-      t.equals(agent.metrics.getMetric('Database/test/' + operation).callCount, 1,
-               "named collection " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('Database/test/' + verifier).callCount, 1,
-               "named collection " + verifier + " should be recorded");
-      t.equals(agent.metrics.getMetric('MongoDB/test/' + operation).callCount, 1,
-               "MongoDB " + operation + " should be recorded");
-      t.equals(agent.metrics.getMetric('MongoDB/test/' + verifier).callCount, 1,
-               "MongoDB " + verifier + " should be recorded");
+      t.equals(
+        agent.metrics.getMetric('Datastore/all').callCount,
+        2,
+        "should find all operations"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/allOther').callCount,
+        2,
+        "should find all operations"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/operation/MongoDB/' + operation).callCount,
+        1,
+        "generic " + operation + " should be recorded"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/operation/MongoDB/' + verifier).callCount,
+        1,
+        "generic " + verifier + " should be recorded"
+      );
+      t.equals(
+       agent.metrics.getMetric('Datastore/statement/MongoDB/test/' + operation).callCount,
+       1,
+       "MongoDB " + operation + " should be recorded"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/statement/MongoDB/test/' + verifier).callCount,
+        1,
+        "MongoDB " + verifier + " should be recorded"
+      );
+      t.equals(
+        agent.metrics.getMetric('Datastore/instance/MongoDB/localhost:27017').callCount,
+        2,
+        "should find all calls to the local instance"
+      );
     }
     catch (error) {
       t.fail(error);
@@ -66,7 +100,7 @@ function verifyTrace(t, transaction, operation) {
 
     var segment = trace.root.children[0];
     t.ok(segment, "trace segment for " + operation + " should exist");
-    t.equals(segment.name, 'MongoDB/test/' + operation,
+    t.equals(segment.name, 'Datastore/statement/MongoDB/test/' + operation,
              "should register the " + operation);
     t.equals(segment.children.length, 0, "should have no children");
   }
@@ -86,13 +120,13 @@ function verifyTraceNoCallback(t, transaction, operation, verifier) {
 
     var segment = trace.root.children[0];
     t.ok(segment, "trace segment for " + operation + " should exist");
-    t.equals(segment.name, 'MongoDB/test/' + operation,
+    t.equals(segment.name, 'Datastore/statement/MongoDB/test/' + operation,
              "should register the " + operation);
     t.equals(segment.children.length, 0, "should have no children");
 
     segment = trace.root.children[1];
     t.ok(segment, "trace segment for " + verifier + " should exist");
-    t.equals(segment.name, 'MongoDB/test/' + verifier,
+    t.equals(segment.name, 'Datastore/statement/MongoDB/test/' + verifier,
              "should register the " + verifier);
     t.equals(segment.children.length, 0, "should have no children");
   }
@@ -105,16 +139,17 @@ function verifyTraceNoCallback(t, transaction, operation, verifier) {
 // +5 asserts
 function verifyNoStats(t, agent, operation) {
   try {
-    t.notOk(agent.metrics.getMetric('Database/all'),
+    t.notOk(agent.metrics.getMetric('Datastore/all'),
             "should find no operations");
-    t.notOk(agent.metrics.getMetric('Database/allOther'),
+    t.notOk(agent.metrics.getMetric('Datastore/allOther'),
             "should find no other operations");
-    t.notOk(agent.metrics.getMetric('Database/' + operation),
+    t.notOk(agent.metrics.getMetric('Datastore/operation/MongoDB/' + operation),
             "generic " + operation + " should not be recorded");
-    t.notOk(agent.metrics.getMetric('Database/test/' + operation),
-            "named collection " + operation + " should not be recorded");
-    t.notOk(agent.metrics.getMetric('Database/test/' + operation),
+    t.notOk(agent.metrics.getMetric('Datastore/statement/MongoDB/test/' + operation),
              "MongoDB " + operation + " should not be recorded");
+    t.notOk(agent.metrics.getMetric('Datastore/instance/MongoDB/localhost:27017'),
+             "should find no calls to the local instance"
+    );
   }
   catch (error) {
     t.fail(error);
@@ -560,7 +595,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(22);
+          t.plan(21);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifierNoCallback(t, agent, 'update', 'find');
@@ -666,7 +701,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(20);
+          t.plan(19);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifierNoCallback(t, agent, 'save', 'find');
@@ -1121,7 +1156,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : 1000}, function (t) {
-          t.plan(19);
+          t.plan(18);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifierNoCallback(t, agent, 'remove', 'count');

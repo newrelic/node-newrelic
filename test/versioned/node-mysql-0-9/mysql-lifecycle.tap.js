@@ -80,21 +80,21 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
 
             var selectSegment = trace.root.children[0];
             t.ok(selectSegment, "trace segment for first SELECT should exist");
-            t.equals(selectSegment.name, "Database/test/select",
+            t.equals(selectSegment.name, "Datastore/statement/MySQL/test/select",
                      "should register as SELECT");
             t.equals(selectSegment.children.length, 1,
                      "SELECT should have a single child");
 
             var insertSegment = selectSegment.children[0];
             t.ok(insertSegment, "trace segment for INSERT should exist");
-            t.equals(insertSegment.name, "Database/test/insert",
+            t.equals(insertSegment.name, "Datastore/statement/MySQL/test/insert",
                      "should register as INSERT");
             t.equals(insertSegment.children.length, 1,
                      "INSERT should have a single child");
 
             var countSegment = insertSegment.children[0];
             t.ok(countSegment, "trace segment for SELECT COUNT(*) should exist");
-            t.equals(countSegment.name, "Database/test/select",
+            t.equals(countSegment.name, "Datastore/statement/MySQL/test/select",
                      "should register as SELECT");
             t.equals(countSegment.children.length, 0,
                      "SELECT COUNT should leave us here at the end");
