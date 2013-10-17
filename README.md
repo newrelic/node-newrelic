@@ -242,13 +242,15 @@ currently there is no way to escape commas in patterns.
 
 #### newrelic.addNamingRule(pattern, name)
 
-Programmatic version of `rules.name` above. Naming rules can not be removed until the Node process is restarted . They can also be added via the agent's configuration. Both
-parameters are mandatory.
+Programmatic version of `rules.name` above. Naming rules can not be removed
+until the Node process is restarted. They can also be added via the agent's
+configuration. Both parameters are mandatory.
 
 #### newrelic.addIgnoringRule(pattern)
 
 Programmatic version of `rules.ignore` above. Ignoring rules can not be removed
-until the Node process is restarted. They can also be added via the agent's configuration. Both parameters are mandatory.
+until the Node process is restarted. They can also be added via the agent's
+configuration. The pattern is mandatory.
 
 ### The fine print
 
