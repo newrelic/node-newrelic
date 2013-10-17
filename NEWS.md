@@ -1,3 +1,10 @@
+### v0.12.1 / beta-38 (2013-10-17):
+
+* The transaction namer wasn't respecting error_collector.ignore_error_codes.
+  We've unified the code paths there so that this no longer happens, so that
+  if the status code of a request is in the list of codes to be ignored, it's
+  no longer rolled up under that status code and gets its normal name.
+
 ### v0.12.0 / beta-37 (2013-10-16):
 
 * Changed how MongoDB, MySQL, memcached, and Redis metrics are reported to New
