@@ -16,6 +16,18 @@ describe("NR URL utilities", function () {
   describe("determining whether an HTTP status code is an error", function () {
     var config = {error_collector : {ignore_status_codes : []}};
 
+    it("shouldn't throw when called with no params", function () {
+      expect(function () { urltils.isError(); }).not.throws();
+    });
+
+    it("shouldn't throw when called with no code", function () {
+      expect(function () { urltils.isError(config); }).not.throws();
+    });
+
+    it("shouldn't throw when config is missing", function () {
+      expect(function () { urltils.isError(null, 200); }).not.throws();
+    });
+
     it("should NOT mark an OK request as an error", function () {
       return expect(urltils.isError(config, 200)).false;
     });
