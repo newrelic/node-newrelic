@@ -209,14 +209,14 @@ describe("Transaction", function () {
         expect(trans.statusCode).equal(200);
       });
 
-      it("produces an error name when status is 404", function () {
+      it("produces a non-error name when status code is ignored", function () {
         trans.setName('/test/string?do=thing&another=thing', 404);
-        expect(trans.name).equal('WebTransaction/Uri/404/*');
+        expect(trans.name).equal('WebTransaction/NormalizedUri/*');
       });
 
-      it("produces an error partial name when status is 404", function () {
+      it("produces a non-error partial name when status code is ignored", function () {
         trans.setName('/test/string?do=thing&another=thing', 404);
-        expect(trans.partialName).equal('Uri/404/*');
+        expect(trans.partialName).equal('NormalizedUri/*');
       });
 
       it("passes through status code when status is 404", function () {
@@ -269,14 +269,14 @@ describe("Transaction", function () {
         expect(trans.statusCode).equal(200);
       });
 
-      it("produces an error name when status is 404", function () {
+      it("keeps the custom name when error status is ignored", function () {
         trans.setName('/test/string?do=thing&another=thing', 404);
-        expect(trans.name).equal('WebTransaction/Uri/404/*');
+        expect(trans.name).equal('WebTransaction/Custom/test');
       });
 
-      it("produces an error partial name when status is 404", function () {
+      it("keeps the custom partial name when error status is ignored", function () {
         trans.setName('/test/string?do=thing&another=thing', 404);
-        expect(trans.partialName).equal('Uri/404/*');
+        expect(trans.partialName).equal('Custom/test');
       });
 
       it("passes through status code when status is 404", function () {

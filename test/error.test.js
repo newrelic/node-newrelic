@@ -12,7 +12,11 @@ var path         = require('path')
   ;
 
 function createTransaction(code) {
-  return { statusCode : code, exceptions : [] };
+  return {
+    agent      : {config : config.config},
+    statusCode : code,
+    exceptions : []
+  };
 }
 
 describe("ErrorTracer", function () {
