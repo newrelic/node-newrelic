@@ -318,7 +318,9 @@ For completeness, here's the rest of the list:
 * `NEW_RELIC_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within
   your application. Values are `true` or `false`. Defaults to true.
 * `NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES`: Comma-delimited list of HTTP
-  status codes to ignore. Maybe you don't care if payment is required? Defaults
+  status codes to ignore. Maybe you don't care if payment is required? Ignoring
+  a status code means that the transaction is not renamed to match the code,
+  and the request is not treated as an error by the error collector. Defaults
   to ignoring 404.
 * `NEW_RELIC_IGNORE_SERVER_CONFIGURATION`: Whether to ignore server-side
   configuration for this application. Defaults to false.
