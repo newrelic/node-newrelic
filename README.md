@@ -416,6 +416,8 @@ under the following licenses:
 
     bunyan                      http://opensource.org/licenses/MIT
     continuation-local-storage  http://opensource.org/licenses/BSD-3-Clause
+    async-listener              http://opensource.org/licenses/BSD-3-Clause
+    shimmer                     http://opensource.org/licenses/BSD-3-Clause
 
 The New Relic Node.js agent itself is free-to-use, proprietary software.
 Please see the full license (found in LICENSE in this distribution) for
