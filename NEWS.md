@@ -1,3 +1,7 @@
+### v1.0.0 (2013-10-24):
+
+* General release. No code changes from v0.12.1.
+
 ### v0.12.1 / beta-38 (2013-10-17):
 
 * The transaction namer wasn't respecting error_collector.ignore_error_codes.

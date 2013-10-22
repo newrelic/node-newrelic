@@ -1,44 +1,22 @@
 # New Relic for Node.js
 
-**NOTE:** If you've used previous versions of New Relic for Node.js, you should
-read the section on [transactions and request
-naming](#transactions-and-request-naming), and some important things have
-changed in the [configuration](#configuring-the-agent), so you'll want to read
-that section again as well.
-
 This package instruments your application for performance monitoring
 with [New Relic](http://newrelic.com).
 
-This is a **beta release**. It has known issues that may affect your
-application's stability. You should try it in your staging or development
+This is a new product. You should try it in your staging or development
 environment first to verify it works for you.
 
 Make sure you have a [New Relic account](http://newrelic.com) before
 starting. To see all the features, such as slow transaction traces, you will
-need a New Relic Pro subscription. Contact your New Relic representative to
-request a Pro Trial subscription during your beta testing.
+need a New Relic Pro subscription (or equivalent).
 
 ## Table of contents
 
-* [Support](#support)
 * [Getting started](#getting-started)
 * [Transactions and request naming](#transactions-and-request-naming)
 * [Configuration](#configuring-the-agent)
 * [Contributions](#contributions)
 * [Known issues](#known-issues)
-
-## Support
-
-New Relic for Node.js is currently in beta and has only limited support.
-Customers who tried it out during the open beta period are welcome to continue
-using it and will receive support, but any new deployments may not receive
-technical support, or receive only limited assistance. We're very close to a
-wider public release, but we're not quite there yet!
-
-We're just as eager as you are to see Node and New Relic live happily ever
-after and we're 100% committed to it. We expect to open up a new beta very
-soon. If you'd like to know when the agent is ready for release, please [sign
-up](http://try.newrelic.com/nodejs) to be notified.
 
 ## Getting started
 
@@ -58,16 +36,15 @@ If you wish to keep the configuration for the agent separate from your
 application, the agent will look for newrelic.js in the directory referenced
 by the environment variable `NEW_RELIC_HOME` if it's set.
 
-When you start your app, the agent should start up with it and start
-reporting data that will appear within [the New Relic
-UI](https://rpm.newrelic.com/) after a few minutes. Because the agent
-minimizes the amount of bandwidth it consumes, it only reports data once a
-minute, so if you add the agent to tests that take less than a minute to run,
-the agent won't have time to report data to New Relic. The agent will write
-its log to a file named `newrelic_agent.log` in the application directory. If
-the agent doesn't send data or crashes your app, the log can help New Relic
-determine what went wrong, so be sure to send it along with any bug reports
-or support requests.
+When you start your app, the agent should start up with it and start reporting
+data that will appear within [the New Relic UI](https://rpm.newrelic.com/)
+after a few minutes. Because the agent minimizes the amount of bandwidth it
+consumes, it only reports data once a minute, so if you add the agent to tests
+that take less than a minute to run, the agent won't have time to report data
+to New Relic. The agent will write its log to a file named `newrelic_agent.log`
+in the application directory. If the agent doesn't send data or crashes your
+app, the log can help New Relic determine what went wrong, so be sure to send
+it along with any bug reports or support requests.
 
 ## Transactions and request naming
 
