@@ -388,14 +388,6 @@ Information about changes to the agent are in NEWS.md.
 
 ## LICENSE
 
-The New Relic Node.js agent uses code from the following open source projects
-under the following licenses:
-
-    bunyan                      http://opensource.org/licenses/MIT
-    continuation-local-storage  http://opensource.org/licenses/BSD-3-Clause
-    async-listener              http://opensource.org/licenses/BSD-3-Clause
-    shimmer                     http://opensource.org/licenses/BSD-3-Clause
-
-The New Relic Node.js agent itself is free-to-use, proprietary software.
-Please see the full license (found in LICENSE in this distribution) for
-details.
+The New Relic Node.js agent is free-to-use, proprietary software.  Please see
+the full license (found in LICENSE in this distribution) for details on its
+license and the licenses of its dependencies.

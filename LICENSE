@@ -36,3 +36,11 @@ condition to your use of these files, you are solely responsible for
 such use. New Relic will have no liability to you for direct,
 indirect, consequential, incidental, special, or punitive damages or
 for lost profits or data.
+
+The New Relic Node.js agent also uses code from the following open source
+projects under the following licenses:
+
+bunyan                      http://opensource.org/licenses/MIT
+continuation-local-storage  http://opensource.org/licenses/BSD-2-Clause
+async-listener              http://opensource.org/licenses/BSD-2-Clause
+shimmer                     http://opensource.org/licenses/BSD-2-Clause
