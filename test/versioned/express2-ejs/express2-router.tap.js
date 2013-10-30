@@ -19,6 +19,9 @@ test("Express 2 router introspection", function (t) {
     });
   });
 
+  // need to capture parameters
+  agent.config.capture_params = true;
+
   agent.on('transactionFinished', function (transaction) {
     t.equal(transaction.name, 'WebTransaction/Expressjs/GET//test/:id',
             "transaction has expected name");
