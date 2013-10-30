@@ -170,6 +170,16 @@ before the request ends wins.
 See the above note on `newrelic.setTransactionName()`, which also applies to
 this function.
 
+#### newrelic.setIgnoreTransaction(ignored)
+
+Tell the module explicitly whether or not a given request should be ignored.
+Allows you to explicitly filter out long-polling routes or requests you know
+are going to be time-consuming in an uninteresting way, and also allows you
+to gather metrics for requests that would otherwise be ignored. Note that
+to prevent a transaction from being ignored with this function, you **must**
+pass `false` as the parameter – in this case `null` or `undefined` will be
+ignored.
+
 ### Rules for naming and ignoring requests
 
 If you don't feel like putting calls to the New Relic module directly into your
