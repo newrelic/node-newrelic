@@ -20,6 +20,9 @@ test("memcached instrumentation should find memcached calls in the transaction t
 
     var memcached = new Memcached('localhost:11211');
 
+    // need to capture parameters
+    agent.config.capture_params = true;
+
     self.tearDown(function () {
       helper.cleanMemcached(app, function done() {
         helper.unloadAgent(agent);
