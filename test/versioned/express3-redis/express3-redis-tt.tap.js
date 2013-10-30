@@ -218,6 +218,9 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
     , request      = require('request')
     ;
 
+  // need to capture parameters
+  agent.config.capture_params = true;
+
   var self = this;
   helper.bootstrapRedis(function (error, service) {
     if (error) {

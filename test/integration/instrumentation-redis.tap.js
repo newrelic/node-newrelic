@@ -26,6 +26,9 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
       });
     });
 
+    // need to capture parameters
+    agent.config.capture_params = true;
+
     t.notOk(agent.getTransaction(), "no transaction should be in play");
 
     helper.runInTransaction(agent, function transactionInScope() {
