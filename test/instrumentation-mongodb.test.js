@@ -32,6 +32,120 @@ describe("agent instrumentation of MongoDB", function () {
     });
   });
 
+  describe("when capturing terms is disabled", function () {
+    var agent
+      , segment
+      , terms
+      ;
+
+    before(function (done) {
+      function StubCollection () {}
+
+      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+        this.terms = terms;
+        this.options = options;
+        process.nextTick(function () { callback(null, 1); });
+      };
+
+      var mockodb    = {Collection : StubCollection}
+        , collection = new mockodb.Collection('test')
+        , initialize = require(path.join(__dirname, '..', 'lib',
+                                         'instrumentation', 'mongodb'))
+        ;
+
+      agent = helper.loadMockedAgent();
+      agent.on('transactionFinished', function (transaction) {
+        // need to generate the trace so exclusive times are added to segment parameters
+        transaction.getTrace().generateJSON(function () {
+          terms = collection.terms;
+          segment = transaction.trace.root.children[0];
+
+          done();
+        });
+      });
+
+      initialize(agent, mockodb);
+
+      helper.runInTransaction(agent, function (trans) {
+        collection.findAndModify({val : 'hi'}, {w : 333}, function () {
+          process.nextTick(function () { trans.end(); });
+        });
+      });
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("shouldn't modify query terms", function () {
+      should.not.exist(terms.nr_exclusive_duration_millis);
+    });
+
+    it("shouldn't copy query terms onto segment parameters", function () {
+      should.not.exist(segment.parameters.val);
+    });
+  });
+
+  describe("when capturing terms is enabled", function () {
+    var agent
+      , segment
+      , terms
+      ;
+
+    before(function (done) {
+      function StubCollection () {}
+
+      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+        this.terms = terms;
+        this.options = options;
+        process.nextTick(function () { callback(null, 1); });
+      };
+
+      var mockodb    = {Collection : StubCollection}
+        , collection = new mockodb.Collection('test')
+        , initialize = require(path.join(__dirname, '..', 'lib',
+                                         'instrumentation', 'mongodb'))
+        ;
+
+      agent = helper.loadMockedAgent();
+      agent.config.capture_params = true;
+      agent.config.ignored_params = ['other'];
+      agent.on('transactionFinished', function (transaction) {
+        // need to generate the trace so exclusive times are added to segment parameters
+        transaction.getTrace().generateJSON(function () {
+          terms = collection.terms;
+          segment = transaction.trace.root.children[0];
+
+          done();
+        });
+      });
+
+      initialize(agent, mockodb);
+
+      helper.runInTransaction(agent, function (trans) {
+        collection.findAndModify({val : 'hi', other : 'bye'}, {w : 333}, function () {
+          process.nextTick(function () { trans.end(); });
+        });
+      });
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("shouldn't modify query terms", function () {
+      should.not.exist(terms.nr_exclusive_duration_millis);
+    });
+
+    it("should append query terms onto segment parameters", function () {
+      expect(segment.parameters.val).equal('hi');
+    });
+
+    it("should respect ignored parameter list", function () {
+      should.not.exist(segment.parameters.other);
+    });
+  });
+
   describe("with child MongoDB operations", function () {
     var agent
       , transaction
