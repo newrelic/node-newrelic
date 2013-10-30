@@ -34,6 +34,11 @@ describe("the New Relic agent API", function () {
     expect(api.setControllerName).a('function');
   });
 
+  it("exports a transaction ignoring function", function () {
+    should.exist(api.setIgnoreTransaction);
+    expect(api.setIgnoreTransaction).a('function');
+  });
+
   it("exports a function for adding naming rules", function () {
     should.exist(api.addNamingRule);
     expect(api.addNamingRule).a('function');
@@ -112,6 +117,56 @@ describe("the New Relic agent API", function () {
         api.setTransactionName('Update');
         api.setTransactionName('Delete');
         api.setTransactionName('List');
+
+        transaction.end();
+      });
+    });
+  });
+
+  describe("when (not) ignoring a transaction", function () {
+    it("should mark the transaction ignored", function (done) {
+      agent.on('transactionFinished', function (transaction) {
+        transaction.setName(URL, 200);
+
+        expect(transaction.ignore).equal(true);
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        var state = agent.tracer.getState();
+
+        state.getSegment().add(NAME);
+        transaction.url  = URL;
+        transaction.verb = 'GET';
+
+        api.setIgnoreTransaction(true);
+
+        transaction.end();
+      });
+    });
+
+    it("should force a transaction to not be ignored", function (done) {
+      var segment;
+
+      api.addIgnoringRule('^/test/.*');
+
+      agent.on('transactionFinished', function (transaction) {
+        transaction.setName(URL, 200);
+
+        expect(transaction.ignore).equal(false);
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        var state = agent.tracer.getState();
+
+        segment          = state.getSegment().add(NAME);
+        transaction.url  = URL;
+        transaction.verb = 'GET';
+
+        api.setIgnoreTransaction(false);
 
         transaction.end();
       });

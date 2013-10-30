@@ -88,6 +88,25 @@ API.prototype.setControllerName = function (name, action) {
 };
 
 /**
+ * Tell the tracer whether to ignore the current transaction. The most common
+ * use for this will be to mark a transaction as ignored (maybe it's handling
+ * a websocket polling channel, or maybe it's an external call you don't care
+ * is slow), but it's also useful when you want a transaction that would
+ * otherwise be ignored due to URL or transaction name normalization rules
+ * to *not* be ignored.
+ *
+ * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
+ */
+API.prototype.setIgnoreTransaction = function (ignored) {
+  var transaction = this.agent.tracer.getTransaction();
+  if (!transaction) {
+    return logger.warn("No transaction found to ignore.");
+  }
+
+  transaction.forceIgnore = ignored;
+};
+
+/**
  * If the URL for a transaction matches the provided pattern, name the
  * transaction with the provided name. If there are capture groups in the
  * pattern (which is a standard JavaScript regular expression, and can be
