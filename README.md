@@ -1,3 +1,5 @@
+[![npm status badge](https://nodei.co/npm/newrelic.png?stars=true&downloads=true)](https://nodei.co/npm/newrelic/)
+
 # New Relic for Node.js
 
 This package instruments your application for performance monitoring
