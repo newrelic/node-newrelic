@@ -346,17 +346,17 @@ For completeness, here's the rest of the list:
 * `NEW_RELIC_DEBUG_METRICS`: Whether to collect internal supportability
   metrics for the agent. Don't mess with this unless New Relic asks you to.
 * `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
-  internal operation. You're welcome to enable it, but it's unlikely to be
-  edifying unless you're a New Relic Node.js engineer.
+  internal operation. It's unlikely to be informative unless you're a New Relic
+  Node.js engineer and it has a significant performance cost, so use with care.
 
 ## Contributions
 
-We owe a debt to all of the beta testers who have provided us with feedback,
-and in some cases significant pieces of code. (If you wish to contribute,
-please see CONTRIBUTING.md in this package.) In particular, we're indebted
-to these people:
+We owe a debt to all of the beta testers and users who have provided us with
+feedback, and in some cases significant pieces of code. (If you wish to
+contribute, please see CONTRIBUTING.md in this directory.) In particular, we're
+indebted to these people:
 
-* Hernan Silberman, for his work on the memcached instrumentation
+* Hernan Silberman, for his work on the memcached instrumentation.
 * Jeff Howell &lt;jhowell@kabam.com&gt;, for coming up with a much simpler way
   to instrument node-mongodb-native, as well as pointing out a problem with the
   Connect instrumentation.
@@ -390,13 +390,16 @@ Information about changes to the agent are in NEWS.md.
 
 ### New Relic features available for other platforms not yet in Node.js
 
+* SSL-protected connections between the module and New Relic
+* high-security mode
 * Real User Monitoring (RUM)
-* custom instrumentation APIs
+* cross-application tracing (depends on RUM)
+* custom parameters, metrics and instrumentation
 * slow SQL traces and explain plans
-* custom parameters
 * garbage collector instrumentation
-* capacity planning
 * thread profiling
+* X-ray transactions (depends on thread profiling)
+* capacity planning
 
 ## LICENSE
 
