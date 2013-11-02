@@ -144,6 +144,22 @@ describe("DataSender", function () {
     });
   });
 
+  describe("when the connection errors", function () {
+    it("should emit an error", function (done) {
+      var sender = new DataSender({host : 'localhost', port : 8765});
+
+      sender.on('error', function (message, error) {
+        expect(message).equal('TEST');
+        expect(error.message).equal('connect ECONNREFUSED');
+
+        done();
+      });
+
+      var body = '{"message":"none"}';
+      sender.postToCollector('TEST', sender.getHeaders(body.length), body);
+    });
+  });
+
   describe("when processing a collector response", function () {
     var sender;
 
