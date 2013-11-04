@@ -107,6 +107,18 @@ API.prototype.setIgnoreTransaction = function (ignored) {
 };
 
 /**
+ * Send errors to New Relic that you've already handled yourself. Should
+ * be an Error or one of its subtypes, but the API will handle strings
+ * and objects that have an attached .message or .stack property.
+ *
+ * @param {Error} error The error to be traced.
+ */
+API.prototype.noticeError = function (error) {
+  var transaction = this.agent.tracer.getTransaction();
+  this.agent.errors.add(transaction, error);
+};
+
+/**
  * If the URL for a transaction matches the provided pattern, name the
  * transaction with the provided name. If there are capture groups in the
  * pattern (which is a standard JavaScript regular expression, and can be

@@ -118,7 +118,7 @@ use the API calls described below to come up with more descriptive names. Also,
 if you use a different web framework or router and would like to see support
 for it added, please let us know.
 
-### The request naming API
+### Request naming with the module API
 
 The API is what's handed back from `require('newrelic')`, so
 
@@ -169,16 +169,6 @@ before the request ends wins.
 
 See the above note on `newrelic.setTransactionName()`, which also applies to
 this function.
-
-#### newrelic.setIgnoreTransaction(ignored)
-
-Tell the module explicitly whether or not a given request should be ignored.
-Allows you to explicitly filter out long-polling routes or requests you know
-are going to be time-consuming in an uninteresting way, and also allows you
-to gather metrics for requests that would otherwise be ignored. Note that
-to prevent a transaction from being ignored with this function, you **must**
-pass `false` as the parameter – in this case `null` or `undefined` will be
-ignored.
 
 ### Rules for naming and ignoring requests
 
@@ -240,6 +230,26 @@ configuration. Both parameters are mandatory.
 Programmatic version of `rules.ignore` above. Ignoring rules can not be removed
 until the Node process is restarted. They can also be added via the agent's
 configuration. The pattern is mandatory.
+
+### Other API calls
+
+#### newrelic.setIgnoreTransaction(ignored)
+
+Tell the module explicitly whether or not a given request should be ignored.
+Allows you to explicitly filter out long-polling routes or requests you know
+are going to be time-consuming in an uninteresting way, and also allows you
+to gather metrics for requests that would otherwise be ignored. Note that
+to prevent a transaction from being ignored with this function, you **must**
+pass `false` as the parameter – in this case `null` or `undefined` will be
+ignored.
+
+#### newrelic.noticeError(error)
+
+If your app is doing its own error handling with domains or try/catch clauses,
+but you want all of the information about how many errors are coming out of the
+app to be centrally managed, use this call. Unlike most of the calls here, this
+call can be used outside of route handlers, but will have additional context if
+called from within transaction scope.
 
 ### The fine print
 
