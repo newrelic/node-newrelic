@@ -54,14 +54,23 @@ describe('TraceAggregator', function () {
     agent.config.transaction_tracer.enabled = false;
     agent.traces.add(createTransaction('/test', 3000));
 
-    expect(agent.traces.trace).equal(null);
+    should.not.exist(agent.traces.trace);
   });
 
   it("shouldn't collect a trace if collect_traces is false", function () {
     agent.config.collect_traces = false;
     agent.traces.add(createTransaction('/test', 3000));
 
-    expect(agent.traces.trace).equal(null);
+    should.not.exist(agent.traces.trace);
+  });
+
+  it("should let the agent decide whether to ignore a transaction", function () {
+    var transaction = new Transaction(agent);
+    transaction.getTrace().setDurationInMillis(3000);
+    transaction.ignore = true;
+
+    agent.traces.add(transaction);
+    should.exist(agent.traces.trace);
   });
 
   describe("with top n support", function () {

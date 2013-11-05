@@ -53,7 +53,7 @@ test("Express 3 router introspection", function (t) {
                 function (error, res, body) {
 
       t.equal(res.statusCode, 200, "nothing exploded");
-      t.deepEqual(body, {status : 'ok'}, "got expected respose");
+      t.deepEqual(body, {status : 'ok'}, "got expected response");
     });
   });
 });

@@ -302,6 +302,44 @@ describe("the New Relic agent", function () {
         expect(function () { agent.onNewMappings(rules); }).not.throws();
       });
     });
+
+    describe("when handling finished transactions", function () {
+      var transaction;
+
+      beforeEach(function () {
+        transaction = new Transaction(agent);
+        transaction.ignore = true;
+      });
+
+      it("shouldn't merge metrics when transaction is ignored", function () {
+        /* Top-level method is bound into EE, so mock the metrics collection
+         * instead.
+         */
+        var mock = sinon.mock(agent.metrics);
+        mock.expects('merge').never();
+
+        transaction.end();
+      });
+
+      it("shouldn't merge errors when transaction is ignored", function () {
+        /* Top-level method is bound into EE, so mock the error tracer instead.
+         */
+        var mock = sinon.mock(agent.errors);
+        mock.expects('onTransactionFinished').never();
+
+        transaction.end();
+      });
+
+      it("shouldn't aggregate trace when transaction is ignored", function () {
+        /* Top-level *and* second-level methods are bound into EEs, so mock the
+         * transaction trace getter instead.
+         */
+        var mock = sinon.mock(transaction);
+        mock.expects('getTrace').never();
+
+        transaction.end();
+      });
+    });
   });
 
   describe("with a mocked connection", function () {
