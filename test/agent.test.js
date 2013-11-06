@@ -398,6 +398,7 @@ describe("the New Relic agent", function () {
         agent.metrics.started = 1337;
 
         var transaction = new Transaction(agent);
+        transaction.name = 'WebTransaction/NormalizedUri/test';
         transaction.statusCode = 501;
         agent.errors.add(transaction, new TypeError('no method last on undefined'));
         agent.errors.add(transaction, new Error('application code error'));
@@ -407,6 +408,9 @@ describe("the New Relic agent", function () {
         var metrics = new Metrics(0.1, agent.mapper, agent.metricNameNormalizer);
         metrics.started = 1337;
         metrics.getOrCreateMetric('Errors/all').incrementCallCount(3);
+        metrics
+          .getOrCreateMetric('Errors/WebTransaction/NormalizedUri/test')
+          .incrementCallCount(1);
 
         mock.expects('sendMetricData').once().withArgs(metrics);
         mock.expects('sendTracedErrors').once();

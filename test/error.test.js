@@ -11,12 +11,12 @@ var path         = require('path')
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
-function createTransaction(code) {
-  return {
-    agent      : {config : config.config},
-    statusCode : code,
-    exceptions : []
-  };
+function createTransaction(agent, code) {
+  var transaction = new Transaction(agent);
+  transaction.name = 'WebTransaction/TestJS/path';
+  transaction.statusCode = code;
+
+  return transaction;
 }
 
 describe("ErrorTracer", function () {
@@ -69,23 +69,49 @@ describe("ErrorTracer", function () {
     expect(tracer.errors.length).equal(20);
   });
 
-  it("should handle errors properly for transactions", function () {
-    tracer.onTransactionFinished(createTransaction(400));
-    tracer.onTransactionFinished(createTransaction(500));
+  describe("when finalizing transactions", function () {
+    var agent;
 
-    expect(tracer.errors.length).equal(2);
-    expect(tracer.errorCount).equal(2);
-  });
+    beforeEach(function () {
+      agent = helper.loadMockedAgent();
+    });
 
-  it("should ignore 404 errors for transactions", function () {
-    tracer.onTransactionFinished(createTransaction(400));
-    // 404 errors are ignored by default
-    tracer.onTransactionFinished(createTransaction(404));
-    tracer.onTransactionFinished(createTransaction(404));
-    tracer.onTransactionFinished(createTransaction(404));
-    tracer.onTransactionFinished(createTransaction(404));
+    afterEach(function () {
+      helper.unloadAgent(agent);
+    });
 
-    expect(tracer.errorCount).equal(1);
+    it("should capture errors for transactions ending in error", function () {
+      tracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics);
+      tracer.onTransactionFinished(createTransaction(agent, 500), agent.metrics);
+
+      expect(tracer.errors.length).equal(2);
+    });
+
+    it("should count errors on the error tracer", function () {
+      tracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics);
+      tracer.onTransactionFinished(createTransaction(agent, 500), agent.metrics);
+
+      expect(tracer.errorCount).equal(2);
+    });
+
+    it("should count named errors on the agent metrics", function () {
+      tracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics);
+      tracer.onTransactionFinished(createTransaction(agent, 500), agent.metrics);
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path');
+      expect(metric.callCount).equal(2);
+    });
+
+    it("should ignore 404 errors for transactions", function () {
+      tracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics);
+      // 404 errors are ignored by default
+      tracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics);
+      tracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics);
+      tracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics);
+      tracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics);
+
+      expect(tracer.errorCount).equal(1);
+    });
   });
 
   describe("with no exception and no transaction", function () {
@@ -95,7 +121,7 @@ describe("ErrorTracer", function () {
       agent = helper.loadMockedAgent();
       var tracer = agent.errors;
 
-      tracer.add(new Transaction (agent), null);
+      tracer.add(new Transaction(agent), null);
     });
 
     afterEach(function () {
