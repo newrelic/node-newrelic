@@ -24,8 +24,8 @@ test("ignoring an Express 3 route", function (t) {
   });
 
   agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Uri/400/*',
-            "transaction has expected name for an error");
+    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//polling/:id',
+            "transaction has expected name even on error");
     t.ok(transaction.ignore, "transaction is ignored");
 
     t.notOk(agent.traces.trace, "should have no transaction trace");

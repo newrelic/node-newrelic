@@ -224,14 +224,14 @@ describe("Transaction", function () {
         expect(trans.statusCode).equal(404);
       });
 
-      it("produces an error name when status is 501", function () {
+      it("produces a regular name when status is 501", function () {
         trans.setName('/test/string?do=thing&another=thing', 501);
-        expect(trans.name).equal('WebTransaction/Uri/501/*');
+        expect(trans.name).equal('WebTransaction/NormalizedUri/*');
       });
 
-      it("produces an error partial name when status is 501", function () {
+      it("produces a regular partial name when status is 501", function () {
         trans.setName('/test/string?do=thing&another=thing', 501);
-        expect(trans.partialName).equal('Uri/501/*');
+        expect(trans.partialName).equal('NormalizedUri/*');
       });
 
       it("passes through status code when status is 501", function () {
@@ -284,14 +284,14 @@ describe("Transaction", function () {
         expect(trans.statusCode).equal(404);
       });
 
-      it("produces an error name when status is 501", function () {
+      it("produces the custom name even when status is 501", function () {
         trans.setName('/test/string?do=thing&another=thing', 501);
-        expect(trans.name).equal('WebTransaction/Uri/501/*');
+        expect(trans.name).equal('WebTransaction/Custom/test');
       });
 
-      it("produces an error partial name when status is 501", function () {
+      it("produces the custome partial name even when status is 501", function () {
         trans.setName('/test/string?do=thing&another=thing', 501);
-        expect(trans.partialName).equal('Uri/501/*');
+        expect(trans.partialName).equal('Custom/test');
       });
 
       it("passes through status code when status is 501", function () {
