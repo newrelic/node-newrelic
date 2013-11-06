@@ -63,6 +63,21 @@ describe("Metrics", function () {
       var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest');
       expect(metric.apdexT).equal(agent.config.apdex_t);
     });
+
+    it("should allow overriding apdex summaries with a custom apdexT", function () {
+      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 1);
+      expect(metric.apdexT).equal(0.001);
+    });
+
+    it("should require the overriding apdex to be greater than 0", function () {
+      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 0);
+      expect(metric.apdexT).equal(agent.config.apdex_t);
+    });
+
+    it("should require the overriding apdex to not be negative", function () {
+      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, -5000);
+      expect(metric.apdexT).equal(agent.config.apdex_t);
+    });
   });
 
   describe("when creating with parameters", function () {

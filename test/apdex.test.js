@@ -20,8 +20,9 @@ describe("ApdexStats", function () {
   });
 
   it("should throw when created with no tolerating value", function () {
-    expect(function () { var apdex = new ApdexStats(); })
-      .throws('Apdex summary must be created with a tolerated value');
+    var apdex;
+    expect(function () { apdex = new ApdexStats(); })
+      .throws('Apdex summary must be created with apdexT');
   });
 
   it("should export apdexT in the 4th field of the timeslice", function () {

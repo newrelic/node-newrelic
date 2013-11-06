@@ -307,6 +307,41 @@ describe("Transaction", function () {
     });
   });
 
+  describe("when setting apdex for key transactions", function () {
+    var trans
+      , metric
+      ;
+
+    before(function () {
+      trans = new Transaction(agent);
+      trans._setApdex('Apdex/TestController/key', 1200, 667);
+
+      metric = trans.metrics.getMetric('Apdex/TestController/key');
+    });
+
+    it("should set apdexT to the key transaction apdexT", function () {
+      expect(metric.apdexT).equal(0.667);
+    });
+
+    it("should not have satisfied", function () {
+      expect(metric.satisfying).equal(0);
+    });
+
+    it("should have been tolerated", function () {
+      expect(metric.tolerating).equal(1);
+    });
+
+    it("should not have frustrated", function () {
+      expect(metric.frustrating).equal(0);
+    });
+
+    it("shouldn't require a key transaction apdexT", function () {
+      trans._setApdex('Apdex/TestController/another', 1200);
+      var another = trans.metrics.getMetric('Apdex/TestController/another');
+      expect(another.apdexT).equal(0.1);
+    });
+  });
+
   describe("when producing a summary of the whole transaction", function () {
     it("should produce a human-readable summary");
     it("should produce a metrics summary suitable for the collector");

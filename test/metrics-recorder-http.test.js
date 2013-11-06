@@ -307,5 +307,34 @@ describe("recordWeb", function () {
       ];
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
     });
+
+    it("should reflect key transaction apdexT", function () {
+      agent.config.web_transactions_apdex = {
+        'WebTransaction/TestJS//key/:id' : 0.667,
+        // just to make sure
+        'WebTransaction/TestJS//another/:name' : 0.444
+      };
+      trans.partialName = 'TestJS//key/:id';
+
+      record({
+        transaction : trans,
+        apdexT      : 0.2,
+        url         : '/key/23',
+        code        : 200,
+        duration    : 1200,
+        exclusive   : 1200
+      });
+
+      var result = [
+        [{name  : 'WebTransaction'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [{name  : 'HttpDispatcher'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [{name  : 'WebTransaction/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [{name  : 'Apdex/TestJS//key/:id'},          [0,   1,   0, 0.667, 0.667,    0]],
+        [{name  : 'Apdex'},                          [0,   0,   1,   0.2,   0.2,    0]],
+        [{name  : 'WebTransaction/TestJS//key/:id',
+          scope : 'WebTransaction/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]]
+      ];
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
+    });
   });
 });
