@@ -1,3 +1,25 @@
+### v1.1.0 (2013-11-05):
+
+* Added a new call to the API, `.noticeError`. See the docs for details, but
+  unlike the other calls on the API, you can use this to pass off errors
+  anywhere in your app, not just from within web requests.
+* Ignoring slow (or polling) requests was only being applied to slow
+  transaction traces. It now applies to metrics and transactions that end in
+  errors.
+* MongoDB, Redis and Memcached now honor the `capture_params` and
+  `ignore_params` settings.
+* New Relic for Node.js, like New Relic's other agents, has a sophisticated
+  system for repeatedly trying to connect to New Relic's servers when the first
+  attempt results in failure. This had been broken since (roughly) January. It
+  works again now.
+* The built-in debugging for the transaction tracer was out of date with
+  respect to the production tracer. This is fixed, and you're welcome to
+  satisfy your curiosity by enabling it, but it's really not going to be useful
+  to you unless you feel like taking the time to understand what the tracer is
+  doing at a low level. Do not ever enable it in production, as it slaughters
+  the tracer's performance and generates a huge pile of objects per
+  transaction.
+
 ### v1.0.1 (2013-10-30):
 
 * Added a new setIgnoreTransaction call to the exported API to allow explicit
