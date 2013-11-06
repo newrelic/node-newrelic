@@ -30,7 +30,7 @@ describe("DataSender", function () {
 
     var expected = 'http://collector.newrelic.com:80' +
                    '/agent_listener/invoke_raw_method' +
-                   '?marshal_format=json&protocol_version=11&' +
+                   '?marshal_format=json&protocol_version=12&' +
                    'license_key=&method=test&run_id=12';
     expect(sender.getURL('test')).equal(expected);
   });

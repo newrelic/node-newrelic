@@ -28,7 +28,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 
     function path(method, runID) {
       var fragment = '/agent_listener/invoke_raw_method?' +
-        'marshal_format=json&protocol_version=11&' +
+        'marshal_format=json&protocol_version=12&' +
         'license_key=license%20key%20here&method=' + method;
 
       if (runID) fragment += '&run_id=' + runID;
@@ -99,7 +99,7 @@ test("merging metrics and errors after a 503", function (t) {
 
     function path(method, runID) {
       var fragment = '/agent_listener/invoke_raw_method?' +
-        'marshal_format=json&protocol_version=11&' +
+        'marshal_format=json&protocol_version=12&' +
         'license_key=license%20key%20here&method=' + method;
 
       if (runID) fragment += '&run_id=' + runID;
