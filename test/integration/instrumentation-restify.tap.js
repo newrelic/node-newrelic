@@ -24,6 +24,11 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
     , server  = restify.createServer()
     ;
 
+  this.tearDown(function () {
+    helper.unloadAgent(agent);
+    server.close();
+  });
+
   server.get('/hello/:name', function sayHello(req, res) {
     t.ok(agent.getTransaction(), "transaction should be available in handler");
     res.send('hello ' + req.params.name);
@@ -52,15 +57,14 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
         if (pair[0] === 'Framework' && pair[1] === 'restify') found = true;
       });
       t.ok(found, "should indicate that restify itself is in play");
-
-      server.close(function () {
-        helper.unloadAgent(agent);
-      });
     });
   });
 });
 
 test("Restify should still be instrumented when run with SSL", function (t) {
+  t.plan(8);
+
+  var suite = this;
   helper.withSSL(function (error, key, certificate, ca) {
     if (error) {
       t.fail("unable to set up SSL: " + error);
@@ -71,6 +75,11 @@ test("Restify should still be instrumented when run with SSL", function (t) {
       , restify = require('restify')
       , server  = restify.createServer({key : key, certificate : certificate})
       ;
+
+    suite.tearDown(function () {
+      helper.unloadAgent(agent);
+      server.close();
+    });
 
     server.get('/hello/:name', function sayHello(req, res) {
       t.ok(agent.getTransaction(), "transaction should be available in handler");
@@ -107,11 +116,6 @@ test("Restify should still be instrumented when run with SSL", function (t) {
           if (pair[0] === 'Framework' && pair[1] === 'restify') found = true;
         });
         t.ok(found, "should indicate that restify itself is in play");
-
-        server.close(function () {
-          helper.unloadAgent(agent);
-          t.end();
-        });
       });
     });
   });
