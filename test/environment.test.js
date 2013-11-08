@@ -24,8 +24,24 @@ describe("the environment scraper", function () {
     settings = environment.toJSON();
   });
 
-  it("should allow resetting of settings", function () {
-    expect(function () { environment.reset(); }).not.throws();
+  it("should allow clearing of the dispatcher", function () {
+    environment.setDispatcher('custom');
+    environment.setDispatcher('another');
+
+    var dispatchers = environment.get('Dispatcher');
+    expect(dispatchers).include.members(['custom', 'another']);
+
+    expect(function () { environment.clearDispatcher(); }).not.throws();
+  });
+
+  it("should allow clearing of the ramework", function () {
+    environment.setFramework('custom');
+    environment.setFramework('another');
+
+    var frameworks = environment.get('Framework');
+    expect(frameworks).include.members(['custom', 'another']);
+
+    expect(function () { environment.clearFramework(); }).not.throws();
   });
 
   it("should have some settings", function () {
