@@ -32,7 +32,7 @@ describe("instrumentOutbound", function () {
     });
 
     function test(expectedPort, expectedHost, port, host) {
-      var client = http.createClient(port,host);
+      var client = http.createClient(port, host);
       expect(client.port).equal(expectedPort);
       expect(client.host).equal(expectedHost);
     }

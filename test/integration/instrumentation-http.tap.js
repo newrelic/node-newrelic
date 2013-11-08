@@ -191,7 +191,6 @@ test("built-in http instrumentation shouldn't swallow errors",
   });
 });
 
-
 test("built-in http instrumentation making outbound requests", function (t) {
   var agent = helper.instrumentMockedAgent();
 
@@ -224,6 +223,87 @@ test("built-in http instrumentation making outbound requests", function (t) {
       });
       res.pipe(sink);
     }).end();
+  }
+
+  function requestWithHost(next) {
+    request('options.host', {
+      host  : 'localhost',
+      port  : 1337,
+      path  : '/',
+      agent : false
+    }, next);
+  }
+
+  function requestWithHostname(next) {
+    request('options.hostname', {
+      hostname : 'localhost',
+      port     : 1337,
+      path     : '/',
+      agent    : false
+    }, next);
+  }
+
+  function requestWithNOTHING(next) {
+    request('nothing', {
+      port     : 1337,
+      path     : '/',
+      agent    : false
+    }, next);
+  }
+
+  server.listen(1337, function () {
+    helper.runInTransaction(agent, function () {
+      requestWithHost(function () {
+        requestWithHostname(function () {
+          requestWithNOTHING(function () {
+            t.end();
+          });
+        });
+      });
+    });
+  });
+});
+
+test("built-in http instrumentation making outbound requests obsoletely", function (t) {
+  var agent = helper.instrumentMockedAgent();
+
+  var server = http.createServer(function (req, res) {
+    var body = '{"status":"ok"}';
+    res.writeHead(200, {
+      'Content-Length' : body.length,
+      'Content-Type'   : 'text/plain' });
+    res.end(body);
+  });
+
+  this.tearDown(function () {
+    server.close();
+    helper.unloadAgent(agent);
+  });
+
+  function request(type, options, next) {
+    var port = options.port;
+    var host = options.host;
+    var path = options.path;
+
+    var req = http.createClient(port, host).request('GET', path);
+    req.on('response', function (res) {
+      res.on('end', function () {
+        t.equal(res.statusCode, 200, "got HTTP OK status code");
+      });
+
+      var sink = new StreamSink(function (err, body) {
+        if (err) {
+          t.fail(err);
+          return t.end();
+        }
+
+        t.deepEqual(JSON.parse(body), {status : 'ok'},
+                    "request with " + type + " defined succeeded");
+        next();
+      });
+      res.pipe(sink);
+    });
+    req.end();
   }
 
   function requestWithHost(next) {
