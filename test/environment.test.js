@@ -24,6 +24,10 @@ describe("the environment scraper", function () {
     settings = environment.toJSON();
   });
 
+  it("should allow resetting of settings", function () {
+    expect(function () { environment.reset(); }).not.throws();
+  });
+
   it("should have some settings", function () {
     expect(settings.length).above(1);
   });

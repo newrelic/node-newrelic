@@ -41,6 +41,7 @@ describe("an instrumented Express application", function () {
 
     before(function () {
       agent = helper.instrumentMockedAgent();
+      agent.environment.reset();
 
       function Router() {}
       Router.prototype._match = function () { return {path : '/test/:id'}; };
@@ -184,6 +185,7 @@ describe("an instrumented Express application", function () {
 
     before(function () {
       agent = helper.instrumentMockedAgent();
+      agent.environment.reset();
 
       stub = {
         version : '3.1.4',
@@ -211,6 +213,7 @@ describe("an instrumented Express application", function () {
     });
 
     after(function () {
+      agent.environment.reset();
       helper.unloadAgent(agent);
     });
 
