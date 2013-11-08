@@ -434,6 +434,9 @@ describe("the agent configuration", function () {
       should.not.exist(configuration.newrelic_home);
       expect(configuration.error_collector &&
              configuration.error_collector.enabled).equal(true);
+
+      delete process.env.NEW_RELIC_NO_CONFIG_FILE;
+      delete process.env.NEW_RELIC_HOME;
     });
   });
 
