@@ -64,7 +64,7 @@ describe('Tracer', function () {
 
     it("it's not set in the future", function (done) {
       tracer.setCurrentSegmentType('TEST2');
-      setTimeout(function () {
+      process.nextTick(function () {
         expect(tracer.isCurrentSegmentType('TEST2')).equal(false);
 
         done();
