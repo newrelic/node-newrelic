@@ -34,7 +34,7 @@ clean:
 
 node_modules: package.json
 	@rm -rf node_modules
-	npm install
+	npm --loglevel warn install
 
 build: clean node_modules
 	@echo "Currently using node $(NODE_VERSION)."
@@ -45,6 +45,11 @@ test-clean:
 	rm -rf test/integration/test-mongodb
 	rm -rf test/integration/test-mysql
 	rm newrelic_agent.log
+
+test-ci: node_modules sub_node_modules $(CERTIFICATE)
+	@rm -f newrelic_agent.log
+	@$(MOCHA) --reporter min
+	@$(TAP) $(INTEGRATION)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
