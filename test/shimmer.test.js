@@ -4,7 +4,8 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger')).child({component : 'TEST'})
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+                     .child({component : 'TEST'})
   , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
   , EventEmitter = require('events').EventEmitter
   ;
@@ -44,6 +45,74 @@ describe("the instrumentation injector", function () {
     expect(doubled).equal(16);
     expect(before).equal(true);
     expect(after).equal(true);
+  });
+
+  describe("with accessor replacement", function () {
+    var simple;
+
+    beforeEach(function () {
+      simple = {target : true};
+    });
+
+    it("shouldn't throw if called with no params", function () {
+      expect(function () {
+        shimmer.wrapDeprecated();
+      }).not.throws();
+    });
+
+    it("shouldn't throw if called with only the original object", function () {
+      expect(function () {
+        shimmer.wrapDeprecated(simple);
+      }).not.throws();
+    });
+
+    it("shouldn't throw if property to be replaced is omitted", function () {
+      expect(function () {
+        shimmer.wrapDeprecated(simple, 'nodule', null,
+                               {get : function () {}, set : function () {}});
+      }).not.throws();
+    });
+
+    it("shouldn't throw if getter is omitted", function () {
+      expect(function () {
+        shimmer.wrapDeprecated(simple, 'nodule', 'target', {set : function () {}});
+      }).not.throws();
+    });
+
+    it("shouldn't throw if setter is omitted", function () {
+      expect(function () {
+        shimmer.wrapDeprecated(simple, 'nodule', 'target', {get : function () {}});
+      }).not.throws();
+    });
+
+    it("should replace a property with an accessor", function (done) {
+      var original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
+        get : function () {
+          // test will only complete if this is called
+          done();
+          return false;
+        }
+      });
+      expect(original).equal(true);
+
+      expect(simple.target).equal(false);
+    });
+
+    it("should invoke the setter when the accessor is used", function (done) {
+      var test = 'ham';
+      var original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
+        get : function () {
+          return test;
+        },
+        set : function (value) {
+          expect(value).equal('eggs');
+          done();
+        }
+      });
+      expect(original).equal(true);
+      expect(simple.target).equal('ham');
+      simple.target = 'eggs';
+    });
   });
 
   it("should wrap, then unwrap a method", function () {
