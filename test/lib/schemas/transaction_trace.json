@@ -1,0 +1,117 @@
+{
+  "id": "transaction_trace",
+  "description": "A transaction trace, delivered as a compressed, encoded payload in the transaction sample data.",
+  "type": "array",
+  "minItems": 4,
+  "maxItems": 5,
+  "items": [
+    {
+      "id": "trace_start_time",
+      "description": "start time of the trace, in seconds",
+      "type": "number",
+      "required": true
+    },
+    {
+      "id": "request_parameters",
+      "type": "object",
+      "required": true
+    },
+    {
+      "id": "custom_parameters",
+      "type": "object",
+      "required": true
+    },
+    {
+      "id": "root_trace_segment",
+      "type": "array",
+      "required": true,
+      "minItems": 5,
+      "maxItems": 6,
+      "items": [
+        {
+          "id": "entry_timestamp",
+          "description": "relative to start of trace, in milliseconds",
+          "type": "number"
+        },
+        {
+          "id": "exit_timestamp",
+          "description": "relative to start of trace, in milliseconds",
+          "type": "number"
+        },
+        {
+          "id": "root_name",
+          "type": "string",
+          "pattern": "ROOT"
+        },
+        {
+          "id": "empty_dictionary",
+          "description": "this is a placeholder -- the root segment is a trace segment, but with a special name",
+          "type": "object",
+          "maxProperties": 0
+        },
+        {
+          "id": "root_children",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "id": "trace_segment",
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 6,
+            "items": [
+              {
+                "id": "entry_timestamp",
+                "description": "relative to start of trace, in milliseconds",
+                "type": "number"
+              },
+              {
+                "id": "exit_timestamp",
+                "description": "relative to start of trace, in milliseconds",
+                "type": "number"
+              },
+              {
+                "id": "metric_name",
+                "type": "string"
+              },
+              {
+                "id": "request_parameters",
+                "type": "object"
+              },
+              {
+                "id": "child_segments",
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "trace_segment"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "parameter_groups",
+      "type": "array",
+      "required": false,
+      "items": {
+        "id": "parameter_group",
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "uniqueItems": true,
+        "items": [
+          {
+            "id": "parameter_group_id",
+            "type": "string"
+          },
+          {
+            "id": "parameters",
+            "type": "object"
+          }
+        ]
+      }
+    }
+  ]
+}

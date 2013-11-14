@@ -1,0 +1,114 @@
+{
+  "id": "metric_data",
+  "description": "agent-aggregated metrics",
+  "type": "array",
+  "minItems": 4,
+  "maxItems": 4,
+  "items": [
+    {
+      "id": "agent_run_id",
+      "description": "agent run ID returned by the collector",
+      "type": "number",
+      "mod": 1,
+      "minimum": 0,
+      "required": true
+    },
+    {
+      "id": "start_time",
+      "description": "start time for metrics capture, in seconds (as a float)",
+      "type": "number",
+      "minimum": 0,
+      "required": true
+    },
+    {
+      "id": "end_time",
+      "description": "end time for metrics capture, in seconds (as a float)",
+      "type": "number",
+      "minimum": 0,
+      "required": true
+    },
+    {
+      "id": "metric_aggregates",
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "items" : {
+        "id": "metric_aggregate",
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": [
+          {
+            "id": "metric_name",
+            "required": true,
+            "type": [
+              {
+                "id": "metric_id",
+                "description": "ID assigned to a metric by the collector",
+                "type": "number"
+              },
+              {
+                "id": "metric_spec",
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 2,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "the metric name path",
+                    "required": true
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "the top-level transaction name in which this metric was gathered",
+                    "required": false
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "stats",
+            "description": "these stats can also hold apdex information, but documenting that is out of scope for this schema",
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": [
+              {
+                "id": "call_count",
+                "description": "number of times this metric was collected during the harvest cycle",
+                "type": "number",
+                "mod": 1
+              },
+              {
+                "id": "total_call_time",
+                "description": "how much time this metric has occupied over all calls (in seconds, for some reason)",
+                "type": "number"
+              },
+              {
+                "id": "total_exclusive_time",
+                "description": "how much exclusive time this metric has occupied over all calls (in seconds)",
+                "type": "number"
+              },
+              {
+                "id": "min_call_time",
+                "description": "the fastest execution time for this metric (in seconds)",
+                "type": "number"
+              },
+              {
+                "id": "max_call_time",
+                "description": "the slowest execution time for this metric (in seconds)",
+                "type": "number"
+              },
+              {
+                "id": "sum_of_squares",
+                "description": "running sum of squares for execution time of this metric (in seconds squared)",
+                "type": "number"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

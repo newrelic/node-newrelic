@@ -71,7 +71,8 @@
     "nave": "*",
     "should": "*",
     "nock": "*",
-    "split": "*"
+    "split": "*",
+    "JSV": "~4.0.2"
   },
   "repository": {
     "type": "git",

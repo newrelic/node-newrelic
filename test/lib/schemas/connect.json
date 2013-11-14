@@ -1,0 +1,72 @@
+{
+  "id": "connect",
+  "description": "the set of data expected by the collector upon connection",
+  "type": "array",
+  "items": {
+    "id": "actual_connect_data",
+    "description": "for some reason, all JSON passed to the collector is wrapped in an array",
+    "type": "object",
+    "properties": {
+      "pid": {
+        "id": "PID_KEY",
+        "description": "the process ID of the server process",
+        "type": "number",
+        "mod": 1,
+        "minimum": 2,
+        "required": true
+      },
+      "language": {
+        "id": "LANGUAGE",
+        "type": "string",
+        "enum": ["dotnet", "java", "nodejs", "php", "python", "ruby"],
+        "required": true
+      },
+      "host": {
+        "id": "HOST",
+        "type": "string",
+        "pattern": "^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\\-]*[A-Za-z0-9])",
+        "required": true
+      },
+      "agent_version": {
+        "id": "AGENT_VERSION",
+        "type": "string",
+        "required": true
+      },
+      "app_name": {
+        "id": "APP_NAME",
+        "type": "array",
+        "minItems": 1,
+        "required": true,
+        "items": {
+          "title": "app_name_instance",
+          "type": "string"
+        }
+      },
+      "environment": {
+        "id": "environment",
+        "description": "ad hoc array of key-value pairs for environment settings",
+        "type": "array",
+        "minItems": 1,
+        "required": false,
+        "items": {
+          "id": "environment_pair",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "id": "environment_key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "id": "environment_value",
+              "type": "any",
+              "required": true
+            }
+          ]
+        }
+      }
+    }
+  }
+}
