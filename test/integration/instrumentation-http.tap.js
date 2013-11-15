@@ -145,14 +145,13 @@ test("built-in http instrumentation should handle internal & external requests",
 
 test("built-in http instrumentation shouldn't swallow errors",
      function (t) {
-  t.plan(4);
+  t.plan(3);
 
   var agent = helper.instrumentMockedAgent();
 
   function handleRequest(req, res) {
-    t.ok(process.domain, "should have a domain available");
     process.once('uncaughtException', function (error) {
-      t.ok(error, "Got error in domain handler.");
+      t.ok(error, "got error in uncaughtException handler.");
       res.statusCode = 501;
 
       res.end();
@@ -179,16 +178,14 @@ test("built-in http instrumentation shouldn't swallow errors",
     });
   }
 
-  var server = http.createServer(handleRequest.bind(this));
+  var server = http.createServer(handleRequest);
 
   this.tearDown(function () {
     server.close();
     helper.unloadAgent(agent);
   });
 
-  server.listen(1337, function () {
-    process.nextTick(makeRequest);
-  });
+  server.listen(1337, makeRequest);
 });
 
 test("built-in http instrumentation making outbound requests", function (t) {
