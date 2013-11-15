@@ -6,7 +6,6 @@ var path         = require('path')
   , should       = chai.should()
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
-  , dominion     = require(path.join(__dirname, '..', 'lib', 'dominion'))
   , ErrorTracer  = require(path.join(__dirname, '..', 'lib', 'error'))
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -733,105 +732,93 @@ describe("ErrorTracer", function () {
     });
   });
 
-  if (dominion.available) {
-    describe("when domains are available", function () {
-      var mochaHandlers
-        , agent
-        , transaction
-        , domain
-        , active
-        , json
-        ;
+  describe("when using the async listener", function () {
+    var mochaHandlers
+      , agent
+      , transaction
+      , active
+      , json
+      ;
 
-      before(function (done) {
-        agent = helper.loadMockedAgent();
+    before(function (done) {
+      agent = helper.loadMockedAgent();
 
-        /**
-         * Mocha is extremely zealous about trapping errors, and runs each test
-         * in a try / catch block. To get the exception to propagate out to the
-         * domain's uncaughtException handler, we need to put the test in an
-         * asynchronous context and break out of the mocha jail.
-         */
-        process.nextTick(function () {
-          // disable mocha's error handler
-          mochaHandlers = helper.onlyDomains();
+      /**
+       * Mocha is extremely zealous about trapping errors, and runs each test
+       * in a try / catch block. To get the exception to propagate out to the
+       * domain's uncaughtException handler, we need to put the test in an
+       * asynchronous context and break out of the mocha jail.
+       */
+      process.nextTick(function () {
+        // disable mocha's error handler
+        mochaHandlers = helper.onlyDomains();
 
-          process.once('uncaughtException', function () {
-            json = agent.errors.errors[0];
+        process.once('uncaughtException', function () {
+          json = agent.errors.errors[0];
 
-            return done();
-          });
-
-          var disruptor = agent.tracer.transactionProxy(function () {
-            transaction = agent.getTransaction();
-            domain = transaction.trace.domain;
-            active = process.domain;
-
-            // trigger the domain
-            throw new Error('sample error');
-          });
-
-          disruptor();
-        });
-      });
-
-      after(function () {
-        // ...but be sure to re-enable mocha's error handler
-        transaction.end();
-        helper.unloadAgent(agent);
-        process._events['uncaughtException'] = mochaHandlers;
-      });
-
-      it("should bind domain to trace", function () {
-        should.exist(domain);
-      });
-
-      it("should have a domain active", function () {
-        should.exist(active);
-      });
-
-      it("the error-handling domain should be the active domain", function () {
-        expect(domain).equal(active);
-      });
-
-      it("should find a single error", function () {
-        expect(agent.errors.errors.length).equal(1);
-      });
-
-      describe("and an error is traced", function () {
-        it("should find the error", function () {
-          should.exist(json);
+          return done();
         });
 
-        it("should have 5 elements in the trace", function () {
-          expect(json.length).equal(5);
+        var disruptor = agent.tracer.transactionProxy(function () {
+          transaction = agent.getTransaction();
+          active = process.domain;
+
+          // trigger the error handler
+          throw new Error('sample error');
         });
 
-        it("should always have a 0 (ignored) timestamp", function () {
-          expect(json[0]).equal(0);
-        });
-
-        it("should have the default name", function () {
-          expect(json[1]).equal('WebTransaction/Uri/*');
-        });
-
-        it("should have the error's message", function () {
-          expect(json[2]).equal('sample error');
-        });
-
-        it("should have the error's constructor name (type)", function () {
-          expect(json[3]).equal('Error');
-        });
-
-        it("should default to passing the stack trace as a parameter", function () {
-          var params = json[4];
-
-          should.exist(params);
-          expect(Object.keys(params).length).equal(1);
-          should.exist(params.stack_trace);
-          expect(params.stack_trace[0]).equal("Error: sample error");
-        });
+        disruptor();
       });
     });
-  }
+
+    after(function () {
+      // ...but be sure to re-enable mocha's error handler
+      transaction.end();
+      helper.unloadAgent(agent);
+      process._events['uncaughtException'] = mochaHandlers;
+    });
+
+    it("should not have a domain active", function () {
+      should.not.exist(active);
+    });
+
+    it("should find a single error", function () {
+      expect(agent.errors.errors.length).equal(1);
+    });
+
+    describe("and an error is traced", function () {
+      it("should find the error", function () {
+        should.exist(json);
+      });
+
+      it("should have 5 elements in the trace", function () {
+        expect(json.length).equal(5);
+      });
+
+      it("should always have a 0 (ignored) timestamp", function () {
+        expect(json[0]).equal(0);
+      });
+
+      it("should have the default name", function () {
+        expect(json[1]).equal('WebTransaction/Uri/*');
+      });
+
+      it("should have the error's message", function () {
+        expect(json[2]).equal('sample error');
+      });
+
+      it("should have the error's constructor name (type)", function () {
+        expect(json[3]).equal('Error');
+      });
+
+      it("should default to passing the stack trace as a parameter", function () {
+        var params = json[4];
+
+        should.exist(params);
+        expect(Object.keys(params).length).equal(1);
+        should.exist(params.stack_trace);
+        expect(params.stack_trace[0]).equal("Error: sample error");
+      });
+    });
+  });
 });
