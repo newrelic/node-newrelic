@@ -63,6 +63,51 @@ describe("the New Relic agent", function () {
     });
   });
 
+  describe("when handling connection failures", function () {
+    var agent
+      , error
+      ;
+
+    function HulkObject() {}
+    HulkObject.prototype.toJSON = function () {
+      throw new Error("You wouldn't like me when I'm serialized.");
+    };
+
+    beforeEach(function () {
+      agent = helper.loadMockedAgent();
+      error = new Error('test error');
+      error.stylee = new HulkObject();
+    });
+
+    afterEach(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("shouldn't blow up when merging metrics with no error", function () {
+      expect(function () {
+        agent.mergeMetrics([0, 0, 0, agent.metrics], null);
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when merging metrics with a weird error", function () {
+      expect(function () {
+        agent.mergeMetrics([0, 0, 0, agent.metrics], error);
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when merging errors with no error", function () {
+      expect(function () {
+        agent.mergeErrors([], null);
+      }).not.throws();
+    });
+
+    it("shouldn't blow up when merging errors with a weird error", function () {
+      expect(function () {
+        agent.mergeErrors([], error);
+      }).not.throws();
+    });
+  });
+
   describe("with a stubbed collector connection", function () {
     var agent
       , connection
