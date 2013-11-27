@@ -331,15 +331,16 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         t.equal(get.name, 'Datastore/operation/Redis/get', "first hgetall child is get");
         t.equal(key, '["users:twitter:othiym23:status"]',
                 "fetched status of othiym23");
-        t.equal(children.length, 2, "get has two children");
+        t.equal(children.length, 1, "get has two children");
 
         var view = children[0] || {};
-        t.equal(view.name, 'View/room/Rendering', "first child is render of room view");
-        t.equal((view.children || {}).length, 0, "view has no children");
+        t.equal(view.name, 'View/room/Rendering', "get child is render of room view");
+        t.equal((view.children || {}).length, 1, "view has one child");
+        children = view.children || [];
 
-        var setex = children[1] || {};
+        var setex = children[0] || {};
         key = (setex.parameters || {}).key;
-        t.equal(setex.name, 'Datastore/operation/Redis/setex', "second child is setex");
+        t.equal(setex.name, 'Datastore/operation/Redis/setex', "view child is setex");
         t.equal(key, '["sess:' + SESSION_ID + '"]',
                 "updated session status");
         t.equal((setex.children || {}).length, 0, "setex has no children");

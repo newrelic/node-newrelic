@@ -65,10 +65,8 @@ describe("the New Relic agent API", function () {
         });
 
         helper.runInTransaction(agent, function (transaction) {
-          // set up web segment
-          var state = agent.tracer.getState();
           // grab segment
-          segment = state.getSegment().add(NAME);
+          segment = agent.tracer.addSegment(NAME);
 
           // HTTP instrumentation sets URL as soon as it knows it
           transaction.url = URL;
@@ -106,9 +104,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
@@ -134,9 +130,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        state.getSegment().add(NAME);
+        agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
@@ -160,9 +154,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
@@ -189,10 +181,8 @@ describe("the New Relic agent API", function () {
         });
 
         helper.runInTransaction(agent, function (transaction) {
-          // set up web segment
-          var state = agent.tracer.getState();
           // grab segment
-          segment = state.getSegment().add(NAME);
+          segment = agent.tracer.addSegment(NAME);
 
           // HTTP instrumentation sets URL as soon as it knows it
           transaction.url = URL;
@@ -230,8 +220,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state   = agent.tracer.getState();
-        segment = state.getSegment().add(NAME);
+        segment = agent.tracer.addSegment(NAME);
 
         transaction.url = URL;
 
@@ -257,9 +246,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
@@ -282,9 +269,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
@@ -364,9 +349,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
@@ -388,9 +371,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = '/test/31337/related';
         transaction.verb = 'GET';
 
@@ -468,9 +449,7 @@ describe("the New Relic agent API", function () {
       });
 
       helper.runInTransaction(agent, function (transaction) {
-        var state = agent.tracer.getState();
-
-        segment          = state.getSegment().add(NAME);
+        segment          = agent.tracer.addSegment(NAME);
         transaction.url  = URL;
         transaction.verb = 'GET';
 
