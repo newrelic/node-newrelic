@@ -1,6 +1,7 @@
 'use strict';
 
 var path        = require('path')
+  , spawn       = require('child_process').spawn
   , chai        = require('chai')
   , expect      = chai.expect
   , should      = chai.should()
@@ -122,6 +123,25 @@ describe("the environment scraper", function () {
     expect(dependencies.length).above(5);
     dependencies.forEach(function (pair) {
       expect(JSON.parse(pair).length).equal(2);
+    });
+  });
+
+  it("should not crash when given a file in NODE_PATH", function (done) {
+    var env = {
+      NODE_PATH: path.join(__dirname, "environment.test.js"),
+      PATH: process.env.PATH
+    };
+    var opt = {
+      env: env,
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..')
+    };
+    var exec = process.argv[0];
+    var args = [path.join(__dirname, 'environment.child.js')];
+    var proc = spawn(exec, args, opt);
+    proc.on('exit', function (code,sig) {
+      expect(code).equal(0);
+      done();
     });
   });
 });
