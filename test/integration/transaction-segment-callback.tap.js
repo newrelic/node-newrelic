@@ -28,13 +28,13 @@ var agent = helper.loadMockedAgent();
  * <- TRANSACTION T1
  */
 test("a. synchronous handler", function (t) {
-  t.plan(8);
+  t.plan(7);
 
   var tracer = new Tracer(agent);
 
   var transaction;
   var handler = function (multiplier, multiplicand) {
-    transaction = tracer.getState().getTransaction();
+    transaction = tracer.getTransaction();
     t.ok(transaction, "should find transaction in handler");
 
     return multiplier * multiplicand;
@@ -44,9 +44,8 @@ test("a. synchronous handler", function (t) {
   var product = wrapped(5, 7);
   t.equal(product, 35, "wrapped function still works");
 
-  t.ok(transaction.state, "state should be attached to transaction");
-  var describer = transaction.state.describer;
-  t.ok(describer, "describer should be on state");
+  var describer = transaction.describer;
+  t.ok(describer, "describer should be on transaction");
   var creations = [
     '+T', '+S', '+C' // handler invocation
   ];
@@ -93,7 +92,7 @@ test("b. asynchronous handler", function (t) {
 
   var transaction;
   var handler = function (multiplier) {
-    transaction = tracer.getState().getTransaction();
+    transaction = tracer.getTransaction();
 
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
@@ -107,7 +106,7 @@ test("b. asynchronous handler", function (t) {
   var product = cb(11);
   t.equal(product, 33, "wrapped function still works");
 
-  var describer = transaction.state.describer;
+  var describer = transaction.describer;
   var creations = [
     '+T', '+S', '+C', // handler invocation
     '+C'              // callback invocation
@@ -177,7 +176,7 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
 
   var transactions = [];
   var handler = function (multiplier) {
-    transactions.push(tracer.getState().getTransaction());
+    transactions.push(tracer.getTransaction());
 
     var callback = function (multiplicand) {
       return multiplier * multiplicand;
@@ -197,7 +196,7 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
 
   t.equals(transactions.length, 2, "should have tracked 2 transactions.");
   transactions.forEach(function (transaction, index) {
-    var describer = transaction.state.describer;
+    var describer = transaction.describer;
     var creations = [
       '+T', '+S', '+C', // handler invocation
       '+C'             // callback proxying
@@ -265,7 +264,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
 
   var transaction;
   var handler = function (multiplier, multiplicand) {
-    transaction = tracer.getState().getTransaction();
+    transaction = tracer.getTransaction();
     var product = multiplier * multiplicand;
 
     return wrappedSubsidiary(product, 7);
@@ -275,7 +274,7 @@ test("d. synchronous handler with synchronous subsidiary handler", function (t) 
   var result = wrapped(3, 5);
   t.equals(result, 22, "wrapped function still works");
 
-  var describer = transaction.state.describer;
+  var describer = transaction.describer;
   var creations = [
     '+T', '+S', '+C', // handler invocation
     '+S', '+C'        // subsidiary handler invocation
@@ -352,7 +351,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
 
   var transaction;
   var handler = function (multiplier, multiplicand, callback) {
-    transaction = tracer.getState().getTransaction();
+    transaction = tracer.getTransaction();
     var next = function (value, divisor) {
       return value / divisor;
     };
@@ -366,7 +365,7 @@ test("e. asynchronous handler with an asynchronous subsidiary handler", function
   var result = cb(17, 2);
   t.equals(result, 80, "wrapped functions still work");
 
-  var describer = transaction.state.describer;
+  var describer = transaction.describer;
   var creations = [
     '+T', '+S', '+C', // handler invocation
     '+C',             // handler callback invocation
@@ -483,7 +482,7 @@ test("f. two overlapping executions of an async handler with an async subsidiary
 
   var transactions = [];
   var handler = function (multiplier, multiplicand, callback) {
-    transactions.push(tracer.getState().getTransaction());
+    transactions.push(tracer.getTransaction());
 
     var next = function (value, divisor) {
       return value / divisor;
@@ -504,7 +503,7 @@ test("f. two overlapping executions of an async handler with an async subsidiary
 
   t.equals(transactions.length, 2, "should have tracked 2 transactions.");
   transactions.forEach(function (transaction, index) {
-    var describer = transaction.state.describer;
+    var describer = transaction.describer;
     var creations = [
       '+T', '+S', '+C', // 1st handler invocation
       '+C',             // 1st callback invocation
