@@ -128,19 +128,24 @@ describe("the environment scraper", function () {
 
   it("should not crash when given a file in NODE_PATH", function (done) {
     var env = {
-      NODE_PATH: path.join(__dirname, "environment.test.js"),
-      PATH: process.env.PATH
+      NODE_PATH : path.join(__dirname, "environment.test.js"),
+      PATH      : process.env.PATH
     };
+
     var opt = {
-      env: env,
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+      env   : env,
+      stdio : 'inherit',
+      cwd   : path.join(__dirname, '..')
     };
-    var exec = process.argv[0];
-    var args = [path.join(__dirname, 'environment.child.js')];
-    var proc = spawn(exec, args, opt);
-    proc.on('exit', function (code,sig) {
+
+    var exec = process.argv[0]
+      , args = [path.join(__dirname, 'environment.child.js')]
+      , proc = spawn(exec, args, opt)
+      ;
+
+    proc.on('exit', function (code) {
       expect(code).equal(0);
+
       done();
     });
   });
