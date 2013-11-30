@@ -139,7 +139,7 @@ describe("the environment scraper", function () {
     };
 
     var exec = process.argv[0]
-      , args = [path.join(__dirname, 'environment.child.js')]
+      , args = [path.join(__dirname, 'helpers', 'environment.child.js')]
       , proc = spawn(exec, args, opt)
       ;
 
