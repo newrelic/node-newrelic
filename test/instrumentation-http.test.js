@@ -43,6 +43,28 @@ describe("built-in http module instrumentation", function () {
     });
   });
 
+  describe("after loading", function () {
+    var agent;
+
+    before(function () {
+      agent = helper.instrumentMockedAgent();
+    });
+
+    after(function () {
+      helper.unloadAgent(agent);
+    });
+
+    it("shouldn't have changed createServer's declared parameter names", function (){
+      var http = require('http');
+      var fn = http.createServer;
+      /* Taken from
+       * https://github.com/dhughes/CoolBeans/blob/master/lib/CoolBeans.js#L199
+       */
+      var params = fn.toString().match(/function\s+\w*\s*\((.*?)\)/)[1].split(/\s*,\s*/);
+      expect(params).eql(['requestListener']);
+    });
+  });
+
   describe("with outbound request mocked", function () {
     var agent
       , http
