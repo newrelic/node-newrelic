@@ -17,6 +17,7 @@ need a New Relic Pro subscription (or equivalent).
 * [Getting started](#getting-started)
 * [Transactions and request naming](#transactions-and-request-naming)
 * [Configuration](#configuring-the-agent)
+* [Security](#security)
 * [Contributions](#contributions)
 * [Known issues](#known-issues)
 
@@ -358,6 +359,13 @@ For completeness, here's the rest of the list:
 * `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
   internal operation. It's unlikely to be informative unless you're a New Relic
   Node.js engineer and it has a significant performance cost, so use with care.
+
+## Security
+
+We take security (and the protection of your and your users' privacy) very
+seriously. See SECURITY.md for details, but the brief version is that if you
+feel you've found a security issue in New Relic for Node, contact us at
+security@newrelic.com.
 
 ## Contributions
 
