@@ -127,9 +127,10 @@ test("agent instrumentation of Express 2", function (t) {
     var agent = helper.instrumentMockedAgent();
 
     // see shimmer.reinstrument for info on why this is here
-    shimmer.reinstrument(agent, path.join(__dirname,
-                                          'node_modules', 'express',
-                                          'node_modules', 'connect'));
+    shimmer.reinstrument(
+      agent,
+      path.join(__dirname, 'node_modules', 'express', 'node_modules', 'connect')
+    );
 
     var app = require('express').createServer();
 
