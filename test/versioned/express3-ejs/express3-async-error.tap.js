@@ -14,6 +14,7 @@ var COMPLETION = 27;
 
 test("Express 3 async throw", function (t) {
   var erk = fork(path.join(__dirname, 'erk.js'));
+  var timer;
 
   erk.on('error', function (error) {
     t.fail(error);
@@ -21,6 +22,7 @@ test("Express 3 async throw", function (t) {
   });
 
   erk.on('exit', function (code) {
+    clearTimeout(timer);
     t.notEqual(code, COMPLETION, "request didn't complete");
     t.end();
   });
@@ -28,10 +30,12 @@ test("Express 3 async throw", function (t) {
   // wait for the child vm to boot
   erk.on('message', function (message) {
     if (message === 'ready') {
-      setTimeout(function () {
+      timer = setTimeout(function () {
         t.fail("hung waiting for exit");
         erk.kill();
-      }, 100).unref();
+      }, 100);
+      // timer.unref is only 0.9+
+      if (timer.unref) timer.unref();
       erk.send(COMPLETION);
     }
   });
