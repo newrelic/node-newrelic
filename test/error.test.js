@@ -688,44 +688,6 @@ describe("ErrorTracer", function () {
     });
   });
 
-  describe("when monitoring function application for errors", function () {
-    var agent
-      , transaction
-      , mochaHandlers
-      ;
-
-    beforeEach(function () {
-      agent = helper.loadMockedAgent();
-      transaction = new Transaction(agent);
-      mochaHandlers = helper.onlyDomains();
-    });
-
-    afterEach(function () {
-      transaction.end();
-      helper.unloadAgent(agent);
-      process._events['uncaughtException'] = mochaHandlers;
-    });
-
-    it("should rethrow the exception", function () {
-      var testFunction = function () {
-        var uninitialized;
-        uninitialized.explosion.happens.here = "fabulous";
-      };
-
-      expect(function () {
-        tracer.monitor(testFunction, transaction);
-      }).throws(TypeError);
-    });
-
-    it("should return the correct value", function () {
-      var safeFunction = function (val) {
-        return val * val;
-      };
-
-      expect(tracer.monitor(safeFunction.bind(null, 3), transaction)).equal(9);
-    });
-  });
-
   describe("when merging from failed collector delivery", function () {
     it("shouldn't crash on null errors", function () {
       expect(function () { tracer.merge(null); }).not.throws();
