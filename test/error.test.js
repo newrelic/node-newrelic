@@ -111,6 +111,16 @@ describe("ErrorTracer", function () {
 
       expect(tracer.errorCount).equal(1);
     });
+
+    it("should ignore 404 errors for transactions with exceptions attached", function () {
+      tracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics);
+      // 404 errors are ignored by default
+      var special = createTransaction(agent, 404);
+      special.exceptions.push(new Error('ignored'));
+      tracer.onTransactionFinished(special, agent.metrics);
+
+      expect(tracer.errorCount).equal(1);
+    });
   });
 
   describe("with no exception and no transaction", function () {
