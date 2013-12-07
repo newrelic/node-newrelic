@@ -43,4 +43,5 @@ projects under the following licenses:
 bunyan                      http://opensource.org/licenses/MIT
 continuation-local-storage  http://opensource.org/licenses/BSD-2-Clause
 async-listener              http://opensource.org/licenses/BSD-2-Clause
+emitter-listener            http://opensource.org/licenses/BSD-2-Clause
 shimmer                     http://opensource.org/licenses/BSD-2-Clause
