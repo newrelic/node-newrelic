@@ -1,8 +1,9 @@
 ### v1.2.0 (2013-12-07):
 
-* Before, there were certain circumstances under which an application would
-  crash without New Relic installed, but wouldn't crash with it. This has been
-  fixed, and the error tracer has been considerably simplified.
+* Before, there were certain circumstances under which an application
+  would crash without New Relic installed, but wouldn't crash with it.
+  This has been fixed, and applications with New Relic installed now
+  crash consistently. The error tracer is now also considerably simpler.
 * Added a security policy. See the new section in README.md or read
   SECURITY.md.
 * Future-proofed the MongoDB instrumentation and prevented the module from
