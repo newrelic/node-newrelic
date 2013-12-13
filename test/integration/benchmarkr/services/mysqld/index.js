@@ -92,10 +92,12 @@ module.exports = function setup(options, imports, register) {
       logger.error(err);
     });
 
-    init.on('exit', function () {
+    init.on('exit', function (code, signal) {
       logger.info("MySQL data directory bootstrapped.");
-
-      return deferred.resolve();
+      if (code || signal)
+        return deferred.reject(new Error("Boostrapping MySQL Returned Code: " + code));
+      else 
+        return deferred.resolve();
     });
 
     carrier.carry(init.stdout, function (line) {
