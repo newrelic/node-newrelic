@@ -119,7 +119,11 @@ module.exports = function setup(options, imports, register) {
     var deferred = Q.defer();
 
     var mysqldProcess = spawn('mysqld',
-                              ['--datadir=' + dbpath],
+                              [
+                                '--datadir=' + dbpath,
+                                '--socket=/tmp/mysqld.sock',
+                                '--pid=/tmp/mysqld.pid'
+                              ],
                               {stdio : [process.stdin, 'pipe', 'pipe']});
 
     mysqldProcess.on('exit', function (code, signal) {
