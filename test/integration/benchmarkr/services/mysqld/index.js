@@ -84,7 +84,8 @@ module.exports = function setup(options, imports, register) {
                      [
                        '--force',
                        '--basedir=' + basedir,
-                       '--datadir=' + dbpath
+                       '--datadir=' + dbpath,
+                       '--user='    + process.getuid()
                      ],
                      {stdio : [process.stdin, 'pipe', 'pipe']});
 
