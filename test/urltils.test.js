@@ -124,4 +124,106 @@ describe("NR URL utilities", function () {
       return expect(urltils.isError(config, 420)).true;
     });
   });
+
+  describe("copying parameters from a query hash", function () {
+    var config
+      , source
+      , dest
+      ;
+
+    beforeEach(function () {
+      config = {
+        capture_params : true,
+        ignored_params : []
+      };
+      source = {};
+      dest = {};
+    });
+
+    it("shouldn't throw on missing configuration", function () {
+      expect(function () { urltils.copyParameters(null, source, dest); }).not.throws();
+    });
+
+    it("shouldn't throw on missing source", function () {
+      expect(function () { urltils.copyParameters(config, null, dest); }).not.throws();
+    });
+
+    it("shouldn't throw on missing destination", function () {
+      expect(function () { urltils.copyParameters(config, source, null); }).not.throws();
+    });
+
+    it("should copy parameters from source to destination", function () {
+      dest.existing = 'here';
+      source.firstNew = 'present';
+      source.secondNew = 'accounted for';
+
+      expect(function () { urltils.copyParameters(config, source, dest); }).not.throws();
+
+      expect(dest).eql({
+        existing  : 'here',
+        firstNew  : 'present',
+        secondNew : 'accounted for'
+      });
+    });
+
+    it("shouldn't copy ignored parameters", function () {
+      dest.existing = 'here';
+      source.firstNew = 'present';
+      source.secondNew = 'accounted for';
+      source.password = 'hamchunx';
+
+      config.ignored_params.push('firstNew');
+      config.ignored_params.push('password');
+
+      urltils.copyParameters(config, source, dest);
+
+      expect(dest).eql({
+        existing  : 'here',
+        // NOPE: firstNew  : 'present',
+        secondNew : 'accounted for'
+        // NOPE: password : '******'
+      });
+    });
+
+    it("shouldn't overwrite existing parameters in destination", function () {
+      dest.existing = 'here';
+      dest.firstNew = 'already around';
+      source.firstNew = 'present';
+      source.secondNew = 'accounted for';
+
+      urltils.copyParameters(config, source, dest);
+
+      expect(dest).eql({
+        existing  : 'here',
+        firstNew  : 'already around',
+        secondNew : 'accounted for'
+      });
+    });
+
+    it("shouldn't overwrite null parameters in destination", function () {
+      dest.existing = 'here';
+      dest.firstNew = null;
+      source.firstNew = 'present';
+
+      urltils.copyParameters(config, source, dest);
+
+      expect(dest).eql({
+        existing  : 'here',
+        firstNew  : null
+      });
+    });
+
+    it("shouldn't overwrite undefined parameters in destination", function () {
+      dest.existing = 'here';
+      dest.firstNew = undefined;
+      source.firstNew = 'present';
+
+      urltils.copyParameters(config, source, dest);
+
+      expect(dest).eql({
+        existing  : 'here',
+        firstNew  : undefined
+      });
+    });
+  });
 });
