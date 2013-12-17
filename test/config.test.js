@@ -52,6 +52,14 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should trim spaces from multiple application names ", function () {
+      idempotentEnv('NEW_RELIC_APP_NAME', 'zero,one, two,  three,   four',
+                    function (tc) {
+        should.exist(tc.app_name);
+        expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four']);
+      });
+    });
+
     it("should pick up the license key", function () {
       idempotentEnv('NEW_RELIC_LICENSE_KEY', 'hambulance', function (tc) {
         should.exist(tc.license_key);
