@@ -46,15 +46,23 @@ describe("an instrumented Hapi application", function () {
       agent.environment.clearDispatcher();
       agent.environment.clearFramework();
 
-      stub = {
-        Server : {
-          prototype : {
-            start  : function () { return 'server'; },
-            views  : function () {},
-            _route : function () {}
-          }
-        }
+      function Router() {
+        this.table = {};
+      }
+      Router.prototype.add = function (config) {
+        this.table[config.method] = [{settings : config}];
       };
+
+      function Server() {
+        this._router = new Router();
+      }
+      Server.prototype = {
+        start  : function () { return 'server'; },
+        views  : function () {},
+        _route : function (config) { this._router.add(config); }
+      };
+
+      stub = {Server : Server};
 
       require(path.join(__dirname, '..', 'lib',
                         'instrumentation', 'hapi'))(agent, stub);
@@ -87,6 +95,7 @@ describe("an instrumented Hapi application", function () {
         transaction.verb = 'GET';
 
         var config = {
+          method : 'GET',
           path : TEST_PATH,
           handler : function handler() {
             expect(transaction.partialName).equal('Hapi/GET//test/{id}');
@@ -94,7 +103,8 @@ describe("an instrumented Hapi application", function () {
           }
         };
 
-        stub.Server.prototype._route(config);
+        var server = new stub.Server();
+        server._route(config);
 
         var request = {
           route : {
@@ -114,6 +124,8 @@ describe("an instrumented Hapi application", function () {
         transaction.agent.config.capture_params = true;
 
         var config = {
+          method : 'GET',
+          path : '/nonexistent',
           handler : function handler() {
             expect(transaction.getTrace().root.parameters).eql({
               id                           : '31337',
@@ -125,7 +137,8 @@ describe("an instrumented Hapi application", function () {
           }
         };
 
-        stub.Server.prototype._route(config);
+        var server = new stub.Server();
+        server._route(config);
 
         var request = {
           route : {
