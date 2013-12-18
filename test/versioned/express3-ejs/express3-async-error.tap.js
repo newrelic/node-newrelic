@@ -33,7 +33,7 @@ test("Express 3 async throw", function (t) {
       timer = setTimeout(function () {
         t.fail("hung waiting for exit");
         erk.kill();
-      }, 100);
+      }, 1000);
       // timer.unref is only 0.9+
       if (timer.unref) timer.unref();
       erk.send(COMPLETION);
