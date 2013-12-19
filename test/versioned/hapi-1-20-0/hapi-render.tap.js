@@ -37,11 +37,6 @@ test("agent instrumentation of Hapi", function (t) {
       , server = hapi.createServer(TEST_HOST, TEST_PORT)
       ;
 
-    this.tearDown(function () {
-      helper.unloadAgent(agent);
-      server.stop();
-    });
-
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1;
 
@@ -85,7 +80,10 @@ test("agent instrumentation of Hapi", function (t) {
         t.ok(serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
              "serialized metrics as expected");
 
-        t.end();
+        server.stop(function () {
+          helper.unloadAgent(agent);
+          t.end();
+        });
       });
     });
   });
@@ -108,11 +106,6 @@ test("agent instrumentation of Hapi", function (t) {
 
     var server = hapi.createServer(TEST_HOST, TEST_PORT, options);
 
-    this.tearDown(function () {
-      helper.unloadAgent(agent);
-      server.stop();
-    });
-
     server.route({
       method : 'GET',
       path : TEST_PATH,
@@ -133,7 +126,10 @@ test("agent instrumentation of Hapi", function (t) {
         t.equal(response.statusCode, 200, "response code should be 200");
         t.equal(body, BODY, "template should still render fine");
 
-        t.end();
+        server.stop(function () {
+          helper.unloadAgent(agent);
+          t.end();
+        });
       });
     });
   });
@@ -143,11 +139,6 @@ test("agent instrumentation of Hapi", function (t) {
       , hapi   = require('hapi')
       , server = hapi.createServer(TEST_HOST, TEST_PORT)
       ;
-
-    this.tearDown(function () {
-      helper.unloadAgent(agent);
-      server.stop();
-    });
 
     server.route({
       method  : 'GET',
@@ -175,7 +166,10 @@ test("agent instrumentation of Hapi", function (t) {
         t.equal(first[2], "Cannot read property 'ohno' of undefined",
                 "got the expected error");
 
-        t.end();
+        server.stop(function () {
+          helper.unloadAgent(agent);
+          t.end();
+        });
       });
     });
   });

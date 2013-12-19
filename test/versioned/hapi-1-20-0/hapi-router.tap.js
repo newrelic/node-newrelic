@@ -13,7 +13,7 @@ var path    = require('path')
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
   ;
 
-function verifier(t) {
+function verifier(t, finished) {
   return function (transaction) {
     t.equal(transaction.name, 'WebTransaction/Hapi/GET//test/{id}',
             "transaction has expected name");
@@ -28,6 +28,8 @@ function verifier(t) {
     t.equal(web.partialName, 'Hapi/GET//test/{id}',
             "should have partial name for apdex");
     t.equal(web.parameters.id, '31337', "namer gets parameters out of route");
+
+    finished();
   };
 }
 
@@ -35,22 +37,20 @@ test("Hapi router introspection", function (t) {
   t.plan(3);
 
   t.test("simple case using server.route", function (t) {
-    t.plan(12);
-
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
       , server = hapi.createServer('localhost', 8080)
       ;
 
-    this.tearDown(function () {
-      helper.unloadAgent(agent);
-      server.stop();
-    });
-
     // disabled by default
     agent.config.capture_params = true;
 
-    agent.on('transactionFinished', verifier(t));
+    agent.on('transactionFinished', verifier(t, function () {
+      helper.unloadAgent(agent);
+      server.stop(function () {
+        t.end();
+      });
+    }));
 
     var route = {
       method : 'GET',
@@ -75,22 +75,20 @@ test("Hapi router introspection", function (t) {
   });
 
   t.test("simple case using server.addRoute", function (t) {
-    t.plan(12);
-
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
       , server = hapi.createServer('localhost', 8080)
       ;
 
-    this.tearDown(function () {
-      helper.unloadAgent(agent);
-      server.stop();
-    });
-
     // disabled by default
     agent.config.capture_params = true;
 
-    agent.on('transactionFinished', verifier(t));
+    agent.on('transactionFinished', verifier(t, function () {
+      helper.unloadAgent(agent);
+      server.stop(function () {
+        t.end();
+      });
+    }));
 
     var route = {
       method : 'GET',
@@ -115,21 +113,19 @@ test("Hapi router introspection", function (t) {
   });
 
   t.test("less simple case (server.addRoute & route.config.handler)", function (t) {
-    t.plan(12);
-
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
       , server = hapi.createServer('localhost', 8080)
       ;
 
-    this.tearDown(function () {
-      helper.unloadAgent(agent);
-      server.stop();
-    });
-
     agent.config.capture_params = true;
 
-    agent.on('transactionFinished', verifier(t));
+    agent.on('transactionFinished', verifier(t, function () {
+      helper.unloadAgent(agent);
+      server.stop(function () {
+        t.end();
+      });
+    }));
 
     var hello = {
       handler : function () {
