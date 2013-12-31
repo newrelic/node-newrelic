@@ -231,7 +231,7 @@ describe("the New Relic agent", function () {
       });
 
       it("loads the rules", function () {
-        var rules = configured.urlNormalizer.rules;
+        var rules = configured.userNormalizer.rules;
         expect(rules.length).equal(2);
         // because of unshift, rules are in reverse of config order
         expect(rules[0].pattern.source).equal('^\\/u');
@@ -251,7 +251,7 @@ describe("the New Relic agent", function () {
       });
 
       it("loads the rules", function () {
-        var rules = configured.urlNormalizer.rules;
+        var rules = configured.userNormalizer.rules;
         expect(rules.length).equal(1);
         expect(rules[0].pattern.source).equal('^\\/ham_snadwich\\/ignore');
         expect(rules[0].ignore).equal(true);

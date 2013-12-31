@@ -149,7 +149,7 @@ API.prototype.noticeError = function (error) {
 API.prototype.addNamingRule = function (pattern, name) {
   if (!name) return logger.error("Simple naming rules require a replacement name.");
 
-  this.agent.urlNormalizer.addSimple(pattern, '/' + name);
+  this.agent.userNormalizer.addSimple(pattern, '/' + name);
 };
 
 /**
@@ -168,7 +168,7 @@ API.prototype.addNamingRule = function (pattern, name) {
 API.prototype.addIgnoringRule = function (pattern) {
   if (!pattern) return logger.error("Must include a URL pattern to ignore.");
 
-  this.agent.urlNormalizer.addSimple(pattern, null);
+  this.agent.userNormalizer.addSimple(pattern, null);
 };
 
 module.exports = API;

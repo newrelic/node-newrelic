@@ -286,9 +286,9 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new naming rule", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.urlNormalizer.rules.length).equal(0);
+      expect(agent.userNormalizer.rules.length).equal(0);
       api.addNamingRule('^/simple.*', 'API');
-      expect(agent.urlNormalizer.rules.length).equal(1);
+      expect(agent.userNormalizer.rules.length).equal(1);
     });
 
     describe("in the base case", function () {
@@ -307,11 +307,12 @@ describe("the New Relic agent API", function () {
         ]);
 
         api.addNamingRule('^/test/.*', 'Test');
-        mine = agent.urlNormalizer.rules[0];
+        mine = agent.userNormalizer.rules[0];
       });
 
       it("should add it to the agent's normalizer", function () {
-        expect(agent.urlNormalizer.rules.length).equal(4);
+        expect(agent.urlNormalizer.rules.length).equal(3);
+        expect(agent.userNormalizer.rules.length).equal(1);
       });
 
       it("should leave the passed-in pattern alone", function () {
@@ -382,9 +383,9 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new pattern to ignore", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.urlNormalizer.rules.length).equal(0);
+      expect(agent.userNormalizer.rules.length).equal(0);
       api.addIgnoringRule('^/simple.*');
-      expect(agent.urlNormalizer.rules.length).equal(1);
+      expect(agent.userNormalizer.rules.length).equal(1);
     });
 
     describe("in the base case", function () {
@@ -403,11 +404,12 @@ describe("the New Relic agent API", function () {
         ]);
 
         api.addIgnoringRule('^/test/.*');
-        mine = agent.urlNormalizer.rules[0];
+        mine = agent.userNormalizer.rules[0];
       });
 
       it("should add it to the agent's normalizer", function () {
-        expect(agent.urlNormalizer.rules.length).equal(4);
+        expect(agent.urlNormalizer.rules.length).equal(3);
+        expect(agent.userNormalizer.rules.length).equal(1);
       });
 
       it("should leave the passed-in pattern alone", function () {

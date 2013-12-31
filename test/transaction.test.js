@@ -4,10 +4,11 @@ var path        = require('path')
   , chai        = require('chai')
   , should      = chai.should()
   , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper      = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , API         = require(path.join(__dirname, '..', 'api.js'))
+  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics.js'))
+  , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace.js'))
+  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
 describe("Transaction", function () {
@@ -181,8 +182,9 @@ describe("Transaction", function () {
       expect(function () { trans.setName(); }).throws();
     });
 
-    it("should ignore a URL when told to by a rule", function () {
-      agent.urlNormalizer.addSimple('^/test/');
+    it("should ignore a request path when told to by a rule", function () {
+      var api = new API(agent);
+      api.addIgnoringRule('^/test/');
       trans.setName('/test/string?do=thing&another=thing', 200);
       return expect(trans.ignore).true;
     });
