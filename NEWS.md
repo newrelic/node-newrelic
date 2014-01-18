@@ -1,3 +1,17 @@
+### v1.3.0 (2014-01-17):
+
+* Support for Spumko's Hapi! This support works with both Hapi 1.x and 2.0.0,
+  and like our Express and Restify instrumentation will automatically name
+  transactions after Hapi paths (get it) and time how long it takes to render
+  views.
+* Before, transaction naming and ignoring rules didn't work with Express and
+  Restify routes. This has been addressed and the documentation has been
+  clarified. Much gratitude to everyone who helped us figure out how to get
+  this right, and for dealing with the previous, unclear documentation.
+* Parameters in the ignored params list weren't being ignored in all cases.
+* A very annoyingly chatty log message had its priority level dropped several
+  levels.
+
 ### v1.2.0 (2013-12-07):
 
 * Before, there were certain circumstances under which an application
