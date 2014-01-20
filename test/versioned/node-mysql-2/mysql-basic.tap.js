@@ -117,14 +117,15 @@ test("SOME IMPORTANT TEST NAME",
 
       withRetry.getClient(function (err, client) {
         if (err) return t.fail(err);
-        
+
+        t.ok(agent.getTransaction(), "generic-pool should not lose the transaction");
         client.query('SELECT 1', function (err) {
           if (err) return t.fail(err);
 
-          t.ok(agent.getTransaction(), "mysql query should not lose the transaction");
+          t.ok(agent.getTransaction(), "MySQL query should not lose the transaction");
           withRetry.release(client);
 
-          return t.end();
+          t.end();
         });
       });
 
