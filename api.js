@@ -1,6 +1,7 @@
 'use strict';
 
 var path   = require('path')
+  , util   = require('util')
   , logger = require(path.join(__dirname, 'lib', 'logger')).child({component : 'api'})
   , NAMES  = require(path.join(__dirname, 'lib', 'metrics', 'names'))
   ;
@@ -169,6 +170,47 @@ API.prototype.addIgnoringRule = function (pattern) {
   if (!pattern) return logger.error("Must include a URL pattern to ignore.");
 
   this.agent.userNormalizer.addSimple(pattern, null);
+};
+
+function obfuscate(string, license_key) {
+  var bytes = new Buffer(string);
+  var i;
+  for (i = 0; i < bytes.length; i++)
+    bytes[i] = bytes[i] ^ license_key[i % 13].charCodeAt(0);
+  return bytes.toString('base64');
+}
+
+var _rum_stub = "<script type='text/javascript'>window.NREUM||(NREUM={});" + 
+                "NREUM.info = %s; %s</script>";
+
+API.prototype.getRUMHeader = function () {
+  var trans = this.agent.getTransaction();
+  var conf  = this.agent.config;
+  var rum   = conf.rum;
+
+  var name  = trans.partialName;
+  var time  = trans.timer.getDurationInMillis();
+  var key   = conf.license_key;
+
+  // this hash gets written directly into the browser
+  var rum_hash = {
+    agent           : rum.js_agent_file,
+    beacon          : rum.beacon,
+    errorBeacon     : rum.error_beacon,
+    licenseKey      : rum.browser_key,
+    applicationID   : conf.application_id,
+    applicationTime : time,
+    transactionName : obfuscate(name, key),
+
+    // we don't use these parameters yet
+    queueTime       : 0,
+    agentToken      : null,
+    ttGuid          : ""
+  };
+
+  var out = util.format(_rum_stub , JSON.stringify(rum_hash), rum.js_agent_loader);   
+
+  return out;
 };
 
 module.exports = API;
