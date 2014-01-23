@@ -183,12 +183,49 @@ function obfuscate(string, license_key) {
 var _rum_stub = "<script type='text/javascript'>window.NREUM||(NREUM={});" + 
                 "NREUM.info = %s; %s</script>";
 
+/**
+ * Get the <script>...</script> header necessary for Real User Monitoring (RUM)
+ * This script must be manually injected into your templates, as high as possible
+ * in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags.
+ * Otherwise you may hurt IE!
+ * 
+ * This method must be called _during_ a transaction, and must be called every
+ * time you want to generate the headers.
+ *
+ * Do *not* reuse the headers between users, or even between requests.
+ */
 API.prototype.getRUMHeader = function () {
+  
+  // gracefully fail
+  // output an HTML comment and log a warning
+  // the comment is meant to be innocuous to the end user
+  function _gracefail(msg){
+    logger.warn('rum:', msg);
+    return '<!-- why is the rum gone? -->';
+  }
+
   var trans = this.agent.getTransaction();
+
+  // bail gracefully outside a transaction
+  if (!trans) 
+    return _gracefail('transaction missing while generating RUM headers');
+
   var conf  = this.agent.config;
   var rum   = conf.rum;
 
+  // conf.rum should always exist, but we don't want the agent to bail
+  // here if something goes wrong
+  if (!rum)
+    return _gracefail('conf.rum missing, something is probably wrong');
+
   var name  = trans.partialName;
+
+  // if we're in an unnamed transaction, add a friendly warning
+  // this is to avoid people going crazy, trying to figure out
+  // why RUM is not working when they're missing a transaction name
+  if (!name) 
+    return _gracefail('rum headers need a transaction name');
+
   var time  = trans.timer.getDurationInMillis();
   var key   = conf.license_key;
 
@@ -209,6 +246,8 @@ API.prototype.getRUMHeader = function () {
   };
 
   var out = util.format(_rum_stub , JSON.stringify(rum_hash), rum.js_agent_loader);   
+  
+  logger.trace('generating RUM header', out);
 
   return out;
 };
