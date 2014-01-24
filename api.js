@@ -258,7 +258,7 @@ API.prototype.makeBrowserMonitoringHeader = function () {
     transactionName : _rum_obfuscate(name, key),
 
     // we don't use these parameters yet
-    queueTime       : 0,
+    queueTime       : trans.queueTime,
     agentToken      : null,
     ttGuid          : ""
   };
