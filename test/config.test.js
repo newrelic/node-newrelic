@@ -155,7 +155,7 @@ describe("the agent configuration", function () {
       idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
                     '401,404,502', function (tc) {
         should.exist(tc.error_collector.ignore_status_codes);
-        expect(tc.error_collector.ignore_status_codes).eql(['401', '404', '502']);
+        expect(tc.error_collector.ignore_status_codes).eql([401, 404, 502]);
       });
     });
 
