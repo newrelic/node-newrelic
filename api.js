@@ -172,7 +172,7 @@ API.prototype.addIgnoringRule = function (pattern) {
   this.agent.userNormalizer.addSimple(pattern, null);
 };
 
-function obfuscate(string, license_key) {
+function _rum_obfuscate(string, license_key) {
   var bytes = new Buffer(string);
   var i;
   for (i = 0; i < bytes.length; i++)
@@ -183,8 +183,17 @@ function obfuscate(string, license_key) {
 var _rum_stub = "<script type='text/javascript'>window.NREUM||(NREUM={});" + 
                 "NREUM.info = %s; %s</script>";
 
+// these messages are used in the _gracefail() method below in makeBrowserMonitoringHeader
+var _rum_issues = [
+  'no browser monitoring headers generated; disabled',
+  'transaction missing while generating browser monitoring headers',
+  'conf.browser_monitoring missing, something is probably wrong',
+  'browser_monitoring headers need a transaction name',
+  'browser_monitoring requires valid application_id', 
+];
+
 /**
- * Get the <script>...</script> header necessary for Real User Monitoring (RUM)
+ * Get the <script>...</script> header necessary for Browser Monitoring
  * This script must be manually injected into your templates, as high as possible
  * in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags.
  * Otherwise you may hurt IE!
@@ -193,51 +202,60 @@ var _rum_stub = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
  * time you want to generate the headers.
  *
  * Do *not* reuse the headers between users, or even between requests.
+ *
+ * @returns {string} the <script> header to be injected
  */
-API.prototype.getRUMHeader = function () {
+API.prototype.makeBrowserMonitoringHeader = function () {
+  var conf = this.agent.config;
   
   // gracefully fail
   // output an HTML comment and log a warning
   // the comment is meant to be innocuous to the end user
-  function _gracefail(msg){
-    logger.warn('rum:', msg);
-    return '<!-- why is the rum gone? -->';
+  function _gracefail(num){
+    logger.warn(_rum_issues[num]);
+    return '<!-- why is the rum gone? (' + num + ') -->';
   }
+
+  // can control header generation with configuration
+  if (!conf.browser_monitoring.enable) return _gracefail(0);
 
   var trans = this.agent.getTransaction();
 
   // bail gracefully outside a transaction
-  if (!trans) 
-    return _gracefail('transaction missing while generating RUM headers');
+  if (!trans) return _gracefail(1);
 
-  var conf  = this.agent.config;
-  var rum   = conf.rum;
+  var browser_monitoring = conf.browser_monitoring;
 
-  // conf.rum should always exist, but we don't want the agent to bail
+  // conf.browser_monitoring should always exist, but we don't want the agent to bail
   // here if something goes wrong
-  if (!rum)
-    return _gracefail('conf.rum missing, something is probably wrong');
+  if (!browser_monitoring) return _gracefail(2);
 
-  var name  = trans.partialName;
+  var name = trans.partialName;
 
   // if we're in an unnamed transaction, add a friendly warning
   // this is to avoid people going crazy, trying to figure out
   // why RUM is not working when they're missing a transaction name
-  if (!name) 
-    return _gracefail('rum headers need a transaction name');
+  if (!name) return _gracefail(3);
 
   var time  = trans.timer.getDurationInMillis();
   var key   = conf.license_key;
+  var appid = conf.application_id;
+
+  // This is only going to work if the agent has successfully handshaked
+  // with the collector. If the networks is bad, or there is no license key
+  // set in newrelis.js, there will be no application_id set.
+  // We bail instead of outputting null/undefined configuration values
+  if (!appid) return _gracefail(4);
 
   // this hash gets written directly into the browser
   var rum_hash = {
-    agent           : rum.js_agent_file,
-    beacon          : rum.beacon,
-    errorBeacon     : rum.error_beacon,
-    licenseKey      : rum.browser_key,
-    applicationID   : conf.application_id,
+    agent           : browser_monitoring.js_agent_file,
+    beacon          : browser_monitoring.beacon,
+    errorBeacon     : browser_monitoring.error_beacon,
+    licenseKey      : browser_monitoring.browser_key,
+    applicationID   : appid,
     applicationTime : time,
-    transactionName : obfuscate(name, key),
+    transactionName : _rum_obfuscate(name, key),
 
     // we don't use these parameters yet
     queueTime       : 0,
@@ -245,7 +263,18 @@ API.prototype.getRUMHeader = function () {
     ttGuid          : ""
   };
 
-  var out = util.format(_rum_stub , JSON.stringify(rum_hash), rum.js_agent_loader);   
+  // if debugging, do pretty format of JSON
+  var tabs;
+  if (conf.browser_monitoring.debug) tabs = 2;
+  else tabs = 0;
+  var json = JSON.stringify(rum_hash, null, tabs);
+
+  // the complete header to be written to the browser
+  var out  = util.format(
+    _rum_stub, 
+    json, 
+    browser_monitoring.js_agent_loader
+  );
   
   logger.trace('generating RUM header', out);
 
