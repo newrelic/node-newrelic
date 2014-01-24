@@ -123,6 +123,16 @@ describe("NR URL utilities", function () {
     it("should mark a request for enhanced calm (brah) as an error", function () {
       return expect(urltils.isError(config, 420)).true;
     });
+
+    it("should handle ignore_status_codes defined as strings", function () {
+      var config = {error_collector : {ignore_status_codes : ['404', '401']}};
+      return expect(urltils.isError(config, 401)).false;
+    });
+
+    it("should handle ignore_status_codes defined as integers", function () {
+      var config = {error_collector : {ignore_status_codes : [404, 401]}};
+      return expect(urltils.isError(config, 401)).false;
+    });
   });
 
   describe("copying parameters from a query hash", function () {
