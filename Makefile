@@ -28,6 +28,7 @@ SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 all: build test
 
 clean:
+	find . -depth -type d -name node_modules -print0 | xargs -0 rm -r
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 	rm -rf $(SSLKEY) $(CACERT) $(CAINDEX) $(CASERIAL) $(CERTIFICATE)
 	rm -rf test/lib/*.old test/lib/*.attr
