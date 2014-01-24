@@ -26,4 +26,10 @@ for (var i = 0; i < length; i++) {
   Stub.prototype[name] = stubFunction(name);
 }
 
+// this code gets injected into HTML templates
+// and we don't want it to return undefined/null
+Stub.prototype.makeBrowserMonitoringHeader = function (){
+  return '';
+};
+
 module.exports = Stub;

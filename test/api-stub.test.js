@@ -71,4 +71,8 @@ describe("the stubbed New Relic agent API", function () {
   it("shouldn't throw when an error is added", function () {
     expect(function () { api.noticeError(new Error()); }).not.throws();
   });
+
+  it("should return an empty string when requesting Browser Monitoring", function () {
+    api.makeBrowserMonitoringHeader().should.equal('');
+  });
 });
