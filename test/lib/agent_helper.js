@@ -44,7 +44,7 @@ var helper = module.exports = {
       , config       = configurator.initialize(logger)
       ;
     // stub applications
-    config.applications = function fakedApplications() { return 'none'; };
+    config.applications = function faked() { return ['New Relic for Node.js tests']; };
 
     var connection = new CollectorConnection({ config : config });
 
