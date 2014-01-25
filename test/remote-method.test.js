@@ -115,7 +115,7 @@ describe("RemoteMethod", function () {
     });
 
     after(function () {
-      nock.restore();
+      nock.enableNetConnect();
     });
 
     beforeEach(function () {
@@ -131,7 +131,9 @@ describe("RemoteMethod", function () {
     describe("successfully", function () {
       beforeEach(function () {
         // nock ensures the correct URL is requested
-        sendMetrics = nock(URL).post(generate('metric_data', RUN_ID)).reply(200);
+        sendMetrics = nock(URL)
+                        .post(generate('metric_data', RUN_ID))
+                        .reply(200, {return_value : []});
       });
 
       it("should invoke the callback without error", function (done) {
