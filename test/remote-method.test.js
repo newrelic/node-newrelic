@@ -9,6 +9,16 @@ var path         = require('path')
                                    'collector', 'remote-method.js'))
   ;
 
+function generate(method, runID) {
+  var fragment = '/agent_listener/invoke_raw_method?' +
+    'marshal_format=json&protocol_version=12&' +
+    'license_key=license%20key%20here&method=' + method;
+
+  if (runID) fragment += '&run_id=' + runID;
+
+  return fragment;
+}
+
 describe("RemoteMethod", function () {
   it("should require a name for the method to call", function () {
     var method;
@@ -40,6 +50,54 @@ describe("RemoteMethod", function () {
         done();
       });
     });
+
+    it("shouldn't throw when dealing with compressed data", function (done) {
+      var method = new RemoteMethod('test', {host : 'localhost'});
+      method._shouldCompress = function () { return true; };
+      method._safeRequest = function (options) {
+        expect(options.body.readUInt8(0)).equal(120);
+        expect(options.body.length).equal(14);
+
+        return done();
+      };
+
+      method.call('data');
+    });
+
+    it("shouldn't throw when preparing uncompressed data", function (done) {
+      var method = new RemoteMethod('test', {host : 'localhost'});
+      method._safeRequest = function (options) {
+        expect(options.body).equal('"data"');
+
+        return done();
+      };
+
+      method.call('data');
+    });
+  });
+
+  describe("when the connection fails", function () {
+    it("should return the connection failure", function (done) {
+      var method = new RemoteMethod('TEST', {host : 'localhost', port : 8765});
+      method.call({message : 'none'}, function (error) {
+        should.exist(error);
+        expect(error.message).equal('connect ECONNREFUSED');
+
+        done();
+      });
+    });
+
+    it("should correctly handle a DNS lookup failure", function (done) {
+      var method = new RemoteMethod('TEST', {host : 'failed.domain.cxlrg', port : 80});
+      method.call([], function (error) {
+        should.exist(error);
+
+        // https://github.com/joyent/node/commit/7295bb9435c
+        expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)$/);
+
+        done();
+      });
+    });
   });
 
   describe("when posting to collector", function () {
@@ -53,6 +111,7 @@ describe("RemoteMethod", function () {
     before(function () {
       // order dependency: requiring nock at the top of the file breaks other tests
       nock = require('nock');
+      nock.disableNetConnect();
     });
 
     after(function () {
@@ -68,16 +127,6 @@ describe("RemoteMethod", function () {
       };
       method = new RemoteMethod('metric_data', config);
     });
-
-    function generate(method, runID) {
-      var fragment = '/agent_listener/invoke_raw_method?' +
-        'marshal_format=json&protocol_version=12&' +
-        'license_key=license%20key%20here&method=' + method;
-
-      if (runID) fragment += '&run_id=' + runID;
-
-      return fragment;
-    }
 
     describe("successfully", function () {
       beforeEach(function () {
@@ -109,6 +158,7 @@ describe("RemoteMethod", function () {
       it("should invoke the callback with an error", function (done) {
         method._post('[]', function (error) {
           should.exist(error);
+
           done();
         });
       });
@@ -116,6 +166,7 @@ describe("RemoteMethod", function () {
       it("should say what the error was", function (done) {
         method._post('[]', function (error) {
           expect(error.message).equal("Got HTTP 500 in response to metric_data.");
+
           done();
         });
       });
@@ -123,7 +174,105 @@ describe("RemoteMethod", function () {
       it("should include the status code on the error", function (done) {
         method._post('[]', function (error) {
           expect(error.statusCode).equal(500);
+
           done();
+        });
+      });
+    });
+
+    describe("and parsing response", function () {
+      describe("that indicated success", function () {
+        var getRedirectHost
+          , response = {
+              return_value : 'collector-42.newrelic.com'
+            }
+          ;
+
+        beforeEach(function () {
+          var config = {
+            host        : 'collector.newrelic.com',
+            port        : 80,
+            license_key : 'license key here'
+          };
+          method = new RemoteMethod('get_redirect_host', config);
+
+          getRedirectHost = nock(URL)
+                              .post(generate('get_redirect_host'))
+                              .reply(200, response);
+        });
+
+        it("shouldn't error", function (done) {
+          method.call(undefined, function (error) {
+            should.not.exist(error);
+
+            done();
+          });
+        });
+
+        it("should find the expected value", function (done) {
+          method.call(undefined, function (error, host) {
+            expect(host).equal('collector-42.newrelic.com');
+
+            done();
+          });
+        });
+
+        it("shouldn't alter the sent JSON", function (done) {
+          method.call(undefined, function (error, host, json) {
+            expect(json).eql(response);
+
+            done();
+          });
+        });
+      });
+
+      describe("that indicated a New Relic error", function () {
+        var metricData;
+        var response = {
+          exception : {
+            message    : "Configuration has changed, need to restart agent.",
+            error_type : "NewRelic::Agent::ForceRestartException"
+          }
+        };
+
+        beforeEach(function () {
+          metricData = nock(URL)
+                         .post(generate('metric_data', RUN_ID))
+                         .reply(200, response);
+
+        });
+
+        it("should set error message to the JSON's message", function (done) {
+          method.call([], function (error) {
+            expect(error.message)
+              .equal("Configuration has changed, need to restart agent.");
+
+            done();
+          });
+        });
+
+        it("should pass along the New Relic error type", function (done) {
+          method.call([], function (error) {
+            expect(error.class).equal('NewRelic::Agent::ForceRestartException');
+
+            done();
+          });
+        });
+
+        it("should include the HTTP status code for the response", function (done) {
+          method.call([], function (error) {
+            expect(error.statusCode).equal(200);
+
+            done();
+          });
+        });
+
+        it("shouldn't alter the sent JSON", function (done) {
+          method.call(undefined, function (error, host, json) {
+            expect(json).eql(response);
+
+            done();
+          });
         });
       });
     });
