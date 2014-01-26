@@ -167,7 +167,7 @@ describe("RemoteMethod", function () {
 
       it("should say what the error was", function (done) {
         method._post('[]', function (error) {
-          expect(error.message).equal("Got HTTP 500 in response to metric_data.");
+          expect(error.message).equal("No body found in response to metric_data.");
 
           done();
         });

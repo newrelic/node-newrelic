@@ -127,7 +127,7 @@ describe("CollectorAPI", function () {
 
         it("should have included an informative error message", function () {
           expect(captured.message)
-            .equal("Got HTTP 503 in response to get_redirect_host.");
+            .equal("No body found in response to get_redirect_host.");
         });
       });
 
@@ -161,7 +161,7 @@ describe("CollectorAPI", function () {
 
         it("should have included an informative error message", function () {
           expect(captured.message)
-            .equal("Got HTTP 503 in response to connect.");
+            .equal("No body found in response to connect.");
         });
       });
 
@@ -188,21 +188,21 @@ describe("CollectorAPI", function () {
           should.exist(captured);
         });
 
-        it("should not have a status code on the error", function () {
-          should.not.exist(captured.statusCode);
+        it("should have paseed on the status code", function () {
+          expect(captured.statusCode).equal(200);
         });
 
         it("should have included an informative error message", function () {
           expect(captured.message)
-            .equal("No data found in response to get_redirect_host.");
+            .equal("No body found in response to get_redirect_host.");
         });
 
         it("should have no return_value", function () {
           should.not.exist(data);
         });
 
-        it("should have passed along raw response", function () {
-          expect(raw).eql({});
+        it("should have passed along (empty) body", function () {
+          should.not.exist(raw);
         });
       });
 
@@ -234,19 +234,19 @@ describe("CollectorAPI", function () {
         });
 
         it("should not have a status code on the error", function () {
-          should.not.exist(captured.statusCode);
+          expect(captured.statusCode).equal(200);
         });
 
         it("should have included an informative error message", function () {
-          expect(captured.message).equal("No data found in response to connect.");
+          expect(captured.message).equal("No body found in response to connect.");
         });
 
         it("should have no return_value", function () {
           should.not.exist(data);
         });
 
-        it("should have passed along raw response", function () {
-          expect(raw).eql({});
+        it("should have passed along (empty) body", function () {
+          should.not.exist(raw);
         });
       });
 
@@ -509,7 +509,7 @@ describe("CollectorAPI", function () {
 
         it("should have included an informative error message", function () {
           expect(captured.message)
-            .equal("Got HTTP 503 in response to get_redirect_host.");
+            .equal("No body found in response to get_redirect_host.");
         });
 
         it("should not have a response body", function () {
