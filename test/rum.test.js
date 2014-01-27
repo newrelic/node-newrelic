@@ -55,6 +55,7 @@ describe("the RUM API", function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       agent.config.application_id = 12345;
+      agent.config.browser_monitoring.browser_key = 1234;
       api.makeBrowserMonitoringHeader()
         .indexOf('<script').should.equal(0);
     });
@@ -65,6 +66,7 @@ describe("the RUM API", function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       agent.config.application_id = 12345;
+      agent.config.browser_monitoring.browser_key = 1234;
       var l = api.makeBrowserMonitoringHeader().split('\n').length;
 
       // there should be about 5 new lines here, this is a really *rough*
@@ -77,8 +79,18 @@ describe("the RUM API", function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       agent.config.application_id = 12345;
+      agent.config.browser_monitoring.browser_key = 1234;
       var l = api.makeBrowserMonitoringHeader().split('\n').length;
       assert.equal(l, 1);
+    });
+  });
+
+  it('should return empty headers when missing browser_key', function () {
+    agent.config.browser_monitoring.debug = true;
+    helper.runInTransaction(agent, function (t) {
+      t.setName('hello');
+      agent.config.application_id = 12345;
+      api.makeBrowserMonitoringHeader().should.equal('<!-- why is the rum gone? (5) -->');
     });
   });
 

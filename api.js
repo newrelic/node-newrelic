@@ -189,7 +189,8 @@ var _rum_issues = [
   'transaction missing while generating browser monitoring headers',
   'conf.browser_monitoring missing, something is probably wrong',
   'browser_monitoring headers need a transaction name',
-  'browser_monitoring requires valid application_id', 
+  'browser_monitoring requires valid application_id',
+  'browser_monitoring requires valid browser_key'
 ];
 
 /**
@@ -216,25 +217,28 @@ API.prototype.makeBrowserMonitoringHeader = function () {
     return '<!-- why is the rum gone? (' + num + ') -->';
   }
 
-  // can control header generation with configuration
-  if (!conf.browser_monitoring.enable) return _gracefail(0);
-
-  var trans = this.agent.getTransaction();
-
-  // bail gracefully outside a transaction
-  if (!trans) return _gracefail(1);
-
   var browser_monitoring = conf.browser_monitoring;
 
   // conf.browser_monitoring should always exist, but we don't want the agent to bail
   // here if something goes wrong
   if (!browser_monitoring) return _gracefail(2);
 
+  // can control header generation with configuration
+  // this setting is only available in the newrelic.js
+  // config file, it is not ever set by the server
+  if (!browser_monitoring.enable) return _gracefail(0);
+
+  var trans = this.agent.getTransaction();
+
+  // bail gracefully outside a transaction
+  if (!trans) return _gracefail(1);
+
   var name = trans.partialName;
 
   // if we're in an unnamed transaction, add a friendly warning
   // this is to avoid people going crazy, trying to figure out
-  // why RUM is not working when they're missing a transaction name
+  // why browser monitoring is not working when they're missing
+  // a transaction name
   if (!name) return _gracefail(3);
 
   var time  = trans.timer.getDurationInMillis();
@@ -247,12 +251,17 @@ API.prototype.makeBrowserMonitoringHeader = function () {
   // We bail instead of outputting null/undefined configuration values
   if (!appid) return _gracefail(4);
 
+  // If there is no browser_key, the server has likely decided to disable
+  // browser monitoring.
+  var licenseKey = browser_monitoring.browser_key;
+  if (!licenseKey) return _gracefail(5);
+
   // this hash gets written directly into the browser
   var rum_hash = {
     agent           : browser_monitoring.js_agent_file,
     beacon          : browser_monitoring.beacon,
     errorBeacon     : browser_monitoring.error_beacon,
-    licenseKey      : browser_monitoring.browser_key,
+    licenseKey      : licenseKey,
     applicationID   : appid,
     applicationTime : time,
     transactionName : _rum_obfuscate(name, key),
