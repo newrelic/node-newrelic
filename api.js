@@ -172,7 +172,7 @@ API.prototype.addIgnoringRule = function (pattern) {
   this.agent.userNormalizer.addSimple(pattern, null);
 };
 
-function _rum_obfuscate(string, license_key) {
+function _rumObfuscate(string, license_key) {
   var bytes = new Buffer(string);
   var i;
   for (i = 0; i < bytes.length; i++)
@@ -180,11 +180,11 @@ function _rum_obfuscate(string, license_key) {
   return bytes.toString('base64');
 }
 
-var _rum_stub = "<script type='text/javascript'>window.NREUM||(NREUM={});" + 
+var _rumStub = "<script type='text/javascript'>window.NREUM||(NREUM={});" + 
                 "NREUM.info = %s; %s</script>";
 
-// these messages are used in the _gracefail() method below in makeBrowserMonitoringHeader
-var _rum_issues = [
+// these messages are used in the _gracefail() method below in getBrowserTimingHeader
+var _rumIssues = [
   'no browser monitoring headers generated; disabled',
   'transaction missing while generating browser monitoring headers',
   'conf.browser_monitoring missing, something is probably wrong',
@@ -206,14 +206,14 @@ var _rum_issues = [
  *
  * @returns {string} the <script> header to be injected
  */
-API.prototype.makeBrowserMonitoringHeader = function () {
+API.prototype.getBrowserTimingHeader = function () {
   var conf = this.agent.config;
   
   // gracefully fail
   // output an HTML comment and log a warning
   // the comment is meant to be innocuous to the end user
   function _gracefail(num){
-    logger.warn(_rum_issues[num]);
+    logger.warn(_rumIssues[num]);
     return '<!-- why is the rum gone? (' + num + ') -->';
   }
 
@@ -264,7 +264,7 @@ API.prototype.makeBrowserMonitoringHeader = function () {
     licenseKey      : licenseKey,
     applicationID   : appid,
     applicationTime : time,
-    transactionName : _rum_obfuscate(name, key),
+    transactionName : _rumObfuscate(name, key),
 
     // we don't use these parameters yet
     queueTime       : trans.queueTime,
@@ -280,7 +280,7 @@ API.prototype.makeBrowserMonitoringHeader = function () {
 
   // the complete header to be written to the browser
   var out  = util.format(
-    _rum_stub, 
+    _rumStub, 
     json, 
     browser_monitoring.js_agent_loader
   );

@@ -27,18 +27,18 @@ describe("the RUM API", function () {
 
   it('should not generate header when disabled', function () {
     agent.config.browser_monitoring.enable = false;
-    api.makeBrowserMonitoringHeader()
+    api.getBrowserTimingHeader()
       .should.equal('<!-- why is the rum gone? (0) -->');
   });
 
   it('should issue a warning outside a transaction', function () {
-    api.makeBrowserMonitoringHeader()
+    api.getBrowserTimingHeader()
       .should.equal('<!-- why is the rum gone? (1) -->');
   });
 
   it('should issue a warning if transaction has no name', function () {
     helper.runInTransaction(agent, function () {
-      api.makeBrowserMonitoringHeader()
+      api.getBrowserTimingHeader()
         .should.equal('<!-- why is the rum gone? (3) -->');
     });
   });
@@ -46,7 +46,7 @@ describe("the RUM API", function () {
   it('should issue a warning without an application_id', function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      api.makeBrowserMonitoringHeader()
+      api.getBrowserTimingHeader()
         .should.equal('<!-- why is the rum gone? (4) -->');
     });
   });
@@ -56,7 +56,7 @@ describe("the RUM API", function () {
       t.setName('hello');
       agent.config.application_id = 12345;
       agent.config.browser_monitoring.browser_key = 1234;
-      api.makeBrowserMonitoringHeader()
+      api.getBrowserTimingHeader()
         .indexOf('<script').should.equal(0);
     });
   });
@@ -67,7 +67,7 @@ describe("the RUM API", function () {
       t.setName('hello');
       agent.config.application_id = 12345;
       agent.config.browser_monitoring.browser_key = 1234;
-      var l = api.makeBrowserMonitoringHeader().split('\n').length;
+      var l = api.getBrowserTimingHeader().split('\n').length;
 
       // there should be about 5 new lines here, this is a really *rough*
       // estimate if it's being pretty printed
@@ -80,7 +80,7 @@ describe("the RUM API", function () {
       t.setName('hello');
       agent.config.application_id = 12345;
       agent.config.browser_monitoring.browser_key = 1234;
-      var l = api.makeBrowserMonitoringHeader().split('\n').length;
+      var l = api.getBrowserTimingHeader().split('\n').length;
       assert.equal(l, 1);
     });
   });
@@ -90,7 +90,7 @@ describe("the RUM API", function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       agent.config.application_id = 12345;
-      api.makeBrowserMonitoringHeader().should.equal('<!-- why is the rum gone? (5) -->');
+      api.getBrowserTimingHeader().should.equal('<!-- why is the rum gone? (5) -->');
     });
   });
 
