@@ -11,6 +11,7 @@ var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , API     = require(path.join('..', '..', '..', 'api.js'))
   ;
 
 var TEST_PATH = '/test'
@@ -29,7 +30,7 @@ var TEST_PATH = '/test'
   ;
 
 test("agent instrumentation of Hapi", function (t) {
-  t.plan(3);
+  t.plan(4);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
@@ -110,6 +111,58 @@ test("agent instrumentation of Hapi", function (t) {
       method : 'GET',
       path : TEST_PATH,
       handler : function () {
+        this.reply.view('index', {title : 'yo dawg'});
+      }
+    });
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('View/index/Rendering');
+      t.equal(stats.callCount, 1, "should note the view rendering");
+    });
+
+    server.start(function () {
+      request(TEST_URL, function (error, response, body) {
+        if (error) t.fail(error);
+
+        t.equal(response.statusCode, 200, "response code should be 200");
+        t.equal(body, BODY, "template should still render fine");
+
+        server.stop(function () {
+          helper.unloadAgent(agent);
+          t.end();
+        });
+      });
+    });
+  });
+
+  t.test("should generate rum headers",
+       {timeout : 1000},
+       function (t) {
+    var agent  = helper.instrumentMockedAgent()
+      , hapi   = require('hapi')
+      , api    = new API(agent)
+      ;
+
+    agent.config.application_id = '12345';
+    agent.config.browser_monitoring.browser_key = '12345';
+
+    var options = {
+      views : {
+        path : path.join(__dirname, 'views'),
+        engines : {
+          ejs : 'ejs'
+        }
+      }
+    };
+
+    var server = hapi.createServer(TEST_HOST, TEST_PORT, options);
+
+    server.route({
+      method : 'GET',
+      path : TEST_PATH,
+      handler : function () {
+        var rum = api.getBrowserTimingHeader();
+        t.equal(rum.substr(0,7), '<script');
         this.reply.view('index', {title : 'yo dawg'});
       }
     });

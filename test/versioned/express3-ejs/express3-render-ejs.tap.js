@@ -8,6 +8,7 @@ var path    = require('path')
   , request = require('request')
   , shimmer = require(path.join(__dirname, '..', '..', '..', 'lib', 'shimmer'))
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , API     = require(path.join('..', '..', '..', 'api.js'))
   ;
 
 var TEST_PATH = '/test'
@@ -27,7 +28,7 @@ var TEST_PATH = '/test'
   ;
 
 test("agent instrumentation of Express 3", function (t) {
-  t.plan(5);
+  t.plan(6);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent = helper.instrumentMockedAgent()
@@ -114,6 +115,48 @@ test("agent instrumentation of Express 3", function (t) {
     request(TEST_URL, function (error, response, body) {
       if (error) t.fail(error);
 
+      t.equal(response.statusCode, 200, "response code should be 200");
+      t.equal(body, BODY, "template should still render fine");
+
+      t.end();
+    });
+  });
+
+  t.test("should generate rum headers",
+       {timeout : 1000},
+       function (t) {
+    var agent  = helper.instrumentMockedAgent()
+      , app    = require('express')()
+      , server = require('http').createServer(app)
+      , api    = new API(agent)
+      ;
+
+    agent.config.application_id = '12345';
+    agent.config.browser_monitoring.browser_key = '12345';
+
+    this.tearDown(function () {
+      server.close();
+      helper.unloadAgent(agent);
+    });
+
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'ejs');
+
+    app.get(TEST_PATH, function (req, res) {
+      var rum = api.getBrowserTimingHeader();
+      t.equal(rum.substr(0,7), '<script');
+      res.render('index', { title: 'yo dawg', rum: rum });
+    });
+
+    server.listen(TEST_PORT, TEST_HOST);
+
+    agent.once('transactionFinished', function () {
+      var stats = agent.metrics.getMetric('View/index/Rendering');
+      t.equal(stats.callCount, 1, "should note the view rendering");
+    });
+
+    request(TEST_URL, function (error, response, body) {
+      if (error) t.fail(error);
       t.equal(response.statusCode, 200, "response code should be 200");
       t.equal(body, BODY, "template should still render fine");
 
