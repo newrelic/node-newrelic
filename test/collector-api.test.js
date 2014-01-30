@@ -43,7 +43,8 @@ describe("CollectorAPI", function () {
         license_key  : 'license key here',
         applications : function () {
           return ['TEST'];
-        }
+        },
+        browser_monitoring: {}
       }
     };
 

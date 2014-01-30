@@ -265,9 +265,9 @@ API.prototype.getBrowserTimingHeader = function () {
     applicationID   : appid,
     applicationTime : time,
     transactionName : _rumObfuscate(name, key),
+    queueTime       : trans.queueTime,
 
     // we don't use these parameters yet
-    queueTime       : trans.queueTime,
     agentToken      : null,
     ttGuid          : ""
   };
