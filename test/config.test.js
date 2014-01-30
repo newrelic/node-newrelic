@@ -718,6 +718,25 @@ describe("the agent configuration", function () {
       config.ignore_server_configuration = true;
     });
 
+    it("should still set rum properties", function () {
+      config.onConnect({
+        js_agent_loader      : "LOADER",
+        js_agent_file        : "FILE",
+        js_agent_loader_file : "LOADER_FILE",
+        beacon               : "BEACON",
+        error_beacon         : "ERR_BEACON",
+        browser_key          : "KEY"
+      });
+      var bm = config.browser_monitoring;
+      
+      expect(bm.js_agent_loader)      .equal ("LOADER");
+      expect(bm.js_agent_file)        .equal ("FILE");
+      expect(bm.js_agent_loader_file) .equal ("LOADER_FILE");
+      expect(bm.beacon)               .equal ("BEACON");
+      expect(bm.error_beacon)         .equal ("ERR_BEACON");
+      expect(bm.browser_key)          .equal ("KEY");
+    });
+
     it("should still set agent_run_id", function () {
       config.onConnect({'agent_run_id' : 1234});
       expect(config.run_id).equal(1234);
