@@ -1,16 +1,13 @@
 'use strict';
 
-var path                = require('path')
-  , fs                  = require('fs')
-  , sinon               = require('sinon')
-  , architect           = require('architect')
-  , wrench              = require('wrench')
-  , logger              = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
-                            .child({component : 'agent_helper'})
-  , shimmer             = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
-  , Agent               = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
-  , CollectorConnection = require(path.join(__dirname, '..', '..', 'lib',
-                                            'collector', 'connection'))
+var path      = require('path')
+  , fs        = require('fs')
+  , architect = require('architect')
+  , wrench    = require('wrench')
+  , logger    = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
+                  .child({component : 'agent_helper'})
+  , shimmer   = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
+  , Agent     = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   ;
 
 /*
@@ -33,10 +30,9 @@ var helper = module.exports = {
    *                       See agent.js for details, but so far this includes
    *                       passing in a config object and the connection stub
    *                       created in this function.
-   * @returns Agent Agent with a mocked connection method.
+   * @returns Agent Agent with a stubbed configuration.
    */
-  loadMockedAgent : function loadMockedAgent(options) {
-    if (!options) options = {};
+  loadMockedAgent : function loadMockedAgent() {
     if (_agent) throw _agent.__created;
 
     // agent needs a "real" configuration
@@ -46,23 +42,36 @@ var helper = module.exports = {
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; };
 
-    var connection = new CollectorConnection({ config : config });
-
-    sinon.stub(connection, 'connect');
-    options.connection = connection;
-
-    _agent = new Agent(config, options);
+    _agent = new Agent(config);
     _agent.__created = new Error("Only one agent at a time! This one was created at:");
-    _agent.setupConnection();
 
     return _agent;
+  },
+
+  /**
+   * Generate the URLs used to talk to the collector, which have a very
+   * specific format. Useful with nock.
+   *
+   * @param String method The method being invoked on the collector.
+   * @param number runID  Agent run ID (optional).
+   *
+   * @returns String URL path for the collector.
+   */
+  generateCollectorPath : function generateCollectorPath(method, runID) {
+    var fragment = '/agent_listener/invoke_raw_method?' +
+      'marshal_format=json&protocol_version=12&' +
+      'license_key=license%20key%20here&method=' + method;
+
+    if (runID) fragment += '&run_id=' + runID;
+
+    return fragment;
   },
 
   /**
    * Builds on loadMockedAgent by patching the module loader and setting up
    * the instrumentation framework.
    *
-   * @returns Agent Agent with a mocked connection method.
+   * @returns Agent Agent with a stubbed configuration.
    */
   instrumentMockedAgent : function instrumentMockedAgent() {
     shimmer.debug = true;
@@ -81,7 +90,6 @@ var helper = module.exports = {
    * @param Agent agent The agent to shut down.
    */
   unloadAgent : function unloadAgent(agent) {
-    agent.stop();
     shimmer.unpatchModule();
     shimmer.unwrapAll();
     shimmer.debug = false;

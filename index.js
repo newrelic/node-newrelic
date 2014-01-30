@@ -11,14 +11,14 @@ try {
                process.uptime());
 
   if (process.version && process.version.split('.')[1] < 6) {
-    message = "The New Relic agent requires a version of Node equal to or\n" +
+    message = "New Relic for Node.js requires a version of Node equal to or\n" +
               "greater than 0.6.0. Not starting!";
 
     logger.error(message);
     throw new Error(message);
   }
 
-  logger.debug("Current working directory at agent load is %s.", process.cwd());
+  logger.debug("Current working directory at module load is %s.", process.cwd());
   logger.debug("Process title is %s.", process.title);
   logger.debug("Application was invoked as %s.", process.argv.join(' '));
 
@@ -27,7 +27,7 @@ try {
    */
   var config = require(path.join(__dirname, 'lib', 'config.js')).initialize(logger);
   if (!config.agent_enabled) {
-    logger.info("Agent not enabled in configuration; not starting.");
+    logger.info("Module not enabled in configuration; not starting.");
   }
   else {
     /* Only load the rest of the module if configuration is available and the
@@ -53,13 +53,27 @@ try {
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
 
-    agent.start();
+    agent.start(function (error) {
+      if (error) {
+        logger.error(
+          error,
+          "New Relic for Node.js was unable to start due to an error:"
+        );
+
+        console.error("New Relic for Node.js was unable to start due to an error:");
+        console.error(error.stack);
+
+        return;
+      }
+
+      logger.debug("New Relic for Node.js is connected to New Relic.");
+    });
   }
 }
 catch (error) {
   logger.error(error,
-               "The New Relic Node.js agent was unable to start due to an error:");
-  console.error("The New Relic Node.js agent was unable to start due to an error:");
+               "New Relic for Node.js was unable to start due to an error:");
+  console.error("New Relic for Node.js was unable to start due to an error:");
   console.error(error.stack);
 }
 

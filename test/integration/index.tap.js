@@ -12,5 +12,5 @@ test("loading the application via index.js", function (t) {
     api = require(path.join(__dirname, '..', '..', 'index.js'));
   }, "just loading the agent");
 
-  api.agent.stop();
+  api.agent.stop(function () {});
 });

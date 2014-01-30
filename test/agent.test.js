@@ -1,66 +1,41 @@
 'use strict';
 
-var path                = require('path')
-  , sinon               = require('sinon')
-  , chai                = require('chai')
-  , should              = chai.should()
-  , expect              = chai.expect
-  , helper              = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , configurator        = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger              = require(path.join(__dirname, '..', 'lib', 'logger'))
-                            .child({component : 'TEST'})
-  , Agent               = require(path.join(__dirname, '..', 'lib', 'agent'))
-  , Transaction         = require(path.join(__dirname, '..', 'lib', 'transaction'))
-  , Metrics             = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , CollectorConnection = require(path.join(__dirname, '..', 'lib',
-                                            'collector', 'connection'))
+var path         = require('path')
+  , sinon        = require('sinon')
+  , chai         = require('chai')
+  , should       = chai.should()
+  , expect       = chai.expect
+  , nock         = require('nock')
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
+  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+                     .child({component : 'TEST'})
+  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
 
+/*
+ *
+ * CONSTANTS
+ *
+ */
+var RUN_ID = 1337;
+
 describe("the New Relic agent", function () {
+  before(function () {
+    nock.disableNetConnect();
+  });
+
+  after(function () {
+    nock.enableNetConnect();
+  });
+
   it("requires the configuration be passed to the constructor",
      function () {
     var config = configurator.initialize(logger, {config : {agent_enabled : false}});
     var agent = new Agent(config);
 
     expect(agent.config.agent_enabled).equal(false);
-  });
-
-  describe("when connecting to the collector", function () {
-    var agent;
-
-    beforeEach(function () {
-      var config = configurator.initialize(logger, {config : {sample : true}});
-      agent = new Agent(config);
-    });
-
-    it("retries on failure", function (done) {
-      // _nextConnectAttempt requires that agent.connection exist
-      agent.setupConnection();
-
-      agent._failAndRetry = function () { return done(); };
-
-      var backoff = agent.nextBackoff();
-      expect(backoff).eql({interval : 15, warn : false, error : false});
-
-      agent._nextConnectAttempt(backoff);
-
-      agent.connection.emit('connectError', 'testConnect', new Error('agent test'));
-    });
-
-    it("gives up after retrying 6 times", function (done) {
-      // _nextConnectAttempt requires agent.connection exist
-      agent.setupConnection();
-
-      agent._failAndShutdown = function () { return done(); };
-      agent.connectionFailures = 6;
-
-      var backoff = agent.nextBackoff();
-      expect(backoff).eql({interval : 300, warn : false, error : true});
-
-      agent._nextConnectAttempt(backoff);
-
-      agent.connection.emit('connectError', 'testConnect', new Error('agent test'));
-    });
   });
 
   describe("when handling connection failures", function () {
@@ -108,21 +83,11 @@ describe("the New Relic agent", function () {
     });
   });
 
-  describe("with a stubbed collector connection", function () {
-    var agent
-      , connection
-      ;
+  describe("when configured", function () {
+    var agent;
 
-    beforeEach(function (done) {
+    beforeEach(function () {
       agent = helper.loadMockedAgent();
-
-      agent.on('connect', function () {
-        connection = agent.connection;
-
-        return done();
-      });
-
-      agent.start();
     });
 
     afterEach(function () {
@@ -131,10 +96,6 @@ describe("the New Relic agent", function () {
 
     it("bootstraps its configuration", function () {
       should.exist(agent.config);
-    });
-
-    it("still has a connection, which is stubbed", function () {
-      should.exist(connection);
     });
 
     it("has an error tracer", function () {
@@ -258,7 +219,7 @@ describe("the New Relic agent", function () {
       });
     });
 
-    describe("when handling events", function () {
+    describe("when calling out to the collector", function () {
       it("should update the metrics' apdex tolerating value when configuration changes",
          function (done) {
         expect(agent.metrics.apdexT).equal(0.1);
@@ -274,35 +235,29 @@ describe("the New Relic agent", function () {
 
       it("should reset the configuration and metrics normalizer on connection",
          function (done) {
-        expect(agent.config.apdex_t).equal(0.1);
-        process.nextTick(function () {
+        var config = {
+          agent_run_id : 404,
+          apdex_t      : 0.742,
+          url_rules    : []
+        };
+
+        var redirect = nock('http://collector.newrelic.com')
+                         .post(helper.generateCollectorPath('get_redirect_host'))
+                         .reply(200, {return_value : 'collector.newrelic.com'});
+        var handshake = nock('http://collector.newrelic.com')
+                          .post(helper.generateCollectorPath('connect'))
+                          .reply(200, {return_value : config});
+
+        agent._connect(function (error) {
+          should.not.exist(error);
+          redirect.done();
+          handshake.done();
+
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
 
-          return done();
+          done();
         });
-
-        connection.emit('connect', {apdex_t : 0.742, url_rules : []});
-      });
-
-      it("should parse metrics responses when metric data is received",
-         function (done) {
-        var NAME     = 'Custom/Test/events';
-        var SCOPE    = 'TEST';
-        var METRICID = 17;
-
-        var testIDs = {};
-        testIDs[NAME + ',' + SCOPE] = METRICID;
-
-        expect(agent.mapper.length).equal(0);
-        process.nextTick(function () {
-          expect(agent.mapper.map(NAME, SCOPE)).equal(17);
-
-          return done();
-        });
-
-        connection.emit('metricDataResponse',
-                        [[{name : NAME, scope : SCOPE}, METRICID]]);
       });
 
       it("should capture the trace off a finished transaction", function (done) {
@@ -334,17 +289,63 @@ describe("the New Relic agent", function () {
       });
     });
 
-    describe("when new metric name -> ID mappings may or may not have come in",
-             function () {
-      it("shouldn't throw if no new rules are received", function () {
-        expect(function () { agent.onNewMappings(null); }).not.throws();
+    describe("when parsing metric mappings", function () {
+      var NAME     = 'Custom/Test/events'
+        , SCOPE    = 'TEST'
+        , METRICID = 17
+        ;
+
+      beforeEach(function () {
+        agent.config.run_id = RUN_ID;
       });
 
-      it("shouldn't throw if new rules are received", function () {
+      it("shouldn't throw if no new rules are received", function (done) {
+        var metrics =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : null});
+
+        agent.harvest(function (error) {
+          should.not.exist(error);
+
+          metrics.done();
+          done();
+        });
+      });
+
+      it("shouldn't throw if new rules are received", function (done) {
         var rules = [[{name : 'Test/RenameMe1'}, 1001],
                      [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]];
 
-        expect(function () { agent.onNewMappings(rules); }).not.throws();
+        var metrics =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : rules});
+
+        agent.harvest(function (error) {
+          should.not.exist(error);
+
+          metrics.done();
+          done();
+        });
+      });
+
+      it("should add them to the existing mappings", function (done) {
+        var rules = [[{name : NAME, scope : SCOPE}, METRICID]];
+
+        var metrics =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : rules});
+
+        agent.config.run_id = RUN_ID;
+        agent.harvest(function (error) {
+          should.not.exist(error);
+          expect(agent.mapper.map(NAME, SCOPE)).equal(17);
+
+          metrics.done();
+          done();
+        });
       });
     });
 
@@ -387,123 +388,105 @@ describe("the New Relic agent", function () {
     });
   });
 
-  describe("with a mocked connection", function () {
-    var agent
-      , mock
-      ;
+  describe("with a nocked connection", function () {
+    var agent;
 
     beforeEach(function () {
-      var connection = new CollectorConnection({
-        config : {
-          applications : function () { return 'none'; },
-          run_id : '1337'
-        }
-      });
-
-      mock = sinon.mock(connection);
-
-      var config = configurator.initialize(logger, {config : {sample : true}});
-      agent = new Agent(config, {connection : connection});
-      agent.setupConnection();
-    });
-
-    afterEach(function () {
-      mock.expects('send').once().withArgs('shutdown');
-
-      agent.stop();
-      mock.verify();
-    });
-
-    describe("when sending data to the collector", function () {
-      it("the last reported time is congruent with reality", function () {
-        mock.expects('sendMetricData').once().withExactArgs(agent.metrics);
-
-        agent.submitMetricData();
-      });
+      var config = configurator.initialize(logger, {config : {
+        run_id      : RUN_ID,
+        license_key : 'license key here'
+      }});
+      agent = new Agent(config);
     });
 
     describe("when harvesting", function () {
+      it("the last reported time is congruent with reality", function () {
+        expect(agent.metrics.started).closeTo(Date.now(), 1000);
+      });
+
       it("sends transactions to the new error handler after harvest", function (done) {
         agent.metrics.started = 1337;
 
-        agent.harvest();
+        var metricData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
 
-        var transaction = new Transaction(agent);
-        agent.errors = {
-          onTransactionFinished : function (t) {
-            expect(t).equal(transaction);
-            return done();
-          }
+        agent.harvest(function () {
+          metricData.done();
+
+          agent.errors = {
+            onTransactionFinished : function (t) {
+              expect(t).equal(transaction);
+              done();
+            }
+          };
+
+          var transaction = new Transaction(agent);
+          transaction.statusCode = 200;
+          transaction.end();
+        });
+      });
+
+      it("reports the error count", function (done) {
+        agent.errors.add(null, new TypeError('no method last on undefined'));
+        agent.errors.add(null, new Error('application code error'));
+        agent.errors.add(null, new RangeError('stack depth exceeded'));
+
+        agent.collector.metricData = function (metrics) {
+          var metric = metrics.getMetric('Errors/all');
+          should.exist(metric);
+          expect(metric.callCount).equal(3);
+
+          done();
         };
 
-        agent.emit('transactionFinished', transaction);
+        agent.harvest(function nop() {});
       });
 
-      it("reports the error count", function () {
-        agent.metrics.started = 1337;
+      it("doesn't send errors when error tracer disabled", function (done) {
+        var metricData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
 
-        var transaction = new Transaction(agent);
-        transaction.name = 'WebTransaction/NormalizedUri/test';
-        transaction.statusCode = 501;
-        agent.errors.add(transaction, new TypeError('no method last on undefined'));
-        agent.errors.add(transaction, new Error('application code error'));
-        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
-        transaction.end();
-
-        var metrics = new Metrics(0.1, agent.mapper, agent.metricNameNormalizer);
-        metrics.started = 1337;
-        metrics.getOrCreateMetric('Errors/all').incrementCallCount(3);
-        metrics
-          .getOrCreateMetric('Errors/WebTransaction/NormalizedUri/test')
-          .incrementCallCount(1);
-
-        mock.expects('sendMetricData').once().withArgs(metrics);
-        mock.expects('sendTracedErrors').once();
-        mock.expects('sendTransactionTraces').once();
-
-        agent.harvest();
-      });
-
-      it("doesn't try to send errors when error tracer disabled", function () {
-        var transaction = new Transaction(agent);
-        transaction.statusCode = 501;
-        agent.errors.add(transaction, new TypeError('no method last on undefined'));
-        agent.errors.add(transaction, new Error('application code error'));
-        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
-        transaction.end();
-
-        mock.expects('sendMetricData').once();
-        mock.expects('sendTracedErrors').never();
-        mock.expects('sendTransactionTraces').once();
+        agent.errors.add(null, new TypeError('no method last on undefined'));
+        agent.errors.add(null, new Error('application code error'));
+        agent.errors.add(null, new RangeError('stack depth exceeded'));
 
         // do this here so error traces get collected but not sent
         agent.config.onConnect({'error_collector.enabled' : false});
 
-        agent.harvest();
-        agent.config.error_collector.enabled = true;
+        agent.harvest(function (error) {
+          should.not.exist(error);
+
+          metricData.done();
+          done();
+        });
       });
 
-      it("doesn't try to send errors when server disables collect_errors", function () {
-        var transaction = new Transaction(agent);
-        transaction.statusCode = 501;
-        agent.errors.add(transaction, new TypeError('no method last on undefined'));
-        agent.errors.add(transaction, new Error('application code error'));
-        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
-        transaction.end();
+      it("doesn't send errors when server disables collect_errors", function (done) {
+        var metricData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
 
-        mock.expects('sendMetricData').once();
-        mock.expects('sendTracedErrors').never();
-        mock.expects('sendTransactionTraces').once();
+        agent.errors.add(null, new TypeError('no method last on undefined'));
+        agent.errors.add(null, new Error('application code error'));
+        agent.errors.add(null, new RangeError('stack depth exceeded'));
 
         // do this here so error traces get collected but not sent
         agent.config.onConnect({collect_errors : false});
 
-        agent.harvest();
-        agent.config.error_collector.enabled = true;
+        agent.harvest(function (error) {
+          should.not.exist(error);
+
+          metricData.done();
+          done();
+        });
       });
 
-      it("doesn't try to send transaction traces when transaction tracer disabled",
-         function () {
+      it("doesn't send transaction traces when slow traces disabled", function (done) {
         var transaction = new Transaction(agent);
         transaction.setName('/test/path/31337', 501);
         agent.errors.add(transaction, new TypeError('no method last on undefined'));
@@ -511,19 +494,28 @@ describe("the New Relic agent", function () {
         agent.errors.add(transaction, new RangeError('stack depth exceeded'));
         transaction.end();
 
-        mock.expects('sendMetricData').once();
-        mock.expects('sendTracedErrors').once();
-        mock.expects('sendTransactionTraces').never();
+        var metricData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
+        var errorData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('error_data', RUN_ID))
+            .reply(200, {return_value : null});
 
         // do this here so slow trace gets collected but not sent
         agent.config.onConnect({'transaction_tracer.enabled' : false});
 
-        agent.harvest();
-        agent.config.transaction_tracer.enabled = true;
+        agent.harvest(function (error) {
+          should.not.exist(error);
+
+          metricData.done();
+          errorData.done();
+          done();
+        });
       });
 
-      it("doesn't try to send transaction traces when server disables collect_traces",
-         function () {
+      it("doesn't send transaction traces when collect_traces disabled", function (done) {
         var transaction = new Transaction(agent);
         transaction.setName('/test/path/31337', 501);
         agent.errors.add(transaction, new TypeError('no method last on undefined'));
@@ -531,15 +523,25 @@ describe("the New Relic agent", function () {
         agent.errors.add(transaction, new RangeError('stack depth exceeded'));
         transaction.end();
 
-        mock.expects('sendMetricData').once();
-        mock.expects('sendTracedErrors').once();
-        mock.expects('sendTransactionTraces').never();
+        var metricData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
+        var errorData =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('error_data', RUN_ID))
+            .reply(200, {return_value : null});
 
         // set this here so slow trace gets collected but not sent
         agent.config.onConnect({collect_traces : false});
 
-        agent.harvest();
-        agent.config.transaction_tracer.enabled = true;
+        agent.harvest(function (error) {
+          should.not.exist(error);
+
+          metricData.done();
+          errorData.done();
+          done();
+        });
       });
     });
   });

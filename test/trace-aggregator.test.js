@@ -131,51 +131,47 @@ describe('TraceAggregator', function () {
       var aggregator = new TraceAggregator(config);
       aggregator.reported = 10; // needed to override "first 5"
 
+      // 1st trace
       aggregator.add(createTransaction('/testOne', 8000));
-      aggregator.once('harvest', function (encoded) {
-        expect(encoded, '1st harvest').an('array');
+      aggregator.harvest(function () {
+        // 2nd trace
+        aggregator.reset();
         aggregator.add(createTransaction('/testTwo', 8000));
-        aggregator.once('harvest', function (encoded) {
-          expect(encoded, '2nd harvest').an('array');
+        aggregator.harvest(function () {
+          // 3rd trace
+          aggregator.reset();
           aggregator.add(createTransaction('/testThr', 8000));
-          aggregator.once('harvest', function (encoded) {
-            expect(encoded, '3rd harvest').an('array');
+          aggregator.harvest(function () {
+            // 4th trace
+            aggregator.reset();
             aggregator.add(createTransaction('/testFor', 8000));
-            aggregator.once('harvest', function (encoded) {
-              expect(encoded, '4th harvest').an('array');
+            aggregator.harvest(function () {
+              // 5th trace
+              aggregator.reset();
               aggregator.add(createTransaction('/testF5v', 8000));
-              aggregator.once('harvest', function (encoded) {
-                expect(encoded, '5th harvest').an('array');
+              aggregator.harvest(function () {
                 // n = 5, so this sixth transaction is gonna lose
+                aggregator.reset();
                 aggregator.add(createTransaction('/testSix', 9000));
-                aggregator.once('harvest', function (encoded) {
+                aggregator.harvest(function (error, encoded) {
+                  should.not.exist(error);
                   should.not.exist(encoded, '6th harvest');
-                  expect(aggregator.requestTimes['WebTransaction/Uri/testOne'],
-                         "1 of top 5").equal(8000);
-                  expect(aggregator.requestTimes['WebTransaction/Uri/testTwo'],
-                         "2 of top 5").equal(8000);
-                  expect(aggregator.requestTimes['WebTransaction/Uri/testThr'],
-                         "3 of top 5").equal(8000);
-                  expect(aggregator.requestTimes['WebTransaction/Uri/testFor'],
-                         "4 of top 5").equal(8000);
-                  expect(aggregator.requestTimes['WebTransaction/Uri/testF5v'],
-                         "5 of top 5").equal(8000);
-                  should.not.exist(aggregator.requestTimes['WebTransaction/Uri/testSix'],
+                  var times = aggregator.requestTimes;
+                  expect(times['WebTransaction/Uri/testOne'], "1 of top 5").equal(8000);
+                  expect(times['WebTransaction/Uri/testTwo'], "2 of top 5").equal(8000);
+                  expect(times['WebTransaction/Uri/testThr'], "3 of top 5").equal(8000);
+                  expect(times['WebTransaction/Uri/testFor'], "4 of top 5").equal(8000);
+                  expect(times['WebTransaction/Uri/testF5v'], "5 of top 5").equal(8000);
+                  should.not.exist(times['WebTransaction/Uri/testSix'],
                                    "6 of top 5 -- OOPS");
 
-                  return done();
+                  done();
                 });
-                aggregator.harvest();
               });
-              aggregator.harvest();
             });
-            aggregator.harvest();
           });
-          aggregator.harvest();
         });
-        aggregator.harvest();
       });
-      aggregator.harvest();
     });
   });
 
@@ -292,25 +288,24 @@ describe('TraceAggregator', function () {
     });
 
     var aggregator = new TraceAggregator(config);
-    aggregator.once('harvest', function firstHarvest(empty) {
-      expect(empty).equal(undefined);
+    expect(function harvestExists() {
+      aggregator.harvest(function (error, empty) {
+        should.not.exist(error);
+        should.not.exist(empty);
 
-      expect(function addExists() {
-        aggregator.add(createTransaction('/test', 4180));
-      }).not.throws();
+        expect(function addExists() {
+          aggregator.add(createTransaction('/test', 4180));
+        }).not.throws();
 
-      aggregator.once('harvest', function finalHarvest(traceData) {
-        expect(traceData).an('array');
-        expect(traceData.length).equal(8);
-        expect(traceData[2]).equal('WebTransaction/Uri/test');
+        aggregator.harvest(function (error, traceData) {
+          expect(traceData).an('array');
+          expect(traceData.length).equal(8);
+          expect(traceData[2]).equal('WebTransaction/Uri/test');
 
-        return done();
+          done();
+        });
       });
-
-      aggregator.harvest();
-    });
-
-    expect(function harvestExists() { aggregator.harvest(); }).not.throws();
+    }).not.throws();
   });
 
   it("should group transactions by the metric name associated with the transaction",
@@ -353,42 +348,41 @@ describe('TraceAggregator', function () {
     };
 
     aggregator.add(createTransaction('/testOne', 503));
-    aggregator.once('harvest', function (encoded) {
+    aggregator.harvest(function (error, encoded) {
       verifier(encoded, true);
+      aggregator.reset();
 
       aggregator.add(createTransaction('/testTwo', 406));
-      aggregator.once('harvest', function (encoded) {
+      aggregator.harvest(function (error, encoded) {
         verifier(encoded, true);
+        aggregator.reset();
 
         aggregator.add(createTransaction('/testThree', 720));
-        aggregator.once('harvest', function (encoded) {
+        aggregator.harvest(function (error, encoded) {
           verifier(encoded, true);
+          aggregator.reset();
 
           aggregator.add(createTransaction('/testOne', 415));
-          aggregator.once('harvest', function (encoded) {
+          aggregator.harvest(function (error, encoded) {
             verifier(encoded, true);
+            aggregator.reset();
 
             aggregator.add(createTransaction('/testTwo', 510));
-            aggregator.once('harvest', function (encoded) {
+            aggregator.harvest(function (error, encoded) {
               verifier(encoded, true);
+              aggregator.reset();
 
               aggregator.add(createTransaction('/testOne', 502));
-              aggregator.once('harvest', function (encoded) {
+              aggregator.harvest(function (error, encoded) {
                 verifier(encoded, false);
 
-                return done();
+                done();
               });
-              aggregator.harvest();
             });
-            aggregator.harvest();
           });
-          aggregator.harvest();
         });
-        aggregator.harvest();
       });
-      aggregator.harvest();
     });
-    aggregator.harvest();
   });
 
   describe("when request timings are tracked over time", function () {
@@ -407,37 +401,39 @@ describe('TraceAggregator', function () {
 
       var remaining = 4;
       // 2nd-5th harvests: no serialized trace, timing still set
-      var looper = function (encoded) {
-        expect(encoded).equal(undefined);
-        expect(aggregator.requestTimes['WebTransaction/Uri/test'],
-               "still churning").equal(5030);
+      var looper = function (error, encoded) {
+        should.not.exist(error);
+        should.not.exist(encoded);
+        expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030);
+        aggregator.reset();
 
-        remaining -= 1;
-        if (remaining === 0) {
-          aggregator.removeListener('harvest', looper);
-
+        remaining--;
+        if (remaining < 1) {
           // 6th harvest: no serialized trace, timings reset
-          aggregator.once('harvest', function (encoded) {
-            expect(encoded).equal(undefined);
-            expect(aggregator.requestTimes['WebTransaction/Uri/test'],
-                   "on the last pass").equal(undefined);
+          aggregator.harvest(function (error, encoded) {
+            should.not.exist(error);
+            should.not.exist(encoded);
+            should.not.exist(aggregator.requestTimes['WebTransaction/Uri/test']);
 
-            return done();
+            done();
           });
-          aggregator.harvest();
+        }
+        else {
+          aggregator.harvest(looper);
         }
       };
 
-      // 1st harvest: serialized trace, timing is set
-      aggregator.once('harvest', function (encoded) {
-        expect(encoded).not.equal(undefined);
-        expect(aggregator.requestTimes['WebTransaction/Uri/test'],
-               "still churning").equal(5030);
+      aggregator.add(createTransaction('/test', 5030));
 
-        aggregator.on('harvest', looper);
-        for (var i = 0; i < 4; i++) aggregator.harvest();
+      // 1st harvest: serialized trace, timing is set
+      aggregator.harvest(function (error, encoded) {
+        should.not.exist(error);
+        should.exist(encoded);
+        expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030);
+        aggregator.reset();
+
+        aggregator.harvest(looper);
       });
-      aggregator.harvest();
     });
   });
 });
