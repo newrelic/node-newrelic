@@ -112,14 +112,14 @@ describe ("MetricNormalizer", function () {
     });
   });
 
-  it("should correctly ignore a matching name", function () {
+  it("should ignore a matching name", function () {
     normalizer.load([
       {each_segment : false, eval_order : 0, terminate_chain : true,
        match_expression : '^/long_polling$',
        replace_all : false, ignore : true, replacement : '*'}
     ]);
 
-    return expect(normalizer.normalize('/long_polling')).empty;
+    expect(normalizer.isIgnored('/long_polling')).equal(true);
   });
 
   it("should apply rules by precedence", function () {

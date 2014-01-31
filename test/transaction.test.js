@@ -192,7 +192,7 @@ describe("Transaction", function () {
     it("should ignore a transaction when told to by a rule", function () {
       agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri');
       trans.setName('/test/string?do=thing&another=thing', 200);
-      return expect(trans.ignore).true;
+      expect(trans.ignore).equal(true);
     });
 
     describe("with no partial name set", function () {
