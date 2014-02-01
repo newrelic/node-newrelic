@@ -1,3 +1,18 @@
+### v1.3.1 (2014-01-31):
+
+* Ignored status codes are now always casted to numbers so that people using
+  environment-variable configuration or strings in config still get error
+  status ignored properly.
+* If you disabled server-side configuration, the server was still able to
+  set the value of apdex_t for your app. This was an oversight, and has
+  been corrected.
+* Before, if you had request renaming rules, if the end result was the same
+  as the match pattern (mapping `/path` to `/path`), they would be silently
+  ignored. This has been fixed.
+* MySQL instrumentation handles callback more consistently, so the transaction
+  tracer doesn't get confused and stop tracking transactions with MySQL calls
+  in it.
+
 ### v1.3.0 (2014-01-17):
 
 * Support for Spumko's Hapi! This support works with both Hapi 1.x and 2.0.0,
