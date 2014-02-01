@@ -491,6 +491,7 @@ describe("the agent configuration", function () {
 
     it("should set apdex_t", function () {
       expect(config.apdex_t).equal(0.1);
+      config.on('apdex_t', function (value) { expect(value).equal(0.05); });
       config.onConnect({'apdex_t' : 0.05});
       expect(config.apdex_t).equal(0.05);
     });
@@ -771,6 +772,7 @@ describe("the agent configuration", function () {
 
     it("shouldn't configure apdex_t", function () {
       expect(config.apdex_t).equal(0.1);
+      config.on('apdex_t', function () { throw new Error("shouldn't happen"); });
       config.onConnect({'apdex_t' : 0.05});
       expect(config.apdex_t).equal(0.1);
     });
