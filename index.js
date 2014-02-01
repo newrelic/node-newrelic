@@ -54,25 +54,20 @@ try {
     shimmer.bootstrapInstrumentation(agent);
 
     agent.start(function (error) {
-      if (error) {
-        logger.error(
-          error,
-          "New Relic for Node.js was unable to start due to an error:"
-        );
+      if (!error) return logger.debug("New Relic for Node.js is connected to New Relic.");
 
-        console.error("New Relic for Node.js was unable to start due to an error:");
-        console.error(error.stack);
+      logger.error(
+        error,
+        "New Relic for Node.js was unable to start due to an error:"
+      );
 
-        return;
-      }
-
-      logger.debug("New Relic for Node.js is connected to New Relic.");
+      console.error("New Relic for Node.js was unable to start due to an error:");
+      console.error(error.stack);
     });
   }
 }
 catch (error) {
-  logger.error(error,
-               "New Relic for Node.js was unable to start due to an error:");
+  logger.error(error, "New Relic for Node.js was unable to start due to an error:");
   console.error("New Relic for Node.js was unable to start due to an error:");
   console.error(error.stack);
 }

@@ -28,9 +28,13 @@ describe("the New Relic agent", function () {
     nock.enableNetConnect();
   });
 
-  it("requires the configuration be passed to the constructor",
-     function () {
-    var config = configurator.initialize(logger, {config : {agent_enabled : false}});
+  it("requires the configuration be passed to the constructor", function () {
+    /*jshint nonew: false */
+    expect(function () { new Agent(); }).throws();
+  });
+
+  it("doesn't throw when passed a valid configuration", function () {
+    var config = configurator.initialize({agent_enabled : false});
     var agent = new Agent(config);
 
     expect(agent.config.agent_enabled).equal(false);
@@ -89,8 +93,7 @@ describe("the New Relic agent", function () {
         expect(debug.internal_metrics).equal(false);
       });
 
-      it("internal instrumentation can be configured",
-         function () {
+      it("internal instrumentation can be configured", function () {
         var config = configurator.initialize({debug : {internal_metrics : true}});
         var debugged = new Agent(config);
 
@@ -165,6 +168,61 @@ describe("the New Relic agent", function () {
         expect(rules.length).equal(1);
         expect(rules[0].pattern.source).equal('^\\/ham_snadwich\\/ignore');
         expect(rules[0].ignore).equal(true);
+      });
+    });
+
+    describe("when starting", function () {
+      it("should require a callback", function () {
+        expect(function () { agent.start(); }).throws("callback required!");
+      });
+
+      it("shouldn't pass an error when disabled via configuration", function (done) {
+        agent.config.agent_enabled = false;
+        agent._connect = function () { done(new Error("shouldn't be called")); };
+        agent.start(done);
+      });
+
+      it("should pass an error when no license key is included", function (done) {
+        agent.config.license_key = undefined;
+        agent._connect = function () { done(new Error("shouldn't be called")); };
+        agent.start(function (error) {
+          should.exist(error);
+
+          done();
+        });
+      });
+
+      it("should say why startup failed without license key", function (done) {
+        agent.config.license_key = undefined;
+        agent._connect = function () { done(new Error("shouldn't be called")); };
+        agent.start(function (error) {
+          expect(error.message).equal("Not starting without license key!");
+
+          done();
+        });
+      });
+
+      it("should call _connect when config is correct", function (done) {
+        agent._connect = function (callback) {
+          should.exist(callback);
+          callback();
+        };
+
+        agent.start(done);
+      });
+
+      it("should pass through errors when _connect fails", function (done) {
+        var passed = new Error("passin' on through");
+
+        agent.collector.connect = function (callback) {
+          callback(passed);
+        };
+
+        agent.start(function (error) {
+          expect(error).equal(passed);
+
+          done();
+        });
       });
     });
 
