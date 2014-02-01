@@ -3,8 +3,6 @@
 var path         = require('path')
   , test         = require('tap').test
   , nock         = require('nock')
-  , logger       = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
-                     .child({component : 'TEST'})
   , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config.js'))
   , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent.js'))
   , Transaction  = require(path.join(__dirname, '..', '..', 'lib', 'transaction.js'))
@@ -15,7 +13,7 @@ nock.disableNetConnect();
 test("harvesting with a mocked collector that returns 503 after connect", function (t) {
   var RUN_ID      = 1337
     , url         = 'http://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize(logger))
+    , agent       = new Agent(configurator.initialize())
     , transaction = new Transaction(agent)
     ;
 
@@ -71,7 +69,7 @@ test("merging metrics and errors after a 503", function (t) {
 
   var RUN_ID      = 1338
     , url         = 'http://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize(logger))
+    , agent       = new Agent(configurator.initialize())
     , transaction = new Transaction(agent)
     ;
 

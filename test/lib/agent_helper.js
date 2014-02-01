@@ -4,8 +4,6 @@ var path      = require('path')
   , fs        = require('fs')
   , architect = require('architect')
   , wrench    = require('wrench')
-  , logger    = require(path.join(__dirname, '..', '..', 'lib', 'logger'))
-                  .child({component : 'agent_helper'})
   , shimmer   = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , Agent     = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   ;
@@ -37,7 +35,7 @@ var helper = module.exports = {
 
     // agent needs a "real" configuration
     var configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
-      , config       = configurator.initialize(logger)
+      , config       = configurator.initialize()
       ;
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; };

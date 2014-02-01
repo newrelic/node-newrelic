@@ -25,7 +25,7 @@ try {
   /* Loading the configuration can throw if a configuration file isn't found and
    * the environment variable NEW_RELIC_NO_CONFIG_FILE isn't set.
    */
-  var config = require(path.join(__dirname, 'lib', 'config.js')).initialize(logger);
+  var config = require(path.join(__dirname, 'lib', 'config.js')).initialize();
   if (!config.agent_enabled) {
     logger.info("Module not enabled in configuration; not starting.");
   }

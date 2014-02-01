@@ -8,8 +8,6 @@ var path         = require('path')
   , nock         = require('nock')
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
   , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
-                     .child({component : 'TEST'})
   , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
   ;
@@ -93,9 +91,7 @@ describe("the New Relic agent", function () {
 
       it("internal instrumentation can be configured",
          function () {
-        var config = configurator.initialize(logger, {
-          config : {debug : {internal_metrics : true}}
-        });
+        var config = configurator.initialize({debug : {internal_metrics : true}});
         var debugged = new Agent(config);
 
         var debug = debugged.config.debug;
@@ -106,9 +102,7 @@ describe("the New Relic agent", function () {
         var debugged;
 
         beforeEach(function () {
-          var config = configurator.initialize(logger, {
-            config : {debug : {internal_metrics : true}}
-          });
+          var config = configurator.initialize({debug : {internal_metrics : true}});
           debugged = new Agent(config);
         });
 
@@ -137,11 +131,11 @@ describe("the New Relic agent", function () {
     describe("with naming rules configured", function () {
       var configured;
       beforeEach(function () {
-        var config = configurator.initialize(logger, {
-          config : {rules : {name : [
+        var config = configurator.initialize({
+          rules : {name : [
             {pattern : '^/t',  name : 'u'},
             {pattern : /^\/u/, name : 't'}
-          ]}}
+          ]}
         });
         configured = new Agent(config);
       });
@@ -158,10 +152,10 @@ describe("the New Relic agent", function () {
     describe("with ignoring rules configured", function () {
       var configured;
       beforeEach(function () {
-        var config = configurator.initialize(logger, {
-          config : {rules : {ignore : [
+        var config = configurator.initialize({
+          rules : {ignore : [
             /^\/ham_snadwich\/ignore/
-          ]}}
+          ]}
         });
         configured = new Agent(config);
       });
@@ -347,10 +341,10 @@ describe("the New Relic agent", function () {
     var agent;
 
     beforeEach(function () {
-      var config = configurator.initialize(logger, {config : {
+      var config = configurator.initialize({
         run_id      : RUN_ID,
         license_key : 'license key here'
-      }});
+      });
       agent = new Agent(config);
     });
 

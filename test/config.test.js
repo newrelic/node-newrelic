@@ -5,8 +5,6 @@ var path   = require('path')
   , should = chai.should()
   , expect = chai.expect
   , fs     = require('fs')
-  , logger = require(path.join(__dirname, '..',
-                               'lib', 'logger')).child({component : 'TEST'})
   , Config = require(path.join(__dirname, '..', 'lib', 'config'))
   ;
 
@@ -21,7 +19,7 @@ function idempotentEnv(name, value, callback) {
 
   process.env[name] = value;
   try {
-    var tc = Config.initialize(logger, {config : {}});
+    var tc = Config.initialize({});
     callback(tc);
   }
   finally {
@@ -38,7 +36,7 @@ describe("the agent configuration", function () {
   it("should handle a directly passed minimal configuration", function () {
     var c;
     expect(function testInitialize() {
-      c = Config.initialize(logger, {config : {}});
+      c = Config.initialize({});
     }).not.throws();
     expect(c.agent_enabled).equal(true);
   });
@@ -245,7 +243,7 @@ describe("the agent configuration", function () {
     var configuration;
 
     before(function () {
-      configuration = Config.initialize(logger, {config : {}});
+      configuration = Config.initialize({});
 
       // ensure environment is clean
       delete configuration.newrelic_home;
@@ -353,11 +351,9 @@ describe("the agent configuration", function () {
     });
 
     it("should allow passed-in config to override errors ignored", function () {
-      configuration = Config.initialize(logger, {
-        config : {
-          error_collector : {
-            ignore_status_codes : []
-          }
+      configuration = Config.initialize({
+        error_collector : {
+          ignore_status_codes : []
         }
       });
 
@@ -422,11 +418,11 @@ describe("the agent configuration", function () {
     });
 
     it("should load the configuration", function () {
-      expect(function () { Config.initialize(logger); }).not.throws();
+      expect(function () { Config.initialize(); }).not.throws();
     });
 
     it("should export the home directory on the resulting object", function () {
-      var configuration = Config.initialize(logger);
+      var configuration = Config.initialize();
       expect(configuration.newrelic_home).equal(DESTDIR);
     });
 
@@ -436,7 +432,7 @@ describe("the agent configuration", function () {
 
       var configuration;
       expect(function envTest() {
-        configuration = Config.initialize(logger);
+        configuration = Config.initialize();
       }).not.throws();
 
       should.not.exist(configuration.newrelic_home);

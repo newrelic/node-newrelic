@@ -6,8 +6,6 @@ var path            = require('path')
   , should          = chai.should()
   , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
   , configurator    = require(path.join(__dirname, '..', 'lib', 'config'))
-  , logger          = require(path.join(__dirname, '..', 'lib', 'logger'))
-                        .child({component : 'TEST'})
   , TraceAggregator = require(path.join(__dirname, '..', 'lib',
                                         'transaction', 'trace', 'aggregator'))
   , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
@@ -39,11 +37,9 @@ describe('TraceAggregator', function () {
   it("should require a configuration at startup time", function () {
     var aggregator;
     expect(function () { aggregator = new TraceAggregator(); }).throws();
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled : true
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled : true
       }
     });
 
@@ -77,11 +73,9 @@ describe('TraceAggregator', function () {
     var config;
 
     beforeEach(function () {
-      config = configurator.initialize(logger, {
-        config : {
-          transaction_tracer : {
-            enabled : true
-          }
+      config = configurator.initialize({
+        transaction_tracer : {
+          enabled : true
         }
       });
     });
@@ -179,12 +173,10 @@ describe('TraceAggregator', function () {
     var ABOVE_THRESHOLD = 29;
     var APDEXT = 0.007;
 
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled : true,
-          top_n : 10
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled : true,
+        top_n : 10
       }
     });
 
@@ -209,12 +201,10 @@ describe('TraceAggregator', function () {
     var BELOW_THRESHOLD = 27;
     var APDEXT = 0.007;
 
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled : true,
-          top_n   : 10
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled : true,
+        top_n   : 10
       }
     });
 
@@ -240,12 +230,10 @@ describe('TraceAggregator', function () {
     var ABOVE_THRESHOLD = 29;
     var THRESHOLD = 0.028;
 
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled               : true,
-          transaction_threshold : THRESHOLD
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled               : true,
+        transaction_threshold : THRESHOLD
       }
     });
 
@@ -261,12 +249,10 @@ describe('TraceAggregator', function () {
     var BELOW_THRESHOLD = 29;
     var THRESHOLD = 30;
 
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled               : true,
-          transaction_threshold : THRESHOLD
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled               : true,
+        transaction_threshold : THRESHOLD
       }
     });
 
@@ -278,12 +264,10 @@ describe('TraceAggregator', function () {
   });
 
   it("should have its own logical notion of a harvest cycle", function (done) {
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled : true,
-          top_n   : 10
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled : true,
+        top_n   : 10
       }
     });
 
@@ -310,12 +294,10 @@ describe('TraceAggregator', function () {
 
   it("should group transactions by the metric name associated with the transaction",
      function () {
-    var config = configurator.initialize(logger, {
-      config : {
-        transaction_tracer : {
-          enabled : true,
-          top_n   : 10
-        }
+    var config = configurator.initialize({
+      transaction_tracer : {
+        enabled : true,
+        top_n   : 10
       }
     });
 
@@ -327,12 +309,10 @@ describe('TraceAggregator', function () {
 
   it("should always report slow traces until 5 have been sent", function (done) {
     agent.config.apdex_t = 0;
-    var config = configurator.initialize(logger, {
-      config : {
-        apdex_t : 0,
-        transaction_tracer : {
-          enabled : true
-        }
+    var config = configurator.initialize({
+      apdex_t : 0,
+      transaction_tracer : {
+        enabled : true
       }
     });
 
@@ -388,11 +368,9 @@ describe('TraceAggregator', function () {
   describe("when request timings are tracked over time", function () {
     it("should reset timings after 5 harvest cycles with no slow traces",
        function (done) {
-      var config = configurator.initialize(logger, {
-        config : {
-          transaction_tracer : {
-            enabled : true
-          }
+      var config = configurator.initialize({
+        transaction_tracer : {
+          enabled : true
         }
       });
 
