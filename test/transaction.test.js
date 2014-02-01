@@ -195,6 +195,12 @@ describe("Transaction", function () {
       expect(trans.ignore).equal(true);
     });
 
+    it("should pass through a name when told to by a rule", function () {
+      agent.userNormalizer.addSimple('^/config', '/config');
+      trans.setName('/config', 200);
+      expect(trans.name).equal('WebTransaction/NormalizedUri/config');
+    });
+
     describe("with no partial name set", function () {
       it("produces a normalized (backstopped) name when status is 200", function () {
         trans.setName('/test/string?do=thing&another=thing', 200);
