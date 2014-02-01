@@ -25,11 +25,11 @@ describe("Stats", function () {
   });
 
   it("should correctly summarize a sample set of statistics", function () {
-    statistics.recordValueInMillis(51);
-    statistics.recordValueInMillis(120, 34);
-    statistics.recordValueInMillis(120, 34);
+    statistics.recordValueInMillis(60);
+    statistics.recordValueInMillis(123, 34);
+    statistics.recordValueInMillis(123, 34);
 
-    verifyStats(statistics, 3, 0.291, 0.119, 0.051, 0.120, 0.031401);
+    verifyStats(statistics, 3, 0.306, 0.128, 0.060, 0.123, 0.033858);
   });
 
   it("should correctly summarize another simple set of statistics", function () {
@@ -60,19 +60,18 @@ describe("Stats", function () {
   });
 
   it("should correctly merge summaries", function () {
-    statistics.recordValueInMillis(51);
-    statistics.recordValueInMillis(120, 34);
-    statistics.recordValueInMillis(120, 34);
-    verifyStats(statistics, 3, 0.291, 0.119, 0.051, 0.120, 0.031401);
+    statistics.recordValueInMillis(60);
+    statistics.recordValueInMillis(123, 34);
+    statistics.recordValueInMillis(123, 34);
+    verifyStats(statistics, 3, 0.306, 0.128, 0.060, 0.123, 0.033858);
 
     var other = new Stats();
-    other.recordValueInMillis(120, 0);
-    other.recordValueInMillis(120, 0);
-    verifyStats(other, 2, 0.240, 0.0, 0.120, 0.120, 0.0288);
+    other.recordValueInMillis(123, 0);
+    other.recordValueInMillis(123, 0);
+    verifyStats(other, 2, 0.246, 0.0, 0.123, 0.123, 0.030258);
 
     statistics.merge(other);
-    // LOL IEEE 754
-    verifyStats(statistics, 5, 0.5309999999999999, 0.119, 0.051, 0.120, 0.060201);
+    verifyStats(statistics, 5, 0.552, 0.128, 0.060, 0.123, 0.064116);
   });
 
   describe("when handling quantities", function () {

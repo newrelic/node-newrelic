@@ -82,17 +82,17 @@ describe("recordExternal", function () {
         url : '/test',
         code : 200,
         apdexT : 10,
-        duration : 26,
+        duration : 30,
         exclusive : 2,
       });
 
       var result = [
-        [{name  : "External/test.example.com/http"}, [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "External/allWeb"},                [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "External/test.example.com/all"},  [1,0.026,0.002,0.026,0.026,0.000676]],
-        [{name  : "External/all"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "External/test.example.com/http"}, [1,0.030,0.002,0.030,0.030,0.0009]],
+        [{name  : "External/allWeb"},                [1,0.030,0.002,0.030,0.030,0.0009]],
+        [{name  : "External/test.example.com/all"},  [1,0.030,0.002,0.030,0.030,0.0009]],
+        [{name  : "External/all"},                   [1,0.030,0.002,0.030,0.030,0.0009]],
         [{name  : "External/test.example.com/http",
-          scope : "WebTransaction/NormalizedUri/*"}, [1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/NormalizedUri/*"}, [1,0.030,0.002,0.030,0.030,0.0009]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -106,22 +106,22 @@ describe("recordExternal", function () {
       , child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
       ;
 
-    root.setDurationInMillis(26, 0);
-    parent.setDurationInMillis(26, 0);
-    child1.setDurationInMillis(12, 3);
-    child2.setDurationInMillis(8, 4);
+    root.setDurationInMillis(  32,  0);
+    parent.setDurationInMillis(32,  0);
+    child1.setDurationInMillis(15, 10);
+    child2.setDurationInMillis( 2,  1);
 
     trans.end();
 
     var result = [
-      [{name : "External/test.example.com/http"},   [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "External/allOther"},                [3,0.046,0.034,0.008,0.026,0.000884]],
-      [{name : "External/test.example.com/all"},    [1,0.026,0.014,0.026,0.026,0.000676]],
-      [{name : "External/all"},                     [3,0.046,0.034,0.008,0.026,0.000884]],
-      [{name : "External/api.twitter.com/https"},   [1,0.012,0.012,0.012,0.012,0.000144]],
-      [{name : "External/api.twitter.com/all"},     [1,0.012,0.012,0.012,0.012,0.000144]],
-      [{name : "External/oauth.facebook.com/http"}, [1,0.008,0.008,0.008,0.008,0.000064]],
-      [{name : "External/oauth.facebook.com/all"},  [1,0.008,0.008,0.008,0.008,0.000064]]
+      [{name : "External/test.example.com/http"},   [1,0.032,0.015,0.032,0.032,0.001024]],
+      [{name : "External/allOther"},                [3,0.049,0.032,0.002,0.032,0.001253]],
+      [{name : "External/test.example.com/all"},    [1,0.032,0.015,0.032,0.032,0.001024]],
+      [{name : "External/all"},                     [3,0.049,0.032,0.002,0.032,0.001253]],
+      [{name : "External/api.twitter.com/https"},   [1,0.015,0.015,0.015,0.015,0.000225]],
+      [{name : "External/api.twitter.com/all"},     [1,0.015,0.015,0.015,0.015,0.000225]],
+      [{name : "External/oauth.facebook.com/http"}, [1,0.002,0.002,0.002,0.002,0.000004]],
+      [{name : "External/oauth.facebook.com/all"},  [1,0.002,0.002,0.002,0.002,0.000004]]
     ];
 
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

@@ -81,22 +81,22 @@ describe("recordMemcached", function () {
         url : '/test',
         code : 200,
         apdexT : 10,
-        duration : 26,
+        duration : 30,
         exclusive : 2,
       });
 
       var result = [
         [{name  : "Datastore/operation/Memcache/set"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/allWeb"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/all"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/instance/Memcache/localhost:11211"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/operation/Memcache/set",
           scope : "WebTransaction/NormalizedUri/*"},
-         [1,0.026,0.002,0.026,0.026,0.000676]]
+         [1,0.030,0.002,0.030,0.030,0.000900]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -110,24 +110,24 @@ describe("recordMemcached", function () {
       , child2 = parent.add('Datastore/operation/Memcache/clear', recordMemcache)
       ;
 
-    root.setDurationInMillis(26, 0);
-    parent.setDurationInMillis(26, 0);
-    child1.setDurationInMillis(12, 3);
-    child2.setDurationInMillis(8, 25);
+    root.setDurationInMillis(  32,  0);
+    parent.setDurationInMillis(32,  0);
+    child1.setDurationInMillis(15, 10);
+    child2.setDurationInMillis( 2,  1);
 
     trans.end();
 
     var result = [
       [{name : "Datastore/operation/Memcache/get"},
-       [1,0.026,0.013,0.026,0.026,0.000676]],
+        [1,0.032,0.015,0.032,0.032,0.001024]],
       [{name : "Datastore/allOther"},
-       [3,0.046,0.033,0.008,0.026,0.000884]],
+        [3,0.049,0.032,0.002,0.032,0.001253]],
       [{name : "Datastore/all"},
-       [3,0.046,0.033,0.008,0.026,0.000884]],
+        [3,0.049,0.032,0.002,0.032,0.001253]],
       [{name : "Datastore/operation/Memcache/set"},
-       [1,0.012,0.012,0.012,0.012,0.000144]],
+        [1,0.015,0.015,0.015,0.015,0.000225]],
       [{name : "Datastore/operation/Memcache/clear"},
-       [1,0.008,0.008,0.008,0.008,0.000064]]
+        [1,0.002,0.002,0.002,0.002,0.000004]]
     ];
 
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

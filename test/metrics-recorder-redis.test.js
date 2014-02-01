@@ -79,24 +79,24 @@ describe("recordRedis", function () {
     it("should record scoped metrics", function () {
       record({
         transaction : trans,
-        url : '/test',
-        code : 200,
-        apdexT : 10,
-        duration : 26,
-        exclusive : 2,
+        url         : '/test',
+        code        : 200,
+        apdexT      : 10,
+        duration    : 30,
+        exclusive   : 2,
       });
 
       var result = [
         [{name  : "Datastore/operation/Redis/set"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/allWeb"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/all"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/instance/Redis/127.0.0.1:6379"},
-         [1,0.026,0.002,0.026,0.026,0.000676]],
+         [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "Datastore/operation/Redis/set", scope : "WebTransaction/Uri/test"},
-         [1,0.026,0.002,0.026,0.026,0.000676]]
+         [1,0.030,0.002,0.030,0.030,0.000900]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -110,19 +110,19 @@ describe("recordRedis", function () {
       , child2 = child1.add('Datastore/operation/Redis/lpop',   recordRedis)
       ;
 
-    root.setDurationInMillis(26, 0);
-    parent.setDurationInMillis(26, 0);
-    child1.setDurationInMillis(12, 4);
-    child2.setDurationInMillis(8, 11);
+    root.setDurationInMillis(  32,  0);
+    parent.setDurationInMillis(32,  0);
+    child1.setDurationInMillis(16, 11);
+    child2.setDurationInMillis( 5,  2);
 
     trans.end();
 
     var result = [
-      [{name : "Datastore/operation/Redis/ladd"},   [1,0.026,0.011,0.026,0.026,0.000676]],
-      [{name : "Datastore/allOther"},               [3,0.046,0.026,0.008,0.026,0.000884]],
-      [{name : "Datastore/all"},                    [3,0.046,0.026,0.008,0.026,0.000884]],
-      [{name : "Datastore/operation/Redis/blpopr"}, [1,0.012,0.007,0.012,0.012,0.000144]],
-      [{name : "Datastore/operation/Redis/lpop"},   [1,0.008,0.008,0.008,0.008,0.000064]]
+      [{name : "Datastore/operation/Redis/ladd"},   [1,0.032,0.011,0.032,0.032,0.001024]],
+      [{name : "Datastore/allOther"},               [3,0.053,0.027,0.005,0.032,0.001305]],
+      [{name : "Datastore/all"},                    [3,0.053,0.027,0.005,0.032,0.001305]],
+      [{name : "Datastore/operation/Redis/blpopr"}, [1,0.016,0.011,0.016,0.016,0.000256]],
+      [{name : "Datastore/operation/Redis/lpop"},   [1,0.005,0.005,0.005,0.005,0.000025]]
     ];
 
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));

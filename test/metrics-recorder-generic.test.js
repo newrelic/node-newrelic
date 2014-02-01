@@ -75,14 +75,14 @@ describe("recordGeneric", function () {
         url : '/test',
         code : 200,
         apdexT : 10,
-        duration : 26,
+        duration : 30,
         exclusive : 2,
       });
 
       var result = [
-        [{name  : "placeholder"},                   [1,0.026,0.002,0.026,0.026,0.000676]],
+        [{name  : "placeholder"},                   [1,0.030,0.002,0.030,0.030,0.000900]],
         [{name  : "placeholder",
-          scope : "WebTransaction/NormalizedUri/*"},[1,0.026,0.002,0.026,0.026,0.000676]]
+          scope : "WebTransaction/NormalizedUri/*"},[1,0.030,0.002,0.030,0.030,0.000900]]
       ];
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result));
@@ -96,15 +96,15 @@ describe("recordGeneric", function () {
       , child2 = parent.add('Test/Child/2', recordGeneric)
       ;
 
-    root.setDurationInMillis(26, 0);
-    parent.setDurationInMillis(26, 0);
+    root.setDurationInMillis(30, 0);
+    parent.setDurationInMillis(30, 0);
     child1.setDurationInMillis(12, 3);
     child2.setDurationInMillis(8, 17);
 
     trans.end();
 
     var result = [
-      [{name : "Test/Parent"},  [1,0.026,0.006,0.026,0.026,0.000676]],
+      [{name : "Test/Parent"},  [1,0.030,0.010,0.030,0.030,0.000900]],
       [{name : "Test/Child/1"}, [1,0.012,0.012,0.012,0.012,0.000144]],
       [{name : "Test/Child/2"}, [1,0.008,0.008,0.008,0.008,0.000064]]
     ];
