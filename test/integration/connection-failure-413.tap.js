@@ -37,7 +37,9 @@ test("harvesting with a mocked collector that returns 413 after connect", functi
     , sendTrace   = nock(url).post(path('transaction_sample_data', RUN_ID)).reply(413)
     ;
 
-  agent._connect(function (error, config) {
+  var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200);
+
+  agent.start(function (error, config) {
     t.notOk(error, 'got no error on connection');
     t.deepEqual(config, {agent_run_id : RUN_ID}, 'got configuration');
     t.ok(redirect.isDone(),    "requested redirect");
@@ -53,7 +55,10 @@ test("harvesting with a mocked collector that returns 413 after connect", functi
       t.ok(sendErrors.isDone(),  "...and then sent error data...");
       t.ok(sendTrace.isDone(),   "...and then sent trace, even though all returned 413");
 
-      t.end();
+      agent.stop(function () {
+        t.ok(sendShutdown.isDone(), "got shutdown message");
+        t.end();
+      });
     });
   });
 });
@@ -87,7 +92,9 @@ test("discarding metrics and errors after a 413", function (t) {
   nock(url).post(path('error_data', RUN_ID)).reply(413);
   nock(url).post(path('transaction_sample_data', RUN_ID)).reply(413);
 
-  agent._connect(function () {
+  nock(url).post(path('shutdown', RUN_ID)).reply(200);
+
+  agent.start(function () {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'));
     agent.traces.trace = transaction.getTrace();
@@ -96,6 +103,8 @@ test("discarding metrics and errors after a 413", function (t) {
       t.notOk(error, "shouldn't have gotten back error for 413");
       t.equal(agent.errors.errors.length, 0, "errors were discarded");
       t.deepEqual(agent.metrics.toJSON(), [], "metrics were discarded");
+
+      agent.stop(function () {});
     });
   });
 });

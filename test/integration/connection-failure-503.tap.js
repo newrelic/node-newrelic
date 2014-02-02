@@ -41,7 +41,9 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
                       .reply(503, returned)
     ;
 
-  agent._connect(function (error, config) {
+  var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200);
+
+  agent.start(function (error, config) {
     t.notOk(error, 'got no error on connection');
     t.deepEqual(config, {agent_run_id : RUN_ID}, 'got configuration');
     t.ok(redirect.isDone(),    "requested redirect");
@@ -59,7 +61,10 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
       t.notOk(sendErrors.isDone(),  "...but didn't send error data...");
       t.notOk(sendTrace.isDone(),   "...and also didn't send trace, because of 503");
 
-      t.end();
+      agent.stop(function () {
+        t.ok(sendShutdown.isDone(), "got shutdown message");
+        t.end();
+      });
     });
   });
 });
@@ -93,7 +98,9 @@ test("merging metrics and errors after a 503", function (t) {
   nock(url).post(path('error_data', RUN_ID)).reply(503);
   nock(url).post(path('transaction_sample_data', RUN_ID)).reply(503);
 
-  agent._connect(function () {
+  nock(url).post(path('shutdown', RUN_ID)).reply(200);
+
+  agent.start(function () {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'));
     agent.traces.trace = transaction.getTrace();
@@ -122,6 +129,8 @@ test("merging metrics and errors after a 503", function (t) {
         ]],
         "metrics were merged"
       );
+
+      agent.stop(function () {});
     });
   });
 });

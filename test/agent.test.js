@@ -207,8 +207,8 @@ describe("the New Relic agent", function () {
         });
       });
 
-      it("should call _connect when config is correct", function (done) {
-        agent._connect = function (callback) {
+      it("should call connect when config is correct", function (done) {
+        agent.collector.connect = function (callback) {
           should.exist(callback);
           callback();
         };
@@ -372,7 +372,7 @@ describe("the New Relic agent", function () {
                           .post(helper.generateCollectorPath('connect'))
                           .reply(200, {return_value : config});
 
-        agent._connect(function (error) {
+        agent.start(function (error) {
           should.not.exist(error);
           redirect.done();
           handshake.done();
@@ -380,6 +380,8 @@ describe("the New Relic agent", function () {
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
 
+          sampler.stop();
+          agent._stopHarvester();
           done();
         });
       });
@@ -429,6 +431,9 @@ describe("the New Relic agent", function () {
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : null});
 
+        // need metrics or agent won't make a call against the collector
+        agent.metrics.measureMilliseconds('Test/bogus', null, 1);
+
         agent.harvest(function (error) {
           should.not.exist(error);
 
@@ -446,6 +451,9 @@ describe("the New Relic agent", function () {
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : rules});
 
+        // need metrics or agent won't make a call against the collector
+        agent.metrics.measureMilliseconds('Test/bogus', null, 1);
+
         agent.harvest(function (error) {
           should.not.exist(error);
 
@@ -461,6 +469,9 @@ describe("the New Relic agent", function () {
           nock('http://collector.newrelic.com')
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : rules});
+
+        // need metrics or agent won't make a call against the collector
+        agent.metrics.measureMilliseconds('Test/bogus', null, 1);
 
         agent.config.run_id = RUN_ID;
         agent.harvest(function (error) {
@@ -599,6 +610,9 @@ describe("the New Relic agent", function () {
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
 
+      // need metrics or agent won't make a call against the collector
+      agent.metrics.measureMilliseconds('Test/bogus', null, 1);
+
       agent.harvest(function () {
         metricData.done();
 
@@ -620,8 +634,11 @@ describe("the New Relic agent", function () {
       agent.errors.add(null, new Error('application code error'));
       agent.errors.add(null, new RangeError('stack depth exceeded'));
 
-      agent.collector.metricData = function (metrics) {
-        var metric = metrics.getMetric('Errors/all');
+      agent.collector.metricData = function (payload) {
+        var metrics = payload[3]
+          , metric  = metrics.getMetric('Errors/all')
+          ;
+
         should.exist(metric);
         expect(metric.callCount).equal(3);
 

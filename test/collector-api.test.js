@@ -34,7 +34,8 @@ describe("CollectorAPI", function () {
     nock.disableNetConnect();
 
     var agentProperties = {
-      config : {
+      reconfigure : function () {},
+      config      : {
         host         : HOST,
         port         : PORT,
         license_key  : 'license key here',
@@ -935,7 +936,8 @@ describe("CollectorAPI", function () {
 
     beforeEach(function () {
       var properties = {
-        config : {
+        reconfigure : function () {},
+        config      : {
           host         : HOST,
           port         : PORT,
           license_key  : 'license key here',
