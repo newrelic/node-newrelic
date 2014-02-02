@@ -6,10 +6,11 @@ var path         = require('path')
   , should       = chai.should()
   , expect       = chai.expect
   , nock         = require('nock')
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , configurator = require(path.join(__dirname, '..', 'lib', 'config'))
-  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
-  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper       = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , sampler      = require(path.join(__dirname, '..', 'lib', 'sampler.js'))
+  , configurator = require(path.join(__dirname, '..', 'lib', 'config.js'))
+  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent.js'))
+  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
 /*
@@ -18,6 +19,10 @@ var path         = require('path')
  *
  */
 var RUN_ID = 1337;
+
+var timeout = global.setTimeout;
+function fast() { global.setTimeout = process.nextTick; }
+function slow() { global.setTimeout = timeout; }
 
 describe("the New Relic agent", function () {
   before(function () {
@@ -176,13 +181,13 @@ describe("the New Relic agent", function () {
         expect(function () { agent.start(); }).throws("callback required!");
       });
 
-      it("shouldn't pass an error when disabled via configuration", function (done) {
+      it("shouldn't error when disabled via configuration", function (done) {
         agent.config.agent_enabled = false;
         agent._connect = function () { done(new Error("shouldn't be called")); };
         agent.start(done);
       });
 
-      it("should pass an error when no license key is included", function (done) {
+      it("should error when no license key is included", function (done) {
         agent.config.license_key = undefined;
         agent._connect = function () { done(new Error("shouldn't be called")); };
         agent.start(function (error) {
@@ -211,7 +216,7 @@ describe("the New Relic agent", function () {
         agent.start(done);
       });
 
-      it("should pass through errors when _connect fails", function (done) {
+      it("should error when _connect fails", function (done) {
         var passed = new Error("passin' on through");
 
         agent.collector.connect = function (callback) {
@@ -221,6 +226,118 @@ describe("the New Relic agent", function () {
         agent.start(function (error) {
           expect(error).equal(passed);
 
+          done();
+        });
+      });
+    });
+
+    describe("when stopping", function () {
+      function nop() {}
+
+      it("should require a callback", function () {
+        expect(function () { agent.stop(); }).throws("callback required!");
+      });
+
+      it("shouldn't error if no harvester handle is set", function () {
+        agent.harvesterHandle = undefined;
+        agent.collector.shutdown = nop;
+
+        expect(function () { agent.stop(nop); }).not.throws();
+      });
+
+      it("shouldn't error if a harvester handle is set", function () {
+        agent.harvesterHandle = setInterval(function () { throw new Error("nope"); }, 5);
+        agent.collector.shutdown = nop;
+
+        expect(function () { agent.stop(nop); }).not.throws();
+      });
+
+      it("should clear harvester handle is set", function () {
+        agent.harvesterHandle = setInterval(function () { throw new Error("nope"); }, 5);
+        agent.collector.shutdown = nop;
+
+        agent.stop(nop);
+        should.not.exist(agent.harvesterHandle);
+      });
+
+      it("should stop sampler", function () {
+        sampler.start(agent);
+        agent.collector.shutdown = nop;
+        agent.stop(nop);
+
+        expect(sampler.state).equal('stopped');
+      });
+
+      it("should only shut down connection if connected", function (done) {
+        agent.stop(function (error) {
+          should.not.exist(error);
+          done();
+        });
+      });
+    });
+
+    describe("when restarting", function () {
+      beforeEach(fast);
+      afterEach(slow);
+
+      it("should require a callback", function () {
+        expect(function () { agent.restart(); }).throws("callback required!");
+      });
+
+      it("should pass along errors from stop", function (done) {
+        agent.config.run_id = 1337;
+        var shutdown = nock('http://collector.newrelic.com')
+                         .post(helper.generateCollectorPath('shutdown', 1337))
+                         .reply(503, {return_value : null});
+        var redirect = nock('http://collector.newrelic.com')
+                         .post(helper.generateCollectorPath('get_redirect_host'))
+                         .reply(200, {return_value : 'collector.newrelic.com'});
+        var connect = nock('http://collector.newrelic.com')
+                        .post(helper.generateCollectorPath('connect'))
+                        .reply(200, {return_value : {agent_run_id : 1338}});
+
+        agent.restart(function (error) {
+          should.exist(error);
+          expect(error.message).equal("Got HTTP 503 in response to shutdown.");
+
+          shutdown.done();
+          redirect.done();
+          connect.done();
+          done();
+        });
+      });
+
+      it("should pass along errors from start", function (done) {
+        var redirect = nock('http://collector.newrelic.com')
+                         .post(helper.generateCollectorPath('get_redirect_host'))
+                         .times(6)
+                         .reply(503, {return_value : null});
+
+        agent.restart(function (error) {
+          should.exist(error);
+          expect(error.message).equal("Got HTTP 503 in response to get_redirect_host.");
+
+          redirect.done();
+          done();
+        });
+      });
+
+      it("should prioritize start errors over stop errors", function (done) {
+        agent.config.run_id = 1337;
+        var shutdown = nock('http://collector.newrelic.com')
+                         .post(helper.generateCollectorPath('shutdown', 1337))
+                         .reply(415, {return_value : null});
+        var redirect = nock('http://collector.newrelic.com')
+                         .post(helper.generateCollectorPath('get_redirect_host'))
+                         .times(6)
+                         .reply(503, {return_value : null});
+
+        agent.restart(function (error) {
+          should.exist(error);
+          expect(error.message).equal("Got HTTP 503 in response to get_redirect_host.");
+
+          shutdown.done();
+          redirect.done();
           done();
         });
       });
@@ -290,7 +407,7 @@ describe("the New Relic agent", function () {
       it("should update the current metrics collection's apdexT", function () {
         expect(agent.metrics.apdexT).not.equal(APDEX_T);
 
-        agent.onApdexTChange(APDEX_T);
+        agent._apdexTChange(APDEX_T);
 
         expect(agent.metrics.apdexT).equal(APDEX_T);
       });
@@ -393,9 +510,69 @@ describe("the New Relic agent", function () {
         transaction.end();
       });
     });
+
+    describe("when tweaking the harvest cycle", function () {
+      afterEach(function () {
+        agent._stopHarvester();
+      });
+
+      it("should begin with no harvester active", function () {
+        should.not.exist(agent.harvesterHandle);
+      });
+
+      it("should start a harvester without throwing", function () {
+        expect(function () { agent._startHarvester(10); }).not.throws();
+        should.exist(agent.harvesterHandle);
+      });
+
+      it("should stop an unstarted harvester without throwing", function () {
+        expect(function () { agent._startHarvester(10); }).not.throws();
+      });
+
+      it("should stop a started harvester", function () {
+        agent._startHarvester(10);
+        agent._stopHarvester();
+        should.not.exist(agent.harvesterHandle);
+      });
+
+      it("should restart an unstarted harvester without throwing", function () {
+        expect(function () { agent._restartHarvester(10); }).not.throws();
+        should.exist(agent.harvesterHandle);
+      });
+
+      it("should restart a started harvester", function () {
+        agent._startHarvester(10);
+        var before = agent.harvesterHandle;
+        should.exist(before);
+        agent._restartHarvester(10);
+        expect(agent.harvesterHandle).not.equal(before);
+      });
+
+      it("shouldn't alter interval when harvester's not running", function (done) {
+        should.not.exist(agent.harvesterHandle);
+        agent._harvesterIntervalChange(13, function () {
+          should.not.exist(agent.harvesterHandle);
+
+          done();
+        });
+      });
+
+      it("should alter interval when harvester's not running", function (done) {
+        agent._startHarvester(10);
+        var before = agent.harvesterHandle;
+        should.exist(before);
+
+        agent._harvesterIntervalChange(13, function (error) {
+          expect(error.message).equal("Not connected to New Relic!");
+          expect(agent.harvesterHandle).not.equal(before);
+
+          done();
+        });
+      });
+    });
   });
 
-  describe("with a nocked connection", function () {
+  describe("when harvesting", function () {
     var agent;
 
     beforeEach(function () {
@@ -406,149 +583,151 @@ describe("the New Relic agent", function () {
       agent = new Agent(config);
     });
 
-    describe("when harvesting", function () {
-      it("the last reported time is congruent with reality", function () {
-        expect(agent.metrics.started).closeTo(Date.now(), 1000);
-      });
+    it("harvest requires a callback", function () {
+      expect(function () { agent.harvest(); }).throws("callback required!");
+    });
 
-      it("sends transactions to the new error handler after harvest", function (done) {
-        agent.metrics.started = 1337;
+    it("the last reported time is congruent with reality", function () {
+      expect(agent.metrics.started).closeTo(Date.now(), 1000);
+    });
 
-        var metricData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []});
+    it("sends transactions to the new error handler after harvest", function (done) {
+      agent.metrics.started = 1337;
 
-        agent.harvest(function () {
-          metricData.done();
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
 
-          agent.errors = {
-            onTransactionFinished : function (t) {
-              expect(t).equal(transaction);
-              done();
-            }
-          };
+      agent.harvest(function () {
+        metricData.done();
 
-          var transaction = new Transaction(agent);
-          transaction.statusCode = 200;
-          transaction.end();
-        });
-      });
-
-      it("reports the error count", function (done) {
-        agent.errors.add(null, new TypeError('no method last on undefined'));
-        agent.errors.add(null, new Error('application code error'));
-        agent.errors.add(null, new RangeError('stack depth exceeded'));
-
-        agent.collector.metricData = function (metrics) {
-          var metric = metrics.getMetric('Errors/all');
-          should.exist(metric);
-          expect(metric.callCount).equal(3);
-
-          done();
+        agent.errors = {
+          onTransactionFinished : function (t) {
+            expect(t).equal(transaction);
+            done();
+          }
         };
 
-        agent.harvest(function nop() {});
-      });
-
-      it("doesn't send errors when error tracer disabled", function (done) {
-        var metricData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []});
-
-        agent.errors.add(null, new TypeError('no method last on undefined'));
-        agent.errors.add(null, new Error('application code error'));
-        agent.errors.add(null, new RangeError('stack depth exceeded'));
-
-        // do this here so error traces get collected but not sent
-        agent.config.onConnect({'error_collector.enabled' : false});
-
-        agent.harvest(function (error) {
-          should.not.exist(error);
-
-          metricData.done();
-          done();
-        });
-      });
-
-      it("doesn't send errors when server disables collect_errors", function (done) {
-        var metricData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []});
-
-        agent.errors.add(null, new TypeError('no method last on undefined'));
-        agent.errors.add(null, new Error('application code error'));
-        agent.errors.add(null, new RangeError('stack depth exceeded'));
-
-        // do this here so error traces get collected but not sent
-        agent.config.onConnect({collect_errors : false});
-
-        agent.harvest(function (error) {
-          should.not.exist(error);
-
-          metricData.done();
-          done();
-        });
-      });
-
-      it("doesn't send transaction traces when slow traces disabled", function (done) {
         var transaction = new Transaction(agent);
-        transaction.setName('/test/path/31337', 501);
-        agent.errors.add(transaction, new TypeError('no method last on undefined'));
-        agent.errors.add(transaction, new Error('application code error'));
-        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+        transaction.statusCode = 200;
         transaction.end();
-
-        var metricData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []});
-        var errorData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('error_data', RUN_ID))
-            .reply(200, {return_value : null});
-
-        // do this here so slow trace gets collected but not sent
-        agent.config.onConnect({'transaction_tracer.enabled' : false});
-
-        agent.harvest(function (error) {
-          should.not.exist(error);
-
-          metricData.done();
-          errorData.done();
-          done();
-        });
       });
+    });
 
-      it("doesn't send transaction traces when collect_traces disabled", function (done) {
-        var transaction = new Transaction(agent);
-        transaction.setName('/test/path/31337', 501);
-        agent.errors.add(transaction, new TypeError('no method last on undefined'));
-        agent.errors.add(transaction, new Error('application code error'));
-        agent.errors.add(transaction, new RangeError('stack depth exceeded'));
-        transaction.end();
+    it("reports the error count", function (done) {
+      agent.errors.add(null, new TypeError('no method last on undefined'));
+      agent.errors.add(null, new Error('application code error'));
+      agent.errors.add(null, new RangeError('stack depth exceeded'));
 
-        var metricData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []});
-        var errorData =
-          nock('http://collector.newrelic.com')
-            .post(helper.generateCollectorPath('error_data', RUN_ID))
-            .reply(200, {return_value : null});
+      agent.collector.metricData = function (metrics) {
+        var metric = metrics.getMetric('Errors/all');
+        should.exist(metric);
+        expect(metric.callCount).equal(3);
 
-        // set this here so slow trace gets collected but not sent
-        agent.config.onConnect({collect_traces : false});
+        done();
+      };
 
-        agent.harvest(function (error) {
-          should.not.exist(error);
+      agent.harvest(function nop() {});
+    });
 
-          metricData.done();
-          errorData.done();
-          done();
-        });
+    it("doesn't send errors when error tracer disabled", function (done) {
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
+
+      agent.errors.add(null, new TypeError('no method last on undefined'));
+      agent.errors.add(null, new Error('application code error'));
+      agent.errors.add(null, new RangeError('stack depth exceeded'));
+
+      // do this here so error traces get collected but not sent
+      agent.config.onConnect({'error_collector.enabled' : false});
+
+      agent.harvest(function (error) {
+        should.not.exist(error);
+
+        metricData.done();
+        done();
+      });
+    });
+
+    it("doesn't send errors when server disables collect_errors", function (done) {
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
+
+      agent.errors.add(null, new TypeError('no method last on undefined'));
+      agent.errors.add(null, new Error('application code error'));
+      agent.errors.add(null, new RangeError('stack depth exceeded'));
+
+      // do this here so error traces get collected but not sent
+      agent.config.onConnect({collect_errors : false});
+
+      agent.harvest(function (error) {
+        should.not.exist(error);
+
+        metricData.done();
+        done();
+      });
+    });
+
+    it("doesn't send transaction traces when slow traces disabled", function (done) {
+      var transaction = new Transaction(agent);
+      transaction.setName('/test/path/31337', 501);
+      agent.errors.add(transaction, new TypeError('no method last on undefined'));
+      agent.errors.add(transaction, new Error('application code error'));
+      agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+      transaction.end();
+
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
+      var errorData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, {return_value : null});
+
+      // do this here so slow trace gets collected but not sent
+      agent.config.onConnect({'transaction_tracer.enabled' : false});
+
+      agent.harvest(function (error) {
+        should.not.exist(error);
+
+        metricData.done();
+        errorData.done();
+        done();
+      });
+    });
+
+    it("doesn't send transaction traces when collect_traces disabled", function (done) {
+      var transaction = new Transaction(agent);
+      transaction.setName('/test/path/31337', 501);
+      agent.errors.add(transaction, new TypeError('no method last on undefined'));
+      agent.errors.add(transaction, new Error('application code error'));
+      agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+      transaction.end();
+
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
+      var errorData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, {return_value : null});
+
+      // set this here so slow trace gets collected but not sent
+      agent.config.onConnect({collect_traces : false});
+
+      agent.harvest(function (error) {
+        should.not.exist(error);
+
+        metricData.done();
+        errorData.done();
+        done();
       });
     });
   });
