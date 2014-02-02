@@ -88,6 +88,10 @@ describe("the New Relic agent", function () {
       expect(function () { agent.getTransaction(); }).not.throws();
     });
 
+    it("requires new configuration to reconfigure the agent", function () {
+      expect(function () { agent.reconfigure(); }).throws();
+    });
+
     it("has some debugging configuration by default", function () {
       should.exist(agent.config.debug);
     });
@@ -183,13 +187,17 @@ describe("the New Relic agent", function () {
 
       it("shouldn't error when disabled via configuration", function (done) {
         agent.config.agent_enabled = false;
-        agent._connect = function () { done(new Error("shouldn't be called")); };
+        agent.collector.connect = function () {
+          done(new Error("shouldn't be called"));
+        };
         agent.start(done);
       });
 
       it("should error when no license key is included", function (done) {
         agent.config.license_key = undefined;
-        agent._connect = function () { done(new Error("shouldn't be called")); };
+        agent.collector.connect = function () {
+          done(new Error("shouldn't be called"));
+        };
         agent.start(function (error) {
           should.exist(error);
 
@@ -199,7 +207,9 @@ describe("the New Relic agent", function () {
 
       it("should say why startup failed without license key", function (done) {
         agent.config.license_key = undefined;
-        agent._connect = function () { done(new Error("shouldn't be called")); };
+        agent.collector.connect = function () {
+          done(new Error("shouldn't be called"));
+        };
         agent.start(function (error) {
           expect(error.message).equal("Not starting without license key!");
 
@@ -216,7 +226,7 @@ describe("the New Relic agent", function () {
         agent.start(done);
       });
 
-      it("should error when _connect fails", function (done) {
+      it("should error when connection fails", function (done) {
         var passed = new Error("passin' on through");
 
         agent.collector.connect = function (callback) {
@@ -226,6 +236,28 @@ describe("the New Relic agent", function () {
         agent.start(function (error) {
           expect(error).equal(passed);
 
+          done();
+        });
+      });
+
+      it("should harvest at connect when metrics are already there", function (done) {
+        var metrics =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
+
+        agent.collector.connect = function (callback) {
+          callback(null, {agent_run_id : RUN_ID});
+        };
+
+        agent.config.run_id = RUN_ID;
+
+        agent.metrics.measureMilliseconds('Test/Bogus', null, 1);
+
+        agent.start(function (error) {
+          should.not.exist(error);
+
+          metrics.done();
           done();
         });
       });
@@ -377,6 +409,7 @@ describe("the New Relic agent", function () {
           redirect.done();
           handshake.done();
 
+          expect(agent.config.run_id).equal(404);
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
 
