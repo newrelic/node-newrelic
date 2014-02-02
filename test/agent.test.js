@@ -20,10 +20,6 @@ var path         = require('path')
  */
 var RUN_ID = 1337;
 
-var timeout = global.setTimeout;
-function fast() { global.setTimeout = process.nextTick; }
-function slow() { global.setTimeout = timeout; }
-
 describe("the New Relic agent", function () {
   before(function () {
     nock.disableNetConnect();
@@ -303,73 +299,6 @@ describe("the New Relic agent", function () {
       it("should only shut down connection if connected", function (done) {
         agent.stop(function (error) {
           should.not.exist(error);
-          done();
-        });
-      });
-    });
-
-    describe("when restarting", function () {
-      beforeEach(fast);
-      afterEach(slow);
-
-      it("should require a callback", function () {
-        expect(function () { agent.restart(); }).throws("callback required!");
-      });
-
-      it("should pass along errors from stop", function (done) {
-        agent.config.run_id = 1337;
-        var shutdown = nock('http://collector.newrelic.com')
-                         .post(helper.generateCollectorPath('shutdown', 1337))
-                         .reply(503, {return_value : null});
-        var redirect = nock('http://collector.newrelic.com')
-                         .post(helper.generateCollectorPath('get_redirect_host'))
-                         .reply(200, {return_value : 'collector.newrelic.com'});
-        var connect = nock('http://collector.newrelic.com')
-                        .post(helper.generateCollectorPath('connect'))
-                        .reply(200, {return_value : {agent_run_id : 1338}});
-
-        agent.restart(function (error) {
-          should.exist(error);
-          expect(error.message).equal("Got HTTP 503 in response to shutdown.");
-
-          shutdown.done();
-          redirect.done();
-          connect.done();
-          done();
-        });
-      });
-
-      it("should pass along errors from start", function (done) {
-        var redirect = nock('http://collector.newrelic.com')
-                         .post(helper.generateCollectorPath('get_redirect_host'))
-                         .times(6)
-                         .reply(503, {return_value : null});
-
-        agent.restart(function (error) {
-          should.exist(error);
-          expect(error.message).equal("Got HTTP 503 in response to get_redirect_host.");
-
-          redirect.done();
-          done();
-        });
-      });
-
-      it("should prioritize start errors over stop errors", function (done) {
-        agent.config.run_id = 1337;
-        var shutdown = nock('http://collector.newrelic.com')
-                         .post(helper.generateCollectorPath('shutdown', 1337))
-                         .reply(415, {return_value : null});
-        var redirect = nock('http://collector.newrelic.com')
-                         .post(helper.generateCollectorPath('get_redirect_host'))
-                         .times(6)
-                         .reply(503, {return_value : null});
-
-        agent.restart(function (error) {
-          should.exist(error);
-          expect(error.message).equal("Got HTTP 503 in response to get_redirect_host.");
-
-          shutdown.done();
-          redirect.done();
           done();
         });
       });
