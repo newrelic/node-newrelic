@@ -8,9 +8,10 @@ var path   = require('path')
   , API    = require(path.join(__dirname, '..', 'lib', 'collector', 'api.js'))
   ;
 
-var HOST = 'collector.newrelic.com'
-  , PORT = 80
-  , URL  = 'http://' + HOST
+var HOST   = 'collector.newrelic.com'
+  , PORT   = 80
+  , URL    = 'http://' + HOST
+  , RUN_ID = 1337
   ;
 
 function generate(method, runID) {
@@ -54,8 +55,7 @@ describe("CollectorAPI", function () {
 
   describe("_login", function () {
     describe("on the happy path", function () {
-      var RUN_ID = 1337
-        , bad
+      var bad
         , ssc
         , raw
         ;
@@ -129,6 +129,78 @@ describe("CollectorAPI", function () {
         it("should have included an informative error message", function () {
           expect(captured.message)
             .equal("No body found in response to get_redirect_host.");
+        });
+      });
+
+      describe("receiving no hostname from get_redirect_host", function () {
+        var captured
+          , ssc
+          ;
+
+        before(function (done) {
+          var redirection = nock(URL)
+                              .post(generate('get_redirect_host'))
+                              .reply(200, {return_value : ''});
+          var connect = nock(URL)
+                          .post(generate('connect'))
+                          .reply(200, {return_value : {agent_run_id : RUN_ID}});
+
+          api._login(function test(error, config) {
+            captured = error;
+            ssc = config;
+
+            redirection.done();
+            connect.done();
+            done();
+          });
+        });
+
+        it("should have gotten no error", function () {
+          should.not.exist(captured);
+        });
+
+        it("should use preexisting collector hostname", function () {
+          expect(api._agent.config.host).equal(HOST);
+        });
+
+        it("should pass along server-side configuration from collector", function () {
+          expect(ssc).eql({agent_run_id : RUN_ID});
+        });
+      });
+
+      describe("receiving no config back from connect", function () {
+        var captured
+          , ssc
+          ;
+
+        before(function (done) {
+          var redirection = nock(URL)
+                              .post(generate('get_redirect_host'))
+                              .reply(200, {return_value : HOST});
+          var connect = nock(URL)
+                          .post(generate('connect'))
+                          .reply(200, {return_value : null});
+
+          api._login(function test(error, config) {
+            captured = error;
+            ssc = config;
+
+            redirection.done();
+            connect.done();
+            done();
+          });
+        });
+
+        it("should have gotten an error", function () {
+          should.exist(captured);
+        });
+
+        it("should have gotten an informative error message", function () {
+          expect(captured.message).equal("No agent run ID received from handshake.");
+        });
+
+        it("should pass along no server-side configuration from collector", function () {
+          should.not.exist(ssc);
         });
       });
 
@@ -308,10 +380,13 @@ describe("CollectorAPI", function () {
   });
 
   describe("connect", function () {
+    it("requires a callback", function () {
+      expect(function () { api.connect(null); }).throws("callback is required");
+    });
+
     describe("on the happy path", function () {
       describe("succeeds immediately, the same as _login", function () {
-        var RUN_ID = 1337
-          , bad
+        var bad
           , ssc
           , raw
           ;
@@ -360,8 +435,7 @@ describe("CollectorAPI", function () {
       });
 
       describe("succeeds after one 503 on get_redirect_host", function () {
-        var RUN_ID = 1337
-          , bad
+        var bad
           , ssc
           , raw
           ;
@@ -416,8 +490,7 @@ describe("CollectorAPI", function () {
       });
 
       describe("succeeds after five 503s on get_redirect_host", function () {
-        var RUN_ID = 1337
-          , bad
+        var bad
           , ssc
           , raw
           ;
@@ -642,9 +715,18 @@ describe("CollectorAPI", function () {
   });
 
   describe("errorData", function () {
+    it("requires errors to send", function () {
+      expect(function () { api.errorData(null, function () {}); })
+        .throws("must pass errors to send");
+    });
+
+    it("requires a callback", function () {
+      expect(function () { api.errorData([], null); })
+        .throws("callback is required");
+    });
+
     describe("on the happy path", function () {
-      var RUN_ID = 1337
-        , bad
+      var bad
         , nothing
         , raw
         ;
@@ -696,9 +778,18 @@ describe("CollectorAPI", function () {
   });
 
   describe("metricData", function () {
+    it("requires metrics to send", function () {
+      expect(function () { api.metricData(null, function () {}); })
+        .throws("must pass metrics to send");
+    });
+
+    it("requires a callback", function () {
+      expect(function () { api.metricData([], null); })
+        .throws("callback is required");
+    });
+
     describe("on the happy path", function () {
-      var RUN_ID = 1337
-        , bad
+      var bad
         , nothing
         , raw
         ;
@@ -751,9 +842,18 @@ describe("CollectorAPI", function () {
   });
 
   describe("transactionSampleData", function () {
+    it("requires slow trace data to send", function () {
+      expect(function () { api.transactionSampleData(null, function () {}); })
+        .throws("must pass slow trace data to send");
+    });
+
+    it("requires a callback", function () {
+      expect(function () { api.transactionSampleData([], null); })
+        .throws("callback is required");
+    });
+
     describe("on the happy path", function () {
-      var RUN_ID = 1337
-        , bad
+      var bad
         , nothing
         , raw
         ;
@@ -798,9 +898,18 @@ describe("CollectorAPI", function () {
   });
 
   describe("sqlTraceData", function () {
+    it("requires slow SQL data to send", function () {
+      expect(function () { api.sqlTraceData(null, function () {}); })
+        .throws("must pass slow SQL to send");
+    });
+
+    it("requires a callback", function () {
+      expect(function () { api.sqlTraceData([], null); })
+        .throws("callback is required");
+    });
+
     describe("on the happy path", function () {
-      var RUN_ID = 1337
-        , bad
+      var bad
         , nothing
         , raw
         ;
@@ -845,9 +954,12 @@ describe("CollectorAPI", function () {
   });
 
   describe("shutdown", function () {
+    it("requires a callback", function () {
+      expect(function () { api.shutdown(null); }).throws("callback is required");
+    });
+
     describe("on the happy path", function () {
-      var RUN_ID = 1337
-        , bad
+      var bad
         , nothing
         , raw
         ;
@@ -887,8 +999,7 @@ describe("CollectorAPI", function () {
 
     describe("off the happy path", function () {
       describe("fails on a 503 status code", function () {
-        var RUN_ID = 1337
-          , captured
+        var captured
           , body
           , raw
           ;
@@ -935,22 +1046,36 @@ describe("CollectorAPI", function () {
     var method;
 
     beforeEach(function () {
+      var config = {
+        host         : HOST,
+        port         : PORT,
+        license_key  : 'license key here',
+        run_id       : 31337,
+        applications : function () {
+          return ['TEST'];
+        }
+      };
       var properties = {
-        reconfigure : function () {},
-        config      : {
-          host         : HOST,
-          port         : PORT,
-          license_key  : 'license key here',
-          run_id       : 31337,
-          applications : function () {
-            return ['TEST'];
-          }
-        },
-        stop : function (callback) { api.shutdown(callback); }
+        config      : config,
+        reconfigure : function (ssc) { config.run_id = ssc.agent_run_id; },
+        stop        : function (callback) { api.shutdown(callback); }
       };
 
       api    = new API(properties);
       method = api._methods.metrics;
+    });
+
+    it("should bail out if disconnected", function (done) {
+      api._agent.config.run_id = undefined;
+
+      function tested(error) {
+        should.exist(error);
+        expect(error.message).equals("Not connected to collector.");
+
+        done();
+      }
+
+      api._runLifecycle(method, null, tested);
     });
 
     it("should discard HTTP 413 errors", function (done) {
@@ -1010,11 +1135,12 @@ describe("CollectorAPI", function () {
                       .post(generate('connect'))
                       .reply(200, {return_value : {agent_run_id : 31338}});
       var succeed = nock(URL)
-                      .post(generate('metric_data'))
+                      .post(generate('metric_data', 31338))
                       .reply(200, {return_value : {}});
 
       function tested(error) {
         should.not.exist(error);
+        expect(api._agent.config.run_id).equal(31338); // has new run ID
 
         restart.done();
         shutdown.done();
@@ -1044,6 +1170,8 @@ describe("CollectorAPI", function () {
 
       function tested(error) {
         expect(error.message).equal("Wake up! Time to die!");
+        expect(error.class).equal('NewRelic::Agent::ForceDisconnectException');
+        should.not.exist(api._agent.config.run_id);
 
         restart.done();
         shutdown.done();
@@ -1064,6 +1192,7 @@ describe("CollectorAPI", function () {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception);
       function tested(error) {
         expect(error.message).equal("Out for a smoke beeearrrbeee");
+        expect(error.class).equal('NewRelic::Agent::MaintenanceError');
 
         failure.done();
         done();
@@ -1076,13 +1205,14 @@ describe("CollectorAPI", function () {
       var exception = {
         exception : {
           message    : "What does this button do?",
-          error_type : 'NewRelic::Agent::RuntimeError'
+          error_type : 'RuntimeError'
         }
       };
 
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception);
       function tested(error) {
         expect(error.message).equal("What does this button do?");
+        expect(error.class).equal('RuntimeError');
 
         failure.done();
         done();

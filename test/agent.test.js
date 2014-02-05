@@ -110,12 +110,50 @@ describe("the New Relic agent", function () {
         var debugged;
 
         beforeEach(function () {
-          var config = configurator.initialize({debug : {internal_metrics : true}});
+          var config = configurator.initialize({
+            license_key : 'license key here',
+            run_id      : RUN_ID,
+            debug       : {internal_metrics   : true}
+          });
           debugged = new Agent(config);
         });
 
         it("should have an object for tracking internal metrics", function () {
-          expect(debugged.config.debug.supportability).not.equal(undefined);
+          should.exist(debugged.config.debug.supportability);
+        });
+
+        it("should set apdexT on the supportability metrics on connect", function (done) {
+          var config = configurator.initialize({
+            license_key : 'license key here',
+            debug       : {internal_metrics   : true}
+          });
+          debugged = new Agent(config);
+
+          expect(debugged.config.debug.supportability.apdexT).equal(0.1);
+
+          var redirect =
+            nock('http://collector.newrelic.com')
+              .post(helper.generateCollectorPath('get_redirect_host'))
+              .reply(200, {return_value : 'collector.newrelic.com'});
+          var connect =
+            nock('http://collector.newrelic.com')
+              .post(helper.generateCollectorPath('connect'))
+              .reply(200, {return_value : {agent_run_id : RUN_ID, apdex_t : 0.5}});
+          var shutdown =
+            nock('http://collector.newrelic.com')
+              .post(helper.generateCollectorPath('shutdown', RUN_ID))
+              .reply(200, {return_value : null});
+
+          debugged.start(function () {
+            expect(debugged.config.debug.supportability.apdexT).equal(0.5);
+
+            redirect.done();
+            connect.done();
+            debugged.stop(function () {
+              shutdown.done();
+              done();
+            });
+          });
         });
 
         it("should find an internal metric for transaction processed", function (done) {
@@ -124,13 +162,66 @@ describe("the New Relic agent", function () {
               , metric = supportability.getMetric('Supportability/Transaction/Count')
               ;
 
-            expect(metric, 'is defined').not.equal(undefined);
-            expect(metric.callCount, 'has been incremented').equal(1);
+            should.exist(metric);
+            expect(metric.callCount).equal(1);
 
-            return done();
+            done();
           });
 
           var transaction = new Transaction(debugged);
+          transaction.end();
+        });
+
+        it("should merge supportability metrics into sent payload", function (done) {
+          debugged.collector.metricData = function (payload, callback) {
+            var metrics = payload[3];
+            expect(metrics.getMetric('Supportability/Transaction/Count').callCount)
+              .equal(1);
+
+            callback();
+          };
+
+          var transaction = new Transaction(debugged);
+          transaction.end();
+
+          debugged._sendMetrics(function () {
+            done();
+          });
+        });
+      });
+
+      describe("with tracer tracing enabled", function () {
+        var debugged
+          , config
+          ;
+
+        beforeEach(function () {
+          config = configurator.initialize({debug : {tracer_tracing : true}});
+          debugged = new Agent(config);
+        });
+
+        it("should not crash on instantiation", function () {
+          expect(function () { debugged = new Agent(config); }).not.throws();
+        });
+
+        it("doesn't blow up when dumping describer", function (done) {
+          var transaction;
+
+          // use this to get the traced transactions
+          var proxy = debugged.tracer.transactionProxy(function () {
+            transaction = debugged.getTransaction();
+          });
+
+          // make sure transactionProxy is still synchronous
+          proxy();
+          should.exist(transaction);
+
+
+          debugged.on('transactionFinished', function () {
+            should.exist(transaction.describer);
+            done();
+          });
+
           transaction.end();
         });
       });
@@ -159,6 +250,7 @@ describe("the New Relic agent", function () {
 
     describe("with ignoring rules configured", function () {
       var configured;
+
       beforeEach(function () {
         var config = configurator.initialize({
           rules : {ignore : [
@@ -173,6 +265,37 @@ describe("the New Relic agent", function () {
         expect(rules.length).equal(1);
         expect(rules[0].pattern.source).equal('^\\/ham_snadwich\\/ignore');
         expect(rules[0].ignore).equal(true);
+      });
+    });
+
+    describe("when forcing transaction ignore status", function () {
+      var agent;
+
+      beforeEach(function () {
+        var config = configurator.initialize({
+          rules : {ignore : [
+            /^\/ham_snadwich\/ignore/
+          ]}
+        });
+        agent = new Agent(config);
+      });
+
+      it("shouldn't error when forcing an ignore", function () {
+        var transaction = new Transaction(agent);
+        transaction.forceIgnore = true;
+        transaction.setName('/ham_snadwich/attend', 200);
+        expect(transaction.ignore).equal(true);
+
+        expect(function () { transaction.end(); }).not.throws();
+      });
+
+      it("shouldn't error when forcing a non-ignore", function () {
+        var transaction = new Transaction(agent);
+        transaction.forceIgnore = false;
+        transaction.setName('/ham_snadwich/ignore', 200);
+        expect(transaction.ignore).equal(false);
+
+        expect(function () { transaction.end(); }).not.throws();
       });
     });
 
@@ -257,6 +380,65 @@ describe("the New Relic agent", function () {
           done();
         });
       });
+
+      it("shouldn't blow up when harvest cycle runs", function (done) {
+        var origInterval = global.setInterval;
+        global.setInterval = function (callback) { return setTimeout(callback, 0); };
+
+        var redirect =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('get_redirect_host'))
+            .reply(200, {return_value : 'collector.newrelic.com'});
+        var connect =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value : {agent_run_id : RUN_ID}});
+        var metrics =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value : []});
+
+        agent.start(function () {
+          setTimeout(function () {
+            global.setInterval = origInterval;
+
+            redirect.done();
+            connect.done();
+            metrics.done();
+            done();
+          }, 15);
+        });
+      });
+
+      it("shouldn't blow up when harvest cycle errors", function (done) {
+        var origInterval = global.setInterval;
+        global.setInterval = function (callback) { return setTimeout(callback, 0); };
+
+        var redirect =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('get_redirect_host'))
+            .reply(200, {return_value : 'collector.newrelic.com'});
+        var connect =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value : {agent_run_id : RUN_ID}});
+        var metrics =
+          nock('http://collector.newrelic.com')
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .times(2)
+            .reply(503);
+
+        agent.start(function () {
+          setTimeout(function () {
+            global.setInterval = origInterval;
+
+            redirect.done();
+            connect.done();
+            metrics.done();
+            done();
+          }, 15);
+        });
+      });
     });
 
     describe("when stopping", function () {
@@ -296,10 +478,43 @@ describe("the New Relic agent", function () {
         expect(sampler.state).equal('stopped');
       });
 
-      it("should only shut down connection if connected", function (done) {
+      it("shouldn't shut down connection if not connected", function (done) {
         agent.stop(function (error) {
           should.not.exist(error);
           done();
+        });
+      });
+
+      describe("if connected", function () {
+        it("should call shutdown", function (done) {
+          agent.config.run_id = RUN_ID;
+          var shutdown =
+            nock('http://collector.newrelic.com')
+              .post(helper.generateCollectorPath('shutdown', RUN_ID))
+              .reply(200, {return_value : null});
+
+          agent.stop(function (error) {
+            should.not.exist(error);
+
+            shutdown.done();
+            done();
+          });
+        });
+
+        it("should pass through error if shutdown fails", function (done) {
+          agent.config.run_id = RUN_ID;
+          var shutdown =
+            nock('http://collector.newrelic.com')
+              .post(helper.generateCollectorPath('shutdown', RUN_ID))
+              .reply(503);
+
+          agent.stop(function (error) {
+            should.exist(error);
+            expect(error.message).equal("No body found in response to shutdown.");
+
+            shutdown.done();
+            done();
+          });
         });
       });
     });
@@ -312,7 +527,7 @@ describe("the New Relic agent", function () {
           should.exist(agent.metrics.apdexT);
           expect(agent.metrics.apdexT).equal(0.666);
 
-          return done();
+          done();
         });
 
         agent.config.emit('apdex_t', 0.666);
@@ -321,9 +536,10 @@ describe("the New Relic agent", function () {
       it("should reset the configuration and metrics normalizer on connection",
          function (done) {
         var config = {
-          agent_run_id : 404,
-          apdex_t      : 0.742,
-          url_rules    : []
+          agent_run_id       : 404,
+          apdex_t            : 0.742,
+          data_report_period : 69,
+          url_rules          : []
         };
 
         var redirect = nock('http://collector.newrelic.com')
@@ -339,6 +555,7 @@ describe("the New Relic agent", function () {
           handshake.done();
 
           expect(agent.config.run_id).equal(404);
+          expect(agent.config.data_report_period).equal(69);
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
 
@@ -530,6 +747,11 @@ describe("the New Relic agent", function () {
         });
       });
 
+      it("shouldn't crash when no callback is passed on interval change", function () {
+        agent.harvesterHandle = setInterval(function () {}, 2 << 40);
+        expect(function () { agent._harvesterIntervalChange(69); }).not.throws();
+      });
+
       it("should alter interval when harvester's not running", function (done) {
         agent._startHarvester(10);
         var before = agent.harvesterHandle;
@@ -608,6 +830,45 @@ describe("the New Relic agent", function () {
       };
 
       agent.harvest(function nop() {});
+    });
+
+    it("bails out early when sending metrics fails", function (done) {
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(503);
+
+      agent.errors.add(null, new Error('application code error'));
+
+      agent.harvest(function (error) {
+        should.exist(error);
+        expect(error.message).equal("No body found in response to metric_data.");
+
+        metricData.done();
+        done();
+      });
+    });
+
+    it("bails out early when sending errors fails", function (done) {
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : null});
+      var errorData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(503);
+
+      agent.errors.add(null, new Error('application code error'));
+
+      agent.harvest(function (error) {
+        should.exist(error);
+        expect(error.message).equal("No body found in response to error_data.");
+
+        metricData.done();
+        errorData.done();
+        done();
+      });
     });
 
     it("doesn't send errors when error tracer disabled", function (done) {
@@ -706,6 +967,121 @@ describe("the New Relic agent", function () {
 
         metricData.done();
         errorData.done();
+        done();
+      });
+    });
+
+    it("sends transaction trace when there's a trace to send", function (done) {
+      var transaction = new Transaction(agent);
+      transaction.setName('/test/path/31337', 501);
+      agent.errors.add(transaction, new TypeError('no method last on undefined'));
+      agent.errors.add(transaction, new Error('application code error'));
+      agent.errors.add(transaction, new RangeError('stack depth exceeded'));
+      transaction.getTrace().setDurationInMillis(4001);
+      transaction.end();
+
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
+      var errorData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, {return_value : null});
+      var transactionSampleData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
+          .reply(200, {return_value : null});
+
+      agent.harvest(function (error) {
+        should.not.exist(error);
+
+        metricData.done();
+        errorData.done();
+        transactionSampleData.done();
+        done();
+      });
+    });
+
+    it("passes through errror when sending trace fails", function (done) {
+      var transaction = new Transaction(agent);
+      transaction.setName('/test/path/31337', 501);
+      agent.errors.add(transaction, new Error('application code error'));
+      transaction.getTrace().setDurationInMillis(4001);
+      transaction.end();
+
+      var metricData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value : []});
+      var errorData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, {return_value : null});
+      var transactionSampleData =
+        nock('http://collector.newrelic.com')
+          .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
+          .reply(503);
+
+      agent.harvest(function (error) {
+        expect(error.message)
+          .equal("No body found in response to transaction_sample_data.");
+
+        metricData.done();
+        errorData.done();
+        transactionSampleData.done();
+        done();
+      });
+    });
+  });
+
+
+  describe("when performing harvest operations without a connection", function () {
+    var agent;
+
+    beforeEach(function () {
+      var config = configurator.initialize({
+        license_key : 'license key here'
+      });
+      agent = new Agent(config);
+    });
+
+    it("should bail informatively when sending metric data", function (done) {
+      var transaction = new Transaction(agent);
+      agent.errors.add(transaction, new Error('application code error'));
+      transaction.getTrace().setDurationInMillis(4001);
+      transaction.setName('/test/path/31337', 501);
+      transaction.end();
+
+      agent._sendMetrics(function (error) {
+        expect(error.message).equal("not connected to New Relic (metrics will be held)");
+        done();
+      });
+    });
+
+    it("should bail informatively when sending error data", function (done) {
+      var transaction = new Transaction(agent);
+      agent.errors.add(transaction, new Error('application code error'));
+      transaction.getTrace().setDurationInMillis(4001);
+      transaction.setName('/test/path/31337', 501);
+      transaction.end();
+
+      agent._sendErrors(function (error) {
+        expect(error.message).equal("not connected to New Relic (errors will be held)");
+        done();
+      });
+    });
+
+    it("should bail informatively when sending transaction trace", function (done) {
+      var transaction = new Transaction(agent);
+      agent.errors.add(transaction, new Error('application code error'));
+      transaction.getTrace().setDurationInMillis(4001);
+      transaction.setName('/test/path/31337', 501);
+      transaction.end();
+
+      agent._sendTrace(function (error) {
+        expect(error.message)
+          .equal("not connected to New Relic (slow trace data will be held)");
         done();
       });
     });

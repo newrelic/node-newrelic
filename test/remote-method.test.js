@@ -33,6 +33,65 @@ describe("RemoteMethod", function () {
     expect(new RemoteMethod('test').name).equal('test');
   });
 
+  describe("_safeRequest", function () {
+    var method
+      , options
+      ;
+
+    beforeEach(function () {
+      method = new RemoteMethod('test');
+      options = {
+        host       : 'collector.newrelic.com',
+        port       : 80,
+        onError    : function error() {},
+        onResponse : function response() {},
+        body       : [],
+        path       : '/nonexistent'
+      };
+    });
+
+    it("requires an options hash", function () {
+      expect(function () { method._safeRequest(); })
+        .throws("Must include options to make request!");
+    });
+
+    it("requires a collector hostname", function () {
+      delete options.host;
+      expect(function () { method._safeRequest(options); })
+        .throws("Must include collector hostname!");
+    });
+
+    it("requires a collector port", function () {
+      delete options.port;
+      expect(function () { method._safeRequest(options); })
+        .throws("Must include collector port!");
+    });
+
+    it("requires an error callback", function () {
+      delete options.onError;
+      expect(function () { method._safeRequest(options); })
+        .throws("Must include error handler!");
+    });
+
+    it("requires a response callback", function () {
+      delete options.onResponse;
+      expect(function () { method._safeRequest(options); })
+        .throws("Must include response handler!");
+    });
+
+    it("requires a request body", function () {
+      delete options.body;
+      expect(function () { method._safeRequest(options); })
+        .throws("Must include body to send to collector!");
+    });
+
+    it("requires a request URL", function () {
+      delete options.path;
+      expect(function () { method._safeRequest(options); })
+        .throws("Must include URL to request!");
+    });
+  });
+
   describe("when calling a method on the collector", function () {
     it("should pass error to the callback when serialization fails", function (done) {
       var config = {
@@ -126,6 +185,17 @@ describe("RemoteMethod", function () {
         license_key : 'license key here'
       };
       method = new RemoteMethod('metric_data', config);
+    });
+
+    it("should pass through error when compression fails", function (done) {
+      var method = new RemoteMethod('test', {host : 'localhost'});
+      method._shouldCompress = function () { return true; };
+      // zlib.deflate really wants a stringlike entity
+      method._post(-1, function (error) {
+        should.exist(error);
+
+        done();
+      });
     });
 
     describe("successfully", function () {
