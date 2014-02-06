@@ -28,18 +28,18 @@ describe("the RUM API", function () {
   it('should not generate header when disabled', function () {
     agent.config.browser_monitoring.enable = false;
     api.getBrowserTimingHeader()
-      .should.equal('<!-- why is the rum gone? (0) -->');
+      .should.equal('<!-- NREUM: (0) -->');
   });
 
   it('should issue a warning outside a transaction', function () {
     api.getBrowserTimingHeader()
-      .should.equal('<!-- why is the rum gone? (1) -->');
+      .should.equal('<!-- NREUM: (1) -->');
   });
 
   it('should issue a warning if transaction has no name', function () {
     helper.runInTransaction(agent, function () {
       api.getBrowserTimingHeader()
-        .should.equal('<!-- why is the rum gone? (3) -->');
+        .should.equal('<!-- NREUM: (3) -->');
     });
   });
 
@@ -47,7 +47,7 @@ describe("the RUM API", function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       api.getBrowserTimingHeader()
-        .should.equal('<!-- why is the rum gone? (4) -->');
+        .should.equal('<!-- NREUM: (4) -->');
     });
   });
 
@@ -90,7 +90,7 @@ describe("the RUM API", function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       agent.config.application_id = 12345;
-      api.getBrowserTimingHeader().should.equal('<!-- why is the rum gone? (5) -->');
+      api.getBrowserTimingHeader().should.equal('<!-- NREUM: (5) -->');
     });
   });
 

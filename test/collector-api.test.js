@@ -1157,7 +1157,8 @@ describe("CollectorAPI", function () {
         run_id       : 31337,
         applications : function () {
           return ['TEST'];
-        }
+        },
+        browser_monitoring: {}
       };
       var properties = {
         config      : config,
