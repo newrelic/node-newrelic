@@ -214,7 +214,7 @@ API.prototype.getBrowserTimingHeader = function () {
   // the comment is meant to be innocuous to the end user
   function _gracefail(num){
     logger.warn(_rumIssues[num]);
-    return '<!-- why is the rum gone? (' + num + ') -->';
+    return '<!-- NREUM: (' + num + ') -->';
   }
 
   var browser_monitoring = conf.browser_monitoring;
