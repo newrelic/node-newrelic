@@ -7,7 +7,7 @@ var path         = require('path')
   , CollectorAPI = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'api.js'))
   ;
 
-test("Collector API should connect to staging-collector.newrelic.com", function (t) {
+test("Collector API should send errors to staging-collector.newrelic.com", function (t) {
   var config = configurator.initialize({
         'app_name'    : 'node.js Tests',
         'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
@@ -21,17 +21,27 @@ test("Collector API should connect to staging-collector.newrelic.com", function 
     , api   = new CollectorAPI(agent)
     ;
 
-  api.connect(function (error, returned) {
+  api.connect(function (error) {
     t.notOk(error, "connected without error");
-    t.ok(returned, "got boot configuration");
-    t.ok(returned.agent_run_id, "got run ID");
-    t.ok(agent.config.run_id, "run ID set in configuration");
 
-    api.shutdown(function (error, returned, json) {
-      t.notOk(error, "should have shut down without issue");
-      t.equal(returned, null, "collector explicitly returns null");
-      t.deepEqual(json, {return_value : null}, "raw message looks right");
-      t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
+    var transaction;
+    var proxy = agent.tracer.transactionProxy(function () {
+      transaction = agent.getTransaction();
+      transaction.setName('/nonexistent', 501);
+    });
+    proxy();
+    t.ok(transaction, "got a transaction");
+    agent.errors.add(transaction, new Error('test error'));
+
+    var payload = [
+      agent.config.run_id,
+      agent.errors.errors
+    ];
+
+    api.errorData(payload, function (error, response, json) {
+      t.notOk(error, "sent errors without error");
+      t.notOk(response, "return value is null");
+      t.deepEqual(json, {return_value : null}, "got raw return value");
 
       t.end();
     });

@@ -4,7 +4,6 @@ var path         = require('path')
   , test         = require('tap').test
   , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
   , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
-  , CollectorAPI = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'api.js'))
   ;
 
 test("Collector API should connect to staging-collector.newrelic.com", function (t) {
@@ -18,19 +17,16 @@ test("Collector API should connect to staging-collector.newrelic.com", function 
         }
       })
     , agent = new Agent(config)
-    , api   = new CollectorAPI(agent)
     ;
 
-  api.connect(function (error, returned) {
+  agent.start(function (error, returned) {
     t.notOk(error, "connected without error");
     t.ok(returned, "got boot configuration");
     t.ok(returned.agent_run_id, "got run ID");
     t.ok(agent.config.run_id, "run ID set in configuration");
 
-    api.shutdown(function (error, returned, json) {
+    agent.stop(function (error) {
       t.notOk(error, "should have shut down without issue");
-      t.equal(returned, null, "collector explicitly returns null");
-      t.deepEqual(json, {return_value : null}, "raw message looks right");
       t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
 
       t.end();
