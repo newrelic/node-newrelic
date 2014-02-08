@@ -1104,10 +1104,61 @@ describe("CollectorAPI", function () {
       api._runLifecycle(method, null, tested);
     });
 
+    it("should discard InternalLimitExceeded exceptions", function (done) {
+      var exception = {
+        exception : {
+          message    : "Trace memory limit exceeded: 32MB -- discarding trace for 1337",
+          error_type : 'NewRelic::Agent::InternalLimitExceeded'
+        }
+      };
+
+      var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception);
+      function tested(error) {
+        should.not.exist(error);
+
+        failure.done();
+        done();
+      }
+
+      api._runLifecycle(method, null, tested);
+    });
+
+    it("should pass through HTTP 500 errors", function (done) {
+      var failure = nock(URL).post(generate('metric_data', 31337)).reply(500);
+      function tested(error) {
+        expect(error.message).equal("No body found in response to metric_data.");
+
+        failure.done();
+        done();
+      }
+
+      api._runLifecycle(method, null, tested);
+    });
+
     it("should pass through HTTP 503 errors", function (done) {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(503);
       function tested(error) {
         expect(error.message).equal("No body found in response to metric_data.");
+
+        failure.done();
+        done();
+      }
+
+      api._runLifecycle(method, null, tested);
+    });
+
+    it("should pass through InvalidLicenseKey errors", function (done) {
+      var exception = {
+        exception : {
+          message    : "Your license key is invalid or the collector is busted.",
+          error_type : 'NewRelic::Agent::LicenseException'
+        }
+      };
+
+      var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception);
+      function tested(error) {
+        expect(error.message)
+          .equal("Your license key is invalid or the collector is busted.");
 
         failure.done();
         done();
