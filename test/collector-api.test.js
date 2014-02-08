@@ -36,6 +36,7 @@ describe("CollectorAPI", function () {
 
     var agentProperties = {
       reconfigure : function () {},
+      state       : function () {},
       config      : {
         host         : HOST,
         port         : PORT,
@@ -607,7 +608,7 @@ describe("CollectorAPI", function () {
         before(function (done) {
           fast();
           var redirectURL = generate('get_redirect_host')
-            , failure     = nock(URL).post(redirectURL).reply(200, response)
+            , failure     = nock(URL).post(redirectURL).times(6).reply(200, response)
             ;
 
           api.connect(function test(error, response, json) {
@@ -668,7 +669,7 @@ describe("CollectorAPI", function () {
 
           var redirectURL = generate('get_redirect_host')
             , failure     = nock(URL).post(redirectURL).reply(503)
-            , license     = nock(URL).post(redirectURL).reply(200, response)
+            , license     = nock(URL).post(redirectURL).times(5).reply(200, response)
             ;
 
           api.connect(function test(error, response, json) {
@@ -1058,6 +1059,7 @@ describe("CollectorAPI", function () {
       var properties = {
         config      : config,
         reconfigure : function (ssc) { config.run_id = ssc.agent_run_id; },
+        state       : function () {},
         stop        : function (callback) { api.shutdown(callback); }
       };
 

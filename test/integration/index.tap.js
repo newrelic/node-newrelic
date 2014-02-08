@@ -5,12 +5,29 @@ var path = require('path')
   ;
 
 test("loading the application via index.js", function (t) {
-  t.plan(1);
+  t.plan(4);
 
-  var api;
+  var agent;
+
+  // just in case connection fails
+  global.setTimeout = process.nextTick;
+
+  process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com';
+  process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b';
+
   t.doesNotThrow(function () {
-    api = require(path.join(__dirname, '..', '..', 'index.js'));
-  }, "just loading the agent");
+    var api = require(path.join(__dirname, '..', '..', 'index.js'));
+    agent = api.agent;
+    t.equal(agent._state, 'starting', "agent is booting");
+  }, "just loading the agent doesn't throw");
 
-  api.agent.stop(function () {});
+  function shutdown() {
+    t.equal(agent._state, 'started', "agent didn't error connecting to staging");
+    agent.stop(function () {
+      t.equal(agent._state, 'stopped', "agent didn't error shutting down");
+    });
+  }
+
+  agent.once('errored', shutdown);
+  agent.once('started', shutdown);
 });

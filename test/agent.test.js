@@ -88,6 +88,14 @@ describe("the New Relic agent", function () {
       expect(function () { agent.reconfigure(); }).throws();
     });
 
+    it("defaults to a state of 'stopped'", function () {
+      expect(agent._state).equal('stopped');
+    });
+
+    it("requires a valid value when changing state", function () {
+      expect(function () { agent.state('bogus'); }).throws('Invalid state bogus');
+    });
+
     it("has some debugging configuration by default", function () {
       should.exist(agent.config.debug);
     });
@@ -304,12 +312,29 @@ describe("the New Relic agent", function () {
         expect(function () { agent.start(); }).throws("callback required!");
       });
 
+      it("should change state to 'starting'", function (done) {
+        agent.collector.connect = function () { done(); };
+        agent.start(function () {});
+        expect(agent._state).equal('starting');
+      });
+
       it("shouldn't error when disabled via configuration", function (done) {
         agent.config.agent_enabled = false;
         agent.collector.connect = function () {
           done(new Error("shouldn't be called"));
         };
         agent.start(done);
+      });
+
+      it("should emit 'stopped' when disabled via configuration", function (done) {
+        agent.config.agent_enabled = false;
+        agent.collector.connect = function () {
+          done(new Error("shouldn't be called"));
+        };
+        agent.start(function () {
+          expect(agent._state).equal('stopped');
+          done();
+        });
       });
 
       it("should error when no license key is included", function (done) {
@@ -478,6 +503,15 @@ describe("the New Relic agent", function () {
         expect(sampler.state).equal('stopped');
       });
 
+      it("should change state to 'stopping'", function () {
+        sampler.start(agent);
+        agent.collector.shutdown = nop;
+        agent.stop(nop);
+
+        expect(agent._state).equal('stopping');
+      });
+
+
       it("shouldn't shut down connection if not connected", function (done) {
         agent.stop(function (error) {
           should.not.exist(error);
@@ -554,6 +588,7 @@ describe("the New Relic agent", function () {
           redirect.done();
           handshake.done();
 
+          expect(agent._state).equal('started');
           expect(agent.config.run_id).equal(404);
           expect(agent.config.data_report_period).equal(69);
           expect(agent.metrics.apdexT).equal(0.742);
