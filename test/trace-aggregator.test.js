@@ -126,27 +126,33 @@ describe('TraceAggregator', function () {
       aggregator.reported = 10; // needed to override "first 5"
 
       // 1st trace
-      aggregator.add(createTransaction('/testOne', 8000));
+      var first = createTransaction('/testOne', 8000);
+      aggregator.add(first);
       aggregator.harvest(function () {
         // 2nd trace
-        aggregator.reset();
-        aggregator.add(createTransaction('/testTwo', 8000));
+        aggregator.reset(first.getTrace());
+        var second = createTransaction('/testTwo', 8000);
+        aggregator.add(second);
         aggregator.harvest(function () {
           // 3rd trace
-          aggregator.reset();
-          aggregator.add(createTransaction('/testThr', 8000));
+          aggregator.reset(second.getTrace());
+          var third = createTransaction('/testThr', 8000);
+          aggregator.add(third);
           aggregator.harvest(function () {
             // 4th trace
-            aggregator.reset();
-            aggregator.add(createTransaction('/testFor', 8000));
+            aggregator.reset(third.getTrace());
+            var fourth = createTransaction('/testFor', 8000);
+            aggregator.add(fourth);
             aggregator.harvest(function () {
               // 5th trace
-              aggregator.reset();
-              aggregator.add(createTransaction('/testF5v', 8000));
+              aggregator.reset(fourth.getTrace());
+              var fifth = createTransaction('/testF5v', 8000);
+              aggregator.add(fifth);
               aggregator.harvest(function () {
                 // n = 5, so this sixth transaction is gonna lose
-                aggregator.reset();
-                aggregator.add(createTransaction('/testSix', 9000));
+                aggregator.reset(fifth.getTrace());
+                var sixth = createTransaction('/testSix', 8000);
+                aggregator.add(sixth);
                 aggregator.harvest(function (error, encoded) {
                   should.not.exist(error);
                   should.not.exist(encoded, '6th harvest');
@@ -328,29 +334,29 @@ describe('TraceAggregator', function () {
     };
 
     aggregator.add(createTransaction('/testOne', 503));
-    aggregator.harvest(function (error, encoded) {
+    aggregator.harvest(function (error, encoded, trace) {
       verifier(encoded, true);
-      aggregator.reset();
+      aggregator.reset(trace);
 
       aggregator.add(createTransaction('/testTwo', 406));
-      aggregator.harvest(function (error, encoded) {
+      aggregator.harvest(function (error, encoded, trace) {
         verifier(encoded, true);
-        aggregator.reset();
+        aggregator.reset(trace);
 
         aggregator.add(createTransaction('/testThree', 720));
-        aggregator.harvest(function (error, encoded) {
+        aggregator.harvest(function (error, encoded, trace) {
           verifier(encoded, true);
-          aggregator.reset();
+          aggregator.reset(trace);
 
           aggregator.add(createTransaction('/testOne', 415));
-          aggregator.harvest(function (error, encoded) {
+          aggregator.harvest(function (error, encoded, trace) {
             verifier(encoded, true);
-            aggregator.reset();
+            aggregator.reset(trace);
 
             aggregator.add(createTransaction('/testTwo', 510));
-            aggregator.harvest(function (error, encoded) {
+            aggregator.harvest(function (error, encoded, trace) {
               verifier(encoded, true);
-              aggregator.reset();
+              aggregator.reset(trace);
 
               aggregator.add(createTransaction('/testOne', 502));
               aggregator.harvest(function (error, encoded) {
@@ -375,22 +381,19 @@ describe('TraceAggregator', function () {
       });
 
       var aggregator = new TraceAggregator(config);
-      aggregator.add(createTransaction('/test', 5030));
+      var transaction = createTransaction('/test', 5030);
+      aggregator.add(transaction);
 
       var remaining = 4;
       // 2nd-5th harvests: no serialized trace, timing still set
-      var looper = function (error, encoded) {
-        should.not.exist(error);
-        should.not.exist(encoded);
+      var looper = function () {
         expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030);
-        aggregator.reset();
+        aggregator.reset(transaction.getTrace());
 
         remaining--;
         if (remaining < 1) {
           // 6th harvest: no serialized trace, timings reset
-          aggregator.harvest(function (error, encoded) {
-            should.not.exist(error);
-            should.not.exist(encoded);
+          aggregator.harvest(function () {
             should.not.exist(aggregator.requestTimes['WebTransaction/Uri/test']);
 
             done();
@@ -401,14 +404,12 @@ describe('TraceAggregator', function () {
         }
       };
 
-      aggregator.add(createTransaction('/test', 5030));
+      aggregator.add(transaction);
 
       // 1st harvest: serialized trace, timing is set
-      aggregator.harvest(function (error, encoded) {
-        should.not.exist(error);
-        should.exist(encoded);
+      aggregator.harvest(function () {
         expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030);
-        aggregator.reset();
+        aggregator.reset(transaction.getTrace());
 
         aggregator.harvest(looper);
       });
