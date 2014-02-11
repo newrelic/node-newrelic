@@ -169,6 +169,46 @@ describe("CollectorAPI", function () {
         });
       });
 
+      describe("receiving a weirdo redirect name from get_redirect_host", function () {
+        var captured
+          , ssc
+          ;
+
+        before(function (done) {
+          var redirection = nock(URL)
+                              .post(generate('get_redirect_host'))
+                              .reply(200, {return_value : HOST + ':chug:8080'});
+          var connect = nock(URL)
+                          .post(generate('connect'))
+                          .reply(200, {return_value : {agent_run_id : RUN_ID}});
+
+          api._login(function test(error, config) {
+            captured = error;
+            ssc = config;
+
+            redirection.done();
+            connect.done();
+            done();
+          });
+        });
+
+        it("should have gotten no error", function () {
+          should.not.exist(captured);
+        });
+
+        it("should use preexisting collector hostname", function () {
+          expect(api._agent.config.host).equal(HOST);
+        });
+
+        it("should use preexisting collector port number", function () {
+          expect(api._agent.config.port).equal(PORT);
+        });
+
+        it("should pass along server-side configuration from collector", function () {
+          expect(ssc).eql({agent_run_id : RUN_ID});
+        });
+      });
+
       describe("receiving no config back from connect", function () {
         var captured
           , ssc
@@ -420,6 +460,68 @@ describe("CollectorAPI", function () {
 
         it("should not error out", function () {
           should.not.exist(bad);
+        });
+
+        it("should have a run ID", function () {
+          expect(ssc.agent_run_id).equal(RUN_ID);
+        });
+
+        it("should pass through server-side configuration untouched", function () {
+          expect(ssc).eql(valid);
+        });
+
+        it("should pass through exactly what it got back from the server", function () {
+          expect(raw).eql(response);
+        });
+      });
+
+      describe("succeeds when given a non-80 port number for redirect", function () {
+        var bad
+          , ssc
+          , raw
+          ;
+
+        var valid = {
+          capture_params : true,
+          agent_run_id   : RUN_ID
+        };
+
+        var response = {return_value : valid};
+
+        before(function (done) {
+          var redirection = nock(URL)
+                              .post(generate('get_redirect_host'))
+                              .reply(200, {return_value : HOST + ':8080'});
+          var connection = nock(URL + ':8080')
+                              .post(generate('connect'))
+                              .reply(200, response);
+
+          api.connect(function test(error, response, json) {
+            bad = error;
+            ssc = response;
+            raw = json;
+
+            redirection.done();
+            connection.done();
+            done();
+          });
+        });
+
+        // the port number gets changed, so reset it
+        after(function () {
+          api._agent.config.port = 80;
+        });
+
+        it("should not error out", function () {
+          should.not.exist(bad);
+        });
+
+        it("should have the correct hostname", function () {
+          expect(api._agent.config.host).equal(HOST);
+        });
+
+        it("should have the correct port number", function () {
+          expect(api._agent.config.port).equal('8080');
         });
 
         it("should have a run ID", function () {
