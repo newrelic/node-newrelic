@@ -26,7 +26,7 @@ describe("RemoteMethod", function () {
   });
 
   it("should expose a call method as its public API", function () {
-    expect(new RemoteMethod('test').call).a('function');
+    expect(new RemoteMethod('test').invoke).a('function');
   });
 
   it("should expose its name", function () {
@@ -104,7 +104,7 @@ describe("RemoteMethod", function () {
       var problematic = {};
       problematic.parent = problematic;
 
-      method.call(problematic, function (error) {
+      method.invoke(problematic, function (error) {
         expect(error.message).equal('Converting circular structure to JSON');
         done();
       });
@@ -120,7 +120,7 @@ describe("RemoteMethod", function () {
         return done();
       };
 
-      method.call('data');
+      method.invoke('data');
     });
 
     it("shouldn't throw when preparing uncompressed data", function (done) {
@@ -131,14 +131,14 @@ describe("RemoteMethod", function () {
         return done();
       };
 
-      method.call('data');
+      method.invoke('data');
     });
   });
 
   describe("when the connection fails", function () {
     it("should return the connection failure", function (done) {
       var method = new RemoteMethod('TEST', {host : 'localhost', port : 8765});
-      method.call({message : 'none'}, function (error) {
+      method.invoke({message : 'none'}, function (error) {
         should.exist(error);
         expect(error.message).equal('connect ECONNREFUSED');
 
@@ -148,7 +148,7 @@ describe("RemoteMethod", function () {
 
     it("should correctly handle a DNS lookup failure", function (done) {
       var method = new RemoteMethod('TEST', {host : 'failed.domain.cxlrg', port : 80});
-      method.call([], function (error) {
+      method.invoke([], function (error) {
         should.exist(error);
 
         // https://github.com/joyent/node/commit/7295bb9435c
@@ -274,7 +274,7 @@ describe("RemoteMethod", function () {
         });
 
         it("shouldn't error", function (done) {
-          method.call(undefined, function (error) {
+          method.invoke(undefined, function (error) {
             should.not.exist(error);
 
             done();
@@ -282,7 +282,7 @@ describe("RemoteMethod", function () {
         });
 
         it("should find the expected value", function (done) {
-          method.call(undefined, function (error, host) {
+          method.invoke(undefined, function (error, host) {
             expect(host).equal('collector-42.newrelic.com');
 
             done();
@@ -290,7 +290,7 @@ describe("RemoteMethod", function () {
         });
 
         it("shouldn't alter the sent JSON", function (done) {
-          method.call(undefined, function (error, host, json) {
+          method.invoke(undefined, function (error, host, json) {
             expect(json).eql(response);
 
             done();
@@ -315,7 +315,7 @@ describe("RemoteMethod", function () {
         });
 
         it("should set error message to the JSON's message", function (done) {
-          method.call([], function (error) {
+          method.invoke([], function (error) {
             expect(error.message)
               .equal("Configuration has changed, need to restart agent.");
 
@@ -324,7 +324,7 @@ describe("RemoteMethod", function () {
         });
 
         it("should pass along the New Relic error type", function (done) {
-          method.call([], function (error) {
+          method.invoke([], function (error) {
             expect(error.class).equal('NewRelic::Agent::ForceRestartException');
 
             done();
@@ -332,7 +332,7 @@ describe("RemoteMethod", function () {
         });
 
         it("should include the HTTP status code for the response", function (done) {
-          method.call([], function (error) {
+          method.invoke([], function (error) {
             expect(error.statusCode).equal(200);
 
             done();
@@ -340,7 +340,7 @@ describe("RemoteMethod", function () {
         });
 
         it("shouldn't alter the sent JSON", function (done) {
-          method.call(undefined, function (error, host, json) {
+          method.invoke(undefined, function (error, host, json) {
             expect(json).eql(response);
 
             done();
