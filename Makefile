@@ -22,7 +22,7 @@ CERTIFICATE  = test/lib/self-signed-test-certificate.crt
 SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
 .PHONY: all build test-cov test clean notes pending pending-core test-clean
-.PHONY: unit integration ssl
+.PHONY: unit integration ssl ca-gen
 .PHONY: sub_node_modules $(SUBNPM)
 
 all: build test
@@ -61,7 +61,10 @@ sub_node_modules: $(SUBNPM)
 $(SUBNPM):
 	@$(MAKE) -s -C $(@:npm-%=%) node_modules
 
-integration: node_modules sub_node_modules $(CERTIFICATE)
+ca-gen:
+	@./bin/update-ca-bundle.sh
+
+integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	@time $(TAP) $(INTEGRATION)
 
 coverage: clean node_modules $(CERTIFICATE)

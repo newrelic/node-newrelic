@@ -72,7 +72,8 @@
     "should": "*",
     "nock": "*",
     "split": "*",
-    "JSV": "~4.0.2"
+    "JSV": "~4.0.2",
+    "glob": "~3.2.9"
   },
   "repository": {
     "type": "git",
