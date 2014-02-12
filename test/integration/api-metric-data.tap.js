@@ -13,6 +13,7 @@ test("Collector API should send metrics to staging-collector.newrelic.com", func
         'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
         'host'        : 'staging-collector.newrelic.com',
         'port'        : 80,
+        'ssl'         : false,
         'logging'     : {
           'level' : 'trace'
         }

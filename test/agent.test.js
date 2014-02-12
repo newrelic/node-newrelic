@@ -18,7 +18,9 @@ var path         = require('path')
  * CONSTANTS
  *
  */
-var RUN_ID = 1337;
+var RUN_ID = 1337
+  , URL    = 'https://collector.newrelic.com'
+  ;
 
 describe("the New Relic agent", function () {
   before(function () {
@@ -140,15 +142,15 @@ describe("the New Relic agent", function () {
           expect(debugged.config.debug.supportability.apdexT).equal(0.1);
 
           var redirect =
-            nock('http://collector.newrelic.com')
+            nock(URL)
               .post(helper.generateCollectorPath('get_redirect_host'))
               .reply(200, {return_value : 'collector.newrelic.com'});
           var connect =
-            nock('http://collector.newrelic.com')
+            nock(URL)
               .post(helper.generateCollectorPath('connect'))
               .reply(200, {return_value : {agent_run_id : RUN_ID, apdex_t : 0.5}});
           var shutdown =
-            nock('http://collector.newrelic.com')
+            nock(URL)
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
               .reply(200, {return_value : null});
 
@@ -386,7 +388,7 @@ describe("the New Relic agent", function () {
 
       it("should harvest at connect when metrics are already there", function (done) {
         var metrics =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : []});
 
@@ -411,15 +413,15 @@ describe("the New Relic agent", function () {
         global.setInterval = function (callback) { return setTimeout(callback, 0); };
 
         var redirect =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('get_redirect_host'))
             .reply(200, {return_value : 'collector.newrelic.com'});
         var connect =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('connect'))
             .reply(200, {return_value : {agent_run_id : RUN_ID}});
         var metrics =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : []});
 
@@ -440,15 +442,15 @@ describe("the New Relic agent", function () {
         global.setInterval = function (callback) { return setTimeout(callback, 0); };
 
         var redirect =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('get_redirect_host'))
             .reply(200, {return_value : 'collector.newrelic.com'});
         var connect =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('connect'))
             .reply(200, {return_value : {agent_run_id : RUN_ID}});
         var metrics =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .times(2)
             .reply(503);
@@ -523,7 +525,7 @@ describe("the New Relic agent", function () {
         it("should call shutdown", function (done) {
           agent.config.run_id = RUN_ID;
           var shutdown =
-            nock('http://collector.newrelic.com')
+            nock(URL)
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
               .reply(200, {return_value : null});
 
@@ -538,7 +540,7 @@ describe("the New Relic agent", function () {
         it("should pass through error if shutdown fails", function (done) {
           agent.config.run_id = RUN_ID;
           var shutdown =
-            nock('http://collector.newrelic.com')
+            nock(URL)
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
               .reply(503);
 
@@ -576,10 +578,10 @@ describe("the New Relic agent", function () {
           url_rules          : []
         };
 
-        var redirect = nock('http://collector.newrelic.com')
+        var redirect = nock(URL)
                          .post(helper.generateCollectorPath('get_redirect_host'))
                          .reply(200, {return_value : 'collector.newrelic.com'});
-        var handshake = nock('http://collector.newrelic.com')
+        var handshake = nock(URL)
                           .post(helper.generateCollectorPath('connect'))
                           .reply(200, {return_value : config});
 
@@ -641,7 +643,7 @@ describe("the New Relic agent", function () {
 
       it("shouldn't throw if no new rules are received", function (done) {
         var metrics =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : null});
 
@@ -661,7 +663,7 @@ describe("the New Relic agent", function () {
                      [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]];
 
         var metrics =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : rules});
 
@@ -680,7 +682,7 @@ describe("the New Relic agent", function () {
         var rules = [[{name : NAME, scope : SCOPE}, METRICID]];
 
         var metrics =
-          nock('http://collector.newrelic.com')
+          nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : rules});
 
@@ -825,7 +827,7 @@ describe("the New Relic agent", function () {
       agent.metrics.started = 1337;
 
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
 
@@ -869,7 +871,7 @@ describe("the New Relic agent", function () {
 
     it("bails out early when sending metrics fails", function (done) {
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(503);
 
@@ -886,11 +888,11 @@ describe("the New Relic agent", function () {
 
     it("bails out early when sending errors fails", function (done) {
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : null});
       var errorData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
           .reply(503);
 
@@ -908,7 +910,7 @@ describe("the New Relic agent", function () {
 
     it("doesn't send errors when error tracer disabled", function (done) {
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
 
@@ -929,7 +931,7 @@ describe("the New Relic agent", function () {
 
     it("doesn't send errors when server disables collect_errors", function (done) {
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
 
@@ -957,11 +959,11 @@ describe("the New Relic agent", function () {
       transaction.end();
 
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
       var errorData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
           .reply(200, {return_value : null});
 
@@ -986,11 +988,11 @@ describe("the New Relic agent", function () {
       transaction.end();
 
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
       var errorData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
           .reply(200, {return_value : null});
 
@@ -1016,15 +1018,15 @@ describe("the New Relic agent", function () {
       transaction.end();
 
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
       var errorData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
           .reply(200, {return_value : null});
       var transactionSampleData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
           .reply(200, {return_value : null});
 
@@ -1046,15 +1048,15 @@ describe("the New Relic agent", function () {
       transaction.end();
 
       var metricData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
       var errorData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
           .reply(200, {return_value : null});
       var transactionSampleData =
-        nock('http://collector.newrelic.com')
+        nock(URL)
           .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
           .reply(503);
 

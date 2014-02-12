@@ -269,8 +269,12 @@ describe("the agent configuration", function () {
       expect(configuration.host).equal('collector.newrelic.com');
     });
 
-    it("should connect to the collector on port 80", function () {
-      expect(configuration.port).equal(80);
+    it("should connect to the collector on port 443", function () {
+      expect(configuration.port).equal(443);
+    });
+
+    it("should have SSL enabled", function () {
+      expect(configuration.ssl).equal(true);
     });
 
     it("should have no proxy host", function () {
@@ -822,6 +826,14 @@ describe("the agent configuration", function () {
       }).not.throws();
     });
 
+    it("should ignore ssl", function () {
+      expect(config.ssl).eql(true);
+      expect(function () {
+        config.onConnect({'ssl' : false});
+      }).not.throws();
+      expect(config.ssl).eql(true);
+    });
+
     it("should ignore cross_process_id", function () {
       expect(function () {
         config.onConnect({'cross_process_id' : 'junk'});
@@ -849,12 +861,6 @@ describe("the agent configuration", function () {
     it("should ignore high_security", function () {
       expect(function () {
         config.onConnect({'high_security' : true});
-      }).not.throws();
-    });
-
-    it("should ignore ssl", function () {
-      expect(function () {
-        config.onConnect({'ssl' : true});
       }).not.throws();
     });
 

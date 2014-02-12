@@ -12,7 +12,7 @@ nock.disableNetConnect();
 
 test("harvesting with a mocked collector that returns 415 after connect", function (t) {
   var RUN_ID      = 1337
-    , url         = 'http://collector.newrelic.com'
+    , url         = 'https://collector.newrelic.com'
     , agent       = new Agent(configurator.initialize())
     , transaction = new Transaction(agent)
     ;
@@ -68,7 +68,7 @@ test("discarding metrics and errors after a 415", function (t) {
   t.plan(3);
 
   var RUN_ID      = 1338
-    , url         = 'http://collector.newrelic.com'
+    , url         = 'https://collector.newrelic.com'
     , agent       = new Agent(configurator.initialize())
     , transaction = new Transaction(agent)
     ;
