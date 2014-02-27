@@ -185,12 +185,12 @@ var _rumStub = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
 var _rumIssues = [
-  'no browser monitoring headers generated; disabled',
-  'transaction missing while generating browser monitoring headers',
-  'conf.browser_monitoring missing, something is probably wrong',
-  'browser_monitoring headers need a transaction name',
-  'browser_monitoring requires valid application_id',
-  'browser_monitoring requires valid browser_key'
+  'NREUM: no browser monitoring headers generated; disabled',
+  'NREUM: transaction missing while generating browser monitoring headers',
+  'NREUM: conf.browser_monitoring missing, something is probably wrong',
+  'NREUM: browser_monitoring headers need a transaction name',
+  'NREUM: browser_monitoring requires valid application_id',
+  'NREUM: browser_monitoring requires valid browser_key'
 ];
 
 /**
