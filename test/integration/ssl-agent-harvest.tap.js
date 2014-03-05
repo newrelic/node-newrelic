@@ -6,13 +6,13 @@ var path         = require('path')
   , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
   ;
 
-test("Agent should send a whole harvest to New Relic staging", function (t) {
+test("Agent should send a whole harvest to New Relic staging", {timeout : Infinity}, function (t) {
   var config = configurator.initialize({
         'ssl'         : true,
         'app_name'    : 'node.js Tests',
         'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
         'host'        : 'staging-collector.newrelic.com',
-        'port'        : 80,
+        'port'        : 443,
         'logging'     : {
           'level' : 'trace'
         }
