@@ -63,7 +63,7 @@
     "carrier": "*",
     "restify": "*",
     "tap": "*",
-    "memcached": "*",
+    "memcached": ">=0.2.8",
     "sequelize": "*",
     "redis": "*",
     "q": "*",

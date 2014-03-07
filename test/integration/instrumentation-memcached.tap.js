@@ -111,7 +111,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
           var getSegment = setSegment.children[0];
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get");
-          t.equals(getSegment.parameters.key, "[\"testkey\",\"otherkey\"]",
+          t.equals(getSegment.parameters.key, "[[\"testkey\",\"otherkey\"]]",
                    "should have the multiple keys fetched as a parameter");
           t.equals(getSegment.children.length, 0,
                    "get should leave us here at the end");
