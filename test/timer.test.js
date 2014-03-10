@@ -88,4 +88,27 @@ describe('Timer', function () {
     expect(function () { delta = second.startedRelativeTo(first); }).not.throw();
     expect(delta).a('number');
   });
+
+  it("should support updating the duration with touch", function (done) {
+    var timer = new Timer();
+    timer.begin();
+
+    setTimeout(function () {
+      timer.touch();
+      var first = timer.getDurationInMillis();
+
+      expect(first).above(0);
+      expect(timer.isActive()).equal(true);
+
+      setTimeout(function () {
+        timer.end();
+
+        var second = timer.getDurationInMillis();
+        expect(second).above(first);
+        expect(timer.isActive()).equal(false);
+
+        done();
+      }, 20);
+    }, 20);
+  });
 });

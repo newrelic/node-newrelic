@@ -66,6 +66,13 @@ describe("TraceSegment", function () {
     expect(segment.timer.isRunning()).equal(true);
   });
 
+  it("allows the timer to be updated without ending it", function () {
+    var segment = new TraceSegment(new Trace('Test/TraceExample04'), 'UnitTest');
+    segment.touch();
+    expect(segment.timer.isRunning()).equal(true);
+    expect(segment.getDurationInMillis()).above(0);
+  });
+
   it("accepts a callback that records metrics associated with this segment",
      function (done) {
     var agent   = helper.loadMockedAgent()
