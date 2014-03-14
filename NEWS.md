@@ -1,3 +1,20 @@
+### v1.4.0 (2014-03-14):
+
+* Browser monitoring! Real User Monitoring! Which is also known as RUM!
+  Whatever it's called, it allows you to see how long your pages take to load,
+  not just on the server side, but in the browser! Wow! It's super cool! We
+  know a lot of you have been waiting for this, and it's here! It's manually
+  set up with an API call! Check the README for details!
+* By default, all communication between New Relic for Node and New Relic's
+  servers is now protected with crisp, clean TLS encryption. To minimize the
+  CPU overhead of running connections over SSL (and it can be configured, see
+  the README and the online documentation for details on how to return to plain
+  HTTP), New Relic for Node is now using a keep-alive connection that will
+  properly pipeline connections, for both HTTP and HTTPS.
+* Improved the timings for a large class of MongoDB / Mongoose use cases. If
+  you've encountered the issue where MongoDB trace segments last for an
+  absurdly long duration, this should help.
+
 ### v1.3.2 (2014-02-12):
 
 * Includes a nearly total rewrite of the connection layer that the module uses
