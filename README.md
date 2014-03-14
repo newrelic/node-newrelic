@@ -15,6 +15,7 @@ need a New Relic Pro subscription (or equivalent).
 ## Table of contents
 
 * [Getting started](#getting-started)
+* [RUM / browser timings](#browser-timings-rum--real-user-monitoring)
 * [Transactions and request naming](#transactions-and-request-naming)
 * [Configuration](#configuring-the-module)
 * [Licensing](#license)
@@ -49,6 +50,86 @@ New Relic. The module will write its log to a file named `newrelic_agent.log`
 in the application directory. If New Relic doesn't send data or crashes your
 app, the log can help New Relic determine what went wrong, so be sure to send
 it along with any bug reports or support requests.
+
+## Browser timings (RUM / Real User Monitoring)
+
+New Relic's instrumentation can extend beyond your application into the
+client's browser.  The `newrelic` module can generate `<script>` headers which,
+when inserted into your HTML templates, will capture client-side page load
+times.
+
+Headers must be manually injected, but no extra configuration is necessary to
+enable browser timings.
+
+### Basics
+
+- Insert the result of `newrelic.getBrowserTimingHeader()`
+into your html page.
+- The browser timing headers should be placed in the beginning of your `<head>` tag.
+  - As an exception to the above, for maximum IE compatability, the results of `getBrowserTimingHeader()`
+should be placed *after* any `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
+- Do *not* cache the header, call it once for every request.
+
+### Example
+
+Below is an example using `express` and `jade`; Express is a popular web
+application framework, and `jade` is a popular template module.  Although the
+specifics are different for other frameworks, the general approach described
+below should work in most cases.
+
+The simplest way to insert browser timing headers is to pass the `newrelic`
+module into your template, and call `newrelic.getBrowserTimingHeader()` from
+within the template.
+
+*app.js:*
+
+```javascript
+var newrelic = require('newrelic');
+var app = require('express')();
+
+// In Express, this lets you call newrelic from within a template.
+app.locals.newrelic = newrelic;
+
+app.get('/user/:id', function (req, res) {
+  res.render('user');
+});
+app.listen(process.env.PORT);
+```
+
+*layout.jade:*
+
+```jade
+doctype html
+html
+  head
+    != newrelic.getBrowserTimingHeader()
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    block content
+```
+
+By defaults calls to `newrelic.getBrowserTimingHeader()` should return valid
+headers.  You can disable header generation *without* removing your template
+code.  In your `newrelic.js` file, add the following to disable header
+generation.
+
+```javascript
+exports.config = {
+  // ... other config
+  browser_monitoring : {
+    enable : false
+  }
+};
+```
+
+You can also set the environment variable `NEW_RELIC_BROWSER_MONITOR_ENABLE=false`.
+
+It is safe to leave the header generation code in place even when you're not
+using it.  If browser timings are disabled, or there is an error such that
+working headers cannot be generated, the `newrelic` module will generate an
+innocuous HTML comment.  If the `newrelic` module is disabled entirely no
+content will be generated.
 
 ## Transactions and request naming
 
@@ -285,79 +366,6 @@ app to be centrally managed, use this call. Unlike most of the calls here, this
 call can be used outside of route handlers, but will have additional context if
 called from within transaction scope.
 
-### Browser Timings (Real User Monitoring)
-
-New Relic instrumentation can continue beyond your application into the clients browser.
-The `newrelic` module can generate `<script>` headers which,
-when inserted into your html templates, will capture client-side page load times.
-
-Headers must be manually injected,
-but no extra configuration is necessary to enable browser timings.
-
-**Basics**
-- Insert the result of `newrelic.getBrowserTimingHeader()` 
-into your html page.
-- The browser timing headers should be placed in the beginning of your `<head>` tag.
-  - As an exception to the above, for maximum IE compatability, the results of `getBrowserTimingHeader()` 
-should be placed *after* any `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
-- Do *not* cache the header, call it once for every request.
-
-**Example**
-
-Below is an example using `express` and `jade`;
-express is a popular web application framework, and jade is a popular template module.
-Although the specifics are different for other frameworks,
-the general approach described below should work in most cases.
-
-The simplest way to insert browser timing headers, is to pass the newrelic module into your template,
-and call `newrelic.getBrowserTimingHeader()` from within the template.
-
-- *app.js*
-
-  ```javascript
-  var newrelic = require('newrelic');
-  var app = require('express')();
-
-  // in express, this let's you call newrelic from within a template
-  app.locals.newrelic = newrelic;
-
-  app.get('/user/:id', function (req, res) {
-    res.render('user');
-  });
-  app.listen(process.env.PORT);
-  ```
-
-- *layout.jade*
-
-  ```
-  doctype html
-  html
-    head
-      != newrelic.getBrowserTimingHeader()
-      title= title
-      link(rel='stylesheet', href='/stylesheets/style.css')
-    body
-      block content
-  ```
-
-By defaults calls to `newrelic.getBrowserTimingHeader()` should return valid headers.
-You can disable header generation *without* removing your template code.
-In your `newrelic.js` file, add the following to disable header generation.
-
-```javascript
-browser_monitoring : {
-  enable : false
-}
-```
-
-You can also set the environment variable `NEW_RELIC_BROWSER_MONITOR_ENABLE=false`.
-
-It is safe to leave the header generation code in place, even when you are not using it.
-If browser timings are disabled, 
-or there is an error such that working headers cannot be generated,
-the `newrelic` module will generate an innocuous html comment.
-If the `newrelic` module is disabled entirely, no content will be generated.
-
 ### The fine print
 
 This is the Node-specific version of New Relic's transaction naming API
@@ -514,7 +522,6 @@ Information about changes to the module are in NEWS.md.
 
 ### New Relic features available for other platforms not yet in Node.js
 
-* Real User Monitoring (RUM)
 * cross-application tracing (depends on RUM)
 * custom parameters, metrics and instrumentation
 * slow SQL traces and explain plans
