@@ -6,6 +6,32 @@ var path   = require('path')
   , NAMES  = require(path.join(__dirname, 'lib', 'metrics', 'names'))
   ;
 
+/*
+ *
+ * CONSTANTS
+ *
+ */
+var RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
+                "NREUM.info = %s; %s</script>";
+
+// these messages are used in the _gracefail() method below in getBrowserTimingHeader
+var RUM_ISSUES = [
+  'NREUM: no browser monitoring headers generated; disabled',
+  'NREUM: transaction missing while generating browser monitoring headers',
+  'NREUM: conf.browser_monitoring missing, something is probably wrong',
+  'NREUM: browser_monitoring headers need a transaction name',
+  'NREUM: browser_monitoring requires valid application_id',
+  'NREUM: browser_monitoring requires valid browser_key'
+];
+
+function _rumObfuscate(string, license_key) {
+  var bytes = new Buffer(string);
+  for (var i = 0; i < bytes.length; i++) {
+    bytes[i] = bytes[i] ^ license_key[i % 13].charCodeAt(0);
+  }
+  return bytes.toString('base64');
+}
+
 /**
  * The exported New Relic API. This contains all of the functions meant to be
  * used by New Relic customers. For now, that means transaction naming.
@@ -172,33 +198,12 @@ API.prototype.addIgnoringRule = function (pattern) {
   this.agent.userNormalizer.addSimple(pattern, null);
 };
 
-function _rumObfuscate(string, license_key) {
-  var bytes = new Buffer(string);
-  var i;
-  for (i = 0; i < bytes.length; i++)
-    bytes[i] = bytes[i] ^ license_key[i % 13].charCodeAt(0);
-  return bytes.toString('base64');
-}
-
-var _rumStub = "<script type='text/javascript'>window.NREUM||(NREUM={});" + 
-                "NREUM.info = %s; %s</script>";
-
-// these messages are used in the _gracefail() method below in getBrowserTimingHeader
-var _rumIssues = [
-  'NREUM: no browser monitoring headers generated; disabled',
-  'NREUM: transaction missing while generating browser monitoring headers',
-  'NREUM: conf.browser_monitoring missing, something is probably wrong',
-  'NREUM: browser_monitoring headers need a transaction name',
-  'NREUM: browser_monitoring requires valid application_id',
-  'NREUM: browser_monitoring requires valid browser_key'
-];
-
 /**
  * Get the <script>...</script> header necessary for Browser Monitoring
  * This script must be manually injected into your templates, as high as possible
  * in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags.
  * Otherwise you may hurt IE!
- * 
+ *
  * This method must be called _during_ a transaction, and must be called every
  * time you want to generate the headers.
  *
@@ -208,12 +213,14 @@ var _rumIssues = [
  */
 API.prototype.getBrowserTimingHeader = function () {
   var conf = this.agent.config;
-  
-  // gracefully fail
-  // output an HTML comment and log a warning
-  // the comment is meant to be innocuous to the end user
+
+  /* Gracefully fail.
+   *
+   * Output an HTML comment and log a warning the comment is meant to be
+   * innocuous to the end user.
+   */
   function _gracefail(num){
-    logger.warn(_rumIssues[num]);
+    logger.warn(RUM_ISSUES[num]);
     return '<!-- NREUM: (' + num + ') -->';
   }
 
@@ -223,9 +230,10 @@ API.prototype.getBrowserTimingHeader = function () {
   // here if something goes wrong
   if (!browser_monitoring) return _gracefail(2);
 
-  // can control header generation with configuration
-  // this setting is only available in the newrelic.js
-  // config file, it is not ever set by the server
+  /* Can control header generation with configuration this setting is only
+   * available in the newrelic.js config file, it is not ever set by the
+   * server.
+   */
   if (!browser_monitoring.enable) return _gracefail(0);
 
   var trans = this.agent.getTransaction();
@@ -235,28 +243,30 @@ API.prototype.getBrowserTimingHeader = function () {
 
   var name = trans.partialName;
 
-  // if we're in an unnamed transaction, add a friendly warning
-  // this is to avoid people going crazy, trying to figure out
-  // why browser monitoring is not working when they're missing
-  // a transaction name
+  /* If we're in an unnamed transaction, add a friendly warning this is to
+   * avoid people going crazy, trying to figure out why browser monitoring is
+   * not working when they're missing a transaction name.
+   */
   if (!name) return _gracefail(3);
 
   var time  = trans.timer.getDurationInMillis();
   var key   = conf.license_key;
   var appid = conf.application_id;
 
-  // This is only going to work if the agent has successfully handshaked
-  // with the collector. If the networks is bad, or there is no license key
-  // set in newrelis.js, there will be no application_id set.
-  // We bail instead of outputting null/undefined configuration values
+  /* This is only going to work if the agent has successfully handshaked with
+   * the collector. If the networks is bad, or there is no license key set in
+   * newrelis.js, there will be no application_id set.  We bail instead of
+   * outputting null/undefined configuration values.
+   */
   if (!appid) return _gracefail(4);
 
-  // If there is no browser_key, the server has likely decided to disable
-  // browser monitoring.
+  /* If there is no browser_key, the server has likely decided to disable
+   * browser monitoring.
+   */
   var licenseKey = browser_monitoring.browser_key;
   if (!licenseKey) return _gracefail(5);
 
-  // this hash gets written directly into the browser
+  // This hash gets written directly into the browser.
   var rum_hash = {
     agent           : browser_monitoring.js_agent_file,
     beacon          : browser_monitoring.beacon,
@@ -273,18 +283,17 @@ API.prototype.getBrowserTimingHeader = function () {
   };
 
   // if debugging, do pretty format of JSON
-  var tabs;
-  if (conf.browser_monitoring.debug) tabs = 2;
-  else tabs = 0;
-  var json = JSON.stringify(rum_hash, null, tabs);
+  var tabs = conf.browser_monitoring.debug ? 2 : 0
+    , json = JSON.stringify(rum_hash, null, tabs)
+    ;
 
   // the complete header to be written to the browser
-  var out  = util.format(
-    _rumStub, 
-    json, 
+  var out = util.format(
+    RUM_STUB,
+    json,
     browser_monitoring.js_agent_loader
   );
-  
+
   logger.trace('generating RUM header', out);
 
   return out;
