@@ -132,6 +132,7 @@ test("agent instrumentation of Express 2", function (t) {
 
     agent.config.application_id = '12345';
     agent.config.browser_monitoring.browser_key = '12345';
+    agent.config.browser_monitoring.js_agent_loader = 'function(){}';
 
     this.tearDown(function () {
       app.close();

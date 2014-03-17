@@ -21,7 +21,8 @@ var RUM_ISSUES = [
   'NREUM: conf.browser_monitoring missing, something is probably wrong',
   'NREUM: browser_monitoring headers need a transaction name',
   'NREUM: browser_monitoring requires valid application_id',
-  'NREUM: browser_monitoring requires valid browser_key'
+  'NREUM: browser_monitoring requires valid browser_key',
+  'NREUM: browser_monitoring requires js_agent_loader script'
 ];
 
 function _rumObfuscate(string, license_key) {
@@ -266,6 +267,12 @@ API.prototype.getBrowserTimingHeader = function () {
   var licenseKey = browser_monitoring.browser_key;
   if (!licenseKey) return _gracefail(5);
 
+  /* If there is no agent_loader script, there is no point
+   * in setting the rum data
+   */
+  var js_agent_loader = browser_monitoring.js_agent_loader;
+  if (!js_agent_loader) return _gracefail(6);
+
   // This hash gets written directly into the browser.
   var rum_hash = {
     agent           : browser_monitoring.js_agent_file,
@@ -291,7 +298,7 @@ API.prototype.getBrowserTimingHeader = function () {
   var out = util.format(
     RUM_STUB,
     json,
-    browser_monitoring.js_agent_loader
+    js_agent_loader
   );
 
   logger.trace('generating RUM header', out);

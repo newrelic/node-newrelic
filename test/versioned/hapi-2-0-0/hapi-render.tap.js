@@ -145,6 +145,7 @@ test("agent instrumentation of Hapi", function (t) {
 
     agent.config.application_id = '12345';
     agent.config.browser_monitoring.browser_key = '12345';
+    agent.config.browser_monitoring.js_agent_loader = 'function(){}';
 
     var options = {
       views : {

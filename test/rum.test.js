@@ -56,6 +56,7 @@ describe("the RUM API", function () {
       t.setName('hello');
       agent.config.application_id = 12345;
       agent.config.browser_monitoring.browser_key = 1234;
+      agent.config.browser_monitoring.js_agent_loader = "function () {}";
       api.getBrowserTimingHeader()
         .indexOf('<script').should.equal(0);
     });
@@ -67,6 +68,7 @@ describe("the RUM API", function () {
       t.setName('hello');
       agent.config.application_id = 12345;
       agent.config.browser_monitoring.browser_key = 1234;
+      agent.config.browser_monitoring.js_agent_loader = "function () {}";
       var l = api.getBrowserTimingHeader().split('\n').length;
 
       // there should be about 5 new lines here, this is a really *rough*
@@ -94,4 +96,13 @@ describe("the RUM API", function () {
     });
   });
 
+  it('should return empty headers when missing js_agent_loader', function () {
+    agent.config.browser_monitoring.js_agent_loader = "";
+    helper.runInTransaction(agent, function (t) {
+      t.setName('hello');
+      agent.config.application_id = 12345;
+      agent.config.browser_monitoring.browser_key = 1234;
+      api.getBrowserTimingHeader().should.equal('<!-- NREUM: (6) -->');
+    });
+  });
 });
