@@ -22,7 +22,8 @@ var RUM_ISSUES = [
   'NREUM: browser_monitoring headers need a transaction name',
   'NREUM: browser_monitoring requires valid application_id',
   'NREUM: browser_monitoring requires valid browser_key',
-  'NREUM: browser_monitoring requires js_agent_loader script'
+  'NREUM: browser_monitoring requires js_agent_loader script',
+  'NREUM: browser_monitoring disabled by browser_monitoring.loader config'
 ];
 
 function _rumObfuscate(string, license_key) {
@@ -272,6 +273,16 @@ API.prototype.getBrowserTimingHeader = function () {
    */
   var js_agent_loader = browser_monitoring.js_agent_loader;
   if (!js_agent_loader) return _gracefail(6);
+
+  /* If rum is enabled, but then later disabled on the server,
+   * this is the only parameter that gets updated.
+   *
+   * This condition should only be met if rum is disabled during
+   * the lifetime of an application, and it should be picked up
+   * on the next ForceRestart by the collector.
+   */
+  var loader = browser_monitoring.loader;
+  if (loader === 'none') return _gracefail(7);
 
   // This hash gets written directly into the browser.
   var rum_hash = {

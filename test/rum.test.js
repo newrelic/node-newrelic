@@ -105,4 +105,17 @@ describe("the RUM API", function () {
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (6) -->');
     });
   });
+
+  it('should be empty headers when loader is none', function () {
+    agent.config.browser_monitoring.js_agent_loader = "";
+    helper.runInTransaction(agent, function (t) {
+      t.setName('hello');
+      agent.config.application_id = 12345;
+      agent.config.browser_monitoring.browser_key = 1234;
+      agent.config.browser_monitoring.js_agent_loader = "function(){}";
+      agent.config.browser_monitoring.loader = "none";
+      api.getBrowserTimingHeader().should.equal('<!-- NREUM: (7) -->');
+    });
+  });
+
 });
