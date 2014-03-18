@@ -16,8 +16,11 @@ describe("the RUM API", function () {
 
   beforeEach(function () {
     agent = helper.loadMockedAgent();
-    agent.config.browser_monitoring.enable = true;
-    agent.config.browser_monitoring.debug = false;
+    agent.config.browser_monitoring.enable          = true;
+    agent.config.browser_monitoring.debug           = false;
+    agent.config.application_id                     = 12345;
+    agent.config.browser_monitoring.browser_key     = 1234;
+    agent.config.browser_monitoring.js_agent_loader = "function () {}";
     api = new API(agent);
   });
 
@@ -44,6 +47,7 @@ describe("the RUM API", function () {
   });
 
   it('should issue a warning without an application_id', function () {
+    agent.config.application_id = undefined;
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
       api.getBrowserTimingHeader()
@@ -54,9 +58,6 @@ describe("the RUM API", function () {
   it('should return the rum headers when in a named transaction', function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      agent.config.application_id = 12345;
-      agent.config.browser_monitoring.browser_key = 1234;
-      agent.config.browser_monitoring.js_agent_loader = "function () {}";
       api.getBrowserTimingHeader()
         .indexOf('<script').should.equal(0);
     });
@@ -66,9 +67,6 @@ describe("the RUM API", function () {
     agent.config.browser_monitoring.debug = true;
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      agent.config.application_id = 12345;
-      agent.config.browser_monitoring.browser_key = 1234;
-      agent.config.browser_monitoring.js_agent_loader = "function () {}";
       var l = api.getBrowserTimingHeader().split('\n').length;
 
       // there should be about 5 new lines here, this is a really *rough*
@@ -80,18 +78,15 @@ describe("the RUM API", function () {
   it('should be compact when not debugging', function () {
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      agent.config.application_id = 12345;
-      agent.config.browser_monitoring.browser_key = 1234;
       var l = api.getBrowserTimingHeader().split('\n').length;
       assert.equal(l, 1);
     });
   });
 
   it('should return empty headers when missing browser_key', function () {
-    agent.config.browser_monitoring.debug = true;
+    agent.config.browser_monitoring.browser_key = undefined;
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      agent.config.application_id = 12345;
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (5) -->');
     });
   });
@@ -100,20 +95,14 @@ describe("the RUM API", function () {
     agent.config.browser_monitoring.js_agent_loader = "";
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      agent.config.application_id = 12345;
-      agent.config.browser_monitoring.browser_key = 1234;
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (6) -->');
     });
   });
 
   it('should be empty headers when loader is none', function () {
-    agent.config.browser_monitoring.js_agent_loader = "";
+    agent.config.browser_monitoring.loader = "none";
     helper.runInTransaction(agent, function (t) {
       t.setName('hello');
-      agent.config.application_id = 12345;
-      agent.config.browser_monitoring.browser_key = 1234;
-      agent.config.browser_monitoring.js_agent_loader = "function(){}";
-      agent.config.browser_monitoring.loader = "none";
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (7) -->');
     });
   });
