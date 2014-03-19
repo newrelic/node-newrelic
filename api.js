@@ -26,6 +26,11 @@ var RUM_ISSUES = [
   'NREUM: browser_monitoring disabled by browser_monitoring.loader config'
 ];
 
+// can't overwrite internal parameters or all heck will break loose
+var CUSTOM_BLACKLIST = [
+  'nr_flatten_leading'
+];
+
 function _rumObfuscate(string, license_key) {
   var bytes = new Buffer(string);
   for (var i = 0; i < bytes.length; i++) {
@@ -114,6 +119,45 @@ API.prototype.setControllerName = function (name, action) {
 
   action = action || transaction.verb || 'GET';
   transaction.partialName = NAMES.CONTROLLER + '/' + name + '/' + action;
+};
+
+/**
+ * Add a custom parameter to the current transaction. Some parameters are
+ * reserved (see CUSTOM_BLACKLIST for the current, very short list), and
+ * as with most API methods, this must be called in the context of an
+ * active transaction. Most recently set value wins.
+ *
+ * @param {string} name  The name you want displayed in the RPM UI.
+ * @param {string} value The value you want displayed. Must be serializable.
+ */
+API.prototype.addCustomParameter = function (name, value) {
+  var transaction = this.agent.tracer.getTransaction();
+  if (!transaction) {
+    return logger.warn("No transaction found for custom parameters.");
+  }
+
+  var trace = transaction.getTrace();
+  if (!trace.custom) {
+    return logger.warn(
+      "Couldn't add parameter %s to nonexistent custom parameters.",
+      name
+    );
+  }
+
+  if (CUSTOM_BLACKLIST.indexOf(name) !== -1) {
+    return logger.warn("Not overwriting value of NR-only parameter %s.", name);
+  }
+
+  if (name in trace.custom) {
+    logger.debug(
+      "Changing custom parameter %s from %s to %s.",
+      name,
+      trace.custom[name],
+      value
+    );
+  }
+
+  trace.custom[name] = value;
 };
 
 /**

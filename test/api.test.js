@@ -49,6 +49,11 @@ describe("the New Relic agent API", function () {
     expect(api.addIgnoringRule).a('function');
   });
 
+  it("exports a function for adding custom parameters", function () {
+    should.exist(api.addCustomParameter);
+    expect(api.addCustomParameter).a('function');
+  });
+
   describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment
@@ -280,6 +285,75 @@ describe("the New Relic agent API", function () {
         api.setControllerName('Test', 'list');
 
         transaction.end();
+      });
+    });
+  });
+
+  describe("when adding a custom parameter", function () {
+    describe("inside a transaction", function () {
+      it("should have set the value properly", function (done) {
+        agent.on('transactionFinished', function (transaction) {
+          var parameters = transaction.getTrace().custom;
+          expect(parameters['TestName']).equal('TestValue');
+
+          done();
+        });
+
+        helper.runInTransaction(agent, function (transaction) {
+          api.addCustomParameter('TestName', 'TestValue');
+
+          transaction.end();
+        });
+      });
+
+      it("should keep the most-recently seen value", function (done) {
+        agent.on('transactionFinished', function (transaction) {
+          var parameters = transaction.getTrace().custom;
+          expect(parameters['TestName']).equal('Third');
+
+          done();
+        });
+
+        helper.runInTransaction(agent, function (transaction) {
+          api.addCustomParameter('TestName', 'TestValue');
+          api.addCustomParameter('TestName', 'Second');
+          api.addCustomParameter('TestName', 'Third');
+
+          transaction.end();
+        });
+      });
+
+      it("should roll with it if custom params are gone", function () {
+        helper.runInTransaction(agent, function (transaction) {
+          var trace = transaction.getTrace();
+          delete trace.custom;
+          expect(function () {
+            api.addCustomParameter('TestName', 'TestValue');
+          }).not.throws();
+        });
+      });
+
+      it("shouldn't allow overwriting of internally-used attributes", function (done) {
+        agent.on('transactionFinished', function (transaction) {
+          var parameters = transaction.getTrace().custom;
+          expect(parameters['nr_flatten_leading']).equal(false);
+
+          done();
+        });
+
+        helper.runInTransaction(agent, function (transaction) {
+          api.addCustomParameter('nr_flatten_leading', 'HAMBONE');
+
+          transaction.end();
+        });
+      });
+    });
+
+    describe("outside a transaction", function () {
+      it("shouldn't blow up", function () {
+        expect(function () {
+          api.addCustomParameter('TestName', 'TestValue');
+        }).not.throws();
       });
     });
   });

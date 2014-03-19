@@ -14,8 +14,8 @@ describe("the stubbed New Relic agent API", function () {
     api = new API();
   });
 
-  it("should export 7 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(7);
+  it("should export 8 API calls", function () {
+    expect(Object.keys(api.constructor.prototype).length).equal(8);
   });
 
   it("exports a transaction naming function", function () {
@@ -72,7 +72,16 @@ describe("the stubbed New Relic agent API", function () {
     expect(function () { api.noticeError(new Error()); }).not.throws();
   });
 
-  it("should return an empty string when requesting Browser Monitoring", function () {
+  it("should return an empty string when requesting browser monitoring", function () {
     api.getBrowserTimingHeader().should.equal('');
+  });
+
+  it("exports a function for adding custom parameters", function () {
+    should.exist(api.addCustomParameter);
+    expect(api.addCustomParameter).a('function');
+  });
+
+  it("shouldn't throw when a custom parameter is added", function () {
+    expect(function () { api.addCustomParameter('test', 'value'); }).not.throws();
   });
 });

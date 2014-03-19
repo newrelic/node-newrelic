@@ -348,6 +348,13 @@ configuration. The pattern is mandatory.
 
 ### Other API calls
 
+#### newrelic.addCustomParameter(name, value)
+
+Set a custom parameter value to be displayed along with the transaction trace
+in the New Relic UI. This must be called within the context of a transaction,
+so it has a place to set the custom parameters. Only displayed in the
+transaction trace detail view.
+
 #### newrelic.setIgnoreTransaction(ignored)
 
 Tell the module explicitly whether or not a given request should be ignored.
