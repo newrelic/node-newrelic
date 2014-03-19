@@ -1,0 +1,20 @@
+{
+  "name": "express4-ejs",
+  "version": "0.0.0",
+  "description": "tests for Express 3 with EJS template rendering",
+  "main": "express3-render-ejs.tap.js",
+  "scripts": {
+    "test": "tap express3-render-ejs.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "dependencies": {
+    "express": "~4",
+    "ejs": "~0.8"
+  },
+  "devDependencies": {
+    "tap": "*",
+    "request": "*"
+  },
+  "private": true
+}
