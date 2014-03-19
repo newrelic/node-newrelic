@@ -18,7 +18,7 @@ var RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
 var RUM_ISSUES = [
   'NREUM: no browser monitoring headers generated; disabled',
   'NREUM: transaction missing while generating browser monitoring headers',
-  'NREUM: conf.browser_monitoring missing, something is probably wrong',
+  'NREUM: config.browser_monitoring missing, something is probably wrong',
   'NREUM: browser_monitoring headers need a transaction name',
   'NREUM: browser_monitoring requires valid application_id',
   'NREUM: browser_monitoring requires valid browser_key',
@@ -131,6 +131,8 @@ API.prototype.setControllerName = function (name, action) {
  * @param {string} value The value you want displayed. Must be serializable.
  */
 API.prototype.addCustomParameter = function (name, value) {
+  var ignored = this.agent.config.ignored_params || [];
+
   var transaction = this.agent.tracer.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found for custom parameters.");
@@ -146,6 +148,10 @@ API.prototype.addCustomParameter = function (name, value) {
 
   if (CUSTOM_BLACKLIST.indexOf(name) !== -1) {
     return logger.warn("Not overwriting value of NR-only parameter %s.", name);
+  }
+
+  if (ignored.indexOf(name) !== -1) {
+    return logger.warn("Not setting ignored parameter name %s.", name);
   }
 
   if (name in trace.custom) {
@@ -258,7 +264,7 @@ API.prototype.addIgnoringRule = function (pattern) {
  * @returns {string} the <script> header to be injected
  */
 API.prototype.getBrowserTimingHeader = function () {
-  var conf = this.agent.config;
+  var config = this.agent.config;
 
   /* Gracefully fail.
    *
@@ -270,9 +276,9 @@ API.prototype.getBrowserTimingHeader = function () {
     return '<!-- NREUM: (' + num + ') -->';
   }
 
-  var browser_monitoring = conf.browser_monitoring;
+  var browser_monitoring = config.browser_monitoring;
 
-  // conf.browser_monitoring should always exist, but we don't want the agent to bail
+  // config.browser_monitoring should always exist, but we don't want the agent to bail
   // here if something goes wrong
   if (!browser_monitoring) return _gracefail(2);
 
@@ -296,8 +302,8 @@ API.prototype.getBrowserTimingHeader = function () {
   if (!name) return _gracefail(3);
 
   var time  = trans.timer.getDurationInMillis();
-  var key   = conf.license_key;
-  var appid = conf.application_id;
+  var key   = config.license_key;
+  var appid = config.application_id;
 
   /* This is only going to work if the agent has successfully handshaked with
    * the collector. If the networks is bad, or there is no license key set in
@@ -345,7 +351,7 @@ API.prototype.getBrowserTimingHeader = function () {
   };
 
   // if debugging, do pretty format of JSON
-  var tabs = conf.browser_monitoring.debug ? 2 : 0
+  var tabs = config.browser_monitoring.debug ? 2 : 0
     , json = JSON.stringify(rum_hash, null, tabs)
     ;
 

@@ -333,6 +333,23 @@ describe("the New Relic agent API", function () {
         });
       });
 
+      it("shouldn't allow setting of ignored parameters", function (done) {
+        agent.config.ignored_params.push('ignore_me');
+
+        agent.on('transactionFinished', function (transaction) {
+          var parameters = transaction.getTrace().custom;
+          should.not.exist(parameters['ignore_me']);
+
+          done();
+        });
+
+        helper.runInTransaction(agent, function (transaction) {
+          api.addCustomParameter('ignore_me', 'set');
+
+          transaction.end();
+        });
+      });
+
       it("shouldn't allow overwriting of internally-used attributes", function (done) {
         agent.on('transactionFinished', function (transaction) {
           var parameters = transaction.getTrace().custom;
