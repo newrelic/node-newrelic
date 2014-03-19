@@ -555,6 +555,28 @@ describe("the agent configuration", function () {
       expect(config.ignored_params).eql(['b', 'c', 'a']);
     });
 
+    describe("when handling embedded agent_config", function () {
+      it("shouldn't blow up when agent_config is passed in", function () {
+        expect(function () {
+          config.onConnect({'agent_config' : {}});
+        }).not.throws();
+      });
+
+      it("should ignore status codes set on the server", function () {
+        config.onConnect({'agent_config' : {
+          'error_collector.ignore_status_codes' : [401, 409, 415]
+        }});
+        expect(config.error_collector.ignore_status_codes).eql([404, 401, 409, 415]);
+      });
+
+      it("should ignore status codes set on the server as strings", function () {
+        config.onConnect({'agent_config' : {
+          'error_collector.ignore_status_codes' : ['401', '409', '415']
+        }});
+        expect(config.error_collector.ignore_status_codes).eql([404, 401, 409, 415]);
+      });
+    });
+
     it("should load named transaction apdexes", function () {
       var apdexes = {"WebTransaction/Custom/UrlGenerator/en/betting/Football" : 7.0};
       expect(config.web_transactions_apdex).eql({});
@@ -728,7 +750,7 @@ describe("the agent configuration", function () {
         browser_key          : "KEY"
       });
       var bm = config.browser_monitoring;
-      
+
       expect(bm.js_agent_loader)      .equal ("LOADER");
       expect(bm.js_agent_file)        .equal ("FILE");
       expect(bm.js_agent_loader_file) .equal ("LOADER_FILE");
