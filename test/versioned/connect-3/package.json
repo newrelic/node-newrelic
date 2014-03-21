@@ -1,0 +1,18 @@
+{
+  "name": "connect-3",
+  "version": "0.0.0",
+  "description": "tests for Connect 3.x",
+  "main": "connect-error-intercept.tap.js",
+  "scripts": {
+    "test": "tap connect-error-intercept.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "dependencies": {
+    "connect": "~3"
+  },
+  "devDependencies": {
+    "tap": "*"
+  },
+  "private": true
+}
