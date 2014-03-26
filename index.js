@@ -56,19 +56,19 @@ try {
     agent.start(function (error) {
       if (!error) return logger.debug("New Relic for Node.js is connected to New Relic.");
 
-      logger.error(
-        error,
-        "New Relic for Node.js was unable to start due to an error:"
-      );
+      var message = "New Relic for Node.js halted startup due to an error:";
+      logger.error(error, message);
 
-      console.error("New Relic for Node.js was unable to start due to an error:");
+      console.error(message);
       console.error(error.stack);
     });
   }
 }
 catch (error) {
-  logger.error(error, "New Relic for Node.js was unable to start due to an error:");
-  console.error("New Relic for Node.js was unable to start due to an error:");
+  var message = "New Relic for Node.js was unable to bootstrap itself due to an error:";
+  logger.error(error, message);
+
+  console.error(message);
   console.error(error.stack);
 }
 
