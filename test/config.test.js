@@ -536,6 +536,11 @@ describe("the agent configuration", function () {
       expect(config.product_level).equal(30);
     });
 
+    it("should configure high_security", function () {
+      config.onConnect({'high_security' : true});
+      expect(config.high_security).equal(true);
+    });
+
     it("should configure param capture", function () {
       expect(config.capture_params).equal(false);
       config.onConnect({'capture_params' : true});
@@ -896,12 +901,6 @@ describe("the agent configuration", function () {
     it("should ignore trusted_account_ids", function () {
       expect(function () {
         config.onConnect({'trusted_account_ids' : [1, 2, 3]});
-      }).not.throws();
-    });
-
-    it("should ignore high_security", function () {
-      expect(function () {
-        config.onConnect({'high_security' : true});
       }).not.throws();
     });
 

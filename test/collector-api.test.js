@@ -44,7 +44,8 @@ describe("CollectorAPI", function () {
         applications : function () {
           return ['TEST'];
         },
-        browser_monitoring: {}
+        browser_monitoring: {},
+        transaction_tracer: {},
       }
     };
 
@@ -1158,7 +1159,8 @@ describe("CollectorAPI", function () {
         applications : function () {
           return ['TEST'];
         },
-        browser_monitoring: {}
+        browser_monitoring: {},
+        transaction_tracer: {},
       };
       var properties = {
         config      : config,

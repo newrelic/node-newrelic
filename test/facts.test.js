@@ -9,8 +9,8 @@ var path     = require('path')
   , facts    = require(path.join(__dirname, '..', 'lib', 'collector', 'facts.js'))
   ;
 
-var EXPECTED = ['pid', 'host', 'language', 'app_name', 
-                'agent_version', 'environment', 'settings'];
+var EXPECTED = ['pid', 'host', 'language', 'app_name',
+                'agent_version', 'environment', 'settings', 'security_settings'];
 
 describe("fun facts about apps that New Relic is interested in include", function () {
   var agent
