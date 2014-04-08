@@ -43,8 +43,12 @@ also need the openssl command-line binary and a GNU-compatible make. Please
 read the documentation for your distribution or packaging system for details on
 how to install the correct packages. Be aware that the binaries are run
 directly by the agent, so network access on the same network isn't going to be
-sufficient. Also, if you get everything up and running on Windows, please send
-us a pull request with the details and we'll incorporate it into this document.
+sufficient. Another thing to be aware of is you can't have any of these
+services already running. If they are running you may get failures when testing
+module integration.
+
+If you get everything up and running on Windows, please send us a pull request
+with the details and we'll incorporate it into this document.
 
 Running the test suite is simple.  Just run:
 
