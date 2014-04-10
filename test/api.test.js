@@ -558,6 +558,15 @@ describe("the New Relic agent API", function () {
       expect(agent.errors.errors.length).equal(1);
     });
 
+    it("should track custom parameters on error without a transaction", function () {
+      expect(agent.errors.errors.length).equal(0);
+      api.noticeError(new TypeError('this test is bogus, man'), {present : 'yep'});
+      expect(agent.errors.errors.length).equal(1);
+
+      var params = agent.errors.errors[0][4];
+      expect(params.present).equal('yep');
+    });
+
     it("should add the error associated to a transaction", function (done) {
       expect(agent.errors.errors.length).equal(0);
 
@@ -576,6 +585,33 @@ describe("the New Relic agent API", function () {
 
       helper.runInTransaction(agent, function (transaction) {
         api.noticeError(new TypeError('test error'));
+        transaction.end();
+      });
+    });
+
+    it("should notice custom parameters associated with an error", function (done) {
+      expect(agent.errors.errors.length).equal(0);
+      var orig = agent.config.ignored_params;
+      agent.config.ignored_params = ['ignored'];
+
+      agent.on('transactionFinished', function (transaction) {
+        expect(agent.errors.errors.length).equal(1);
+        var caught = agent.errors.errors[0];
+        expect(caught[1]).equal('WebTransaction/Uri/*');
+        expect(caught[2]).equal('test error');
+        expect(caught[3]).equal('TypeError');
+        expect(caught[4].hi).equal('yo');
+        should.not.exist(caught[4].ignored);
+
+        should.exist(transaction.error);
+        expect(transaction.ignore).equal(false);
+
+        agent.config.ignored_params = orig;
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        api.noticeError(new TypeError('test error'), {hi : 'yo', ignored : 'yup'});
         transaction.end();
       });
     });
@@ -658,6 +694,28 @@ describe("the New Relic agent API", function () {
 
       helper.runInTransaction(agent, function (transaction) {
         api.noticeError('busted, bro');
+        transaction.end();
+      });
+    });
+
+    it("should allow custom parameters to be added to string errors", function (done) {
+      expect(agent.errors.errors.length).equal(0);
+
+      agent.on('transactionFinished', function (transaction) {
+        expect(agent.errors.errors.length).equal(1);
+        var caught = agent.errors.errors[0];
+        expect(caught[2]).equal('busted, bro');
+        expect(caught[4].a).equal(1);
+        expect(caught[4].steak).equal('sauce');
+
+        should.exist(transaction.error);
+        expect(transaction.ignore).equal(false);
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        api.noticeError('busted, bro', {a : 1, steak : 'sauce'});
         transaction.end();
       });
     });

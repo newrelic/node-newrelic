@@ -190,11 +190,14 @@ API.prototype.setIgnoreTransaction = function (ignored) {
  * be an Error or one of its subtypes, but the API will handle strings
  * and objects that have an attached .message or .stack property.
  *
- * @param {Error} error The error to be traced.
+ * @param {Error}  error            The error to be traced.
+ * @param {object} customParameters Any custom parameters to be displayed in
+ *                                  the New Relic UI.
  */
-API.prototype.noticeError = function (error) {
+API.prototype.noticeError = function (error, customParameters) {
+  if (typeof error === 'string') error = new Error(error);
   var transaction = this.agent.tracer.getTransaction();
-  this.agent.errors.add(transaction, error);
+  this.agent.errors.add(transaction, error, customParameters);
 };
 
 /**

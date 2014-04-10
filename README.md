@@ -365,14 +365,15 @@ to prevent a transaction from being ignored with this function, you **must**
 pass `false` as the parameter – in this case `null` or `undefined` will be
 ignored.
 
-#### newrelic.noticeError(error)
+#### newrelic.noticeError(error, customParameters)
 
 If your app is doing its own error handling with domains or try/catch clauses,
 but you want all of the information about how many errors are coming out of the
 app to be centrally managed, use this call. Unlike most of the calls here, this
-function can be used outside of route handlers, but will have additional context if
-called from within transaction scope. If custom parameters are passed in on an
-object literal, they will be passed back to New Relic for display.
+function can be used outside of route handlers, but will have additional
+context if called from within transaction scope. If custom parameters are
+passed in on an object literal, they will be passed back to New Relic for
+display.
 
 ### The fine print
 
