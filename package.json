@@ -52,7 +52,7 @@
   "dependencies": {
     "bunyan": "0.14.6",
     "continuation-local-storage": "2.6.2",
-    "yakaa": "0.0.0"
+    "yakaa": "^1.0.0"
   },
   "bundledDependencies": [
     "bunyan",
