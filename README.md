@@ -370,8 +370,9 @@ ignored.
 If your app is doing its own error handling with domains or try/catch clauses,
 but you want all of the information about how many errors are coming out of the
 app to be centrally managed, use this call. Unlike most of the calls here, this
-call can be used outside of route handlers, but will have additional context if
-called from within transaction scope.
+function can be used outside of route handlers, but will have additional context if
+called from within transaction scope. If custom parameters are passed in on an
+object literal, they will be passed back to New Relic for display.
 
 ### The fine print
 
@@ -465,7 +466,7 @@ For completeness, here's the rest of the list:
   See the section on request and transaction naming for details. Defaults to
   empty.
 * `NEW_RELIC_IGNORING_RULES`: A list of comma-delimited patterns:
-  `NEW_RELIC_IGNORING_RULES='^/socket\.io/\*/xhr-polling,ignore_me'` Note that
+  `NEW_RELIC_IGNORING_RULES='^/socket\.io/.*/xhr-polling,ignore_me'` Note that
   currently there is no way to escape commas in patterns. Defaults to empty.
 * `NEW_RELIC_TRACER_TOP_N`: Increase this number to increase the diversity of
   slow transaction traces sent to New Relic. Defaults to 1. See the description
