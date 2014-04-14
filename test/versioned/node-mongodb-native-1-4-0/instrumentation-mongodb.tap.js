@@ -1074,8 +1074,8 @@ test("agent instrumentation of node-mongodb-native", function (t) {
             collection.dropIndex('id_1', function (error) {
               t.notOk(agent.getTransaction(), "should have no transaction");
 
-              t.equal(error.message, 'index not found',
-                      "shouldn't have found index to drop");
+              t.ok(error.message.indexOf('index not found') === 0,
+                   "shouldn't have found index to drop");
 
               verifyNoStats(t, agent, 'dropIndex');
             });
