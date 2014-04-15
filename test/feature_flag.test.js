@@ -1,11 +1,15 @@
 var flags = require('../lib/feature_flags.js');
 var chai  = require('chai');
 var assert= require('assert');
+var Config= require('../lib/config');
 
 chai.should();
 
+// please do not delete flags from here
 var used = [
-  'express4'
+  'express4',
+  'released',
+  'unreleased',
 ];
 
 describe("feature flags", function () {
@@ -13,8 +17,8 @@ describe("feature flags", function () {
 
   before(function(){
     prerelease = Object.keys(flags.prerelease);
-    unreleased = Object.keys(flags.unreleased);
-    released   = Object.keys(flags.released);
+    unreleased = flags.unreleased;
+    released   = flags.released;
   });
 
   it("should declare every prerelease feature in the *used* variable", function () {
@@ -50,5 +54,25 @@ describe("feature flags", function () {
 
       throw new Error('Flag not accounted for');
     });
+  });
+  it("should warn if released flags are still in config", function () {
+    Config.prototype.setLogger({
+      warn: function(){ called = true; }
+    });
+    var called = false;
+    var config = new Config();
+    config.feature_flag.released = true;
+    config.validateFlags();
+    called.should.equal(true);
+  });
+  it("should warn if unreleased flags are still in config", function () {
+    Config.prototype.setLogger({
+      warn: function(){ called = true; }
+    });
+    var called = false;
+    var config = new Config();
+    config.feature_flag.unreleased = true;
+    config.validateFlags();
+    called.should.equal(true);
   });
 });
