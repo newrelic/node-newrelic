@@ -1,3 +1,10 @@
+### v1.5.1 (2014-04-18):
+
+* Upgrade continuation-local-storage dependency to 3.0.0.
+  The `newrelic` node module uses `cls` to help join asynchronous transaction
+  segments. The latest `cls` module includes a fix that prevents contexts from
+  leaking across transactions.
+
 ### v1.5.0 (2014-04-11):
 
 * Add high-security compliance for accounts with enterprise security enabled.
