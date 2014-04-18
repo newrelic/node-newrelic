@@ -21,10 +21,8 @@ test("Express 4 detection", function (t) {
     helper.unloadAgent(agent);
   });
 
-  // FLAG: express4
-  agent.config.feature_flag.express4 = true;
-
-  console.dir(express.Router.process_params);
+  // Check if process_params is wrapped as it is the only exclusively
+  // express 4 chunk that we wrap.
   t.ok(express.Router.process_params.__NR_unwrap);
   t.end()
 

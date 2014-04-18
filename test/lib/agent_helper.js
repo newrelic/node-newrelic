@@ -40,6 +40,11 @@ var helper = module.exports = {
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; };
 
+    // Turn all feature flags on for testing purposes.
+    for (var flag in config.feature_flag) {
+      config.feature_flag[flag] = true;
+    }
+
     _agent = new Agent(config);
     _agent.__created = new Error("Only one agent at a time! This one was created at:");
 
