@@ -27,7 +27,7 @@ var TEST_PATH = '/test'
                 "</html>\n"
   ;
 
-test("agent instrumentation of Express 3", function (t) {
+test("agent instrumentation of Express 4", function (t) {
   t.plan(6);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {

@@ -12,7 +12,7 @@ var path = require('path')
  */
 var COMPLETION = 27;
 
-test("Express 3 async throw", function (t) {
+test("Express 4 async throw", function (t) {
   var erk = fork(path.join(__dirname, 'erk.js'));
   var timer;
 

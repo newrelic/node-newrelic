@@ -7,7 +7,7 @@ var path    = require('path')
   , API     = require(path.join(__dirname, '..', '..', '..', 'api.js'))
   ;
 
-test("ignoring an Express 3 route", function (t) {
+test("ignoring an Express 4 route", function (t) {
   t.plan(7);
 
   var agent   = helper.instrumentMockedAgent()
