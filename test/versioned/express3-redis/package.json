@@ -10,7 +10,7 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "express": "3.3.4",
+    "express": "^3.5.1",
     "request": "2.27.0",
     "connect-redis": "1.4.x",
     "jade": "~0.33.0",

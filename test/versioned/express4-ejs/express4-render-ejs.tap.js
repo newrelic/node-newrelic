@@ -27,10 +27,8 @@ var TEST_PATH = '/test'
                 "</html>\n"
   ;
 
-function skip(){}
-
 test("agent instrumentation of Express 4", function (t) {
-  t.plan(5);
+  t.plan(6);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent = helper.instrumentMockedAgent()
@@ -167,12 +165,8 @@ test("agent instrumentation of Express 4", function (t) {
     });
   });
 
-  skip("should trap errors correctly", function (t) {
+  t.test("should trap errors correctly", function (t) {
     var agent = helper.instrumentMockedAgent();
-
-    // see shimmer.reinstrument for info on why this is here
-    shimmer.reinstrument(agent, path.join(__dirname,
-                                          'node_modules', 'express'));
 
     var app    = require('express')()
       , server = require('http').createServer(app)
@@ -189,10 +183,20 @@ test("agent instrumentation of Express 4", function (t) {
     });
 
     server.listen(TEST_PORT, TEST_HOST, function () {
-      t.equal(app.stack.length, 4,
+      t.equal(app._router.stack.length, 4,
               "4 middleware functions: query parser, Express, router, error trapper");
-      t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel',
+      t.equal(app._router.stack[app._router.stack.length - 1].handle.name, 'sentinel',
               "error handler is last function in middleware chain");
+
+      for (var i = 0; i < app._router.stack.length; i++) {
+        var layer = app._router.stack[i]
+        // route middleware doesn't have a name, sentinel is our error handler,
+        // neither should be wrapped.
+        if (layer.handle.name && layer.handle.name !== 'sentinel') {
+          t.equal(typeof layer.handle.__NR_original, 'function',
+                  'all middlewares are wrapped')
+        }
+      }
 
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
