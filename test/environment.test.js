@@ -1,6 +1,7 @@
 'use strict';
 
 var path        = require('path')
+  , fs          = require('fs')
   , spawn       = require('child_process').spawn
   , chai        = require('chai')
   , expect      = chai.expect
@@ -146,6 +147,40 @@ describe("the environment scraper", function () {
     proc.on('exit', function (code) {
       expect(code).equal(0);
 
+      done();
+    });
+  });
+
+  it("should not crash when encountering a dangling symlink", function (done) {
+    var opt = {
+      stdio : 'pipe',
+      env   : process.env,
+      cwd   : path.join(__dirname, 'helpers'),
+    };
+
+    var nmod = path.join(__dirname, 'helpers', 'node_modules');
+    var into = path.join(nmod, 'a');
+    var dest = path.join(nmod, 'b');
+
+    // cleanup in case dest is dirty
+    try {fs.unlinkSync(dest);} catch(e) {}
+    if (!fs.existsSync(nmod)) fs.mkdirSync(nmod);
+
+    fs.writeFileSync(into, 'hello world');
+    fs.symlinkSync(into, dest);
+    fs.unlinkSync(into);
+
+    var exec = process.argv[0]
+      , args = [path.join(__dirname, 'helpers', 'environment.child.js')]
+      , proc = spawn(exec, args, opt)
+      ;
+
+    proc.stdout.pipe(process.stderr);
+    proc.stderr.pipe(process.stderr);
+
+    proc.on('exit', function (code) {
+      expect(code).equal(0);
+      fs.unlinkSync(dest);
       done();
     });
   });
