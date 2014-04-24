@@ -1,3 +1,9 @@
+### v1.5.2 (2014-04-24):
+
+* Fix [issue #118](https://github.com/newrelic/node-newrelic/issues/118)
+  where dangling symbolic links in the `node_modules` folder
+  would crash the environment scraper.
+
 ### v1.5.1 (2014-04-18):
 
 * Upgrade continuation-local-storage dependency to 3.0.0.
