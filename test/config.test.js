@@ -41,7 +41,8 @@ describe("the agent configuration", function () {
     expect(c.agent_enabled).equal(true);
   });
 
-  describe("when overriding configuration values via environment variables", function () {
+  describe("when overriding configuration values via environment variables",
+  function () {
     it("should pick up the application name", function () {
       idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic',
                     function (tc) {
@@ -689,6 +690,29 @@ describe("the agent configuration", function () {
       expect(function () {
         config.onConnect({'browser_key' : 'beefchunx'});
       }).not.throws();
+    });
+
+    it("shouldn't blow up when analytics_events.max_samples_stored is received",
+    function () {
+      expect(function () {
+        config.onConnect({'analytics_events.max_samples_stored' : 10});
+      }).not.throws();
+      expect(config.analytics_events.max_samples_stored).equals(10);
+    });
+
+    it("shouldn't blow up when analytics_events.max_samples_per_minute is received",
+    function () {
+      expect(function () {
+        config.onConnect({'analytics_events.max_samples_per_minute' : 1});
+      }).not.throws();
+      expect(config.analytics_events.max_samples_per_minute).equals(1);
+    });
+
+    it("shouldn't blow up when analytics_events.enabled is received", function () {
+      expect(function () {
+        config.onConnect({'analytics_events.enabled' : false});
+      }).not.throws();
+      expect(config.analytics_events.enabled).equals(false);
     });
 
     describe("when data_report_period is set", function () {

@@ -882,6 +882,73 @@ describe("CollectorAPI", function () {
     });
   });
 
+  describe("analyticsEvents", function () {
+    it("requires errors to send", function () {
+      expect(function () { api.analyticsEvents(null, function () {}); })
+        .throws("must pass events to send");
+    });
+
+    it("requires a callback", function () {
+      expect(function () { api.analyticsEvents([], null); })
+        .throws("callback is required");
+    });
+
+    describe("on the happy path", function () {
+      var bad
+        , nothing
+        , raw
+        ;
+
+      var response = {return_value : []};
+
+      before(function (done) {
+        api._agent.config.run_id = RUN_ID;
+        var shutdown = nock(URL)
+                         .post(generate('analytic_event_data', RUN_ID))
+                         .reply(200, response);
+
+        var errors = [
+          RUN_ID,
+          [{
+            "webDuration" : 1.0,
+            "timestamp"   : 1000,
+            "name"        : "Controller/rails/welcome/index",
+            "duration"    : 1.0,
+            "type"        : "Transaction"
+          },{
+            "A": "a",
+            "B": "b",
+          }]
+        ];
+
+        api.analyticsEvents(errors, function test(error, response, json) {
+          bad = error;
+          nothing = response;
+          raw = json;
+
+          shutdown.done();
+          done();
+        });
+      });
+
+      after(function () {
+        api._agent.config.run_id = undefined;
+      });
+
+      it("should not error out", function () {
+        should.not.exist(bad);
+      });
+
+      it("should return empty data array", function () {
+        expect(nothing).eql([]);
+      });
+
+      it("should pass through exactly what it got back from the server", function () {
+        expect(raw).eql(response);
+      });
+    });
+  });
+
   describe("metricData", function () {
     it("requires metrics to send", function () {
       expect(function () { api.metricData(null, function () {}); })
@@ -1392,4 +1459,5 @@ describe("CollectorAPI", function () {
       api._runLifecycle(method, null, tested);
     });
   });
+
 });

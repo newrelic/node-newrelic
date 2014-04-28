@@ -6,7 +6,6 @@ process.env.NODE_ENV = 'test';
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
-  , shimmer = require(path.join(__dirname, '..', '..', '..', 'lib', 'shimmer'))
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   , API     = require(path.join('..', '..', '..', 'api.js'))
   ;
@@ -31,7 +30,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.plan(6);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
-    var agent = helper.instrumentMockedAgent()
+    var agent = helper.instrumentMockedAgent({express4: true})
       , app = require('express')()
       , server = require('http').createServer(app)
       ;
@@ -88,7 +87,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("using EJS templates",
        {timeout : 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({express4: true})
       , app    = require('express')()
       , server = require('http').createServer(app)
       ;
@@ -125,7 +124,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("should generate rum headers",
        {timeout : 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({express4: true})
       , app    = require('express')()
       , server = require('http').createServer(app)
       , api    = new API(agent)
@@ -166,7 +165,7 @@ test("agent instrumentation of Express 4", function (t) {
   });
 
   t.test("should trap errors correctly", function (t) {
-    var agent = helper.instrumentMockedAgent();
+    var agent = helper.instrumentMockedAgent({express4: true});
 
     var app    = require('express')()
       , server = require('http').createServer(app)
@@ -189,12 +188,12 @@ test("agent instrumentation of Express 4", function (t) {
               "error handler is last function in middleware chain");
 
       for (var i = 0; i < app._router.stack.length; i++) {
-        var layer = app._router.stack[i]
+        var layer = app._router.stack[i];
         // route middleware doesn't have a name, sentinel is our error handler,
         // neither should be wrapped.
         if (layer.handle.name && layer.handle.name !== 'sentinel') {
           t.equal(typeof layer.handle.__NR_original, 'function',
-                  'all middlewares are wrapped')
+                  'all middlewares are wrapped');
         }
       }
 
@@ -222,7 +221,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("should measure request duration properly (NA-46)",
        {timeout : 2 * 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({express4: true})
       , app    = require('express')()
       , server = require('http').createServer(app)
       ;
@@ -270,7 +269,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("should capture URL correctly when configured with a prefix",
          {timeout : 2 * 1000},
          function (t) {
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({express4: true})
       , app    = require('express')()
       , server = require('http').createServer(app)
       ;

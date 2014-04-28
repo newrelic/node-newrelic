@@ -30,7 +30,7 @@ var helper = module.exports = {
    *                       created in this function.
    * @returns Agent Agent with a stubbed configuration.
    */
-  loadMockedAgent : function loadMockedAgent() {
+  loadMockedAgent : function loadMockedAgent(flags) {
     if (_agent) throw _agent.__created;
 
     // agent needs a "real" configuration
@@ -40,13 +40,10 @@ var helper = module.exports = {
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; };
 
-    // Turn all feature flags on for testing purposes.
-    for (var flag in config.feature_flag) {
-      config.feature_flag[flag] = true;
-    }
-
     _agent = new Agent(config);
     _agent.__created = new Error("Only one agent at a time! This one was created at:");
+
+    if (flags) _agent.config.feature_flag = flags;
 
     return _agent;
   },
@@ -76,10 +73,11 @@ var helper = module.exports = {
    *
    * @returns Agent Agent with a stubbed configuration.
    */
-  instrumentMockedAgent : function instrumentMockedAgent() {
+  instrumentMockedAgent : function instrumentMockedAgent(flags) {
     shimmer.debug = true;
 
-    var agent = helper.loadMockedAgent();
+    var agent = helper.loadMockedAgent(flags);
+
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
 

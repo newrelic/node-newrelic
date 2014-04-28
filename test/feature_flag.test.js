@@ -8,6 +8,7 @@ chai.should();
 // please do not delete flags from here
 var used = [
   'express4',
+  'insights',
   'released',
   'unreleased',
 ];
