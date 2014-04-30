@@ -149,6 +149,10 @@ describe("the New Relic agent", function () {
             nock(URL)
               .post(helper.generateCollectorPath('connect'))
               .reply(200, {return_value : {agent_run_id : RUN_ID, apdex_t : 0.5}});
+          var settings =
+            nock(URL)
+              .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+              .reply(200, {return_value : []});
           var shutdown =
             nock(URL)
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
@@ -160,6 +164,7 @@ describe("the New Relic agent", function () {
             redirect.done();
             connect.done();
             debugged.stop(function () {
+              settings.done();
               shutdown.done();
               done();
             });
@@ -420,6 +425,10 @@ describe("the New Relic agent", function () {
           nock(URL)
             .post(helper.generateCollectorPath('connect'))
             .reply(200, {return_value : {agent_run_id : RUN_ID}});
+        var settings =
+          nock(URL)
+            .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+            .reply(200, {return_value : []});
         var metrics =
           nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -431,6 +440,7 @@ describe("the New Relic agent", function () {
 
             redirect.done();
             connect.done();
+            settings.done();
             metrics.done();
             done();
           }, 15);
@@ -449,6 +459,10 @@ describe("the New Relic agent", function () {
           nock(URL)
             .post(helper.generateCollectorPath('connect'))
             .reply(200, {return_value : {agent_run_id : RUN_ID}});
+        var settings =
+          nock(URL)
+            .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+            .reply(200, {return_value : []});
         var metrics =
           nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -461,6 +475,7 @@ describe("the New Relic agent", function () {
 
             redirect.done();
             connect.done();
+            settings.done();
             metrics.done();
             done();
           }, 15);
@@ -584,6 +599,12 @@ describe("the New Relic agent", function () {
         var handshake = nock(URL)
                           .post(helper.generateCollectorPath('connect'))
                           .reply(200, {return_value : config});
+        var settings = nock(URL)
+                          .post(helper.generateCollectorPath('agent_settings', 404))
+                          .reply(200, {return_value : config});
+        var shutdown = nock(URL)
+                          .post(helper.generateCollectorPath('shutdown', 404))
+                          .reply(200, {return_value : null});
 
         agent.start(function (error) {
           should.not.exist(error);
@@ -596,9 +617,11 @@ describe("the New Relic agent", function () {
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
 
-          sampler.stop();
-          agent._stopHarvester();
-          done();
+          agent.stop(function () {
+            settings.done();
+            shutdown.done();
+            done();
+          });
         });
       });
 
@@ -909,6 +932,10 @@ describe("the New Relic agent", function () {
     });
 
     it("doesn't send errors when error tracer disabled", function (done) {
+      var settings =
+        nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value : []});
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -925,11 +952,20 @@ describe("the New Relic agent", function () {
         should.not.exist(error);
 
         metricData.done();
-        done();
+
+        // Wait for agent_settings command to be sent after event emitted from onConnect
+        setTimeout(function() {
+          settings.done();
+          done();
+        }, 15);
       });
     });
 
     it("doesn't send errors when server disables collect_errors", function (done) {
+      var settings =
+        nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value : []});
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -946,7 +982,12 @@ describe("the New Relic agent", function () {
         should.not.exist(error);
 
         metricData.done();
-        done();
+
+        // Wait for agent_settings command to be sent after event emitted from onConnect
+        setTimeout(function() {
+          settings.done();
+          done();
+        }, 15);
       });
     });
 
@@ -958,6 +999,10 @@ describe("the New Relic agent", function () {
       agent.errors.add(transaction, new RangeError('stack depth exceeded'));
       transaction.end();
 
+      var settings =
+        nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value : []});
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -975,7 +1020,12 @@ describe("the New Relic agent", function () {
 
         metricData.done();
         errorData.done();
-        done();
+
+        // Wait for agent_settings command to be sent after event emitted from onConnect
+        setTimeout(function() {
+          settings.done();
+          done();
+        }, 15);
       });
     });
 
@@ -987,6 +1037,10 @@ describe("the New Relic agent", function () {
       agent.errors.add(transaction, new RangeError('stack depth exceeded'));
       transaction.end();
 
+      var settings =
+        nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value : []});
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -1004,7 +1058,12 @@ describe("the New Relic agent", function () {
 
         metricData.done();
         errorData.done();
-        done();
+
+        // Wait for agent_settings command to be sent after event emitted from onConnect
+        setTimeout(function() {
+          settings.done();
+          done();
+        }, 15);
       });
     });
 

@@ -34,6 +34,8 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 
   var handshake = nock(url).post(path('connect'))
                     .reply(200, {return_value : {agent_run_id : RUN_ID}});
+  var settings = nock(url).post(path('agent_settings', RUN_ID))
+                   .reply(200, {return_value : []});
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
     , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
@@ -62,6 +64,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
       t.notOk(sendTrace.isDone(),   "...and also didn't send trace, because of 503");
 
       agent.stop(function () {
+        t.ok(settings.isDone(), "got agent_settings message");
         t.ok(sendShutdown.isDone(), "got shutdown message");
         t.end();
       });
@@ -93,6 +96,8 @@ test("merging metrics and errors after a 503", function (t) {
 
   nock(url).post(path('connect'))
            .reply(200, {return_value : {agent_run_id : RUN_ID}});
+  nock(url).post(path('agent_settings', RUN_ID))
+           .reply(200, {return_value : []});
 
   nock(url).post(path('metric_data', RUN_ID)).reply(503);
   nock(url).post(path('error_data', RUN_ID)).reply(503);

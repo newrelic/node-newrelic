@@ -31,6 +31,8 @@ test("harvesting with a mocked collector that returns 413 after connect", functi
                    .reply(200, {return_value : "collector.newrelic.com"});
   var handshake = nock(url).post(path('connect'))
                     .reply(200, {return_value : {agent_run_id : RUN_ID}});
+  var settings = nock(url).post(path('agent_settings', RUN_ID))
+                   .reply(200, {return_value : []});
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(413)
     , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(413)
@@ -56,6 +58,7 @@ test("harvesting with a mocked collector that returns 413 after connect", functi
       t.ok(sendTrace.isDone(),   "...and then sent trace, even though all returned 413");
 
       agent.stop(function () {
+        t.ok(settings.isDone(), "got agent_settings message");
         t.ok(sendShutdown.isDone(), "got shutdown message");
         t.end();
       });
@@ -87,6 +90,8 @@ test("discarding metrics and errors after a 413", function (t) {
 
   nock(url).post(path('connect'))
            .reply(200, {return_value : {agent_run_id : RUN_ID}});
+  nock(url).post(path('agent_settings', RUN_ID))
+           .reply(200, {return_value : []});
 
   nock(url).post(path('metric_data', RUN_ID)).reply(413);
   nock(url).post(path('error_data', RUN_ID)).reply(413);

@@ -44,6 +44,9 @@ describe("CollectorAPI", function () {
         applications : function () {
           return ['TEST'];
         },
+        publicSettings : function () {
+          return {setting1: true, setting2: false};
+        },
         browser_monitoring: {},
         transaction_tracer: {},
       }
@@ -819,6 +822,39 @@ describe("CollectorAPI", function () {
     });
   });
 
+  describe("reportSettings", function () {
+    var bad
+      , raw
+      , response = {return_value: []};
+
+    before(function (done) {
+      api._agent.config.run_id = RUN_ID;
+
+      var mock = nock(URL)
+                   .post(generate('agent_settings', RUN_ID))
+                   .reply(200, response);
+
+      api.reportSettings(function test(error, json) {
+        bad = error;
+        raw = json;
+        mock.done();
+        done();
+      });
+    });
+
+    after(function () {
+      api._agent.config.run_id = undefined;
+    });
+
+    it("should not error out", function () {
+      should.not.exist(bad);
+    });
+
+    it("should return the expected 'empty' response", function () {
+      expect(raw).eql(response);
+    });
+  });
+
   describe("errorData", function () {
     it("requires errors to send", function () {
       expect(function () { api.errorData(null, function () {}); })
@@ -1228,6 +1264,9 @@ describe("CollectorAPI", function () {
         },
         browser_monitoring: {},
         transaction_tracer: {},
+        publicSettings : function () {
+          return {setting1: true, setting2: false};
+        },
       };
       var properties = {
         config      : config,
