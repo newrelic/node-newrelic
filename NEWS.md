@@ -1,3 +1,11 @@
+### v1.5.3 (2014-05-01):
+
+* Express 4 support.
+
+  Closes [#132](https://github.com/newrelic/node-newrelic/issues/132).
+  Express 4 apps now have their transactions named correctly.
+  Errors in the middleware chain are properly recorded.
+
 ### v1.5.2 (2014-04-24):
 
 * Fix [issue #118](https://github.com/newrelic/node-newrelic/issues/118)
