@@ -692,27 +692,36 @@ describe("the agent configuration", function () {
       }).not.throws();
     });
 
-    it("shouldn't blow up when analytics_events.max_samples_stored is received",
+    it("shouldn't blow up when collect_analytics_events is received",
     function () {
+      config.transaction_events.enabled = true;
       expect(function () {
-        config.onConnect({'analytics_events.max_samples_stored' : 10});
+        config.onConnect({'collect_analytics_events' : false});
       }).not.throws();
-      expect(config.analytics_events.max_samples_stored).equals(10);
+      expect(config.transaction_events.enabled).equals(false);
     });
 
-    it("shouldn't blow up when analytics_events.max_samples_per_minute is received",
+    it("shouldn't blow up when transaction_events.max_samples_stored is received",
     function () {
       expect(function () {
-        config.onConnect({'analytics_events.max_samples_per_minute' : 1});
+        config.onConnect({'transaction_events.max_samples_stored' : 10});
       }).not.throws();
-      expect(config.analytics_events.max_samples_per_minute).equals(1);
+      expect(config.transaction_events.max_samples_stored).equals(10);
     });
 
-    it("shouldn't blow up when analytics_events.enabled is received", function () {
+    it("shouldn't blow up when transaction_events.max_samples_per_minute is received",
+    function () {
       expect(function () {
-        config.onConnect({'analytics_events.enabled' : false});
+        config.onConnect({'transaction_events.max_samples_per_minute' : 1});
       }).not.throws();
-      expect(config.analytics_events.enabled).equals(false);
+      expect(config.transaction_events.max_samples_per_minute).equals(1);
+    });
+
+    it("shouldn't blow up when transaction_events.enabled is received", function () {
+      expect(function () {
+        config.onConnect({'transaction_events.enabled' : false});
+      }).not.throws();
+      expect(config.transaction_events.enabled).equals(false);
     });
 
     describe("when data_report_period is set", function () {

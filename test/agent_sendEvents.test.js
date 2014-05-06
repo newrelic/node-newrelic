@@ -4,6 +4,7 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , nock         = require('nock')
+  , Reservoir    = require(path.join(__dirname, '..', 'lib', 'reservoir.js'))
   , helper       = require(path.join(__dirname, 'lib', 'agent_helper.js'))
   ;
 
@@ -46,12 +47,12 @@ describe("the New Relic agent", function () {
     });
 
     it("should pass events to server", function (done) {
-      var events0 = [
-        [{},{}]
-      ];
-      agent.events = events0;
+      var r = new Reservoir();
+      var e = {id: 1};
+      r.add(e);
+      agent.events = r;
       agent._sendEvents(function () {
-        expect(events[1]).equals(events0);
+        expect(events[1][0]).equals(e);
         done();
       });
     });
