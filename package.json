@@ -80,7 +80,8 @@
     "nock": "*",
     "split": "*",
     "JSV": "~4.0.2",
-    "glob": "~3.2.9"
+    "glob": "~3.2.9",
+    "mkdirp": "*"
   },
   "repository": {
     "type": "git",

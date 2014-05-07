@@ -5,6 +5,7 @@ var fs      = require('fs')
   , spawn   = require('child_process').spawn
   , carrier = require('carrier')
   , Q       = require('q')
+  , mkdirp  = require('mkdirp')
   ;
 
 var MYSQL_LOG_REGEXP = /^([0-9]+) [0-9:]+/;
@@ -40,7 +41,7 @@ module.exports = function setup(options, imports, register) {
   function makeDataDir() {
     logger.debug("Creating %s.", dbpath);
 
-    return Q.ninvoke(fs, 'mkdir', dbpath, '0755');
+    return Q.nfcall(mkdirp, dbpath, {mode: '0755'});
   }
 
   function findInstallDir() {
