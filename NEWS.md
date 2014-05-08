@@ -1,3 +1,14 @@
+### v1.5.4 (2014-05-08):
+
+* On connect, the full `newrelic` module configuration is pushed to
+  New Relic APM. Full config will be visible under the
+  *Agent initialization* tab, under the *Settings* button in
+  the APM application page.
+
+  The reported settings will reflect the *running* agent config,
+  which may differ from the `newrelic.js` file depending on server-side,
+  and environmental configuration.
+
 ### v1.5.3 (2014-05-01):
 
 * Express 4 support.
