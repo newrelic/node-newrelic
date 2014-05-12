@@ -892,6 +892,54 @@ describe("the New Relic agent", function () {
       agent.harvest(function nop() {});
     });
 
+    it("resets error count after harvest", function (done) {
+      agent.errors.add(null, new TypeError('no method last on undefined'));
+      agent.errors.add(null, new Error('application code error'));
+      agent.errors.add(null, new RangeError('stack depth exceeded'));
+
+      agent.collector.metricData = function (payload, cb) {
+        // These tests do not clean up after themselves, at least call the cb
+        // that harvest doesn't hang.
+        cb();
+      };
+
+      var old_ed = agent.collector.errorData;
+      agent.collector.errorData = function (errors, cb) {
+        cb();
+      };
+
+      agent.harvest(function () {
+        expect(agent.errors.errorCount).equal(0);
+        agent.collector.errorData = old_ed;
+        done();
+      });
+
+    });
+
+    it("resets error count after harvest when error collector is off", function (done) {
+      agent.errors.add(null, new TypeError('no method last on undefined'));
+      agent.errors.add(null, new Error('application code error'));
+      agent.errors.add(null, new RangeError('stack depth exceeded'));
+
+      // Defaults to true, but maybe it'll change in the future.
+      var old_config = agent.config.error_collector.enabled;
+      agent.config.error_collector.enabled = false;
+
+      agent.collector.metricData = function (payload, cb) {
+        // These tests do not clean up after themselves, at least call the cb
+        // that harvest doesn't hang.
+        cb();
+      };
+
+
+
+      agent.harvest(function () {
+        expect(agent.errors.errorCount).equal(0);
+        agent.config.error_collector.enabled = old_config;
+        done();
+      });
+    });
+
     it("bails out early when sending metrics fails", function (done) {
       var metricData =
         nock(URL)
