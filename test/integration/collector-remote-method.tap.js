@@ -24,7 +24,7 @@ test("DataSender (callback style) talking to fake collector", function (t) {
       return t.end();
     }
 
-    suite.tearDown(function () {
+    suite.tearDown(function cb_tearDown() {
       server.close();
     });
 

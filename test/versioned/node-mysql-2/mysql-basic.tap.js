@@ -15,7 +15,7 @@ test("SOME IMPORTANT TEST NAME",
      function (t) {
   // t.plan(9);
 
-  helper.bootstrapMySQL(function (error, app) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent();
     var mysql   = require('mysql')
@@ -48,7 +48,7 @@ test("SOME IMPORTANT TEST NAME",
           pool.destroy(client);
         });
 
-        client.connect(function (err) {
+        client.connect(function cb_connect(err) {
           if (err) {
             poolLogger.error("MySQL client failed to connect. Does database %s exist?",
                              DBNAME);
@@ -69,7 +69,7 @@ test("SOME IMPORTANT TEST NAME",
         if (!counter) counter = 1;
         counter++;
 
-        pool.acquire(function (err, client) {
+        pool.acquire(function cb_acquire(err, client) {
           if (err) {
             poolLogger.error("Failed to get connection from the pool: %s", err);
 
@@ -97,7 +97,7 @@ test("SOME IMPORTANT TEST NAME",
       return t.end();
     }
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow();
         helper.cleanMySQL(app, function done() {
@@ -115,7 +115,7 @@ test("SOME IMPORTANT TEST NAME",
     helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction(), "we should be in a transaction");
 
-      withRetry.getClient(function (err, client) {
+      withRetry.getClient(function cb_getClient(err, client) {
         if (err) return t.fail(err);
 
         t.ok(agent.getTransaction(), "generic-pool should not lose the transaction");

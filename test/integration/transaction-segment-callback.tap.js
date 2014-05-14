@@ -195,7 +195,7 @@ test("c. two overlapping executions of an asynchronous handler", function (t) {
   t.equal(product2, 55, "wrapped function still works");
 
   t.equals(transactions.length, 2, "should have tracked 2 transactions.");
-  transactions.forEach(function (transaction, index) {
+  transactions.forEach(function cb_forEach(transaction, index) {
     var describer = transaction.describer;
     var creations = [
       '+T', '+S', '+C', // handler invocation
@@ -502,7 +502,7 @@ test("f. two overlapping executions of an async handler with an async subsidiary
   t.equals(result2, 45, "wrapped functions still work");
 
   t.equals(transactions.length, 2, "should have tracked 2 transactions.");
-  transactions.forEach(function (transaction, index) {
+  transactions.forEach(function cb_forEach(transaction, index) {
     var describer = transaction.describer;
     var creations = [
       '+T', '+S', '+C', // 1st handler invocation

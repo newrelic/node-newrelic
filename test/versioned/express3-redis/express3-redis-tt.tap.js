@@ -38,7 +38,7 @@ function getUsersInRoom(req, client, next) {
   client.smembers('rooms:' + req.params.id + ':online', function (err, online) {
     var users = [];
 
-    online.forEach(function (userKey) {
+    online.forEach(function cb_forEach(userKey) {
       client.get('users:' + userKey + ':status', function (err, status) {
         var msnData  = userKey.split(':')
           , username = msnData.length > 1 ? msnData[1] : msnData[0]
@@ -67,7 +67,7 @@ function getPublicRoomsInfo(client, next) {
 
     if (!len) next([]);
 
-    publicRooms.forEach(function (roomKey) {
+    publicRooms.forEach(function cb_forEach(roomKey) {
       client.hgetall('rooms:' + roomKey + ':info', function (err, room) {
         if (!err && room && Object.keys(room).length) {
           rooms.push({
@@ -123,7 +123,7 @@ function bootstrapExpress(client) {
     , app        = express()
     ;
 
-  passport.deserializeUser(function (id, done) {
+  passport.deserializeUser(function cb_deserializeUser(id, done) {
     done(null, {provider : 'twitter', username : id});
   });
 
@@ -222,7 +222,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
   agent.config.capture_params = true;
 
   var self = this;
-  helper.bootstrapRedis(function (error, service) {
+  helper.bootstrapRedis(function cb_bootstrapRedis(error, service) {
     if (error) {
       t.fail(error);
       return t.end();
@@ -232,8 +232,8 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
       , server = createServer(bootstrapExpress(client)).listen(31337)
       ;
 
-    self.tearDown(function () {
-      server.close(function () {
+    self.tearDown(function cb_tearDown() {
+      server.close(function cb_close() {
         client.end();
         helper.cleanRedis(service);
         helper.unloadAgent(agent);

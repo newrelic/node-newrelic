@@ -23,7 +23,7 @@ module.exports = function setup(options, imports, register) {
   }
 
   function query(client, sql, successMessage) {
-    return Q.ninvoke(client, 'query', sql).then(function () {
+    return Q.ninvoke(client, 'query', sql).then(function cb_then() {
       logger.debug(successMessage);
 
       return client;
@@ -31,7 +31,7 @@ module.exports = function setup(options, imports, register) {
   }
 
   function end(client) {
-    return Q.ninvoke(client, 'end').then(function () {
+    return Q.ninvoke(client, 'end').then(function cb_then() {
       logger.debug("Connection as %s destroyed.", client.user);
     });
   }
@@ -102,7 +102,7 @@ module.exports = function setup(options, imports, register) {
     return Q.ninvoke(client, 'query', sql, [dbname, tablename])
       .get(0)
       .get('length')
-      .then(function (length) {
+      .then(function cb_then(length) {
         logger.debug("%s test table(s) found.", length);
         if (length > 0) return client;
 
@@ -116,7 +116,7 @@ module.exports = function setup(options, imports, register) {
 
     return Q.ninvoke(client, 'query', sql)
       .get(0)
-      .then(function (result) {
+      .then(function cb_then(result) {
         if (result.length !== 1) throw new Error("Test table query failed.");
 
         var count = result[0].counted;

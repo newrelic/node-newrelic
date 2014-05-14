@@ -22,11 +22,11 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
     , api   = new CollectorAPI(agent)
     ;
 
-  api.connect(function (error) {
+  api.connect(function cb_connect(error) {
     t.notOk(error, "connected without error");
 
     var transaction;
-    var proxy = agent.tracer.transactionProxy(function () {
+    var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction();
       transaction.setName('/nonexistent', 501);
     });

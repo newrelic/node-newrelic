@@ -195,12 +195,12 @@ describe("the instrumentation injector", function () {
         ;
 
       var spamTransaction = function (i) {
-        var wrapped = agent.tracer.transactionProxy(function () {
+        var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
           var current     = agent.getTransaction();
           transactions[i] = current;
           ids[i]          = current.id;
 
-          process.nextTick(agent.tracer.callbackProxy(function () {
+          process.nextTick(agent.tracer.callbackProxy(function cb_callbackProxy() {
             var lookup = agent.getTransaction();
             expect(lookup).equal(current);
 
@@ -235,12 +235,12 @@ describe("the instrumentation injector", function () {
         ;
 
       var spamTransaction = function (i) {
-        var wrapped = agent.tracer.transactionProxy(function () {
+        var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
           var current     = agent.getTransaction();
           transactions[i] = current;
           ids[i]          = current.id;
 
-          setTimeout(agent.tracer.callbackProxy(function () {
+          setTimeout(agent.tracer.callbackProxy(function cb_callbackProxy() {
             var lookup = agent.getTransaction();
             expect(lookup).equal(current);
 
@@ -277,7 +277,7 @@ describe("the instrumentation injector", function () {
         ;
 
       var eventTransaction = function (j) {
-        var wrapped = agent.tracer.transactionProxy(function () {
+        var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
           var current = agent.getTransaction()
             , id      = current.id
             , name    = ('ttest' + (j + 1))
@@ -286,7 +286,7 @@ describe("the instrumentation injector", function () {
           transactions[j] = current;
           ids[j]          = id;
 
-          eventer.on(name, agent.tracer.callbackProxy(function () {
+          eventer.on(name, agent.tracer.callbackProxy(function cb_callbackProxy() {
             var lookup = agent.getTransaction();
             expect(lookup).equal(current);
             expect(lookup.id).equal(id);
@@ -341,8 +341,8 @@ describe("the instrumentation injector", function () {
       });
 
       var createTimer = function (trans, j) {
-        var wrapped = agent.tracer.segmentProxy(function () {
-          setTimeout(agent.tracer.callbackProxy(function () {
+        var wrapped = agent.tracer.segmentProxy(function cb_segmentProxy() {
+          setTimeout(agent.tracer.callbackProxy(function cb_callbackProxy() {
             var current = agent.getTransaction();
 
             verify(j, 'createTimer', current);
@@ -353,14 +353,14 @@ describe("the instrumentation injector", function () {
       };
 
       var createTicker = function (j) {
-        return agent.tracer.transactionProxy(function () {
+        return agent.tracer.transactionProxy(function cb_transactionProxy() {
           var current     = agent.getTransaction();
           transactions[j] = current;
           ids[j]          = current.id;
 
           verify(j, 'createTicker', current);
 
-          process.nextTick(agent.tracer.callbackProxy(function () {
+          process.nextTick(agent.tracer.callbackProxy(function cb_callbackProxy() {
             verify(j, 'nextTick', current);
             createTimer(current, j);
           }));

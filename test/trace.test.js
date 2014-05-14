@@ -120,7 +120,7 @@ describe('Trace', function () {
                                     //        worrying about it for now
       ];
 
-      transaction.getTrace().generateJSON(function (err, traceJSON) {
+      transaction.getTrace().generateJSON(function cb_generateJSON(err, traceJSON) {
         if (err) return done(err);
 
         codec.decode(traceJSON[4], function (derr, reconstituted) {

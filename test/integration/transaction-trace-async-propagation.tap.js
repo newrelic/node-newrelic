@@ -17,7 +17,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.loadMockedAgent();
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -41,7 +41,7 @@ test("asynchronous state propagation", function (t) {
       , handle
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -64,7 +64,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.loadMockedAgent();
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -87,7 +87,7 @@ test("asynchronous state propagation", function (t) {
       , ee    = new EventEmitter()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -114,7 +114,7 @@ test("asynchronous state propagation", function (t) {
       , agent = helper.loadMockedAgent()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -147,7 +147,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.loadMockedAgent();
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -189,7 +189,7 @@ test("asynchronous state propagation", function (t) {
       , agent = helper.loadMockedAgent()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -207,7 +207,7 @@ test("asynchronous state propagation", function (t) {
       process.nextTick(handler.bind(null, first));
     });
 
-    process.nextTick(function () {
+    process.nextTick(function cb_nextTick() {
       helper.runInTransaction(agent, function () {
         second = agent.getTransaction().id;
         t.notEqual(first, second, "different transaction IDs");
@@ -225,7 +225,7 @@ test("asynchronous state propagation", function (t) {
       , ee    = new EventEmitter()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -252,7 +252,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.loadMockedAgent();
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -289,7 +289,7 @@ test("asynchronous state propagation", function (t) {
       , innerHandle
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
@@ -325,14 +325,14 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.loadMockedAgent();
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);
     });
 
     function inner(callback) {
-      process.nextTick(function () {
+      process.nextTick(function cb_nextTick() {
         t.ok(agent.getTransaction(), "transaction should -- yep -- still be visible");
         callback();
       });
@@ -340,7 +340,7 @@ test("asynchronous state propagation", function (t) {
 
     function outer() {
       t.ok(agent.getTransaction(), "transaction should be visible");
-      process.nextTick(function () {
+      process.nextTick(function cb_nextTick() {
         t.ok(agent.getTransaction(), "transaction should still be visible");
         inner(function () {
           t.ok(agent.getTransaction(), "transaction should even still be visible");
@@ -367,7 +367,7 @@ test("asynchronous state propagation", function (t) {
       , inner = new EventEmitter()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end();
       helper.unloadAgent(agent);

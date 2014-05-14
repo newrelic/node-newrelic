@@ -26,7 +26,7 @@ var DEFAULT_HOST = 'collector.lvh.me'
   ;
 
 var schemas = {};
-Object.keys(PATHS).forEach(function (key) {
+Object.keys(PATHS).forEach(function cb_forEach(key) {
   schemas[key] = JSON.parse(fs.readFileSync(PATHS[key]));
 });
 
@@ -38,7 +38,7 @@ function decodeTraceData(encodedArray, callback) {
   var toDecode = encodedArray.length;
   var decoded = [];
 
-  encodedArray.forEach(function (data) {
+  encodedArray.forEach(function cb_forEach(data) {
     var element = data[4];
     codec.decode(element, function (error, extracted) {
       if (error) return callback(error);
@@ -115,10 +115,10 @@ var validators = {
         return callback(null, validations);
       }
 
-      validations.transaction_traces = traces.map(function (trace) {
+      validations.transaction_traces = traces.map(function cb_map(trace) {
         var report = env.validate(trace, schemas.trace);
         if (report.errors.length > 0) return report.errors;
-      }).filter(function (trace) { if (trace) return true; });
+      }).filter(function cb_filter(trace) { if (trace) return true; });
 
       if (validations.transaction_traces.length < 1) {
         delete validations.transaction_traces;
@@ -138,7 +138,7 @@ var validators = {
     validations.sql_params = [];
 
     var toDecode = data.length;
-    data.forEach(function (trace) {
+    data.forEach(function cb_forEach(trace) {
       codec.decode(trace[9], function (error, extracted) {
         if (error) {
           var message = util.format(

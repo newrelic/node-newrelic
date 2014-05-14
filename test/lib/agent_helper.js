@@ -111,7 +111,7 @@ var helper = module.exports = {
       throw new TypeError("Must include both agent and function!");
     }
 
-    return agent.tracer.transactionProxy(function () {
+    return agent.tracer.transactionProxy(function cb_transactionProxy() {
       var transaction = agent.getTransaction();
       callback(transaction);
     })(); // <-- invoke immediately
@@ -167,7 +167,7 @@ var helper = module.exports = {
 
   cleanMongoDB : function cleanMongoDB(app, callback) {
     var mongod = app.getService('mongodbProcess');
-    mongod.shutdown(function () {
+    mongod.shutdown(function cb_shutdown() {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..',
                                           'integration', 'test-mongodb'));
 
@@ -195,7 +195,7 @@ var helper = module.exports = {
 
   cleanMySQL : function cleanMySQL(app, callback) {
     var mysqld = app.getService('mysqldProcess');
-    mysqld.shutdown(function () {
+    mysqld.shutdown(function cb_shutdown() {
       wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
 
       if (callback) return callback();
@@ -247,7 +247,7 @@ var helper = module.exports = {
     var exceptionHandlers = process._events['uncaughtException'];
     if (exceptionHandlers) {
       if (Array.isArray(exceptionHandlers)) {
-        process._events['uncaughtException'] = exceptionHandlers.filter(function (f) {
+        process._events['uncaughtException'] = exceptionHandlers.filter(function cb_filter(f) {
           return f.name === 'uncaughtHandler';
         });
       }

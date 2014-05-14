@@ -24,7 +24,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
     , server  = restify.createServer()
     ;
 
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent);
     server.close();
   });
@@ -47,13 +47,13 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
       t.equals(body, '"hello friend"', "data returned by restify should be as expected");
 
       var found = false;
-      agent.environment.toJSON().forEach(function (pair) {
+      agent.environment.toJSON().forEach(function cb_forEach(pair) {
         if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true;
       });
       t.ok(found, "should indicate that the Restify dispatcher is in play");
 
       found = false;
-      agent.environment.toJSON().forEach(function (pair) {
+      agent.environment.toJSON().forEach(function cb_forEach(pair) {
         if (pair[0] === 'Framework' && pair[1] === 'restify') found = true;
       });
       t.ok(found, "should indicate that restify itself is in play");
@@ -65,7 +65,7 @@ test("Restify should still be instrumented when run with SSL", function (t) {
   t.plan(8);
 
   var suite = this;
-  helper.withSSL(function (error, key, certificate, ca) {
+  helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
     if (error) {
       t.fail("unable to set up SSL: " + error);
       t.end();
@@ -76,7 +76,7 @@ test("Restify should still be instrumented when run with SSL", function (t) {
       , server  = restify.createServer({key : key, certificate : certificate})
       ;
 
-    suite.tearDown(function () {
+    suite.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent);
       server.close();
     });
@@ -106,13 +106,13 @@ test("Restify should still be instrumented when run with SSL", function (t) {
                  "data returned by restify should be as expected");
 
         var found = false;
-        agent.environment.toJSON().forEach(function (pair) {
+        agent.environment.toJSON().forEach(function cb_forEach(pair) {
           if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true;
         });
         t.ok(found, "should indicate that the Restify dispatcher is in play");
 
         found = false;
-        agent.environment.toJSON().forEach(function (pair) {
+        agent.environment.toJSON().forEach(function cb_forEach(pair) {
           if (pair[0] === 'Framework' && pair[1] === 'restify') found = true;
         });
         t.ok(found, "should indicate that restify itself is in play");

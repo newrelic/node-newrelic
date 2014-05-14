@@ -13,8 +13,8 @@ test("Express 2 router introspection", function (t) {
     , app   = require('express').createServer()
     ;
 
-  this.tearDown(function () {
-    app.close(function () {
+  this.tearDown(function cb_tearDown() {
+    app.close(function cb_close() {
       helper.unloadAgent(agent);
     });
   });

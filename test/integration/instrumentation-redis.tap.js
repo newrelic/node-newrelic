@@ -12,7 +12,7 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
   t.plan(17);
 
   var self = this;
-  helper.bootstrapRedis(function (error, app) {
+  helper.bootstrapRedis(function cb_bootstrapRedis(error, app) {
     if (error) return t.fail(error);
 
     var agent  = helper.instrumentMockedAgent()
@@ -20,7 +20,7 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
       , client = redis.createClient()
       ;
 
-    self.tearDown(function () {
+    self.tearDown(function cb_tearDown() {
       helper.cleanRedis(app, function done() {
         helper.unloadAgent(agent);
       });

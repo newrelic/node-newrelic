@@ -6,7 +6,7 @@ var http   = require('http')
   , logger = require('../../../lib/logger').child({component : 'http_random_delays'})
   ;
 
-var server = http.createServer(function (request, response) {
+var server = http.createServer(function cb_createServer(request, response) {
   var body = '<html><head><title>yo dawg</title></head><body><p>I heard you like HTML.</p></body></html>';
   response.writeHead(200, {'Content-Length' : body.length, 'Content-Type' : 'text/html'});
 

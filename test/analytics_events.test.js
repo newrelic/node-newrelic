@@ -25,7 +25,7 @@ describe("when analytics events are disabled", function () {
       throw new Error(); // FAIL
     };
     agent.config.transaction_events.enabled = false;
-    agent._sendEvents(function () {
+    agent._sendEvents(function cb__sendEvents() {
       done();
     });
   });

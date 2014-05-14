@@ -10,7 +10,7 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
      function (t) {
   t.plan(22);
 
-  helper.bootstrapMySQL(function (error, app) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     if (error) {
       t.fail(error);
       return t.end();
@@ -25,7 +25,7 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
     });
     t.ok(client, "Client should be created OK.");
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       client.end(function cleanup(error) {
         if (error) t.fail(error);
 
