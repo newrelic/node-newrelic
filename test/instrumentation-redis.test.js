@@ -101,7 +101,7 @@ describe("agent instrumentation of Redis", function () {
         var transaction = agent.getTransaction();
         should.exist(transaction);
 
-        client.PING(function (error, results) {
+        client.PING(function cb_PING(error, results) {
           if (error) return done(error);
 
           should.exist(agent.getTransaction());

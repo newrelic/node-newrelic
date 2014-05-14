@@ -45,7 +45,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 
   var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200);
 
-  agent.start(function (error, config) {
+  agent.start(function cb_start(error, config) {
     t.notOk(error, 'got no error on connection');
     t.deepEqual(config, {agent_run_id : RUN_ID}, 'got configuration');
     t.ok(redirect.isDone(),    "requested redirect");
@@ -55,7 +55,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
     agent.errors.add(transaction, new Error('test error'));
     agent.traces.trace = transaction.getTrace();
 
-    agent.harvest(function (error) {
+    agent.harvest(function cb_harvest(error) {
       t.ok(error, "error received on 503");
       t.equal(error.message, 'Got HTTP 503 in response to metric_data.',
               "got expected error message");
@@ -63,7 +63,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
       t.notOk(sendErrors.isDone(),  "...but didn't send error data...");
       t.notOk(sendTrace.isDone(),   "...and also didn't send trace, because of 503");
 
-      agent.stop(function () {
+      agent.stop(function cb_stop() {
         t.ok(settings.isDone(), "got agent_settings message");
         t.ok(sendShutdown.isDone(), "got shutdown message");
         t.end();
@@ -105,12 +105,12 @@ test("merging metrics and errors after a 503", function (t) {
 
   nock(url).post(path('shutdown', RUN_ID)).reply(200);
 
-  agent.start(function () {
+  agent.start(function cb_start() {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'));
     agent.traces.trace = transaction.getTrace();
 
-    agent.harvest(function (error) {
+    agent.harvest(function cb_harvest(error) {
       t.ok(error, "should have gotten back error for 503");
 
       t.equal(agent.errors.errors.length, 1, "errors were merged back in");
@@ -135,7 +135,7 @@ test("merging metrics and errors after a 503", function (t) {
         "metrics were merged"
       );
 
-      agent.stop(function () {});
+      agent.stop(function cb_stop() {});
     });
   });
 });

@@ -16,12 +16,12 @@ function bootstrapExpress(Model) {
   app.use(express.bodyParser());
 
   app.post('/test', function (request, response) {
-    Model.create(request.body).success(function (model) {
+    Model.create(request.body).success(function cb_success(model) {
       response.send({
         success : true,
         id : model.id
       });
-    }).error(function (error) {
+    }).error(function cb_error(error) {
       response.send({
         success : false,
         reason  : error
@@ -32,14 +32,14 @@ function bootstrapExpress(Model) {
   app.get('/test/:id', function (request, response) {
     // smh Sequelize explodes if you pass a string to the finder
     var id = parseInt(request.params.id, 10);
-    Model.find(id).success(function (model) {
+    Model.find(id).success(function cb_success(model) {
       if (!model) return response.send({
         success : false,
         reason : 'not_found'
       }, 404);
 
       response.send(model);
-    }).error(function (error) {
+    }).error(function cb_error(error) {
       response.send({
         success : false,
         reason  : error
@@ -72,7 +72,7 @@ architect.createApp(architect.loadConfig(configPath), function (error, app) {
 
   var sundowner = function (exitCode) {
     var mysqld = app.getService('mysqldProcess');
-    mysqld.shutdown(function () {
+    mysqld.shutdown(function cb_shutdown() {
       process.exit(exitCode);
     });
   };
@@ -81,9 +81,9 @@ architect.createApp(architect.loadConfig(configPath), function (error, app) {
     sundowner(0);
   });
 
-  TestEAV.sync().success(function () {
+  TestEAV.sync().success(function cb_success() {
     bootstrapExpress(TestEAV);
-  }).error(function (error) {
+  }).error(function cb_error(error) {
     console.error(error);
     console.error("Welp, that didn\'t work. Bailing out!");
     sundowner(-1);

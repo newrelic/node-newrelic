@@ -7,7 +7,7 @@ var path = require('path')
 
 test("agent instrumentation of MongoDB when GridFS is used", function (t) {
   var context = this;
-  helper.bootstrapMongoDB(function (err, app) {
+  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(err, app) {
     if (err) {
       t.fail(err);
       return t.end();
@@ -24,7 +24,7 @@ test("agent instrumentation of MongoDB when GridFS is used", function (t) {
         }
         t.ok(db, "got MongoDB connection");
 
-        context.tearDown(function () {
+        context.tearDown(function cb_tearDown() {
           helper.cleanMongoDB(app);
           db.close();
         });
@@ -33,7 +33,7 @@ test("agent instrumentation of MongoDB when GridFS is used", function (t) {
           , gs        = new GridStore(db, 'RandomFileName' + Math.random(), 'w')
           ;
 
-        gs.open(function (err, gridfile) {
+        gs.open(function cb_open(err, gridfile) {
           if (err) {
             t.fail(err);
             return t.end();

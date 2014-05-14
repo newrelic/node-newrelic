@@ -22,13 +22,13 @@ test("Collector API should connect to staging-collector.newrelic.com", function 
     , api   = new CollectorAPI(agent)
     ;
 
-  api.connect(function (error, returned) {
+  api.connect(function cb_connect(error, returned) {
     t.notOk(error, "connected without error");
     t.ok(returned, "got boot configuration");
     t.ok(returned.agent_run_id, "got run ID");
     t.ok(agent.config.run_id, "run ID set in configuration");
 
-    api.shutdown(function (error, returned, json) {
+    api.shutdown(function cb_shutdown(error, returned, json) {
       t.notOk(error, "should have shut down without issue");
       t.equal(returned, null, "collector explicitly returns null");
       t.deepEqual(json, {return_value : null}, "raw message looks right");

@@ -30,7 +30,7 @@ d.on('error', function (error) {
 function children(segments) {
   var processed = [];
 
-  segments.forEach(function (segment) {
+  segments.forEach(function cb_forEach(segment) {
     processed.push({
       name                  : segment[2],
       relativeStartInMillis : segment[0],
@@ -62,7 +62,7 @@ function detrace(trace) {
   };
 }
 
-d.run(function () {
+d.run(function cb_run() {
   process.stdin
     .pipe(split(JSON.parse))
     .on('data', function (entry) {
@@ -75,8 +75,8 @@ d.run(function () {
       // data[0] is the agent run ID, which we don't care about for now
       if (!(data && data[1] && Array.isArray(data[1]))) return;
 
-      data[1].forEach(function (tt) {
-        decode(tt[4], d.intercept(function (trace) {
+      data[1].forEach(function cb_forEach(tt) {
+        decode(tt[4], d.intercept(function cb_intercept(trace) {
           console.log(JSON.stringify({
             scope            : tt[2],
             url              : tt[3],

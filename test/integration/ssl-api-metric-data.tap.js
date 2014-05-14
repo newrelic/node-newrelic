@@ -22,7 +22,7 @@ test("Collector API should send metrics to staging-collector.newrelic.com", func
     , api   = new CollectorAPI(agent)
     ;
 
-  api.connect(function (error) {
+  api.connect(function cb_connect(error) {
     t.notOk(error, "connected without error");
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101);
@@ -47,7 +47,7 @@ test("Collector API should send metrics to staging-collector.newrelic.com", func
       t.equal(tag.scope, '', "didn't get back a scope");
 
       t.ok(mapping[1] > 1, "Got back a numeric ID to map to");
-      t.doesNotThrow(function () {
+      t.doesNotThrow(function cb_doesNotThrow() {
         agent.mapper.load(response);
       }, "was able to load mapping");
 

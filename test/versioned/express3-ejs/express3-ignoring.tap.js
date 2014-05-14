@@ -17,8 +17,8 @@ test("ignoring an Express 3 route", function (t) {
     , server  = require('http').createServer(app)
     ;
 
-  this.tearDown(function () {
-    server.close(function () {
+  this.tearDown(function cb_tearDown() {
+    server.close(function cb_close() {
       helper.unloadAgent(agent);
     });
   });

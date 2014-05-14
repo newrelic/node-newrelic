@@ -53,7 +53,7 @@ try {
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
 
-    agent.start(function (error) {
+    agent.start(function cb_start(error) {
       if (!error) return logger.debug("New Relic for Node.js is connected to New Relic.");
 
       var message = "New Relic for Node.js halted startup due to an error:";

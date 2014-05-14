@@ -20,13 +20,13 @@ test("Agent should send a whole harvest to New Relic staging", function (t) {
     , agent = new Agent(config)
     ;
 
-  agent.start(function (error) {
+  agent.start(function cb_start(error) {
     t.notOk(error, "connected without error");
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101);
 
     var transaction;
-    var proxy = agent.tracer.transactionProxy(function () {
+    var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction();
       transaction.setName('/nonexistent', 501);
     });
@@ -37,10 +37,10 @@ test("Agent should send a whole harvest to New Relic staging", function (t) {
 
     t.ok(agent.traces.trace, "have a slow trace to send");
 
-    agent.harvest(function (error) {
+    agent.harvest(function cb_harvest(error) {
       t.notOk(error, "harvest ran correctly");
 
-      agent.stop(function (error) {
+      agent.stop(function cb_stop(error) {
         t.notOk(error, "stopped without error");
 
         t.end();

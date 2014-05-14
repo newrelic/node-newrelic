@@ -16,7 +16,7 @@ test("Express 4 detection", function (t) {
     , express = require('express')
     ;
 
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent);
   });
 

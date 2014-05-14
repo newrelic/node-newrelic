@@ -15,7 +15,7 @@ var express = require('express')
   ;
 
 app.get('/test/:id', function (req, res, next) {
-  process.nextTick(function () { throw new Error('threw in a timer', next); });
+  process.nextTick(function cb_nextTick() { throw new Error('threw in a timer', next); });
 });
 
 server.listen(8080, function () {

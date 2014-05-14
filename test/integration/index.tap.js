@@ -15,7 +15,7 @@ test("loading the application via index.js", function (t) {
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com';
   process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b';
 
-  t.doesNotThrow(function () {
+  t.doesNotThrow(function cb_doesNotThrow() {
     var api = require(path.join(__dirname, '..', '..', 'index.js'));
     agent = api.agent;
     t.equal(agent._state, 'starting', "agent is booting");
@@ -23,7 +23,7 @@ test("loading the application via index.js", function (t) {
 
   function shutdown() {
     t.equal(agent._state, 'started', "agent didn't error connecting to staging");
-    agent.stop(function () {
+    agent.stop(function cb_stop() {
       t.equal(agent._state, 'stopped', "agent didn't error shutting down");
     });
   }

@@ -127,7 +127,7 @@ describe("an instrumented Express application", function () {
 
         var res = http.ServerResponse.prototype;
         expect(res.render.call(res, 'TEST', function () {
-          process.nextTick(function () {
+          process.nextTick(function cb_nextTick() {
             var json     = transaction.getTrace().root.toJSON()
               , children = json[4]
               , render   = children[0]
@@ -152,7 +152,7 @@ describe("an instrumented Express application", function () {
         var res = http.ServerResponse.prototype;
         expect(res.render.call(res, 'TEST')).equal('rendered');
 
-        process.nextTick(function () {
+        process.nextTick(function cb_nextTick() {
           var json     = transaction.getTrace().root.toJSON()
             , children = json[4]
             , render   = children[0]
@@ -240,7 +240,7 @@ describe("an instrumented Express application", function () {
 
         var res = stub.response;
         expect(res.render.call(res, 'TEST', {}, function () {
-          process.nextTick(function () {
+          process.nextTick(function cb_nextTick() {
             var json     = transaction.getTrace().root.toJSON()
               , children = json[4]
               , render   = children[0]
@@ -263,7 +263,7 @@ describe("an instrumented Express application", function () {
 
         var res = stub.response;
         expect(res.render.call(res, 'TEST', function () {
-          process.nextTick(function () {
+          process.nextTick(function cb_nextTick() {
             var json     = transaction.getTrace().root.toJSON()
               , children = json[4]
               , render   = children[0]
@@ -286,7 +286,7 @@ describe("an instrumented Express application", function () {
 
         var res = stub.response;
         expect(res.render.call(res, 'TEST')).equal('rendered');
-        process.nextTick(function () {
+        process.nextTick(function cb_nextTick() {
           var json     = transaction.getTrace().root.toJSON()
             , children = json[4]
             , render   = children[0]

@@ -96,7 +96,7 @@ describe ("MetricNormalizer", function () {
          pattern: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'}
       ];
 
-      expect(normalizer.rules.map(function (r) { return r.toJSON(); })).eql(reduced);
+      expect(normalizer.rules.map(function cb_map(r) { return r.toJSON(); })).eql(reduced);
     });
 
     it("should normalize a JPEGgy URL", function () {

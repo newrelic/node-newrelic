@@ -22,7 +22,7 @@ bootstrap(function (error) {
   var server = new Server('127.0.0.1', 27017);
   var db     = new DB('everything-bot', server);
 
-  db.open(function (error, client) {
+  db.open(function cb_open(error, client) {
     if (error) return logger.error(error);
 
     // preseed state
@@ -31,7 +31,7 @@ bootstrap(function (error) {
 
     app.get('/test', function (req, res) {
       var cursor = things.find({position : 1337});
-      cursor.nextObject(function (error, document) {
+      cursor.nextObject(function cb_nextObject(error, document) {
         if (error) return logger.error(error);
 
         res.send(document);

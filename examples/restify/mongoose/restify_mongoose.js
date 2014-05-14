@@ -17,7 +17,7 @@ function bootstrapRestify(Model) {
   server.post('/test', function (request, response, next) {
     var entity = new Model(request.params);
 
-    entity.save(function (error) {
+    entity.save(function cb_save(error) {
       if (error) {
         response.send(500, {success : false, error : error});
         return next(error);
@@ -110,7 +110,7 @@ architect.createApp(architect.loadConfig(configPath), function (error, app) {
 
   var sundowner = function (exitCode) {
     var mongod = app.getService('mongodbProcess');
-    mongod.shutdown(function () {
+    mongod.shutdown(function cb_shutdown() {
       process.exit(exitCode);
     });
   };

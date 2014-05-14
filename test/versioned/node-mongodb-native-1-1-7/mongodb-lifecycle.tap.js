@@ -12,7 +12,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
   t.plan(2);
 
   var self = this;
-  helper.bootstrapMongoDB(function (error, app) {
+  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(error, app) {
     if (error) return t.fail(error);
 
     var agent = helper.instrumentMockedAgent();
@@ -21,7 +21,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     var server = new mongodb.Server('localhost', 27017, {auto_reconnect : true});
     var db = new mongodb.Db('integration', server, {safe : true});
 
-    self.tearDown(function () {
+    self.tearDown(function cb_tearDown() {
       db.close(true, function (error) {
         if (error) t.fail(error);
 
@@ -55,7 +55,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
         );
       });
 
-      db.open(function (error, db) {
+      db.open(function cb_open(error, db) {
         if (error) return t.fail(error);
 
         db.createCollection('test', {safe : true}, function (error, collection) {
@@ -102,7 +102,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
                 t.equals(findSegment.children.length, 0,
                          "find should leave us here at the end");
 
-                db.close(function (error) {
+                db.close(function cb_close(error) {
                   if (error) t.fail(error);
 
                   t.end();
@@ -147,7 +147,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
         );
       });
 
-      db.open(function (error, db) {
+      db.open(function cb_open(error, db) {
         if (error) return t.fail(error);
 
         db.createCollection('test2', function (error, collection) {
@@ -161,7 +161,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
               var cursor = collection.find({id : 1});
               t.ok(cursor, "cursor should be returned by callback-less find");
 
-              cursor.toArray(function (error, results) {
+              cursor.toArray(function cb_toArray(error, results) {
                 if (error) return t.fail(error);
 
                 t.equals(results.length, 1, "should be one result");
@@ -169,7 +169,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
                 transaction.end();
 
-                db.close(function (error) {
+                db.close(function cb_close(error) {
                   if (error) t.fail(error);
 
                   t.end();

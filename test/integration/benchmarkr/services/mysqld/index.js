@@ -33,7 +33,7 @@ module.exports = function setup(options, imports, register) {
   }
 
   function dataDirExists() {
-    return Q.nfcall((fs.exists || path.exists), dbpath).then(function (exists) {
+    return Q.nfcall((fs.exists || path.exists), dbpath).then(function cb_then(exists) {
       if (!exists) throw new Error(dbpath + " doesn't exist.");
     });
   }

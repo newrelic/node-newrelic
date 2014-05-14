@@ -23,8 +23,8 @@ test("ignoring a Hapi route", function (t) {
     , server = hapi.createServer('localhost', 8080)
     ;
 
-  this.tearDown(function () {
-    server.stop(function () {
+  this.tearDown(function cb_tearDown() {
+    server.stop(function cb_stop() {
       helper.unloadAgent(agent);
     });
   });
@@ -53,7 +53,7 @@ test("ignoring a Hapi route", function (t) {
     }
   });
 
-  server.start(function () {
+  server.start(function cb_start() {
     request.get('http://localhost:8080/order/31337',
                 {json : true},
                 function (error, res, body) {

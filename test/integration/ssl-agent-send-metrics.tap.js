@@ -20,18 +20,18 @@ test("Agent should send metrics to staging-collector.newrelic.com", function (t)
     , agent = new Agent(config)
     ;
 
-  agent.start(function (error) {
+  agent.start(function cb_start(error) {
     t.notOk(error, "started without error");
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101);
     t.equal(agent.metrics.toJSON().length, 1, "only one metric");
 
-    agent._sendMetrics(function (error) {
+    agent._sendMetrics(function cb__sendMetrics(error) {
       t.notOk(error, "sent metrics without error");
 
       t.ok(agent.mapper.map('TEST/discard') > 0, "received metric mapping");
 
-      agent.stop(function (error) {
+      agent.stop(function cb_stop(error) {
         t.notOk(error, "stopped without error");
 
         t.end();

@@ -35,7 +35,7 @@ test("agent instrumentation of Express 2", function (t) {
       , app   = require('express').createServer()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       app.close();
       helper.unloadAgent(agent);
     });
@@ -92,7 +92,7 @@ test("agent instrumentation of Express 2", function (t) {
       , app   = require('express').createServer()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       app.close();
       helper.unloadAgent(agent);
     });
@@ -134,7 +134,7 @@ test("agent instrumentation of Express 2", function (t) {
     agent.config.browser_monitoring.browser_key = '12345';
     agent.config.browser_monitoring.js_agent_loader = 'function(){}';
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       app.close();
       helper.unloadAgent(agent);
     });
@@ -179,7 +179,7 @@ test("agent instrumentation of Express 2", function (t) {
 
     var app = require('express').createServer();
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       app.close();
       helper.unloadAgent(agent);
     });
@@ -223,7 +223,7 @@ test("agent instrumentation of Express 2", function (t) {
       , app   = require('express').createServer()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       app.close();
       helper.unloadAgent(agent);
     });
@@ -238,12 +238,12 @@ test("agent instrumentation of Express 2", function (t) {
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
-        t.ok(agent.environment.toJSON().some(function (pair) {
+        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
           return pair[0] === 'Dispatcher' && pair[1] === 'express';
         }),
         "should indicate that the Express dispatcher is in play");
 
-        t.ok(agent.environment.toJSON().some(function (pair) {
+        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
           return pair[0] === 'Framework' && pair[1] === 'express';
         }),
         "should indicate that Express itself is in play");
@@ -270,7 +270,7 @@ test("agent instrumentation of Express 2", function (t) {
       , app   = require('express').createServer()
       ;
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       app.close();
       helper.unloadAgent(agent);
     });

@@ -49,7 +49,7 @@ test("agent instrumentation of Hapi", function (t) {
       }
     });
 
-    server.start(function () {
+    server.start(function cb_start() {
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
@@ -81,7 +81,7 @@ test("agent instrumentation of Hapi", function (t) {
         t.ok(serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
              "serialized metrics as expected");
 
-        server.stop(function () {
+        server.stop(function cb_stop() {
           helper.unloadAgent(agent);
           t.end();
         });
@@ -120,14 +120,14 @@ test("agent instrumentation of Hapi", function (t) {
       t.equal(stats.callCount, 1, "should note the view rendering");
     });
 
-    server.start(function () {
+    server.start(function cb_start() {
       request(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
         t.equal(response.statusCode, 200, "response code should be 200");
         t.equal(body, BODY, "template should still render fine");
 
-        server.stop(function () {
+        server.stop(function cb_stop() {
           helper.unloadAgent(agent);
           t.end();
         });
@@ -173,14 +173,14 @@ test("agent instrumentation of Hapi", function (t) {
       t.equal(stats.callCount, 1, "should note the view rendering");
     });
 
-    server.start(function () {
+    server.start(function cb_start() {
       request(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
         t.equal(response.statusCode, 200, "response code should be 200");
         t.equal(body, BODY, "template should still render fine");
 
-        server.stop(function () {
+        server.stop(function cb_stop() {
           helper.unloadAgent(agent);
           t.end();
         });
@@ -203,7 +203,7 @@ test("agent instrumentation of Hapi", function (t) {
       }
     });
 
-    server.start(function () {
+    server.start(function cb_start() {
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error);
 
@@ -220,7 +220,7 @@ test("agent instrumentation of Hapi", function (t) {
         t.equal(first[2], "Cannot read property 'ohno' of undefined",
                 "got the expected error");
 
-        server.stop(function () {
+        server.stop(function cb_stop() {
           helper.unloadAgent(agent);
           t.end();
         });
