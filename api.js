@@ -59,7 +59,7 @@ function API(agent) {
  * @param {string} name The name you want to give the web request in the New
  *                      Relic UI. Will be prefixed with 'Custom/' when sent.
  */
-API.prototype.setTransactionName = function (name) {
+API.prototype.setTransactionName = function setTransactionName(name) {
   var transaction = this.agent.tracer.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found when setting name to '%s'.", name);
@@ -99,7 +99,7 @@ API.prototype.setTransactionName = function (name) {
  * @param {string} action The action being invoked on the controller. Defaults
  *                        to the HTTP method used for the request.
  */
-API.prototype.setControllerName = function (name, action) {
+API.prototype.setControllerName = function setControllerName(name, action) {
   var transaction = this.agent.tracer.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found when setting controller to %s.", name);
@@ -130,7 +130,7 @@ API.prototype.setControllerName = function (name, action) {
  * @param {string} name  The name you want displayed in the RPM UI.
  * @param {string} value The value you want displayed. Must be serializable.
  */
-API.prototype.addCustomParameter = function (name, value) {
+API.prototype.addCustomParameter = function addCustomParameter(name, value) {
   var ignored = this.agent.config.ignored_params || [];
 
   var transaction = this.agent.tracer.getTransaction();
@@ -176,7 +176,7 @@ API.prototype.addCustomParameter = function (name, value) {
  *
  * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
  */
-API.prototype.setIgnoreTransaction = function (ignored) {
+API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
   var transaction = this.agent.tracer.getTransaction();
   if (!transaction) {
     return logger.warn("No transaction found to ignore.");
@@ -194,7 +194,7 @@ API.prototype.setIgnoreTransaction = function (ignored) {
  * @param {object} customParameters Any custom parameters to be displayed in
  *                                  the New Relic UI.
  */
-API.prototype.noticeError = function (error, customParameters) {
+API.prototype.noticeError = function noticeError(error, customParameters) {
   if (typeof error === 'string') error = new Error(error);
   var transaction = this.agent.tracer.getTransaction();
   this.agent.errors.add(transaction, error, customParameters);
@@ -228,7 +228,7 @@ API.prototype.noticeError = function (error, customParameters) {
  * @param {RegExp} pattern The pattern to rename (with capture groups).
  * @param {string} name    The name to use for the transaction.
  */
-API.prototype.addNamingRule = function (pattern, name) {
+API.prototype.addNamingRule = function addNamingRule(pattern, name) {
   if (!name) return logger.error("Simple naming rules require a replacement name.");
 
   this.agent.userNormalizer.addSimple(pattern, '/' + name);
@@ -247,7 +247,7 @@ API.prototype.addNamingRule = function (pattern, name) {
  *
  * @param {RegExp} pattern The pattern to ignore.
  */
-API.prototype.addIgnoringRule = function (pattern) {
+API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
   if (!pattern) return logger.error("Must include a URL pattern to ignore.");
 
   this.agent.userNormalizer.addSimple(pattern, null);
@@ -266,7 +266,7 @@ API.prototype.addIgnoringRule = function (pattern) {
  *
  * @returns {string} the <script> header to be injected
  */
-API.prototype.getBrowserTimingHeader = function () {
+API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   var config = this.agent.config;
 
   /* Gracefully fail.

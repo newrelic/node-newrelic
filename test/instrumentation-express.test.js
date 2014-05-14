@@ -45,7 +45,7 @@ describe("an instrumented Express application", function () {
       agent.environment.clearFramework();
 
       function Router() {}
-      Router.prototype._match = function () { return {path : '/test/:id'}; };
+      Router.prototype._match = function _match() { return {path : '/test/:id'}; };
 
       stub = {
         version : '2.5.3',
@@ -58,11 +58,11 @@ describe("an instrumented Express application", function () {
 
       http = require('http');
       should.not.exist(http.ServerResponse.prototype.render);
-      http.ServerResponse.prototype.render = function (view, options, cb) {
+      http.ServerResponse.prototype.render = function render(view, options, cb) {
         process.nextTick(cb);
         return 'rendered';
       };
-      http.ServerResponse.prototype.send = function () {};
+      http.ServerResponse.prototype.send = function send() {};
 
       require(path.join(__dirname, '..', 'lib',
                         'instrumentation', 'express'))(agent, stub);
