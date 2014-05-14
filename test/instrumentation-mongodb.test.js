@@ -41,7 +41,7 @@ describe("agent instrumentation of MongoDB", function () {
     before(function (done) {
       function StubCollection () {}
 
-      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
         this.terms = terms;
         this.options = options;
         process.nextTick(function () { callback(null, 1); });
@@ -95,7 +95,7 @@ describe("agent instrumentation of MongoDB", function () {
     before(function (done) {
       function StubCollection () {}
 
-      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
         this.terms = terms;
         this.options = options;
         process.nextTick(function () { callback(null, 1); });
@@ -159,11 +159,11 @@ describe("agent instrumentation of MongoDB", function () {
         this.collectionName = name;
       }
 
-      StubCollection.prototype.findAndRemove = function (terms, options, callback) {
+      StubCollection.prototype.findAndRemove = function findAndRemove(terms, options, callback) {
         this.findAndModify(terms, options, callback);
       };
 
-      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
         this.terms = terms;
         this.options = options;
         process.nextTick(function () {
