@@ -1,3 +1,22 @@
+### v1.5.5 (2014-05-15):
+
+* Fix a bug where if the user disabled the error collector, error count would
+  be carried over harvest cycles instead of reset. This would result in an ever
+  increasing error count until the app was restarted.
+
+* New Relic Insights beta support. This is a feature for our paying customers.
+  The support of Insights in the agent is beta, this means we don't recommend
+  turning the feature on in production, but instead trying it out in development
+  and staging environments.
+
+  To enable Insights support add the following to your `newrelic.js`:
+
+  ```
+  feature_flag : {
+    insights: true
+  }
+  ```
+
 ### v1.5.4 (2014-05-08):
 
 * On connect, the full `newrelic` module configuration is pushed to
