@@ -12,7 +12,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
   t.plan(29);
 
   var self = this;
-  helper.bootstrapMemcached(function (error, app) {
+  helper.bootstrapMemcached(function cb_bootstrapMemcached(error, app) {
     if (error) return t.fail(error);
 
     var agent = helper.instrumentMockedAgent();
@@ -23,7 +23,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
     // need to capture parameters
     agent.config.capture_params = true;
 
-    self.tearDown(function () {
+    self.tearDown(function cb_tearDown() {
       helper.cleanMemcached(app, function done() {
         helper.unloadAgent(agent);
       });

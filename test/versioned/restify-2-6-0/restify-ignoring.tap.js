@@ -15,8 +15,8 @@ test("Restify router introspection", function (t) {
     , server = require('restify').createServer()
     ;
 
-  this.tearDown(function () {
-    server.close(function () {
+  this.tearDown(function cb_tearDown() {
+    server.close(function cb_close() {
       helper.unloadAgent(agent);
     });
   });

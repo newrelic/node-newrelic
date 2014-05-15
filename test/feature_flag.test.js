@@ -23,27 +23,27 @@ describe("feature flags", function () {
   });
 
   it("should declare every prerelease feature in the *used* variable", function () {
-    prerelease.forEach(function (key) {
+    prerelease.forEach(function cb_forEach(key) {
       assert(used.indexOf(key) >= 0);
     });
   });
   it("should declare every release feature in the *used* variable", function () {
-    released.forEach(function (key) {
+    released.forEach(function cb_forEach(key) {
       assert(used.indexOf(key) >= 0);
     });
   });
   it("should declare every unrelease feature in the *used* variable", function () {
-    unreleased.forEach(function (key) {
+    unreleased.forEach(function cb_forEach(key) {
       assert(used.indexOf(key) >= 0);
     });
   });
   it("should not re-declare a flag in prerelease from released", function () {
-    prerelease.filter(function (n) {
+    prerelease.filter(function cb_filter(n) {
       return released.indexOf(n) !== -1;
     }).length.should.equal(0);
   });
   it("should not re-declare a flag in prerelease from unreleased", function () {
-    Object.keys(flags.prerelease).filter(function (n) {
+    Object.keys(flags.prerelease).filter(function cb_filter(n) {
       return unreleased.indexOf(n) !== -1;
     }).length.should.equal(0);
   });

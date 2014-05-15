@@ -28,7 +28,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       if (error) return next(error);
 
       var collection = new Collection(client, 'test');
-      collection.find({_id : new ObjectID(id)}).nextObject(function (err, obj) {
+      collection.find({_id : new ObjectID(id)}).nextObject(function cb_nextObject(err, obj) {
         t.ok(agent.getTransaction(), "tracer state visible in find callback");
         next(err, obj);
       });
@@ -103,8 +103,8 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       ;
 
 
-    app.configure(function () {
-      app.use(function (req, res, next) {
+    app.configure(function cb_configure() {
+      app.use(function cb_use(req, res, next) {
         t.ok(agent.getTransaction(), "tracer state visible before body parsing");
 
         bodyParser(req, res, function () {
@@ -114,7 +114,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
         });
       });
 
-      app.use(function (req, res, next) {
+      app.use(function cb_use(req, res, next) {
         t.ok(agent.getTransaction(), "tracer state visible before method overriding");
 
         methodOverride(req, res, function () {
@@ -124,7 +124,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
         });
       });
 
-      app.use(function (req, res, next) {
+      app.use(function cb_use(req, res, next) {
         t.ok(agent.getTransaction(), "tracer state visible before routing");
 
         router(req, res, function () {
@@ -144,7 +144,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
 
   function populate(next) {
     var db = new Db('async_test', new Server('localhost', 27017));
-    db.open(function (error, db) {
+    db.open(function cb_open(error, db) {
       if (error) return next(error);
 
       db.collection('test', function (error, collection) {
@@ -168,7 +168,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
    **
    **/
   var self = this;
-  helper.bootstrapMongoDB(function (error, service) {
+  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(error, service) {
     if (error) {
       t.fail(error);
       return t.end();
@@ -180,8 +180,8 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       app(req, res);
     }).listen(8765);
 
-    self.tearDown(function () {
-      server.close(function () {
+    self.tearDown(function cb_tearDown() {
+      server.close(function cb_close() {
         helper.cleanMongoDB(service, function () {
           helper.unloadAgent(agent);
         });

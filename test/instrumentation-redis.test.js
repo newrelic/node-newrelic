@@ -12,7 +12,7 @@ function FakeConnection () {
   this.writable = true;
 }
 
-FakeConnection.prototype.on = function (event, callback) {
+FakeConnection.prototype.on = function on(event, callback) {
   if (event === 'connect') return callback();
   if (event === 'data') {
     this.on_data = callback;
@@ -20,15 +20,15 @@ FakeConnection.prototype.on = function (event, callback) {
   }
 };
 
-FakeConnection.prototype.setNoDelay = function (bagel) {
+FakeConnection.prototype.setNoDelay = function setNoDelay(bagel) {
   if (bagel !== false) this.bagel = true;
 };
 
-FakeConnection.prototype.setTimeout = function (timeout) {
+FakeConnection.prototype.setTimeout = function setTimeout(timeout) {
   this.timeout = timeout;
 };
 
-FakeConnection.prototype.write = function () {};
+FakeConnection.prototype.write = function write() {};
 
 describe("agent instrumentation of Redis", function () {
   describe("shouldn't cause bootstrapping to fail", function () {
@@ -101,7 +101,7 @@ describe("agent instrumentation of Redis", function () {
         var transaction = agent.getTransaction();
         should.exist(transaction);
 
-        client.PING(function (error, results) {
+        client.PING(function cb_PING(error, results) {
           if (error) return done(error);
 
           should.exist(agent.getTransaction());

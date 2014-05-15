@@ -22,11 +22,11 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
     , api   = new CollectorAPI(agent)
     ;
 
-  api.connect(function (error) {
+  api.connect(function cb_connect(error) {
     t.notOk(error, "connected without error");
 
     var transaction;
-    var proxy = agent.tracer.transactionProxy(function () {
+    var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction();
       transaction.setName('/nonexistent', 200);
     });
@@ -37,7 +37,7 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
 
     t.ok(agent.traces.trace, "have a slow trace to send");
 
-    agent.traces.harvest(function (error, encoded) {
+    agent.traces.harvest(function cb_harvest(error, encoded) {
       t.notOk(error, "trace encoded properly");
       t.ok(encoded, "have the encoded trace");
 

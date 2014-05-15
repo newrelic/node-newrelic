@@ -42,7 +42,7 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
 
   var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200);
 
-  agent.start(function (error, config) {
+  agent.start(function cb_start(error, config) {
     t.notOk(error, 'got no error on connection');
     t.deepEqual(config, {agent_run_id : RUN_ID}, 'got configuration');
     t.ok(redirect.isDone(),    "requested redirect");
@@ -52,13 +52,13 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
     agent.errors.add(transaction, new Error('test error'));
     agent.traces.trace = transaction.getTrace();
 
-    agent.harvest(function (error) {
+    agent.harvest(function cb_harvest(error) {
       t.notOk(error, "no error received on 415");
       t.ok(sendMetrics.isDone(), "sent metrics...");
       t.ok(sendErrors.isDone(),  "...and then sent error data...");
       t.ok(sendTrace.isDone(),   "...and then sent trace, even though all returned 413");
 
-      agent.stop(function () {
+      agent.stop(function cb_stop() {
         t.ok(settings.isDone(), "got agent_settings message");
         t.ok(sendShutdown.isDone(), "got shutdown message");
         t.end();
@@ -100,17 +100,17 @@ test("discarding metrics and errors after a 415", function (t) {
 
   nock(url).post(path('shutdown', RUN_ID)).reply(200);
 
-  agent.start(function () {
+  agent.start(function cb_start() {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'));
     agent.traces.trace = transaction.getTrace();
 
-    agent.harvest(function (error) {
+    agent.harvest(function cb_harvest(error) {
       t.notOk(error, "shouldn't have gotten back error for 415");
       t.equal(agent.errors.errors.length, 0, "errors were discarded");
       t.deepEqual(agent.metrics.toJSON(), [], "metrics were discarded");
 
-      agent.stop(function () {});
+      agent.stop(function cb_stop() {});
     });
   });
 });

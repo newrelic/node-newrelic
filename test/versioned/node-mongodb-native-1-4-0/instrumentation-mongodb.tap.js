@@ -172,7 +172,7 @@ function runWithDB(context, t, callback) {
     , db      = mongodb.Db('integration', server, {safe : true})
     ;
 
-  context.tearDown(function () {
+  context.tearDown(function cb_tearDown() {
     db.close(true, function (error) {
       if (error) t.fail(error);
     });
@@ -181,7 +181,7 @@ function runWithDB(context, t, callback) {
   // <3 CrabDude and creationix
   trycatch(
     function () {
-      db.open(function (error, db) {
+      db.open(function cb_open(error, db) {
         if (error) { t.fail(error); return t.end(); }
 
         db.createCollection('test', {safe : false}, function (error, collection) {
@@ -219,7 +219,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
   t.plan(15);
 
   var toplevel = this;
-  helper.bootstrapMongoDB(function (error, app) {
+  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(error, app) {
     if (error) return t.fail(error);
 
     toplevel.tearDown(helper.cleanMongoDB.bind(helper, app));
@@ -337,7 +337,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
             addMetricsVerifier(t, agent, 'find');
 
             var cursor = collection.find({id : 1337});
-            cursor.toArray(function (error, result) {
+            cursor.toArray(function cb_toArray(error, result) {
               if (error) { t.fail(error); return t.end(); }
               t.ok(result, "should have gotten back results");
 
@@ -375,7 +375,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
           runWithoutTransaction(this, t, function (agent, collection) {
             var cursor = collection.find({id : 1337});
-            cursor.toArray(function (error, result) {
+            cursor.toArray(function cb_toArray(error, result) {
               if (error) { t.fail(error); return t.end(); }
               t.ok(result, "should have gotten back results");
               t.notOk(agent.getTransaction(), "should be no transaction");
@@ -613,14 +613,14 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                               {$set : {__updatedWith : 'yup'}});
 
             setTimeout(function () {
-              collection.find({__updatedWith : 'yup'}).toArray(function (error, docs) {
+              collection.find({__updatedWith : 'yup'}).toArray(function cb_toArray(error, docs) {
                 if (error) { t.fail(error); return t.end(); }
 
                 t.ok(agent.getTransaction(), "transaction should still be visible");
 
                 t.ok(docs, "should have gotten back results");
                 t.equal(docs.length, 2, "should have found 2 modified");
-                docs.forEach(function (doc) {
+                docs.forEach(function cb_forEach(doc) {
                   t.ok(doc.feeblers, "expected value found");
                 });
 
@@ -662,13 +662,13 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                               {$set : {__updatedWithout : 'yup'}});
 
             setTimeout(function () {
-              collection.find({__updatedWithout : 'yup'}).toArray(function (error, docs) {
+              collection.find({__updatedWithout : 'yup'}).toArray(function cb_toArray(error, docs) {
                 if (error) { t.fail(error); return t.end(); }
                 t.notOk(agent.getTransaction(), "should be no transaction");
 
                 t.ok(docs, "should have gotten back results");
                 t.equal(docs.length, 2, "should have found 2 modified");
-                docs.forEach(function (doc) {
+                docs.forEach(function cb_forEach(doc) {
                   t.ok(doc.hamchunx, "expected value found");
                 });
 
@@ -719,7 +719,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
             collection.save(saved);
 
             setTimeout(function () {
-              collection.find({oneoff : 'radishes'}).toArray(function (error, docs) {
+              collection.find({oneoff : 'radishes'}).toArray(function cb_toArray(error, docs) {
                 if (error) { t.fail(error); return t.end(); }
 
                 t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -765,7 +765,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
             collection.save(saved);
 
             setTimeout(function () {
-              collection.find({oneoff : 'radishes'}).toArray(function (error, docs) {
+              collection.find({oneoff : 'radishes'}).toArray(function cb_toArray(error, docs) {
                 if (error) { t.fail(error); return t.end(); }
                 t.notOk(agent.getTransaction(), "should be no transaction");
 
@@ -792,7 +792,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'count');
 
-            collection.count(function (error, count) {
+            collection.count(function cb_count(error, count) {
               if (error) { t.fail(error); return t.end(); }
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -816,7 +816,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
-            collection.count(function (error, count) {
+            collection.count(function cb_count(error, count) {
               if (error) { t.fail(error); return t.end(); }
               t.notOk(agent.getTransaction(), "should have no transaction");
 
@@ -996,7 +996,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'reIndex');
 
-            collection.reIndex(function (error, result) {
+            collection.reIndex(function cb_reIndex(error, result) {
               if (error) { t.fail(error); return t.end(); }
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -1020,7 +1020,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
-            collection.reIndex(function (error, result) {
+            collection.reIndex(function cb_reIndex(error, result) {
               if (error) { t.fail(error); return t.end(); }
               t.notOk(agent.getTransaction(), "should have no transaction");
 
@@ -1098,7 +1098,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropAllIndexes');
 
-            collection.dropAllIndexes(function (error, result) {
+            collection.dropAllIndexes(function cb_dropAllIndexes(error, result) {
               if (error) { t.fail(error); return t.end(); }
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
@@ -1122,7 +1122,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           t.plan(7);
 
           runWithoutTransaction(this, t, function (agent, collection) {
-            collection.dropAllIndexes(function (error, result) {
+            collection.dropAllIndexes(function cb_dropAllIndexes(error, result) {
               if (error) { t.fail(error); return t.end(); }
 
               t.notOk(agent.getTransaction(), "should have no transaction");

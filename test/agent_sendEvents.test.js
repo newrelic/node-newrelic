@@ -51,7 +51,7 @@ describe("the New Relic agent", function () {
       var e = {id: 1};
       r.add(e);
       agent.events = r;
-      agent._sendEvents(function () {
+      agent._sendEvents(function cb__sendEvents() {
         expect(events[1][0]).equals(e);
         done();
       });
@@ -59,7 +59,7 @@ describe("the New Relic agent", function () {
 
     it("should send agent run id", function (done) {
       agent.config.run_id = RUN_ID;
-      agent._sendEvents(function () {
+      agent._sendEvents(function cb__sendEvents() {
         expect(events[0]).equals(RUN_ID);
         done();
       });

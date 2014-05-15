@@ -47,7 +47,7 @@ test("Hapi router introspection", function (t) {
 
     agent.on('transactionFinished', verifier(t, function () {
       helper.unloadAgent(agent);
-      server.stop(function () {
+      server.stop(function cb_stop() {
         t.end();
       });
     }));
@@ -63,7 +63,7 @@ test("Hapi router introspection", function (t) {
     };
     server.route(route);
 
-    server.start(function () {
+    server.start(function cb_start() {
       request.get('http://localhost:8080/test/31337',
                   {json : true},
                   function (error, res, body) {
@@ -84,7 +84,7 @@ test("Hapi router introspection", function (t) {
 
     agent.on('transactionFinished', verifier(t, function () {
       helper.unloadAgent(agent);
-      server.stop(function () {
+      server.stop(function cb_stop() {
         t.end();
       });
     }));
@@ -104,7 +104,7 @@ test("Hapi router introspection", function (t) {
     };
     server.route(route);
 
-    server.start(function () {
+    server.start(function cb_start() {
       request.get('http://localhost:8080/test/31337',
                   {json : true},
                   function (error, res, body) {

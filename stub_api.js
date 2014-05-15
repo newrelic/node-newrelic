@@ -28,7 +28,7 @@ for (var i = 0; i < length; i++) {
 
 // this code gets injected into HTML templates
 // and we don't want it to return undefined/null
-Stub.prototype.getBrowserTimingHeader = function (){
+Stub.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(){
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.');
   return '';
 };

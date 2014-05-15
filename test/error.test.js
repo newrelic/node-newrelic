@@ -721,7 +721,7 @@ describe("ErrorTracer", function () {
        * domain's uncaughtException handler, we need to put the test in an
        * asynchronous context and break out of the mocha jail.
        */
-      process.nextTick(function () {
+      process.nextTick(function cb_nextTick() {
         // disable mocha's error handler
         mochaHandlers = helper.onlyDomains();
 
@@ -731,7 +731,7 @@ describe("ErrorTracer", function () {
           return done();
         });
 
-        var disruptor = agent.tracer.transactionProxy(function () {
+        var disruptor = agent.tracer.transactionProxy(function cb_transactionProxy() {
           transaction = agent.getTransaction();
           active = process.domain;
 

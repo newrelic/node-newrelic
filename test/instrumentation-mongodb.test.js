@@ -41,10 +41,10 @@ describe("agent instrumentation of MongoDB", function () {
     before(function (done) {
       function StubCollection () {}
 
-      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
         this.terms = terms;
         this.options = options;
-        process.nextTick(function () { callback(null, 1); });
+        process.nextTick(function cb_nextTick() { callback(null, 1); });
       };
 
       var mockodb    = {Collection : StubCollection}
@@ -56,7 +56,7 @@ describe("agent instrumentation of MongoDB", function () {
       agent = helper.loadMockedAgent();
       agent.on('transactionFinished', function (transaction) {
         // need to generate the trace so exclusive times are added to segment parameters
-        transaction.getTrace().generateJSON(function () {
+        transaction.getTrace().generateJSON(function cb_generateJSON() {
           terms = collection.terms;
           segment = transaction.trace.root.children[0];
 
@@ -68,7 +68,7 @@ describe("agent instrumentation of MongoDB", function () {
 
       helper.runInTransaction(agent, function (trans) {
         collection.findAndModify({val : 'hi'}, {w : 333}, function () {
-          process.nextTick(function () { trans.end(); });
+          process.nextTick(function cb_nextTick() { trans.end(); });
         });
       });
     });
@@ -95,10 +95,10 @@ describe("agent instrumentation of MongoDB", function () {
     before(function (done) {
       function StubCollection () {}
 
-      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
         this.terms = terms;
         this.options = options;
-        process.nextTick(function () { callback(null, 1); });
+        process.nextTick(function cb_nextTick() { callback(null, 1); });
       };
 
       var mockodb    = {Collection : StubCollection}
@@ -112,7 +112,7 @@ describe("agent instrumentation of MongoDB", function () {
       agent.config.ignored_params = ['other'];
       agent.on('transactionFinished', function (transaction) {
         // need to generate the trace so exclusive times are added to segment parameters
-        transaction.getTrace().generateJSON(function () {
+        transaction.getTrace().generateJSON(function cb_generateJSON() {
           terms = collection.terms;
           segment = transaction.trace.root.children[0];
 
@@ -124,7 +124,7 @@ describe("agent instrumentation of MongoDB", function () {
 
       helper.runInTransaction(agent, function (trans) {
         collection.findAndModify({val : 'hi', other : 'bye'}, {w : 333}, function () {
-          process.nextTick(function () { trans.end(); });
+          process.nextTick(function cb_nextTick() { trans.end(); });
         });
       });
     });
@@ -159,14 +159,14 @@ describe("agent instrumentation of MongoDB", function () {
         this.collectionName = name;
       }
 
-      StubCollection.prototype.findAndRemove = function (terms, options, callback) {
+      StubCollection.prototype.findAndRemove = function findAndRemove(terms, options, callback) {
         this.findAndModify(terms, options, callback);
       };
 
-      StubCollection.prototype.findAndModify = function (terms, options, callback) {
+      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
         this.terms = terms;
         this.options = options;
-        process.nextTick(function () {
+        process.nextTick(function cb_nextTick() {
           callback(null, 1);
         });
       };

@@ -16,7 +16,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
      function (t) {
   t.plan(9);
 
-  helper.bootstrapMySQL(function (error, app) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent();
     var mysql   = require('mysql')
@@ -49,7 +49,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
           pool.destroy(client);
         });
 
-        client.connect(function (err) {
+        client.connect(function cb_connect(err) {
           if (err) {
             poolLogger.error("MySQL client failed to connect. Does database %s exist?",
                              DBNAME);
@@ -70,7 +70,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
         if (!counter) counter = 1;
         counter++;
 
-        pool.acquire(function (err, client) {
+        pool.acquire(function cb_acquire(err, client) {
           if (err) {
             poolLogger.error("Failed to get connection from the pool: %s", err);
 
@@ -97,7 +97,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
       lookup : function (params, callback) {
         if (!params.id) return callback(new Error("Must include ID to look up."));
 
-        withRetry.getClient(function (err, client) {
+        withRetry.getClient(function cb_getClient(err, client) {
           if (err) return callback(err);
 
           client.query("SELECT *" +
@@ -120,7 +120,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
       return t.end();
     }
 
-    this.tearDown(function () {
+    this.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow();
         helper.cleanMySQL(app, function done() {

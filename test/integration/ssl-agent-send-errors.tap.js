@@ -20,11 +20,11 @@ test("Agent should send errors to staging-collector.newrelic.com", function (t) 
     , agent = new Agent(config)
     ;
 
-  agent.start(function (error) {
+  agent.start(function cb_start(error) {
     t.notOk(error, "connected without error");
 
     var transaction;
-    var proxy = agent.tracer.transactionProxy(function () {
+    var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction();
       transaction.setName('/nonexistent', 501);
     });
@@ -32,10 +32,10 @@ test("Agent should send errors to staging-collector.newrelic.com", function (t) 
     t.ok(transaction, "got a transaction");
     agent.errors.add(transaction, new Error('test error'));
 
-    agent._sendErrors(function (error) {
+    agent._sendErrors(function cb__sendErrors(error) {
       t.notOk(error, "sent errors without error");
 
-      agent.stop(function (error) {
+      agent.stop(function cb_stop(error) {
         t.notOk(error, "stopped without error");
 
         t.end();

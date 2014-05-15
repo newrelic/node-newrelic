@@ -10,7 +10,7 @@ var path        = require('path')
   ;
 
 function find(settings, name) {
-  var items = settings.filter(function (candidate) {
+  var items = settings.filter(function cb_filter(candidate) {
     return candidate[0] === name;
   });
 
@@ -114,7 +114,7 @@ describe("the environment scraper", function () {
   it("should have built a flattened package list", function () {
     var packages = find(settings, 'Packages');
     expect(packages.length).above(5);
-    packages.forEach(function (pair) {
+    packages.forEach(function cb_forEach(pair) {
       expect(JSON.parse(pair).length).equal(2);
     });
   });
@@ -122,7 +122,7 @@ describe("the environment scraper", function () {
   it("should have built a flattened dependency list", function () {
     var dependencies = find(settings, 'Dependencies');
     expect(dependencies.length).above(5);
-    dependencies.forEach(function (pair) {
+    dependencies.forEach(function cb_forEach(pair) {
       expect(JSON.parse(pair).length).equal(2);
     });
   });

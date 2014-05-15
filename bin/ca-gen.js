@@ -75,7 +75,7 @@ function dumpCerts(error, certs) {
     OUTFILE,
     HEADER +
     'module.exports = [\n' +
-    certs.map(function (cert) { return cert.toEntry(); }).join(',\n\n') +
+    certs.map(function cb_map(cert) { return cert.toEntry(); }).join(',\n\n') +
     '\n];\n'
   );
 }

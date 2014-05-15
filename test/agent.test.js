@@ -158,12 +158,12 @@ describe("the New Relic agent", function () {
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
               .reply(200, {return_value : null});
 
-          debugged.start(function () {
+          debugged.start(function cb_start() {
             expect(debugged.config.debug.supportability.apdexT).equal(0.5);
 
             redirect.done();
             connect.done();
-            debugged.stop(function () {
+            debugged.stop(function cb_stop() {
               settings.done();
               shutdown.done();
               done();
@@ -199,7 +199,7 @@ describe("the New Relic agent", function () {
           var transaction = new Transaction(debugged);
           transaction.end();
 
-          debugged._sendMetrics(function () {
+          debugged._sendMetrics(function cb__sendMetrics() {
             done();
           });
         });
@@ -223,7 +223,7 @@ describe("the New Relic agent", function () {
           var transaction;
 
           // use this to get the traced transactions
-          var proxy = debugged.tracer.transactionProxy(function () {
+          var proxy = debugged.tracer.transactionProxy(function cb_transactionProxy() {
             transaction = debugged.getTransaction();
           });
 
@@ -321,7 +321,7 @@ describe("the New Relic agent", function () {
 
       it("should change state to 'starting'", function (done) {
         agent.collector.connect = function () { done(); };
-        agent.start(function () {});
+        agent.start(function cb_start() {});
         expect(agent._state).equal('starting');
       });
 
@@ -338,7 +338,7 @@ describe("the New Relic agent", function () {
         agent.collector.connect = function () {
           done(new Error("shouldn't be called"));
         };
-        agent.start(function () {
+        agent.start(function cb_start() {
           expect(agent._state).equal('stopped');
           done();
         });
@@ -349,7 +349,7 @@ describe("the New Relic agent", function () {
         agent.collector.connect = function () {
           done(new Error("shouldn't be called"));
         };
-        agent.start(function (error) {
+        agent.start(function cb_start(error) {
           should.exist(error);
 
           done();
@@ -361,7 +361,7 @@ describe("the New Relic agent", function () {
         agent.collector.connect = function () {
           done(new Error("shouldn't be called"));
         };
-        agent.start(function (error) {
+        agent.start(function cb_start(error) {
           expect(error.message).equal("Not starting without license key!");
 
           done();
@@ -384,7 +384,7 @@ describe("the New Relic agent", function () {
           callback(passed);
         };
 
-        agent.start(function (error) {
+        agent.start(function cb_start(error) {
           expect(error).equal(passed);
 
           done();
@@ -405,7 +405,7 @@ describe("the New Relic agent", function () {
 
         agent.metrics.measureMilliseconds('Test/Bogus', null, 1);
 
-        agent.start(function (error) {
+        agent.start(function cb_start(error) {
           should.not.exist(error);
 
           metrics.done();
@@ -434,7 +434,7 @@ describe("the New Relic agent", function () {
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value : []});
 
-        agent.start(function () {
+        agent.start(function cb_start() {
           setTimeout(function () {
             global.setInterval = origInterval;
 
@@ -469,7 +469,7 @@ describe("the New Relic agent", function () {
             .times(2)
             .reply(503);
 
-        agent.start(function () {
+        agent.start(function cb_start() {
           setTimeout(function () {
             global.setInterval = origInterval;
 
@@ -530,7 +530,7 @@ describe("the New Relic agent", function () {
 
 
       it("shouldn't shut down connection if not connected", function (done) {
-        agent.stop(function (error) {
+        agent.stop(function cb_stop(error) {
           should.not.exist(error);
           done();
         });
@@ -544,7 +544,7 @@ describe("the New Relic agent", function () {
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
               .reply(200, {return_value : null});
 
-          agent.stop(function (error) {
+          agent.stop(function cb_stop(error) {
             should.not.exist(error);
 
             shutdown.done();
@@ -559,7 +559,7 @@ describe("the New Relic agent", function () {
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
               .reply(503);
 
-          agent.stop(function (error) {
+          agent.stop(function cb_stop(error) {
             should.exist(error);
             expect(error.message).equal("No body found in response to shutdown.");
 
@@ -574,7 +574,7 @@ describe("the New Relic agent", function () {
       it("should update the metrics' apdex tolerating value when configuration changes",
          function (done) {
         expect(agent.metrics.apdexT).equal(0.1);
-        process.nextTick(function () {
+        process.nextTick(function cb_nextTick() {
           should.exist(agent.metrics.apdexT);
           expect(agent.metrics.apdexT).equal(0.666);
 
@@ -606,7 +606,7 @@ describe("the New Relic agent", function () {
                           .post(helper.generateCollectorPath('shutdown', 404))
                           .reply(200, {return_value : null});
 
-        agent.start(function (error) {
+        agent.start(function cb_start(error) {
           should.not.exist(error);
           redirect.done();
           handshake.done();
@@ -617,7 +617,7 @@ describe("the New Relic agent", function () {
           expect(agent.metrics.apdexT).equal(0.742);
           expect(agent.urlNormalizer.rules).deep.equal([]);
 
-          agent.stop(function () {
+          agent.stop(function cb_stop() {
             settings.done();
             shutdown.done();
             done();
@@ -673,7 +673,7 @@ describe("the New Relic agent", function () {
         // need metrics or agent won't make a call against the collector
         agent.metrics.measureMilliseconds('Test/bogus', null, 1);
 
-        agent.harvest(function (error) {
+        agent.harvest(function cb_harvest(error) {
           should.not.exist(error);
 
           metrics.done();
@@ -693,7 +693,7 @@ describe("the New Relic agent", function () {
         // need metrics or agent won't make a call against the collector
         agent.metrics.measureMilliseconds('Test/bogus', null, 1);
 
-        agent.harvest(function (error) {
+        agent.harvest(function cb_harvest(error) {
           should.not.exist(error);
 
           metrics.done();
@@ -713,7 +713,7 @@ describe("the New Relic agent", function () {
         agent.metrics.measureMilliseconds('Test/bogus', null, 1);
 
         agent.config.run_id = RUN_ID;
-        agent.harvest(function (error) {
+        agent.harvest(function cb_harvest(error) {
           should.not.exist(error);
           expect(agent.mapper.map(NAME, SCOPE)).equal(17);
 
@@ -857,7 +857,7 @@ describe("the New Relic agent", function () {
       // need metrics or agent won't make a call against the collector
       agent.metrics.measureMilliseconds('Test/bogus', null, 1);
 
-      agent.harvest(function () {
+      agent.harvest(function cb_harvest() {
         metricData.done();
 
         agent.errors = {
@@ -908,7 +908,7 @@ describe("the New Relic agent", function () {
         cb();
       };
 
-      agent.harvest(function () {
+      agent.harvest(function cb_harvest() {
         expect(agent.errors.errorCount).equal(0);
         agent.collector.errorData = old_ed;
         done();
@@ -933,7 +933,7 @@ describe("the New Relic agent", function () {
 
 
 
-      agent.harvest(function () {
+      agent.harvest(function cb_harvest() {
         expect(agent.errors.errorCount).equal(0);
         agent.config.error_collector.enabled = old_config;
         done();
@@ -948,7 +948,7 @@ describe("the New Relic agent", function () {
 
       agent.errors.add(null, new Error('application code error'));
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.exist(error);
         expect(error.message).equal("No body found in response to metric_data.");
 
@@ -969,7 +969,7 @@ describe("the New Relic agent", function () {
 
       agent.errors.add(null, new Error('application code error'));
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.exist(error);
         expect(error.message).equal("No body found in response to error_data.");
 
@@ -996,7 +996,7 @@ describe("the New Relic agent", function () {
       // do this here so error traces get collected but not sent
       agent.config.onConnect({'error_collector.enabled' : false});
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.not.exist(error);
 
         metricData.done();
@@ -1026,7 +1026,7 @@ describe("the New Relic agent", function () {
       // do this here so error traces get collected but not sent
       agent.config.onConnect({collect_errors : false});
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.not.exist(error);
 
         metricData.done();
@@ -1063,7 +1063,7 @@ describe("the New Relic agent", function () {
       // do this here so slow trace gets collected but not sent
       agent.config.onConnect({'transaction_tracer.enabled' : false});
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.not.exist(error);
 
         metricData.done();
@@ -1101,7 +1101,7 @@ describe("the New Relic agent", function () {
       // set this here so slow trace gets collected but not sent
       agent.config.onConnect({collect_traces : false});
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.not.exist(error);
 
         metricData.done();
@@ -1137,7 +1137,7 @@ describe("the New Relic agent", function () {
           .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
           .reply(200, {return_value : null});
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         should.not.exist(error);
 
         metricData.done();
@@ -1167,7 +1167,7 @@ describe("the New Relic agent", function () {
           .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
           .reply(503);
 
-      agent.harvest(function (error) {
+      agent.harvest(function cb_harvest(error) {
         expect(error.message)
           .equal("No body found in response to transaction_sample_data.");
 
@@ -1197,7 +1197,7 @@ describe("the New Relic agent", function () {
       transaction.setName('/test/path/31337', 501);
       transaction.end();
 
-      agent._sendMetrics(function (error) {
+      agent._sendMetrics(function cb__sendMetrics(error) {
         expect(error.message).equal("not connected to New Relic (metrics will be held)");
         done();
       });
@@ -1210,7 +1210,7 @@ describe("the New Relic agent", function () {
       transaction.setName('/test/path/31337', 501);
       transaction.end();
 
-      agent._sendErrors(function (error) {
+      agent._sendErrors(function cb__sendErrors(error) {
         expect(error.message).equal("not connected to New Relic (errors will be held)");
         done();
       });
@@ -1223,7 +1223,7 @@ describe("the New Relic agent", function () {
       transaction.setName('/test/path/31337', 501);
       transaction.end();
 
-      agent._sendTrace(function (error) {
+      agent._sendTrace(function cb__sendTrace(error) {
         expect(error.message)
           .equal("not connected to New Relic (slow trace data will be held)");
         done();

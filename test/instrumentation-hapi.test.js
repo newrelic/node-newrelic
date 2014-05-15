@@ -49,7 +49,7 @@ describe("an instrumented Hapi application", function () {
       function Router() {
         this.table = {};
       }
-      Router.prototype.add = function (config) {
+      Router.prototype.add = function add(config) {
         this.table[config.method] = [{settings : config}];
       };
 

@@ -11,7 +11,7 @@ var path   = require ('path')
 var DIRNAME = 'XXXNOCONFTEST';
 
 test("logger configuration from environment", function (t) {
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     if (path.basename(process.cwd()) === DIRNAME) process.chdir('..');
     if (exists(path.join(process.cwd(), DIRNAME))) wrench.rmdirSyncRecursive(DIRNAME);
   });

@@ -119,7 +119,7 @@ describe("built-in http module instrumentation", function () {
       http  = require('http');
       agent = helper.instrumentMockedAgent();
 
-      var external = http.createServer(function (request, response) {
+      var external = http.createServer(function cb_createServer(request, response) {
         should.exist(agent.getTransaction());
 
         response.writeHead(200,
@@ -128,7 +128,7 @@ describe("built-in http module instrumentation", function () {
         response.end(PAYLOAD);
       });
 
-      var server = http.createServer(function (request, response) {
+      var server = http.createServer(function cb_createServer(request, response) {
         transaction = agent.getTransaction();
         should.exist(transaction);
 
@@ -217,7 +217,7 @@ describe("built-in http module instrumentation", function () {
     it("should indicate that the http dispatcher is in play", function (done) {
       var found = false;
 
-      agent.environment.toJSON().forEach(function (pair) {
+      agent.environment.toJSON().forEach(function cb_forEach(pair) {
         if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true;
       });
 
@@ -280,7 +280,7 @@ describe("built-in http module instrumentation", function () {
           return done();
         });
 
-        server = http.createServer(function () {
+        server = http.createServer(function cb_createServer() {
           throw new Error("whoops!");
         });
 
@@ -303,7 +303,7 @@ describe("built-in http module instrumentation", function () {
           return done();
         });
 
-        server = http.createServer(function (request, response) {
+        server = http.createServer(function cb_createServer(request, response) {
           response.writeHead(200,
                              {'Content-Length' : PAYLOAD.length,
                               'Content-Type'   : 'application/json'});

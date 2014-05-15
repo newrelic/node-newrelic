@@ -27,7 +27,7 @@ test("built-in http instrumentation should handle internal & external requests",
                            '</html>'
     ;
 
-  var external = http.createServer(function (request, response) {
+  var external = http.createServer(function cb_createServer(request, response) {
     response.writeHead(200,
                        {'Content-Length' : PAYLOAD.length,
                         'Content-Type'   : 'application/json'});
@@ -55,7 +55,7 @@ test("built-in http instrumentation should handle internal & external requests",
     };
   };
 
-  var server = http.createServer(function (request, response) {
+  var server = http.createServer(function cb_createServer(request, response) {
     t.ok(agent.getTransaction(), "should be within the scope of the transaction");
 
     var req = http.request({host   : TEST_HOST,
@@ -69,7 +69,7 @@ test("built-in http instrumentation should handle internal & external requests",
     req.end();
   });
 
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     external.close();
     server.close();
     helper.unloadAgent(agent);
@@ -101,7 +101,7 @@ test("built-in http instrumentation should handle internal & external requests",
       t.equals(stats.callCount, 2,
                "should record unscoped path stats after a normal request");
 
-      agent.environment.toJSON().forEach(function (pair) {
+      agent.environment.toJSON().forEach(function cb_forEach(pair) {
         if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true;
       });
       t.ok(found, "should indicate that the http dispatcher is in play");
@@ -180,7 +180,7 @@ test("built-in http instrumentation shouldn't swallow errors",
 
   var server = http.createServer(handleRequest);
 
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     server.close();
     helper.unloadAgent(agent);
   });
@@ -191,7 +191,7 @@ test("built-in http instrumentation shouldn't swallow errors",
 test("built-in http instrumentation making outbound requests", function (t) {
   var agent = helper.instrumentMockedAgent();
 
-  var server = http.createServer(function (req, res) {
+  var server = http.createServer(function cb_createServer(req, res) {
     var body = '{"status":"ok"}';
     res.writeHead(200, {
       'Content-Length' : body.length,
@@ -199,7 +199,7 @@ test("built-in http instrumentation making outbound requests", function (t) {
     res.end(body);
   });
 
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     server.close();
     helper.unloadAgent(agent);
   });
@@ -264,7 +264,7 @@ test("built-in http instrumentation making outbound requests", function (t) {
 test("built-in http instrumentation making outbound requests obsoletely", function (t) {
   var agent = helper.instrumentMockedAgent();
 
-  var server = http.createServer(function (req, res) {
+  var server = http.createServer(function cb_createServer(req, res) {
     var body = '{"status":"ok"}';
     res.writeHead(200, {
       'Content-Length' : body.length,
@@ -272,7 +272,7 @@ test("built-in http instrumentation making outbound requests obsoletely", functi
     res.end(body);
   });
 
-  this.tearDown(function () {
+  this.tearDown(function cb_tearDown() {
     server.close();
     helper.unloadAgent(agent);
   });
