@@ -94,6 +94,13 @@ describe("the agent configuration", function () {
       });
     });
 
+    it("should pick up the proxy auth", function () {
+      idempotentEnv('NEW_RELIC_PROXY_AUTH', 'username:password', function (tc) {
+        should.exist(tc.proxy_auth);
+        expect(tc.proxy_auth).equal('username:password');
+      });
+    });
+
     it("should pick up the log level", function () {
       idempotentEnv('NEW_RELIC_LOG_LEVEL', 'XXNOEXIST', function (tc) {
         should.exist(tc.logging.level);
@@ -286,6 +293,9 @@ describe("the agent configuration", function () {
       expect(configuration.proxy_port).equal('');
     });
 
+    it("should have no proxy auth", function () {
+      expect(configuration.proxy_auth).equal('');
+    });
     it("should not ignore server-side configuration", function () {
       expect(configuration.ignore_server_configuration).equal(false);
     });
