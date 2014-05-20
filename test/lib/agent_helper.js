@@ -4,10 +4,7 @@ var path      = require('path')
   , fs        = require('fs')
   , extend    = require('util')._extend
   , architect = require('architect')
-  , MongoClient = require('mongodb').MongoClient
   , async     = require('async')
-  , redis     = require('redis')
-  , Memcached = require('memcached')
   , shimmer   = require('../../lib/shimmer')
   , Agent     = require('../../lib/agent')
   , params    = require('../lib/params')
@@ -138,6 +135,7 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapMemcached : function bootstrapMemcached(callback) {
+    var Memcached = require('memcached')
     var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     memcached.flush(function(err) {
       memcached.end()
@@ -153,6 +151,7 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapMongoDB : function bootstrapMongoDB(collections, callback) {
+    var MongoClient = require('mongodb').MongoClient
     MongoClient.connect('mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration', function(err, db) {
       if (err) return callback(err)
 
@@ -195,6 +194,7 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapRedis : function bootstrapRedis(db_index, callback) {
+    var redis = require('redis')
     var client = redis.createClient(params.redis_port, params.redis_host)
     client.select(db_index, function cb_select(err) {
       if (err) {
