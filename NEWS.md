@@ -1,3 +1,17 @@
+### v1.6.0 (2014-05-22):
+
+* New Relic Insights support no longer requires a feature flag. If you are a
+  paying customer, you'll begin to see data show up in Insights as soon as you
+  upgrade to 1.6.0. The agent will send event data for every transaction up to
+  10,000 per minute. After that events are statistically sampled. Event data
+  includes transaction timing, transaction name, and any custom parameters. You
+  can read what is sent in more detail
+  [here](http://docs.newrelic.com/docs/insights/basic-attributes#transaction-defaults).
+
+  You can read more about Insights [here](http://newrelic.com/insights).
+  Documentation for configuring this feature can be found
+  [here](https://docs.newrelic.com/docs/nodejs/customizing-your-nodejs-config-file#tx_events).
+
 ### v1.5.5 (2014-05-15):
 
 * Fix a bug where if the user disabled the error collector, error count would
