@@ -1055,6 +1055,10 @@ describe("the New Relic agent", function () {
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
+      var eventData =
+        nock(URL)
+          .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
+          .reply(200, {return_value : []});
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
@@ -1067,6 +1071,7 @@ describe("the New Relic agent", function () {
         should.not.exist(error);
 
         metricData.done();
+        eventData.done();
         errorData.done();
 
         // Wait for agent_settings command to be sent after event emitted from onConnect
@@ -1093,6 +1098,10 @@ describe("the New Relic agent", function () {
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
+      var eventData =
+        nock(URL)
+          .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
+          .reply(200, {return_value : []});
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
@@ -1105,6 +1114,7 @@ describe("the New Relic agent", function () {
         should.not.exist(error);
 
         metricData.done();
+        eventData.done();
         errorData.done();
 
         // Wait for agent_settings command to be sent after event emitted from onConnect
@@ -1128,6 +1138,10 @@ describe("the New Relic agent", function () {
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
           .reply(200, {return_value : []});
+      var eventData =
+        nock(URL)
+          .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
+          .reply(200, {return_value : []});
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
@@ -1141,6 +1155,7 @@ describe("the New Relic agent", function () {
         should.not.exist(error);
 
         metricData.done();
+        eventData.done();
         errorData.done();
         transactionSampleData.done();
         done();

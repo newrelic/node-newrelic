@@ -58,6 +58,10 @@ describe("the New Relic agent", function () {
     });
 
     it("should send agent run id", function (done) {
+      var r = new Reservoir();
+      var e = {id: 1};
+      r.add(e);
+      agent.events = r;
       agent.config.run_id = RUN_ID;
       agent._sendEvents(function cb__sendEvents() {
         expect(events[0]).equals(RUN_ID);
