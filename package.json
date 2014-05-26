@@ -81,7 +81,8 @@
     "split": "*",
     "JSV": "~4.0.2",
     "glob": "~3.2.9",
-    "mkdirp": "*"
+    "mkdirp": "*",
+    "express": "*"
   },
   "repository": {
     "type": "git",
