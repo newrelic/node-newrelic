@@ -82,7 +82,8 @@
     "JSV": "~4.0.2",
     "glob": "~3.2.9",
     "mkdirp": "*",
-    "express": "*"
+    "express": "*",
+    "npm-license": "*"
   },
   "repository": {
     "type": "git",
