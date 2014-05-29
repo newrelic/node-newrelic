@@ -537,9 +537,9 @@ describe("the agent configuration", function () {
       expect(config.product_level).equal(30);
     });
 
-    it("should configure high_security", function () {
+    it("should reject high_security", function () {
       config.onConnect({'high_security' : true});
-      expect(config.high_security).equal(true);
+      expect(config.high_security).equal(false);
     });
 
     it("should configure param capture", function () {

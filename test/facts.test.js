@@ -10,7 +10,7 @@ var path     = require('path')
   ;
 
 var EXPECTED = ['pid', 'host', 'language', 'app_name',
-                'agent_version', 'environment', 'settings', 'security_settings'];
+                'agent_version', 'environment', 'settings', 'high_security'];
 
 describe("fun facts about apps that New Relic is interested in include", function () {
   var agent

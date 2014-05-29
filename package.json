@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -81,7 +81,8 @@
     "split": "*",
     "JSV": "~4.0.2",
     "glob": "~3.2.9",
-    "mkdirp": "*"
+    "mkdirp": "*",
+    "express": "*"
   },
   "repository": {
     "type": "git",

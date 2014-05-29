@@ -131,6 +131,16 @@ API.prototype.setControllerName = function setControllerName(name, action) {
  * @param {string} value The value you want displayed. Must be serializable.
  */
 API.prototype.addCustomParameter = function addCustomParameter(name, value) {
+  // If high security mode is on, custom params are disabled
+  if (this.agent.config.high_security === true) {
+    // we only want to log this warning once
+    if (this._highSecCustomParamLogged !== true) {
+      this._highSecCustomParamLogged = true;
+      logger.warn("Custom parameters are disabled by high security mode.");
+    }
+    return false;
+  }
+
   var ignored = this.agent.config.ignored_params || [];
 
   var transaction = this.agent.tracer.getTransaction();

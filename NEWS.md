@@ -1,3 +1,25 @@
+### v1.7.0 (2014-05-29):
+* Client side setting of `high_security` is now supported.
+
+  High Security Mode is a feature to prevent any sensitive data from being sent
+  to New Relic. The local setting for the agent must match the server setting in
+  the New Relic APM UI. If there is a mismatch, the agent will log a message and
+  act as if it is disabled. A link to the docs for High Security Mode can be
+  found [here](https://docs.newrelic.com/docs/subscriptions/security#high-security)
+
+  Attributes of high security mode (when enabled):
+    * requires ssl
+    * does not allow capturing of parameters,
+    * does not allow custom parameters
+
+  The default setting for High Security Mode is ‘false’.
+
+  Note: If you currently have high security mode enabled within the New Relic
+  APM UI, you have to add `high_security: true` to your local newrelic.js.
+
+* Fixed a bug in our instrumentation of restify, where if you were using the
+  restify client with express as a web server, req.query would be overridden.
+
 ### v1.6.0 (2014-05-22):
 
 * New Relic Insights support no longer requires a feature flag. If you are a
