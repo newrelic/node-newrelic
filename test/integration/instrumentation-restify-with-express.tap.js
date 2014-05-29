@@ -19,13 +19,12 @@ test("agent instrumentation of restify shouldn't affect express query parsing mi
 
   app.get('/', function cb_get(req, res) {
     t.deepEqual(req.query, {test: 'success'}, 'express req.query property is correct');
-    req.resume();
     res.send(200);
   });
   server.listen(8765);
 
   request.get('http://localhost:8765/?test=success', function cb_get(err, response, body) {
-    if (err) return t.fail(error);
+    if (err) return t.fail(err);
     t.equal(200, response.statusCode);
   });
 
