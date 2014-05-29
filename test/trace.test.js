@@ -98,9 +98,20 @@ describe('Trace', function () {
 
     var rootNode = [
       trace.root.timer.start / 1000,
-      {test : "value"},
-      {nr_flatten_leading : false},
+      {},
+      {
+        nr_flatten_leading : false
+      },
       rootSegment,
+      {
+        agentAttributes: {
+          test : "value"
+        },
+        userAttributes: {
+
+        },
+        intrinsics: {}
+      },
       []  // FIXME: parameter groups
     ];
 

@@ -350,20 +350,6 @@ describe("the New Relic agent API", function () {
         });
       });
 
-      it("shouldn't allow overwriting of internally-used attributes", function (done) {
-        agent.on('transactionFinished', function (transaction) {
-          var parameters = transaction.getTrace().custom;
-          expect(parameters['nr_flatten_leading']).equal(false);
-
-          done();
-        });
-
-        helper.runInTransaction(agent, function (transaction) {
-          api.addCustomParameter('nr_flatten_leading', 'HAMBONE');
-
-          transaction.end();
-        });
-      });
     });
 
     describe("outside a transaction", function () {
@@ -564,7 +550,7 @@ describe("the New Relic agent API", function () {
       expect(agent.errors.errors.length).equal(1);
 
       var params = agent.errors.errors[0][4];
-      expect(params.present).equal('yep');
+      expect(params.userAttributes.present).equal('yep');
     });
 
     it("should add the error associated to a transaction", function (done) {
@@ -600,7 +586,7 @@ describe("the New Relic agent API", function () {
         expect(caught[1]).equal('WebTransaction/Uri/*');
         expect(caught[2]).equal('test error');
         expect(caught[3]).equal('TypeError');
-        expect(caught[4].hi).equal('yo');
+        expect(caught[4].userAttributes.hi).equal('yo');
         should.not.exist(caught[4].ignored);
 
         should.exist(transaction.error);
@@ -705,8 +691,8 @@ describe("the New Relic agent API", function () {
         expect(agent.errors.errors.length).equal(1);
         var caught = agent.errors.errors[0];
         expect(caught[2]).equal('busted, bro');
-        expect(caught[4].a).equal(1);
-        expect(caught[4].steak).equal('sauce');
+        expect(caught[4].userAttributes.a).equal(1);
+        expect(caught[4].userAttributes.steak).equal('sauce');
 
         should.exist(transaction.error);
         expect(transaction.ignore).equal(false);

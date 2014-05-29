@@ -18,6 +18,106 @@ function createTransaction(agent, code) {
   return transaction;
 }
 
+describe("agent attribute format", function () {
+  var PARAMS = 4;
+
+  var agent, trans, error;
+
+  beforeEach(function () {
+    agent = helper.loadMockedAgent();
+    agent.config.capture_params = true;
+
+    trans = new Transaction(agent);
+    trans.url = '/';
+
+    error = agent.errors;
+  });
+
+  afterEach(function () {
+    helper.unloadAgent(agent);
+  });
+
+  it("record captured params", function () {
+    trans.getTrace().parameters['a'] = 'A';
+    error.add(trans, new Error());
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.agentAttributes).deep.equals({
+      a: 'A'
+    });
+  });
+
+  it("merge captured params with url params", function () {
+    trans.url = '/?b=B';
+    trans.getTrace().parameters['a'] = 'A';
+    error.add(trans, new Error());
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.agentAttributes).deep.equals({
+      a: 'A',
+      b: 'B'
+    });
+  });
+
+  it("captured params overrides url params", function () {
+    trans.url = '/?a=x';
+    trans.getTrace().parameters['a'] = 'A';
+    error.add(trans, new Error());
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.agentAttributes).deep.equals({
+      a: 'A',
+    });
+  });
+
+  it("records custom parameters", function () {
+    trans.getTrace().custom['a'] = 'A';
+    error.add(trans, new Error());
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.userAttributes).deep.equals({
+      a: 'A',
+    });
+  });
+
+  it("merge custom parameters", function () {
+    trans.getTrace().custom['a'] = 'A';
+    error.add(trans, new Error(), {b: 'B'});
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.userAttributes).deep.equals({
+      a: 'A',
+      b: 'B'
+    });
+  });
+
+  it("passed in custom parameters overrides custom parameters", function () {
+    trans.getTrace().custom['a'] = 'A';
+    error.add(trans, new Error(), {a: 'AA'});
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.userAttributes).deep.equals({
+      a: 'AA'
+    });
+  });
+
+  it("passed in custom parameters overrides custom parameters", function () {
+    agent.config.high_security = true;
+    error.add(trans, new Error(), {a: 'AA'});
+
+    var params = error.errors[0][PARAMS];
+
+    expect(params.userAttributes).deep.equals({});
+  });
+
+});
+
 describe("ErrorTracer", function () {
   var tracer;
 
@@ -266,11 +366,11 @@ describe("ErrorTracer", function () {
     });
 
     it("should parse out the first URL parameter", function () {
-      expect(params.request_params.test_param).equal('a value');
+      expect(params.agentAttributes.test_param).equal('a value');
     });
 
     it("should parse out the other URL parameter", function () {
-      expect(params.request_params.thing).equal(true);
+      expect(params.agentAttributes.thing).equal(true);
     });
   });
 
@@ -307,7 +407,7 @@ describe("ErrorTracer", function () {
     var errorJSON = tracer.errors[0];
     var params = errorJSON[4];
 
-    expect(params.request_params).eql({test_param : 'a value'});
+    expect(params.agentAttributes).eql({test_param : 'a value'});
     helper.unloadAgent(agent);
   });
 
@@ -464,11 +564,11 @@ describe("ErrorTracer", function () {
     });
 
     it("should parse out the first URL parameter", function () {
-      expect(params.request_params.test_param).equal('a value');
+      expect(params.agentAttributes.test_param).equal('a value');
     });
 
     it("should parse out the other URL parameter", function () {
-      expect(params.request_params.thing).equal(true);
+      expect(params.agentAttributes.thing).equal(true);
     });
   });
 
@@ -575,11 +675,11 @@ describe("ErrorTracer", function () {
     });
 
     it("should parse out the first URL parameter", function () {
-      expect(params.request_params.test_param).equal('a value');
+      expect(params.agentAttributes.test_param).equal('a value');
     });
 
     it("should parse out the other URL parameter", function () {
-      expect(params.request_params.thing).equal(true);
+      expect(params.agentAttributes.thing).equal(true);
     });
   });
 
@@ -632,7 +732,6 @@ describe("ErrorTracer", function () {
       var params = error[4];
 
       should.exist(params);
-      expect(Object.keys(params).length).equal(2);
       expect(params.request_uri).equal("/test-request/zxrkbl");
 
       should.exist(params.stack_trace);
@@ -684,7 +783,7 @@ describe("ErrorTracer", function () {
     it("should associate errors with parameters", function () {
       var params = error[4];
 
-      expect(params).deep.equal({request_uri : "/test-request/zxrkbl"});
+      expect(params.request_uri).equal("/test-request/zxrkbl");
     });
   });
 
@@ -787,7 +886,6 @@ describe("ErrorTracer", function () {
         var params = json[4];
 
         should.exist(params);
-        expect(Object.keys(params).length).equal(1);
         should.exist(params.stack_trace);
         expect(params.stack_trace[0]).equal("Error: sample error");
       });

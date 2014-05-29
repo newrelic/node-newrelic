@@ -8,6 +8,31 @@ var path         = require('path')
   , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
   ;
 
+describe("when there are parameters on transaction", function () {
+  var agent
+    , trans
+    ;
+
+  beforeEach(function () {
+    agent = helper.loadMockedAgent();
+    trans = new Transaction(agent);
+  });
+
+  afterEach(function () {
+    helper.unloadAgent(agent);
+  });
+
+  it("event should contain those parameters", function (){
+    var par = trans.getTrace().parameters;
+    par['test'] = 'TEST';
+    agent._addEventFromTransaction(trans);
+
+    var first = 0;
+    var agentAttrs = 2;
+    expect(agent.events.toArray()[first][agentAttrs].test).equals('TEST')
+  });
+
+});
 
 describe("when analytics events are disabled", function () {
   var agent;
@@ -102,6 +127,19 @@ describe("on transaction finished", function () {
     expect(event[0].name).to.equal(trans.name);
     expect(event[0].duration).to.equal(trans.timer.duration);
     expect(event[0].type).to.equal('Transaction');
+  });
+
+  it("should contain user and agent attirbutes", function () {
+    var trans = new Transaction(agent);
+
+    trans.end();
+
+    expect(agent.events.toArray().length).to.equal(1);
+
+    var event = agent.events.toArray()[0];
+    expect(event[0]).to.be.a('Object');
+    expect(event[1]).to.be.a('Object');
+    expect(event[2]).to.be.a('Object');
   });
 
   it("should contain custom parameters", function () {
