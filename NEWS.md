@@ -1,3 +1,12 @@
+### v1.7.1 (2014-06-05):
+
+* Fixed an issue where collected errors did not include captured and custom
+  parameters.
+
+* Added the environment variable `NEW_RELIC_HIGH_SECURITY`. This correlates to
+  the `high_security` setting in your `newrelic.js` for High Security Mode.
+
+
 ### v1.7.0 (2014-05-29):
 * Client side setting of `high_security` is now supported.
 
