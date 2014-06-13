@@ -532,7 +532,7 @@ Information about changes to the module are in NEWS.md.
 ### New Relic features available for other platforms not yet in Node.js
 
 * cross-application tracing (depends on RUM)
-* custom parameters, metrics and instrumentation
+* custom metrics and instrumentation
 * slow SQL traces and explain plans
 * garbage collector instrumentation
 * thread profiling

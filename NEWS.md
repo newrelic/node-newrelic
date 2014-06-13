@@ -1,3 +1,20 @@
+### v1.7.2 (2014-06-13):
+
+* Captured parameters for express, restify, and hapi have been normalized.
+
+  When `capture_params` is enabled the agent will collect route and query
+  parameters. Previously express and restify only captured route params, and
+  hapi only captured query params. This normalizes the behavior across the
+  frameworks.
+
+* Fixed an issue with restify instrumentation that caused the agent to always
+  collect route parameters.
+
+  Users of restify who want to continue capturing route (and now query)
+  parameters are advised to enable `capture_params`.
+
+* Fixed an issue where circular configs caused the agent to crash.
+
 ### v1.7.1 (2014-06-05):
 
 * Fixed an issue where collected errors did not include captured and custom
