@@ -19,6 +19,9 @@ test("Restify router introspection", function (t) {
     });
   });
 
+  // need to capture parameters
+  agent.config.capture_params = true;
+
   agent.on('transactionFinished', function (transaction) {
     t.equal(transaction.name, 'WebTransaction/Restify/GET//test/:id',
             "transaction has expected name");

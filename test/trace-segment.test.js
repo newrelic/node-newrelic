@@ -152,25 +152,29 @@ describe("TraceSegment", function () {
   });
 
   describe("with parameters parsed out by framework", function () {
-    var webChild, agent;
+    var webChild, agent, trace;
 
     before(function () {
       agent = helper.loadMockedAgent();
       agent.config.capture_params = true;
 
-      var transaction = new Transaction(agent)
-        , trace       = new Trace(transaction)
-        , segment     = new TraceSegment(trace, 'UnitTest')
-        , url         = '/test'
-        , params;
+      var transaction = new Transaction(agent);
+      trace = new Trace(transaction);
+      trace.mer = 6;
+
+      var segment = new TraceSegment(trace, 'UnitTest')
+        , url     = '/test'
+        , params  = {};
 
       // Express uses positional parameters sometimes
-      params = ['first', 'another'];
+      params[0] = 'first';
+      params[1] = 'another';
       params.test3 = '50';
 
       webChild = segment.add(url);
+      webChild.parameters = params;
       transaction.setName(url, 200);
-      webChild.markAsWeb(url, params);
+      webChild.markAsWeb(url);
 
       trace.setDurationInMillis(1, 0);
       webChild.setDurationInMillis(1, 0);
@@ -184,17 +188,17 @@ describe("TraceSegment", function () {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*');
     });
 
-    it("should have parameters on the child segment", function () {
-      should.exist(webChild.parameters);
+    it("should have parameters on the trace", function () {
+      should.exist(trace.parameters);
     });
 
     it("should have the positional parameters from the params array", function () {
-      expect(webChild.parameters[0]).equal('first');
-      expect(webChild.parameters[1]).equal('another');
+      expect(trace.parameters[0]).equal('first');
+      expect(trace.parameters[1]).equal('another');
     });
 
     it("should have the named parameter from the params array", function () {
-      expect(webChild.parameters.test3).equal('50');
+      expect(trace.parameters.test3).equal('50');
     });
 
     it("should serialize the segment with the parameters", function () {
