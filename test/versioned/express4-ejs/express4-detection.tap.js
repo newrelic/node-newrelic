@@ -11,7 +11,6 @@ var path    = require('path')
  */
 
 test("Express 4 detection", function (t) {
-  // FLAG: express4
   var agent   = helper.instrumentMockedAgent()
     , express = require('express')
     ;

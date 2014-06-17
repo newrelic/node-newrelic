@@ -18,8 +18,6 @@ var TEST_PORT = 9876
 
 
 test("test capture_params for express", function (t) {
-  t.plan(4);
-
   t.test("no variables", function (t) {
     t.plan(5);
     var agent = helper.instrumentMockedAgent({express4: true})
@@ -184,6 +182,38 @@ test("test capture_params for express", function (t) {
              "got correct content type");
         t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.");
       });
+    });
+  });
+
+  t.test("query params mask route parameters", function (t) {
+    var agent = helper.instrumentMockedAgent()
+      , app = require('express')()
+      , server = require('http').createServer(app)
+      ;
+
+    this.tearDown(function () {
+      server.close();
+      helper.unloadAgent(agent);
+    });
+
+    // set apdexT so apdex stats will be recorded
+    agent.config.apdex_t = 1;
+
+    // set capture_params so we get the data we need.
+    agent.config.capture_params = true;
+
+    app.get('/user/:id', function (req, res) {
+      res.end();
+    });
+
+    agent.on('transactionFinished', function (transaction){
+      t.deepEqual(transaction.trace.parameters, {id: 6},
+                  'parameters should include query params');
+      t.end();
+    });
+
+    server.listen(TEST_PORT, TEST_HOST, function () {
+      request.get(TEST_URL + '/user/5?id=6');
     });
   });
 
