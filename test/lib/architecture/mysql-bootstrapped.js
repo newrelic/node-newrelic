@@ -8,9 +8,6 @@ var path   = require('path')
  * This is a c9/architect configuration file.
  */
 module.exports = [
-  {packagePath : path.join(__dirname, '..', '..', 'integration', 'benchmarkr', 'services', 'mysqld'),
-   dbpath      : path.join(__dirname, '..', '..', 'integration', 'test-mysql'),
-   logger      : logger.child({component : 'mysqld'})},
   {packagePath : path.join(__dirname, '..', 'bootstrap', 'mysql'),
    db          : {
      user  : 'test_user',

@@ -83,7 +83,9 @@
     "glob": "~3.2.9",
     "mkdirp": "*",
     "express": "*",
-    "npm-license": "*"
+    "npm-license": "*",
+    "mongodb": "*",
+    "async": "*"
   },
   "repository": {
     "type": "git",

@@ -65,7 +65,15 @@ ca-gen:
 	@./bin/update-ca-bundle.sh
 
 integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
-	@time $(TAP) $(INTEGRATION)
+	@HOST=`boot2docker ip 2>/dev/null`; \
+	if test "$${HOST}"; then \
+	  echo "Using boot2docker host through IP $${HOST}"; \
+	  export NR_NODE_TEST_MEMCACHED_HOST=$${HOST}; \
+	  export NR_NODE_TEST_MONGODB_HOST=$${HOST}; \
+	  export NR_NODE_TEST_MYSQL_HOST=$${HOST}; \
+	  export NR_NODE_TEST_REDIS_HOST=$${HOST}; \
+	fi; \
+	time $(TAP) $(INTEGRATION)
 
 coverage: clean node_modules $(CERTIFICATE)
 	@$(COVER) run $(MOCHA_NOBIN)
@@ -123,3 +131,25 @@ $(CERTIFICATE): $(CACERT)
 		-in server.csr \
 		-out $(CERTIFICATE)
 	@rm -f server.csr
+
+services:
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_memcached[^a-zA-Z_]"; then \
+	  docker start nr_node_memcached; \
+	else \
+	  docker run -d --name nr_node_memcached -p 11211:11211 borja/docker-memcached; \
+	fi
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_mongodb[^a-zA-Z_]"; then \
+	  docker start nr_node_mongodb; \
+	else \
+	  docker run -d --name nr_node_mongodb -p 27017:27017 dockerfile/mongodb; \
+	fi
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_mysql[^a-zA-Z_]"; then \
+	  docker start nr_node_mysql; \
+	else \
+	  docker run -d --name nr_node_mysql -p 3306:3306 orchardup/mysql; \
+	fi
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_redis[^a-zA-Z_]"; then \
+	  docker start nr_node_redis; \
+	else \
+	  docker run -d --name nr_node_redis -p 6379:6379 redis; \
+	fi

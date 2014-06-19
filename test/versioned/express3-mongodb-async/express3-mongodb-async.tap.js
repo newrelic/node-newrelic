@@ -3,9 +3,13 @@
 var path   = require('path')
   , test   = require('tap').test
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , params = require('../../lib/params')
   ;
 
-var DB_URL = 'mongodb://localhost:27017/async_test';
+// CONSTANTS
+var DB_COLLECTION = 'test_express'
+  , DB_URL = 'mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration'
+;
 
 test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, function (t) {
   t.plan(24);
@@ -27,10 +31,11 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       t.ok(agent.getTransaction(), "tracer state visible in find's connect callback");
       if (error) return next(error);
 
-      var collection = new Collection(client, 'test');
+      var collection = new Collection(client, DB_COLLECTION);
       collection.find({_id : new ObjectID(id)}).nextObject(function cb_nextObject(err, obj) {
         t.ok(agent.getTransaction(), "tracer state visible in find callback");
         next(err, obj);
+        client.close();
       });
     });
   }
@@ -41,8 +46,11 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       t.ok(agent.getTransaction(), "tracer state visible in update's connect callback");
       if (error) return next(error);
 
-      var objs = new Collection(client, 'test');
-      objs.update({_id : obj._id}, obj, {upsert : false, safe : true}, next);
+      var objs = new Collection(client, DB_COLLECTION);
+      objs.update({_id : obj._id}, obj, {upsert : false, safe : true}, function cb_update(err, obj) {
+        next(err, obj);
+        client.close();
+      });
     });
   }
 
@@ -143,11 +151,11 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
   }
 
   function populate(next) {
-    var db = new Db('async_test', new Server('localhost', 27017));
+    var db = new Db('integration', new Server(params.mongodb_host, params.mongodb_port));
     db.open(function cb_open(error, db) {
       if (error) return next(error);
 
-      db.collection('test', function (error, collection) {
+      db.collection(DB_COLLECTION, function (error, collection) {
         if (error) return next(error);
         var obj = {
           seen    : [1, 2, 3],
@@ -168,7 +176,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
    **
    **/
   var self = this;
-  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(error, service) {
+  helper.bootstrapMongoDB([DB_COLLECTION], function cb_bootstrapMongoDB(error, service) {
     if (error) {
       t.fail(error);
       return t.end();
@@ -182,9 +190,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
 
     self.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
-        helper.cleanMongoDB(service, function () {
-          helper.unloadAgent(agent);
-        });
+        helper.unloadAgent(agent);
       });
     });
 
@@ -209,12 +215,12 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
         t.equal(children.length, 2, "only one child of web node");
 
         var find = children[0] || {};
-        t.equal(find.name, 'Datastore/statement/MongoDB/test/find',
+        t.equal(find.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/find',
                 "second segment is MongoDB find");
         t.equal((find.children || []).length, 0, "no children of find node");
 
         var update = children[1] || {};
-        t.equal(update.name, 'Datastore/statement/MongoDB/test/update',
+        t.equal(update.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/update',
                 "third segment is MongoDB update");
         t.equal((update.children || []).length, 0, "no children of update node");
       }

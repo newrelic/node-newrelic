@@ -2,6 +2,7 @@
 
 var mysql = require('mysql')
   , Q     = require('q')
+  , params = require('../../params')
   ;
 
 /**
@@ -39,7 +40,7 @@ module.exports = function setup(options, imports, register) {
   function createUser(client) {
     return query(
       client,
-      "CREATE USER '" + username + "'@'localhost'",
+      "CREATE USER '" + username + "'",
       "User '" + username + "' created successfully."
     );
   }
@@ -47,7 +48,7 @@ module.exports = function setup(options, imports, register) {
   function grantPermissions(client) {
     return query(
       client,
-      "GRANT ALL ON " + dbname + ".* TO '" + username + "'@'localhost'",
+      "GRANT ALL ON " + dbname + ".* TO '" + username + "'",
       "Access granted to user '" + username + "'."
     );
   }
@@ -65,7 +66,9 @@ module.exports = function setup(options, imports, register) {
 
     return Q.resolve(mysql.createClient({
       user     : username,
-      database : dbname
+      database : dbname,
+      host     : params.mysql_host,
+      port     : params.mysql_port
     }));
   }
 
@@ -78,6 +81,14 @@ module.exports = function setup(options, imports, register) {
         "  test_value VARCHAR(255)" +
         ")",
       "Table '" + tablename + "' created."
+    );
+  }
+
+  function truncateTable(client) {
+    return query(
+      client,
+      'TRUNCATE TABLE ' + tablename,
+      "Table '" + tablename + "' truncated.'"
     );
   }
 
@@ -138,11 +149,13 @@ module.exports = function setup(options, imports, register) {
 
   var client = mysql.createClient({
     user     : 'root',
-    database : 'mysql'
+    database : 'mysql',
+    host     : params.mysql_host,
+    port     : params.mysql_port
   });
 
   // actually run the initializer
-  var isInitialized = run(client, [ensureTable, ensureData, end]);
+  var isInitialized = run(client, [ensureTable, end, connectAsTestUser, truncateTable, createSeedData, ensureData, end]);
   isInitialized.then(
     succeeded,
     function notYetBootstrapped(error) {

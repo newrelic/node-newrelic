@@ -4,7 +4,11 @@ var path   = require('path')
   , tap    = require('tap')
   , test   = tap.test
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+  , params = require('../lib/params')
   ;
+
+// CONSTANTS
+var DB_INDEX = 2;
 
 test("Redis instrumentation should find Redis calls in the transaction trace",
      {timeout : 5000},
@@ -12,18 +16,15 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
   t.plan(17);
 
   var self = this;
-  helper.bootstrapRedis(function cb_bootstrapRedis(error, app) {
+  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, app) {
     if (error) return t.fail(error);
-
     var agent  = helper.instrumentMockedAgent()
       , redis  = require('redis')
-      , client = redis.createClient()
+      , client = redis.createClient(params.redis_port, params.redis_host)
       ;
 
     self.tearDown(function cb_tearDown() {
-      helper.cleanRedis(app, function done() {
-        helper.unloadAgent(agent);
-      });
+      helper.unloadAgent(agent);
     });
 
     // need to capture parameters

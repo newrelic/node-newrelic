@@ -1,0 +1,6 @@
+environment:
+  services:
+    - orchardup/mysql
+    - dockerfile/mongodb
+    - borja/docker-memcached
+    - redis

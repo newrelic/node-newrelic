@@ -4,6 +4,7 @@ var path   = require('path')
   , tap    = require('tap')
   , test   = tap.test
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , params = require('../../lib/params')
   ;
 
 test("MySQL instrumentation should find the MySQL call in the transaction trace",
@@ -20,6 +21,8 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
     var mysql = require('mysql');
 
     var client = mysql.createClient({
+      host     : params.mysql_host,
+      port     : params.mysql_port,
       user     : 'test_user',
       database : 'agent_integration'
     });
@@ -29,9 +32,7 @@ test("MySQL instrumentation should find the MySQL call in the transaction trace"
       client.end(function cleanup(error) {
         if (error) t.fail(error);
 
-        helper.cleanMySQL(app, function done() {
-          helper.unloadAgent(agent);
-        });
+        helper.unloadAgent(agent);
       });
     });
 

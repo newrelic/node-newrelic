@@ -35,20 +35,33 @@ Functional tests against specific versions of instrumented modules are stored in
 There are some other tests in `test/multiverse/` and `test/versioned-node/`.
 They are works in progress and not ready for general-purpose use.
 
-### Running tests
 
-To run the functional tests, you will need to have servers for MongoDB, Redis,
-MySQL, and memcached installed on the machine where you run the tests. You will
-also need the openssl command-line binary and a GNU-compatible make. Please
-read the documentation for your distribution or packaging system for details on
-how to install the correct packages. Be aware that the binaries are run
-directly by the agent, so network access on the same network isn't going to be
-sufficient. Another thing to be aware of is you can't have any of these
-services already running. If they are running you may get failures when testing
-module integration.
+### Setup
 
-If you get everything up and running on Windows, please send us a pull request
-with the details and we'll incorporate it into this document.
+To run the tests you need a GNU-compatible make, the openssl command-line
+binary, and some services:
+
+* Memcached
+* MongoDB
+* MySQL
+* Redis
+
+If you have these all running locally on the standard ports, then you are good
+to go. However, the suggested path is to use [Docker](http://www.docker.com).
+Follow the [install guide](https://docs.docker.com/installation/#installation)
+to install Docker for your system. Then, run `make services` to start docker
+containers for each of the above services.
+
+If you have these services available on non-standard ports or elsewhere on your
+network, you can use the following environment variables to tell the tests where
+they are:
+
+* NR_NODE_TEST_\<service\>_HOST
+* NR_NODE_TEST_\<service\>_PORT
+
+The service token is the all-caps version of the service name listed above.
+
+### Running the tests
 
 Running the test suite is simple.  Just run:
 
@@ -58,7 +71,7 @@ This will install all the necessary modules (and do any required SSL certificate
 creation) and run the unit tests in standalone mode, followed by the functional
 tests if all of the unit tests pass.
 
-If you don't feel like dealing with the hassle of installing the servers, just
+If you don't feel like dealing with the hassle of setting up the servers, just
 the unit tests can be run with:
 
     make unit
@@ -66,10 +79,12 @@ the unit tests can be run with:
 ### Writing tests
 
 For most contributions it is strongly recommended to add additional tests which
-exercise your changes.
-
-This helps us efficiently incorporate your changes into our mainline codebase
-and provides a safeguard that your change won't be broken by future development.
+exercise your changes. This helps us efficiently incorporate your changes into
+our mainline codebase and provides a safeguard that your change won't be broken
+by future development. Because of this, we require that all changes come with
+tests. You are welcome to submit pull requests with untested changes, but they
+won't be merged until you or the development team have an opportunity to write
+tests for them.
 
 There are some rare cases where code changes do not result in changed
 functionality (e.g. a performance optimization) and new tests are not required.
