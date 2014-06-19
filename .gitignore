@@ -7,3 +7,4 @@ npm-debug.log
 *.crt
 ca-index*
 ca-serial*
+.DS_Store
