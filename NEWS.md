@@ -1,3 +1,9 @@
+### v1.7.3 (2014-06-20):
+
+* Support for instrumenting a standalone express 4 router.
+  See [issue 154](https://github.com/newrelic/node-newrelic/pull/154).
+* Set the default log level to `info`.
+
 ### v1.7.2 (2014-06-13):
 
 * Captured parameters for express, restify, and hapi have been normalized.
