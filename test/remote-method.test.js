@@ -524,11 +524,15 @@ describe("RemoteMethod", function () {
         expect(parsed.hostname).equal('collector.newrelic.com');
       });
 
-      it("should proxyify port when proxy_host is set", function () {
+      it("should proxify proxy authentication when proxy_auth is set", function () {
         config.proxy_host = 'proxy.example.com';
-        var method = new RemoteMethod(TEST_METHOD, config);
-        parsed = reconstitute(method._path());
-        expect(parsed.port).equal('80');
+        config.proxy_port = 12345;
+        config.proxy_auth = 'username:password';
+
+        var method = new RemoteMethod(TEST_METHOD, config),
+          headers = method._headers(4, false);
+
+        expect(headers['Proxy-Authorization']).equal('dXNlcm5hbWU6cGFzc3dvcmQ=');
       });
     });
   });
