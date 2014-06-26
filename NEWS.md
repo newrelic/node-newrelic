@@ -1,3 +1,8 @@
+### v1.7.4 (2014-06-26):
+
+* The agent now reports the value of the `NODE_ENV` environment variable
+  to New Relic.
+
 ### v1.7.3 (2014-06-20):
 
 * Support for instrumenting a standalone express 4 router.
