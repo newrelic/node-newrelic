@@ -72,6 +72,7 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	  export NR_NODE_TEST_MONGODB_HOST=$${HOST}; \
 	  export NR_NODE_TEST_MYSQL_HOST=$${HOST}; \
 	  export NR_NODE_TEST_REDIS_HOST=$${HOST}; \
+	  export NR_NODE_TEST_CASSANDRA_HOST=$${HOST}; \
 	fi; \
 	time $(TAP) $(INTEGRATION)
 
@@ -152,4 +153,9 @@ services:
 	  docker start nr_node_redis; \
 	else \
 	  docker run -d --name nr_node_redis -p 6379:6379 redis; \
+	fi
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_cassandra[^a-zA-Z_]"; then \
+	  docker start nr_node_cassandra; \
+	else \
+	  docker run -d --name nr_node_cassandra -p 9042:9042 zmarcantel/cassandra; \
 	fi

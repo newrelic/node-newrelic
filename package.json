@@ -74,6 +74,7 @@
     "mongodb": "*",
     "nave": "*",
     "nock": "*",
+    "node-cassandra-cql": "^0.5.0",
     "npm-license": "*",
     "proxy": "^0.2.3",
     "q": "*",
@@ -86,7 +87,8 @@
     "sinon": "*",
     "split": "*",
     "tap": "*",
-    "wrench": "*"
+    "wrench": "*",
+    "async": "*"
   },
   "repository": {
     "type": "git",

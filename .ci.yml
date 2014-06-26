@@ -4,3 +4,4 @@ environment:
     - dockerfile/mongodb
     - borja/docker-memcached
     - redis
+    - zmarcantel/cassandra
