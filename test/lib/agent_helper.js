@@ -29,18 +29,19 @@ var helper = module.exports = {
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
    *
+   * @param object flags   Any feature flags
    * @param object options Any configuration to override in the agent.
    *                       See agent.js for details, but so far this includes
    *                       passing in a config object and the connection stub
    *                       created in this function.
    * @returns Agent Agent with a stubbed configuration.
    */
-  loadMockedAgent : function loadMockedAgent(flags) {
+  loadMockedAgent : function loadMockedAgent(flags, conf) {
     if (_agent) throw _agent.__created;
 
     // agent needs a "real" configuration
     var configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
-      , config       = configurator.initialize()
+      , config       = configurator.initialize(conf)
       ;
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; };
@@ -78,10 +79,10 @@ var helper = module.exports = {
    *
    * @returns Agent Agent with a stubbed configuration.
    */
-  instrumentMockedAgent : function instrumentMockedAgent(flags) {
+  instrumentMockedAgent : function instrumentMockedAgent(flags, conf) {
     shimmer.debug = true;
 
-    var agent = helper.loadMockedAgent(flags);
+    var agent = helper.loadMockedAgent(flags, conf);
 
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
