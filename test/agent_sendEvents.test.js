@@ -31,9 +31,6 @@ describe("the New Relic agent", function () {
     beforeEach(function () {
       agent = helper.loadMockedAgent();
 
-      // FLAG: insights
-      agent.config.feature_flag.insights = true;
-
       agent.collector = {
         analyticsEvents: function (_events, callback) {
           events = _events;

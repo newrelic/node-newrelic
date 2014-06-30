@@ -90,9 +90,6 @@ describe("on transaction finished", function () {
 
   beforeEach(function () {
     agent = helper.loadMockedAgent();
-
-    // FLAG: insights
-    agent.config.feature_flag.insights = true;
   });
 
   afterEach(function () {
