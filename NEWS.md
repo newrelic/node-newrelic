@@ -1,3 +1,14 @@
+### v1.7.5 (2014-07-02):
+
+* Plain `http` routes (i.e. routes outside of a framework) now apply config
+  naming rules early. See [rules for naming and ignoring requests](https://github.com/newrelic/node-newrelic#rules-for-naming-and-ignoring-requests).
+
+  This fixes a bug where generating the *Browser Timing Header* would not work
+  without a framework (i.e. express, restify, hapi).
+
+* *Beta* support for connecting to newrelic via ssl through a proxy.
+  See [issue 128](https://github.com/newrelic/node-newrelic/issues/128) for details.
+
 ### v1.7.4 (2014-06-26):
 
 * The agent now reports the value of the `NODE_ENV` environment variable
