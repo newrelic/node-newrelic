@@ -52,13 +52,11 @@
   "dependencies": {
     "bunyan": "0.14.6",
     "continuation-local-storage": "^3.0.0",
-    "proxying-agent": "^0.1.4",
     "yakaa": "^1.0.0"
   },
   "bundledDependencies": [
     "bunyan",
     "continuation-local-storage",
-    "proxying-agent",
     "yakaa"
   ],
   "devDependencies": {
