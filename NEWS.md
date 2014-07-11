@@ -1,3 +1,14 @@
+### v1.8.0 (2014-07-11):
+
+* General release of proxy support for the agent to connect to New Relic.
+  * HTTP/HTTPS support from the `newrelic` module to the proxy
+  * HTTP/HTTPS support from the `newrelic` module to New Relic.
+  * Basic proxy authentication.
+  * Allow custom certificates during TLS negotiation.
+  * For more information, read our docs [here](https://docs.newrelic.com/docs/nodejs/customizing-your-nodejs-config-file#proxy)
+* Fix for enabling High Security Mode via an environment variable
+* Optimization to allow early garbage collection of TLS slab buffers.
+
 ### v1.7.5 (2014-07-02):
 
 * Plain `http` routes (i.e. routes outside of a framework) now apply config
