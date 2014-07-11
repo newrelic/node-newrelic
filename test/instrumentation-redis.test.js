@@ -28,6 +28,10 @@ FakeConnection.prototype.setTimeout = function setTimeout(timeout) {
   this.timeout = timeout;
 };
 
+FakeConnection.prototype.setKeepAlive = function setKeepAlive(keepAlive){
+  this.keepAlive = keepAlive;
+};
+
 FakeConnection.prototype.write = function write() {};
 
 describe("agent instrumentation of Redis", function () {
