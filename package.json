@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "1.7.5",
+  "version": "1.8.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -87,8 +87,7 @@
     "sinon": "*",
     "split": "*",
     "tap": "*",
-    "wrench": "*",
-    "async": "*"
+    "wrench": "*"
   },
   "repository": {
     "type": "git",
