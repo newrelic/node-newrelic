@@ -1,3 +1,9 @@
+### v1.8.1 (2014-07-18):
+
+* Agent now tracks metrics for router queue time.
+  In addition to X-REQUEST-START, the agent now supports X-QUEUE-START header times.
+  This metric will show up as "Request Queueing" in the Overview tab.
+
 ### v1.8.0 (2014-07-11):
 
 * General release of proxy support for the agent to connect to New Relic.
