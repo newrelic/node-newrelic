@@ -13,7 +13,7 @@ var path   = require('path')
 
 var agent      = helper.instrumentMockedAgent()
   , cassandra  = require('node-cassandra-cql')
-  , client     =  new cassandra.Client({hosts: [params.cassandra_host  + ":"
+  , client     = new cassandra.Client({hosts: [params.cassandra_host  + ":"
     + params.cassandra_port]});
 
 //constants for keyspace and table creation
