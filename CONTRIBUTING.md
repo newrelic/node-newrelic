@@ -41,6 +41,7 @@ They are works in progress and not ready for general-purpose use.
 To run the tests you need a GNU-compatible make, the openssl command-line
 binary, and some services:
 
+* Cassandra
 * Memcached
 * MongoDB
 * MySQL
