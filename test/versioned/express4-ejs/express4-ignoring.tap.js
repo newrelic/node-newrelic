@@ -10,7 +10,7 @@ var path    = require('path')
 test("ignoring an Express 4 route", function (t) {
   t.plan(7);
 
-  var agent   = helper.instrumentMockedAgent({express4: true})
+  var agent   = helper.instrumentMockedAgent()
     , api     = new API(agent)
     , express = require('express')
     , app     = express()

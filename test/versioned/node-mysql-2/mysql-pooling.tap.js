@@ -4,6 +4,7 @@ var path   = require('path')
   , test   = require('tap').test
   , logger = require(path.join(__dirname, '..', '..', '..', 'lib', 'logger'))
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , params = require('../../lib/params')
   ;
 
 var DBUSER = 'test_user'
@@ -40,7 +41,9 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
       create : function (callback) {
         var client = mysql.createConnection({
           user     : DBUSER,
-          database : DBNAME
+          database : DBNAME,
+          host     : params.mysql_host,
+          port     : params.mysql_port
         });
 
         client.on('error', function (err) {
@@ -123,9 +126,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
     this.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow();
-        helper.cleanMySQL(app, function done() {
-          helper.unloadAgent(agent);
-        });
+        helper.unloadAgent(agent);
       });
     });
 

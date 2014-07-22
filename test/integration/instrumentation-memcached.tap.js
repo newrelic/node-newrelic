@@ -4,6 +4,7 @@ var path   = require('path')
   , tap    = require('tap')
   , test   = tap.test
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+  , params = require('../lib/params')
   ;
 
 test("memcached instrumentation should find memcached calls in the transaction trace",
@@ -18,15 +19,14 @@ test("memcached instrumentation should find memcached calls in the transaction t
     var agent = helper.instrumentMockedAgent();
     var Memcached = require('memcached');
 
-    var memcached = new Memcached('localhost:11211');
+    var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port);
 
     // need to capture parameters
     agent.config.capture_params = true;
 
     self.tearDown(function cb_tearDown() {
-      helper.cleanMemcached(app, function done() {
-        helper.unloadAgent(agent);
-      });
+      memcached.end();
+      helper.unloadAgent(agent);
     });
 
     t.notOk(agent.getTransaction(), "no transaction should be in play");

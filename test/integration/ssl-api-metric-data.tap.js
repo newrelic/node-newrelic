@@ -39,14 +39,7 @@ test("Collector API should send metrics to staging-collector.newrelic.com", func
       t.notOk(error, "sent metrics without error");
       t.ok(response, "got a response");
 
-      t.equal(response.length, 1, "got back 1 metric mapping");
-      var mapping = response[0];
-      t.ok(Array.isArray(mapping), "metric mapping is an array");
-      var tag = mapping[0];
-      t.equal(tag.name, 'TEST/discard', "got back metric name");
-      t.equal(tag.scope, '', "didn't get back a scope");
-
-      t.ok(mapping[1] > 1, "Got back a numeric ID to map to");
+      t.equal(response.length, 0, "got back no mappings");
       t.doesNotThrow(function cb_doesNotThrow() {
         agent.mapper.load(response);
       }, "was able to load mapping");

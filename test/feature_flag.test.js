@@ -11,6 +11,7 @@ var used = [
   'insights',
   'released',
   'unreleased',
+  'proxy',
 ];
 
 describe("feature flags", function () {

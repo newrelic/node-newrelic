@@ -3,11 +3,12 @@
 var path = require('path')
   , test = require('tap').test
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , params = require('../../lib/params')
   ;
 
 test("agent instrumentation of MongoDB when GridFS is used", function (t) {
   var context = this;
-  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(err, app) {
+  helper.bootstrapMongoDB([], function cb_bootstrapMongoDB(err, app) {
     if (err) {
       t.fail(err);
       return t.end();
@@ -17,7 +18,7 @@ test("agent instrumentation of MongoDB when GridFS is used", function (t) {
     helper.runInTransaction(agent, function () {
       var mongodb = require('mongodb');
 
-      mongodb.connect('mongodb://localhost:27017/noexist', function (err, db) {
+      mongodb.connect('mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/noexist', function (err, db) {
         if (err) {
           t.fail(err);
           return t.end();
@@ -25,7 +26,6 @@ test("agent instrumentation of MongoDB when GridFS is used", function (t) {
         t.ok(db, "got MongoDB connection");
 
         context.tearDown(function cb_tearDown() {
-          helper.cleanMongoDB(app);
           db.close();
         });
 

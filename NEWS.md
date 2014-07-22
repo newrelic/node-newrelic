@@ -1,3 +1,59 @@
+### v1.8.1 (2014-07-18):
+
+* Agent now tracks metrics for router queue time.
+  In addition to X-REQUEST-START, the agent now supports X-QUEUE-START header times.
+  This metric will show up as "Request Queueing" in the Overview tab.
+
+### v1.8.0 (2014-07-11):
+
+* General release of proxy support for the agent to connect to New Relic.
+  * HTTP/HTTPS support from the `newrelic` module to the proxy
+  * HTTP/HTTPS support from the `newrelic` module to New Relic.
+  * Basic proxy authentication.
+  * Allow custom certificates during TLS negotiation.
+  * For more information, read our docs [here](https://docs.newrelic.com/docs/nodejs/customizing-your-nodejs-config-file#proxy)
+* Fix for enabling High Security Mode via an environment variable
+* Optimization to allow early garbage collection of TLS slab buffers.
+
+### v1.7.5 (2014-07-02):
+
+* Plain `http` routes (i.e. routes outside of a framework) now apply config
+  naming rules early. See [rules for naming and ignoring requests](https://github.com/newrelic/node-newrelic#rules-for-naming-and-ignoring-requests).
+
+  This fixes a bug where generating the *Browser Timing Header* would not work
+  without a framework (i.e. express, restify, hapi).
+
+* *Beta* support for connecting to newrelic via ssl through a proxy.
+  See [issue 128](https://github.com/newrelic/node-newrelic/issues/128) for details.
+
+### v1.7.4 (2014-06-26):
+
+* The agent now reports the value of the `NODE_ENV` environment variable
+  to New Relic.
+
+### v1.7.3 (2014-06-20):
+
+* Support for instrumenting a standalone express 4 router.
+  See [issue 154](https://github.com/newrelic/node-newrelic/pull/154).
+* Set the default log level to `info`.
+
+### v1.7.2 (2014-06-13):
+
+* Captured parameters for express, restify, and hapi have been normalized.
+
+  When `capture_params` is enabled the agent will collect route and query
+  parameters. Previously express and restify only captured route params, and
+  hapi only captured query params. This normalizes the behavior across the
+  frameworks.
+
+* Fixed an issue with restify instrumentation that caused the agent to always
+  collect route parameters.
+
+  Users of restify who want to continue capturing route (and now query)
+  parameters are advised to enable `capture_params`.
+
+* Fixed an issue where circular configs caused the agent to crash.
+
 ### v1.7.1 (2014-06-05):
 
 * Fixed an issue where collected errors did not include captured and custom

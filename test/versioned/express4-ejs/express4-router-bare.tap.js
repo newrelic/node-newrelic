@@ -9,7 +9,7 @@ var path    = require('path')
 test("Express 4 router introspection", function (t) {
   t.plan(11);
 
-  var agent   = helper.instrumentMockedAgent({express4: true})
+  var agent   = helper.instrumentMockedAgent()
     , express = require('express')
     , app     = express()
     , server  = require('http').createServer(app)

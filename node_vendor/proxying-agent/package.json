@@ -1,0 +1,27 @@
+{
+  "name": "proxying-agent",
+  "version": "0.1.4",
+  "description": "Node HTTP/HTTPS Forward Proxy Agent",
+  "keywords": [
+    "http",
+    "https",
+    "agent",
+    "proxy",
+    "tunnel",
+    "ntlm"
+  ],
+  "homepage": "https://github.com/capriza/node-proxying-agent/",
+  "author": {
+    "name": "Nadav Fischer"
+  },
+  "main": "./index.js",
+  "licenses": {
+    "type": "The MIT License",
+    "url": "http://www.opensource.org/licenses/mit-license.php"
+  },
+  "repositories": "https://github.com/capriza/node-proxying-agent.git",
+  "engines": {
+    "node": ">=0.9.0"
+  },
+  "readmeFilename": "README.md"
+}

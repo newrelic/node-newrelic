@@ -26,11 +26,60 @@ var TEST_PATH = '/test'
                 "</html>\n"
   ;
 
+// Regression test for issue 154
+// https://github.com/newrelic/node-newrelic/pull/154
+test("using only the express router", function (t) {
+  var agent = helper.instrumentMockedAgent();
+  var router = require('express').Router()
+
+  this.tearDown(function cb_tearDown() {
+    helper.unloadAgent(agent);
+  });
+
+  router.get('/test', function () {
+    //
+  });
+
+  router.get('/test2', function () {
+    //
+  });
+
+  // just try not to blow up
+  t.end();
+});
+
+test("the express router should go through a whole request lifecycle", function (t) {
+  var agent = helper.instrumentMockedAgent();
+  var router = require('express').Router()
+  var server;
+
+  t.plan(2);
+
+  this.tearDown(function cb_tearDown() {
+    helper.unloadAgent(agent);
+  });
+
+  router.get('/test', function (_, res) {
+    t.ok(true);
+    res.end();
+  });
+
+  server = require('http').createServer(router)
+  server.listen(8080, function(){
+    request.get('http://localhost:8080/test', function (error, response, body) {
+      server.close();
+
+      t.ifError(error);
+      t.end();
+    });
+  })
+});
+
 test("agent instrumentation of Express 4", function (t) {
   t.plan(6);
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
-    var agent = helper.instrumentMockedAgent({express4: true})
+    var agent = helper.instrumentMockedAgent()
       , app = require('express')()
       , server = require('http').createServer(app)
       ;
@@ -87,7 +136,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("using EJS templates",
        {timeout : 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent({express4: true})
+    var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
       ;
@@ -124,7 +173,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("should generate rum headers",
        {timeout : 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent({express4: true})
+    var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
       , api    = new API(agent)
@@ -165,7 +214,7 @@ test("agent instrumentation of Express 4", function (t) {
   });
 
   t.test("should trap errors correctly", function (t) {
-    var agent = helper.instrumentMockedAgent({express4: true});
+    var agent = helper.instrumentMockedAgent();
 
     var app    = require('express')()
       , server = require('http').createServer(app)
@@ -221,7 +270,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("should measure request duration properly (NA-46)",
        {timeout : 2 * 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent({express4: true})
+    var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
       ;
@@ -269,7 +318,7 @@ test("agent instrumentation of Express 4", function (t) {
   t.test("should capture URL correctly when configured with a prefix",
          {timeout : 2 * 1000},
          function (t) {
-    var agent  = helper.instrumentMockedAgent({express4: true})
+    var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
       ;

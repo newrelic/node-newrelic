@@ -12,3 +12,11 @@ test('flatten flattens things', function (t) {
 
   t.end();
 });
+
+test('flatten a recursive object', function (t) {
+  var obj = {};
+  obj.x = obj;
+  t.deepEqual(flatten({}, '', obj), {});
+
+  t.end();
+});

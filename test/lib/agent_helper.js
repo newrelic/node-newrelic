@@ -4,8 +4,13 @@ var path      = require('path')
   , fs        = require('fs')
   , architect = require('architect')
   , wrench    = require('wrench')
+  , MongoClient = require('mongodb').MongoClient
+  , async     = require('async')
+  , redis     = require('redis')
+  , Memcached = require('memcached')
   , shimmer   = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
   , Agent     = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
+  , params    = require('../lib/params')
   ;
 
 /*
@@ -24,18 +29,19 @@ var helper = module.exports = {
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
    *
+   * @param object flags   Any feature flags
    * @param object options Any configuration to override in the agent.
    *                       See agent.js for details, but so far this includes
    *                       passing in a config object and the connection stub
    *                       created in this function.
    * @returns Agent Agent with a stubbed configuration.
    */
-  loadMockedAgent : function loadMockedAgent(flags) {
+  loadMockedAgent : function loadMockedAgent(flags, conf) {
     if (_agent) throw _agent.__created;
 
     // agent needs a "real" configuration
     var configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
-      , config       = configurator.initialize()
+      , config       = configurator.initialize(conf)
       ;
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; };
@@ -73,10 +79,10 @@ var helper = module.exports = {
    *
    * @returns Agent Agent with a stubbed configuration.
    */
-  instrumentMockedAgent : function instrumentMockedAgent(flags) {
+  instrumentMockedAgent : function instrumentMockedAgent(flags, conf) {
     shimmer.debug = true;
 
-    var agent = helper.loadMockedAgent(flags);
+    var agent = helper.loadMockedAgent(flags, conf);
 
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
@@ -118,67 +124,48 @@ var helper = module.exports = {
   },
 
   /**
-   * Use c9/architect to bootstrap a memcached server for running integration
-   * tests.
+   * Stub to bootstrap a memcached instance
    *
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
   bootstrapMemcached : function bootstrapMemcached(callback) {
-    var memcached = path.join(__dirname, 'architecture', 'memcached.js');
-    var config = architect.loadConfig(memcached);
-    architect.createApp(config, function (error, app) {
-      if (error) return helper.cleanMemcached(app, function () {
-        return callback(error);
-      });
-
-      return callback(null, app);
+    var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port);
+    memcached.flush(function(err) {
+      memcached.end();
+      callback(err);
     });
   },
 
   /**
-   * Shut down and clean up after memcached.
-   *
-   * @param Object app The architect app to be shut down.
-   * @param Function callback The operations to be run after the server is
-   *                          shut down.
-   */
-  cleanMemcached : function cleanMemcached(app, callback) {
-    var memcached = app.getService('memcachedProcess');
-    memcached.shutdown(callback);
-  },
-
-  /**
-   * Use c9/architect to bootstrap a MongoDB server for running integration
-   * tests.
+   * Bootstrap a running MongoDB instance by dropping all the collections used
+   * by tests
    *
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
-  bootstrapMongoDB : function bootstrapMongoDB(callback) {
-    var bootstrapped = path.join(__dirname, 'architecture', 'mongodb-bootstrapped.js');
-    var config = architect.loadConfig(bootstrapped);
-    architect.createApp(config, function (error, app) {
-      if (error) return helper.cleanMongoDB(app, function () { return callback(error); });
+  bootstrapMongoDB : function bootstrapMongoDB(collections, callback) {
+    MongoClient.connect('mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration', function(err, db) {
+      if (err) return callback(err);
 
-      return callback(null, app);
-    });
-  },
+      async.eachSeries(collections, function(collection, callback) {
+        db.dropCollection(collection, function(err) {
+          // It's ok if the collection didn't exist before
+          if (err && err.errmsg === 'ns not found') err = null;
 
-  cleanMongoDB : function cleanMongoDB(app, callback) {
-    var mongod = app.getService('mongodbProcess');
-    mongod.shutdown(function cb_shutdown() {
-      wrench.rmdirSyncRecursive(path.join(__dirname, '..',
-                                          'integration', 'test-mongodb'));
-
-      if (callback) return callback();
+          callback(err);
+        });
+      }, function(err) {
+        db.close(function(err2) {
+          callback(err || err2);
+        });
+      });
     });
   },
 
   /**
    * Use c9/architect to bootstrap a MySQL server for running integration
-   * tests. Will create a blank data directory, meant to be paired with
-   * cleanMySQL.
+   * tests.
    *
    * @param Function callback The operations to be performed while the server
    *                          is running.
@@ -187,43 +174,32 @@ var helper = module.exports = {
     var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
     architect.createApp(config, function (error, app) {
-      if (error) return helper.cleanMySQL(app, function () { return callback(error); });
+      if (error) return callback(error);
 
       return callback(null, app);
-    });
-  },
-
-  cleanMySQL : function cleanMySQL(app, callback) {
-    var mysqld = app.getService('mysqldProcess');
-    mysqld.shutdown(function cb_shutdown() {
-      wrench.rmdirSyncRecursive(path.join(__dirname, '..', 'integration', 'test-mysql'));
-
-      if (callback) return callback();
     });
   },
 
   /**
-   * Use c9/architect to bootstrap a Redis server for running integration
-   * tests.
+   * Select Redis DB index and flush entries in it.
    *
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
-  bootstrapRedis : function bootstrapRedis(callback) {
-    var redis = path.join(__dirname, 'architecture', 'redis.js');
-    var config = architect.loadConfig(redis);
-    architect.createApp(config, function (error, app) {
-      if (error) return helper.cleanRedis(app, function () {
-        return callback(error);
+  bootstrapRedis : function bootstrapRedis(db_index, callback) {
+    var client = redis.createClient(params.redis_port, params.redis_host);
+    client.select(db_index, function cb_select(err) {
+      if (err) {
+        client.end();
+        return callback(err);
+      }
+
+      client.flushdb(function(err) {
+        client.end();
+
+        callback(err);
       });
-
-      return callback(null, app);
     });
-  },
-
-  cleanRedis : function cleanRedis(app, callback) {
-    var redis = app.getService('redisProcess');
-    redis.shutdown(callback);
   },
 
   withSSL : function (callback) {

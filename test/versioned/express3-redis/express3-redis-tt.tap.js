@@ -3,6 +3,7 @@
 var path   = require('path')
   , test   = require('tap').test
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , params = require('../../lib/params')
   ;
 
 /*
@@ -11,6 +12,7 @@ var path   = require('path')
 var SESSION_SECRET = 'hecknope'
   , SESSION_ID     = 'deadbeef'
   , ROOM_ID        = 'abad1d3a'
+  , DB_INDEX       = 1
   ;
 
 
@@ -134,7 +136,7 @@ function bootstrapExpress(client) {
   app.use(express.cookieParser(SESSION_SECRET));
   app.use(express.session({
     key   : 'test',
-    store : new RedisStore({client: client})
+    store : new RedisStore({client: client, db: DB_INDEX})
   }));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -222,20 +224,19 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
   agent.config.capture_params = true;
 
   var self = this;
-  helper.bootstrapRedis(function cb_bootstrapRedis(error, service) {
+  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, service) {
     if (error) {
       t.fail(error);
       return t.end();
     }
 
-    var client = redis.createClient(6379, 'localhost')
+    var client = redis.createClient(params.redis_port, params.redis_host)
       , server = createServer(bootstrapExpress(client)).listen(31337)
       ;
 
     self.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
         client.end();
-        helper.cleanRedis(service);
         helper.unloadAgent(agent);
       });
     });

@@ -4,6 +4,12 @@ var path   = require('path')
   , tap    = require('tap')
   , test   = tap.test
   , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , params = require('../../lib/params')
+  ;
+
+// CONSTANTS
+var COLLECTION = 'test_1_1_7'
+  , COLLECTION_CURSOR = COLLECTION + '_cursor'
   ;
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
@@ -12,22 +18,20 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
   t.plan(2);
 
   var self = this;
-  helper.bootstrapMongoDB(function cb_bootstrapMongoDB(error, app) {
+  helper.bootstrapMongoDB([COLLECTION, COLLECTION_CURSOR], function cb_bootstrapMongoDB(error, app) {
     if (error) return t.fail(error);
 
     var agent = helper.instrumentMockedAgent();
     var mongodb = require('mongodb');
 
-    var server = new mongodb.Server('localhost', 27017, {auto_reconnect : true});
+    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true});
     var db = new mongodb.Db('integration', server, {safe : true});
 
     self.tearDown(function cb_tearDown() {
       db.close(true, function (error) {
         if (error) t.fail(error);
 
-        helper.cleanMongoDB(app, function done() {
-          helper.unloadAgent(agent);
-        });
+        helper.unloadAgent(agent);
       });
     });
 
@@ -43,13 +47,13 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "basic insert should be recorded"
         );
         t.equals(
-          agent.metrics.getMetric('Datastore/statement/MongoDB/test/insert').callCount,
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/insert').callCount,
           1,
           "collection insertion should be recorded"
         );
         t.equals(
-          agent.metrics.getMetric('Datastore/statement/MongoDB/test/insert',
-                                  'Datastore/statement/MongoDB/test/insert').callCount,
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/insert',
+                                  'Datastore/statement/MongoDB/' + COLLECTION + '/insert').callCount,
           1,
           "Scoped MongoDB request should be recorded"
         );
@@ -58,7 +62,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       db.open(function cb_open(error, db) {
         if (error) return t.fail(error);
 
-        db.createCollection('test', {safe : true}, function (error, collection) {
+        db.createCollection(COLLECTION, {safe : true}, function (error, collection) {
           if (error) return t.fail(error);
           t.notOk(agent.getTransaction(), "no transaction should be in play yet");
 
@@ -66,7 +70,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
             var transaction = agent.getTransaction();
             t.ok(transaction, "transaction should be visible");
             // hardcode this because we're creating the transactional scope ourselves
-            transaction.name = 'Datastore/statement/MongoDB/test/insert';
+            transaction.name = 'Datastore/statement/MongoDB/' + COLLECTION + '/insert';
 
             var hunx = {id : 1, hamchunx : "verbloks"};
             collection.insert(hunx, function insertCallback(error) {
@@ -91,13 +95,13 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
                 var insertSegment = trace.root.children[0];
                 t.ok(insertSegment, "trace segment for insert should exist");
-                t.equals(insertSegment.name, "Datastore/statement/MongoDB/test/insert",
+                t.equals(insertSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/insert",
                          "should register the insert");
                 t.equals(insertSegment.children.length, 1, "insert should have a child");
 
                 var findSegment = insertSegment.children[0];
                 t.ok(findSegment, "trace segment for findOne should exist");
-                t.equals(findSegment.name, "Datastore/statement/MongoDB/test/findOne",
+                t.equals(findSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/findOne",
                          "should register the findOne");
                 t.equals(findSegment.children.length, 0,
                          "find should leave us here at the end");
@@ -129,17 +133,17 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "basic insert should be recorded with cursor"
         );
         t.equals(
-          agent.metrics.getMetric('Datastore/statement/MongoDB/test2/insert').callCount,
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert').callCount,
           1,
           "collection insertion should be recorded from cursor"
         );
         t.equals(
-          agent.metrics.getMetric('Datastore/statement/MongoDB/test2/insert',
-                                  'Datastore/statement/MongoDB/test2/insert').callCount,
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert',
+                                  'Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert').callCount,
           1,
           "scoped MongoDB request should be recorded from cursor"
         );
-        var instance = 'Datastore/instance/MongoDB/localhost:27017';
+        var instance = 'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port;
         t.equals(
           agent.metrics.getMetric(instance).callCount,
           3,
@@ -150,12 +154,12 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       db.open(function cb_open(error, db) {
         if (error) return t.fail(error);
 
-        db.createCollection('test2', function (error, collection) {
+        db.createCollection(COLLECTION_CURSOR, function (error, collection) {
           if (error) return t.fail(error);
 
           helper.runInTransaction(agent, function transactionInScope(transaction) {
             // hardcode this because we're creating the transactional scope ourselves
-            transaction.name = 'Datastore/statement/MongoDB/test2/insert';
+            transaction.name = 'Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert';
             var hunx = {id : 1, hamchunx : "verbloks"};
             collection.insert(hunx, function () {
               var cursor = collection.find({id : 1});

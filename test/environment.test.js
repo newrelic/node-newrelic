@@ -36,7 +36,7 @@ describe("the environment scraper", function () {
     expect(function () { environment.clearDispatcher(); }).not.throws();
   });
 
-  it("should allow clearing of the ramework", function () {
+  it("should allow clearing of the framework", function () {
     environment.setFramework('custom');
     environment.setFramework('another');
 
@@ -44,6 +44,15 @@ describe("the environment scraper", function () {
     expect(frameworks).include.members(['custom', 'another']);
 
     expect(function () { environment.clearFramework(); }).not.throws();
+  });
+
+  it("should persist dispatcher between toJSON()s", function () {
+    environment.setDispatcher('test');
+    expect(environment.get('Dispatcher')).include.members(['test']);
+
+    environment.refresh();
+    expect(environment.get('Dispatcher')).include.members(['test']);
+
   });
 
   it("should have some settings", function () {
@@ -68,6 +77,10 @@ describe("the environment scraper", function () {
 
   it("should know the Node.js version", function () {
     should.exist(find(settings, 'Node.js version'));
+  });
+  //expected to be run when NODE_ENV is unset
+  it("should not find a value for NODE_ENV", function () {
+    expect(environment.get('NODE_ENV')).to.be.empty;
   });
 
   if (process.config) {
@@ -184,4 +197,23 @@ describe("the environment scraper", function () {
       done();
     });
   });
+
+  describe("when NODE_ENV is 'production'", function () {
+    var nSettings;
+
+    before(function () {
+      process.env.NODE_ENV = 'production';
+      nSettings = environment.toJSON();
+    });
+
+    after(function () {
+      delete process.env.NODE_ENV;
+    });
+
+    it("should save the NODE_ENV value in the environment settings", function () {
+      (find(nSettings, 'NODE_ENV')).should.equal('production');
+    });
+
+  });
+
 });
