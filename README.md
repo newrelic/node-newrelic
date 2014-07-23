@@ -472,10 +472,17 @@ For completeness, here's the rest of the list:
 * `NEW_RELIC_TRACER_TOP_N`: Increase this number to increase the diversity of
   slow transaction traces sent to New Relic. Defaults to 1. See the description
   in `lib/config.default.js`, as this feature is exceedingly hard to summarize.
-* `NEW_RELIC_HOST`: Hostname for the New Relic collector proxy. You shouldn't
+* `NEW_RELIC_HOST`: Hostname for the New Relic collector. You shouldn't
   need to change this.
-* `NEW_RELIC_PORT`: Port number on which the New Relic collector proxy will be
+* `NEW_RELIC_PORT`: Port number on which the New Relic collector will be
   listening. You shouldn't need to change this either.
+* `NEW_RELIC_PROXY_URL`: A fully-qualified URL to an http/https proxy.
+  The proxy URL may include basic authentication.
+  The use of `NEW_RELIC_PROXY_URL` overrides other proxy settings.
+* `NEW_RELIC_PROXY_HOST`: Proxy hostname
+* `NEW_RELIC_PROXY_PORT`: Proxy port.
+* `NEW_RELIC_PROXY_USER`: Proxy user name (basic auth only).
+* `NEW_RELIC_PROXY_PASS`: Proxy password.
 * `NEW_RELIC_DEBUG_METRICS`: Whether to collect internal supportability metrics
   for the agent. Don't mess with this unless New Relic asks you to.
 * `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
