@@ -30,6 +30,53 @@ describe("built-in http queueTime", function () {
 
   var testVal = 1000;
 
+  it("header should allow t=${time} style headers", function (done) {
+    var server;
+
+    server = http.createServer(function cb_createServer(request, response) {
+      var transTime = agent.getTransaction().queueTime;
+      assert(transTime > 0, 'must be positive');
+      assert(transTime < 2000, 'should have correct order');
+      response.end();
+    });
+
+    server.listen(PORT, function () {
+      var port = server.address().port
+      var opts = {host : 'localhost', port : port, headers: {
+        "x-request-start": "t="+ testTime
+      }
+    };
+      http.get(opts, function () {
+
+        server.close();
+        return done();
+      });
+    });
+  });
+
+  it("bad header should log a warning", function (done) {
+    var server;
+
+    server = http.createServer(function cb_createServer(request, response) {
+      var transTime = agent.getTransaction().queueTime;
+      assert.equal(transTime, 0, 'queueTime is not added');
+      response.end();
+    });
+
+    server.listen(PORT, function () {
+      var port = server.address().port
+      var opts = {host : 'localhost', port : port, headers: {
+        "x-request-start": "alskdjf"
+      }
+    };
+      http.get(opts, function () {
+
+        server.close();
+        return done();
+      });
+    });
+  });
+
   it("x-request should verify milliseconds", function (done) {
     var server;
 
