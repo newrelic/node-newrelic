@@ -12,6 +12,7 @@ var used = [
   'released',
   'unreleased',
   'proxy',
+  'custom_instrumentation',
 ];
 
 describe("feature flags", function () {

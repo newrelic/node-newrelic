@@ -4,6 +4,8 @@ var path   = require('path')
   , util   = require('util')
   , logger = require(path.join(__dirname, 'lib', 'logger')).child({component : 'api'})
   , NAMES  = require(path.join(__dirname, 'lib', 'metrics', 'names'))
+  , genericRecorder = require(path.join(__dirname, 'lib', 'metrics', 'recorders',
+                                        'generic'))
   ;
 
 /*
@@ -378,6 +380,26 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   logger.trace('generating RUM header', out);
 
   return out;
+};
+
+/**
+ * This creates a new segment with the passed in name. It then wraps the
+ * callback and binds it to the current transaction and segment so any further
+ * custom instrumentation as well as auto instrumentation will also be able to
+ * find the current transaction and segment.
+ */
+API.prototype.createSegment = function createSegment(name, callback) {
+  // FLAG: custom_instrumentation
+  if (!this.agent.config.feature_flag.custom_instrumentation) {
+    return callback;
+  }
+
+  var tracer = this.agent.tracer;
+  var segment = tracer.addSegment(name, genericRecorder);
+  return tracer.callbackProxy(function () {
+    callback.apply(this, arguments);
+    segment.end();
+  });
 };
 
 module.exports = API;

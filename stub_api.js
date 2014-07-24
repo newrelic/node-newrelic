@@ -33,4 +33,11 @@ Stub.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(){
   return '';
 };
 
+// Normally createSegment returns the a wrapped callback, instead we should just
+// return the callback in its unwrapped state.
+Stub.prototype.createSegment = function(name, callback) {
+  logger.debug('Not calling createSegment because New Relic is disabled.');
+  return callback;
+};
+
 module.exports = Stub;

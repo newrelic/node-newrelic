@@ -14,8 +14,8 @@ describe("the stubbed New Relic agent API", function () {
     api = new API();
   });
 
-  it("should export 8 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(8);
+  it("should export 9 API calls", function () {
+    expect(Object.keys(api.constructor.prototype).length).equal(9);
   });
 
   it("exports a transaction naming function", function () {
