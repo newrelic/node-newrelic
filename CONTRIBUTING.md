@@ -45,6 +45,7 @@ binary, and some services:
 * Memcached
 * MongoDB
 * MySQL
+* Postgres
 * Redis
 
 If you have these all running locally on the standard ports, then you are good

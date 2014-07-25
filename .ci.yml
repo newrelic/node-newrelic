@@ -5,3 +5,4 @@ environment:
     - borja/docker-memcached
     - redis
     - zmarcantel/cassandra
+    - zaiste/postgresql

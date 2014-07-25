@@ -14,4 +14,10 @@ module.exports = {
   cassandra_host: process.env.NR_NODE_TEST_CASSANDRA_HOST || 'localhost',
   cassandra_port: process.env.NR_NODE_TEST_CASSANDRA_PORT || 9042,
 
+  postgres_host: process.env.NR_NODE_TEST_POSTGRES_HOST || 'localhost',
+  postgres_port: process.env.NR_NODE_TEST_POSTGRES_PORT || 5432,
+  postgres_user: process.env.NR_NODE_TEST_POSTGRES_USER || 'docker',
+  postgres_pass: process.env.NR_NODE_TEST_POSTGRES_PASS || 'docker',
+  postgres_db: process.env.NR_NODE_TEST_POSTGRES_DB || 'docker',
+
 };

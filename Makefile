@@ -73,6 +73,7 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	  export NR_NODE_TEST_MYSQL_HOST=$${HOST}; \
 	  export NR_NODE_TEST_REDIS_HOST=$${HOST}; \
 	  export NR_NODE_TEST_CASSANDRA_HOST=$${HOST}; \
+	  export NR_NODE_TEST_POSTGRES_HOST=$${HOST}; \
 	fi; \
 	time $(TAP) $(INTEGRATION)
 
@@ -158,4 +159,9 @@ services:
 	  docker start nr_node_cassandra; \
 	else \
 	  docker run -d --name nr_node_cassandra -p 9042:9042 zmarcantel/cassandra; \
+	fi
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_postgres[^a-zA-Z_]"; then \
+	  docker start nr_node_postgres; \
+	else \
+	  docker run -d --name nr_node_postgres -p 5432:5432 zaiste/postgresql; \
 	fi

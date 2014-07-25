@@ -13,6 +13,7 @@ var used = [
   'unreleased',
   'proxy',
   'custom_instrumentation',
+  'postgres'
 ];
 
 describe("feature flags", function () {
