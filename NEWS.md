@@ -1,3 +1,15 @@
+### v1.9.0 (2014-07-24):
+
+* We now support Cassandra via the `node-cassandra-cql` driver.
+
+  New database instrumentation means that we can present you with the timing
+  data for how long those queries take. Thanks to Aaron Silvas from GoDaddy for
+  the initial implementation of the Cassandra instrumentation.
+
+* Router queue time now supports `t=<number>` in the X-REQUEST-START and
+  X-QUEUE-START headers.
+
+
 ### v1.8.1 (2014-07-18):
 
 * Agent now tracks metrics for router queue time.
