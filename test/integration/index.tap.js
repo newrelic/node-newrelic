@@ -5,7 +5,7 @@ var path = require('path')
   ;
 
 test("loading the application via index.js", function (t) {
-  t.plan(4);
+  t.plan(6);
 
   var agent;
 
@@ -23,6 +23,8 @@ test("loading the application via index.js", function (t) {
 
   function shutdown() {
     t.equal(agent._state, 'started', "agent didn't error connecting to staging");
+    t.deepEquals(agent.config.applications(), ['My Application'], "app name is valid")
+    t.equals(agent.config.agent_enabled, true, "the agent is still enabled")
     agent.stop(function cb_stop() {
       t.equal(agent._state, 'stopped', "agent didn't error shutting down");
     });

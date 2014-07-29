@@ -1,14 +1,11 @@
 'use strict';
 
-GLOBAL.NR_CASSANDRA = true
-
 var path   = require('path')
   , tap    = require('tap')
   , async  = require('async')
   , params = require('../lib/params')
   , test   = tap.test
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , cassandra  = require('node-cassandra-cql')
   ;
 
 var agent      = helper.instrumentMockedAgent()

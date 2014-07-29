@@ -6,6 +6,9 @@ var path    = require('path')
   , agent
   ;
 
+var APP_NAME_REGEX = /^[A-Za-z0-9 -_\[\](){}?!.'"]*$/;
+
+
 try {
   logger.debug("Process was running %s seconds before agent was loaded.",
                process.uptime());
@@ -39,15 +42,36 @@ try {
      */
     var Agent = require(path.join(__dirname, 'lib', 'agent.js'));
     agent = new Agent(config);
+    var appNames = agent.config.applications();
 
-    if (agent.config.applications().length < 1) {
+    if (appNames.length < 1) {
       message = "New Relic requires that you name this application!\n" +
                 "Set app_name in your newrelic.js file or set environment variable\n" +
                 "NEW_RELIC_APP_NAME. Not starting!";
-
       logger.error(message);
       throw new Error(message);
     }
+
+    var testVal;
+
+    appNames.forEach(function (name) {
+      testVal = name.match(APP_NAME_REGEX);
+
+      if (!testVal){
+        message = "New Relic requires that you name this application using alphanumeric" +
+              " and certain punctuation characters ([](){}.?!') only.\n" +
+              "Reset app_name to follow these naming conventions " +
+              "in your newrelic.js file or set environment variable\n" +
+              "NEW_RELIC_APP_NAME. Not starting!";
+
+        config.agent_enabled = false;
+        config.emit('agent_enabled', false);
+
+        logger.error(message);
+        console.log(message);
+
+      }
+    });
 
     var shimmer = require(path.join(__dirname, 'lib', 'shimmer.js'));
     shimmer.patchModule(agent);
