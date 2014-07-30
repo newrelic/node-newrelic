@@ -13,22 +13,20 @@ var path         = require('path')
 describe("built-in http queueTime", function () {
   var agent
     , testDate
-    , testTime
     , PORT
+    , THRESHOLD
     ;
 
   before(function () {
     agent = helper.instrumentMockedAgent();
     testDate = Date.now();
-    testTime = testDate - testVal;
-    PORT = 0
+    PORT = 0;
+    THRESHOLD = 200;
   });
 
   after(function () {
     helper.unloadAgent(agent);
   });
-
-  var testVal = 1000;
 
   it("header should allow t=${time} style headers", function (done) {
     var server;
@@ -36,14 +34,14 @@ describe("built-in http queueTime", function () {
     server = http.createServer(function cb_createServer(request, response) {
       var transTime = agent.getTransaction().queueTime;
       assert(transTime > 0, 'must be positive');
-      assert(transTime < 2000, 'should have correct order');
+      assert(transTime < THRESHOLD, 'should be less than ' + THRESHOLD + 'ms (' + transTime + 'ms)');
       response.end();
     });
 
     server.listen(PORT, function () {
       var port = server.address().port
       var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": "t="+ testTime
+        "x-request-start": "t="+ testDate
       }
     };
       http.get(opts, function () {
@@ -83,14 +81,14 @@ describe("built-in http queueTime", function () {
     server = http.createServer(function cb_createServer(request, response) {
       var transTime = agent.getTransaction().queueTime;
       assert(transTime > 0, 'must be positive');
-      assert(transTime < 2000, 'should have correct order');
+      assert(transTime < THRESHOLD, 'should be less than ' + THRESHOLD + 'ms (' + transTime + 'ms)');
       response.end();
     });
 
     server.listen(PORT, function () {
       var port = server.address().port
       var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": testTime
+        "x-request-start": testDate
       }
     };
       http.get(opts, function () {
@@ -107,14 +105,14 @@ describe("built-in http queueTime", function () {
     server = http.createServer(function cb_createServer(request, response) {
       var transTime = agent.getTransaction().queueTime;
       assert(transTime > 0, 'must be positive');
-      assert(transTime < 2000, 'should have correct order');
+      assert(transTime < THRESHOLD, 'should be less than ' + THRESHOLD + 'ms (' + transTime + 'ms)');
       response.end();
     });
 
     server.listen(PORT, function () {
       var port = server.address().port
       var opts = {host : 'localhost', port : port, headers: {
-        "x-queue-start": testTime
+        "x-queue-start": testDate
       }
     };
       http.get(opts, function () {
@@ -131,14 +129,14 @@ describe("built-in http queueTime", function () {
     server = http.createServer(function cb_createServer(request, response) {
       var transTime = agent.getTransaction().queueTime;
       assert(transTime > 0, 'must be positive');
-      assert(transTime < 2000, 'should have correct order');
+      assert(transTime < THRESHOLD, 'should be less than ' + THRESHOLD + 'ms (' + transTime + 'ms)');
       response.end();
     });
 
     server.listen(PORT, function () {
       var port = server.address().port
       var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": testTime * 1e3
+        "x-request-start": testDate * 1e3
       }};
       http.get(opts, function () {
 
@@ -154,14 +152,14 @@ describe("built-in http queueTime", function () {
     server = http.createServer(function cb_createServer(request, response) {
       var transTime = agent.getTransaction().queueTime;
       assert(transTime > 0, 'must be positive');
-      assert(transTime < 2000, 'should have correct order');
+      assert(transTime < THRESHOLD, 'should be less than ' + THRESHOLD + 'ms (' + transTime + 'ms)');
       response.end();
     });
 
       server.listen(PORT, function () {
         var port = server.address().port
         var opts = {host : 'localhost', port : port, headers: {
-        "x-queue-start": testTime * 1e6
+        "x-queue-start": testDate * 1e6
       }};
       http.get(opts, function () {
 
@@ -177,14 +175,14 @@ describe("built-in http queueTime", function () {
     server = http.createServer(function cb_createServer(request, response) {
       var transTime = agent.getTransaction().queueTime;
       assert(transTime > 0, 'must be positive');
-      assert(transTime < 2000, 'should have correct order');
+      assert(transTime < THRESHOLD, 'should be less than ' + THRESHOLD + 'ms (' + transTime + 'ms)');
       response.end();
     });
 
     server.listen(PORT, function () {
       var port = server.address().port
       var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": testTime / 1e3
+        "x-request-start": testDate / 1e3
       }};
       http.get(opts, function () {
 
