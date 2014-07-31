@@ -1,3 +1,17 @@
+### v1.9.1 (2014-07-30):
+
+* Added a check for invalid characters in the `app_name` setting.
+
+  The agent will now emit a warning and disable itself if any application name
+  is invalid. Allowed characters are alphanumerics and certain punctuation
+  characters ([](){}.?!')
+
+* Router queue time now properly handles floating point values.
+
+* Fixed a bug where a socket connection could throw a synchronous error and
+  cause the application to crash.
+
+
 ### v1.9.0 (2014-07-24):
 
 * We now support Cassandra via the `node-cassandra-cql` driver.
