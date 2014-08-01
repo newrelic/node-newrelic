@@ -222,6 +222,8 @@ regular expression (e.g.  `/^/user/([-0-9a-f]+)$/`). New Relic will capture
 both those pieces of information in the request name. If you have support for
 slow transaction traces and have enabled `capture_params`, the transaction
 trace will also have the request's parameters and their values attached to it.
+Likewise, request parameters and their values will be attached to any errors
+recorded by the agent.
 
 The only important thing to know about New Relic's support for Express and
 Restify is that if you're dissatisfied with the names it comes up with, you can
@@ -350,10 +352,9 @@ configuration. The pattern is mandatory.
 
 #### newrelic.addCustomParameter(name, value)
 
-Set a custom parameter value to be displayed along with the transaction trace
+Set a custom parameter value to be attached to a transaction trace and/or error
 in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters. Only displayed in the
-transaction trace detail view.
+so it has a place to set the custom parameters.
 
 #### newrelic.setIgnoreTransaction(ignored)
 
