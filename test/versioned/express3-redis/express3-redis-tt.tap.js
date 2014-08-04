@@ -212,7 +212,7 @@ function makeCookie() {
  **
  **/
 test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
-  t.plan(35);
+  t.plan(37);
 
   var agent        = helper.instrumentMockedAgent()
     , redis        = require('redis')
