@@ -13,6 +13,7 @@ var used = [
   'unreleased',
   'proxy',
   'custom_instrumentation',
+  'mysql_pool',
   'postgres'
 ];
 
