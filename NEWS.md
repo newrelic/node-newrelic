@@ -1,3 +1,8 @@
+### v1.9.2 (2014-08-08):
+
+* Fixed a bug in the express instrumentation where if you named an error handler
+  function `handle` it would cause a recursion depth error.
+
 ### v1.9.1 (2014-07-30):
 
 * Added a check for invalid characters in the `app_name` setting.
