@@ -33,10 +33,15 @@ Stub.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(){
   return '';
 };
 
-// Normally createSegment returns the a wrapped callback, instead we should just
+// Normally createTracer returns the a wrapped callback, instead we should just
 // return the callback in its unwrapped state.
-Stub.prototype.createSegment = function(name, callback) {
-  logger.debug('Not calling createSegment because New Relic is disabled.');
+Stub.prototype.createTracer = function(name, callback) {
+  logger.debug('Not calling createTracer because New Relic is disabled.');
+  return callback;
+};
+
+Stub.prototype.createWebTransaction = function(name, callback) {
+  logger.debug('Not calling createWebTransaction because New Relic is disabled.');
   return callback;
 };
 

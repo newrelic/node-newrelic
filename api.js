@@ -1,9 +1,11 @@
 'use strict';
 
-var path   = require('path')
-  , util   = require('util')
-  , logger = require(path.join(__dirname, 'lib', 'logger')).child({component : 'api'})
-  , NAMES  = require(path.join(__dirname, 'lib', 'metrics', 'names'))
+var path      = require('path')
+  , util      = require('util')
+  , logger    = require(path.join(__dirname, 'lib', 'logger')).child({component : 'api'})
+  , NAMES     = require(path.join(__dirname, 'lib', 'metrics', 'names'))
+  , recordWeb = require(path.join(__dirname, 'lib', 'metrics',
+                                         'recorders', 'http.js'))
   , genericRecorder = require(path.join(__dirname, 'lib', 'metrics', 'recorders',
                                         'generic'))
   ;
@@ -383,23 +385,66 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
 };
 
 /**
- * This creates a new segment with the passed in name. It then wraps the
+ * This creates a new tracer with the passed in name. It then wraps the
  * callback and binds it to the current transaction and segment so any further
  * custom instrumentation as well as auto instrumentation will also be able to
  * find the current transaction and segment.
  */
-API.prototype.createSegment = function createSegment(name, callback) {
+API.prototype.createTracer = function createTracer(name, callback) {
   // FLAG: custom_instrumentation
   if (!this.agent.config.feature_flag.custom_instrumentation) {
     return callback;
   }
 
   var tracer = this.agent.tracer;
-  var segment = tracer.addSegment(name, genericRecorder);
-  return tracer.callbackProxy(function () {
+  var txn = tracer.getTransaction();
+  if (txn) {
+    var segment = tracer.addSegment(name, genericRecorder);
+    return tracer.callbackProxy(function () {
+      callback.apply(this, arguments);
+      segment.end();
+    });
+  } else {
+    return callback;
+  }
+};
+
+API.prototype.createWebTransaction = function createWebTransaction(url, callback) {
+  // FLAG: custom_instrumentation
+  if (!this.agent.config.feature_flag.custom_instrumentation) {
+    return callback;
+  }
+
+  var tracer  = this.agent.tracer;
+
+  return tracer.transactionNestProxy(tracer.segmentProxy(function(){
+    var tx = tracer.getTransaction();
+    tx.setName(url, 0);
+    tx.webSegment = tracer.addSegment(url, recordWeb);
+
     callback.apply(this, arguments);
-    segment.end();
-  });
+  }));
+};
+
+API.prototype.endTransaction = function endTransaction() {
+  // FLAG: custom_instrumentation
+  if (!this.agent.config.feature_flag.custom_instrumentation) {
+    return;
+  }
+
+  var tracer = this.agent.tracer;
+  var tx = tracer.getTransaction();
+
+  if (tx) {
+    if (tx.webSegment) {
+      // Only exists for custom web transactions right now.
+      tx.webSegment.markAsWeb(tx.url);
+      tx.webSegment.end();
+    }
+    tx.end();
+  } else {
+    console.log('no tx');
+  }
 };
 
 module.exports = API;

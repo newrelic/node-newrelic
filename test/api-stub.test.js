@@ -14,8 +14,8 @@ describe("the stubbed New Relic agent API", function () {
     api = new API();
   });
 
-  it("should export 9 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(9);
+  it("should export 11 API calls", function () {
+    expect(Object.keys(api.constructor.prototype).length).equal(11);
   });
 
   it("exports a transaction naming function", function () {
@@ -83,5 +83,35 @@ describe("the stubbed New Relic agent API", function () {
 
   it("shouldn't throw when a custom parameter is added", function () {
     expect(function () { api.addCustomParameter('test', 'value'); }).not.throws();
+  });
+
+  it("shouldn't throw when a custom segment is added", function () {
+    expect(function () {
+      api.createTracer('name', function nop(){});
+    }).not.throws();
+  });
+
+  it("should return a function when calling createTracer", function () {
+    function myNop () {}
+    var retVal = api.createTracer('name', myNop);
+    expect(retVal).to.be.equal(myNop);
+  });
+
+  it("shouldn't throw when a custom web transaction is added", function () {
+    expect(function () {
+      api.createWebTransaction('name', function nop(){});
+    }).not.throws();
+  });
+
+  it("should return a function when calling createWebTransaction", function () {
+    function myNop () {}
+    var retVal = api.createWebTransaction('name', myNop);
+    expect(retVal).to.be.equal(myNop);
+  });
+
+  it("shouldn't throw when a transaction is ended", function () {
+    expect(function () {
+      api.endTransaction();
+    }).not.throws();
   });
 });
