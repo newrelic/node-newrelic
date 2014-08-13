@@ -15,7 +15,7 @@ describe("the stubbed New Relic agent API", function () {
   });
 
   it("should export 11 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(11);
+    expect(Object.keys(api.constructor.prototype).length).equal(12);
   });
 
   it("exports a transaction naming function", function () {
@@ -106,6 +106,18 @@ describe("the stubbed New Relic agent API", function () {
   it("should return a function when calling createWebTransaction", function () {
     function myNop () {}
     var retVal = api.createWebTransaction('name', myNop);
+    expect(retVal).to.be.equal(myNop);
+  });
+
+  it("shouldn't throw when a custom background transaction is added", function () {
+    expect(function () {
+      api.createBackgroundTransaction('name', function nop(){});
+    }).not.throws();
+  });
+
+  it("should return a function when calling createBackgroundTransaction", function () {
+    function myNop () {}
+    var retVal = api.createBackgroundTransaction('name', myNop);
     expect(retVal).to.be.equal(myNop);
   });
 

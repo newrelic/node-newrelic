@@ -113,6 +113,20 @@ describe('The custom instrumentation API', function () {
         markedFunction();
       });
     });
+
+    it('should record a metric for the custom segment', function (done) {
+      agent.on('transactionFinished', function (transaction) {
+        expect(transaction.metrics.unscoped).to.have.property('Custom/custom:segment');
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        var markedFunction = api.createTracer('custom:segment', function () {
+          transaction.end();
+        });
+        markedFunction();
+      });
+    });
   });
 
   describe('when creating a web transaction', function () {
@@ -131,7 +145,7 @@ describe('The custom instrumentation API', function () {
         tx.end();
         done();
       });
-
+      expect(agent.tracer.getTransaction()).to.not.exist;
       txHandler();
     });
 
@@ -202,12 +216,218 @@ describe('The custom instrumentation API', function () {
       txHandler();
     });
 
-    it('endTransaction should not throw an exception if there is no transaction active', function () {
-      var tx = agent.tracer.getTransaction();
-      expect(tx).to.not.exist;
-      expect(function () {
-        api.endTransaction();
-      }).to.not.throw;
+    it('should create proper metrics', function (done) {
+      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+
+        var expectedMetrics = [
+          {"name": "WebTransaction"},
+          {"name": "HttpDispatcher"},
+          {"name": "WebTransaction/Custom//custom/transaction"},
+          {"name": "Apdex/null"},
+          {"name": "Apdex"},
+          {"name": "WebTransaction/Custom//custom/transaction", "scope": "WebTransaction/Custom//custom/transaction"}
+        ];
+
+        tx.end();
+        tx.metrics.toJSON().forEach(function (element, index) {
+          expect(element[0]).to.be.deep.equal(expectedMetrics[index]);
+        });
+        done();
+      });
+      expect(agent.tracer.getTransaction()).to.not.exist;
+      txHandler();
     });
+
+    it('it should create a new transaction when nested within a background transaction', function (done) {
+      var bgHandler = api.createBackgroundTransaction('background:job', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+        expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job');
+        expect(tx.webSegment).to.not.exist;
+        expect(tx.bgSegment).to.exist;
+        var webHandler = api.createWebTransaction('/custom/transaction', function () {
+          var tx = agent.tracer.getTransaction();
+          expect(tx).to.exist;
+          expect(tx.url).to.be.equal('/custom/transaction');
+          expect(tx.webSegment).to.exist;
+          expect(tx.bgSegment).to.not.exist;
+          // clean up tx so it doesn't cause other problems
+          tx.end();
+          done();
+        });
+        webHandler();
+        // clean up tx so it doesn't cause other problems
+        tx.end();
+      });
+      expect(agent.tracer.getTransaction()).to.not.exist;
+      bgHandler();
+    });
+  });
+
+  describe('when creating an background transaction', function () {
+    it('should return a function', function () {
+      var txHandler = api.createBackgroundTransaction('background:job', function () {});
+      expect(txHandler).to.be.a('function');
+    });
+
+    it('should create a transaction', function (done) {
+      var txHandler = api.createBackgroundTransaction('background:job', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+        expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job');
+
+        // clean up tx so it doesn't cause other problems
+        tx.end();
+        done();
+      });
+      expect(agent.tracer.getTransaction()).to.not.exist;
+      txHandler();
+    });
+
+    it('should create an outermost segment', function (done) {
+        var txHandler = api.createBackgroundTransaction('background:job', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+
+        var trace = tx.getTrace();
+        expect(trace.root.children).to.have.length(1);
+
+        // clean up tx so it doesn't cause other problems
+        tx.end();
+        done();
+      });
+
+      txHandler();
+    });
+
+    it('should respect the in play transaction and not create a new one', function (done) {
+      var txHandler = api.createBackgroundTransaction('background:job', function (outerTx) {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.be.equal(outerTx);
+
+        var trace = tx.getTrace();
+        expect(trace.root.children).to.have.length(1);
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        txHandler(transaction);
+        transaction.end();
+      });
+    });
+
+    it('should nest its segment within an in play segment', function (done) {
+        var txHandler = api.createBackgroundTransaction('background:job', function (outerTx) {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.be.equal(outerTx);
+
+        var trace = tx.getTrace();
+        expect(trace.root.children).to.have.length(1);
+        var child = trace.root.children[0];
+        expect(child.name).to.equal('outer');
+        expect(child.children).to.have.length(1);
+
+        done();
+      });
+
+      helper.runInTransaction(agent, function (transaction) {
+        agent.tracer.addSegment('outer');
+        txHandler(transaction);
+        transaction.end();
+      });
+    });
+
+    it('should be ended by calling endTransaction', function (done) {
+      var txHandler = api.createWebTransaction('background:job', function () {
+        var tx = agent.tracer.getTransaction();
+
+        expect(tx.isActive()).to.be.true;
+        api.endTransaction();
+        expect(tx.isActive()).to.be.false;
+
+        done();
+      });
+      txHandler();
+    });
+
+    it('should create proper metrics with default group name', function (done) {
+      var txHandler = api.createBackgroundTransaction('background:job', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+
+        var expectedMetrics = [
+          {"name": "OtherTransaction/Nodejs/background:job"},
+          {"name": "OtherTransaction/all"},
+          {"name": "OtherTransaction/Nodejs/all"},
+          {"name": "OtherTransaction/Nodejs/background:job", "scope": "OtherTransaction/Nodejs/background:job"}
+        ];
+
+        tx.end();
+        tx.metrics.toJSON().forEach(function (element, index) {
+          expect(element[0]).to.be.deep.equal(expectedMetrics[index]);
+        });
+        done();
+      });
+      expect(agent.tracer.getTransaction()).to.not.exist;
+      txHandler();
+    });
+
+    it('should create proper metrics with group name', function (done) {
+      var txHandler = api.createBackgroundTransaction('background:job', 'thinger', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+
+        var expectedMetrics = [
+          {"name": "OtherTransaction/thinger/background:job"},
+          {"name": "OtherTransaction/all"},
+          {"name": "OtherTransaction/thinger/all"},
+          {"name": "OtherTransaction/thinger/background:job", "scope": "OtherTransaction/thinger/background:job"}
+        ];
+
+        tx.end();
+        tx.metrics.toJSON().forEach(function (element, index) {
+          expect(element[0]).to.be.deep.equal(expectedMetrics[index]);
+        });
+        done();
+      });
+      expect(agent.tracer.getTransaction()).to.not.exist;
+      txHandler();
+    });
+
+    it('it should create a new transaction when nested within a background transaction', function (done) {
+      var webHandler = api.createWebTransaction('/custom/transaction', function () {
+        var tx = agent.tracer.getTransaction();
+        expect(tx).to.exist;
+        expect(tx.url).to.be.equal('/custom/transaction');
+        expect(tx.webSegment).to.exist;
+        expect(tx.bgSegment).to.not.exist;
+        var bgHandler = api.createBackgroundTransaction('background:job', function () {
+          var tx = agent.tracer.getTransaction();
+          expect(tx).to.exist;
+          expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job');
+          expect(tx.webSegment).to.not.exist;
+          expect(tx.bgSegment).to.exist;
+          // clean up tx so it doesn't cause other problems
+          tx.end();
+          done();
+        });
+        bgHandler();
+        // clean up tx so it doesn't cause other problems
+        tx.end();
+      });
+      expect(agent.tracer.getTransaction()).to.not.exist;
+      webHandler();
+    });
+  });
+
+  it('endTransaction should not throw an exception if there is no transaction active', function () {
+    var tx = agent.tracer.getTransaction();
+    expect(tx).to.not.exist;
+    expect(function () {
+      api.endTransaction();
+    }).to.not.throw;
   });
 });

@@ -112,7 +112,11 @@ var helper = module.exports = {
    *                    transaction.
    * @param Function callback The function to be run within the transaction.
    */
-  runInTransaction : function runInTransaction(agent, callback) {
+  runInTransaction : function runInTransaction(agent, type, callback) {
+    if (callback === undefined && typeof type === 'function') {
+      callback = type;
+      type = undefined;
+    }
     if (!(agent && callback)) {
       throw new TypeError("Must include both agent and function!");
     }

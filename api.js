@@ -5,9 +5,11 @@ var path      = require('path')
   , logger    = require(path.join(__dirname, 'lib', 'logger')).child({component : 'api'})
   , NAMES     = require(path.join(__dirname, 'lib', 'metrics', 'names'))
   , recordWeb = require(path.join(__dirname, 'lib', 'metrics',
-                                         'recorders', 'http.js'))
-  , genericRecorder = require(path.join(__dirname, 'lib', 'metrics', 'recorders',
-                                        'generic'))
+                                  'recorders', 'http.js'))
+  , recordBackground = require(path.join(__dirname, 'lib', 'metrics',
+                                        'recorders', 'other.js'))
+  , customRecorder = require(path.join(__dirname, 'lib', 'metrics', 'recorders',
+                                       'custom'))
   ;
 
 /*
@@ -399,7 +401,7 @@ API.prototype.createTracer = function createTracer(name, callback) {
   var tracer = this.agent.tracer;
   var txn = tracer.getTransaction();
   if (txn) {
-    var segment = tracer.addSegment(name, genericRecorder);
+    var segment = tracer.addSegment(name, customRecorder);
     return tracer.callbackProxy(function () {
       callback.apply(this, arguments);
       segment.end();
@@ -417,10 +419,33 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
 
   var tracer  = this.agent.tracer;
 
-  return tracer.transactionNestProxy(tracer.segmentProxy(function(){
+  return tracer.transactionNestProxy('web', tracer.segmentProxy(function(){
     var tx = tracer.getTransaction();
+    tx.partialName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + url;
     tx.setName(url, 0);
     tx.webSegment = tracer.addSegment(url, recordWeb);
+
+    callback.apply(this, arguments);
+  }));
+};
+
+API.prototype.createBackgroundTransaction = function createBackgroundTransaction(name, group, callback) {
+  if (callback === undefined && typeof group === 'function') {
+    callback = group;
+    group = 'Nodejs';
+  }
+  // FLAG: custom_instrumentation
+  if (!this.agent.config.feature_flag.custom_instrumentation) {
+    return callback;
+  }
+
+  var tracer  = this.agent.tracer;
+
+  return tracer.transactionNestProxy('bg', tracer.segmentProxy(function(){
+    var tx = tracer.getTransaction();
+    tx.setBackgroundName(name, group);
+    tx.bgSegment = tracer.addSegment(name, recordBackground);
+    tx.bgSegment.partialName = group;
 
     callback.apply(this, arguments);
   }));
