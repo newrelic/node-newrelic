@@ -8,6 +8,9 @@ var path    = require('path')
 
 var APP_NAME_REGEX = /^[A-Za-z0-9 -_\[\](){}?!.'"]*$/;
 
+var agentVersion = require(path.join(__dirname, 'package.json')).version;
+logger.trace("Using New Relic for Node.js version %s.", agentVersion);
+
 
 try {
   logger.debug("Process was running %s seconds before agent was loaded.",
