@@ -376,6 +376,65 @@ context if called from within transaction scope. If custom parameters are
 passed in on an object literal, they will be passed back to New Relic for
 display.
 
+### Custom Instrumentation
+
+Custom transaction should be used for instrumenting `socket.io` or other
+varieties of socket servers, and background jobs. These are things that the
+agent can't automatically instrument because without your knowledge of your
+application, the agent can't tell when they should begin and end.
+
+Read more at:
+https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-custom-instrumentation
+
+#### newrelic.createWebTransaction(url, handle)
+
+`url` is the name of the web transaction. It should be pretty static, not
+including anything like user ids or any other data that is very specific to the
+request. `handle` is the function you'd like to wrap in the web transaction.
+Both custom and auto instrumentation will be captured as part of the
+transaction.
+
+If called within an active web transaction, it will act as a nested tracer. If
+called within an active background transaction, it will create a new,
+independent transaction and any calls within the `handle` will be bound to the
+new web transaction.
+
+Custom transactions **must** be ended manually by calling `endTransaction()`.
+Timing for custom transaction starts from when the returned wrapped function is
+called until `endTransaction()` is called.
+
+#### newrelic.createBackgroundTransaction(name, [group], handle)
+
+`name` is the name of the job. It should be pretty static, and not include job
+ids or anything very specific to that run of the job. `group` is optional, and
+allows you to group types of jobs together. This should follow similar rules as
+the `name`. `handle` is a function that encompases your background job. Both
+custom and auto instrumentation will be captured as part of the transaction.
+
+If called within an active background transaction, it will act as a nested
+tracer. If called within an active web transaction, it will create a new
+transaction and any calls within the `handle` will be bound to the new,
+independent background transaction.
+
+Custom transactions **must** be ended manually by calling `endTransaction()`.
+Timing for custom transaction starts from when the returned wrapped function is
+called until `endTransaction()` is called.
+
+#### newrelic.endTransaction()
+
+This takes no arguments and must be called to end any custom transaction. It
+will detect what kind of transaction was active and end it.
+
+#### newrelic.createTracer(name, handle)
+
+`name` is the name of the tracer. It will show up as a segment in your
+transaction traces and create its own metric. `handle` is the function to be
+bound to the tracer.
+
+Timing is from when `createTracer` is called until the `handle` done executing.
+This should be called inside of a transaction to get data. If it is called
+outside of a transaction it will just pass through.
+
 ### The fine print
 
 This is the Node-specific version of New Relic's transaction naming API
