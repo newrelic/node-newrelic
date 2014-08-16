@@ -1,3 +1,13 @@
+### v1.10.0 (2014-08-15):
+
+* Custom instrumentation
+
+  The agent now supports the ability to annotate application code to provide
+  customized instrumentation. This includes the ability to time both web and
+  background transactions, and add tracers to measure activity within
+  transactions like querying a database. Documentation available at
+  https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-custom-instrumentation
+
 ### v1.9.2 (2014-08-08):
 
 * Fixed a bug in the express instrumentation where if you named an error handler
