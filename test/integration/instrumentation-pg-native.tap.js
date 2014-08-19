@@ -9,7 +9,7 @@ var path   = require('path')
 
 //FLAG: postgres
 var agent  = helper.instrumentMockedAgent({postgres: true})
-  , pg     = require('pg')
+  , pg     = require('pg').native
   ;
 
 //constants for table creation and db connection
@@ -55,7 +55,7 @@ function postgresSetup (runTest) {
  };
 
 
-test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t) {
+test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
   t.plan(2);
   postgresSetup(runTest);
   function runTest () {
