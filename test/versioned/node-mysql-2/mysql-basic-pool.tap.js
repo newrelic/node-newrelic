@@ -31,10 +31,6 @@ test('See if mysql is running', function(t){
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     agent = helper.instrumentMockedAgent()
-    // FLAG: mysql_pool
-    agent.config.feature_flag = {
-      mysql_pool: true
-    }
     mysql = require('mysql')
     pool  = mysql.createPool(config)
 
@@ -54,10 +50,6 @@ test("bad config", function (t) {
     , mysql
 
   agent = helper.instrumentMockedAgent()
-  // FLAG: mysql_pool
-  agent.config.feature_flag = {
-    mysql_pool: true
-  }
   mysql = require('mysql')
 
   badConfig = {
@@ -112,10 +104,6 @@ test("mysql built-in connction pools",
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     agent = helper.instrumentMockedAgent()
-    // FLAG: mysql_pool
-    agent.config.feature_flag = {
-      mysql_pool: true
-    }
     mysql = require('mysql')
     pool  = mysql.createPool(config)
 
@@ -268,11 +256,6 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
 
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     agent = helper.instrumentMockedAgent();
-
-    // FLAG: mysql_pool
-    agent.config.feature_flag = {
-      mysql_pool: true
-    }
 
     mysql = require('mysql')
 
