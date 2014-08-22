@@ -1,3 +1,11 @@
+### v1.10.1 (2014-08-22):
+
+* MySQL Pooling Support
+
+  Better support for mysql pooling, including connections that use
+  `createPoolCluster` and `createPool`. Previously connections obtained through
+  a pool could potentially be uninstrumented.
+
 ### v1.10.0 (2014-08-15):
 
 * Custom instrumentation
