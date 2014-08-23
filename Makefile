@@ -165,3 +165,6 @@ services:
 	else \
 	  docker run -d --name nr_node_postgres -p 5432:5432 zaiste/postgresql; \
 	fi
+
+	@echo "\nTo run individual integration tests, run 'source test/docker_env_vars.sh' to set\
+	 the environment variables for all services.\n"
