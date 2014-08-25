@@ -1,3 +1,10 @@
+### v1.10.2 (2014-08-25):
+
+* Fix to prevent proxy credentials transmission
+
+  This update prevents proxy credentials set in the agent config file from
+  being transmitted to New Relic.
+
 ### v1.10.1 (2014-08-22):
 
 * MySQL Pooling Support
