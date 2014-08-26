@@ -7,6 +7,9 @@ var path   = require('path')
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
+//setting env var for forcing native then deleted in tearDown()
+process.env.NODE_PG_FORCE_NATIVE = true;
+
 //FLAG: postgres
 var agent  = helper.instrumentMockedAgent({postgres: true})
   , pg     = require('pg')
@@ -19,7 +22,6 @@ var TABLE      = 'testTable'
   , CON_STRING = 'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@'
       + params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db;
 
-
 /**
  * Deletion of testing table if already exists,
  * then recreation of a testing table
@@ -27,7 +29,9 @@ var TABLE      = 'testTable'
  *
  * @param Callback function to set off running the tests
  */
+
 function postgresSetup (runTest) {
+
   var setupClient = new pg.Client(CON_STRING);
 
   setupClient.connect(function (error) {
@@ -52,15 +56,16 @@ function postgresSetup (runTest) {
       });
     });
   });
- };
+ }
 
 
-test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t) {
+test("Postgres instrumentation: force native", {timeout : 5000}, function (t) {
   t.plan(2);
   postgresSetup(runTest);
   function runTest () {
 
     t.test("simple query with prepared statement", function (t) {
+      t.ok(process.env.NODE_PG_FORCE_NATIVE, "NODE_PG_FORCE_NATIVE is true");
 
       var client = new pg.Client(CON_STRING);
 
@@ -78,7 +83,8 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
         client.connect(function (error) {
           if (error) return t.fail(error);
           client.query(insQuery, [pkVal, colVal], function (error, ok) {
-             if (error) return t.fail(error);
+            if (error) return t.fail(error);
+
             t.ok(agent.getTransaction(), "transaction should still be visible");
             t.ok(ok, "everything should be peachy after setting");
 
@@ -99,10 +105,10 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
                 t.equals(trace.root.children.length, 1,
                        "there should be only one child of the root");
                 var setSegment = trace.root.children[0];
-                //t.equals(setSegment.host, params.postgres_host,
-                       //"should register the host");
-               // t.equals(setSegment.port, params.postgres_port,
-                      // "should register the correct port");
+                t.equals(setSegment.host, params.postgres_host,
+                       "should register the host");
+                t.equals(setSegment.port, params.postgres_port,
+                       "should register the correct port");
                 t.ok(setSegment, "trace segment for insert should exist");
                 t.equals(setSegment.name, "Datastore/operation/Postgres/query",
                        "should register the query call");
@@ -118,7 +124,7 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
 
                 client.end();
                 t.end();
-              });
+              })
             });
           });
         });
@@ -127,6 +133,9 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
 
 
     t.test("client pooling query", function (t) {
+
+      t.ok(process.env.NODE_PG_FORCE_NATIVE, "NODE_PG_FORCE_NATIVE is true");
+
       t.notOk(agent.getTransaction(), "no transaction should be in play");
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction();
@@ -164,10 +173,10 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
                 t.equals(trace.root.children.length, 1,
                        "there should be only one child of the root");
                 var setSegment = trace.root.children[0];
-                //t.equals(setSegment.host, params.postgres_host,
-                  //     "should register the host");
-                //t.equals(setSegment.port, params.postgres_port,
-                  //     "should register the correct port");
+                t.equals(setSegment.host, params.postgres_host,
+                       "should register the host");
+                t.equals(setSegment.port, params.postgres_port,
+                       "should register the correct port");
                 t.ok(setSegment, "trace segment for insert should exist");
                 t.equals(setSegment.name, "Datastore/operation/Postgres/query",
                        "should register the query call");
@@ -183,7 +192,7 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
 
                 t.end();
                 done();
-              });
+              })
             });
           });
         });
@@ -193,6 +202,7 @@ test("Postgres instrumentation: pure Javascript", {timeout : 5000}, function (t)
     t.tearDown(function () {
       pg.end();
       helper.unloadAgent(agent);
+      delete process.env.NODE_PG_FORCE_NATIVE;
     });
   };
 });

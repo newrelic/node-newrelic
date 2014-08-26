@@ -71,7 +71,7 @@ test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
         t.equal(tx, transaction, 'We got the same transaction');
 
         var colVal = 'Hello';
-        var pkVal= 111;
+        var pkVal = 111;
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL;
         insQuery += ') VALUES($1, $2);';
 
@@ -93,25 +93,33 @@ test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
 
               transaction.end();
 
-              var trace = transaction.getTrace();
-              t.ok(trace, "trace should exist");
-              t.ok(trace.root, "root element should exist");
-              t.equals(trace.root.children.length, 1,
-                     "there should be only one child of the root");
-              var setSegment = trace.root.children[0];
-              t.ok(setSegment, "trace segment for set should exist");
-              t.equals(setSegment.name, "Datastore/operation/Postgres/query",
-                     "should register the query call");
-              t.equals(setSegment.children.length, 1,
-                     "set should have an only child");
-              var getSegment = setSegment.children[0];
-              t.ok(getSegment, "trace segment for get should exist");
-              t.equals(getSegment.name, "Datastore/operation/Postgres/query",
-                     "should register the query call");
-              t.equals(getSegment.children.length, 0,
-                     "get should leave us here at the end");
-              client.end();
-              t.end();
+              setImmediate(function() {
+                var trace = transaction.getTrace();
+                t.ok(trace, "trace should exist");
+                t.ok(trace.root, "root element should exist");
+                t.equals(trace.root.children.length, 1,
+                       "there should be only one child of the root");
+                var setSegment = trace.root.children[0];
+                t.equals(setSegment.host, params.postgres_host,
+                       "should register the host");
+                t.equals(setSegment.port, params.postgres_port,
+                       "should register the correct port");
+                t.ok(setSegment, "trace segment for insert should exist");
+                t.equals(setSegment.name, "Datastore/operation/Postgres/query",
+                       "should register the query call");
+                t.equals(setSegment.children.length, 1,
+                       "set should have an only child");
+                var getSegment = setSegment.children[0];
+                t.ok(getSegment, "trace segment for select should exist");
+                t.equals(getSegment.name, "Datastore/operation/Postgres/query",
+                       "should register the query call");
+                t.equals(getSegment.children.length, 0,
+                       "get should leave us here at the end");
+                t.ok(!getSegment.timer.isActive(), "trace segment has ended");
+
+                client.end();
+                t.end();
+              });
             });
           });
         });
@@ -127,7 +135,7 @@ test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
         t.equal(tx, transaction, 'We got the same transaction');
 
         var colVal = 'World!';
-        var pkVal= 222;
+        var pkVal = 222;
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL;
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');" ;
 
@@ -150,26 +158,33 @@ test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
 
               transaction.end();
 
-              var trace = transaction.getTrace();
-              t.ok(trace, "trace should exist");
-              t.ok(trace.root, "root element should exist");
-              t.equals(trace.root.children.length, 1,
-                     "there should be only one child of the root");
-              var setSegment = trace.root.children[0];
-              t.ok(setSegment, "trace segment for set should exist");
-              t.equals(setSegment.name, "Datastore/operation/Postgres/query",
-                     "should register the query call");
-              t.equals(setSegment.children.length, 1,
-                     "set should have an only child");
-              var getSegment = setSegment.children[0];
-              t.ok(getSegment, "trace segment for get should exist");
-              t.equals(getSegment.name, "Datastore/operation/Postgres/query",
-                     "should register the query call");
-              t.equals(getSegment.children.length, 0,
-                     "get should leave us here at the end");
+              setImmediate(function() {
+                var trace = transaction.getTrace();
+                t.ok(trace, "trace should exist");
+                t.ok(trace.root, "root element should exist");
+                t.equals(trace.root.children.length, 1,
+                       "there should be only one child of the root");
+                var setSegment = trace.root.children[0];
+                t.equals(setSegment.host, params.postgres_host,
+                       "should register the host");
+                t.equals(setSegment.port, params.postgres_port,
+                       "should register the correct port");
+                t.ok(setSegment, "trace segment for insert should exist");
+                t.equals(setSegment.name, "Datastore/operation/Postgres/query",
+                       "should register the query call");
+                t.equals(setSegment.children.length, 1,
+                       "set should have an only child");
+                var getSegment = setSegment.children[0];
+                t.ok(getSegment, "trace segment for get should exist");
+                t.equals(getSegment.name, "Datastore/operation/Postgres/query",
+                       "should register the query call");
+                t.equals(getSegment.children.length, 0,
+                       "get should leave us here at the end");
+                t.ok(!getSegment.timer.isActive(), "trace segment has ended");
 
-              t.end();
-              done();
+                t.end();
+                done();
+              });
             });
           });
         });
