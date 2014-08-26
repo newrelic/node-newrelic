@@ -168,7 +168,8 @@ test("proxy agent with plain text to collector", function (t) {
           'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
           'host'        : 'staging-collector.newrelic.com',
           'port'        : 80,
-          'proxy'       : fmt('http://localhost:%d', port),
+          'proxy_host'  : 'localhost', // Specifically use proxy_host and
+          'proxy_port'  : port,        // proxy_port to test these settings
           'ssl'         : false,
           'logging'     : {
             'level' : 'trace'

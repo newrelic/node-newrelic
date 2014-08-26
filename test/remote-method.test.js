@@ -482,55 +482,6 @@ describe("RemoteMethod", function () {
     it("should start with the (old-style) path", function () {
       expect(parsed.pathname.indexOf('/agent_listener/invoke_raw_method')).equal(0);
     });
-
-    describe("when proxy is configured", function () {
-      it("should attach proxy host and port during URL canonicalization", function () {
-        var config = {
-          proxy_host : 'localhost',
-          proxy_port : '8765',
-          host       : 'collector.newrelic.com',
-          port       : '80',
-          run_id     : 12
-        };
-        var method = new RemoteMethod('test', config);
-
-        var expected = 'http://collector.newrelic.com:80' +
-                       '/agent_listener/invoke_raw_method' +
-                       '?marshal_format=json&protocol_version=12&' +
-                       'license_key=&method=test&run_id=12';
-        expect(method._path()).equal(expected);
-      });
-
-      it("should proxyify host when proxy settings are complete", function () {
-        config.proxy_host = 'proxy.example.com';
-        config.proxy_port = 8080;
-        var method = new RemoteMethod(TEST_METHOD, config);
-        parsed = reconstitute(method._path());
-        expect(parsed.hostname).equal('collector.newrelic.com');
-      });
-
-      it("should proxyify port when proxy settings are complete", function () {
-        config.proxy_host = 'proxy.example.com';
-        config.proxy_port = 12345;
-        var method = new RemoteMethod(TEST_METHOD, config);
-        parsed = reconstitute(method._path());
-        expect(parsed.port).equal('80');
-      });
-
-      it("should proxyify host when proxy_port is set", function () {
-        config.proxy_port = 8080;
-        var method = new RemoteMethod(TEST_METHOD, config);
-        parsed = reconstitute(method._path());
-        expect(parsed.hostname).equal('collector.newrelic.com');
-      });
-
-      it("should proxyify port when proxy_host is set", function () {
-        config.proxy_host = 'proxy.example.com';
-        var method = new RemoteMethod(TEST_METHOD, config);
-        parsed = reconstitute(method._path());
-        expect(parsed.port).equal('80');
-      });
-    });
   });
 
   describe("when generating the User-Agent string", function () {
