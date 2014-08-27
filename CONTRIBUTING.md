@@ -32,8 +32,8 @@ Generic functional tests are stored in `test/integration/`. They're written in
 Functional tests against specific versions of instrumented modules are stored in
 `test/versioned/`. They are also written in `node-tap`.
 
-There are some other tests in `test/multiverse/` and `test/versioned-node/`.
-They are works in progress and not ready for general-purpose use.
+There are some other tests in `test/versioned-node/`. They are works in progress
+and not ready for general-purpose use.
 
 
 ### Setup
