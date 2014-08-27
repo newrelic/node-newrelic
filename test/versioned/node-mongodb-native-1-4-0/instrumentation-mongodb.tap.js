@@ -102,50 +102,57 @@ function addMetricsVerifierNoCallback(t, agent, operation, verifier) {
   });
 }
 
-// +6 asserts
+// +7 asserts
 function verifyTrace(t, transaction, operation) {
-  try {
-    var trace = transaction.getTrace();
-    t.ok(trace, "trace should exist.");
-    t.ok(trace.root, "root element should exist.");
-    t.equals(trace.root.children.length, 1, "should be only one child.");
+  setImmediate(function cb_setImmediate() {
+    try {
+      var trace = transaction.getTrace();
+      t.ok(trace, "trace should exist.");
+      t.ok(trace.root, "root element should exist.");
+      t.equals(trace.root.children.length, 1, "should be only one child.");
 
-    var segment = trace.root.children[0];
-    t.ok(segment, "trace segment for " + operation + " should exist");
-    t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
-             "should register the " + operation);
-    t.equals(segment.children.length, 0, "should have no children");
-  }
-  catch (error) {
-    t.fail(error);
-    t.end();
-  }
+      var segment = trace.root.children[0];
+      t.ok(segment, "trace segment for " + operation + " should exist");
+      t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
+               "should register the " + operation);
+      t.equals(segment.children.length, 0, "should have no children");
+      t.ok(segment._isEnded(), "should have ended");
+    }
+    catch (error) {
+      t.fail(error);
+      t.end();
+    }
+  });
 }
 
-// +9 asserts
+// +11 asserts
 function verifyTraceNoCallback(t, transaction, operation, verifier) {
-  try {
-    var trace = transaction.getTrace();
-    t.ok(trace, "trace should exist.");
-    t.ok(trace.root, "root element should exist.");
-    t.equals(trace.root.children.length, 2, "should be two children.");
+  setImmediate(function cb_setImmediate() {
+    try {
+      var trace = transaction.getTrace();
+      t.ok(trace, "trace should exist.");
+      t.ok(trace.root, "root element should exist.");
+      t.equals(trace.root.children.length, 2, "should be two children.");
 
-    var segment = trace.root.children[0];
-    t.ok(segment, "trace segment for " + operation + " should exist");
-    t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
-             "should register the " + operation);
-    t.equals(segment.children.length, 0, "should have no children");
+      var segment = trace.root.children[0];
+      t.ok(segment, "trace segment for " + operation + " should exist");
+      t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
+               "should register the " + operation);
+      t.equals(segment.children.length, 0, "should have no children");
+      t.ok(segment._isEnded(), "should have ended");
 
-    segment = trace.root.children[1];
-    t.ok(segment, "trace segment for " + verifier + " should exist");
-    t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + verifier,
-             "should register the " + verifier);
-    t.equals(segment.children.length, 0, "should have no children");
-  }
-  catch (error) {
-    t.fail(error);
-    t.end();
-  }
+      segment = trace.root.children[1];
+      t.ok(segment, "trace segment for " + verifier + " should exist");
+      t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + verifier,
+               "should register the " + verifier);
+      t.equals(segment.children.length, 0, "should have no children");
+      t.ok(segment._isEnded(), "should have ended");
+    }
+    catch (error) {
+      t.fail(error);
+      t.end();
+    }
+  });
 }
 
 // +5 asserts
@@ -231,7 +238,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'insert');
@@ -251,7 +258,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(11);
+          t.plan(12);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'insert');
@@ -312,7 +319,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
@@ -331,7 +338,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with Cursor", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
@@ -396,7 +403,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'findOne');
@@ -447,7 +454,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(14);
+          t.plan(15);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'findAndModify');
@@ -508,7 +515,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(14);
+          t.plan(15);
 
           var current = this;
           runWithDB(current, t, function (collection) {
@@ -581,7 +588,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'update');
@@ -604,7 +611,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(21);
+          t.plan(23);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifierNoCallback(t, agent, 'update', 'find');
@@ -687,7 +694,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(15);
+          t.plan(16);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'save');
@@ -710,7 +717,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(19);
+          t.plan(21);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifierNoCallback(t, agent, 'save', 'find');
@@ -787,7 +794,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'count');
@@ -838,7 +845,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'distinct');
@@ -889,7 +896,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'createIndex');
@@ -940,7 +947,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'ensureIndex');
@@ -991,7 +998,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'reIndex');
@@ -1042,7 +1049,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropIndex');
@@ -1093,7 +1100,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropAllIndexes');
@@ -1145,7 +1152,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         t.plan(2);
 
         t.test("with callback", {timeout : 5000}, function (t) {
-          t.plan(13);
+          t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'remove');
@@ -1165,7 +1172,7 @@ test("agent instrumentation of node-mongodb-native", function (t) {
         });
 
         t.test("with no callback (w = 0)", {timeout : SLUG_FACTOR}, function (t) {
-          t.plan(18);
+          t.plan(20);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifierNoCallback(t, agent, 'remove', 'count');
