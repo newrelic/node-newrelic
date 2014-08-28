@@ -16,7 +16,7 @@ var path     = require('path')
 // centrally control how long we're willing to wait for mongo
 var SLUG_FACTOR = 30000;
 
-var COLLECTION = 'test_1_4_0';
+var COLLECTION = 'test_1_3_19_plus';
 
 // +5 asserts
 function addMetricsVerifier(t, agent, operation) {
