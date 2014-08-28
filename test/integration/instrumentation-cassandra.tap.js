@@ -112,24 +112,28 @@ test("Cassandra instrumentation",
 
             transaction.end();
 
-            var trace = transaction.getTrace();
-            t.ok(trace, "trace should exist");
-            t.ok(trace.root, "root element should exist");
-            t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root");
-            var setSegment = trace.root.children[0];
-            t.ok(setSegment, "trace segment for set should exist");
-            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeBatch",
-                   "should register the executeBatch");
-            t.equals(setSegment.children.length, 1,
-                   "set should have an only child");
-            var getSegment = setSegment.children[0];
-            t.ok(getSegment, "trace segment for get should exist");
-            t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
-                   "should register the execute");
-            t.equals(getSegment.children.length, 0,
-                   "get should leave us here at the end");
-            t.end();
+            setImmediate(function() {
+              var trace = transaction.getTrace();
+              t.ok(trace, "trace should exist");
+              t.ok(trace.root, "root element should exist");
+              t.equals(trace.root.children.length, 1,
+                     "there should be only one child of the root");
+              var setSegment = trace.root.children[0];
+              t.ok(setSegment, "trace segment for insert should exist");
+              t.equals(setSegment.name, "Datastore/operation/Cassandra/executeBatch",
+                     "should register the executeBatch");
+              t.equals(setSegment.children.length, 1,
+                     "set should have an only child");
+              var getSegment = setSegment.children[0];
+              t.ok(getSegment, "trace segment for select should exist");
+              t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
+                     "should register the execute");
+              t.equals(getSegment.children.length, 0,
+                     "get should leave us here at the end");
+              t.ok(getSegment._isEnded(), "trace segment should have ended");
+
+              t.end();
+            });
           });
         });
       });
@@ -160,24 +164,28 @@ test("Cassandra instrumentation",
 
             transaction.end();
 
-            var trace = transaction.getTrace();
-            t.ok(trace, "trace should exist");
-            t.ok(trace.root, "root element should exist");
-            t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root");
-            var setSegment = trace.root.children[0];
-            t.ok(setSegment, "trace segment for set should exist");
-            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeAsPrepared",
-                   "should register the executeAsPrepared");
-            t.equals(setSegment.children.length, 1,
-                   "set should have an only child");
-            var getSegment = setSegment.children[0];
-            t.ok(getSegment, "trace segment for get should exist");
-            t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
-                   "should register the execute");
-            t.equals(getSegment.children.length, 0,
-                   "get should leave us here at the end");
-            t.end();
+            setImmediate(function() {
+              var trace = transaction.getTrace();
+              t.ok(trace, "trace should exist");
+              t.ok(trace.root, "root element should exist");
+              t.equals(trace.root.children.length, 1,
+                     "there should be only one child of the root");
+              var setSegment = trace.root.children[0];
+              t.ok(setSegment, "trace segment for set should exist");
+              t.equals(setSegment.name, "Datastore/operation/Cassandra/executeAsPrepared",
+                     "should register the executeAsPrepared");
+              t.equals(setSegment.children.length, 1,
+                     "set should have an only child");
+              var getSegment = setSegment.children[0];
+              t.ok(getSegment, "trace segment for get should exist");
+              t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
+                     "should register the execute");
+              t.equals(getSegment.children.length, 0,
+                     "get should leave us here at the end");
+              t.ok(getSegment._isEnded(), "trace segment should have ended");
+
+              t.end();
+            });
           });
         });
       });

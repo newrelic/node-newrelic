@@ -13,7 +13,7 @@ var DB_INDEX = 2;
 test("Redis instrumentation should find Redis calls in the transaction trace",
      {timeout : 5000},
      function (t) {
-  t.plan(17);
+  t.plan(18);
 
   var self = this;
   helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, app) {
@@ -50,31 +50,34 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
 
           transaction.end();
 
-          var trace = transaction.getTrace();
-          t.ok(trace, "trace should exist");
-          t.ok(trace.root, "root element should exist");
-          t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root");
+          setImmediate(function() {
+            var trace = transaction.getTrace();
+            t.ok(trace, "trace should exist");
+            t.ok(trace.root, "root element should exist");
+            t.equals(trace.root.children.length, 1,
+                     "there should be only one child of the root");
 
-          var setSegment = trace.root.children[0];
-          t.ok(setSegment, "trace segment for set should exist");
-          t.equals(setSegment.name, "Datastore/operation/Redis/set",
-                   "should register the set");
-          t.equals(setSegment.parameters.key, "[\"testkey\"]",
-                   "should have the set key as a parameter");
-          t.equals(setSegment.children.length, 1,
-                   "set should have an only child");
+            var setSegment = trace.root.children[0];
+            t.ok(setSegment, "trace segment for set should exist");
+            t.equals(setSegment.name, "Datastore/operation/Redis/set",
+                     "should register the set");
+            t.equals(setSegment.parameters.key, "[\"testkey\"]",
+                     "should have the set key as a parameter");
+            t.equals(setSegment.children.length, 1,
+                     "set should have an only child");
 
-          var getSegment = setSegment.children[0];
-          t.ok(getSegment, "trace segment for get should exist");
-          t.equals(getSegment.name, "Datastore/operation/Redis/get",
-                   "should register the get");
-          t.equals(getSegment.parameters.key, "[\"testkey\"]",
-                   "should have the get key as a parameter");
-          t.equals(getSegment.children.length, 0,
-                   "get should leave us here at the end");
+            var getSegment = setSegment.children[0];
+            t.ok(getSegment, "trace segment for get should exist");
+            t.equals(getSegment.name, "Datastore/operation/Redis/get",
+                     "should register the get");
+            t.equals(getSegment.parameters.key, "[\"testkey\"]",
+                     "should have the get key as a parameter");
+            t.equals(getSegment.children.length, 0,
+                     "get should leave us here at the end");
+            t.ok(getSegment._isEnded(), "trace segment should have ended");
 
-          client.end();
+            client.end();
+          });
         });
       });
     });
