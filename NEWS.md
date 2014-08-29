@@ -1,3 +1,8 @@
+### v1.10.3 (2014-08-28):
+
+* Removed a preemptive DNS lookup of the New Relic servers that caused when
+  behind a proxy.
+
 ### v1.10.2 (2014-08-25):
 
 * Fix to prevent proxy credentials transmission
