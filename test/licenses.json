@@ -3,6 +3,7 @@
   "bunyan": "MIT*",
   "continuation-local-storage": "BSD",
   "emitter-listener" : "BSD-2-Clause",
+  "proxying-agent": "The MIT License",
   "shimmer" : "BSD",
   "yakaa" : "MIT"
 }
