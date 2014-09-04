@@ -7,8 +7,7 @@ var path   = require('path')
   , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
   ;
 
-//FLAG: postgres
-var agent  = helper.instrumentMockedAgent({postgres: true})
+var agent  = helper.instrumentMockedAgent()
   , pg     = require('pg').native
   ;
 
@@ -115,7 +114,7 @@ test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
                        "should register the query call");
                 t.equals(getSegment.children.length, 0,
                        "get should leave us here at the end");
-                t.ok(!getSegment.timer.isActive(), "trace segment has ended");
+                t.ok(getSegment._isEnded(), "trace segment should have ended");
 
                 client.end();
                 t.end();
@@ -180,7 +179,7 @@ test("Postgres instrumentation: native", {timeout : 5000}, function (t) {
                        "should register the query call");
                 t.equals(getSegment.children.length, 0,
                        "get should leave us here at the end");
-                t.ok(!getSegment.timer.isActive(), "trace segment has ended");
+                t.ok(getSegment._isEnded(), "trace segment should have ended");
 
                 t.end();
                 done();

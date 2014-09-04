@@ -10,8 +10,7 @@ var path   = require('path')
 //setting env var for forcing native then deleted in tearDown()
 process.env.NODE_PG_FORCE_NATIVE = true;
 
-//FLAG: postgres
-var agent  = helper.instrumentMockedAgent({postgres: true})
+var agent  = helper.instrumentMockedAgent()
   , pg     = require('pg')
   ;
 
@@ -120,7 +119,7 @@ test("Postgres instrumentation: force native", {timeout : 5000}, function (t) {
                        "should register the query call");
                 t.equals(getSegment.children.length, 0,
                        "get should leave us here at the end");
-                t.ok(!getSegment.timer.isActive(), "trace segment has ended");
+                t.ok(getSegment._isEnded(), "trace segment should have ended");
 
                 client.end();
                 t.end();
@@ -188,7 +187,7 @@ test("Postgres instrumentation: force native", {timeout : 5000}, function (t) {
                        "should register the query call");
                 t.equals(getSegment.children.length, 0,
                        "get should leave us here at the end");
-                t.ok(!getSegment.timer.isActive(), "trace segment has ended");
+                t.ok(getSegment._isEnded(), "trace segment should have ended");
 
                 t.end();
                 done();
