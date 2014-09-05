@@ -1,3 +1,18 @@
+### v1.11.0 (2014-09-05):
+
+* We now support PostgreSQL via the `pg` driver.
+
+  The Node.js agent now records the amount of time spent in transactions with
+  PostgreSQL databases. This timing can be viewed in the Transactions dashboard
+  within individual transactions and their traces.
+
+  The agent supports all of the following `pg` usage scenarios:
+    * Using the pure javascript API exposed directly from `pg`
+    * Using the "native" API exposed from `pg.native`
+    * Using the "native" API exposed directly from `pg` when the
+      `NODE_PG_FORCE_NATIVE` environment variable is set
+    * Using the pure javascript API from the `pg.js` module
+
 ### v1.10.3 (2014-08-28):
 
 * Removed a preemptive DNS lookup of the New Relic servers that could cause
