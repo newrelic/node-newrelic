@@ -468,7 +468,7 @@ API.prototype.endTransaction = function endTransaction() {
     }
     tx.end();
   } else {
-    console.log('no tx');
+    logger.warn('endTransaction() called while not in a transaction.');
   }
 };
 
