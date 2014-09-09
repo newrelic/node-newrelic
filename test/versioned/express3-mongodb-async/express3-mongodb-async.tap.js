@@ -212,14 +212,16 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
                 "first segment is web transaction");
 
         children = web.children || [];
-        t.equal(children.length, 2, "only one child of web node");
+        t.equal(children.length, 1, "only one child of web node");
 
         var find = children[0] || {};
         t.equal(find.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/find',
                 "second segment is MongoDB find");
-        t.equal((find.children || []).length, 0, "no children of find node");
 
-        var update = children[1] || {};
+        children = find.children || [];
+        t.equal(children.length, 1, "only one child of find node");
+
+        var update = children[0] || {};
         t.equal(update.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/update',
                 "third segment is MongoDB update");
         t.equal((update.children || []).length, 0, "no children of update node");

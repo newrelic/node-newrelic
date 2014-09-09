@@ -21,22 +21,20 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
   helper.bootstrapMongoDB([COLLECTION, COLLECTION_CURSOR], function cb_bootstrapMongoDB(error, app) {
     if (error) return t.fail(error);
 
-    var agent = helper.instrumentMockedAgent();
-    var mongodb = require('mongodb');
+    t.test("with a callback", function (t) {
+      t.plan(21);
 
-    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true});
-    var db = new mongodb.Db('integration', server, {safe : true});
+      var agent = helper.instrumentMockedAgent();
+      var mongodb = require('mongodb');
+      var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true});
+      var db = new mongodb.Db('integration', server, {safe : true});
 
-    self.tearDown(function cb_tearDown() {
-      db.close(true, function (error) {
-        if (error) t.fail(error);
-
+      this.tearDown(function cb_tearDown() {
+        db.close(true, function (error) {
+          if (error) t.fail(error);
+        });
         helper.unloadAgent(agent);
       });
-    });
-
-    t.test("with a callback", function (t) {
-      t.plan(18);
 
       agent.once('transactionFinished', function () {
         t.equals(agent.metrics.getMetric('Datastore/all').callCount, 2,
@@ -47,15 +45,31 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "basic insert should be recorded"
         );
         t.equals(
+          agent.metrics.getMetric('Datastore/operation/MongoDB/findOne').callCount,
+          1,
+          "basic findOne should be recorded"
+        );
+        t.equals(
           agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/insert').callCount,
           1,
           "collection insertion should be recorded"
         );
         t.equals(
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/findOne').callCount,
+          1,
+          "collection findOne should be recorded"
+        );
+        t.equals(
           agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/insert',
                                   'Datastore/statement/MongoDB/' + COLLECTION + '/insert').callCount,
           1,
-          "Scoped MongoDB request should be recorded"
+          "Scoped MongoDB insert should be recorded"
+        );
+        t.equals(
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/findOne',
+                                  'Datastore/statement/MongoDB/' + COLLECTION + '/insert').callCount,
+          1,
+          "Scoped MongoDB findOne should be recorded"
         );
       });
 
@@ -119,7 +133,19 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     });
 
     t.test("with a Cursor", function (t) {
-      t.plan(8);
+      t.plan(12);
+
+      var agent = helper.instrumentMockedAgent();
+      var mongodb = require('mongodb');
+      var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true});
+      var db = new mongodb.Db('integration', server, {safe : true});
+
+      this.tearDown(function cb_tearDown() {
+        db.close(true, function (error) {
+          if (error) t.fail(error);
+        });
+        helper.unloadAgent(agent);
+      });
 
       agent.once('transactionFinished', function () {
         t.equals(
@@ -129,8 +155,13 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
         );
         t.equals(
           agent.metrics.getMetric('Datastore/operation/MongoDB/insert').callCount,
-          2,
+          1,
           "basic insert should be recorded with cursor"
+        );
+        t.equals(
+          agent.metrics.getMetric('Datastore/operation/MongoDB/find').callCount,
+          2,
+          "basic find should be recorded with cursor"
         );
         t.equals(
           agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert').callCount,
@@ -138,10 +169,21 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "collection insertion should be recorded from cursor"
         );
         t.equals(
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/find').callCount,
+          2,
+          "collection find should be recorded from cursor"
+        );
+        t.equals(
           agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert',
                                   'Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert').callCount,
           1,
-          "scoped MongoDB request should be recorded from cursor"
+          "scoped MongoDB insert should be recorded from cursor"
+        );
+        t.equals(
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/find',
+                                  'Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert').callCount,
+          2,
+          "scoped MongoDB find should be recorded from cursor"
         );
         var instance = 'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port;
         t.equals(
@@ -171,12 +213,19 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
                 t.equals(results.length, 1, "should be one result");
                 t.equals(results[0].hamchunx, 'verbloks', "driver should still work");
 
-                transaction.end();
+                var cursor2 = collection.find({id : 2});
+                cursor2.toArray(function cb_toArray(error, results) {
+                  if (error) return t.fail(error);
 
-                db.close(function cb_close(error) {
-                  if (error) t.fail(error);
+                  t.equals(results.length, 0, "should be no results");
 
-                  t.end();
+                  transaction.end();
+
+                  db.close(function cb_close(error) {
+                    if (error) t.fail(error);
+
+                    t.end();
+                  });
                 });
               });
             });

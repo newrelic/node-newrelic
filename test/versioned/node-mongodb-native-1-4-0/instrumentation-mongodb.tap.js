@@ -316,15 +316,42 @@ test("agent instrumentation of node-mongodb-native", function (t) {
       t.plan(2);
 
       t.test("inside transaction", function (t) {
-        t.plan(2);
+        t.plan(5);
 
-        t.test("with callback", {timeout : SLUG_FACTOR}, function (t) {
+        t.test("with selector, with callback, then toArray", {timeout : SLUG_FACTOR}, function (t) {
+          t.plan(16);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'find');
+
+            collection.find({id : 1337}, function (error, cursor) {
+              if (error) { t.fail(error); return t.end(); }
+              t.ok(cursor, "should have gotten back cursor");
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              cursor.toArray(function cb_toArray(error, result) {
+                if (error) { t.fail(error); return t.end(); }
+                t.ok(result, "should have gotten back results");
+
+                t.ok(agent.getTransaction(), "transaction should still be visible");
+
+                transaction.end();
+
+                verifyTrace(t, transaction, 'find');
+              });
+            });
+          });
+        });
+
+        t.test("without selector, then toArray", {timeout : SLUG_FACTOR}, function (t) {
           t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
 
-            collection.find({id : 1337}, function (error, result) {
+            var cursor = collection.find();
+            cursor.toArray(function cb_toArray(error, result) {
               if (error) { t.fail(error); return t.end(); }
               t.ok(result, "should have gotten back results");
 
@@ -337,16 +364,66 @@ test("agent instrumentation of node-mongodb-native", function (t) {
           });
         });
 
-        t.test("with Cursor", {timeout : SLUG_FACTOR}, function (t) {
+        t.test("with selector, then each", {timeout : SLUG_FACTOR}, function (t) {
+          t.plan(13);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'find');
+
+            var cursor = collection.find();
+            cursor.each(function cb_each(error, result) {
+              if (error) { t.fail(error); return t.end(); }
+
+              // When result is null we've exhausted all results
+              if (result !== null) return;
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              transaction.end();
+
+              verifyTrace(t, transaction, 'find');
+            });
+          });
+        });
+
+        t.test("with selector, then nextObject to exhaustion", {timeout : SLUG_FACTOR}, function (t) {
+          t.plan(21);
+
+          runWithTransaction(this, t, function (agent, collection, transaction) {
+            addMetricsVerifier(t, agent, 'find');
+
+            var cursor = collection.find();
+            function cb_nextObject(error, result) {
+              if (error) { t.fail(error); return t.end(); }
+
+              t.ok(agent.getTransaction(), "transaction should still be visible");
+
+              if (result) {
+                t.ok(result, "should have gotten back results");
+                cursor.nextObject(cb_nextObject);
+              } else {
+                transaction.end();
+
+                verifyTrace(t, transaction, 'find');
+              }
+            };
+
+            cursor.nextObject(cb_nextObject);
+          });
+        });
+
+        t.test("with selector, then nextObject, then close", {timeout : SLUG_FACTOR}, function (t) {
           t.plan(14);
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'find');
 
-            var cursor = collection.find({id : 1337});
-            cursor.toArray(function cb_toArray(error, result) {
+            var cursor = collection.find();
+            cursor.nextObject(function cb_nextObject(error, result) {
               if (error) { t.fail(error); return t.end(); }
               t.ok(result, "should have gotten back results");
+
+              cursor.close();
 
               t.ok(agent.getTransaction(), "transaction should still be visible");
 
