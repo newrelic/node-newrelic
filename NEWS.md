@@ -1,3 +1,15 @@
+### v1.11.1 (2014-09-11)
+
+Fixes:
+
+* Improved MongoDB find instrumentation.
+
+  The `mongo` driver provides many different ways to invoke its API and find
+  documents. In previous releases, some API invocations would create transaction
+  trace segments that would not end properly, leading to inaccurately large
+  segment times. This release now covers all the ways to find and iterate
+  through documents, ensuring segment times are accurate.
+
 ### v1.11.0 (2014-09-05):
 
 * We now support PostgreSQL via the `pg` driver.
