@@ -403,8 +403,9 @@ API.prototype.createTracer = function createTracer(name, callback) {
   if (txn) {
     var segment = tracer.addSegment(name, customRecorder);
     return tracer.callbackProxy(function () {
-      callback.apply(this, arguments);
+      var value = callback.apply(this, arguments);
       segment.end();
+      return value;
     });
   } else {
     return callback;
@@ -425,7 +426,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     tx.setName(url, 0);
     tx.webSegment = tracer.addSegment(url, recordWeb);
 
-    callback.apply(this, arguments);
+    return callback.apply(this, arguments);
   }));
 };
 
@@ -447,7 +448,7 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
     tx.bgSegment = tracer.addSegment(name, recordBackground);
     tx.bgSegment.partialName = group;
 
-    callback.apply(this, arguments);
+    return callback.apply(this, arguments);
   }));
 };
 

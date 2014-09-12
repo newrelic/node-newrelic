@@ -127,6 +127,17 @@ describe('The custom instrumentation API', function () {
         markedFunction();
       });
     });
+
+    it('should allow the user to return a value from the handle', function () {
+      helper.runInTransaction(agent, function (transaction) {
+        var markedFunction = api.createTracer('custom:segment', function () {
+          return 'something'
+          transaction.end();
+        });
+        var value = markedFunction();
+        expect(value).to.be.equal('something');
+      });
+    });
   });
 
   describe('when creating a web transaction', function () {
@@ -263,6 +274,14 @@ describe('The custom instrumentation API', function () {
       });
       expect(agent.tracer.getTransaction()).to.not.exist;
       bgHandler();
+    });
+
+    it('should return the any value that the hanlder returns', function () {
+      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+        return 'a thing';
+      });
+      var value = txHandler();
+      expect(value).to.be.equal('a thing');
     });
   });
 
@@ -420,6 +439,14 @@ describe('The custom instrumentation API', function () {
       });
       expect(agent.tracer.getTransaction()).to.not.exist;
       webHandler();
+    });
+
+    it('should return the any value that the hanlder returns', function () {
+      var txHandler = api.createBackgroundTransaction('/custom/transaction', function () {
+        return 'a thing';
+      });
+      var value = txHandler();
+      expect(value).to.be.equal('a thing');
     });
   });
 
