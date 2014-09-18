@@ -58,6 +58,7 @@
   "bundledDependencies": [
     "bunyan",
     "continuation-local-storage",
+    "proxying-agent",
     "yakaa"
   ],
   "devDependencies": {
