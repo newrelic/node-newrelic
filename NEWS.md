@@ -1,6 +1,19 @@
-### v1.11.1 (2014-09-11)
+### v1.11.2 (2014-09-19):
 
-Fixes:
+* Custom Instrumentation functions now pass through the return value of their
+  passed in callback.
+
+* Multiple improvements to PostgreSQL instrumentation
+
+  When no callback was detected in the query functions, we were inserting our
+  own. The insertion itself caused a crash. Adding a callback also modified the
+  behavior of the pg module. Instead, we now listen for `error` or `end` events
+  to finish segments.
+
+  We now generate metrics for statement type/table combinations. Look for these
+  in the database tab your APM Account!
+
+### v1.11.1 (2014-09-11):
 
 * Improved MongoDB find instrumentation.
 
