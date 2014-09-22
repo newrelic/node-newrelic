@@ -28,6 +28,11 @@
       "name": "Wraithan (Chris McDonald)",
       "email": "wmcdonald@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Michael Hayes",
+      "email": "mhayes@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
