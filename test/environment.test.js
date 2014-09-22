@@ -140,6 +140,19 @@ describe("the environment scraper", function () {
     });
   });
 
+   it("should get correct version for dependencies", function () {
+    var root = path.join(__dirname, 'lib/example-packages')
+    var versions = environment.listPackages(root).reduce(function(map, pkg) {
+      map[pkg[0]] = pkg[1]
+      return map
+    }, {})
+
+    expect(versions).deep.equal({
+      'invalid-json': '<unknown>',
+      'valid-json': '1.2.3'
+    })
+  });
+
   it("should not crash when given a file in NODE_PATH", function (done) {
     var env = {
       NODE_PATH : path.join(__dirname, "environment.test.js"),
