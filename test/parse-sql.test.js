@@ -12,6 +12,9 @@ describe('database query parser', function () {
       var ps = parseSql('NoSQL', "Select * from dude");
       should.exist(ps);
 
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
+
       should.exist(ps.operation);
       ps.operation.should.equal('select');
 
@@ -22,6 +25,9 @@ describe('database query parser', function () {
     it("should parse another simple query", function () {
       var ps = parseSql('NoSQL', "Select * from transaction_traces_12");
       should.exist(ps);
+
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
 
       should.exist(ps.operation);
       ps.operation.should.equal('select');
@@ -36,6 +42,9 @@ describe('database query parser', function () {
       var ps = parseSql('NoSQL', "DELETE\nfrom dude");
       should.exist(ps);
 
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
+
       should.exist(ps.operation);
       ps.operation.should.equal('delete');
 
@@ -46,6 +55,9 @@ describe('database query parser', function () {
     it("should parse a command with conditions", function () {
       var ps = parseSql('NoSQL', "DELETE\nfrom dude where name = 'man'");
       should.exist(ps);
+
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
 
       should.exist(ps.operation);
       ps.operation.should.equal('delete');
@@ -60,6 +72,9 @@ describe('database query parser', function () {
       var ps = parseSql('NoSQL', "  update test set value = 1 where id = 12");
       should.exist(ps);
 
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
+
       should.exist(ps.operation);
       ps.operation.should.equal('update');
 
@@ -73,6 +88,9 @@ describe('database query parser', function () {
       var ps = parseSql('NoSQL', "  insert into\ntest\nselect * from dude");
       should.exist(ps);
 
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
+
       should.exist(ps.operation);
       ps.operation.should.equal('insert');
 
@@ -82,15 +100,17 @@ describe('database query parser', function () {
   });
 
   describe('invalid DML', function () {
-    it("should return 'unknown' when handed garbage", function () {
+    it("should return 'other' when handed garbage", function () {
       var ps = parseSql('NoSQL', "  bulge into\ndudes\nselect * from dude");
       should.exist(ps);
 
-      should.exist(ps.operation);
-      ps.operation.should.equal('unknown');
+      should.exist(ps.type);
+      ps.type.should.equal('NoSQL');
 
-      should.exist(ps.model);
-      ps.model.should.equal('unknown');
+      should.exist(ps.operation);
+      ps.operation.should.equal('other');
+
+      should.not.exist(ps.model);
     });
   });
 });
