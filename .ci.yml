@@ -1,8 +1,0 @@
-environment:
-  services:
-    - orchardup/mysql
-    - dockerfile/mongodb
-    - borja/docker-memcached
-    - redis
-    - zmarcantel/cassandra
-    - zaiste/postgresql
