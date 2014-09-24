@@ -3,8 +3,8 @@
 var path         = require('path')
   , tap          = require('tap')
   , test         = tap.test
-  , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config.js'))
-  , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
+  , configurator = require('../../lib/config.js')
+  , Agent        = require('../../lib/agent')
   , agent
   ;
 

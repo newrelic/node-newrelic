@@ -5,8 +5,8 @@ var path     = require('path')
   , chai     = require('chai')
   , expect   = chai.expect
   , should   = chai.should()
-  , helper   = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , facts    = require(path.join(__dirname, '..', 'lib', 'collector', 'facts.js'))
+  , helper   = require('./lib/agent_helper.js')
+  , facts    = require('../lib/collector/facts.js')
   ;
 
 var EXPECTED = ['pid', 'host', 'language', 'app_name',

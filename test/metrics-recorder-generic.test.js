@@ -3,10 +3,9 @@
 var path          = require('path')
   , chai          = require('chai')
   , expect        = chai.expect
-  , helper        = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , recordGeneric = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                      'recorders', 'generic'))
-  , Transaction   = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper        = require('./lib/agent_helper')
+  , recordGeneric = require('../lib/metrics/recorders/generic')
+  , Transaction   = require('../lib/transaction')
   ;
 
 function makeSegment(options) {

@@ -3,7 +3,7 @@
 var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper = require('./lib/agent_helper')
   ;
 
 describe("an instrumented Hapi application", function () {
@@ -14,8 +14,7 @@ describe("an instrumented Hapi application", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'hapi'));
+      initialize = require('../lib/instrumentation/hapi');
     });
 
     after(function () {
@@ -64,8 +63,7 @@ describe("an instrumented Hapi application", function () {
 
       stub = {Server : Server};
 
-      require(path.join(__dirname, '..', 'lib',
-                        'instrumentation', 'hapi'))(agent, stub);
+      require('../lib/instrumentation/hapi')(agent, stub);
     });
 
     afterEach(function () {

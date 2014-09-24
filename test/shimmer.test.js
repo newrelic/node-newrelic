@@ -3,10 +3,10 @@
 var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , logger       = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , helper       = require('./lib/agent_helper')
+  , logger       = require('../lib/logger')
                      .child({component : 'TEST'})
-  , shimmer      = require(path.join(__dirname, '..', 'lib', 'shimmer'))
+  , shimmer      = require('../lib/shimmer')
   , EventEmitter = require('events').EventEmitter
   ;
 

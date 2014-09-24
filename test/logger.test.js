@@ -3,7 +3,7 @@
 var path = require('path')
   , chai = require('chai')
   , expect = chai.expect
-  , logger = require(path.join(__dirname, '..', 'lib', 'logger'))
+  , logger = require('../lib/logger')
   ;
 
 describe("Logger", function () {

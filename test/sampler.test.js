@@ -3,9 +3,9 @@
 var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
-  , configurator = require(path.join(__dirname, '..', 'lib', 'config.js'))
-  , sampler      = require(path.join(__dirname, '..', 'lib', 'sampler'))
-  , Agent        = require(path.join(__dirname, '..', 'lib', 'agent'))
+  , configurator = require('../lib/config.js')
+  , sampler      = require('../lib/sampler')
+  , Agent        = require('../lib/agent')
   ;
 
 describe("environmental sampler", function () {

@@ -5,7 +5,7 @@ var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
   , should = chai.should()
-  , API    = require(path.join(__dirname, '..', 'lib', 'collector', 'api.js'))
+  , API    = require('../lib/collector/api.js')
   ;
 
 var HOST   = 'collector.newrelic.com'

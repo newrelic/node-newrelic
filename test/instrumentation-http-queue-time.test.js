@@ -7,7 +7,7 @@ var path         = require('path')
   , should       = chai.should()
   , expect       = chai.expect
   , EventEmitter = require('events').EventEmitter
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper       = require('./lib/agent_helper')
   ;
 
 describe("built-in http queueTime", function () {

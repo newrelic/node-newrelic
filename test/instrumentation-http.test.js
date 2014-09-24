@@ -5,7 +5,7 @@ var path         = require('path')
   , should       = chai.should()
   , expect       = chai.expect
   , EventEmitter = require('events').EventEmitter
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper       = require('./lib/agent_helper')
   ;
 
 describe("built-in http module instrumentation", function () {
@@ -26,8 +26,7 @@ describe("built-in http module instrumentation", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'core', 'http'));
+      initialize = require('../lib/instrumentation/core/http');
     });
 
     after(function () {
@@ -74,8 +73,7 @@ describe("built-in http module instrumentation", function () {
 
     beforeEach(function () {
       agent = helper.loadMockedAgent();
-      var initialize = require(path.join(__dirname, '..', 'lib',
-                                        'instrumentation', 'core', 'http'));
+      var initialize = require('../lib/instrumentation/core/http');
       http = {
         request : function request(_options, _callback) {
           options  = _options;

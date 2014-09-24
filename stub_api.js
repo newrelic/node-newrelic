@@ -1,8 +1,8 @@
 'use strict';
 
 var path    = require('path')
-  , logger  = require(path.join(__dirname, 'lib', 'logger.js'))
-  , RealAPI = require(path.join(__dirname, 'api.js'))
+  , logger  = require('./lib/logger.js')
+  , RealAPI = require('./api.js')
   ;
 
 function stubFunction (name) {

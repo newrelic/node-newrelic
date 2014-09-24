@@ -2,7 +2,7 @@
 
 var path    = require('path')
   , test    = require('tap').test
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
+  , helper  = require('../../lib/agent_helper.js')
   ;
 /*
  *

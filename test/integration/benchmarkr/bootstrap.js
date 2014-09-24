@@ -2,7 +2,7 @@
 
 var path      = require('path')
   , architect = require('architect')
-  , logger    = require(path.join(__dirname, 'logger'))
+  , logger    = require('./logger')
   ;
 
 var services = path.join(__dirname, 'services.js');

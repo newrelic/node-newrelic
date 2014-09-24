@@ -54,7 +54,7 @@ function bootstrapExpress(Model) {
   });
 }
 
-var configPath = path.join(__dirname, 'architecture', 'sequelize-bootstrapped.js');
+var configPath = path.join(__dirname, 'architecture/sequelize-bootstrapped.js');
 architect.createApp(architect.loadConfig(configPath), function (error, app) {
   if (error) return console.error(error);
 

@@ -5,7 +5,7 @@ var path         = require('path')
   , expect       = chai.expect
   , should       = chai.should()
   , sinon        = require('sinon')
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper       = require('./lib/agent_helper')
   ;
 
 function FakeConnection () {
@@ -42,8 +42,7 @@ describe("agent instrumentation of Redis", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'redis'));
+      initialize = require('../lib/instrumentation/redis');
     });
 
     after(function () {

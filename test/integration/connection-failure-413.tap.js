@@ -3,9 +3,9 @@
 var path         = require('path')
   , test         = require('tap').test
   , nock         = require('nock')
-  , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config.js'))
-  , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent.js'))
-  , Transaction  = require(path.join(__dirname, '..', '..', 'lib', 'transaction.js'))
+  , configurator = require('../../lib/config.js')
+  , Agent        = require('../../lib/agent.js')
+  , Transaction  = require('../../lib/transaction.js')
   ;
 
 nock.disableNetConnect();

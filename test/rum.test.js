@@ -3,8 +3,8 @@
 var path   = require('path')
   , chai   = require('chai')
   , assert = require('assert')
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , API    = require(path.join(__dirname, '..', 'api.js'))
+  , helper = require('./lib/agent_helper.js')
+  , API    = require('../api.js')
   ;
 
 chai.should();

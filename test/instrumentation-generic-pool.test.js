@@ -3,7 +3,7 @@
 var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper = require('./lib/agent_helper')
   ;
 
 describe("agent instrumentation of generic-pool", function () {
@@ -13,8 +13,7 @@ describe("agent instrumentation of generic-pool", function () {
 
   before(function () {
     agent = helper.loadMockedAgent();
-    initialize = require(path.join(__dirname, '..', 'lib',
-                                   'instrumentation', 'generic-pool'));
+    initialize = require('../lib/instrumentation/generic-pool');
   });
 
   after(function () {

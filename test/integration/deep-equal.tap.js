@@ -3,7 +3,7 @@
 var path = require('path')
   , tap  = require('tap')
   , test = tap.test
-  , d    = require(path.join(__dirname, '..', '..', 'lib', 'util', 'deep-equal'))
+  , d    = require('../../lib/util/deep-equal')
   ;
 
 test("deepEqual handles all the edge cases", function (t) {

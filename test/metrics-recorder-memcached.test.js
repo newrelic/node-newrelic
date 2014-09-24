@@ -3,10 +3,9 @@
 var path           = require('path')
   , chai           = require('chai')
   , expect         = chai.expect
-  , helper         = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , recordMemcache = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                        'recorders', 'memcached.js'))
-  , Transaction    = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
+  , helper         = require('./lib/agent_helper.js')
+  , recordMemcache = require('../lib/metrics/recorders/memcached.js')
+  , Transaction    = require('../lib/transaction.js')
   ;
 
 function makeSegment(options) {

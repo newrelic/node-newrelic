@@ -3,9 +3,8 @@
 var path    = require('path')
   , tap     = require('tap')
   , test    = tap.test
-  , helper  = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
-  , Tracer  = require(path.join(__dirname, '..', '..', 'lib',
-                                'transaction', 'tracer', 'debug'))
+  , helper  = require('../lib/agent_helper')
+  , Tracer  = require('../../lib/transaction/tracer/debug')
   ;
 
 

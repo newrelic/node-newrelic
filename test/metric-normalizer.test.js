@@ -3,7 +3,7 @@
 var path       = require('path')
   , chai       = require('chai')
   , expect     = chai.expect
-  , Normalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
+  , Normalizer = require('../lib/metrics/normalizer')
   ;
 
 describe ("MetricNormalizer", function () {

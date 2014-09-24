@@ -3,9 +3,9 @@
 var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
-  , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , ParsedStatement = require(path.join(__dirname, '..', 'lib', 'db', 'parsed-statement'))
-  , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper          = require('./lib/agent_helper')
+  , ParsedStatement = require('../lib/db/parsed-statement')
+  , Transaction     = require('../lib/transaction')
   ;
 
 function makeSegment(options) {

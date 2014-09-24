@@ -3,7 +3,7 @@
 var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
-  , sumChildren = require(path.join(__dirname, '..', 'lib', 'util', 'sum-children'))
+  , sumChildren = require('../lib/util/sum-children')
   ;
 
 describe("simplifying timings lists", function () {

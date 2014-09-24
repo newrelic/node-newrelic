@@ -8,8 +8,8 @@ var path      = require('path')
   , async     = require('async')
   , redis     = require('redis')
   , Memcached = require('memcached')
-  , shimmer   = require(path.join(__dirname, '..', '..', 'lib', 'shimmer'))
-  , Agent     = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
+  , shimmer   = require('../../lib/shimmer')
+  , Agent     = require('../../lib/agent')
   , params    = require('../lib/params')
   ;
 
@@ -40,7 +40,7 @@ var helper = module.exports = {
     if (_agent) throw _agent.__created;
 
     // agent needs a "real" configuration
-    var configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
+    var configurator = require('../../lib/config')
       , config       = configurator.initialize(conf)
       ;
     // stub applications
@@ -175,7 +175,7 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapMySQL : function bootstrapMySQL(callback) {
-    var bootstrapped = path.join(__dirname, 'architecture', 'mysql-bootstrapped.js');
+    var bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js');
     var config = architect.loadConfig(bootstrapped);
     architect.createApp(config, function (error, app) {
       if (error) return callback(error);

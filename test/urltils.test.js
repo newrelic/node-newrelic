@@ -3,7 +3,7 @@
 var path    = require('path')
   , chai    = require('chai')
   , expect  = chai.expect
-  , urltils = require(path.join(__dirname, '..', 'lib', 'util', 'urltils.js'))
+  , urltils = require('../lib/util/urltils.js')
   ;
 
 describe("NR URL utilities", function () {

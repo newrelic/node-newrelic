@@ -4,8 +4,8 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , nock         = require('nock')
-  , Reservoir    = require(path.join(__dirname, '..', 'lib', 'reservoir.js'))
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , Reservoir    = require('../lib/reservoir.js')
+  , helper       = require('./lib/agent_helper.js')
   ;
 
 /*

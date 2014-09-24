@@ -1,14 +1,14 @@
 'use strict';
 
 var path   = require('path')
-  , logger = require(path.join(__dirname, '..', '..', '..', 'lib', 'logger'))
+  , logger = require('../../../lib/logger')
   ;
 
 /**
  * This is a c9/architect configuration file.
  */
 module.exports = [
-  {packagePath : path.join(__dirname, '..', 'bootstrap', 'mysql'),
+  {packagePath : path.join(__dirname, '../bootstrap/mysql'),
    db          : {
      user  : 'test_user',
      name  : 'agent_integration',

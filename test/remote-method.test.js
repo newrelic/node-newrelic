@@ -5,8 +5,7 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , should       = chai.should()
-  , RemoteMethod = require(path.join(__dirname, '..', 'lib',
-                                   'collector', 'remote-method.js'))
+  , RemoteMethod = require('../lib/collector/remote-method.js')
   ;
 
 function generate(method, runID) {

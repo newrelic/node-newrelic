@@ -2,7 +2,7 @@
 
 var path    = require('path')
   , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
+  , helper  = require('../../lib/agent_helper.js')
   ;
 
 // bootstrap instrumentation

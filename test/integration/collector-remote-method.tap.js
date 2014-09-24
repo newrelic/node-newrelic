@@ -4,9 +4,8 @@ var path = require('path');
 var test = require('tap').test;
 
 test("DataSender (callback style) talking to fake collector", function (t) {
-  var RemoteMethod = require(path.join(__dirname, '..', '..', 'lib',
-                                      'collector', 'remote-method.js'));
-  var collector = require(path.join(__dirname, '..', 'lib', 'fake-collector.js'));
+  var RemoteMethod = require('../../lib/collector/remote-method.js');
+  var collector = require('../lib/fake-collector.js');
 
   var config = {
     host        : 'collector.lvh.me',

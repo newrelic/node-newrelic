@@ -10,8 +10,8 @@ if (process.version.split('.')[1] < 10) {
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
-  , API     = require(path.join(__dirname, '..', '..', '..', 'api.js'))
+  , helper  = require('../../lib/agent_helper.js')
+  , API     = require('../../../api.js')
   ;
 
 test("ignoring a Hapi route", function (t) {

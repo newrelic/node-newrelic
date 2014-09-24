@@ -4,7 +4,7 @@ var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
   , should = chai.should()
-  , parse  = require(path.join(__dirname, '..', 'lib', 'collector', 'parse-response.js'))
+  , parse  = require('../lib/collector/parse-response.js')
   ;
 
 describe("collector response parser", function () {

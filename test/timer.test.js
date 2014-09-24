@@ -3,7 +3,7 @@
 var path = require('path')
   , chai = require('chai')
   , expect = chai.expect
-  , Timer = require(path.join(__dirname, '..', 'lib', 'timer'))
+  , Timer = require('../lib/timer')
   ;
 
 describe('Timer', function () {

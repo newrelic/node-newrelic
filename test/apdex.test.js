@@ -3,7 +3,7 @@
 var path       = require('path')
   , chai       = require('chai')
   , expect     = chai.expect
-  , ApdexStats = require(path.join(__dirname, '..', 'lib', 'stats', 'apdex'))
+  , ApdexStats = require('../lib/stats/apdex')
   ;
 
 describe("ApdexStats", function () {

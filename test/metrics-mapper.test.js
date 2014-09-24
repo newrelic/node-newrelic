@@ -3,7 +3,7 @@
 var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
-  , MetricMapper = require(path.join(__dirname, '..', 'lib', 'metrics', 'mapper.js'))
+  , MetricMapper = require('../lib/metrics/mapper.js')
   ;
 
 describe('MetricMapper', function () {

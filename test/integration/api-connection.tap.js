@@ -2,9 +2,9 @@
 
 var path         = require('path')
   , test         = require('tap').test
-  , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
-  , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
-  , CollectorAPI = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'api.js'))
+  , configurator = require('../../lib/config')
+  , Agent        = require('../../lib/agent')
+  , CollectorAPI = require('../../lib/collector/api.js')
   ;
 
 test("Collector API should connect to staging-collector.newrelic.com", function (t) {

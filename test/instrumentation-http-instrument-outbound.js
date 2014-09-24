@@ -5,10 +5,9 @@ var path   = require('path')
   , events = require('events')
   , chai   = require('chai')
   , expect = chai.expect
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , NAMES  = require(path.join(__dirname, '..', 'lib', 'metrics', 'names.js'))
-  , instrumentOutbound = require(path.join(__dirname, '..', 'lib', 'transaction',
-                                           'tracer', 'instrumentation', 'outbound.js'))
+  , helper = require('./lib/agent_helper')
+  , NAMES  = require('../lib/metrics/names.js')
+  , instrumentOutbound = require('../lib/transaction/tracer/instrumentation/outbound.js')
   ;
 
 describe("instrumentOutbound", function () {

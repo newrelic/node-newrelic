@@ -6,7 +6,7 @@ var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
   , should      = chai.should()
-  , environment = require(path.join(__dirname, '..', 'lib', 'environment'))
+  , environment = require('../lib/environment')
   ;
 
 function find(settings, name) {
@@ -166,7 +166,7 @@ describe("the environment scraper", function () {
     };
 
     var exec = process.argv[0]
-      , args = [path.join(__dirname, 'helpers', 'environment.child.js')]
+      , args = [path.join(__dirname, 'helpers/environment.child.js')]
       , proc = spawn(exec, args, opt)
       ;
 
@@ -184,7 +184,7 @@ describe("the environment scraper", function () {
       cwd   : path.join(__dirname, 'helpers'),
     };
 
-    var nmod = path.join(__dirname, 'helpers', 'node_modules');
+    var nmod = path.join(__dirname, 'helpers/node_modules');
     var into = path.join(nmod, 'a');
     var dest = path.join(nmod, 'b');
 
@@ -197,7 +197,7 @@ describe("the environment scraper", function () {
     fs.unlinkSync(into);
 
     var exec = process.argv[0]
-      , args = [path.join(__dirname, 'helpers', 'environment.child.js')]
+      , args = [path.join(__dirname, 'helpers/environment.child.js')]
       , proc = spawn(exec, args, opt)
       ;
 

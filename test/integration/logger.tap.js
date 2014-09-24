@@ -28,7 +28,7 @@ test("logger configuration from environment", function (t) {
     process.env.NEW_RELIC_NO_CONFIG_FILE = '1';
 
     try {
-      t.ok(require(path.join(__dirname, '..', '..', 'lib', 'logger')),
+      t.ok(require('../../lib/logger'),
            "requiring logger returned a logging object");
     }
     catch (error) {

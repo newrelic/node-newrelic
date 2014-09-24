@@ -6,8 +6,8 @@ var path    = require('path')
   , jsv     = require('JSV').JSV
   , env     = jsv.createEnvironment()
   , restify = require('restify')
-  , codec   = require(path.join(__dirname, '..', '..', 'lib', 'util', 'codec.js'))
-  , logger  = require(path.join(__dirname, '..', '..', 'lib', 'logger.js'))
+  , codec   = require('../../lib/util/codec.js')
+  , logger  = require('../../lib/logger.js')
                 .child({component : 'fake_collector'})
   ;
 
@@ -15,13 +15,13 @@ var DEFAULT_HOST = 'collector.lvh.me'
   , ACTUAL_HOST  = 'collector-1.lvh.me'
   , PORT         = 8080
   , PATHS        = {
-      connect   : path.join(__dirname, 'schemas', 'connect.json'),
-      container : path.join(__dirname, 'schemas', 'transaction_sample_data.json'),
-      trace     : path.join(__dirname, 'schemas', 'transaction_trace.json'),
-      error     : path.join(__dirname, 'schemas', 'error_data.json'),
-      metric    : path.join(__dirname, 'schemas', 'metric_data.json'),
-      sql       : path.join(__dirname, 'schemas', 'sql_trace_data.json'),
-      sqlParams : path.join(__dirname, 'schemas', 'sql_params.json')
+      connect   : path.join(__dirname, 'schemas/connect.json'),
+      container : path.join(__dirname, 'schemas/transaction_sample_data.json'),
+      trace     : path.join(__dirname, 'schemas/transaction_trace.json'),
+      error     : path.join(__dirname, 'schemas/error_data.json'),
+      metric    : path.join(__dirname, 'schemas/metric_data.json'),
+      sql       : path.join(__dirname, 'schemas/sql_trace_data.json'),
+      sqlParams : path.join(__dirname, 'schemas/sql_params.json')
     }
   ;
 

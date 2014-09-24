@@ -3,8 +3,8 @@
 var path   = require('path')
   , assert = require('assert')
   , test   = require('tap').test
-  , logger = require(path.join(__dirname, '..', '..', '..', 'lib', 'logger'))
-  , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , logger = require('../../../lib/logger')
+  , helper = require('../../lib/agent_helper')
   , params = require('../../lib/params')
   ;
 

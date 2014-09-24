@@ -2,7 +2,7 @@ var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
   , should = chai.should()
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper = require('./lib/agent_helper')
   ;
 
 function nextulator(req, res, next) { return next(); }
@@ -18,8 +18,7 @@ describe("an instrumented Connect stack", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'connect'));
+      initialize = require('../lib/instrumentation/connect');
     });
 
     after(function () {
@@ -61,8 +60,7 @@ describe("an instrumented Connect stack", function () {
         }}
       };
 
-      require(path.join(__dirname, '..', 'lib',
-                        'instrumentation', 'connect'))(agent, stub);
+      require('../lib/instrumentation/connect')(agent, stub);
 
       app = stub.HTTPServer.prototype;
     });
@@ -180,8 +178,7 @@ describe("an instrumented Connect stack", function () {
         }
       };
 
-      require(path.join(__dirname, '..', 'lib',
-                        'instrumentation', 'connect'))(agent, stub);
+      require('../lib/instrumentation/connect')(agent, stub);
 
       app = stub.proto;
     });

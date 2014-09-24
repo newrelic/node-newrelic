@@ -5,7 +5,7 @@ var path   = require('path')
   , async  = require('async')
   , params = require('../lib/params')
   , test   = tap.test
-  , helper = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+  , helper = require('../lib/agent_helper')
   ;
 
 var agent      = helper.instrumentMockedAgent()

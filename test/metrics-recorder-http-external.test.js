@@ -3,10 +3,9 @@
 var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
-  , helper           = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , generateRecorder = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                    'recorders', 'http_external'))
-  , Transaction      = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper           = require('./lib/agent_helper')
+  , generateRecorder = require('../lib/metrics/recorders/http_external')
+  , Transaction      = require('../lib/transaction')
   ;
 
 function recordExternal(segment, scope) {

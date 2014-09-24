@@ -2,8 +2,8 @@
 
 var path         = require('path')
   , test         = require('tap').test
-  , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
-  , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
+  , configurator = require('../../lib/config')
+  , Agent        = require('../../lib/agent')
   ;
 
 test("Agent should send errors to staging-collector.newrelic.com", function (t) {

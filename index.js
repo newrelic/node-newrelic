@@ -1,14 +1,14 @@
 'use strict';
 
 var path    = require('path')
-  , logger  = require(path.join(__dirname, 'lib', 'logger.js'))
+  , logger  = require('./lib/logger.js')
   , message
   , agent
   ;
 
 var APP_NAME_REGEX = /^[A-Za-z0-9 -_\[\](){}?!.'"]*$/;
 
-var agentVersion = require(path.join(__dirname, 'package.json')).version;
+var agentVersion = require('./package.json').version;
 logger.trace("Using New Relic for Node.js version %s.", agentVersion);
 
 
@@ -31,7 +31,7 @@ try {
   /* Loading the configuration can throw if a configuration file isn't found and
    * the environment variable NEW_RELIC_NO_CONFIG_FILE isn't set.
    */
-  var config = require(path.join(__dirname, 'lib', 'config.js')).initialize();
+  var config = require('./lib/config.js').initialize();
   if (!config.agent_enabled) {
     logger.info("Module not enabled in configuration; not starting.");
   }
@@ -43,7 +43,7 @@ try {
      * multiple times, with undefined results. New Relic's instrumentation
      * can't be enabled or disabled without an application restart.
      */
-    var Agent = require(path.join(__dirname, 'lib', 'agent.js'));
+    var Agent = require('./lib/agent.js');
     agent = new Agent(config);
     var appNames = agent.config.applications();
 
@@ -76,7 +76,7 @@ try {
       }
     });
 
-    var shimmer = require(path.join(__dirname, 'lib', 'shimmer.js'));
+    var shimmer = require('./lib/shimmer.js');
     shimmer.patchModule(agent);
     shimmer.bootstrapInstrumentation(agent);
 
@@ -101,9 +101,9 @@ catch (error) {
 
 var API;
 if (agent) {
-  API = require(path.join(__dirname, 'api.js'));
+  API = require('./api.js');
 }
 else {
-  API = require(path.join(__dirname, 'stub_api.js'));
+  API = require('./stub_api.js');
 }
 module.exports = new API(agent);

@@ -3,7 +3,7 @@
 var path   = require ('path')
   , tap    = require('tap')
   , test   = tap.test
-  , helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , helper = require('../../lib/agent_helper')
   ;
 
 // connect is a loudmouth without this

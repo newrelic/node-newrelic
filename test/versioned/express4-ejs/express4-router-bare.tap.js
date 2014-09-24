@@ -3,7 +3,7 @@
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
+  , helper  = require('../../lib/agent_helper.js')
   ;
 
 test("Express 4 router introspection", function (t) {

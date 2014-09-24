@@ -2,10 +2,10 @@
 
 var path   = require('path')
   , chai   = require('chai')
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , facts  = require(path.join(__dirname, '..', 'lib', 'collector', 'facts.js'))
-  , API    = require(path.join(__dirname, '..', 'api.js'))
-  , Config = require(path.join(__dirname, '..', 'lib', 'config'))
+  , helper = require('./lib/agent_helper.js')
+  , facts  = require('../lib/collector/facts.js')
+  , API    = require('../api.js')
+  , Config = require('../lib/config')
   ;
 
 var should = chai.should();

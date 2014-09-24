@@ -4,11 +4,10 @@ var path            = require('path')
   , chai            = require('chai')
   , expect          = chai.expect
   , should          = chai.should()
-  , helper          = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , configurator    = require(path.join(__dirname, '..', 'lib', 'config'))
-  , TraceAggregator = require(path.join(__dirname, '..', 'lib',
-                                        'transaction', 'trace', 'aggregator'))
-  , Transaction     = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper          = require('./lib/agent_helper')
+  , configurator    = require('../lib/config')
+  , TraceAggregator = require('../lib/transaction/trace/aggregator')
+  , Transaction     = require('../lib/transaction')
   ;
 
 describe('TraceAggregator', function () {

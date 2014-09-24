@@ -5,7 +5,7 @@ var path   = require('path')
   , should = chai.should()
   , expect = chai.expect
   , fs     = require('fs')
-  , Config = require(path.join(__dirname, '..', 'lib', 'config'))
+  , Config = require('../lib/config')
   ;
 
 function idempotentEnv(name, value, callback) {
@@ -390,8 +390,7 @@ describe("the agent configuration", function () {
           process.chdir(NOPLACEDIR);
           process.env.NEW_RELIC_HOME = DESTDIR;
 
-          var sampleConfig = fs.createReadStream(path.join(__dirname, '..',
-                                                           'lib', 'config.default.js'));
+          var sampleConfig = fs.createReadStream(path.join(__dirname, '../lib/config.default.js'));
           var sandboxedConfig = fs.createWriteStream(CONFIGPATH);
           sampleConfig.pipe(sandboxedConfig);
 

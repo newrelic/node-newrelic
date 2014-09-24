@@ -3,7 +3,7 @@
 var path     = require('path')
   , chai     = require('chai')
   , should   = chai.should()
-  , parseSql = require(path.join(__dirname, '..', 'lib', 'db', 'parse-sql'))
+  , parseSql = require('../lib/db/parse-sql')
   ;
 
 describe('database query parser', function () {

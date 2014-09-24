@@ -3,7 +3,7 @@
 var path     = require('path')
   , trycatch = require('trycatch')
   , test     = require('tap').test
-  , helper   = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+  , helper   = require('../../lib/agent_helper')
   , params   = require('../../lib/params')
   ;
 

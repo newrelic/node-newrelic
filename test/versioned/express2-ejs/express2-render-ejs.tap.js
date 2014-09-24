@@ -6,9 +6,9 @@ process.env.NODE_ENV = 'test';
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
-  , shimmer = require(path.join(__dirname, '..', '..', '..', 'lib', 'shimmer'))
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
-  , API     = require(path.join('..', '..', '..', 'api.js'))
+  , shimmer = require('../../../lib/shimmer')
+  , helper  = require('../../lib/agent_helper')
+  , API     = require('../../../api.js')
   ;
 
 var TEST_PATH = '/test'
@@ -174,7 +174,7 @@ test("agent instrumentation of Express 2", function (t) {
     // see shimmer.reinstrument for info on why this is here
     shimmer.reinstrument(
       agent,
-      path.join(__dirname, 'node_modules', 'express', 'node_modules', 'connect')
+      path.join(__dirname, 'node_modules/express/node_modules/connect')
     );
 
     var app = require('express').createServer();

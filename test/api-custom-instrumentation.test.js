@@ -2,8 +2,8 @@
 
 var path   = require('path')
   , expect = require('chai').expect
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , API    = require(path.join(__dirname, '..', 'api.js'))
+  , helper = require('./lib/agent_helper.js')
+  , API    = require('../api.js')
   ;
 
 describe('The custom instrumentation API', function () {

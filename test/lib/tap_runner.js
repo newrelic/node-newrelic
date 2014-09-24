@@ -7,8 +7,8 @@ var path     = require('path')
   , readdir  = Q.nfbind(fs.readdir)
   , exec     = require('child_process').exec
   , tap      = require('tap')
-  , recreate = require(path.join(__dirname, 'recreate'))
-  , Timer    = require(path.join(__dirname, '..', '..', 'lib', 'timer'))
+  , recreate = require('./recreate')
+  , Timer    = require('../../lib/timer')
   ;
 
 

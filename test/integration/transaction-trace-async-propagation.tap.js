@@ -4,7 +4,7 @@ var path         = require('path')
   , EventEmitter = require('events').EventEmitter
   , tap          = require('tap')
   , test         = tap.test
-  , helper       = require(path.join(__dirname, '..', 'lib', 'agent_helper'))
+  , helper       = require('../lib/agent_helper')
   ;
 
 test("asynchronous state propagation", function (t) {

@@ -4,10 +4,10 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , should       = chai.should()
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , config       = require(path.join(__dirname, '..', 'lib', 'config.default'))
-  , ErrorTracer  = require(path.join(__dirname, '..', 'lib', 'error'))
-  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper       = require('./lib/agent_helper')
+  , config       = require('../lib/config.default')
+  , ErrorTracer  = require('../lib/error')
+  , Transaction  = require('../lib/transaction')
   ;
 
 function createTransaction(agent, code) {

@@ -2,14 +2,11 @@
 
 var path      = require('path')
   , util      = require('util')
-  , logger    = require(path.join(__dirname, 'lib', 'logger')).child({component : 'api'})
-  , NAMES     = require(path.join(__dirname, 'lib', 'metrics', 'names'))
-  , recordWeb = require(path.join(__dirname, 'lib', 'metrics',
-                                  'recorders', 'http.js'))
-  , recordBackground = require(path.join(__dirname, 'lib', 'metrics',
-                                        'recorders', 'other.js'))
-  , customRecorder = require(path.join(__dirname, 'lib', 'metrics', 'recorders',
-                                       'custom'))
+  , logger    = require('./lib/logger').child({component : 'api'})
+  , NAMES     = require('./lib/metrics/names')
+  , recordWeb = require('./lib/metrics/recorders/http.js')
+  , recordBackground = require('./lib/metrics/recorders/other.js')
+  , customRecorder = require('./lib/metrics/recorders/custom')
   ;
 
 /*

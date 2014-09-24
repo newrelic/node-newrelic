@@ -4,7 +4,7 @@ var path   = require('path')
   , chai   = require('chai')
   , should = chai.should()
   , expect = chai.expect
-  , API    = require(path.join(__dirname, '..', 'stub_api.js'))
+  , API    = require('../stub_api.js')
   ;
 
 describe("the stubbed New Relic agent API", function () {

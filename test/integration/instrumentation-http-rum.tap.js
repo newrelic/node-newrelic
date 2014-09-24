@@ -4,10 +4,9 @@ var path       = require('path')
   , tap        = require('tap')
   , test       = tap.test
   , http       = require('http')
-  , helper     = require(path.join(__dirname, '..', 'lib', 'agent_helper.js'))
-  , API        = require(path.join(__dirname, '..', '..', 'api.js'))
-  , StreamSink = require(path.join(__dirname, '..', '..', 'lib', 'util',
-                         'stream-sink.js'))
+  , helper     = require('../lib/agent_helper.js')
+  , API        = require('../../api.js')
+  , StreamSink = require('../../lib/util/stream-sink.js')
   ;
 
 test("custom naming rules should be applied early for RUM",

@@ -21,7 +21,7 @@ test("loading the application via index.js for an invalid app_name", function (t
   process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b';
 
   t.doesNotThrow(function cb_doesThrow() {
-    var api = require(path.join(__dirname, '..', '..', 'index.js'));
+    var api = require('../../index.js');
     agent = api.agent;
     appName = agent.config.applications()[0];
     t.equal(agent._state, 'stopped', "agent is not booting");

@@ -2,10 +2,10 @@
 /*jshint expr:true*/
 
 var path         = require('path')
-  , helper       = require(path.join(__dirname, 'lib', 'agent_helper.js'))
+  , helper       = require('./lib/agent_helper.js')
   , chai         = require('chai')
   , expect       = chai.expect
-  , Transaction  = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
+  , Transaction  = require('../lib/transaction.js')
   ;
 
 describe("when there are parameters on transaction", function () {

@@ -3,12 +3,11 @@
 var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
-  , Segment     = require(path.join(__dirname, '..', 'lib', 'transaction',
-                                    'trace', 'segment'))
-  , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper      = require('./lib/agent_helper')
+  , codec       = require('../lib/util/codec')
+  , Segment     = require('../lib/transaction/trace/segment')
+  , Trace       = require('../lib/transaction/trace')
+  , Transaction = require('../lib/transaction')
   ;
 
 describe('Trace', function () {

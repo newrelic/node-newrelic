@@ -4,9 +4,8 @@ var path       = require('path')
   , tap        = require('tap')
   , test       = tap.test
   , http       = require('http')
-  , helper     = require(path.join(__dirname, '..', 'lib', 'agent_helper.js'))
-  , StreamSink = require(path.join(__dirname, '..', '..', 'lib', 'util',
-                         'stream-sink.js'))
+  , helper     = require('../lib/agent_helper.js')
+  , StreamSink = require('../../lib/util/stream-sink.js')
   ;
 
 test("built-in http instrumentation should handle internal & external requests",

@@ -10,8 +10,8 @@ if (process.version.split('.')[1] < 10) {
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
-  , API     = require(path.join('..', '..', '..', 'api.js'))
+  , helper  = require('../../lib/agent_helper')
+  , API     = require('../../../api.js')
   ;
 
 var TEST_PATH = '/test'

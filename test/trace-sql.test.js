@@ -3,12 +3,11 @@
 var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper'))
-  , codec       = require(path.join(__dirname, '..', 'lib', 'util', 'codec'))
-  , Stats       = require(path.join(__dirname, '..', 'lib', 'stats'))
-  , SQLTrace    = require(path.join(__dirname, '..', 'lib', 'transaction',
-                                   'trace', 'sql'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction'))
+  , helper      = require('./lib/agent_helper')
+  , codec       = require('../lib/util/codec')
+  , Stats       = require('../lib/stats')
+  , SQLTrace    = require('../lib/transaction/trace/sql')
+  , Transaction = require('../lib/transaction')
   ;
 
 describe('SQLTrace', function () {

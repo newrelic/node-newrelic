@@ -3,10 +3,9 @@
 var path        = require('path')
   , chai        = require('chai')
   , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , recordRedis = require(path.join(__dirname, '..', 'lib', 'metrics',
-                                    'recorders', 'redis.js'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
+  , helper      = require('./lib/agent_helper.js')
+  , recordRedis = require('../lib/metrics/recorders/redis.js')
+  , Transaction = require('../lib/transaction.js')
   ;
 
 function makeSegment(options) {

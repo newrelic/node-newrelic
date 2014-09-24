@@ -3,7 +3,7 @@
 var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
-  , Stats  = require(path.join(__dirname, '..', 'lib', 'stats'))
+  , Stats  = require('../lib/stats')
   ;
 
 /*jshint maxparams:8 */

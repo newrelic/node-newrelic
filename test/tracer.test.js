@@ -3,7 +3,7 @@
 var path    = require('path')
   , chai    = require('chai')
   , expect  = chai.expect
-  , helper  = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper  = require('./lib/agent_helper')
   ;
 
 describe('Tracer', function () {

@@ -4,11 +4,11 @@ var path        = require('path')
   , chai        = require('chai')
   , should      = chai.should()
   , expect      = chai.expect
-  , helper      = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , API         = require(path.join(__dirname, '..', 'api.js'))
-  , Metrics     = require(path.join(__dirname, '..', 'lib', 'metrics.js'))
-  , Trace       = require(path.join(__dirname, '..', 'lib', 'transaction', 'trace.js'))
-  , Transaction = require(path.join(__dirname, '..', 'lib', 'transaction.js'))
+  , helper      = require('./lib/agent_helper.js')
+  , API         = require('../api.js')
+  , Metrics     = require('../lib/metrics.js')
+  , Trace       = require('../lib/transaction/trace.js')
+  , Transaction = require('../lib/transaction.js')
   ;
 
 describe("Transaction", function () {

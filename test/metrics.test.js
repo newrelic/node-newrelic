@@ -4,10 +4,10 @@ var path             = require('path')
   , chai             = require('chai')
   , expect           = chai.expect
   , should           = chai.should()
-  , helper           = require(path.join(__dirname, 'lib', 'agent_helper.js'))
-  , Metrics          = require(path.join(__dirname, '..', 'lib', 'metrics'))
-  , MetricMapper     = require(path.join(__dirname, '..', 'lib', 'metrics', 'mapper'))
-  , MetricNormalizer = require(path.join(__dirname, '..', 'lib', 'metrics', 'normalizer'))
+  , helper           = require('./lib/agent_helper.js')
+  , Metrics          = require('../lib/metrics')
+  , MetricMapper     = require('../lib/metrics/mapper')
+  , MetricNormalizer = require('../lib/metrics/normalizer')
   ;
 
 describe("Metrics", function () {

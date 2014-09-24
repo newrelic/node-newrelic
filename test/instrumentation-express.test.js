@@ -4,7 +4,7 @@ var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
   , should = chai.should()
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper = require('./lib/agent_helper')
   ;
 
 describe("an instrumented Express application", function () {
@@ -15,8 +15,7 @@ describe("an instrumented Express application", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'express'));
+      initialize = require('../lib/instrumentation/express');
     });
 
     after(function () {
@@ -64,8 +63,7 @@ describe("an instrumented Express application", function () {
       };
       http.ServerResponse.prototype.send = function send() {};
 
-      require(path.join(__dirname, '..', 'lib',
-                        'instrumentation', 'express'))(agent, stub);
+      require('../lib/instrumentation/express')(agent, stub);
     });
 
     after(function () {
@@ -210,8 +208,7 @@ describe("an instrumented Express application", function () {
         }
       };
 
-      require(path.join(__dirname, '..', 'lib',
-                        'instrumentation', 'express'))(agent, stub);
+      require('../lib/instrumentation/express')(agent, stub);
     });
 
     after(function () {

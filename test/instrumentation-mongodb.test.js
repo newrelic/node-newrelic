@@ -4,7 +4,7 @@ var path   = require('path')
   , chai   = require('chai')
   , expect = chai.expect
   , should = chai.should()
-  , helper = require(path.join(__dirname, 'lib', 'agent_helper'))
+  , helper = require('./lib/agent_helper')
   ;
 
 describe("agent instrumentation of MongoDB", function () {
@@ -15,8 +15,7 @@ describe("agent instrumentation of MongoDB", function () {
 
     before(function () {
       agent = helper.loadMockedAgent();
-      initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'mongodb'));
+      initialize = require('../lib/instrumentation/mongodb');
     });
 
     after(function () {
@@ -49,8 +48,7 @@ describe("agent instrumentation of MongoDB", function () {
 
       var mockodb    = {Collection : StubCollection}
         , collection = new mockodb.Collection('test')
-        , initialize = require(path.join(__dirname, '..', 'lib',
-                                         'instrumentation', 'mongodb'))
+        , initialize = require('../lib/instrumentation/mongodb')
         ;
 
       agent = helper.loadMockedAgent();
@@ -103,8 +101,7 @@ describe("agent instrumentation of MongoDB", function () {
 
       var mockodb    = {Collection : StubCollection}
         , collection = new mockodb.Collection('test')
-        , initialize = require(path.join(__dirname, '..', 'lib',
-                                         'instrumentation', 'mongodb'))
+        , initialize = require('../lib/instrumentation/mongodb')
         ;
 
       agent = helper.loadMockedAgent();
@@ -176,8 +173,7 @@ describe("agent instrumentation of MongoDB", function () {
       agent = helper.loadMockedAgent();
       agent.on('transactionFinished', done.bind(null, null));
 
-      var initialize = require(path.join(__dirname, '..', 'lib',
-                                     'instrumentation', 'mongodb'));
+      var initialize = require('../lib/instrumentation/mongodb');
       initialize(agent, mockodb);
 
       collection = new mockodb.Collection('test');

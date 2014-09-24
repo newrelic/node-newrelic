@@ -8,9 +8,9 @@ var path         = require('path')
   , join         = require('path').join
   , setup        = require('proxy')
   , read         = require('fs').readFileSync
-  , configurator = require(path.join(__dirname, '..', '..', 'lib', 'config'))
-  , Agent        = require(path.join(__dirname, '..', '..', 'lib', 'agent'))
-  , CollectorAPI = require(path.join(__dirname, '..', '..', 'lib', 'collector', 'api.js'))
+  , configurator = require('../../lib/config')
+  , Agent        = require('../../lib/agent')
+  , CollectorAPI = require('../../lib/collector/api.js')
   ;
 
 test("support ssl to the proxy", function (t) {
