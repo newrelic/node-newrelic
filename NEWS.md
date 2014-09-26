@@ -1,3 +1,17 @@
+### v1.11.3 (2014-09-26):
+
+* Updated hapi instrumentation to support the recently released v6.9.
+
+* Fixed a bug where an invalid package.json could cause the agent to crash while
+  it recursed through `node_modules` gathering version details.
+
+* Properly name `other` SQL queries.
+
+  Previously when the agent failed to parse SQL it would create a metric stating
+  the database type, query type, and query table were all unknown. This has been
+  changed to keep track of database type and create an appropriate `other`
+  operation metric like other agents.
+
 ### v1.11.2 (2014-09-19):
 
 * Custom Instrumentation functions now pass through the return value of their
