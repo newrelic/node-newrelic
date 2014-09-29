@@ -3,8 +3,10 @@ MOCHA_NOBIN  = node_modules/.bin/_mocha
 COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
 NODE_VERSION = $(shell node --version)
-INTEGRATION  =  $(wildcard test/integration/*.tap.js)
-INTEGRATION  += $(wildcard test/versioned/*/*.tap.js)
+INTEGRATION  =  test/integration/*.tap.js
+INTEGRATION  += test/integration/*/*.tap.js
+INTEGRATION  += test/integration/*/*/*.tap.js
+INTEGRATION  += test/versioned/*/*.tap.js
 # subcomponents manage their own modules
 NPMDIRS =  $(wildcard test/lib/bootstrap/*)
 NPMDIRS += $(wildcard test/versioned/*)
@@ -49,12 +51,12 @@ test-clean:
 
 test-ci: node_modules sub_node_modules $(CERTIFICATE)
 	@rm -f newrelic_agent.log
-	@$(MOCHA) --reporter min
+	@$(MOCHA) test/unit --recursive --reporter min
 	@$(TAP) $(INTEGRATION)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
-	@$(MOCHA)
+	@$(MOCHA) test/unit --recursive
 
 sub_node_modules: $(SUBNPM)
 
@@ -78,7 +80,7 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	time $(TAP) $(INTEGRATION)
 
 coverage: clean node_modules $(CERTIFICATE)
-	@$(COVER) run $(MOCHA_NOBIN)
+	@$(COVER) run $(MOCHA_NOBIN) -- test/unit --recursive
 	@for tapfile in $(INTEGRATION) ; do \
 		$(COVER) run $$tapfile ; \
 	done
@@ -94,10 +96,10 @@ notes:
 	      -type f -exec egrep -n -H --color=always -C 2 'FIXME|TODO|NOTE|TBD|hax|HAX' {} \; | less -r
 
 pending: node_modules
-	@$(MOCHA) --reporter list | egrep '^\s+\-'
+	@$(MOCHA) test/unit --recursive --reporter list | egrep '^\s+\-'
 
 pending-core: node_modules
-	@$(MOCHA) --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
+	@$(MOCHA) test/unit --recursive --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
 
 ssl: $(CERTIFICATE)
 
