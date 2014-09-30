@@ -45,9 +45,9 @@ Stub.prototype.createWebTransaction = function(url, callback) {
   return callback
 }
 
-Stub.prototype.createBackgroundTransaction = function(name, callback) {
+Stub.prototype.createBackgroundTransaction = function(name, group, callback) {
   logger.debug('Not calling createBackgroundTransaction because New Relic is disabled.')
-  return callback
+  return (callback === undefined) ? group : callback
 }
 
 module.exports = Stub

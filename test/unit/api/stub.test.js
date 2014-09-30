@@ -5,7 +5,7 @@ var path   = require('path')
   , should = chai.should()
   , expect = chai.expect
   , API    = require('../../../stub_api.js')
-  
+
 
 describe("the stubbed New Relic agent API", function () {
   var api
@@ -118,6 +118,18 @@ describe("the stubbed New Relic agent API", function () {
   it("should return a function when calling createBackgroundTransaction", function () {
     function myNop () {}
     var retVal = api.createBackgroundTransaction('name', myNop)
+    expect(retVal).to.be.equal(myNop)
+  })
+
+  it("shouldn't throw when a custom background transaction with a group is added", function () {
+    expect(function () {
+      api.createBackgroundTransaction('name', 'group', function nop(){})
+    }).not.throws()
+  })
+
+  it("should return a function when calling createBackgroundTransaction", function () {
+    function myNop () {}
+    var retVal = api.createBackgroundTransaction('name', 'group', myNop)
     expect(retVal).to.be.equal(myNop)
   })
 
