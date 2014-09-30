@@ -6,11 +6,11 @@ var path         = require('path')
   , should       = chai.should()
   , expect       = chai.expect
   , nock         = require('nock')
-  , helper       = require('../lib/agent_helper.js')
-  , sampler      = require('../../lib/sampler.js')
-  , configurator = require('../../lib/config.js')
-  , Agent        = require('../../lib/agent.js')
-  , Transaction  = require('../../lib/transaction.js')
+  , helper       = require('../../lib/agent_helper.js')
+  , sampler      = require('../../../lib/sampler.js')
+  , configurator = require('../../../lib/config.js')
+  , Agent        = require('../../../lib/agent.js')
+  , Transaction  = require('../../../lib/transaction.js')
   ;
 
 /*

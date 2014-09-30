@@ -3,7 +3,6 @@
 var path      = require('path')
   , fs        = require('fs')
   , architect = require('architect')
-  , wrench    = require('wrench')
   , MongoClient = require('mongodb').MongoClient
   , async     = require('async')
   , redis     = require('redis')

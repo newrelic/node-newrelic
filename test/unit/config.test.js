@@ -954,4 +954,25 @@ describe("the agent configuration", function () {
       }).not.throws();
     });
   });
+
+  // This is a dirty, dirty test for a hack. The hack and this test will be
+  // pulled in the 1.12.0 release. Essentially, we need to report a special
+  // agent version for APM UI to show the transaction map for customers who turn
+  // on the feature.
+  describe("when cat feature flag is enabled", function () {
+    var config;
+
+    it("should set agent version to 1.11.9", function () {
+      config = new Config({feature_flag: {cat: true}});
+      expect(config.version).equal('1.11.9');
+    });
+  });
+  describe("when cat feature flag is not enabled", function () {
+    var config;
+
+    it("should set agent version to 1.11.{3,4}", function () {
+      config = new Config({feature_flag: {cat: false}});
+      expect(/^1.11.[34]$/.test(config.version)).to.be.true;
+    });
+  });
 });

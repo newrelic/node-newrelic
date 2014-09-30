@@ -14,7 +14,8 @@ var used = [
   'proxy',
   'custom_instrumentation',
   'mysql_pool',
-  'postgres'
+  'postgres',
+  'cat'
 ];
 
 describe("feature flags", function () {

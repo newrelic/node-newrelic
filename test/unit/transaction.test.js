@@ -9,6 +9,7 @@ var path        = require('path')
   , Metrics     = require('../../lib/metrics.js')
   , Trace       = require('../../lib/transaction/trace.js')
   , Transaction = require('../../lib/transaction.js')
+  , hashes      = require('../../lib/util/hashes')
   ;
 
 describe("Transaction", function () {
@@ -65,7 +66,7 @@ describe("Transaction", function () {
 
   describe("upon creation", function () {
     it("should have an ID", function () {
-      expect(trans.id).above(0);
+      should.exist(trans.id);
     });
 
     it("should have associated metrics", function () {
@@ -360,5 +361,55 @@ describe("Transaction", function () {
     trans.setName('/test/1337?action=edit', 200);
     expect(trans.name).not.equal('/test/1337?action=edit');
     expect(trans.name).not.equal('WebTransaction/Uri/test/1337');
+  });
+
+  describe('pathHashes', function () {
+    var transaction;
+
+    beforeEach(function() {
+      transaction = new Transaction(agent);
+    });
+
+    it('should add up to 10 items to to pathHashes', function() {
+      var toAdd = ['1', '2', '3', '4', '4', '5', '6', '7', '8', '9', '10', '11'];
+      var expected = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+
+      toAdd.forEach(transaction.pushPathHash.bind(transaction));
+      expect(transaction.pathHashes).deep.equal(expected);
+    });
+
+    it('should not include current pathHash in alternatePathHashes', function() {
+      transaction.name = '/a/b/c';
+      transaction.referringPathHash = '/d/e/f';
+
+      var curHash = hashes.calculatePathHash(
+        agent.config.applications()[0],
+        transaction.name,
+        transaction.referringPathHash
+      );
+
+      transaction.pathHashes = ['/a', curHash, '/a/b'];
+      expect(transaction.alternatePathHashes()).equal('/a,/a/b');
+      transaction.partialName = transaction.name;
+      transaction.name = null;
+      transaction.pathHashes = ['/a', '/a/b'];
+      expect(transaction.alternatePathHashes()).equal('/a,/a/b');
+    });
+
+    it('should return null when no alternate pathHashes exist', function() {
+      transaction.partialName = '/a/b/c';
+      transaction.referringPathHash = '/d/e/f';
+
+      var curHash = hashes.calculatePathHash(
+        agent.config.applications()[0],
+        transaction.partialName,
+        transaction.referringPathHash
+      );
+
+      transaction.pathHashes = [curHash];
+      expect(transaction.alternatePathHashes()).equal(null);
+      transaction.pathHashes = [];
+      expect(transaction.alternatePathHashes()).equal(null);
+    });
   });
 });

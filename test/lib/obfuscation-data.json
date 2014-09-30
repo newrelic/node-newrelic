@@ -1,0 +1,32 @@
+[
+  {
+    "testname": "utf8_input_text",
+    "key": "hello there",
+    "input": "Доверяй, но проверяй",
+    "output": "uPG80r+SpN208rTntdVAT/DJuNtStde07LzR8Ma40KPlueq81Q=="
+  },
+  {
+    "testname": "utf8_key",
+    "key": "Доверяй, но проверяй",
+    "input": "the rain in spain stays mainly in the plain",
+    "output": "pPy1nqLTudvx6b+vo8lNSb6do8pBqczx7bHXvt6plbju8fu43PDkvN+53A=="
+  },
+  {
+    "testname": "short_key_long_message",
+    "key": "short",
+    "input": "really super extra long message content, no seriously this is fairly long kind of",
+    "output": "AQ0OHhgKSBwHBBYaTxcMBxoOUhgcBghSGRYbHBMTFkgMHRoHDQEGWFMGAFIHFhoGHQEABBZSABsBHFIdAEgJEx0BBBZSGBwGCFIfGgYLUhsV"
+  },
+  {
+    "testname": "long_key_short_message",
+    "key": "wow this is a really long key don't you think?",
+    "input": "short msg",
+    "output": "BAcYUgBIBABH"
+  },
+  {
+    "testname": "key_length_equal_to_message",
+    "key": "123456789",
+    "input": "abcdefghi",
+    "output": "UFBQUFBQUFBQ"
+  }
+]

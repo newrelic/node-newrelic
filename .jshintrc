@@ -6,7 +6,6 @@
   "immed": true,
   "unused": true,
   "undef": true,
-  "latedef": true,
   "maxlen": 90,
   "maxdepth": 3,
   "maxparams": 4,

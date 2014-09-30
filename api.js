@@ -1,12 +1,12 @@
 'use strict';
 
-var path      = require('path')
-  , util      = require('util')
+var util      = require('util')
   , logger    = require('./lib/logger').child({component : 'api'})
   , NAMES     = require('./lib/metrics/names')
   , recordWeb = require('./lib/metrics/recorders/http.js')
   , recordBackground = require('./lib/metrics/recorders/other.js')
   , customRecorder = require('./lib/metrics/recorders/custom')
+  , hashes    = require('./lib/util/hashes')
   ;
 
 /*
@@ -33,14 +33,6 @@ var RUM_ISSUES = [
 var CUSTOM_BLACKLIST = [
   'nr_flatten_leading'
 ];
-
-function _rumObfuscate(string, license_key) {
-  var bytes = new Buffer(string);
-  for (var i = 0; i < bytes.length; i++) {
-    bytes[i] = bytes[i] ^ license_key[i % 13].charCodeAt(0);
-  }
-  return bytes.toString('base64');
-}
 
 /**
  * The exported New Relic API. This contains all of the functions meant to be
@@ -318,7 +310,12 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   if (!name) return _gracefail(3);
 
   var time  = trans.timer.getDurationInMillis();
-  var key   = config.license_key;
+
+  /*
+   * Only the first 13 chars of the license should be used for hashing with
+   * the transaction name.
+   */
+  var key   = config.license_key.substr(0, 13);
   var appid = config.application_id;
 
   /* This is only going to work if the agent has successfully handshaked with
@@ -358,12 +355,12 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
     licenseKey      : licenseKey,
     applicationID   : appid,
     applicationTime : time,
-    transactionName : _rumObfuscate(name, key),
+    transactionName : hashes.obfuscateNameUsingKey(name, key),
     queueTime       : trans.queueTime,
+    ttGuid          : trans.id,
 
     // we don't use these parameters yet
-    agentToken      : null,
-    ttGuid          : ""
+    agentToken      : null
   };
 
   // if debugging, do pretty format of JSON

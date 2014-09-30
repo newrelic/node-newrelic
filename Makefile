@@ -170,3 +170,8 @@ services:
 
 	@echo "\nTo run individual integration tests, run 'source test/docker_env_vars.sh' to set\
 	 the environment variables for all services.\n"
+
+update_cross_agent_tests:
+	rm -rf test/lib/cross_agent_tests
+	git clone git@source.datanerd.us:newrelic/cross_agent_tests.git test/lib/cross_agent_tests
+	rm -rf test/lib/cross_agent_tests/.git
