@@ -358,17 +358,18 @@ describe("RemoteMethod", function () {
         port       : '80',
         run_id     : 12
       };
-      var method = new RemoteMethod('test', config);
+      var body = 'test☃'
+      var method = new RemoteMethod(body, config);
 
-      headers = method._headers(4, false);
+      headers = method._headers(body, false);
     });
 
     it("should use the content type from the parameter", function () {
       expect(headers["CONTENT-ENCODING"]).equal("identity");
     });
 
-    it("should use the content length from the parameter", function () {
-      expect(headers["Content-Length"]).equal(4);
+    it("should generate the content length from the body parameter", function () {
+      expect(headers["Content-Length"]).equal(7);
     });
 
     it("should use a keepalive connection", function () {
@@ -397,17 +398,18 @@ describe("RemoteMethod", function () {
         port       : '80',
         run_id     : 12
       };
-      var method = new RemoteMethod('test', config);
+      var body = 'test☃'
+      var method = new RemoteMethod(body, config);
 
-      headers = method._headers(4, true);
+      headers = method._headers(body, true);
     });
 
     it("should use the content type from the parameter", function () {
       expect(headers["CONTENT-ENCODING"]).equal("deflate");
     });
 
-    it("should use the content length from the parameter", function () {
-      expect(headers["Content-Length"]).equal(4);
+    it("should generate the content length from the body parameter", function () {
+      expect(headers["Content-Length"]).equal(7);
     });
 
     it("should use a keepalive connection", function () {
