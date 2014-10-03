@@ -1,3 +1,8 @@
+### v1.11.4 (2014-10-03):
+
+* Fixed a bug where mutibyte characters would cause an error when sending data
+  to the New Relic servers.
+
 ### v1.11.3 (2014-09-26):
 
 * Updated hapi instrumentation to support the recently released v6.9.
