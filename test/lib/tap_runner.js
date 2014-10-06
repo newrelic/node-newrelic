@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var path     = require('path')
   , Q        = require('Q')
@@ -9,7 +9,7 @@ var path     = require('path')
   , tap      = require('tap')
   , recreate = require('./recreate')
   , Timer    = require('../../lib/timer')
-  ;
+  
 
 
 /*
@@ -17,30 +17,30 @@ var path     = require('path')
  */
 var IMPATIENCE      = 30000
   , DEFAULT_COMMAND = 'node'
-  ;
+  
 
 function isTapFile(name) {
-  return name.match(/\.tap\.js$/);
+  return name.match(/\.tap\.js$/)
 }
 
 function onlyTapFiles(files) {
-  return Qx.filter(files, isTapFile);
+  return Qx.filter(files, isTapFile)
 }
 
 module.exports = function (info) {
   function runTapFile(index, files, result) {
-    if (!files[index]) return result;
+    if (!files[index]) return result
 
     var timer = new Timer()
       , deferred = Q.defer()
-      ;
+      
 
-    timer.begin();
+    timer.begin()
 
     function execed(error) {
-      if (error) return deferred.reject(error);
+      if (error) return deferred.reject(error)
 
-      deferred.resolve();
+      deferred.resolve()
     }
 
     var filepath = path.join(info.prefix, files[index])
@@ -49,16 +49,16 @@ module.exports = function (info) {
       , consumer = tap.createConsumer()
       , busted   = 0
       , tests    = 0
-      ;
+      
 
     function onTapData(data) {
       if (data.ok === true) {
-        tests++;
-        return;
+        tests++
+        return
       }
       else if (data.ok === false) {
-        tests++;
-        busted++;
+        tests++
+        busted++
         // console.dir(data);
       }
       else {
@@ -67,51 +67,51 @@ module.exports = function (info) {
     }
 
     function getDuration(timer) {
-      return (timer.getDurationInMillis() / 1000).toFixed(2);
+      return (timer.getDurationInMillis() / 1000).toFixed(2)
     }
 
     function failed(error) {
-      timer.end();
+      timer.end()
 
       if (error.killed) {
         console.error("%s %s: %s failures (out of %s asserts). " +
                       "Installed in %ss, suite killed after %ss.",
                       info.name, info.version, busted, tests,
-                      info.duration.toFixed(2), getDuration(timer));
+                      info.duration.toFixed(2), getDuration(timer))
       }
       else if (error.signal) {
         console.error("%s %s: %s failures (out of %s asserts). " +
                       "Installed in %ss, SUITE DIED (signal %s) after %ss.",
                       info.name, info.version, busted, tests,
-                      info.duration.toFixed(2), error.signal, getDuration(timer));
+                      info.duration.toFixed(2), error.signal, getDuration(timer))
       }
       else {
         console.error("%s %s: %s failures (out of %s asserts). " +
                       "Installed in %ss, SUITE EXITED (code %s) after %ss.",
                       info.name, info.version, busted, tests,
-                      info.duration.toFixed(2), error.code, getDuration(timer));
+                      info.duration.toFixed(2), error.code, getDuration(timer))
       }
     }
 
     function finished() {
-      timer.end();
+      timer.end()
 
       console.log("%s %s: %s failures (out of %s asserts). " +
                   "Installed in %ss, tested in %ss.",
                   info.name, info.version, busted, tests,
                   info.duration.toFixed(2),
-                  (timer.getDurationInMillis() / 1000).toFixed(2));
+                  (timer.getDurationInMillis() / 1000).toFixed(2))
     }
 
-    consumer.on('data', onTapData);
-    producer.stdout.pipe(consumer);
+    consumer.on('data', onTapData)
+    producer.stdout.pipe(consumer)
 
     return deferred.promise
              .then(finished, failed)
-             .then(runTapFile.bind(null, index + 1, files));
+             .then(runTapFile.bind(null, index + 1, files))
   }
 
-  recreate(info.prefix, 'tap');
+  recreate(info.prefix, 'tap')
 
-  return readdir(info.prefix).then(onlyTapFiles).then(runTapFile.bind(null, 0));
-};
+  return readdir(info.prefix).then(onlyTapFiles).then(runTapFile.bind(null, 0))
+}

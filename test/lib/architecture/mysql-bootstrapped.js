@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 var path   = require('path')
   , logger = require('../../../lib/logger')
-  ;
+  
 
 /**
  * This is a c9/architect configuration file.
@@ -15,4 +15,4 @@ module.exports = [
      table : 'test'
    },
    logger      : logger.child({component : 'mysql_bootstrap'})}
-];
+]

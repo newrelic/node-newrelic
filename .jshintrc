@@ -11,6 +11,8 @@
   "maxparams": 4,
   "newcap": true,
   "nonew": true,
+  "asi": true,
+  "lastsemic": true,
   "sub": true,
   "shadow": false,
   "predef": [

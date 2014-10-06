@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 
 var path         = require('path')
   , test         = require('tap').test
   , configurator = require('../../../lib/config')
   , Agent        = require('../../../lib/agent')
-  ;
+  
 
 test("Agent should send metrics to staging-collector.newrelic.com", function (t) {
   var config = configurator.initialize({
@@ -18,22 +18,22 @@ test("Agent should send metrics to staging-collector.newrelic.com", function (t)
         }
       })
     , agent = new Agent(config)
-    ;
+    
 
   agent.start(function cb_start(error) {
-    t.notOk(error, "started without error");
+    t.notOk(error, "started without error")
 
-    agent.metrics.measureMilliseconds('TEST/discard', null, 101);
-    t.equal(agent.metrics.toJSON().length, 1, "only one metric");
+    agent.metrics.measureMilliseconds('TEST/discard', null, 101)
+    t.equal(agent.metrics.toJSON().length, 1, "only one metric")
 
     agent._sendMetrics(function cb__sendMetrics(error) {
-      t.notOk(error, "sent metrics without error");
+      t.notOk(error, "sent metrics without error")
 
       agent.stop(function cb_stop(error) {
-        t.notOk(error, "stopped without error");
+        t.notOk(error, "stopped without error")
 
-        t.end();
-      });
-    });
-  });
-});
+        t.end()
+      })
+    })
+  })
+})

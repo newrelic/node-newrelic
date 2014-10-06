@@ -23,4 +23,4 @@ exports.config = {
     level : 'trace'
   },
   capture_params : true
-};
+}

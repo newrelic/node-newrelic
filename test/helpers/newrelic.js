@@ -21,4 +21,4 @@ exports.config = {
      */
     level : 'trace'
   }
-};
+}

@@ -1,45 +1,45 @@
-'use strict';
+'use strict'
 
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  ;
+  
 
 test("Restify router introspection", function (t) {
-  t.plan(3);
+  t.plan(3)
 
   var agent  = helper.instrumentMockedAgent()
     , server = require('restify').createServer()
     , api    = new API(agent)
-    ;
+    
 
-  agent.config.application_id = '12345';
-  agent.config.browser_monitoring.browser_key = '12345';
-  agent.config.browser_monitoring.js_agent_loader = 'function(){}';
+  agent.config.application_id = '12345'
+  agent.config.browser_monitoring.browser_key = '12345'
+  agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
   this.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
-      helper.unloadAgent(agent);
-    });
-  });
+      helper.unloadAgent(agent)
+    })
+  })
 
   server.get('/test/:id', function (req, res, next) {
-    var rum = api.getBrowserTimingHeader();
-    t.equal(rum.substr(0,7), '<script');
-    res.send({status : 'ok'});
-    next();
-  });
+    var rum = api.getBrowserTimingHeader()
+    t.equal(rum.substr(0,7), '<script')
+    res.send({status : 'ok'})
+    next()
+  })
 
   server.listen(8080, function () {
     request.get('http://localhost:8080/test/31337',
                 {json : true},
                 function (error, res, body) {
 
-      t.equal(res.statusCode, 200, "nothing exploded");
-      t.deepEqual(body, {status : 'ok'}, "got expected respose");
-      t.end();
-    });
-  });
-});
+      t.equal(res.statusCode, 200, "nothing exploded")
+      t.deepEqual(body, {status : 'ok'}, "got expected respose")
+      t.end()
+    })
+  })
+})

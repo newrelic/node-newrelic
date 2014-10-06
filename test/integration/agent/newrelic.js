@@ -8,4 +8,4 @@ exports.config = {
   transaction_tracer : {
     enabled : true
   }
-};
+}

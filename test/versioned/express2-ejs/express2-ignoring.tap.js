@@ -1,53 +1,53 @@
-'use strict';
+'use strict'
 
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  ;
+  
 
 test("ignoring an Express 3 route", function (t) {
-  t.plan(7);
+  t.plan(7)
 
   var agent = helper.instrumentMockedAgent()
     , api   = new API(agent)
     , app   = require('express').createServer()
-    ;
+    
 
   this.tearDown(function cb_tearDown() {
     app.close(function cb_close() {
-      helper.unloadAgent(agent);
-    });
-  });
+      helper.unloadAgent(agent)
+    })
+  })
 
   agent.on('transactionFinished', function (transaction) {
     t.equal(transaction.name, 'WebTransaction/Expressjs/GET//polling/:id',
-            "transaction has expected name even on error");
-    t.ok(transaction.ignore, "transaction is ignored");
+            "transaction has expected name even on error")
+    t.ok(transaction.ignore, "transaction is ignored")
 
-    t.notOk(agent.traces.trace, "should have no transaction trace");
+    t.notOk(agent.traces.trace, "should have no transaction trace")
 
-    var metrics = agent.metrics.unscoped;
-    t.equal(Object.keys(metrics).length, 0, "no metrics added to agent collection");
+    var metrics = agent.metrics.unscoped
+    t.equal(Object.keys(metrics).length, 0, "no metrics added to agent collection")
 
-    var errors = agent.errors.errors;
-    t.equal(errors.length, 0, "no errors noticed");
-  });
+    var errors = agent.errors.errors
+    t.equal(errors.length, 0, "no errors noticed")
+  })
 
   app.get('/polling/:id', function (req, res) {
-    api.setIgnoreTransaction(true);
+    api.setIgnoreTransaction(true)
 
-    res.send(400, {status : 'pollpollpoll'});
-    res.end();
-  });
+    res.send(400, {status : 'pollpollpoll'})
+    res.end()
+  })
 
   app.listen(8080, function () {
     request.get('http://localhost:8080/polling/31337',
                 function (error, res, body) {
 
-      t.equal(res.statusCode, 400, "got expected error");
-      t.deepEqual(body, 'Bad Request', "got expected response");
-    });
-  });
-});
+      t.equal(res.statusCode, 400, "got expected error")
+      t.deepEqual(body, 'Bad Request', "got expected response")
+    })
+  })
+})

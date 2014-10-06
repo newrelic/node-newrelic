@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 var path   = require('path')
   , logger = require('./logger')
-  ;
+  
 
 /**
  * This is a c9/architect configuration file.
@@ -20,4 +20,4 @@ module.exports = [
    logger      : logger.child({component : 'memcached'})},
   {packagePath : path.join(__dirname, 'commands/shutdown'),
    logger      : logger}
-];
+]

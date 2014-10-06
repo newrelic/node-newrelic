@@ -20,4 +20,4 @@ module.exports = {
   postgres_pass: process.env.NR_NODE_TEST_POSTGRES_PASS || 'docker',
   postgres_db: process.env.NR_NODE_TEST_POSTGRES_DB || 'docker',
 
-};
+}

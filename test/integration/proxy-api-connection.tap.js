@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var path         = require('path')
   , http         = require('http')
@@ -11,19 +11,19 @@ var path         = require('path')
   , configurator = require('../../lib/config')
   , Agent        = require('../../lib/agent')
   , CollectorAPI = require('../../lib/collector/api.js')
-  ;
+  
 
 test("support ssl to the proxy", function (t) {
-  var port   = 0;
+  var port   = 0
   var opts  = {
     key  : read(join(__dirname, '../lib/test-key.key')),
     cert : read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
-  };
+  }
 
-  var server = setup(https.createServer(opts));
+  var server = setup(https.createServer(opts))
 
   server.listen(port, function () {
-    port = server.address().port;
+    port = server.address().port
 
     var config = configurator.initialize({
           'app_name'    : 'node.js Tests',
@@ -42,34 +42,34 @@ test("support ssl to the proxy", function (t) {
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      ;
+      
 
     api.connect(function cb_connect(error, returned) {
-      t.notOk(error, "connected without error");
-      t.ok(returned, "got boot configuration");
-      t.ok(returned.agent_run_id, "got run ID");
-      t.ok(agent.config.run_id, "run ID set in configuration");
+      t.notOk(error, "connected without error")
+      t.ok(returned, "got boot configuration")
+      t.ok(returned.agent_run_id, "got run ID")
+      t.ok(agent.config.run_id, "run ID set in configuration")
 
       api.shutdown(function cb_shutdown(error, returned, json) {
-        t.notOk(error, "should have shut down without issue");
-        t.equal(returned, null, "collector explicitly returns null");
-        t.deepEqual(json, {return_value : null}, "raw message looks right");
-        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
+        t.notOk(error, "should have shut down without issue")
+        t.equal(returned, null, "collector explicitly returns null")
+        t.deepEqual(json, {return_value : null}, "raw message looks right")
+        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown")
 
-        server.close();
-        t.end();
-      });
-    });
-  });
+        server.close()
+        t.end()
+      })
+    })
+  })
 
-});
+})
 
 test("setting proxy_port should use the proxy agent", function (t) {
-  var server = setup(http.createServer());
-  var port   = 0;
+  var server = setup(http.createServer())
+  var port   = 0
 
   server.listen(port, function () {
-    port = server.address().port;
+    port = server.address().port
 
     var config = configurator.initialize({
           'app_name'    : 'node.js Tests',
@@ -88,34 +88,34 @@ test("setting proxy_port should use the proxy agent", function (t) {
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      ;
+      
 
     api.connect(function cb_connect(error, returned) {
-      t.notOk(error, "connected without error");
-      t.ok(returned, "got boot configuration");
-      t.ok(returned.agent_run_id, "got run ID");
-      t.ok(agent.config.run_id, "run ID set in configuration");
+      t.notOk(error, "connected without error")
+      t.ok(returned, "got boot configuration")
+      t.ok(returned.agent_run_id, "got run ID")
+      t.ok(agent.config.run_id, "run ID set in configuration")
 
       api.shutdown(function cb_shutdown(error, returned, json) {
-        t.notOk(error, "should have shut down without issue");
-        t.equal(returned, null, "collector explicitly returns null");
-        t.deepEqual(json, {return_value : null}, "raw message looks right");
-        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
+        t.notOk(error, "should have shut down without issue")
+        t.equal(returned, null, "collector explicitly returns null")
+        t.deepEqual(json, {return_value : null}, "raw message looks right")
+        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown")
 
-        server.close();
-        t.end();
-      });
-    });
-  });
+        server.close()
+        t.end()
+      })
+    })
+  })
 
-});
+})
 
 test("proxy agent with SSL tunnel to collector", function (t) {
-  var server = setup(http.createServer());
-  var port   = 0;
+  var server = setup(http.createServer())
+  var port   = 0
 
   server.listen(port, function () {
-    port = server.address().port;
+    port = server.address().port
 
     var config = configurator.initialize({
           'app_name'    : 'node.js Tests',
@@ -134,34 +134,34 @@ test("proxy agent with SSL tunnel to collector", function (t) {
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      ;
+      
 
     api.connect(function cb_connect(error, returned) {
-      t.notOk(error, "connected without error");
-      t.ok(returned, "got boot configuration");
-      t.ok(returned.agent_run_id, "got run ID");
-      t.ok(agent.config.run_id, "run ID set in configuration");
+      t.notOk(error, "connected without error")
+      t.ok(returned, "got boot configuration")
+      t.ok(returned.agent_run_id, "got run ID")
+      t.ok(agent.config.run_id, "run ID set in configuration")
 
       api.shutdown(function cb_shutdown(error, returned, json) {
-        t.notOk(error, "should have shut down without issue");
-        t.equal(returned, null, "collector explicitly returns null");
-        t.deepEqual(json, {return_value : null}, "raw message looks right");
-        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
+        t.notOk(error, "should have shut down without issue")
+        t.equal(returned, null, "collector explicitly returns null")
+        t.deepEqual(json, {return_value : null}, "raw message looks right")
+        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown")
 
-        server.close();
-        t.end();
-      });
-    });
-  });
+        server.close()
+        t.end()
+      })
+    })
+  })
 
-});
+})
 
 test("proxy agent with plain text to collector", function (t) {
-  var server = setup(http.createServer());
-  var port   = 0;
+  var server = setup(http.createServer())
+  var port   = 0
 
   server.listen(port, function () {
-    port = server.address().port;
+    port = server.address().port
 
     var config = configurator.initialize({
           'app_name'    : 'node.js Tests',
@@ -181,40 +181,40 @@ test("proxy agent with plain text to collector", function (t) {
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      ;
+      
 
     api.connect(function cb_connect(error, returned) {
-      t.notOk(error, "connected without error");
-      t.ok(returned, "got boot configuration");
-      t.ok(returned.agent_run_id, "got run ID");
-      t.ok(agent.config.run_id, "run ID set in configuration");
+      t.notOk(error, "connected without error")
+      t.ok(returned, "got boot configuration")
+      t.ok(returned.agent_run_id, "got run ID")
+      t.ok(agent.config.run_id, "run ID set in configuration")
 
       api.shutdown(function cb_shutdown(error, returned, json) {
-        t.notOk(error, "should have shut down without issue");
-        t.equal(returned, null, "collector explicitly returns null");
-        t.deepEqual(json, {return_value : null}, "raw message looks right");
-        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
+        t.notOk(error, "should have shut down without issue")
+        t.equal(returned, null, "collector explicitly returns null")
+        t.deepEqual(json, {return_value : null}, "raw message looks right")
+        t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown")
 
-        server.close();
-        t.end();
-      });
-    });
-  });
+        server.close()
+        t.end()
+      })
+    })
+  })
 
-});
+})
 
 test("proxy authentication should set headers", function (t) {
-  t.plan(1);
+  t.plan(1)
 
   var server = http.createServer(function (req, res){
-    t.equal(req.headers['proxy-authorization'], 'Basic YTpi');
+    t.equal(req.headers['proxy-authorization'], 'Basic YTpi')
 
-    res.end();
-  });
-  var port = 0;
+    res.end()
+  })
+  var port = 0
 
   server.listen(port, function () {
-    port = server.address().port;
+    port = server.address().port
 
     var config = configurator.initialize({
           'app_name'    : 'node.js Tests',
@@ -233,15 +233,15 @@ test("proxy authentication should set headers", function (t) {
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      ;
+      
 
     api._methods.redirect.invoke(null, function cb_invoke() {
-      server.close();
-      t.end();
-    });
-  });
+      server.close()
+      t.end()
+    })
+  })
 
-});
+})
 
 test("no proxy set should not use proxy agent", function (t) {
   var config = configurator.initialize({
@@ -260,21 +260,21 @@ test("no proxy set should not use proxy agent", function (t) {
       })
     , agent = new Agent(config)
     , api   = new CollectorAPI(agent)
-    ;
+    
 
   api.connect(function cb_connect(error, returned) {
-    t.notOk(error, "connected without error");
-    t.ok(returned, "got boot configuration");
-    t.ok(returned.agent_run_id, "got run ID");
-    t.ok(agent.config.run_id, "run ID set in configuration");
+    t.notOk(error, "connected without error")
+    t.ok(returned, "got boot configuration")
+    t.ok(returned.agent_run_id, "got run ID")
+    t.ok(agent.config.run_id, "run ID set in configuration")
 
     api.shutdown(function cb_shutdown(error, returned, json) {
-      t.notOk(error, "should have shut down without issue");
-      t.equal(returned, null, "collector explicitly returns null");
-      t.deepEqual(json, {return_value : null}, "raw message looks right");
-      t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown");
+      t.notOk(error, "should have shut down without issue")
+      t.equal(returned, null, "collector explicitly returns null")
+      t.deepEqual(json, {return_value : null}, "raw message looks right")
+      t.notOk(agent.config.run_id, "run ID should have been cleared by shutdown")
 
-      t.end();
-    });
-  });
-});
+      t.end()
+    })
+  })
+})

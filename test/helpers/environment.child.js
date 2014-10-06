@@ -1,2 +1,2 @@
-require('../../'); // require newrelic
-process.exit(0);
+require('../..'); // require newrelic
+process.exit(0)

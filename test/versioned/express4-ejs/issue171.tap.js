@@ -1,14 +1,14 @@
-'use strict';
+'use strict'
 
 var path   = require('path')
   , helper = require('../../lib/agent_helper.js')
 
-helper.instrumentMockedAgent();
+helper.instrumentMockedAgent()
 
 var test = require('tap').test
   , http = require('http')
   , app  = require('express')()
-  ;
+  
 
 test("adding 'handle' middleware", function (t) {
   t.plan(2)
@@ -24,7 +24,7 @@ test("adding 'handle' middleware", function (t) {
     throw new Error()
   })
 
-  app.use(handle);
+  app.use(handle)
 
   var server = app.listen(function(){
     var port = server.address().port
@@ -38,4 +38,4 @@ test("adding 'handle' middleware", function (t) {
       server.close()
     }).end()
   })
-});
+})

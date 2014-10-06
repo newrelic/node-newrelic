@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 
 var path         = require('path')
   , test         = require('tap').test
   , configurator = require('../../../lib/config')
   , Agent        = require('../../../lib/agent')
-  ;
+  
 
 test("Agent should send a whole harvest to New Relic staging", {timeout : Infinity}, function (t) {
   var config = configurator.initialize({
@@ -18,33 +18,33 @@ test("Agent should send a whole harvest to New Relic staging", {timeout : Infini
         }
       })
     , agent = new Agent(config)
-    ;
+    
 
   agent.start(function cb_start(error) {
-    t.notOk(error, "connected without error");
+    t.notOk(error, "connected without error")
 
-    agent.metrics.measureMilliseconds('TEST/discard', null, 101);
+    agent.metrics.measureMilliseconds('TEST/discard', null, 101)
 
-    var transaction;
+    var transaction
     var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
-      transaction = agent.getTransaction();
-      transaction.setName('/nonexistent', 501);
-    });
-    proxy();
+      transaction = agent.getTransaction()
+      transaction.setName('/nonexistent', 501)
+    })
+    proxy()
     // ensure it's slow enough to get traced
-    transaction.getTrace().setDurationInMillis(5001);
-    transaction.end();
+    transaction.getTrace().setDurationInMillis(5001)
+    transaction.end()
 
-    t.ok(agent.traces.trace, "have a slow trace to send");
+    t.ok(agent.traces.trace, "have a slow trace to send")
 
     agent.harvest(function cb_harvest(error) {
-      t.notOk(error, "harvest ran correctly");
+      t.notOk(error, "harvest ran correctly")
 
       agent.stop(function cb_stop(error) {
-        t.notOk(error, "stopped without error");
+        t.notOk(error, "stopped without error")
 
-        t.end();
-      });
-    });
-  });
-});
+        t.end()
+      })
+    })
+  })
+})

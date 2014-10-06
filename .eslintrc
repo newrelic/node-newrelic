@@ -1,0 +1,29 @@
+{
+  "env": {
+    "node": true
+  },
+  "global": [
+    "after",
+    "afterEach",
+    "before",
+    "beforeEach",
+    "describe",
+    "it"
+  ],
+  "rules": {
+    "eqeqeq": 2,
+    "guard-for-in": 2,
+    "wrap-iife": 2,
+    "no-unused-vars": 2,
+    "no-undef": 0, //this seems broken
+    "max-len": [2, 90],
+    "max-depth": [2, 3],
+    "max-params": [2, 4],
+    "new-cap": 2,
+    "no-new": 2,
+    "semi": [2, "never"],
+    "dot-notation": 0,
+    "shadow": false,
+    "quotes": [0, "single"],
+  }
+}

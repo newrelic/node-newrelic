@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var path      = require('path')
   , fs        = require('fs')
@@ -10,7 +10,7 @@ var path      = require('path')
   , shimmer   = require('../../lib/shimmer')
   , Agent     = require('../../lib/agent')
   , params    = require('../lib/params')
-  ;
+  
 
 /*
  * CONSTANTS
@@ -19,9 +19,9 @@ var path      = require('path')
 var KEYPATH  = path.join(__dirname, 'test-key.key')
   , CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
   , CAPATH   = path.join(__dirname, 'ca-certificate.crt')
-  ;
+  
 
-var _agent;
+var _agent
 
 var helper = module.exports = {
   /**
@@ -36,21 +36,21 @@ var helper = module.exports = {
    * @returns Agent Agent with a stubbed configuration.
    */
   loadMockedAgent : function loadMockedAgent(flags, conf) {
-    if (_agent) throw _agent.__created;
+    if (_agent) throw _agent.__created
 
     // agent needs a "real" configuration
     var configurator = require('../../lib/config')
       , config       = configurator.initialize(conf)
-      ;
+      
     // stub applications
-    config.applications = function faked() { return ['New Relic for Node.js tests']; };
+    config.applications = function faked() { return ['New Relic for Node.js tests']; }
 
-    _agent = new Agent(config);
-    _agent.__created = new Error("Only one agent at a time! This one was created at:");
+    _agent = new Agent(config)
+    _agent.__created = new Error("Only one agent at a time! This one was created at:")
 
-    if (flags) _agent.config.feature_flag = flags;
+    if (flags) _agent.config.feature_flag = flags
 
-    return _agent;
+    return _agent
   },
 
   /**
@@ -65,11 +65,11 @@ var helper = module.exports = {
   generateCollectorPath : function generateCollectorPath(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
       'marshal_format=json&protocol_version=12&' +
-      'license_key=license%20key%20here&method=' + method;
+      'license_key=license%20key%20here&method=' + method
 
-    if (runID) fragment += '&run_id=' + runID;
+    if (runID) fragment += '&run_id=' + runID
 
-    return fragment;
+    return fragment
   },
 
   /**
@@ -79,14 +79,14 @@ var helper = module.exports = {
    * @returns Agent Agent with a stubbed configuration.
    */
   instrumentMockedAgent : function instrumentMockedAgent(flags, conf) {
-    shimmer.debug = true;
+    shimmer.debug = true
 
-    var agent = helper.loadMockedAgent(flags, conf);
+    var agent = helper.loadMockedAgent(flags, conf)
 
-    shimmer.patchModule(agent);
-    shimmer.bootstrapInstrumentation(agent);
+    shimmer.patchModule(agent)
+    shimmer.bootstrapInstrumentation(agent)
 
-    return agent;
+    return agent
   },
 
   /**
@@ -96,11 +96,11 @@ var helper = module.exports = {
    * @param Agent agent The agent to shut down.
    */
   unloadAgent : function unloadAgent(agent) {
-    shimmer.unpatchModule();
-    shimmer.unwrapAll();
-    shimmer.debug = false;
+    shimmer.unpatchModule()
+    shimmer.unwrapAll()
+    shimmer.debug = false
 
-    if (agent === _agent) _agent = null;
+    if (agent === _agent) _agent = null
   },
 
   /**
@@ -113,16 +113,16 @@ var helper = module.exports = {
    */
   runInTransaction : function runInTransaction(agent, type, callback) {
     if (callback === undefined && typeof type === 'function') {
-      callback = type;
-      type = undefined;
+      callback = type
+      type = undefined
     }
     if (!(agent && callback)) {
-      throw new TypeError("Must include both agent and function!");
+      throw new TypeError("Must include both agent and function!")
     }
 
     return agent.tracer.transactionProxy(function cb_transactionProxy() {
-      var transaction = agent.getTransaction();
-      callback(transaction);
+      var transaction = agent.getTransaction()
+      callback(transaction)
     })(); // <-- invoke immediately
   },
 
@@ -133,11 +133,11 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapMemcached : function bootstrapMemcached(callback) {
-    var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port);
+    var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     memcached.flush(function(err) {
-      memcached.end();
-      callback(err);
-    });
+      memcached.end()
+      callback(err)
+    })
   },
 
   /**
@@ -149,21 +149,21 @@ var helper = module.exports = {
    */
   bootstrapMongoDB : function bootstrapMongoDB(collections, callback) {
     MongoClient.connect('mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration', function(err, db) {
-      if (err) return callback(err);
+      if (err) return callback(err)
 
       async.eachSeries(collections, function(collection, callback) {
         db.dropCollection(collection, function(err) {
           // It's ok if the collection didn't exist before
-          if (err && err.errmsg === 'ns not found') err = null;
+          if (err && err.errmsg === 'ns not found') err = null
 
-          callback(err);
-        });
+          callback(err)
+        })
       }, function(err) {
         db.close(function(err2) {
-          callback(err || err2);
-        });
-      });
-    });
+          callback(err || err2)
+        })
+      })
+    })
   },
 
   /**
@@ -174,13 +174,13 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapMySQL : function bootstrapMySQL(callback) {
-    var bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js');
-    var config = architect.loadConfig(bootstrapped);
+    var bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js')
+    var config = architect.loadConfig(bootstrapped)
     architect.createApp(config, function (error, app) {
-      if (error) return callback(error);
+      if (error) return callback(error)
 
-      return callback(null, app);
-    });
+      return callback(null, app)
+    })
   },
 
   /**
@@ -190,53 +190,53 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapRedis : function bootstrapRedis(db_index, callback) {
-    var client = redis.createClient(params.redis_port, params.redis_host);
+    var client = redis.createClient(params.redis_port, params.redis_host)
     client.select(db_index, function cb_select(err) {
       if (err) {
-        client.end();
-        return callback(err);
+        client.end()
+        return callback(err)
       }
 
       client.flushdb(function(err) {
-        client.end();
+        client.end()
 
-        callback(err);
-      });
-    });
+        callback(err)
+      })
+    })
   },
 
   withSSL : function (callback) {
     fs.readFile(KEYPATH, function (error, key) {
-      if (error) return callback(error);
+      if (error) return callback(error)
 
       fs.readFile(CERTPATH, function (error, certificate) {
-        if (error) return callback(error);
+        if (error) return callback(error)
 
         fs.readFile(CAPATH, function (error, ca) {
-          if (error) return callback(error);
+          if (error) return callback(error)
 
-          callback(null, key, certificate, ca);
-        });
-      });
-    });
+          callback(null, key, certificate, ca)
+        })
+      })
+    })
   },
 
   // FIXME: I long for the day I no longer need this gross hack
   onlyDomains : function () {
-    var exceptionHandlers = process._events['uncaughtException'];
+    var exceptionHandlers = process._events['uncaughtException']
     if (exceptionHandlers) {
       if (Array.isArray(exceptionHandlers)) {
         process._events['uncaughtException'] = exceptionHandlers.filter(function cb_filter(f) {
-          return f.name === 'uncaughtHandler';
-        });
+          return f.name === 'uncaughtHandler'
+        })
       }
       else {
         if (exceptionHandlers.name !== 'uncaughtException') {
-          delete process._events['uncaughtException'];
+          delete process._events['uncaughtException']
         }
       }
     }
 
-    return exceptionHandlers;
+    return exceptionHandlers
   }
-};
+}
