@@ -1,12 +1,9 @@
 'use strict'
 
-var path    = require('path')
-  , logger  = require('./lib/logger.js')
+var logger  = require('./lib/logger.js')
   , message
   , agent
-  
 
-var APP_NAME_REGEX = /^[A-Za-z0-9 -_\[\](){}?!.'"]*$/
 
 var agentVersion = require('./package.json').version
 logger.trace("Using New Relic for Node.js version %s.", agentVersion)
@@ -54,27 +51,6 @@ try {
       logger.error(message)
       throw new Error(message)
     }
-
-    var testVal
-
-    appNames.forEach(function (name) {
-      testVal = name.match(APP_NAME_REGEX)
-
-      if (!testVal){
-        message = "New Relic requires that you name this application using alphanumeric" +
-              " and certain punctuation characters ([](){}.?!') only.\n" +
-              "Reset app_name to follow these naming conventions " +
-              "in your newrelic.js file or set environment variable\n" +
-              "NEW_RELIC_APP_NAME. Not starting!"
-
-        config.agent_enabled = false
-        config.emit('agent_enabled', false)
-
-        logger.error(message)
-        console.log(message)
-
-      }
-    })
 
     var shimmer = require('./lib/shimmer.js')
     shimmer.patchModule(agent)
