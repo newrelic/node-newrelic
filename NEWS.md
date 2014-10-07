@@ -1,3 +1,9 @@
+### v1.11.5 (2014-10-06):
+
+* Fixed a type error while checking the payload size to be sent to the New Relic
+  servers, we expected string and sometimes got a buffer due to gzipping large
+  payloads.
+
 ### v1.11.4 (2014-10-03):
 
 * Fixed a bug where mutibyte characters would cause an error when sending data
