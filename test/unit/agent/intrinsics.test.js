@@ -7,16 +7,17 @@ var helper = require('../../lib/agent_helper.js')
   , Transaction = require('../../../lib/transaction.js')
   , tests = require('../../lib/cross_agent_tests/cat_map.json')
   , _isValidReferringHash = require('../../../lib/instrumentation/core/http.js')._isValidReferringHash
-  
 
-function mockTransaction(agent, test) {
+
+function mockTransaction(agent, test, duration) {
   var trans = new Transaction(agent)
 
   // non-CAT data
   trans.name = test.transactionName
-  trans.timer.duration = 5000
+  trans.timer.duration = duration
   trans.timer.start = 2
   trans.id = test.transactionGuid
+  trans.webSegment = {getDurationInMillis: function () {return trans.timer.duration}}
 
   // CAT data
 
@@ -42,7 +43,7 @@ describe('when CAT is disabled', function () {
   var agent
 
   before(function() {
-    agent = helper.loadMockedAgent({app_name: ['testAppName']}); // App name from test data
+    agent = helper.loadMockedAgent({cat: false});
   })
 
   after(function() {
@@ -51,7 +52,7 @@ describe('when CAT is disabled', function () {
 
   tests.forEach(function(test) {
     it(test.name + ' transaction event should only contain non-CAT intrinsic attributes', function() {
-      var trans = mockTransaction(agent, test)
+      var trans = mockTransaction(agent, test, 5000)
 
       var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
@@ -82,24 +83,43 @@ describe('when CAT is enabled', function () {
     helper.unloadAgent(agent)
   })
 
-  tests.forEach(function(test) {
+  var durations = [100, 300, 1000]
+
+  tests.forEach(function(test, index) {
     it(test.name + ' transaction event should contain all intrinsic attributes', function() {
-      var trans = mockTransaction(agent, test)
+      var idx = index % durations.length
+      var duration = durations[idx]
+      var trans = mockTransaction(agent, test, duration)
 
       var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
       var expected = {
-        duration: 5,
+        duration: duration/1000,
         name: test.transactionName,
         timestamp: 2,
         type: 'Transaction',
-        webDuration: 5,
+        webDuration: duration/1000,
         'nr.guid': test.expectedIntrinsicFields['nr.guid'],
         'nr.pathHash': test.expectedIntrinsicFields['nr.pathHash'],
         'nr.referringPathHash': test.expectedIntrinsicFields['nr.referringPathHash'],
         'nr.tripId': test.expectedIntrinsicFields['nr.tripId'],
         'nr.referringTransactionGuid': test.expectedIntrinsicFields['nr.referringTransactionGuid'],
         'nr.alternatePathHashes': test.expectedIntrinsicFields['nr.alternatePathHashes'],
+      }
+      if (test.expectedIntrinsicFields['nr.pathHash']) {
+        // nr.apdexPerfZone not specified in the test, this is used to exercise it.
+        switch (idx) {
+          case 0:
+            expected['nr.apdexPerfZone'] = 'S'
+            break
+          case 1:
+            expected['nr.apdexPerfZone'] = 'T'
+            break
+          case 2:
+            expected['nr.apdexPerfZone'] = 'F'
+            break
+        }
+
       }
       for (var i = 0; i < test.nonExpectedIntrinsicFields.length; i++) {
         delete expected[test.nonExpectedIntrinsicFields[i]]

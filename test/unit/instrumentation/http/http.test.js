@@ -6,7 +6,7 @@ var chai         = require('chai')
   , EventEmitter = require('events').EventEmitter
   , helper       = require('../../../lib/agent_helper')
   , hashes       = require('../../../../lib/util/hashes')
-  
+
 
 var NEWRELIC_ID_HEADER = 'x-newrelic-id'
 var NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
@@ -15,7 +15,7 @@ var NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
 describe("built-in http module instrumentation", function () {
   var http
     , agent
-    
+
 
   var PAYLOAD = JSON.stringify({msg : 'ok'})
 
@@ -26,7 +26,7 @@ describe("built-in http module instrumentation", function () {
 
   describe("shouldn't cause bootstrapping to fail", function () {
     var initialize
-      
+
 
     before(function () {
       agent = helper.loadMockedAgent()
@@ -73,7 +73,7 @@ describe("built-in http module instrumentation", function () {
       , http
       , options
       , callback
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -115,7 +115,7 @@ describe("built-in http module instrumentation", function () {
     var transaction
       , fetchedStatusCode
       , fetchedBody
-      
+
 
     before(function (done) {
       http  = require('http')
@@ -568,6 +568,7 @@ describe("built-in http module instrumentation", function () {
         {cat: true},
         {encoding_key: encKey, obfuscatedId: 'o123'}
       )
+      http = require('http')
       server = http.createServer(function(req, res) {
         res.end()
         req.resume()
@@ -580,8 +581,18 @@ describe("built-in http module instrumentation", function () {
       server.close(done)
     })
 
+    function addSegment() {
+      var transaction = agent.getTransaction()
+      transaction.webSegment = {
+        getDurationInMillis: function fake() {
+          return 1000;
+        }
+      }
+    }
+
     it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
       helper.runInTransaction(agent, function() {
+        addSegment() // Add webSegment so everything works properly
         http.get({host : 'localhost', port : 4123}, function(res) {
           expect(res.req.getHeader(NEWRELIC_ID_HEADER)).equal('o123')
           res.resume()
@@ -593,6 +604,7 @@ describe("built-in http module instrumentation", function () {
 
     it('should use set x-newrelic-transaction', function(done) {
       helper.runInTransaction(agent, function() {
+        addSegment() // Add webSegment so everything works properly
         var transaction = agent.getTransaction()
         transaction.name = '/abc'
         transaction.referringPathHash = 'h/def'
@@ -622,6 +634,7 @@ describe("built-in http module instrumentation", function () {
 
     it('should use transaction.id if transaction.tripId is not set', function(done) {
       helper.runInTransaction(agent, function() {
+        addSegment() // Add webSegment so everything works properly
         var transaction = agent.getTransaction()
         transaction.id = '456'
         transaction.tripId = null
@@ -641,6 +654,7 @@ describe("built-in http module instrumentation", function () {
 
     it('should use partialName if transaction.name is not set', function(done) {
       helper.runInTransaction(agent, function() {
+        addSegment() // Add webSegment so everything works properly
         var transaction = agent.getTransaction()
         transaction.partialName = '/xyz'
         transaction.name = null
@@ -665,6 +679,7 @@ describe("built-in http module instrumentation", function () {
     })
     it('should save current pathHash', function(done) {
       helper.runInTransaction(agent, function() {
+        addSegment() // Add webSegment so everything works properly
         var transaction = agent.getTransaction()
         transaction.name = '/xyz'
         transaction.referringPathHash = 'h/def'

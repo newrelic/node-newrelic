@@ -9,13 +9,13 @@ var path   = require('path')
   , NAMES  = require('../../../../lib/metrics/names.js')
   , instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
   , hashes             = require('../../../../lib/util/hashes')
-  
+
 
 describe("instrumentOutbound", function () {
   var agent
     , HOSTNAME = 'localhost'
     , PORT     = 8890
-    
+
 
   before(function () {
     agent = helper.loadMockedAgent()
@@ -63,7 +63,7 @@ describe("instrumentOutbound", function () {
     helper.runInTransaction(agent, function (transaction) {
       var path  = '/asdf'
         , name  = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
-        
+
 
       req.path  = '/asdf?a=b&another=yourself&thing&grownup=true'
       instrumentOutbound(agent, req, HOSTNAME, PORT)
@@ -121,7 +121,7 @@ describe("instrumentOutbound", function () {
   it("should throw if hostname is undefined", function () {
     var req  = new events.EventEmitter()
       , undef
-      
+
 
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic'
@@ -133,7 +133,7 @@ describe("instrumentOutbound", function () {
 
   it("should throw if hostname is null", function () {
     var req  = new events.EventEmitter()
-      
+
 
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic'
@@ -156,7 +156,7 @@ describe("instrumentOutbound", function () {
   it("should throw if port is undefined", function () {
     var req  = new events.EventEmitter()
       , undef
-      
+
 
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic'
@@ -201,8 +201,18 @@ describe('should add data from cat header to segment', function () {
     server.close(done)
   })
 
+  function addSegment() {
+    var transaction = agent.getTransaction()
+    transaction.webSegment = {
+      getDurationInMillis: function fake() {
+        return 1000;
+      }
+    }
+  }
+
   it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
     helper.runInTransaction(agent, function() {
+      addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
         var segment = agent.tracer.getSegment()
 
@@ -219,6 +229,7 @@ describe('should add data from cat header to segment', function () {
 
   it('should not explode with invalid data', function(done) {
     helper.runInTransaction(agent, function() {
+      addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
         var segment = agent.tracer.getSegment()
 

@@ -2,6 +2,7 @@
 
 var path      = require('path')
   , fs        = require('fs')
+  , extend    = require('util')._extend
   , architect = require('architect')
   , MongoClient = require('mongodb').MongoClient
   , async     = require('async')
@@ -10,7 +11,7 @@ var path      = require('path')
   , shimmer   = require('../../lib/shimmer')
   , Agent     = require('../../lib/agent')
   , params    = require('../lib/params')
-  
+
 
 /*
  * CONSTANTS
@@ -19,7 +20,7 @@ var path      = require('path')
 var KEYPATH  = path.join(__dirname, 'test-key.key')
   , CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
   , CAPATH   = path.join(__dirname, 'ca-certificate.crt')
-  
+
 
 var _agent
 
@@ -41,14 +42,18 @@ var helper = module.exports = {
     // agent needs a "real" configuration
     var configurator = require('../../lib/config')
       , config       = configurator.initialize(conf)
-      
+
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; }
 
     _agent = new Agent(config)
     _agent.__created = new Error("Only one agent at a time! This one was created at:")
 
-    if (flags) _agent.config.feature_flag = flags
+    if (flags) {
+      var newFlags = extend({}, _agent.config.feature_flag)
+      newFlags = extend(newFlags, flags)
+      _agent.config.feature_flag = newFlags
+    }
 
     return _agent
   },

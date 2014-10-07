@@ -1,10 +1,10 @@
 var test = require('tap').test
-var helper = require('../lib/agent_helper')
-var hashes = require('../../lib/util/hashes')
-var http = require('http')
-var API = require('../../api')
+var helper = require('../../lib/agent_helper')
+var hashes = require('../../../lib/util/hashes')
+var API = require('../../../api')
 var format = require('util').format
 
+// constants
 var START_PORT = 10000
 var MIDDLE_PORT = 10001
 var END_PORT = 10002
@@ -24,6 +24,8 @@ test('cross application tracing full integration', function (t) {
   config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
                                                      config.encoding_key)
   var agent = helper.instrumentMockedAgent(feature_flag, config)
+  // require http after creating the agent
+  var http = require('http');
   var api = new API(agent)
 
   var serversToStart = 3
@@ -36,14 +38,14 @@ test('cross application tracing full integration', function (t) {
 
   // Naming is how the requests will flow through the system, to test that all
   // metrics are generated as expected as well as the dirac events.
-  var start = generateServer(api, START_PORT, started, function (req, res) {
+  var start = generateServer(http, api, START_PORT, started, function (req, res) {
     http.get(generateUrl(MIDDLE_PORT, 'start/middle'), function (externRes) {
       externRes.resume()
       res.end()
     })
   })
 
-  var middle = generateServer(api, MIDDLE_PORT, started, function (req, res) {
+  var middle = generateServer(http, api, MIDDLE_PORT, started, function (req, res) {
     t.ok(req.headers['x-newrelic-id'], 'middle received x-newrelic-id from start')
     t.ok(req.headers['x-newrelic-transaction'], 'middle received x-newrelic-transaction from start')
     http.get(generateUrl(END_PORT, 'middle/end'), function (externRes) {
@@ -52,7 +54,7 @@ test('cross application tracing full integration', function (t) {
     })
   })
 
-  var end = generateServer(api, END_PORT, started, function (req, res) {
+  var end = generateServer(http, api, END_PORT, started, function (req, res) {
     t.ok(req.headers['x-newrelic-id'], 'end received x-newrelic-id from middle')
     t.ok(req.headers['x-newrelic-transaction'], 'end received x-newrelic-transaction from middle')
     res.end()
@@ -206,7 +208,7 @@ test('cross application tracing full integration', function (t) {
   ]
 })
 
-function generateServer(api, port, started, responseHandler) {
+function generateServer(http, api, port, started, responseHandler) {
   var server = http.createServer(function (req, res) {
     api.setTransactionName(req.url)
     req.resume()
