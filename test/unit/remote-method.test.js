@@ -218,6 +218,15 @@ describe("RemoteMethod", function () {
           done();
         });
       });
+
+      it("should not throw when compressing", function (done) {
+        method._shouldCompress = function () { return true; };
+        // zlib.deflate really wants a stringlike entity
+        method._post('abc', function (error) {
+          expect(sendMetrics.isDone()).equal(true);
+          done();
+        });
+      });
     });
 
     describe("unsuccessfully", function () {
