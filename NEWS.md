@@ -1,8 +1,10 @@
 ### v1.11.5 (2014-10-06):
 
 * Fixed a type error while checking the payload size to be sent to the New Relic
-  servers, we expected string and sometimes got a buffer due to gzipping large
-  payloads.
+  servers.
+
+  When this happened the agent would fail to send the payload to New Relic. This
+  was more likely to occur in higher throughput applications.
 
 ### v1.11.4 (2014-10-03):
 
