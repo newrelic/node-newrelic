@@ -8,7 +8,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper')
   , API     = require('../../../api.js')
-  
+
 
 var TEST_PATH = '/test'
   , TEST_PORT = 9876
@@ -24,7 +24,7 @@ var TEST_PATH = '/test'
                 "  <p>I heard u like HTML.</p>\n" +
                 "</body>\n" +
                 "</html>\n"
-  
+
 
 // Regression test for issue 154
 // https://github.com/newrelic/node-newrelic/pull/154
@@ -82,7 +82,7 @@ test("agent instrumentation of Express 4", function (t) {
     var agent = helper.instrumentMockedAgent()
       , app = require('express')()
       , server = require('http').createServer(app)
-      
+
 
     this.tearDown(function cb_tearDown() {
       server.close()
@@ -139,7 +139,7 @@ test("agent instrumentation of Express 4", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
-      
+
 
     this.tearDown(function cb_tearDown() {
       server.close()
@@ -177,7 +177,7 @@ test("agent instrumentation of Express 4", function (t) {
       , app    = require('express')()
       , server = require('http').createServer(app)
       , api    = new API(agent)
-      
+
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
@@ -218,7 +218,7 @@ test("agent instrumentation of Express 4", function (t) {
 
     var app    = require('express')()
       , server = require('http').createServer(app)
-      
+
 
     this.tearDown(function cb_tearDown() {
       server.close()
@@ -273,7 +273,7 @@ test("agent instrumentation of Express 4", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
-      
+
 
     this.tearDown(function cb_tearDown() {
       server.close()
@@ -321,7 +321,7 @@ test("agent instrumentation of Express 4", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , app    = require('express')()
       , server = require('http').createServer(app)
-      
+
 
     this.tearDown(function cb_tearDown() {
       server.close()
