@@ -41,19 +41,6 @@ describe("the agent configuration", function () {
     expect(c.agent_enabled).equal(true)
   })
 
-  it('should convert labels to expected format', function() {
-    var long_key = Array(257).join('€')
-    var long_value = Array(257).join('𝌆')
-    var config = {labels: {}}
-    config.labels.a = 'b'
-    config.labels[long_key] = long_value
-
-    var expected = [{label_type: 'a', label_value: 'b'}]
-    expected.push({label_type: Array(256).join('€'), label_value: Array(256).join('𝌆')})
-
-    expect(new Config(config).labels).deep.equal(expected)
-  })
-
   describe("when overriding configuration values via environment variables",
   function () {
     it("should pick up the application name", function () {
@@ -249,16 +236,6 @@ describe("the agent configuration", function () {
       idempotentEnv('APP_POOL_ID', 'Simple Azure app', function (tc) {
         should.exist(tc.app_name)
         expect(tc.applications()).eql(['Simple Azure app'])
-      })
-    })
-
-    it("should pick up labels", function () {
-      idempotentEnv('NEW_RELIC_LABELS', 'key:value;a:b;', function (tc) {
-        should.exist(tc.labels)
-        expect(tc.labels).deep.equal([
-          {label_type: 'key', label_value: 'value'},
-          {label_type: 'a', label_value: 'b'}
-        ])
       })
     })
   })
