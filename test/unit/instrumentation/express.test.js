@@ -5,13 +5,13 @@ var path   = require('path')
   , expect = chai.expect
   , should = chai.should()
   , helper = require('../../lib/agent_helper')
-  
+
 
 describe("an instrumented Express application", function () {
   describe("shouldn't cause bootstrapping to fail", function () {
     var agent
       , initialize
-      
+
 
     before(function () {
       agent = helper.loadMockedAgent()
@@ -36,7 +36,7 @@ describe("an instrumented Express application", function () {
     var agent
       , stub
       , http
-      
+
 
     before(function () {
       agent = helper.instrumentMockedAgent()
@@ -94,14 +94,14 @@ describe("an instrumented Express application", function () {
         var transaction = agent.getTransaction()
           // FIXME: too quick, too dirty
           , res         = http.ServerResponse.prototype
-          
+
 
         function finalizer() {
           var json     = transaction.getTrace().root.toJSON()
             , children = json[4]
             , render   = children[0]
             , name     = render[2]
-            
+
 
           expect(name).equal('View/TEST/Rendering')
           transaction.end()
@@ -130,7 +130,7 @@ describe("an instrumented Express application", function () {
               , children = json[4]
               , render   = children[0]
               , name     = render[2]
-              
+
 
             expect(name).equal('View/TEST/Rendering')
             transaction.end()
@@ -155,7 +155,7 @@ describe("an instrumented Express application", function () {
             , children = json[4]
             , render   = children[0]
             , name     = render[2]
-            
+
 
           expect(name).equal('View/TEST/Rendering')
           transaction.end()
@@ -180,7 +180,7 @@ describe("an instrumented Express application", function () {
   describe("for Express 3 (stubbed)", function () {
     var agent
       , stub
-      
+
 
     before(function () {
       agent = helper.instrumentMockedAgent()
@@ -242,7 +242,7 @@ describe("an instrumented Express application", function () {
               , children = json[4]
               , render   = children[0]
               , name     = render[2]
-              
+
 
             expect(name).equal('View/TEST/Rendering')
             transaction.end()
@@ -265,7 +265,7 @@ describe("an instrumented Express application", function () {
               , children = json[4]
               , render   = children[0]
               , name     = render[2]
-              
+
 
             expect(name).equal('View/TEST/Rendering')
             transaction.end()
@@ -288,7 +288,7 @@ describe("an instrumented Express application", function () {
             , children = json[4]
             , render   = children[0]
             , name     = render[2]
-            
+
 
           expect(name).equal('View/TEST/Rendering')
           transaction.end()
@@ -305,7 +305,7 @@ describe("an instrumented Express application", function () {
 
         var match = stub.Router.prototype.matchRequest
         expect(match()).eql({path : 'test/:id'})
-        expect(transaction.partialName).equal('Expressjs/GET/test/:id')
+        expect(transaction.partialName).equal('Expressjs/GET//test/:id')
       })
     })
   })
