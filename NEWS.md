@@ -1,3 +1,17 @@
+### v1.12.0 (2014-10-06):
+
+* Added support for Cross Application Tracing
+
+  The agent now supports Cross Application Tracing, which allows the New Relic
+  APM UI to display traces that span multiple applications.
+  https://docs.newrelic.com/docs/apm/traces/cross-application-traces/cross-application-traces
+
+* Fixed a bug that would cause application to crash on request when using the
+  kraken framework.
+
+* Loosened the restrictions on the `app_name` setting. Application names may now
+  include any Unicode characters.
+
 ### v1.11.5 (2014-10-06):
 
 * Fixed a type error while checking the payload size to be sent to the New Relic
