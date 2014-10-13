@@ -4,12 +4,26 @@ var path    = require('path')
   , chai    = require('chai')
   , expect  = chai.expect
   , urltils = require('../../lib/util/urltils.js')
-  
+
 
 describe("NR URL utilities", function () {
   describe("scrubbing URLs", function () {
     it("should return '/' if there's no leading slash on the path", function () {
       expect(urltils.scrub('?t_u=http://some.com/o/p')).equal('/')
+    })
+  })
+
+  describe("parsing parameters", function () {
+    it("should find empty object of params in url lacking query", function () {
+      expect(urltils.parseParameters('/favicon.ico')).deep.equal({});
+    })
+
+    it("should find v param in url containing ?v with no value", function () {
+      expect(urltils.parseParameters('/status?v')).deep.equal({v:true});
+    })
+
+    it("should find v param with value in url containing ?v=1", function () {
+      expect(urltils.parseParameters('/status?v=1')).deep.equal({v:'1'});
     })
   })
 
@@ -129,7 +143,7 @@ describe("NR URL utilities", function () {
     var config
       , source
       , dest
-      
+
 
     beforeEach(function () {
       config = {
