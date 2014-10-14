@@ -4,7 +4,7 @@ var tap    = require('tap')
   , params = require('../../lib/params')
   , helper = require('../../lib/agent_helper')
   , test   = tap.test
-  
+
 
 module.exports = function runTests(agent, pg, name) {
   //constants for table creation and db connection
@@ -32,7 +32,7 @@ module.exports = function runTests(agent, pg, name) {
 
       var tableCreate = 'CREATE TABLE ' + TABLE + ' (' + PK + ' integer PRIMARY KEY, '
       tableCreate += COL + ' text);'
-  
+
       setupClient.query(tableDrop, function (error) {
         if (error) {
           throw error
@@ -116,7 +116,7 @@ module.exports = function runTests(agent, pg, name) {
   }
 
   test('Postgres instrumentation: ' + name, function (t) {
-    t.plan(4)
+    t.plan(5)
     postgresSetup(runTest)
     function runTest () {
 
@@ -298,6 +298,23 @@ module.exports = function runTests(agent, pg, name) {
                 verify(t, transaction)
               })
             })
+          })
+        })
+      })
+
+      t.test('query.on should still be chainable', function (t) {
+        var client = new pg.Client(CON_STRING)
+
+        client.connect(function (error) {
+          if (error) return t.fail(error)
+          var query = client.query('SELECT table_name FROM information_schema.tables')
+
+          query.on('error', function(err) {
+            t.error(err, 'error while querying')
+            t.end()
+          }).on('end', function ended() {
+            client.end()
+            t.end()
           })
         })
       })
