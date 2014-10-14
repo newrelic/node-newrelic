@@ -238,6 +238,13 @@ describe("the agent configuration", function () {
         expect(tc.applications()).eql(['Simple Azure app'])
       })
     })
+
+    it("should pick up labels", function () {
+      idempotentEnv('NEW_RELIC_LABELS', 'key:value;a:b;', function (tc) {
+        should.exist(tc.labels)
+        expect(tc.labels).equal('key:value;a:b;')
+      })
+    })
   })
 
   describe("with default properties", function () {

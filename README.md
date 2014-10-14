@@ -549,7 +549,11 @@ For completeness, here's the rest of the list:
 * `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
   internal operation. It's unlikely to be informative unless you're a New Relic
   Node.js engineer and it has a significant performance cost, so use with care.
-* `NEW_RELIC_BROWSER_MONITOR_ENABLE`: Whether to generate browser timing (RUM) headers or not.
+* `NEW_RELIC_BROWSER_MONITOR_ENABLE`: Whether to generate browser timing (RUM)
+  headers or not.
+* `NEW_RELIC_LABELS`: Sets the label names and values to associate with the
+  application. The list is a semi-colon delimited list of colon-separated name
+  and value pairs
 
 ## Security
 

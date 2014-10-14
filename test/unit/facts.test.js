@@ -7,15 +7,15 @@ var path     = require('path')
   , should   = chai.should()
   , helper   = require('../lib/agent_helper.js')
   , facts    = require('../../lib/collector/facts.js')
-  
 
-var EXPECTED = ['pid', 'host', 'language', 'app_name',
+
+var EXPECTED = ['pid', 'host', 'language', 'app_name', 'labels',
                 'agent_version', 'environment', 'settings', 'high_security']
 
 describe("fun facts about apps that New Relic is interested in include", function () {
   var agent
     , factsed
-    
+
 
   before(function () {
     agent = helper.loadMockedAgent()
@@ -60,5 +60,29 @@ describe("fun facts about apps that New Relic is interested in include", functio
 
   it("and nothing else", function () {
     expect(Object.keys(factsed).sort()).eql(EXPECTED.sort())
+  })
+
+  it('should convert label object to expected format', function() {
+    var long_key = Array(257).join('€')
+    var long_value = Array(257).join('𝌆')
+    agent.config.labels = {}
+    agent.config.labels.a = 'b'
+    agent.config.labels[long_key] = long_value
+
+    var expected = [{label_type: 'a', label_value: 'b'}]
+    expected.push({label_type: Array(256).join('€'), label_value: Array(256).join('𝌆')})
+
+    expect(facts(agent).labels).deep.equal(expected)
+  })
+
+  it('should convert label string to expected format', function() {
+    var long_key = Array(257).join('€')
+    var long_value = Array(257).join('𝌆')
+    agent.config.labels = 'a: b; ' + long_key + ' : ' + long_value
+
+    var expected = [{label_type: 'a', label_value: 'b'}]
+    expected.push({label_type: Array(256).join('€'), label_value: Array(256).join('𝌆')})
+
+    expect(facts(agent).labels).deep.equal(expected)
   })
 })

@@ -18,11 +18,11 @@
     "name":        "multiple_labels_with_leading_and_trailing_whitespaces",
     "labelString": "   Data Center   : East Coast  ;   Deployment Flavor    :  Integration Environment   ",
     "warning":     false,
-    "expected":    [ 
+    "expected":    [
         { "label_type": "Data Center", "label_value": "East Coast" },
         { "label_type": "Deployment Flavor", "label_value": "Integration Environment" }
     ]
-  }, 
+  },
   {
     "name":        "single",
     "labelString": "Server:East",
@@ -53,7 +53,7 @@
   {
     "name":        "truncation",
     "labelString": "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK:VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV",
-    "warning":     false,
+    "warning":     true,
     "expected":    [ {
       "label_type":  "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
       "label_value": "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
@@ -62,25 +62,25 @@
   {
     "name":        "single_label_key_to_be_truncated_with_leading_and_trailing_whitespaces",
     "labelString": "           123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345TTTTT       :value",
-    "warning":     false,
-    "expected":    [ 
+    "warning":     true,
+    "expected":    [
         { "label_type": "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345", "label_value": "value" }
     ]
-  }, 
+  },
   {
     "name":        "single_label_value_to_be_truncated_with_leading_and_trailing_whitespaces",
     "labelString": "key:           123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345TTTTT       ",
-    "warning":     false,
-    "expected":    [ 
-        { "label_type": "key", "label_value": "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" } 
+    "warning":     true,
+    "expected":    [
+        { "label_type": "key", "label_value": "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" }
     ]
-  }, 
+  },
   {
     "name":        "utf8",
     "labelString": "kéÿ:vãlüê",
     "warning":     false,
-    "expected":    [ 
-        { "label_type": "kéÿ", "label_value": "vãlüê" } 
+    "expected":    [
+        { "label_type": "kéÿ", "label_value": "vãlüê" }
     ]
   },
   {
@@ -183,7 +183,13 @@
   {
     "name": "long_multibyte_utf8",
     "labelString": "foo:€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€",
-    "warning": false,
+    "warning": true,
     "expected": [ { "label_type": "foo", "label_value": "€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€" } ]
+  },
+  {
+    "name": "long_4byte_utf8",
+    "labelString": "foo:𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆",
+    "warning": true,
+    "expected": [ { "label_type": "foo", "label_value": "𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆𝌆"}]
   }
 ]
