@@ -11,7 +11,7 @@ var path         = require('path')
   , configurator = require('../../lib/config')
   , Agent        = require('../../lib/agent')
   , CollectorAPI = require('../../lib/collector/api.js')
-  
+
 
 test("support ssl to the proxy", function (t) {
   var port   = 0
@@ -32,17 +32,13 @@ test("support ssl to the proxy", function (t) {
           'proxy'       : 'https://ssl.lvh.me:' + port,
           'port'        : 443,
           'ssl'         : true,
-          'feature_flag': {
-            // FLAG: proxy
-            proxy: true
-          },
           'certificates': [
             read(join(__dirname, '..', 'lib', 'ca-certificate.crt'), 'utf8')
           ]
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      
+
 
     api.connect(function cb_connect(error, returned) {
       t.notOk(error, "connected without error")
@@ -80,15 +76,11 @@ test("setting proxy_port should use the proxy agent", function (t) {
           'ssl'         : true,
           'logging'     : {
             'level' : 'trace'
-          },
-          'feature_flag': {
-            // FLAG: proxy
-            proxy: true
           }
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      
+
 
     api.connect(function cb_connect(error, returned) {
       t.notOk(error, "connected without error")
@@ -126,15 +118,11 @@ test("proxy agent with SSL tunnel to collector", function (t) {
           'ssl'         : true,
           'logging'     : {
             'level' : 'trace'
-          },
-          'feature_flag': {
-            // FLAG: proxy
-            proxy: true
           }
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      
+
 
     api.connect(function cb_connect(error, returned) {
       t.notOk(error, "connected without error")
@@ -173,15 +161,11 @@ test("proxy agent with plain text to collector", function (t) {
           'ssl'         : false,
           'logging'     : {
             'level' : 'trace'
-          },
-          'feature_flag': {
-            // FLAG: proxy
-            proxy: true
           }
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      
+
 
     api.connect(function cb_connect(error, returned) {
       t.notOk(error, "connected without error")
@@ -225,15 +209,11 @@ test("proxy authentication should set headers", function (t) {
           'ssl'         : false,
           'logging'     : {
             'level' : 'trace'
-          },
-          'feature_flag': {
-            // FLAG: proxy
-            proxy: true
           }
         })
       , agent = new Agent(config)
       , api   = new CollectorAPI(agent)
-      
+
 
     api._methods.redirect.invoke(null, function cb_invoke() {
       server.close()
@@ -252,15 +232,11 @@ test("no proxy set should not use proxy agent", function (t) {
         'ssl'         : true,
         'logging'     : {
           'level' : 'trace'
-        },
-        'feature_flag': {
-          // FLAG: proxy
-          proxy: true
         }
       })
     , agent = new Agent(config)
     , api   = new CollectorAPI(agent)
-    
+
 
   api.connect(function cb_connect(error, returned) {
     t.notOk(error, "connected without error")
