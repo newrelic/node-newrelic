@@ -142,11 +142,11 @@ transaction breakdowns), to identify slow requests, and to group scoped
 metrics. For example, this can identify slow database queries by showing which
 requests are spending a long time waiting on the database.
 
-If you're using Express or Restify with their default routers and are satisfied
-with your application being represented by those frameworks' route matchers, you
-may not need to do anything. However, if you want more specific names than are
-provided by your framework, you may want to use one or more of the tools
-described further on.
+If you're using Express, Restify or Hapi with their default routers and are
+satisfied with your application being represented by those frameworks' route
+matchers, you may not need to do anything. However, if you want more specific
+names than are provided by your framework, you may want to use one or more of
+the tools described further on.
 
 The simplest way to tell that you need to read further in this document is if
 you feel too many of your requests are being lumped together under the
@@ -172,8 +172,9 @@ that variety greatly complicates things for us, with our limited resources, and
 so we offer a few different tools to help you give us the information we need
 to provide you useful metrics about your application:
 
-* we can read the route names from the Express and Restify routers, if you're
-  using them (and as said above, for many of you, this may be all you need)
+* we can read the route names from the Express, Restify, and Hapi routers, if
+  you're using them (and as said above, for many of you, this may be all you
+  need)
 * we offer an API for naming the current request, either with simple names or,
   if you prefer, grouped into controllers with actions
 * and we support rules stored in your module's configuration that can mark
@@ -225,8 +226,8 @@ trace will also have the request's parameters and their values attached to it.
 Likewise, request parameters and their values will be attached to any errors
 recorded by the agent.
 
-The only important thing to know about New Relic's support for Express and
-Restify is that if you're dissatisfied with the names it comes up with, you can
+The only important thing to know about New Relic's support for Express, Restify,
+or Hapi is that if you're dissatisfied with the names it comes up with, you can
 use the API calls described below to come up with more descriptive names. Also,
 if you use a different web framework or router and would like to see support
 for it added, please let us know.
@@ -253,7 +254,7 @@ has started, but before the request has finished. A good rule of thumb is that
 if the request and response objects are in scope, you can set the name.
 
 Explicitly calling `newrelic.setTransactionName()` will override any names set
-by Express or Restify routes. Calls to `newrelic.setTransactionName()` and
+by Express, Restify or Hapi routes. Calls to `newrelic.setTransactionName()` and
 `newrelic.setControllerName()` will overwrite each other. The last call made
 before the request ends wins.
 
@@ -275,8 +276,8 @@ the HTTP method (e.g. `GET`, `POST`) as the action. The rules for when you can
 call `newrelic.setControllerName()` are the same as they are for
 `newrelic.setTransactionName()`.
 
-Explicitly calling `newrelic.setControllerName()` will override any names set
-by Express or Restify routes. Calls to `newrelic.setTransactionName()` and
+Explicitly calling `newrelic.setControllerName()` will override any names set by
+Express, Restify, or Hapi routes. Calls to `newrelic.setTransactionName()` and
 `newrelic.setControllerName()` will overwrite each other. The last one to run
 before the request ends wins.
 
@@ -598,8 +599,7 @@ Information about changes to the module are in NEWS.md.
 
 ### New Relic features available for other platforms not yet in Node.js
 
-* cross-application tracing (depends on RUM)
-* custom metrics and instrumentation
+* custom metrics
 * slow SQL traces and explain plans
 * garbage collector instrumentation
 * thread profiling
