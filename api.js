@@ -7,7 +7,7 @@ var util      = require('util')
   , recordBackground = require('./lib/metrics/recorders/other.js')
   , customRecorder = require('./lib/metrics/recorders/custom')
   , hashes    = require('./lib/util/hashes')
-  
+
 
 /*
  *
@@ -366,7 +366,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   // if debugging, do pretty format of JSON
   var tabs = config.browser_monitoring.debug ? 2 : 0
     , json = JSON.stringify(rum_hash, null, tabs)
-    
+
 
   // the complete header to be written to the browser
   var out = util.format(
@@ -392,9 +392,32 @@ API.prototype.createTracer = function createTracer(name, callback) {
     return callback
   }
 
+  var fail = false
+  if (!name) {
+    logger.warn('createTracer called without a name')
+    fail = true
+  }
+
+  if (typeof callback !== 'function') {
+    logger.warn('createTracer called with a callback arg that is not a function')
+    fail = true
+  }
+
+  if (fail) {
+    // If name is undefined but callback is defined we should make a best effort
+    // to return it so things don't crash.
+    return callback
+  }
+
   var tracer = this.agent.tracer
   var txn = tracer.getTransaction()
   if (txn) {
+    logger.debug(
+      'creating tracer %s (%s) on transaction %s.',
+      name,
+      callback && callback.name,
+      txn.id
+    )
     var segment = tracer.addSegment(name, customRecorder)
     return tracer.callbackProxy(function () {
       var value = callback.apply(this, arguments)
@@ -402,6 +425,11 @@ API.prototype.createTracer = function createTracer(name, callback) {
       return value
     })
   } else {
+    logger.debug(
+      'createTracer called with %s (%s) outside of a transaction, unable to create tracer.',
+      name,
+      callback && callback.name
+    )
     return callback
   }
 }
@@ -412,10 +440,39 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     return callback
   }
 
+  var fail = false
+  if (!url) {
+    logger.warn('createWebTransaction called without an url')
+    fail = true
+  }
+
+  if (typeof callback !== 'function') {
+    logger.warn('createWebTransaction called with a callback arg that is not a function')
+    fail = true
+  }
+
+  if (fail) {
+    // If name is undefined but callback is defined we should make a best effort
+    // to return it so things don't crash.
+    return callback
+  }
+
+  logger.debug(
+    'creating web transaction generator %s (%s).',
+    url,
+    callback && callback.name
+  )
+
   var tracer  = this.agent.tracer
 
   return tracer.transactionNestProxy('web', tracer.segmentProxy(function(){
     var tx = tracer.getTransaction()
+    logger.debug(
+      'creating web transaction %s (%s) with transaction id: %s',
+      url,
+      callback && callback.name,
+      tx.id
+    )
     tx.partialName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + url
     tx.setName(url, 0)
     tx.webSegment = tracer.addSegment(url, recordWeb)
@@ -434,10 +491,43 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
     return callback
   }
 
+  var fail = false
+  if (!name) {
+    logger.warn('createBackgroundTransaction called without an url')
+    fail = true
+  }
+
+  if (typeof callback !== 'function') {
+    logger.warn('createBackgroundTransaction called with a callback arg that is not a function')
+    fail = true
+  }
+
+  if (fail) {
+    // If name is undefined but callback is defined we should make a best effort
+    // to return it so things don't crash.
+    return callback
+  }
+
+  logger.debug(
+    'creating background transaction generator %s:%s (%s)',
+    name,
+    group,
+    callback && callback.name
+  )
+
   var tracer  = this.agent.tracer
 
   return tracer.transactionNestProxy('bg', tracer.segmentProxy(function(){
     var tx = tracer.getTransaction()
+
+    logger.debug(
+      'creating background transaction %s:%s (%s) with transaction id: %s',
+      name,
+      group,
+      callback && callback.name,
+      tx.id
+    )
+
     tx.setBackgroundName(name, group)
     tx.bgSegment = tracer.addSegment(name, recordBackground)
     tx.bgSegment.partialName = group
@@ -456,14 +546,14 @@ API.prototype.endTransaction = function endTransaction() {
   var tx = tracer.getTransaction()
 
   if (tx) {
+    logger.debug('ending transaction with id: %s', tx.id)
     if (tx.webSegment) {
-      // Only exists for custom web transactions right now.
       tx.webSegment.markAsWeb(tx.url)
       tx.webSegment.end()
     }
     tx.end()
   } else {
-    logger.warn('endTransaction() called while not in a transaction.')
+    logger.debug('endTransaction() called while not in a transaction.')
   }
 }
 
