@@ -10,7 +10,7 @@ var path         = require('path')
   , sampler      = require('../../../lib/sampler.js')
   , configurator = require('../../../lib/config.js')
   , Agent        = require('../../../lib/agent.js')
-  , Transaction  = require('../../../lib/transaction.js')
+  , Transaction  = require('../../../lib/transaction')
   
 
 /*

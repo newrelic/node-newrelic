@@ -6,16 +6,16 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require('../lib/agent_helper.js')
   , API         = require('../../api.js')
-  , Metrics     = require('../../lib/metrics.js')
-  , Trace       = require('../../lib/transaction/trace.js')
-  , Transaction = require('../../lib/transaction.js')
+  , Metrics     = require('../../lib/metrics')
+  , Trace       = require('../../lib/transaction/trace')
+  , Transaction = require('../../lib/transaction')
   , hashes      = require('../../lib/util/hashes')
-  
+
 
 describe("Transaction", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -151,7 +151,7 @@ describe("Transaction", function () {
       var TRACE_NAME = 'Custom/Test06'
         , SLEEP_DURATION = 43
         , tt = new Transaction(agent)
-        
+
 
       tt.measure(TRACE_NAME, null, SLEEP_DURATION)
       tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5)
@@ -319,7 +319,7 @@ describe("Transaction", function () {
   describe("when setting apdex for key transactions", function () {
     var trans
       , metric
-      
+
 
     before(function () {
       trans = new Transaction(agent)

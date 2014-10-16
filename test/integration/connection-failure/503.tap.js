@@ -5,7 +5,7 @@ var path         = require('path')
   , nock         = require('nock')
   , configurator = require('../../../lib/config.js')
   , Agent        = require('../../../lib/agent.js')
-  , Transaction  = require('../../../lib/transaction.js')
+  , Transaction  = require('../../../lib/transaction')
   
 
 nock.disableNetConnect()

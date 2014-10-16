@@ -6,14 +6,14 @@ var path   = require('path')
   , expect = chai.expect
   , helper = require('../../lib/agent_helper.js')
   , API    = require('../../../api.js')
-  
+
 
 describe("the New Relic agent API", function () {
   var URL     = '/test/path/31337'
     , NAME    = 'WebTransaction/Uri/test/path/31337'
     , agent
     , api
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -58,7 +58,7 @@ describe("the New Relic agent API", function () {
     describe("in the simplest case", function () {
       var segment
         , transaction
-        
+
 
       beforeEach(function (done) {
         agent.on('transactionFinished', function (t) {
@@ -174,7 +174,7 @@ describe("the New Relic agent API", function () {
     describe("in the simplest case", function () {
       var segment
         , transaction
-        
+
 
       beforeEach(function (done) {
         agent.on('transactionFinished', function (t) {
@@ -704,6 +704,81 @@ describe("the New Relic agent API", function () {
         api.noticeError('busted, bro', {a : 1, steak : 'sauce'})
         transaction.end()
       })
+    })
+  })
+
+  describe('when recording custom metrics', function () {
+    it('it should aggregate metric values', function () {
+      agent.config.feature_flag.custom_metrics = true
+      api.recordMetric('/Custom/metric/thing', 3)
+      api.recordMetric('/Custom/metric/thing', 4)
+      api.recordMetric('/Custom/metric/thing', 5)
+
+      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+
+      expect(metric.total).equal(12)
+      expect(metric.totalExclusive).equal(12)
+      expect(metric.min).equal(3)
+      expect(metric.max).equal(5)
+      expect(metric.sumOfSquares).equal(50)
+      expect(metric.callCount).equal(3)
+      agent.config.feature_flag.custom_metrics = false
+    })
+
+    it('it should merge metrics', function () {
+      agent.config.feature_flag.custom_metrics = true
+      api.recordMetric('/Custom/metric/thing', 3)
+      api.recordMetric('/Custom/metric/thing', {
+        total: 9,
+        min: 4,
+        max: 5,
+        sumOfSquares: 41,
+        callCount: 2
+      })
+
+      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+
+      expect(metric.total).equal(12)
+      expect(metric.totalExclusive).equal(12)
+      expect(metric.min).equal(3)
+      expect(metric.max).equal(5)
+      expect(metric.sumOfSquares).equal(50)
+      expect(metric.callCount).equal(3)
+      agent.config.feature_flag.custom_metrics = false
+    })
+
+    it('it should increment properly', function () {
+      agent.config.feature_flag.custom_metrics = true
+      api.incrementMetric('/Custom/metric/thing')
+      api.incrementMetric('/Custom/metric/thing')
+      api.incrementMetric('/Custom/metric/thing')
+
+      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+
+      expect(metric.total).equal(3)
+      expect(metric.totalExclusive).equal(3)
+      expect(metric.min).equal(1)
+      expect(metric.max).equal(1)
+      expect(metric.sumOfSquares).equal(3)
+      expect(metric.callCount).equal(3)
+
+      api.incrementMetric('/Custom/metric/thing', 4)
+      api.incrementMetric('/Custom/metric/thing', 5)
+
+
+      expect(metric.total).equal(12)
+      expect(metric.totalExclusive).equal(12)
+      expect(metric.min).equal(1)
+      expect(metric.max).equal(5)
+      expect(metric.sumOfSquares).equal(44)
+      expect(metric.callCount).equal(5)
+      agent.config.feature_flag.custom_metrics = false
+    })
+
+    it('should not blow up when disabled', function () {
+      agent.config.feature_flag.custom_metrics = false
+      api.incrementMetric('/Custom/metric/thing')
+      api.recordMetric('/Custom/metric/thing', 3)
     })
   })
 })

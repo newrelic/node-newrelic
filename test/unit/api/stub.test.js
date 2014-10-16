@@ -14,8 +14,8 @@ describe("the stubbed New Relic agent API", function () {
     api = new API()
   })
 
-  it("should export 11 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(12)
+  it("should export 14 API calls", function () {
+    expect(Object.keys(api.constructor.prototype).length).equal(14)
   })
 
   it("exports a transaction naming function", function () {
@@ -137,5 +137,15 @@ describe("the stubbed New Relic agent API", function () {
     expect(function () {
       api.endTransaction()
     }).not.throws()
+  })
+
+  it('exports a metric recording function', function () {
+    should.exist(api.recordMetric)
+    expect(api.recordMetric).a('function')
+  })
+
+  it('exports a metric increment function', function () {
+    should.exist(api.setTransactionName)
+    expect(api.setTransactionName).a('function')
   })
 })

@@ -557,4 +557,66 @@ API.prototype.endTransaction = function endTransaction() {
   }
 }
 
+API.prototype.recordMetric = function recordMetric(name, value) {
+  // FLAG: custom_metrics
+  if (!this.agent.config.feature_flag.custom_metrics) {
+    return
+  }
+
+  if(typeof name !== 'string') {
+    logger.warn('Metric name must be a string')
+    return
+  }
+
+  var metric = this.agent.metrics.getOrCreateMetric(name)
+
+  if(typeof value === 'number') {
+    metric.recordValue(value)
+    return
+  }
+
+  if(typeof value !== 'object') {
+    logger.warn('Metric value must be either a number, or a metric object')
+    return
+  }
+
+  var stats = {}
+  var required = ['callCount', 'total', 'min', 'max', 'sumOfSquares']
+
+  for(var i = 0, l = required.length; i < l; ++i) {
+    if(typeof value[required[i]] !== 'number') {
+      logger.warn('Metric object must include ' + required[i] + ' as a number')
+      return
+    }
+
+    stats[required[i]] = value[required[i]]
+  }
+
+  if(typeof value.totalExclusive === 'number') {
+    stats.totalExclusive = value.totalExclusive
+  } else {
+    stats.totalExclusive = value.total
+  }
+
+  metric.merge(stats)
+}
+
+API.prototype.incrementMetric = function incrementMetric(name, value) {
+  // FLAG: custom_metrics
+  if (!this.agent.config.feature_flag.custom_metrics) {
+    return
+  }
+
+  if(!value && value !== 0) {
+    value = 1
+  }
+
+  if(typeof value !== 'number') {
+    logger.warn('Metric Increment value must be a number')
+    return
+  }
+
+  this.recordMetric(name, value)
+}
+
 module.exports = API

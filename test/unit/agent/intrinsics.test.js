@@ -4,7 +4,7 @@
 var helper = require('../../lib/agent_helper.js')
   , chai = require('chai')
   , assert = chai.assert
-  , Transaction = require('../../../lib/transaction.js')
+  , Transaction = require('../../../lib/transaction')
   , tests = require('../../lib/cross_agent_tests/cat_map.json')
   , _isValidReferringHash = require('../../../lib/instrumentation/core/http.js')._isValidReferringHash
 

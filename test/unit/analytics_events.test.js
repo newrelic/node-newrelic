@@ -5,7 +5,7 @@ var path         = require('path')
   , helper       = require('../lib/agent_helper.js')
   , chai         = require('chai')
   , expect       = chai.expect
-  , Transaction  = require('../../lib/transaction.js')
+  , Transaction  = require('../../lib/transaction')
   
 
 describe("when there are parameters on transaction", function () {

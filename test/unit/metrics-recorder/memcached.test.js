@@ -5,7 +5,7 @@ var path           = require('path')
   , expect         = chai.expect
   , helper         = require('../../lib/agent_helper.js')
   , recordMemcache = require('../../../lib/metrics/recorders/memcached.js')
-  , Transaction    = require('../../../lib/transaction.js')
+  , Transaction    = require('../../../lib/transaction')
   
 
 function makeSegment(options) {

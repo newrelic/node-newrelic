@@ -5,7 +5,7 @@ var path        = require('path')
   , expect      = chai.expect
   , helper      = require('../../lib/agent_helper.js')
   , recordRedis = require('../../../lib/metrics/recorders/redis.js')
-  , Transaction = require('../../../lib/transaction.js')
+  , Transaction = require('../../../lib/transaction')
   
 
 function makeSegment(options) {
