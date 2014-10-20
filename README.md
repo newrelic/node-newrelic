@@ -6,7 +6,8 @@ This package instruments your application for performance monitoring
 with [New Relic](http://newrelic.com).
 
 This is a new product. You should try it in your staging or development
-environment first to verify it works for you.
+environment first to verify it works for you. 
+_Note: This module does not work in a Docker container._
 
 Make sure you have a [New Relic account](http://newrelic.com) before
 starting. To see all the features, such as slow transaction traces, you will
