@@ -4,7 +4,7 @@ var path   = require ('path')
   , tap    = require('tap')
   , test   = tap.test
   , helper = require('../../lib/agent_helper')
-  
+
 
 // connect is a loudmouth without this
 process.env.NODE_ENV = 'test'
@@ -16,7 +16,7 @@ test("intercepting errors with connect 2", function (t) {
     var agent   = helper.instrumentMockedAgent()
       , connect = require('connect')
       , app     = connect()
-      
+
 
     this.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
@@ -49,7 +49,7 @@ test("intercepting errors with connect 2", function (t) {
     var agent   = helper.instrumentMockedAgent()
       , connect = require('connect')
       , app     = connect()
-      
+
 
     this.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
@@ -79,7 +79,7 @@ test("intercepting errors with connect 2", function (t) {
     var agent   = helper.instrumentMockedAgent()
       , connect = require('connect')
       , app     = connect()
-      
+
 
     this.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
@@ -93,8 +93,10 @@ test("intercepting errors with connect 2", function (t) {
     }
 
     var stubReq = {
-      url : '/test',
-      method : 'GET'
+      url: '/test',
+      method: 'GET',
+      unpipe: new Function(),
+      resume: new Function()
     }
 
     var stubRes = {
