@@ -6,6 +6,7 @@ var chai         = require('chai')
   , EventEmitter = require('events').EventEmitter
   , helper       = require('../../../lib/agent_helper')
   , hashes       = require('../../../../lib/util/hashes')
+  , semver       = require('semver')
 
 
 var NEWRELIC_ID_HEADER = 'x-newrelic-id'
@@ -270,6 +271,10 @@ describe("built-in http module instrumentation", function () {
       should.exist(mochaHandlers)
       expect(mochaHandlers.length).above(0)
     })
+
+    // Uncaught errors only handled in 0.9 and above, skip the rest of this
+    // block
+    if (!semver.satisfies(process.versions.node, '>=0.9.0')) return
 
     describe("for http.createServer", function () {
       it("should trace errors in top-level handlers", function (done) {
@@ -593,12 +598,13 @@ describe("built-in http module instrumentation", function () {
     it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
       helper.runInTransaction(agent, function() {
         addSegment() // Add webSegment so everything works properly
-        http.get({host : 'localhost', port : 4123}, function(res) {
-          expect(res.req.getHeader(NEWRELIC_ID_HEADER)).equal('o123')
+        var req = http.request({host : 'localhost', port : 4123}, function(res) {
+          expect(req.getHeader(NEWRELIC_ID_HEADER)).equal('o123')
           res.resume()
           agent.getTransaction().end()
           done()
-        }).end()
+        })
+        req.end()
       })
     })
 
@@ -616,9 +622,9 @@ describe("built-in http module instrumentation", function () {
           transaction.referringPathHash
         )
 
-        http.get({host : 'localhost', port : 4123}, function(res) {
+        var req = http.get({host : 'localhost', port : 4123}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
-            res.req.getHeader(NEWRELIC_TRANSACTION_HEADER),
+            req.getHeader(NEWRELIC_TRANSACTION_HEADER),
             encKey
           ))
           expect(data[0]).equal('456')
@@ -628,7 +634,8 @@ describe("built-in http module instrumentation", function () {
           res.resume()
           transaction.end()
           done()
-        }).end()
+        })
+        req.end()
       })
     })
 
@@ -639,16 +646,17 @@ describe("built-in http module instrumentation", function () {
         transaction.id = '456'
         transaction.tripId = null
 
-        http.get({host : 'localhost', port : 4123}, function(res) {
+        var req = http.get({host : 'localhost', port : 4123}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
-            res.req.getHeader(NEWRELIC_TRANSACTION_HEADER),
+            req.getHeader(NEWRELIC_TRANSACTION_HEADER),
             encKey
           ))
           expect(data[2]).equal('456')
           res.resume()
           transaction.end()
           done()
-        }).end()
+        })
+        req.end()
       })
     })
 
@@ -665,16 +673,17 @@ describe("built-in http module instrumentation", function () {
           transaction.referringPathHash
         )
 
-        http.get({host : 'localhost', port : 4123}, function(res) {
+        var req = http.get({host : 'localhost', port : 4123}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
-            res.req.getHeader(NEWRELIC_TRANSACTION_HEADER),
+            req.getHeader(NEWRELIC_TRANSACTION_HEADER),
             encKey
           ))
           expect(data[3]).equal(pathHash)
           res.resume()
           transaction.end()
           done()
-        }).end()
+        })
+        req.end()
       })
     })
     it('should save current pathHash', function(done) {

@@ -8,6 +8,7 @@ var path         = require('path')
   , config       = require('../../lib/config.default')
   , ErrorTracer  = require('../../lib/error')
   , Transaction  = require('../../lib/transaction')
+  , semver       = require('semver')
   
 
 function createTransaction(agent, code) {
@@ -809,7 +810,9 @@ describe("ErrorTracer", function () {
       , transaction
       , active
       , json
-      
+
+    // Everything after this only works on 0.9 or later
+    if (!semver.satisfies(process.versions.node, '>=0.9.0')) return
 
     before(function (done) {
       agent = helper.loadMockedAgent()
