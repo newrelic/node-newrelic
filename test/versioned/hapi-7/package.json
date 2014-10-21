@@ -1,0 +1,20 @@
+{
+  "name": "hapi-4",
+  "version": "0.0.0",
+  "description": "tests for Hapi 2",
+  "main": "hapi-render.tap.js",
+  "scripts": {
+    "test": "tap hapi-render.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "dependencies": {
+    "hapi": "^7",
+    "ejs": "~0.8.5"
+  },
+  "devDependencies": {
+    "tap": "*",
+    "request": "*"
+  },
+  "private": true
+}
