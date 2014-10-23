@@ -1,3 +1,11 @@
+### v1.12.2 (2014-10-23)
+
+* Fixed a bug that would cause the application to crash on outbound connections
+  when using node 0.8.
+
+* Fixed a bug that could sometimes cause the application to crash while parsing
+  MySQL queries.
+
 ### v1.12.1 (2014-10-16)
 
 * Added support for Label Categories
@@ -27,7 +35,7 @@
   transactions are ended. It will also log when it can't create a tracer due
   to there being no active transaction.
 
-* Fixed a bug in PostgreSQL instrumentation where the event emitter from
+* Fixed a bug in QL instrumentation where the event emitter from
   `query`   could not chain `.on` calls. This patch was contributed by
   [sebastianhoitz](https://github.com/sebastianhoitz).
 
