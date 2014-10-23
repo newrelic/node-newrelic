@@ -29,13 +29,16 @@ need a New Relic Pro subscription (or equivalent).
    required. Some features (e.g. error tracing) depend in whole or in
    part on features in 0.10 and above. Development work on the module is
    being done against the latest released non-development version of Node.
-2. Install this module via `npm install newrelic` for the application you
+2. Verify your version of node came with a new enough version of npm using
+   `npm -v`. We require version 1.4.28 at the very least, and recommend using
+   the latest release. Read more about [upgrading npm here](#upgrading-npm).
+3. Install this module via `npm install newrelic` for the application you
    want to monitor.
-3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
+4. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
    your application.
-4. Edit `newrelic.js` and replace `license_key`'s value with the license key
+5. Edit `newrelic.js` and replace `license_key`'s value with the license key
    for your account.
-5. Add `require('newrelic');` as the first line of the app's main module.
+6. Add `require('newrelic');` as the first line of the app's main module.
 
 If you wish to keep the configuration for the module separate from your
 application, the module will look for newrelic.js in the directory referenced
@@ -50,6 +53,20 @@ New Relic. The module will write its log to a file named `newrelic_agent.log`
 in the application directory. If New Relic doesn't send data or crashes your
 app, the log can help New Relic determine what went wrong, so be sure to send
 it along with any bug reports or support requests.
+
+### Upgrading npm
+
+If you're running on a version of npm before 1.4.28, or are interested in moving
+up to latest follow these steps:
+
+1. Run `npm -v` to make sure you have npm installed and working.
+2. If you are on linux/smartos/osx/*nix run `ls -l $(which npm)` and check to
+   see if the file is owned by "root" or "admin". If so, prefix the next command
+   with `sudo`.
+3. Run `npm install -g npm@latest` to upgrade npm itself.
+
+**Warning**: an existing installation of npm can break if it is used to upgrade
+itself without root privileges while the npm executable is owned by root.
 
 ## Browser timings (RUM / Real User Monitoring)
 
