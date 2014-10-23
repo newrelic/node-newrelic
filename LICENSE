@@ -293,9 +293,11 @@ Root Certificate License Agreement v3.0 (January 2014)
 The New Relic Node.js agent also uses code from the following open source
 projects under the following licenses:
 
+async-listener              http://opensource.org/licenses/BSD-2-Clause
 bunyan                      http://opensource.org/licenses/MIT
 continuation-local-storage  http://opensource.org/licenses/BSD-2-Clause
-async-listener              http://opensource.org/licenses/BSD-2-Clause
 emitter-listener            http://opensource.org/licenses/BSD-2-Clause
+json-stringify-safe         http://opensource.org/licenses/BSD-2-Clause
+proxying-agent              http://opensource.org/licenses/MIT
 shimmer                     http://opensource.org/licenses/BSD-2-Clause
 yakaa                       http://opensource.org/licenses/MIT

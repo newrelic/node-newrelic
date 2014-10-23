@@ -1,17 +1,16 @@
 'use strict'
 
-var path   = require('path')
-  , test   = require('tap').test
+var test   = require('tap').test
   , logger = require('../../../lib/logger')
   , helper = require('../../lib/agent_helper')
   , params = require('../../lib/params')
-  
+
 
 var DBUSER = 'test_user'
   , DBNAME = 'agent_integration'
-  
 
-test("SOME IMPORTANT TEST NAME",
+
+test("Basic run through mysql functionality",
      {timeout : 30 * 1000},
      function (t) {
   // t.plan(9);
@@ -21,7 +20,7 @@ test("SOME IMPORTANT TEST NAME",
     var agent = helper.instrumentMockedAgent()
     var mysql   = require('mysql')
       , generic = require('generic-pool')
-      
+
 
     /*
      *
