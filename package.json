@@ -58,7 +58,7 @@
     "bunyan": "0.14.6",
     "continuation-local-storage": "^3.1.0",
     "json-stringify-safe": "^5.0.0",
-    "proxying-agent": "^0.1.5",
+    "proxying-agent": "^0.1.6",
     "yakaa": "^1.0.0"
   },
   "bundledDependencies": [
