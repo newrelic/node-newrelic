@@ -112,5 +112,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/newrelic/node-newrelic.git"
+  },
+  "optionalDependencies": {
+    "oracle": "^0.3.7"
   }
 }

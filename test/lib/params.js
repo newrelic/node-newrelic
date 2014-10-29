@@ -20,4 +20,10 @@ module.exports = {
   postgres_pass: process.env.NR_NODE_TEST_POSTGRES_PASS || 'docker',
   postgres_db: process.env.NR_NODE_TEST_POSTGRES_DB || 'docker',
 
+  oracle_host: process.env.NR_NODE_TEST_ORACLE_HOST || 'localhost',
+  oracle_port: process.env.NR_NODE_TEST_ORACLE_PORT || 1521,
+  oracle_user: process.env.NR_NODE_TEST_ORACLE_USER || 'docker',
+  oracle_pass: process.env.NR_NODE_TEST_ORACLE_PASS || 'docker',
+  oracle_db: process.env.NR_NODE_TEST_ORACLE_DB || 'xe'
+
 }
