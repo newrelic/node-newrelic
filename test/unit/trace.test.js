@@ -8,7 +8,7 @@ var path        = require('path')
   , Segment     = require('../../lib/transaction/trace/segment')
   , Trace       = require('../../lib/transaction/trace')
   , Transaction = require('../../lib/transaction')
-  
+
 
 describe('Trace', function () {
   var agent
@@ -151,7 +151,7 @@ describe('Trace', function () {
   describe("when inserting segments", function () {
     var trace
       , transaction
-      
+
 
     beforeEach(function () {
       transaction = new Transaction(agent)
@@ -249,6 +249,20 @@ describe('Trace', function () {
       child2.setDurationInMillis(11, now + 22)
 
       expect(trace.getExclusiveDurationInMillis()).equal(9)
+    })
+
+    it('should be limited to 900 children', function () {
+      for(var i = 0; i < 950; ++i) {
+        trace.add(i.toString(), noop)
+      }
+
+      expect(trace.root.children.length).equal(900)
+      expect(trace.recorders.length).equal(950)
+      trace.segmentCount = 0
+      trace.root.children = []
+      trace.recorders = []
+
+      function noop(){}
     })
   })
 })
