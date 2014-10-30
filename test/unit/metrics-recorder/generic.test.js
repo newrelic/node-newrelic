@@ -6,7 +6,7 @@ var path          = require('path')
   , helper        = require('../../lib/agent_helper')
   , recordGeneric = require('../../../lib/metrics/recorders/generic')
   , Transaction   = require('../../../lib/transaction')
-  
+
 
 function makeSegment(options) {
   var segment = options.transaction.getTrace().root.add('placeholder')
@@ -21,7 +21,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   recordGeneric(segment, options.transaction.name)
@@ -30,7 +30,7 @@ function record(options) {
 describe("recordGeneric", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -93,14 +93,13 @@ describe("recordGeneric", function () {
       , parent = root.add('Test/Parent',    recordGeneric)
       , child1 = parent.add('Test/Child/1', recordGeneric)
       , child2 = parent.add('Test/Child/2', recordGeneric)
-      
+
 
     root.setDurationInMillis(30, 0)
     parent.setDurationInMillis(30, 0)
     child1.setDurationInMillis(12, 3)
     child2.setDurationInMillis(8, 17)
 
-    trans.end()
 
     var result = [
       [{name : "Test/Parent"},  [1,0.030,0.010,0.030,0.030,0.000900]],
@@ -108,6 +107,8 @@ describe("recordGeneric", function () {
       [{name : "Test/Child/2"}, [1,0.008,0.008,0.008,0.008,0.000064]]
     ]
 
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    trans.end(function() {
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    })
   })
 })

@@ -5,7 +5,7 @@ var path     = require('path')
   , test     = require('tap').test
   , helper   = require('../../lib/agent_helper')
   , params   = require('../../lib/params')
-  
+
 
 /*
  *
@@ -180,7 +180,7 @@ function runWithDB(context, t, callback) {
   var mongodb = require('mongodb')
     , server  = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true})
     , db      = mongodb.Db('integration', server, {safe : true})
-    
+
 
   context.tearDown(function cb_tearDown() {
     db.close(true, function (error) {
@@ -250,9 +250,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.ok(agent.getTransaction(), "transaction should still be visible")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'insert')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'insert')
+              })
             })
           })
         })
@@ -267,9 +267,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
             collection.insert(hanx)
 
             setTimeout(function () {
-              transaction.end()
-
-              verifyTrace(t, transaction, 'insert')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'insert')
+              })
             }, 100)
           })
         })
@@ -336,9 +336,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                 t.ok(agent.getTransaction(), "transaction should still be visible")
 
-                transaction.end()
-
-                verifyTrace(t, transaction, 'find')
+                transaction.end(function() {
+                  verifyTrace(t, transaction, 'find')
+                })
               })
             })
           })
@@ -357,9 +357,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.ok(agent.getTransaction(), "transaction should still be visible")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'find')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'find')
+              })
             })
           })
         })
@@ -379,9 +379,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.ok(agent.getTransaction(), "transaction should still be visible")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'find')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'find')
+              })
             })
           })
         })
@@ -402,9 +402,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                 t.ok(result, "should have gotten back results")
                 cursor.nextObject(cb_nextObject)
               } else {
-                transaction.end()
-
-                verifyTrace(t, transaction, 'find')
+                transaction.end(function() {
+                  verifyTrace(t, transaction, 'find')
+                })
               }
             }
 
@@ -427,9 +427,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.ok(agent.getTransaction(), "transaction should still be visible")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'find')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'find')
+              })
             })
           })
         })
@@ -491,9 +491,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.ok(agent.getTransaction(), "transaction should still be visible")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'findOne')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'findOne')
+              })
             })
           })
         })
@@ -548,9 +548,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               t.ok(doc, "should have gotten back the modified document")
               t.ok(doc.__findAndModify, "have evidence of modification")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'findAndModify')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'findAndModify')
+              })
             })
           })
         })
@@ -613,9 +613,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                   t.ok(doc, "should have gotten back the removed document")
                   t.equal(doc.id, 876, "should have evidence of removal")
 
-                  transaction.end()
-
-                  verifyTrace(t, transaction, 'findAndRemove')
+                  transaction.end(function() {
+                    verifyTrace(t, transaction, 'findAndRemove')
+                  })
                 })
               })
             })
@@ -680,9 +680,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(numberModified, 2, "should have modified 2 documents")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'update')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'update')
+              })
             })
           })
         })
@@ -708,9 +708,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                   t.ok(doc.feeblers, "expected value found")
                 })
 
-                transaction.end()
-
-                verifyTraceNoCallback(t, transaction, 'update', 'find')
+                transaction.end(function() {
+                  verifyTraceNoCallback(t, transaction, 'update', 'find')
+                })
               })
             }, 100)
           })
@@ -786,9 +786,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
               t.ok(result._id, "should have evidence that it saved")
               t.ok(result.__saved, "should have evidence we got our original document")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'save')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'save')
+              })
             })
           })
         })
@@ -811,9 +811,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                 t.equal(docs.length, 1, "should have only found one document")
                 t.equal(docs[0].id, 555, "should have evidence it's the same document")
 
-                transaction.end()
-
-                verifyTraceNoCallback(t, transaction, 'save', 'find')
+                transaction.end(function() {
+                  verifyTraceNoCallback(t, transaction, 'save', 'find')
+                })
               })
             }, 100)
           })
@@ -883,9 +883,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(count, 8, "should have found 8 documents")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'count')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'count')
+              })
             })
           })
         })
@@ -934,9 +934,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(distinctSet.length, 8, "should have found 8 documents")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'distinct')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'distinct')
+              })
             })
           })
         })
@@ -985,9 +985,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(name, 'id_1', "should have created an index")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'createIndex')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'createIndex')
+              })
             })
           })
         })
@@ -1036,9 +1036,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(name, 'id_1', "should have found an index")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'ensureIndex')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'ensureIndex')
+              })
             })
           })
         })
@@ -1087,9 +1087,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(result, true, "should have found an index")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'reIndex')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'reIndex')
+              })
             })
           })
         })
@@ -1138,9 +1138,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(result.nIndexesWas, 2, "should have dropped an index")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'dropIndex')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'dropIndex')
+              })
             })
           })
         })
@@ -1189,9 +1189,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(result, true, "should have dropped the indexes")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'dropAllIndexes')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'dropAllIndexes')
+              })
             })
           })
         })
@@ -1241,9 +1241,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
               t.equal(removed, 1, "should have removed 1 document from collection")
 
-              transaction.end()
-
-              verifyTrace(t, transaction, 'remove')
+              transaction.end(function() {
+                verifyTrace(t, transaction, 'remove')
+              })
             })
           })
         })
@@ -1263,9 +1263,9 @@ test("agent instrumentation of node-mongodb-native", function (t) {
 
                 t.notOk(nope, "should have removed document with id 2 from collection")
 
-                transaction.end()
-
-                verifyTraceNoCallback(t, transaction, 'remove', 'count')
+                transaction.end(function() {
+                  verifyTraceNoCallback(t, transaction, 'remove', 'count')
+                })
               })
             })
           })

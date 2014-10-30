@@ -150,11 +150,10 @@ module.exports = function runTests(agent, pg, name) {
                 t.ok(agent.getTransaction(), 'transaction should still still be visible')
                 t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-                transaction.end()
-
-                client.end()
-
-                verify(t, transaction)
+                transaction.end(function() {
+                  client.end()
+                  verify(t, transaction)
+                })
               })
             })
           })
@@ -201,11 +200,10 @@ module.exports = function runTests(agent, pg, name) {
               query.on('end', function() {
                 t.ok(agent.getTransaction(), 'transaction should still still be visible')
 
-                transaction.end()
-
-                client.end()
-
-                verify(t, transaction)
+                transaction.end(function() {
+                  client.end()
+                  verify(t, transaction)
+                })
               })
             })
           })
@@ -252,11 +250,10 @@ module.exports = function runTests(agent, pg, name) {
               query.addListener('end', function() {
                 t.ok(agent.getTransaction(), 'transaction should still still be visible')
 
-                transaction.end()
-
-                client.end()
-
-                verify(t, transaction)
+                transaction.end(function() {
+                  client.end()
+                  verify(t, transaction)
+                })
               })
             })
           })
@@ -291,11 +288,10 @@ module.exports = function runTests(agent, pg, name) {
                 t.ok(agent.getTransaction(), 'transaction should still still be visible')
                 t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-                transaction.end()
-
-                done()
-
-                verify(t, transaction)
+                transaction.end(function() {
+                  done()
+                  verify(t, transaction)
+                })
               })
             })
           })

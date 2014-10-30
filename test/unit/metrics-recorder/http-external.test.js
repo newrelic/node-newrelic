@@ -6,7 +6,7 @@ var path             = require('path')
   , helper           = require('../../lib/agent_helper')
   , generateRecorder = require('../../../lib/metrics/recorders/http_external')
   , Transaction      = require('../../../lib/transaction')
-  
+
 
 function recordExternal(segment, scope) {
   return generateRecorder('test.example.com', 'http')(segment, scope)
@@ -25,7 +25,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   recordExternal(segment, options.transaction.name)
@@ -34,7 +34,7 @@ function record(options) {
 describe("recordExternal", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -103,14 +103,12 @@ describe("recordExternal", function () {
       , parent = root.add('/parent',   recordExternal)
       , child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
       , child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
-      
+
 
     root.setDurationInMillis(  32,  0)
     parent.setDurationInMillis(32,  0)
     child1.setDurationInMillis(15, 10)
     child2.setDurationInMillis( 2,  1)
-
-    trans.end()
 
     var result = [
       [{name : "External/test.example.com/http"},   [1,0.032,0.015,0.032,0.032,0.001024]],
@@ -123,6 +121,8 @@ describe("recordExternal", function () {
       [{name : "External/oauth.facebook.com/all"},  [1,0.002,0.002,0.002,0.002,0.000004]]
     ]
 
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    trans.end(function(){
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    })
   })
 })

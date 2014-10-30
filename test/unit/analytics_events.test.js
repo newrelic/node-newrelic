@@ -6,12 +6,12 @@ var path         = require('path')
   , chai         = require('chai')
   , expect       = chai.expect
   , Transaction  = require('../../lib/transaction')
-  
+
 
 describe("when there are parameters on transaction", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -110,45 +110,43 @@ describe("on transaction finished", function () {
   it("should generate an event from transaction", function () {
     var trans = new Transaction(agent)
 
-    trans.end()
+    trans.end(function() {
+      expect(agent.events.toArray().length).to.equal(1)
 
-    expect(agent.events.toArray().length).to.equal(1)
-
-    var event = agent.events.toArray()[0]
-    expect(event).to.be.a('Array')
-    expect(event[0]).to.be.a('object')
-    expect(event[0].webDuration).to.be.a('number')
-    expect(event[0].webDuration).to.equal(trans.timer.duration)
-    expect(event[0].timestamp).to.be.a('number')
-    expect(event[0].timestamp).to.equal(trans.timer.start)
-    expect(event[0].name).to.equal(trans.name)
-    expect(event[0].duration).to.equal(trans.timer.duration)
-    expect(event[0].type).to.equal('Transaction')
+      var event = agent.events.toArray()[0]
+      expect(event).to.be.a('Array')
+      expect(event[0]).to.be.a('object')
+      expect(event[0].webDuration).to.be.a('number')
+      expect(event[0].webDuration).to.equal(trans.timer.duration)
+      expect(event[0].timestamp).to.be.a('number')
+      expect(event[0].timestamp).to.equal(trans.timer.start)
+      expect(event[0].name).to.equal(trans.name)
+      expect(event[0].duration).to.equal(trans.timer.duration)
+      expect(event[0].type).to.equal('Transaction')
+    })
   })
 
   it("should contain user and agent attirbutes", function () {
     var trans = new Transaction(agent)
 
-    trans.end()
+    trans.end(function() {
+      expect(agent.events.toArray().length).to.equal(1)
 
-    expect(agent.events.toArray().length).to.equal(1)
-
-    var event = agent.events.toArray()[0]
-    expect(event[0]).to.be.a('Object')
-    expect(event[1]).to.be.a('Object')
-    expect(event[2]).to.be.a('Object')
+      var event = agent.events.toArray()[0]
+      expect(event[0]).to.be.a('Object')
+      expect(event[1]).to.be.a('Object')
+      expect(event[2]).to.be.a('Object')
+    })
   })
 
   it("should contain custom parameters", function () {
     var trans = new Transaction(agent)
 
     trans.getTrace().custom['a'] = 'b'
-    trans.end()
-
-    var event = agent.events.toArray()[0]
-
-    expect(event[1].a).equals('b')
-
+    trans.end(function() {
+      var event = agent.events.toArray()[0]
+      expect(event[1].a).equals('b')
+    })
   })
 
   it("not spill over reservoir size", function () {

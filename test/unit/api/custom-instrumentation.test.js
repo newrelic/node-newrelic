@@ -4,7 +4,7 @@ var path   = require('path')
   , expect = require('chai').expect
   , helper = require('../../lib/agent_helper.js')
   , API    = require('../../../api.js')
-  
+
 
 describe('The custom instrumentation API', function () {
   var agent
@@ -138,6 +138,22 @@ describe('The custom instrumentation API', function () {
         expect(value).to.be.equal('something')
       })
     })
+
+    it('should include end time if transaction ends in callback', function (done) {
+      agent.on('transactionFinished', function (transaction) {
+        var segment = transaction.getTrace().root.children[0]
+        expect(segment.getDurationInMillis()).greaterThan(1)
+        done()
+      })
+
+      helper.runInTransaction(agent, function (transaction) {
+        var markedFunction = api.createTracer('custom:segment', function () {
+          transaction.end()
+        })
+        setTimeout(markedFunction, 0)
+      })
+    })
+
   })
 
   describe('when creating a web transaction', function () {

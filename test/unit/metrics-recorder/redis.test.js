@@ -6,7 +6,7 @@ var path        = require('path')
   , helper      = require('../../lib/agent_helper.js')
   , recordRedis = require('../../../lib/metrics/recorders/redis.js')
   , Transaction = require('../../../lib/transaction')
-  
+
 
 function makeSegment(options) {
   var segment = options.transaction.getTrace().root.add('Datastore/operation/Redis/set')
@@ -23,7 +23,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   recordRedis(segment, options.transaction.name)
@@ -32,7 +32,7 @@ function record(options) {
 describe("recordRedis", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -107,14 +107,13 @@ describe("recordRedis", function () {
       , parent = root.add('Datastore/operation/Redis/ladd',     recordRedis)
       , child1 = parent.add('Datastore/operation/Redis/blpopr', recordRedis)
       , child2 = child1.add('Datastore/operation/Redis/lpop',   recordRedis)
-      
+
 
     root.setDurationInMillis(  32,  0)
     parent.setDurationInMillis(32,  0)
     child1.setDurationInMillis(16, 11)
     child2.setDurationInMillis( 5,  2)
 
-    trans.end()
 
     var result = [
       [{name : "Datastore/operation/Redis/ladd"},   [1,0.032,0.011,0.032,0.032,0.001024]],
@@ -124,6 +123,8 @@ describe("recordRedis", function () {
       [{name : "Datastore/operation/Redis/lpop"},   [1,0.005,0.005,0.005,0.005,0.000025]]
     ]
 
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    trans.end(function() {
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    })
   })
 })

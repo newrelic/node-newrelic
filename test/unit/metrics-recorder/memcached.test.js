@@ -6,7 +6,7 @@ var path           = require('path')
   , helper         = require('../../lib/agent_helper.js')
   , recordMemcache = require('../../../lib/metrics/recorders/memcached.js')
   , Transaction    = require('../../../lib/transaction')
-  
+
 
 function makeSegment(options) {
   var segment = options.transaction.getTrace().root
@@ -24,7 +24,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   recordMemcache(segment, options.transaction.name)
@@ -33,7 +33,7 @@ function record(options) {
 describe("recordMemcached", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -107,14 +107,13 @@ describe("recordMemcached", function () {
       , parent = root.add('Datastore/operation/Memcache/get',     recordMemcache)
       , child1 = parent.add('Datastore/operation/Memcache/set',   recordMemcache)
       , child2 = parent.add('Datastore/operation/Memcache/clear', recordMemcache)
-      
+
 
     root.setDurationInMillis(  32,  0)
     parent.setDurationInMillis(32,  0)
     child1.setDurationInMillis(15, 10)
     child2.setDurationInMillis( 2,  1)
 
-    trans.end()
 
     var result = [
       [{name : "Datastore/operation/Memcache/get"},
@@ -129,6 +128,8 @@ describe("recordMemcached", function () {
         [1,0.002,0.002,0.002,0.002,0.000004]]
     ]
 
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    trans.end(function(){
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    })
   })
 })
