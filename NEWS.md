@@ -1,4 +1,27 @@
-### v1.12.2 (2014-10-23)
+### v1.13.0 (2014-10-31):
+
+* Added support for Custom Metrics
+
+  Custom metrics provides a way to send additional metrics up to New Relic APM,
+  which can be viewed with Custom Dashboards. We have two APIs for this,
+  recordMetric(name, value) and incrementMetric(name[, value]). Read more about
+  this in our docs:
+  https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-custom-metrics
+
+* Fixed a bug in deeply nested transactions.
+
+  Previously we allowed transactions to be nested to any depth. We've found in
+  some cases this causes stack depth problems and are now limiting to 900
+  segments per transaction. We will still collect metrics on all segments, but
+  transaction traces will only show the first 900.
+
+* Fixed a bug where custom tracers would show 0 time if the transaction ended n
+  them.
+
+  This may change the times you see for other types of tracers by a small
+  amount. The change will reflect slightly more accurate timing.
+
+### v1.12.2 (2014-10-23):
 
 * Fixed a bug that would cause the application to crash on outbound connections
   when using node 0.8.
@@ -6,7 +29,7 @@
 * Fixed a bug that could sometimes cause the application to crash while parsing
   MySQL queries.
 
-### v1.12.1 (2014-10-16)
+### v1.12.1 (2014-10-16):
 
 * Added support for Label Categories
 
