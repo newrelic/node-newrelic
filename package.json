@@ -33,6 +33,11 @@
       "name": "Michael Hayes",
       "email": "mhayes@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Jeff Olfert",
+      "email": "jolfert@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
