@@ -7,16 +7,17 @@ chai.should()
 
 // please do not delete flags from here
 var used = [
-  'express4',
-  'insights',
-  'released',
-  'unreleased',
-  'proxy',
+  'cat',
+  'custom_events',
   'custom_instrumentation',
   'custom_metrics',
+  'express4',
+  'insights',
   'mysql_pool',
   'postgres',
-  'cat'
+  'proxy',
+  'released',
+  'unreleased',
 ]
 
 describe("feature flags", function () {
