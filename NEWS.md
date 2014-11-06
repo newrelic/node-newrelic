@@ -1,10 +1,14 @@
-### v1.13.1 (2014-11-06):
+### v1.13.2 (2014-11-06):
 
 * Updated support for hapi 7.2 and higher.
 
   Hapi refactored how the server is instantiated and caused the agent to not be
   able to get transaction names. This release accounts for the update and
   enables full instrumentation.
+
+### v1.13.1 (2014-11-06):
+
+* This release was unpublished as it got packaged incorrectly.
 
 ### v1.13.0 (2014-10-31):
 
