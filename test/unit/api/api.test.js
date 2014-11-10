@@ -733,7 +733,7 @@ describe("the New Relic agent API", function () {
         min: 4,
         max: 5,
         sumOfSquares: 41,
-        callCount: 2
+        count: 2
       })
 
       var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
@@ -755,23 +755,23 @@ describe("the New Relic agent API", function () {
 
       var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
 
-      expect(metric.total).equal(3)
-      expect(metric.totalExclusive).equal(3)
-      expect(metric.min).equal(1)
-      expect(metric.max).equal(1)
-      expect(metric.sumOfSquares).equal(3)
+      expect(metric.total).equal(0)
+      expect(metric.totalExclusive).equal(0)
+      expect(metric.min).equal(0)
+      expect(metric.max).equal(0)
+      expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(3)
 
       api.incrementMetric('/Custom/metric/thing', 4)
       api.incrementMetric('/Custom/metric/thing', 5)
 
 
-      expect(metric.total).equal(12)
-      expect(metric.totalExclusive).equal(12)
-      expect(metric.min).equal(1)
-      expect(metric.max).equal(5)
-      expect(metric.sumOfSquares).equal(44)
-      expect(metric.callCount).equal(5)
+      expect(metric.total).equal(0)
+      expect(metric.totalExclusive).equal(0)
+      expect(metric.min).equal(0)
+      expect(metric.max).equal(0)
+      expect(metric.sumOfSquares).equal(0)
+      expect(metric.callCount).equal(12)
       agent.config.feature_flag.custom_metrics = false
     })
 

@@ -453,6 +453,24 @@ Timing is from when `createTracer` is called until the `handle` done executing.
 This should be called inside of a transaction to get data. If it is called
 outside of a transaction it will just pass through.
 
+#### newrelic.recordMetric(name, value)
+
+`name` is the metric name to record, it must be a string that begins with
+`Custom/` typically followed by segments for `category` and `label`.
+(eg.`Custom/my_category/my_label`).
+`value` is either a numerical value to associate with the metric sample,
+or an object representing multiple samples for the metric. If `value` is
+an object, it must include keys for `count`, `total`, `min`, `max`, and
+`sumOfSquares`.
+
+#### newrelic.api.incrementMetric(name[, amount])
+
+`name` is the metric name to record, it must be a string that beings with
+`Custom/` typically followed by segments for `category` and `label`.
+(eg.`Custom/my_category/my_label`).
+`amount` is optional, but must be an integer if provided.  `amount` is
+the number of times to increment the metrics `count`, it defaults to 1.
+
 ### The fine print
 
 This is the Node-specific version of New Relic's transaction naming API

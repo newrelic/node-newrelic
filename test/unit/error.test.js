@@ -9,7 +9,7 @@ var path         = require('path')
   , ErrorTracer  = require('../../lib/error')
   , Transaction  = require('../../lib/transaction')
   , semver       = require('semver')
-  
+
 
 function createTransaction(agent, code) {
   var transaction = new Transaction(agent)
@@ -247,7 +247,7 @@ describe("ErrorTracer", function () {
   describe("with no error and a transaction with status code", function () {
     var agent
       , tracer
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -269,7 +269,7 @@ describe("ErrorTracer", function () {
     var agent
       , tracer
       , errorJSON
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -317,7 +317,7 @@ describe("ErrorTracer", function () {
       , tracer
       , errorJSON
       , params
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -416,7 +416,7 @@ describe("ErrorTracer", function () {
     var agent
       , tracer
       , errorJSON
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -463,7 +463,7 @@ describe("ErrorTracer", function () {
     var agent
       , tracer
       , errorJSON
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -471,7 +471,7 @@ describe("ErrorTracer", function () {
 
       var transaction = new Transaction(agent)
         , exception   = new TypeError('Dare to be different!')
-        
+
 
       tracer.add(transaction, exception)
       errorJSON = tracer.errors[0]
@@ -513,7 +513,7 @@ describe("ErrorTracer", function () {
       , tracer
       , errorJSON
       , params
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -522,7 +522,7 @@ describe("ErrorTracer", function () {
 
       var transaction = new Transaction(agent)
         , exception   = new TypeError('wanted JSON, got XML')
-        
+
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
 
@@ -577,7 +577,7 @@ describe("ErrorTracer", function () {
     var agent
       , tracer
       , errorJSON
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -585,7 +585,7 @@ describe("ErrorTracer", function () {
 
       var transaction = new Transaction(agent)
         , exception   = 'Dare to be different!'
-        
+
 
       tracer.add(transaction, exception)
       errorJSON = tracer.errors[0]
@@ -625,7 +625,7 @@ describe("ErrorTracer", function () {
       , tracer
       , errorJSON
       , params
-      
+
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -634,7 +634,7 @@ describe("ErrorTracer", function () {
 
       var transaction = new Transaction(agent)
         , exception   = 'wanted JSON, got XML'
-        
+
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
 
@@ -688,23 +688,25 @@ describe("ErrorTracer", function () {
     var agent
       , name = 'WebTransaction/Uri/test-request/zxrkbl'
       , error
-      
 
-    beforeEach(function () {
+
+    beforeEach(function (done) {
       agent = helper.loadMockedAgent()
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
         , exception   = new Error('500 test error')
-        
+
 
       transaction.exceptions.push(exception)
       transaction.url = '/test-request/zxrkbl'
       transaction.name = 'WebTransaction/Uri/test-request/zxrkbl'
       transaction.statusCode = 500
-      transaction.end()
+      transaction.end(function() {
+        error = tracer.errors[0]
+        done()
+      })
 
-      error = tracer.errors[0]
     })
 
     afterEach(function () {
@@ -744,9 +746,9 @@ describe("ErrorTracer", function () {
     var agent
       , name = 'WebTransaction/Uri/test-request/zxrkbl'
       , error
-      
 
-    beforeEach(function () {
+
+    beforeEach(function (done) {
       agent = helper.loadMockedAgent()
       tracer = agent.errors
 
@@ -754,9 +756,10 @@ describe("ErrorTracer", function () {
       transaction.url = '/test-request/zxrkbl'
       transaction.name = 'WebTransaction/Uri/test-request/zxrkbl'
       transaction.statusCode = 503
-      transaction.end()
-
-      error = tracer.errors[0]
+      transaction.end(function() {
+        error = tracer.errors[0]
+        done()
+      })
     })
 
     afterEach(function () {

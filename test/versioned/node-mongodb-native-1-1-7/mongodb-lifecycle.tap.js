@@ -5,12 +5,12 @@ var path   = require('path')
   , test   = tap.test
   , helper = require('../../lib/agent_helper')
   , params = require('../../lib/params')
-  
+
 
 // CONSTANTS
 var COLLECTION = 'test_1_1_7'
   , COLLECTION_CURSOR = COLLECTION + '_cursor'
-  
+
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
      {timeout : 15000},
@@ -99,31 +99,31 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
                 t.deepEquals(item, hunx, "MongoDB should still work.")
 
-                transaction.end()
+                transaction.end(function() {
+                  var trace = transaction.getTrace()
+                  t.ok(trace, "trace should exist.")
+                  t.ok(trace.root, "root element should exist.")
+                  t.equals(trace.root.children.length, 1,
+                           "There should be only one child.")
 
-                var trace = transaction.getTrace()
-                t.ok(trace, "trace should exist.")
-                t.ok(trace.root, "root element should exist.")
-                t.equals(trace.root.children.length, 1,
-                         "There should be only one child.")
+                  var insertSegment = trace.root.children[0]
+                  t.ok(insertSegment, "trace segment for insert should exist")
+                  t.equals(insertSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/insert",
+                           "should register the insert")
+                  t.equals(insertSegment.children.length, 1, "insert should have a child")
 
-                var insertSegment = trace.root.children[0]
-                t.ok(insertSegment, "trace segment for insert should exist")
-                t.equals(insertSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/insert",
-                         "should register the insert")
-                t.equals(insertSegment.children.length, 1, "insert should have a child")
+                  var findSegment = insertSegment.children[0]
+                  t.ok(findSegment, "trace segment for findOne should exist")
+                  t.equals(findSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/findOne",
+                           "should register the findOne")
+                  t.equals(findSegment.children.length, 0,
+                           "find should leave us here at the end")
 
-                var findSegment = insertSegment.children[0]
-                t.ok(findSegment, "trace segment for findOne should exist")
-                t.equals(findSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/findOne",
-                         "should register the findOne")
-                t.equals(findSegment.children.length, 0,
-                         "find should leave us here at the end")
+                  db.close(function cb_close(error) {
+                    if (error) t.fail(error)
 
-                db.close(function cb_close(error) {
-                  if (error) t.fail(error)
-
-                  t.end()
+                    t.end()
+                  })
                 })
               })
             })
@@ -219,12 +219,12 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
                   t.equals(results.length, 0, "should be no results")
 
-                  transaction.end()
+                  transaction.end(function() {
+                    db.close(function cb_close(error) {
+                      if (error) t.fail(error)
 
-                  db.close(function cb_close(error) {
-                    if (error) t.fail(error)
-
-                    t.end()
+                      t.end()
+                    })
                   })
                 })
               })

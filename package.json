@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "1.12.2",
+  "version": "1.13.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -33,6 +33,11 @@
       "name": "Michael Hayes",
       "email": "mhayes@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Jeff Olfert",
+      "email": "jolfert@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
@@ -58,7 +63,7 @@
     "bunyan": "0.14.6",
     "continuation-local-storage": "^3.1.0",
     "json-stringify-safe": "^5.0.0",
-    "proxying-agent": "^0.1.5",
+    "proxying-agent": "^0.1.6",
     "yakaa": "^1.0.0"
   },
   "bundledDependencies": [

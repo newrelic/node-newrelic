@@ -581,7 +581,8 @@ API.prototype.recordMetric = function recordMetric(name, value) {
   }
 
   var stats = {}
-  var required = ['callCount', 'total', 'min', 'max', 'sumOfSquares']
+  var required = ['count', 'total', 'min', 'max', 'sumOfSquares']
+  var keyMap = {count: 'callCount'}
 
   for(var i = 0, l = required.length; i < l; ++i) {
     if(typeof value[required[i]] !== 'number') {
@@ -589,7 +590,8 @@ API.prototype.recordMetric = function recordMetric(name, value) {
       return
     }
 
-    stats[required[i]] = value[required[i]]
+    var key = keyMap[required[i]] || required[i]
+    stats[key] = value[required[i]]
   }
 
   if(typeof value.totalExclusive === 'number') {
@@ -611,12 +613,18 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
     value = 1
   }
 
-  if(typeof value !== 'number') {
-    logger.warn('Metric Increment value must be a number')
+  if(typeof value !== 'number' || value % 1 !== 0) {
+    logger.warn('Metric Increment value must be an integer')
     return
   }
 
-  this.recordMetric(name, value)
+  this.recordMetric(name, {
+    count: value,
+    total: 0,
+    min: 0,
+    max: 0,
+    sumOfSquares: 0
+  })
 }
 
 module.exports = API

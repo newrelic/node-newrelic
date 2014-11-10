@@ -6,7 +6,7 @@ var path            = require('path')
   , helper          = require('../../lib/agent_helper')
   , ParsedStatement = require('../../../lib/db/parsed-statement')
   , Transaction     = require('../../../lib/transaction')
-  
+
 
 function makeSegment(options) {
   var segment = options.transaction.getTrace().root
@@ -33,7 +33,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   recordMySQL(segment, options.transaction.name)
@@ -42,7 +42,7 @@ function record(options) {
 describe("record ParsedStatement with MySQL", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -127,14 +127,13 @@ describe("record ParsedStatement with MySQL", function () {
                             makeRecorder('users', 'insert'))
       , child2 = child1.add('Datastore/statement/MySQL/cache/update',
                             makeRecorder('cache', 'update'))
-      
+
 
     root.setDurationInMillis(  32,  0)
     parent.setDurationInMillis(32,  0)
     child1.setDurationInMillis(16, 11)
     child2.setDurationInMillis( 5,  2)
 
-    trans.end()
 
     var result = [
       [{name : "Datastore/statement/MySQL/users/select"},
@@ -155,6 +154,8 @@ describe("record ParsedStatement with MySQL", function () {
        [1,0.005,0.005,0.005,0.005,0.000025]]
     ]
 
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    trans.end(function() {
+      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    })
   })
 })

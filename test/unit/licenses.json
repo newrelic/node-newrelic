@@ -4,7 +4,7 @@
   "continuation-local-storage": "BSD",
   "emitter-listener" : "BSD-2-Clause",
   "json-stringify-safe": "BSD",
-  "proxying-agent": "The MIT License",
+  "proxying-agent": "MIT",
   "shimmer" : "BSD",
   "yakaa" : "MIT"
 }
