@@ -97,7 +97,7 @@ describe("an instrumented Express application", function () {
 
 
         function finalizer() {
-          var json     = transaction.getTrace().root.toJSON()
+          var json     = transaction.trace.root.toJSON()
             , children = json[4]
             , render   = children[0]
             , name     = render[2]
@@ -126,7 +126,7 @@ describe("an instrumented Express application", function () {
         var res = http.ServerResponse.prototype
         expect(res.render.call(res, 'TEST', function () {
           process.nextTick(function cb_nextTick() {
-            var json     = transaction.getTrace().root.toJSON()
+            var json     = transaction.trace.root.toJSON()
               , children = json[4]
               , render   = children[0]
               , name     = render[2]
@@ -151,7 +151,7 @@ describe("an instrumented Express application", function () {
         expect(res.render.call(res, 'TEST')).equal('rendered')
 
         process.nextTick(function cb_nextTick() {
-          var json     = transaction.getTrace().root.toJSON()
+          var json     = transaction.trace.root.toJSON()
             , children = json[4]
             , render   = children[0]
             , name     = render[2]
@@ -238,7 +238,7 @@ describe("an instrumented Express application", function () {
         var res = stub.response
         expect(res.render.call(res, 'TEST', {}, function () {
           process.nextTick(function cb_nextTick() {
-            var json     = transaction.getTrace().root.toJSON()
+            var json     = transaction.trace.root.toJSON()
               , children = json[4]
               , render   = children[0]
               , name     = render[2]
@@ -261,7 +261,7 @@ describe("an instrumented Express application", function () {
         var res = stub.response
         expect(res.render.call(res, 'TEST', function () {
           process.nextTick(function cb_nextTick() {
-            var json     = transaction.getTrace().root.toJSON()
+            var json     = transaction.trace.root.toJSON()
               , children = json[4]
               , render   = children[0]
               , name     = render[2]
@@ -284,7 +284,7 @@ describe("an instrumented Express application", function () {
         var res = stub.response
         expect(res.render.call(res, 'TEST')).equal('rendered')
         process.nextTick(function cb_nextTick() {
-          var json     = transaction.getTrace().root.toJSON()
+          var json     = transaction.trace.root.toJSON()
             , children = json[4]
             , render   = children[0]
             , name     = render[2]

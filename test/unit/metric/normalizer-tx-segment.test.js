@@ -35,7 +35,6 @@ function runTest(data) {
 
   for (var j = 0; j < data.tests.length; j++) {
     var test = data.tests[j]
-    console.log(test)
     expect(normalizer.normalize(test.input)).equal(test.expected)
   }
 }

@@ -27,7 +27,7 @@ describe('synthetics transaction traces', function () {
       }
 
       txn.end(function () {
-        var trace = txn.getTrace()
+        var trace = txn.trace
         expect(trace.intrinsics['synthetics_resource_id']).equal('resId')
         expect(trace.intrinsics['synthetics_job_id']).equal('jobId')
         expect(trace.intrinsics['synthetics_monitor_id']).equal('monId')
@@ -49,7 +49,7 @@ describe('synthetics transaction traces', function () {
       }
 
       txn.end(function () {
-        var trace = txn.getTrace()
+        var trace = txn.trace
         expect(trace.intrinsics['synthetics_resource_id']).not.exist()
         expect(trace.intrinsics['synthetics_job_id']).not.exist()
         expect(trace.intrinsics['synthetics_monitor_id']).not.exist()

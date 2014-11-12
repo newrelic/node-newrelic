@@ -4,7 +4,7 @@ var path   = require('path')
   , test   = require('tap').test
   , helper = require('../../lib/agent_helper')
   , params = require('../../lib/params')
-  
+
 
 // CONSTANTS
 var DB_COLLECTION = 'test_express'
@@ -23,7 +23,9 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
     , Server       = mongodb.Server
     , Db           = mongodb.Db
     , Collection   = mongodb.Collection
-    
+
+  process.nr_agent = agent
+
 
   function find(id, next) {
     t.ok(agent.getTransaction(), "tracer state visible at start of find")
@@ -71,7 +73,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
           var item       = req.body[i]
             , collection = (item.type === 'star') ? obj.star : obj.seen
             , index      = collection.indexOf(item.id)
-            
+
 
           if (item.status) {
             if (index === -1) {
@@ -108,7 +110,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       , methodOverride = express.methodOverride()
       , router         = app.router
       , errorHandler   = express.errorHandler()
-      
+
 
 
     app.configure(function cb_configure() {
@@ -201,9 +203,9 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       }
 
       function verifier(transaction) {
-        var trace    = transaction.getTrace()
+        var trace    = transaction.trace
           , children = trace.root.children || []
-          
+
 
         t.equal(children.length, 1, "only one child of root node")
 
@@ -212,19 +214,35 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
                 "first segment is web transaction")
 
         children = web.children || []
-        t.equal(children.length, 1, "only one child of web node")
+        t.equal(children.length, 1, "should have a MongoDB connection child")
 
-        var find = children[0] || {}
-        t.equal(find.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/find',
-                "second segment is MongoDB find")
+        var connect = children[0]
+        children = connect.children[1].children
+        t.equal(
+          connect.name,
+          'Datastore/operation/MongoDB/connect',
+          "only segment is MongoDB connect"
+        )
 
-        children = find.children || []
-        t.equal(children.length, 1, "only one child of find node")
+        var nextObject = children[0]
+        t.equal(nextObject.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/nextObject',
+                "last segment is MongoDB nextObject")
+
+        children = nextObject.children || []
+        t.equal(children.length, 1, "should have a MongoDB connection child")
+
+        var connect = children[0].children[0]
+        children = connect.children[1].children
+        t.equal(
+          connect.name,
+          'Datastore/operation/MongoDB/connect',
+          "only segment is MongoDB connect"
+        )
 
         var update = children[0] || {}
         t.equal(update.name, 'Datastore/statement/MongoDB/' + DB_COLLECTION + '/update',
                 "third segment is MongoDB update")
-        t.equal((update.children || []).length, 0, "no children of update node")
+        t.equal((update.children || []).length, 1, "should have a callback")
       }
 
       agent.on('transactionFinished', verifier)

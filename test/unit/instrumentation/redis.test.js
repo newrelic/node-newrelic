@@ -1,12 +1,12 @@
 'use strict'
 
-var path         = require('path')
-  , chai         = require('chai')
-  , expect       = chai.expect
-  , should       = chai.should()
-  , sinon        = require('sinon')
-  , helper       = require('../../lib/agent_helper')
-  
+var path = require('path')
+var chai = require('chai')
+var expect = chai.expect
+var should = chai.should()
+var sinon = require('sinon')
+var helper = require('../../lib/agent_helper')
+
 
 function FakeConnection () {
   this.writable = true
@@ -34,11 +34,11 @@ FakeConnection.prototype.setKeepAlive = function setKeepAlive(keepAlive){
 
 FakeConnection.prototype.write = function write() {}
 
-describe("agent instrumentation of Redis", function () {
-  describe("shouldn't cause bootstrapping to fail", function () {
+describe('agent instrumentation of Redis', function () {
+  describe('shouldn\'t cause bootstrapping to fail', function () {
     var agent
-      , initialize
-      
+    var initialize
+
 
     before(function () {
       agent = helper.loadMockedAgent()
@@ -49,29 +49,22 @@ describe("agent instrumentation of Redis", function () {
       helper.unloadAgent(agent)
     })
 
-    it("when passed no module", function () {
+    it('when passed no module', function () {
       expect(function () { initialize(agent); }).not.throws()
     })
 
-    it("when passed a module with no RedisClient present.", function () {
+    it('when passed a module with no RedisClient present.', function () {
       expect(function () { initialize(agent, {}); }).not.throws()
     })
   })
 
-  describe("for each operation", function () {
-    it("should update the global aggregate statistics")
-    it("should also update the global web aggregate statistics")
-    it("should update the aggregate statistics for the operation type")
-    it("should update the scoped aggregate statistics for the operation type")
-  })
-
   // Redis has a lot of commands, and this is not all of them.
-  describe("should instrument", function () {
+  describe('should instrument', function () {
     var agent
-      , client
-      , connection
-      , mockConnection
-      
+    var client
+    var connection
+    var mockConnection
+
 
     beforeEach(function () {
       agent = helper.instrumentMockedAgent()
@@ -90,7 +83,7 @@ describe("agent instrumentation of Redis", function () {
       helper.unloadAgent(agent)
     })
 
-    it("PING", function (done) {
+    it('PING', function (done) {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once()
 
       agent.once('transactionFinished', function (transaction) {
@@ -108,7 +101,7 @@ describe("agent instrumentation of Redis", function () {
           if (error) return done(error)
 
           should.exist(agent.getTransaction())
-          expect(results, "PING should still work").equal('PONG')
+          expect(results, 'PING should still work').equal('PONG')
         })
 
         should.exist(connection.on_data)
@@ -118,7 +111,7 @@ describe("agent instrumentation of Redis", function () {
       })
     })
 
-    it("PING without callback", function (done) {
+    it('PING without callback', function (done) {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once()
 
       agent.once('transactionFinished', function (transaction) {
@@ -141,7 +134,7 @@ describe("agent instrumentation of Redis", function () {
       })
     })
 
-    it("PING with callback in array", function (done) {
+    it('PING with callback in array', function (done) {
       mockConnection
         .expects('write')
         .withExactArgs('*3\r\n$4\r\nping\r\n$1\r\n1\r\n$1\r\n2\r\n')
@@ -162,7 +155,7 @@ describe("agent instrumentation of Redis", function () {
           if (error) return done(error)
 
           should.exist(agent.getTransaction())
-          expect(results, "PING should still work").equal('PONG')
+          expect(results, 'PING should still work').equal('PONG')
         })
 
         should.exist(connection.on_data)
@@ -172,7 +165,7 @@ describe("agent instrumentation of Redis", function () {
       })
     })
 
-    it("PING with no callback in array", function (done) {
+    it('PING with no callback in array', function (done) {
       mockConnection
         .expects('write')
         .withExactArgs('*3\r\n$4\r\nping\r\n$1\r\n1\r\n$1\r\n2\r\n')
@@ -197,32 +190,5 @@ describe("agent instrumentation of Redis", function () {
         transaction.end()
       })
     })
-
-    it("SET")
-    it("HSET")
-    it("MSET")
-    it("SETNX")
-    it("HSETNX")
-    it("MSETNX")
-    it("HMSET")
-    it("GET")
-    it("HGET")
-    it("HGETALL")
-    it("MGET")
-    it("HMGET")
-    it("DEL")
-    it("HDEL")
-    it("EXISTS")
-    it("HEXISTS")
-    it("EXPIRE")
-    it("EXPIREAT")
-    it("PUBLISH")
-    it("SUBSCRIBE")
-    it("UNSUBSCRIBE")
-    it("SUNION")
-    it("SUNIONSTORE")
-    it("AUTH")
-    it("PERSIST")
-    it("BITCOUNT")
   })
 })

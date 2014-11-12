@@ -1,19 +1,18 @@
 'use strict'
 
-var path   = require('path')
-  , test   = require('tap').test
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
-  
+var path = require('path')
+var test = require('tap').test
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
+
 
 /*
  * CONSTANTS
  */
 var SESSION_SECRET = 'hecknope'
-  , SESSION_ID     = 'deadbeef'
-  , ROOM_ID        = 'abad1d3a'
-  , DB_INDEX       = 1
-  
+var SESSION_ID = 'deadbeef'
+var ROOM_ID = 'abad1d3a'
+var DB_INDEX = 1
 
 
 /* Ensure Passport session is set up
@@ -45,7 +44,7 @@ function getUsersInRoom(req, client, next) {
         var msnData  = userKey.split(':')
           , username = msnData.length > 1 ? msnData[1] : msnData[0]
           , provider = msnData.length > 1 ? msnData[0] : 'twitter'
-          
+
 
         users.push({
           username : username,
@@ -65,7 +64,7 @@ function getPublicRoomsInfo(client, next) {
   client.smembers('test:public:rooms', function (err, publicRooms) {
     var rooms = []
       , len   = publicRooms.length
-      
+
 
     if (!len) next([])
 
@@ -123,14 +122,14 @@ function bootstrapExpress(client) {
     , passport   = require('passport')
     , RedisStore = require('connect-redis')(express)
     , app        = express()
-    
+
 
   passport.deserializeUser(function cb_deserializeUser(id, done) {
     done(null, {provider : 'twitter', username : id})
   })
 
   app.set('view engine', 'jade')
-  app.set('views',       path.join(__dirname, 'views'))
+  app.set('views', path.join(__dirname, 'views'))
 
   app.use(express.bodyParser())
   app.use(express.cookieParser(SESSION_SECRET))
@@ -200,7 +199,7 @@ function populate(client, next) {
 function makeCookie() {
   var cookie = require('cookie')
     , signer = require('cookie-signature')
-    
+
 
   return cookie.serialize('test', 's:' + signer.sign(SESSION_ID, SESSION_SECRET))
 }
@@ -218,7 +217,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
     , redis        = require('redis')
     , createServer = require('http').createServer
     , request      = require('request')
-    
+
 
   // need to capture parameters
   agent.config.capture_params = true
@@ -232,7 +231,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
     var client = redis.createClient(params.redis_port, params.redis_host)
       , server = createServer(bootstrapExpress(client)).listen(31337)
-      
+
 
     self.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
@@ -249,7 +248,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
 
       agent.on('transactionFinished', function verifier(transaction) {
         var key
-        var trace = transaction.getTrace()
+        var trace = transaction.trace
         var children = trace.root.children || []
         t.equal(trace.root.children.length, 1, "root has one child")
 
@@ -264,20 +263,24 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         t.equal(get.name, 'Datastore/operation/Redis/get', "first child segment is get")
         t.equal(key, '["sess:' + SESSION_ID + '"]',
                 "operation is session load")
-        t.equal((get.children || {}).length, 0, "get has no children")
+        t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
         var hgetall = children[1] || {}
         key = (hgetall.parameters || {}).key
-        children = hgetall.children || []
+
+        children = hgetall.children[0].children || []
         t.equal(hgetall.name, 'Datastore/operation/Redis/hgetall',
                 "second child segment is hgetall")
         t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
                 "operation is room info load")
-        t.equal(children.length, 1, "hgetall has one child")
+        t.equal(
+          children.length, 1,
+          "hgetall callback has one child"
+        )
 
         var smembers = children[0] || {}
         key = (smembers.parameters || {}).key
-        children = smembers.children || []
+        children = smembers.children[0].children || []
         t.equal(smembers.name, 'Datastore/operation/Redis/smembers',
                 "hgetall child is smembers")
         t.equal(key, '["rooms:' + ROOM_ID + ':online"]',
@@ -292,25 +295,25 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         t.equal(get.name, 'Datastore/operation/Redis/get',
                 "first smembers child is get")
         t.like(key, users, "fetched status of user")
-        t.equal((get.children || {}).length, 0, "get has no children")
+        t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
         get = children[1] || {}
         key = (get.parameters || {}).key
         t.equal(get.name, 'Datastore/operation/Redis/get',
                 "second smembers child is get")
         t.like(key, users, "fetched status of user")
-        t.equal((get.children || {}).length, 0, "get has no children")
+        t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
         get = children[2] || {}
         key = (get.parameters || {}).key
         t.equal(get.name, 'Datastore/operation/Redis/get',
                 "third smembers child is get")
         t.like(key, users, "fetched status of user")
-        t.equal((get.children || {}).length, 0, "get has no children")
+        t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
         smembers = children[3] || {}
         key = (smembers.parameters || {}).key
-        children = smembers.children || []
+        children = smembers.children[0].children || []
         t.equal(smembers.name, 'Datastore/operation/Redis/smembers',
                 "fourth child is smembers")
         t.equal(key, '["test:public:rooms"]',
@@ -324,27 +327,26 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
                 "child segment is hgetall")
         t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
                 "operation is room info load")
-        t.equal(children.length, 1, "hgetall has one child")
+        t.ok(children.length >= 1, "hgetallhave a callback segment")
 
-        get = children[0] || {}
+        get = children[0].children[0] || {}
         key = (get.parameters || {}).key
-        children = get.children || []
+        children = get.children[0].children || []
         t.equal(get.name, 'Datastore/operation/Redis/get', "first hgetall child is get")
         t.equal(key, '["users:twitter:othiym23:status"]',
                 "fetched status of othiym23")
-        t.equal(children.length, 1, "get has two children")
+        t.ok(children.length >= 2, "get has two children")
 
         var view = children[0] || {}
         t.equal(view.name, 'View/room/Rendering', "get child is render of room view")
-        t.equal((view.children || {}).length, 1, "view has one child")
-        children = view.children || []
+        t.equal((view.children || {}).length, 0, "has no children")
 
-        var setex = children[0] || {}
+        var setex = children[1] || {}
         key = (setex.parameters || {}).key
         t.equal(setex.name, 'Datastore/operation/Redis/setex', "view child is setex")
         t.equal(key, '["sess:' + SESSION_ID + '"]',
                 "updated session status")
-        t.equal((setex.children || {}).length, 0, "setex has no children")
+        t.equal((setex.children || {}).length, 1, "setex has a callback segment")
       })
 
       var jar = request.jar()

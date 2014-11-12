@@ -12,7 +12,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
   , API     = require(path.join('..', '..', '..', 'api.js'))
-  
+
 
 var TEST_PATH = '/test'
   , TEST_PORT = 9876
@@ -27,7 +27,7 @@ var TEST_PATH = '/test'
                 "  <p>I heard u like HTML.</p>\n" +
                 "</body>\n" +
                 "</html>\n"
-  
+
 
 test("agent instrumentation of Hapi", function (t) {
   t.plan(4)
@@ -36,7 +36,7 @@ test("agent instrumentation of Hapi", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
       , server = hapi.createServer(TEST_HOST, TEST_PORT)
-      
+
 
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
@@ -94,7 +94,7 @@ test("agent instrumentation of Hapi", function (t) {
        function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      
+
 
     var options = {
       views : {
@@ -141,7 +141,7 @@ test("agent instrumentation of Hapi", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
       , api    = new API(agent)
-      
+
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
@@ -192,7 +192,7 @@ test("agent instrumentation of Hapi", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
       , server = hapi.createServer(TEST_HOST, TEST_PORT)
-      
+
 
     server.route({
       method  : 'GET',
@@ -212,12 +212,18 @@ test("agent instrumentation of Hapi", function (t) {
 
         var errors = agent.errors.errors
         t.ok(errors, "errors were found")
-        t.equal(errors.length, 1, "Only one error thrown.")
+        t.equal(errors.length, 2, "should be 2 errors")
 
         var first = errors[0]
+        var second = errors[1]
         t.ok(first, "have the first error")
 
         t.equal(first[2], "Cannot read property 'ohno' of undefined",
+                "got the expected error")
+
+        t.ok(second, "have the second error")
+
+        t.equal(second[2], "HttpError 500",
                 "got the expected error")
 
         server.stop(function () {

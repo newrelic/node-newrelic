@@ -125,7 +125,7 @@ describe("an instrumented Hapi application", function () {
           method : 'GET',
           path : '/nonexistent',
           handler : function handler() {
-            expect(transaction.getTrace().root.parameters).eql({
+            expect(transaction.trace.root.parameters).eql({
               id                           : '31337',
               type                         : 'box',
               nr_exclusive_duration_millis : null

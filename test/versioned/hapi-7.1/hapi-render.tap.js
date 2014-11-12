@@ -208,12 +208,18 @@ test("agent instrumentation of Hapi", function (t) {
 
         var errors = agent.errors.errors
         t.ok(errors, "errors were found")
-        t.equal(errors.length, 1, "Only one error thrown.")
+        t.equal(errors.length, 2, "should be 2 errors")
 
         var first = errors[0]
+        var second = errors[1]
         t.ok(first, "have the first error")
 
         t.equal(first[2], "Cannot read property 'ohno' of undefined",
+                "got the expected error")
+
+        t.ok(second, "have the second error")
+
+        t.equal(second[2], "HttpError 500",
                 "got the expected error")
 
         server.stop(function () {

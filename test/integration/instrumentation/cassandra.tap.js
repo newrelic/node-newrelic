@@ -1,23 +1,22 @@
 'use strict'
 
-var path   = require('path')
-  , tap    = require('tap')
-  , async  = require('async')
-  , params = require('../../lib/params')
-  , test   = tap.test
-  , helper = require('../../lib/agent_helper')
-  
+var tap = require('tap')
+var async = require('async')
+var params = require('../../lib/params')
+var test = tap.test
+var helper = require('../../lib/agent_helper')
 
-var agent      = helper.instrumentMockedAgent()
-  , cassandra  = require('node-cassandra-cql')
-  , client     = new cassandra.Client({hosts: [params.cassandra_host  + ":"
+
+var agent = helper.instrumentMockedAgent()
+var cassandra = require('node-cassandra-cql')
+var client = new cassandra.Client({hosts: [params.cassandra_host  + ":"
     + params.cassandra_port]})
 
 //constants for keyspace and table creation
-var KS  = 'test'
-  , FAM = 'testFamily'
-  , PK  = 'pk_column'
-  , COL = 'test_column'
+var KS = 'test'
+var FAM = 'testFamily'
+var PK = 'pk_column'
+var COL = 'test_column'
 
 
 /**
@@ -53,6 +52,7 @@ function cassSetup (runTest) {
       }
     ],
     function(err, results) {
+      console.log(err)
       if (err) {
        throw err
       }
@@ -110,28 +110,27 @@ test("Cassandra instrumentation",
             t.ok(agent.getTransaction(), "transaction should still still be visible")
             t.equals(value.rows[0][COL], colValArr[0], "Cassandra client should still work")
 
-            transaction.end()
+            var trace = transaction.trace
+            t.ok(trace, "trace should exist")
+            t.ok(trace.root, "root element should exist")
+            t.equals(trace.root.children.length, 1,
+                   "there should be only one child of the root")
 
-            setImmediate(function() {
-              var trace = transaction.getTrace()
-              t.ok(trace, "trace should exist")
-              t.ok(trace.root, "root element should exist")
-              t.equals(trace.root.children.length, 1,
-                     "there should be only one child of the root")
-              var setSegment = trace.root.children[0]
-              t.ok(setSegment, "trace segment for insert should exist")
-              t.equals(setSegment.name, "Datastore/operation/Cassandra/executeBatch",
-                     "should register the executeBatch")
-              t.equals(setSegment.children.length, 1,
-                     "set should have an only child")
-              var getSegment = setSegment.children[0]
-              t.ok(getSegment, "trace segment for select should exist")
-              t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
-                     "should register the execute")
-              t.equals(getSegment.children.length, 0,
-                     "get should leave us here at the end")
-              t.ok(getSegment._isEnded(), "trace segment should have ended")
+            var setSegment = trace.root.children[0]
+            t.ok(setSegment, "trace segment for insert should exist")
+            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeBatch",
+                   "should register the executeBatch")
+            t.ok(setSegment.children.length >= 2,
+                   "set should have atleast a dns lookup and callback child")
+            var getSegment = setSegment.children[1].children[0]
+            t.ok(getSegment, "trace segment for select should exist")
+            t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
+                   "should register the execute")
+            t.ok(getSegment.children.length >= 1,
+                   "get should have a callback segment")
+            t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
 
+            transaction.end(function() {
               t.end()
             })
           })
@@ -162,28 +161,26 @@ test("Cassandra instrumentation",
             t.ok(agent.getTransaction(), "transaction should still still be visible")
             t.equals(value.rows[0][COL], colVal, "Cassandra client should still work")
 
-            transaction.end()
+            var trace = transaction.trace
+            t.ok(trace, "trace should exist")
+            t.ok(trace.root, "root element should exist")
+            t.equals(trace.root.children.length, 1,
+                   "there should be only one child of the root")
+            var setSegment = trace.root.children[0]
+            t.ok(setSegment, "trace segment for set should exist")
+            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeAsPrepared",
+                   "should register the executeAsPrepared")
+            t.ok(setSegment.children.length >= 1,
+                   "set should have a callback segment")
+            var getSegment = setSegment.children[1].children[0]
+            t.ok(getSegment, "trace segment for get should exist")
+            t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
+                   "should register the execute")
+            t.ok(getSegment.children.length >= 1,
+                   "should have a callback")
+            t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
 
-            setImmediate(function() {
-              var trace = transaction.getTrace()
-              t.ok(trace, "trace should exist")
-              t.ok(trace.root, "root element should exist")
-              t.equals(trace.root.children.length, 1,
-                     "there should be only one child of the root")
-              var setSegment = trace.root.children[0]
-              t.ok(setSegment, "trace segment for set should exist")
-              t.equals(setSegment.name, "Datastore/operation/Cassandra/executeAsPrepared",
-                     "should register the executeAsPrepared")
-              t.equals(setSegment.children.length, 1,
-                     "set should have an only child")
-              var getSegment = setSegment.children[0]
-              t.ok(getSegment, "trace segment for get should exist")
-              t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
-                     "should register the execute")
-              t.equals(getSegment.children.length, 0,
-                     "get should leave us here at the end")
-              t.ok(getSegment._isEnded(), "trace segment should have ended")
-
+            transaction.end(function() {
               t.end()
             })
           })

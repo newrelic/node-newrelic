@@ -1,28 +1,27 @@
 'use strict'
 
-var path   = require('path')
-  , test   = require('tap').test
-  , logger = require('../../../lib/logger')
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
-  
+var test = require('tap').test
+var logger = require('../../../lib/logger')
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
+
 
 var DBUSER = 'test_user'
-  , DBNAME = 'agent_integration'
-  , DBTABLE = 'test'
-  
+var DBNAME = 'agent_integration'
+var DBTABLE = 'test'
 
-test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
+
+test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
      {timeout : 30 * 1000},
      function (t) {
-  t.plan(9)
+  t.plan(11)
 
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent()
     var mysql   = require('mysql')
       , generic = require('generic-pool')
-      
+
 
     /*
      *
@@ -47,14 +46,14 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
         })
 
         client.on('error', function (err) {
-          poolLogger.error("MySQL connection errored out, destroying connection")
+          poolLogger.error('MySQL connection errored out, destroying connection')
           poolLogger.error(err)
           pool.destroy(client)
         })
 
         client.connect(function cb_connect(err) {
           if (err) {
-            poolLogger.error("MySQL client failed to connect. Does database %s exist?",
+            poolLogger.error('MySQL client failed to connect. Does database %s exist?',
                              DBNAME)
           }
 
@@ -63,7 +62,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
       },
 
       destroy : function (client) {
-        poolLogger.info("Destroying MySQL connection")
+        poolLogger.info('Destroying MySQL connection')
         client.end()
       }
     })
@@ -75,14 +74,14 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
         pool.acquire(function cb_acquire(err, client) {
           if (err) {
-            poolLogger.error("Failed to get connection from the pool: %s", err)
+            poolLogger.error('Failed to get connection from the pool: %s', err)
 
             if (counter < 10) {
               pool.destroy(client)
               withRetry.getClient(callback, counter)
             }
             else {
-              return callback(new Error("Couldn't connect to DB after 10 attempts."))
+              return callback(new Error('Couldn\'t connect to DB after 10 attempts.'))
             }
           }
           else {
@@ -98,14 +97,14 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
     var dal = {
       lookup : function (params, callback) {
-        if (!params.id) return callback(new Error("Must include ID to look up."))
+        if (!params.id) return callback(new Error('Must include ID to look up.'))
 
         withRetry.getClient(function cb_getClient(err, client) {
           if (err) return callback(err)
 
-          client.query("SELECT *" +
-                       "  FROM " + DBNAME + '.' + DBTABLE +
-                       " WHERE id = ?",
+          client.query('SELECT *' +
+                       '  FROM ' + DBNAME + '.' + DBTABLE +
+                       ' WHERE id = ?',
                        [params.id],
                        function (err, results) {
             withRetry.release(client); // always release back to the pool
@@ -135,7 +134,7 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
      * TEST GOES HERE
      *
      */
-    t.notOk(agent.getTransaction(), "no transaction should be in play yet")
+    t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
       dal.lookup({id : 1}, function (error, row) {
         if (error) {
@@ -145,28 +144,34 @@ test("MySQL instrumentation with a connection pool and node-mysql 2.0+",
 
         var transaction = agent.getTransaction()
         if (!transaction) {
-          t.fail("transaction should be visible")
+          t.fail('transaction should be visible')
           return t.end()
         }
 
-        t.equals(row.id, 1, "node-mysql should still work (found id)")
+        t.equals(row.id, 1, 'node-mysql should still work (found id)')
         t.equals(row.test_value, 'hamburgefontstiv',
-                 "mysql driver should still work (found value)")
+                 'mysql driver should still work (found value)')
 
         transaction.end()
 
-        var trace = transaction.getTrace()
-        t.ok(trace, "trace should exist")
-        t.ok(trace.root, "root element should exist.")
-        t.equals(trace.root.children.length, 1, "There should be only one child.")
+        var trace = transaction.trace
+        t.ok(trace, 'trace should exist')
+        t.ok(trace.root, 'root element should exist.')
+        t.equals(trace.root.children.length, 2, 'There should be only one child.')
 
-        var selectSegment = trace.root.children[0]
-        t.ok(selectSegment, "trace segment for first SELECT should exist")
+        var selectSegment = trace.root.children[1]
+        t.ok(selectSegment, 'trace segment for first SELECT should exist')
         t.equals(selectSegment.name,
-                 "Datastore/statement/MySQL/agent_integration.test/select",
-                 "should register as SELECT")
-        t.equals(selectSegment.children.length, 0, "SELECT should have no children")
+                 'Datastore/statement/MySQL/agent_integration.test/select',
+                 'should register as SELECT')
 
+        t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
+        t.equals(selectSegment.children[0].name, 'Callback: anonymous')
+        t.equals(
+          selectSegment.children[0].children.length,
+          0,
+          'callback should not have children'
+        )
         t.end()
       })
     })

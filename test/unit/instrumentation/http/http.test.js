@@ -15,8 +15,6 @@ var NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
 
 describe("built-in http module instrumentation", function () {
   var http
-  var agent
-
 
   var PAYLOAD = JSON.stringify({msg : 'ok'})
 
@@ -27,7 +25,7 @@ describe("built-in http module instrumentation", function () {
 
   describe("shouldn't cause bootstrapping to fail", function () {
     var initialize
-
+    var agent
 
     before(function () {
       agent = helper.loadMockedAgent()
@@ -116,7 +114,7 @@ describe("built-in http module instrumentation", function () {
     var transaction
     var fetchedStatusCode
     var fetchedBody
-
+    var agent
 
     before(function (done) {
       http = require('http')
@@ -248,6 +246,7 @@ describe("built-in http module instrumentation", function () {
 
   describe("with error monitor", function () {
     var mochaHandlers
+    var agent
 
     before(function () {
       // disable mocha's error handler
@@ -701,7 +700,7 @@ describe("built-in http module instrumentation", function () {
         http.get({host : 'localhost', port : 4123}, function(res) {
           expect(transaction.pathHashes).deep.equal([pathHash])
           res.resume()
-          transaction.end()
+          transaction.end ()
           done()
         }).end()
       })
@@ -709,17 +708,20 @@ describe("built-in http module instrumentation", function () {
   })
 
   describe('request headers for outbound request', function () {
+    var agent
     it('should preserve headers regardless of format', function(done) {
       var encKey = 'gringletoes'
-      var agent = helper.instrumentMockedAgent(
+
+      agent = helper.instrumentMockedAgent(
         {cat: true},
         {encoding_key: encKey, obfuscatedId: 'o123'}
       )
+
       var http = require('http')
       var had_expect = 0
 
       var server = http.createServer(function(req, res) {
-        if(req.headers.expect) {
+        if (req.headers.expect) {
           had_expect++
           expect(req.headers.expect).equal('100-continue')
         }

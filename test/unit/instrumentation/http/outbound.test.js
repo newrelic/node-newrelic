@@ -10,7 +10,6 @@ var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumenta
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
 
-
 describe("instrumentOutbound", function () {
   var agent
   var HOSTNAME = 'localhost'
@@ -67,7 +66,7 @@ describe("instrumentOutbound", function () {
 
       req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
       instrumentOutbound(agent, req, HOSTNAME, PORT)
-      expect(transaction.getTrace().root.children[0].name).equal(name)
+      expect(transaction.trace.root.children[0].name).equal(name)
     })
   })
 
@@ -77,7 +76,7 @@ describe("instrumentOutbound", function () {
       agent.config.capture_params = true
       req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
       instrumentOutbound(agent, req, HOSTNAME, PORT)
-      expect(transaction.getTrace().root.children[0].parameters).deep.equal({
+      expect(transaction.trace.root.children[0].parameters).deep.equal({
         "a"                            : "b",
         "nr_exclusive_duration_millis" : null,
         "another"                      : "yourself",
@@ -103,7 +102,7 @@ describe("instrumentOutbound", function () {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
       instrumentOutbound(agent, req, HOSTNAME, PORT)
-      expect(transaction.getTrace().root.children[0].name).equal(name)
+      expect(transaction.trace.root.children[0].name).equal(name)
     })
   })
 
@@ -114,7 +113,7 @@ describe("instrumentOutbound", function () {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
       instrumentOutbound(agent, req, HOSTNAME, PORT)
-      expect(transaction.getTrace().root.children[0].name).equal(name)
+      expect(transaction.trace.root.children[0].name).equal(name)
     })
   })
 
@@ -214,7 +213,7 @@ describe('should add data from cat header to segment', function () {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getSegment()
+        var segment = agent.tracer.getTransaction().trace.root.children[1]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
@@ -231,7 +230,7 @@ describe('should add data from cat header to segment', function () {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getSegment()
+        var segment = agent.tracer.getTransaction().trace.root.children[1]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
@@ -306,6 +305,29 @@ describe("when working with http.request", function () {
         res.resume()
         transaction.end()
         done()
+      })
+    })
+  })
+
+  it('should start and end segment', function (done) {
+    var host = "http://www.google.com"
+    var path = "/index.html"
+    nock(host).get(path).reply(200, "Hello from Google")
+
+    helper.runInTransaction(agent, function (transaction) {
+      http.get("http://www.google.com/index.html", function (res) {
+        var segment = agent.tracer.getSegment()
+
+        expect(segment.timer.hrstart).instanceof(Array)
+        expect(segment.timer.hrDuration).equal(null)
+
+        res.resume()
+        res.on('end', function onEnd() {
+          expect(segment.timer.hrDuration).instanceof(Array)
+          expect(segment.timer.duration).above(0)
+          done()
+        })
+        transaction.end()
       })
     })
   })

@@ -1,15 +1,13 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , helper      = require('../../lib/agent_helper')
-  , recordWeb   = require('../../../lib/metrics/recorders/http')
-  , Transaction = require('../../../lib/transaction')
-  
+var chai = require('chai')
+var expect = chai.expect
+var helper = require('../../lib/agent_helper')
+var recordWeb = require('../../../lib/metrics/recorders/http')
+var Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root.add('placeholder')
+  var segment = options.transaction.trace.root.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -21,7 +19,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   segment.markAsWeb(options.url)
@@ -31,7 +29,7 @@ function record(options) {
 describe("recordWeb", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()

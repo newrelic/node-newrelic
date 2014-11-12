@@ -6,7 +6,7 @@ var path       = require('path')
   , http       = require('http')
   , helper     = require('../../lib/agent_helper.js')
   , StreamSink = require('../../../lib/util/stream-sink.js')
-  
+
 
 test("built-in http instrumentation should handle internal & external requests",
      function (t) {
@@ -24,7 +24,7 @@ test("built-in http instrumentation should handle internal & external requests",
                            '<head><title>test response</title></head>' +
                            '<body><p>I heard you like HTML.</p></body>' +
                            '</html>'
-    
+
 
   var external = http.createServer(function cb_createServer(request, response) {
     response.writeHead(200,
@@ -95,7 +95,7 @@ test("built-in http instrumentation should handle internal & external requests",
       var scope = 'WebTransaction/NormalizedUri/*'
         , stats = agent.metrics.getOrCreateMetric(scope)
         , found = false
-        
+
 
       t.equals(stats.callCount, 2,
                "should record unscoped path stats after a normal request")
@@ -144,7 +144,7 @@ test("built-in http instrumentation should handle internal & external requests",
 
 test("built-in http instrumentation shouldn't swallow errors",
      function (t) {
-  t.plan(3)
+  t.plan(8)
 
   var agent = helper.instrumentMockedAgent()
 
@@ -170,8 +170,23 @@ test("built-in http instrumentation shouldn't swallow errors",
     }
 
     http.get(options, function (res) {
-      t.equal(agent.errors.errors.length, 1, "should have recorded an error")
       t.equal(res.statusCode, 501, "got expected (error) status code")
+
+      var errors = agent.errors.errors
+      t.ok(errors, "errors were found")
+      t.equal(errors.length, 2, "should be 2 errors")
+
+      var first = errors[0]
+      var second = errors[1]
+      t.ok(first, "have the first error")
+
+      t.equal(first[2], "Cannot read property 'dieshere' of undefined",
+              "got the expected error")
+
+      t.ok(second, "have the second error")
+
+      t.equal(second[2], "HttpError 501",
+              "got the expected error")
 
       t.end()
     })

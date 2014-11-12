@@ -1,13 +1,12 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , helper      = require('../lib/agent_helper')
-  , codec       = require('../../lib/util/codec')
-  , Segment     = require('../../lib/transaction/trace/segment')
-  , Trace       = require('../../lib/transaction/trace')
-  , Transaction = require('../../lib/transaction')
+var chai = require('chai')
+var expect = chai.expect
+var helper = require('../lib/agent_helper')
+var codec = require('../../lib/util/codec')
+var Segment = require('../../lib/transaction/trace/segment')
+var Trace = require('../../lib/transaction/trace')
+var Transaction = require('../../lib/transaction')
 
 
 describe('Trace', function () {
@@ -21,7 +20,7 @@ describe('Trace', function () {
     helper.unloadAgent(agent)
   })
 
-  it("should always be bound to a transaction", function () {
+  it('should always be bound to a transaction', function () {
     // fail
     var transam
     expect(function () {
@@ -29,21 +28,24 @@ describe('Trace', function () {
     }).throws(/must be associated with a transaction/)
 
     // succeed
-    var tt = new Trace(new Transaction(agent))
+    var transaction = new Transaction(agent)
+    var tt = new Trace(transaction)
     expect(tt.transaction).instanceof(Transaction)
   })
 
-  it("should have the root of a Segment tree", function () {
+  it('should have the root of a Segment tree', function () {
     var tt = new Trace(new Transaction(agent))
     expect(tt.root).instanceof(Segment)
   })
 
-  it("should be the primary interface for adding segments to a trace", function () {
-    var trace = new Trace(new Transaction(agent))
-    expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws()
+  it('should be the primary interface for adding segments to a trace', function () {
+    var transaction = new Transaction(agent)
+    var trace = transaction.trace
+
+    expect(function () { trace.add('Custom/Test17/Child1') }).not.throws()
   })
 
-  it("should produce a transaction trace in the collector's expected format",
+  it('should produce a transaction trace in the collector\'s expected format',
      function (done) {
     var DURATION = 33
     var URL = '/test?test=value'
@@ -53,9 +55,9 @@ describe('Trace', function () {
     transaction.url  = URL
     transaction.verb = 'GET'
 
-    var trace = transaction.getTrace()
+    var trace = transaction.trace
     var start = trace.root.timer.start
-    expect(start, "root segment's start time").above(0)
+    expect(start, 'root segment\'s start time').above(0)
     trace.setDurationInMillis(DURATION, 0)
 
     var web = trace.root.add(URL)
@@ -72,7 +74,7 @@ describe('Trace', function () {
 
     /*
      * Segment data repeats the outermost data, nested, with the scope for the
-     * outermost version having its scope always set to "ROOT". The null bits
+     * outermost version having its scope always set to 'ROOT'. The null bits
      * are parameters, which are optional, and so far, unimplemented for Node.
      */
     var rootSegment = [
@@ -104,7 +106,7 @@ describe('Trace', function () {
       rootSegment,
       {
         agentAttributes: {
-          test : "value"
+          test : 'value'
         },
         userAttributes: {
 
@@ -132,14 +134,14 @@ describe('Trace', function () {
         null                        // syntheticsResourceId
       ]
 
-      transaction.getTrace().generateJSON(function cb_generateJSON(err, traceJSON) {
+      transaction.trace.generateJSON(function cb_generateJSON(err, traceJSON) {
         if (err) return done(err)
 
         codec.decode(traceJSON[4], function (derr, reconstituted) {
           if (derr) return done(derr)
 
-          expect(reconstituted, "reconstituted trace segments").deep.equal(rootNode)
-          expect(traceJSON,     "full trace JSON").deep.equal(expected)
+          expect(reconstituted, 'reconstituted trace segments').deep.equal(rootNode)
+          expect(traceJSON,     'full trace JSON').deep.equal(expected)
 
           helper.unloadAgent(agent)
           return done()
@@ -148,33 +150,33 @@ describe('Trace', function () {
     })
   })
 
-  it("should produce human-readable JSON of the entire trace graph")
+  it('should produce human-readable JSON of the entire trace graph')
 
-  describe("when inserting segments", function () {
+  describe('when inserting segments', function () {
     var trace
       , transaction
 
 
     beforeEach(function () {
       transaction = new Transaction(agent)
-      trace       = transaction.getTrace()
+      trace       = transaction.trace
     })
 
-    it("should require a name for the new segment", function () {
+    it('should require a name for the new segment', function () {
       expect(function () { trace.add(); }).throws(/must be named/)
     })
 
-    it("should allow child segments on a trace", function () {
+    it('should allow child segments on a trace', function () {
       expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws()
     })
 
-    it("should return the segment", function () {
+    it('should return the segment', function () {
       var segment
       expect(function () { segment = trace.add('Custom/Test18/Child1'); }).not.throws()
       expect(segment).instanceof(Segment)
     })
 
-    it("should call a function associated with the segment",
+    it('should call a function associated with the segment',
        function (done) {
       var segment = trace.add('Custom/Test18/Child1', function () {
         return done()
@@ -184,7 +186,7 @@ describe('Trace', function () {
       transaction.end()
     })
 
-    it("should measure exclusive time vs total time at each level of the graph",
+    it('should measure exclusive time vs total time at each level of the graph',
        function () {
       var child = trace.add('Custom/Test18/Child1')
 
@@ -194,7 +196,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(20)
     })
 
-    it("should accurately sum overlapping segments", function () {
+    it('should accurately sum overlapping segments', function () {
       trace.setDurationInMillis(42)
 
       var now = Date.now()
@@ -217,7 +219,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(5)
     })
 
-    it("should accurately sum partially overlapping segments", function () {
+    it('should accurately sum partially overlapping segments', function () {
       trace.setDurationInMillis(42)
 
       var now = Date.now()
@@ -238,7 +240,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(9)
     })
 
-    it("should accurately sum partially overlapping, open-ranged segments", function () {
+    it('should accurately sum partially overlapping, open-ranged segments', function () {
       trace.setDurationInMillis(42)
 
       var now = Date.now()
@@ -254,12 +256,12 @@ describe('Trace', function () {
     })
 
     it('should be limited to 900 children', function () {
-      for(var i = 0; i < 950; ++i) {
+      for (var i = 0; i < 950; ++i) {
         trace.add(i.toString(), noop)
       }
 
       expect(trace.root.children.length).equal(900)
-      expect(trace.recorders.length).equal(950)
+      expect(transaction._recorders.length).equal(950)
       trace.segmentCount = 0
       trace.root.children = []
       trace.recorders = []

@@ -1,145 +1,149 @@
 'use strict'
 
-var path    = require('path')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , urltils = require('../../lib/util/urltils.js')
+var chai = require('chai')
+var expect = chai.expect
+var urltils = require('../../lib/util/urltils.js')
+var url = require('url')
 
 
-describe("NR URL utilities", function () {
-  describe("scrubbing URLs", function () {
-    it("should return '/' if there's no leading slash on the path", function () {
+describe('NR URL utilities', function () {
+  describe('scrubbing URLs', function () {
+    it('should return "/" if there\'s no leading slash on the path', function () {
       expect(urltils.scrub('?t_u=http://some.com/o/p')).equal('/')
     })
   })
 
-  describe("parsing parameters", function () {
-    it("should find empty object of params in url lacking query", function () {
-      expect(urltils.parseParameters('/favicon.ico')).deep.equal({});
+  describe('parsing parameters', function () {
+    it('should find empty object of params in url lacking query', function () {
+      expect(urltils.parseParameters('/favicon.ico')).deep.equal({})
     })
 
-    it("should find v param in url containing ?v with no value", function () {
-      expect(urltils.parseParameters('/status?v')).deep.equal({v:true});
+    it('should find v param in url containing ?v with no value', function () {
+      expect(urltils.parseParameters('/status?v')).deep.equal({v:true})
     })
 
-    it("should find v param with value in url containing ?v=1", function () {
-      expect(urltils.parseParameters('/status?v=1')).deep.equal({v:'1'});
+    it('should find v param with value in url containing ?v=1', function () {
+      expect(urltils.parseParameters('/status?v=1')).deep.equal({v:'1'})
+    })
+
+    it('should find v param when passing in an object', function () {
+      expect(urltils.parseParameters(url.parse('/status?v=1', true))).deep.equal({v:'1'})
     })
   })
 
-  describe("determining whether an HTTP status code is an error", function () {
+  describe('determining whether an HTTP status code is an error', function () {
     var config = {error_collector : {ignore_status_codes : []}}
 
-    it("shouldn't throw when called with no params", function () {
+    it('should not throw when called with no params', function () {
       expect(function () { urltils.isError(); }).not.throws()
     })
 
-    it("shouldn't throw when called with no code", function () {
+    it('should not throw when called with no code', function () {
       expect(function () { urltils.isError(config); }).not.throws()
     })
 
-    it("shouldn't throw when config is missing", function () {
+    it('should not throw when config is missing', function () {
       expect(function () { urltils.isError(null, 200); }).not.throws()
     })
 
-    it("should NOT mark an OK request as an error", function () {
+    it('should NOT mark an OK request as an error', function () {
       return expect(urltils.isError(config, 200)).false
     })
 
-    it("should NOT mark a permanent redirect as an error", function () {
+    it('should NOT mark a permanent redirect as an error', function () {
       return expect(urltils.isError(config, 301)).false
     })
 
-    it("should NOT mark a temporary redirect as an error", function () {
+    it('should NOT mark a temporary redirect as an error', function () {
       return expect(urltils.isError(config, 303)).false
     })
 
-    it("should mark a bad request as an error", function () {
+    it('should mark a bad request as an error', function () {
       return expect(urltils.isError(config, 400)).true
     })
 
-    it("should mark an unauthorized request as an error", function () {
+    it('should mark an unauthorized request as an error', function () {
       return expect(urltils.isError(config, 401)).true
     })
 
-    it("should mark a 'payment required' request as an error", function () {
+    it('should mark a "payment required" request as an error', function () {
       return expect(urltils.isError(config, 402)).true
     })
 
-    it("should mark a forbidden request as an error", function () {
+    it('should mark a forbidden request as an error', function () {
       return expect(urltils.isError(config, 403)).true
     })
 
-    it("should mark a not found request as an error", function () {
+    it('should mark a not found request as an error', function () {
       return expect(urltils.isError(config, 404)).true
     })
 
-    it("should mark a request with too long a URI as an error", function () {
+    it('should mark a request with too long a URI as an error', function () {
       return expect(urltils.isError(config, 414)).true
     })
 
-    it("should mark a method not allowed request as an error", function () {
+    it('should mark a method not allowed request as an error', function () {
       return expect(urltils.isError(config, 405)).true
     })
 
-    it("should mark a request with unacceptable types as an error", function () {
+    it('should mark a request with unacceptable types as an error', function () {
       return expect(urltils.isError(config, 406)).true
     })
 
-    it("should mark a request requiring proxy auth as an error", function () {
+    it('should mark a request requiring proxy auth as an error', function () {
       return expect(urltils.isError(config, 407)).true
     })
 
-    it("should mark a timed out request as an error", function () {
+    it('should mark a timed out request as an error', function () {
       return expect(urltils.isError(config, 408)).true
     })
 
-    it("should mark a conflicted request as an error", function () {
+    it('should mark a conflicted request as an error', function () {
       return expect(urltils.isError(config, 409)).true
     })
 
-    it("should mark a request for a disappeared resource as an error", function () {
+    it('should mark a request for a disappeared resource as an error', function () {
       return expect(urltils.isError(config, 410)).true
     })
 
-    it("should mark a request with a missing length as an error", function () {
+    it('should mark a request with a missing length as an error', function () {
       return expect(urltils.isError(config, 411)).true
     })
 
-    it("should mark a request with a failed precondition as an error", function () {
+    it('should mark a request with a failed precondition as an error', function () {
       return expect(urltils.isError(config, 412)).true
     })
 
-    it("should mark a too-large request as an error", function () {
+    it('should mark a too-large request as an error', function () {
       return expect(urltils.isError(config, 413)).true
     })
 
-    it("should mark a request for an unsupported media type as an error", function () {
+    it('should mark a request for an unsupported media type as an error', function () {
       return expect(urltils.isError(config, 415)).true
     })
 
-    it("should mark a request for an unsatisfiable range as an error", function () {
+    it('should mark a request for an unsatisfiable range as an error', function () {
       return expect(urltils.isError(config, 416)).true
     })
 
-    it("should mark a request with a failed expectation as an error", function () {
+    it('should mark a request with a failed expectation as an error', function () {
       return expect(urltils.isError(config, 417)).true
     })
 
-    it("should mark a request asserting teapotness as an error", function () {
+    it('should mark a request asserting teapotness as an error', function () {
       return expect(urltils.isError(config, 418)).true
     })
 
-    it("should mark a request with timed-out auth as an error", function () {
+    it('should mark a request with timed-out auth as an error', function () {
       return expect(urltils.isError(config, 419)).true
     })
 
-    it("should mark a request for enhanced calm (brah) as an error", function () {
+    it('should mark a request for enhanced calm (brah) as an error', function () {
       return expect(urltils.isError(config, 420)).true
     })
   })
 
-  describe("copying parameters from a query hash", function () {
+  describe('copying parameters from a query hash', function () {
     var config
       , source
       , dest
@@ -154,19 +158,19 @@ describe("NR URL utilities", function () {
       dest = {}
     })
 
-    it("shouldn't throw on missing configuration", function () {
+    it('shouldn not throw on missing configuration', function () {
       expect(function () { urltils.copyParameters(null, source, dest); }).not.throws()
     })
 
-    it("shouldn't throw on missing source", function () {
+    it('should not throw on missing source', function () {
       expect(function () { urltils.copyParameters(config, null, dest); }).not.throws()
     })
 
-    it("shouldn't throw on missing destination", function () {
+    it('should not throw on missing destination', function () {
       expect(function () { urltils.copyParameters(config, source, null); }).not.throws()
     })
 
-    it("should copy parameters from source to destination", function () {
+    it('should copy parameters from source to destination', function () {
       dest.existing = 'here'
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
@@ -180,7 +184,7 @@ describe("NR URL utilities", function () {
       })
     })
 
-    it("shouldn't copy ignored parameters", function () {
+    it('should not copy ignored parameters', function () {
       dest.existing = 'here'
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
@@ -199,7 +203,7 @@ describe("NR URL utilities", function () {
       })
     })
 
-    it("shouldn't overwrite existing parameters in destination", function () {
+    it('should not overwrite existing parameters in destination', function () {
       dest.existing = 'here'
       dest.firstNew = 'already around'
       source.firstNew = 'present'
@@ -214,7 +218,7 @@ describe("NR URL utilities", function () {
       })
     })
 
-    it("shouldn't overwrite null parameters in destination", function () {
+    it('should not overwrite null parameters in destination', function () {
       dest.existing = 'here'
       dest.firstNew = null
       source.firstNew = 'present'
@@ -227,7 +231,7 @@ describe("NR URL utilities", function () {
       })
     })
 
-    it("shouldn't overwrite undefined parameters in destination", function () {
+    it('should not overwrite undefined parameters in destination', function () {
       dest.existing = 'here'
       dest.firstNew = undefined
       source.firstNew = 'present'

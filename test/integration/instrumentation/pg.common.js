@@ -1,17 +1,17 @@
 'use strict'
 
-var tap    = require('tap')
-  , params = require('../../lib/params')
-  , helper = require('../../lib/agent_helper')
-  , test   = tap.test
+var tap = require('tap')
+var params = require('../../lib/params')
+var helper = require('../../lib/agent_helper')
+var test = tap.test
 
 
 module.exports = function runTests(agent, pg, name) {
   //constants for table creation and db connection
-  var TABLE      = 'testTable'
-    , PK         = 'pk_column'
-    , COL        = 'test_column'
-    , CON_STRING = 'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@'
+  var TABLE = 'testTable'
+  var PK = 'pk_column'
+  var COL = 'test_column'
+  var CON_STRING = 'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@'
         + params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db
 
   /**
@@ -48,71 +48,74 @@ module.exports = function runTests(agent, pg, name) {
     })
    }
 
-  function verify(t, transaction) {
-    setImmediate(function() {
-      t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
+  function verify(t, segment) {
+    var transaction = segment.transaction
+    t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
 
-      var unscoped = transaction.metrics.unscoped
+    var unscoped = transaction.metrics.unscoped
 
-      var expected = {
-        'Datastore/all': 2,
-        'Datastore/allOther': 2,
-        'Datastore/operation/Postgres/insert': 1,
-        'Datastore/operation/Postgres/select': 1,
+    var expected = {
+      'Datastore/all': 2,
+      'Datastore/allOther': 2,
+      'Datastore/Postgres/all': 2,
+      'Datastore/Postgres/allOther': 2,
+      'Datastore/operation/Postgres/insert': 1,
+      'Datastore/operation/Postgres/select': 1,
+    }
+
+    expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
+    expected['Datastore/statement/Postgres/' + TABLE + '/select'] = 1
+
+    if (name !== 'pure JavaScript') {
+      // disabled until metric explosions can be handled by server
+      // expected['Datastore/instance/Postgres/' + params.postgres_host + ':' + params.postgres_port] = 2
+    }
+
+    var expectedNames = Object.keys(expected)
+    var unscopedNames = Object.keys(unscoped)
+
+
+    expectedNames.forEach(function (name) {
+      t.ok(unscoped[name], 'should have unscoped metric ' + name)
+      if (unscoped[name]) {
+        t.equals(unscoped[name].callCount, expected[name], 'metric ' + name + ' should have correct callCount')
       }
-
-      expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
-      expected['Datastore/statement/Postgres/' + TABLE + '/select'] = 1
-
-      if (name !== 'pure JavaScript') {
-        expected['Datastore/instance/Postgres/' + params.postgres_host + ':' + params.postgres_port] = 2
-      }
-
-      var expectedNames = Object.keys(expected)
-      var unscopedNames = Object.keys(unscoped)
-
-      expectedNames.forEach(function (name) {
-        t.ok(unscoped[name], 'should have unscoped metric ' + name)
-        if (unscoped[name]) {
-          t.equals(unscoped[name].callCount, expected[name], 'metric ' + name + ' should have correct callCount')
-        }
-      })
-
-      t.equals(unscopedNames.length, expectedNames.length, 'should have correct number of unscoped metrics')
-
-      var trace = transaction.getTrace()
-      t.ok(trace, 'trace should exist')
-      t.ok(trace.root, 'root element should exist')
-      t.equals(trace.root.children.length, 1,
-               'there should be only one child of the root')
-      var setSegment = trace.root.children[0]
-
-      if (name !== 'pure JavaScript') {
-        t.equals(setSegment.host, params.postgres_host, 'should register the host')
-        t.equals(setSegment.port, params.postgres_port, 'should register the port')
-      } else {
-        t.skip('should register the host (unsupported for pure JS right now)')
-        t.skip('should register the port (unsupported for pure JS right now)')
-      }
-
-      t.ok(setSegment, 'trace segment for insert should exist')
-      t.equals(setSegment.name, 'Datastore/statement/Postgres/' + TABLE + '/insert',
-               'should register the query call')
-      t.equals(setSegment.children.length, 1,
-               'set should have an only child')
-      var getSegment = setSegment.children[0]
-      t.ok(getSegment, 'trace segment for select should exist')
-
-      if (!getSegment) return t.end()
-
-      t.equals(getSegment.name, 'Datastore/statement/Postgres/' + TABLE + '/select',
-               'should register the query call')
-      t.equals(getSegment.children.length, 0,
-               'get should leave us here at the end')
-      t.ok(getSegment._isEnded(), 'trace segment should have ended')
-
-      t.end()
     })
+
+    t.equals(unscopedNames.length, expectedNames.length, 'should have correct number of unscoped metrics')
+
+    var trace = transaction.trace
+    var getSegment = segment.parent
+    var setSegment = getSegment.parent.parent
+
+    t.ok(trace, 'trace should exist')
+    t.ok(trace.root, 'root element should exist')
+
+    if (name !== 'pure JavaScript') {
+      t.equals(setSegment.host, params.postgres_host, 'should register the host')
+      t.equals(setSegment.port, params.postgres_port, 'should register the port')
+    } else {
+      t.skip('should register the host (unsupported for pure JS right now)')
+      t.skip('should register the port (unsupported for pure JS right now)')
+    }
+
+    t.ok(setSegment, 'trace segment for insert should exist')
+    t.equals(
+      setSegment.name, 'Datastore/statement/Postgres/' + TABLE + '/insert',
+      'should register the query call'
+    )
+
+    t.ok(getSegment, 'trace segment for select should exist')
+
+    if (!getSegment) return t.end()
+
+    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + TABLE + '/select',
+             'should register the query call')
+    t.equals(segment.children.length, 0,
+             'get should leave us here at the end')
+
+    t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+    t.end()
   }
 
   test('Postgres instrumentation: ' + name, function (t) {
@@ -152,7 +155,7 @@ module.exports = function runTests(agent, pg, name) {
 
                 transaction.end(function() {
                   client.end()
-                  verify(t, transaction)
+                  verify(t, agent.tracer.getSegment())
                 })
               })
             })
@@ -202,7 +205,7 @@ module.exports = function runTests(agent, pg, name) {
 
                 transaction.end(function() {
                   client.end()
-                  verify(t, transaction)
+                  verify(t, agent.tracer.getSegment())
                 })
               })
             })
@@ -252,7 +255,7 @@ module.exports = function runTests(agent, pg, name) {
 
                 transaction.end(function() {
                   client.end()
-                  verify(t, transaction)
+                  verify(t, agent.tracer.getSegment())
                 })
               })
             })
@@ -290,7 +293,7 @@ module.exports = function runTests(agent, pg, name) {
 
                 transaction.end(function() {
                   done()
-                  verify(t, transaction)
+                  verify(t, agent.tracer.getSegment())
                 })
               })
             })

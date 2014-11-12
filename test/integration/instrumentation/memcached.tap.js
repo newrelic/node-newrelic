@@ -1,11 +1,9 @@
 'use strict'
 
-var path   = require('path')
-  , tap    = require('tap')
-  , test   = tap.test
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
-
+var tap = require('tap')
+var test = tap.test
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
 
 test("memcached instrumentation should find memcached calls in the transaction trace",
      {timeout : 5000},
@@ -49,7 +47,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
 
           transaction.end()
 
-          var trace = transaction.getTrace()
+          var trace = transaction.trace
           t.ok(trace, "trace should exist")
           t.ok(trace.root, "root element should exist")
           t.equals(trace.root.children.length, 1,
@@ -61,16 +59,15 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "should register the set")
           t.equals(setSegment.parameters.key, "[\"testkey\"]",
                    "should have the set key as a parameter")
-          t.equals(setSegment.children.length, 1,
-                   "set should have an only child")
+          t.ok(setSegment.children.length >= 1, "set should have a callback segment")
 
-          var getSegment = setSegment.children[0]
+          var getSegment = setSegment.children[1].children[0]
           t.ok(getSegment, "trace segment for get should exist")
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get")
           t.equals(getSegment.parameters.key, "[\"testkey\"]",
                    "should have the get key as a parameter")
-          t.equals(getSegment.children.length, 0,
+          t.ok(getSegment.children.length >= 1,
                    "get should leave us here at the end")
         })
       })
@@ -94,7 +91,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
 
           transaction.end()
 
-          var trace = transaction.getTrace()
+          var trace = transaction.trace
           t.ok(trace, "trace should exist")
           t.ok(trace.root, "root element should exist")
           t.equals(trace.root.children.length, 1,
@@ -105,16 +102,18 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "should register the set")
           t.equals(setSegment.parameters.key, "[\"otherkey\"]",
                    "should have the set key as a parameter")
-          t.equals(setSegment.children.length, 1,
-                   "set should have an only child")
+          t.ok(setSegment.children.length >= 1,
+                   "set should have a callback segment")
 
-          var getSegment = setSegment.children[0]
+          var getSegment = setSegment.children[1].children[0]
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get")
           t.equals(getSegment.parameters.key, "[[\"testkey\",\"otherkey\"]]",
                    "should have the multiple keys fetched as a parameter")
-          t.equals(getSegment.children.length, 0,
-                   "get should leave us here at the end")
+          t.ok(
+            getSegment.children.length >= 1,
+            "get should have a callback segment"
+          )
         })
       })
     })

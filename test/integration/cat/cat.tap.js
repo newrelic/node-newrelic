@@ -93,7 +93,7 @@ test('cross application tracing full integration', function (t) {
       }
 
       // Check the intrinsic parameters
-      var trace = trans.getTrace()
+      var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'end should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'end should have a path_hash variable')
       t.ok(trace.intrinsics['cross_process_id'], 'end should have a cross_process_id variable')
@@ -138,14 +138,14 @@ test('cross application tracing full integration', function (t) {
       }
 
       // check the intrinsic parameters
-      var trace = trans.getTrace()
+      var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'middle should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'middle should have a path_hash variable')
       t.ok(trace.intrinsics['cross_process_id'], 'middle should have a cross_process_id variable')
       t.ok(trace.intrinsics['referring_transaction_guid'], 'middle should have a referring_transaction_guid variable')
 
       // check the external segment for its properties
-      var externalSegment = trace.root.children[0].children[0]
+      var externalSegment = trace.root.children[0].children[trace.root.children[0].children.length - 1]
       t.equal(externalSegment.name.split('/')[0], 'ExternalTransaction', 'middle should have an ExternalTransaction segment')
       t.ok(externalSegment.parameters.transaction_guid, 'middle should have a transaction_guid on its external segment')
 
@@ -184,14 +184,14 @@ test('cross application tracing full integration', function (t) {
       }
 
       // check the intrinsic parameters
-      var trace = trans.getTrace()
+      var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'start should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'start should have a path_hash variable')
       t.ok(trace.intrinsics['cross_process_id'], 'start should have a cross_process_id variable')
       t.notOk(trace.intrinsics['referring_transaction_guid'], 'start should not have a referring_transaction_guid variable')
 
       // check the external segment for its properties
-      var externalSegment = trace.root.children[0].children[0]
+      var externalSegment = trace.root.children[0].children[trace.root.children[0].children.length - 1]
       t.equal(externalSegment.name.split('/')[0], 'ExternalTransaction', 'start should have an ExternalTransaction segment')
       t.ok(externalSegment.parameters.transaction_guid, 'start should have a transaction_guid on its external segment')
 

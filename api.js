@@ -146,7 +146,7 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
     return logger.warn("No transaction found for custom parameters.")
   }
 
-  var trace = transaction.getTrace()
+  var trace = transaction.trace
   if (!trace.custom) {
     return logger.warn(
       "Couldn't add parameter %s to nonexistent custom parameters.",
@@ -421,12 +421,10 @@ API.prototype.createTracer = function createTracer(name, callback) {
       callback && callback.name,
       txn.id
     )
-    var segment = tracer.addSegment(name, customRecorder)
-    return tracer.callbackProxy(function () {
-      var value = callback.apply(this, arguments)
-      segment.end()
-      return value
-    })
+
+    var segment = tracer.createSegment(name, customRecorder)
+    segment.start()
+    return tracer.bindFunction(callback, segment, true)
   } else {
     logger.debug(
       'createTracer called with %s (%s) outside of a transaction, unable to create tracer.',
@@ -468,8 +466,9 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
 
   var tracer  = this.agent.tracer
 
-  return tracer.transactionNestProxy('web', tracer.segmentProxy(function(){
+  return tracer.transactionNestProxy('web', function createWebSegment() {
     var tx = tracer.getTransaction()
+
     logger.debug(
       'creating web transaction %s (%s) with transaction id: %s',
       url,
@@ -479,10 +478,11 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     tx.partialName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + url
     tx.url = url
     tx.applyUserNamingRules(tx.url)
-    tx.webSegment = tracer.addSegment(url, recordWeb)
+    tx.webSegment = tracer.createSegment(url, recordWeb)
+    tx.webSegment.start()
 
-    return callback.apply(this, arguments)
-  }))
+    return tracer.bindFunction(callback, tx.webSegment).apply(this, arguments)
+  })
 }
 
 API.prototype.createBackgroundTransaction = function createBackgroundTransaction(name, group, callback) {
@@ -521,7 +521,7 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
 
   var tracer  = this.agent.tracer
 
-  return tracer.transactionNestProxy('bg', tracer.segmentProxy(function(){
+  return tracer.transactionNestProxy('bg', function createBackgroundSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -533,11 +533,12 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
     )
 
     tx.setBackgroundName(name, group)
-    tx.bgSegment = tracer.addSegment(name, recordBackground)
+    tx.bgSegment = tracer.createSegment(name, recordBackground)
     tx.bgSegment.partialName = group
+    tx.bgSegment.start()
 
-    return callback.apply(this, arguments)
-  }))
+    return tracer.bindFunction(callback, tx.bgSegment).apply(this, arguments)
+  })
 }
 
 API.prototype.endTransaction = function endTransaction() {
@@ -556,6 +557,8 @@ API.prototype.endTransaction = function endTransaction() {
       tx.webSegment.markAsWeb(tx.url)
       tx.webSegment.end()
       tx.setName(tx.url, 0)
+    } else if (tx.bgSegment) {
+      tx.bgSegment.end()
     }
     tx.end()
   } else {
@@ -569,19 +572,19 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  if(typeof name !== 'string') {
+  if (typeof name !== 'string') {
     logger.warn('Metric name must be a string')
     return
   }
 
   var metric = this.agent.metrics.getOrCreateMetric(name)
 
-  if(typeof value === 'number') {
+  if (typeof value === 'number') {
     metric.recordValue(value)
     return
   }
 
-  if(typeof value !== 'object') {
+  if (typeof value !== 'object') {
     logger.warn('Metric value must be either a number, or a metric object')
     return
   }
@@ -590,8 +593,8 @@ API.prototype.recordMetric = function recordMetric(name, value) {
   var required = ['count', 'total', 'min', 'max', 'sumOfSquares']
   var keyMap = {count: 'callCount'}
 
-  for(var i = 0, l = required.length; i < l; ++i) {
-    if(typeof value[required[i]] !== 'number') {
+  for (var i = 0, l = required.length; i < l; ++i) {
+    if (typeof value[required[i]] !== 'number') {
       logger.warn('Metric object must include ' + required[i] + ' as a number')
       return
     }
@@ -600,7 +603,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     stats[key] = value[required[i]]
   }
 
-  if(typeof value.totalExclusive === 'number') {
+  if (typeof value.totalExclusive === 'number') {
     stats.totalExclusive = value.totalExclusive
   } else {
     stats.totalExclusive = value.total
@@ -615,11 +618,11 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
     return
   }
 
-  if(!value && value !== 0) {
+  if (!value && value !== 0) {
     value = 1
   }
 
-  if(typeof value !== 'number' || value % 1 !== 0) {
+  if (typeof value !== 'number' || value % 1 !== 0) {
     logger.warn('Metric Increment value must be an integer')
     return
   }

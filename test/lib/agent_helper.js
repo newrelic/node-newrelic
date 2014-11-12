@@ -1,22 +1,22 @@
 'use strict'
 
-var path      = require('path')
-  , fs        = require('fs')
-  , extend    = require('util')._extend
-  , architect = require('architect')
-  , async     = require('async')
-  , shimmer   = require('../../lib/shimmer')
-  , Agent     = require('../../lib/agent')
-  , params    = require('../lib/params')
+var path = require('path')
+var fs = require('fs')
+var extend = require('util')._extend
+var architect = require('architect')
+var async = require('async')
+var shimmer = require('../../lib/shimmer')
+var Agent = require('../../lib/agent')
+var params = require('../lib/params')
 
 
 /*
  * CONSTANTS
  */
 
-var KEYPATH  = path.join(__dirname, 'test-key.key')
-  , CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
-  , CAPATH   = path.join(__dirname, 'ca-certificate.crt')
+var KEYPATH = path.join(__dirname, 'test-key.key')
+var CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
+var CAPATH = path.join(__dirname, 'ca-certificate.crt')
 
 
 var _agent
@@ -38,7 +38,14 @@ var helper = module.exports = {
 
     // agent needs a "real" configuration
     var configurator = require('../../lib/config')
-      , config       = configurator.initialize(conf)
+    var config = configurator.initialize(conf)
+
+    if (!config.debug) {
+      config.debug = {}
+    }
+
+    // adds link to parents node in traces for easier testing
+    config.debug.double_linked_transactions = true
 
     // stub applications
     config.applications = function faked() { return ['New Relic for Node.js tests']; }
@@ -105,6 +112,15 @@ var helper = module.exports = {
     if (agent === _agent) _agent = null
   },
 
+  loadTestAgent: function loadTestAgent(t) {
+    var agent = helper.instrumentMockedAgent()
+    t.tearDown(function tearDown() {
+      helper.unloadAgent(agent)
+    })
+
+    return agent
+  },
+
   /**
    * Create a transactional scope in which instrumentation that will only add
    * trace segments to existing transactions will funciton.
@@ -125,7 +141,7 @@ var helper = module.exports = {
     return agent.tracer.transactionProxy(function cb_transactionProxy() {
       var transaction = agent.getTransaction()
       callback(transaction)
-    })(); // <-- invoke immediately
+    })() // <-- invoke immediately
   },
 
   /**
@@ -151,8 +167,19 @@ var helper = module.exports = {
    *                          is running.
    */
   bootstrapMongoDB : function bootstrapMongoDB(collections, callback) {
-    var MongoClient = require('mongodb').MongoClient
-    MongoClient.connect('mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration', function(err, db) {
+    var mongodb = require('mongodb')
+    var server  = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
+      auto_reconnect : true
+    })
+    var db = mongodb.Db('integration', server, {
+      w: 1,
+      safe : true,
+      numberOfRetries: 10,
+      wtimeout: 100,
+      retryMiliSeconds: 300
+    })
+
+    db.open(function(err, db) {
       if (err) return callback(err)
 
       async.eachSeries(collections, function(collection, callback) {

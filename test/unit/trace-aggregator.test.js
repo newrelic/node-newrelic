@@ -16,7 +16,7 @@ describe('TraceAggregator', function () {
   function createTransaction(name, duration) {
     var transaction = new Transaction(agent)
     // gotta create the trace
-    transaction.getTrace().setDurationInMillis(duration)
+    transaction.trace.setDurationInMillis(duration)
     transaction.url = name
     transaction.name = 'WebTransaction/Uri' + name
     transaction.statusCode = 200
@@ -61,7 +61,7 @@ describe('TraceAggregator', function () {
 
   it("should let the agent decide whether to ignore a transaction", function () {
     var transaction = new Transaction(agent)
-    transaction.getTrace().setDurationInMillis(3000)
+    transaction.trace.setDurationInMillis(3000)
     transaction.ignore = true
 
     agent.traces.add(transaction)
@@ -129,27 +129,27 @@ describe('TraceAggregator', function () {
       aggregator.add(first)
       aggregator.harvest(function cb_harvest() {
         // 2nd trace
-        aggregator.reset(first.getTrace())
+        aggregator.reset(first.trace)
         var second = createTransaction('/testTwo', 8000)
         aggregator.add(second)
         aggregator.harvest(function cb_harvest() {
           // 3rd trace
-          aggregator.reset(second.getTrace())
+          aggregator.reset(second.trace)
           var third = createTransaction('/testThr', 8000)
           aggregator.add(third)
           aggregator.harvest(function cb_harvest() {
             // 4th trace
-            aggregator.reset(third.getTrace())
+            aggregator.reset(third.trace)
             var fourth = createTransaction('/testFor', 8000)
             aggregator.add(fourth)
             aggregator.harvest(function cb_harvest() {
               // 5th trace
-              aggregator.reset(fourth.getTrace())
+              aggregator.reset(fourth.trace)
               var fifth = createTransaction('/testF5v', 8000)
               aggregator.add(fifth)
               aggregator.harvest(function cb_harvest() {
                 // n = 5, so this sixth transaction is gonna lose
-                aggregator.reset(fifth.getTrace())
+                aggregator.reset(fifth.trace)
                 var sixth = createTransaction('/testSix', 8000)
                 aggregator.add(sixth)
                 aggregator.harvest(function cb_harvest(error, encoded) {
@@ -193,7 +193,7 @@ describe('TraceAggregator', function () {
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT
-    transaction.getTrace().setDurationInMillis(ABOVE_THRESHOLD)
+    transaction.trace.setDurationInMillis(ABOVE_THRESHOLD)
     transaction.url = '/test'
     transaction.name = 'WebTransaction/Uri/test'
     transaction.statusCode = 200
@@ -221,7 +221,7 @@ describe('TraceAggregator', function () {
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT
-    transaction.getTrace().setDurationInMillis(BELOW_THRESHOLD)
+    transaction.trace.setDurationInMillis(BELOW_THRESHOLD)
     transaction.url = '/test'
     transaction.name = 'WebTransaction/Uri/test'
     transaction.statusCode = 200
@@ -389,7 +389,7 @@ describe('TraceAggregator', function () {
       // 2nd-5th harvests: no serialized trace, timing still set
       var looper = function () {
         expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
-        aggregator.reset(transaction.getTrace())
+        aggregator.reset(transaction.trace)
 
         remaining--
         if (remaining < 1) {
@@ -410,7 +410,7 @@ describe('TraceAggregator', function () {
       // 1st harvest: serialized trace, timing is set
       aggregator.harvest(function cb_harvest() {
         expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
-        aggregator.reset(transaction.getTrace())
+        aggregator.reset(transaction.trace)
 
         aggregator.harvest(looper)
       })

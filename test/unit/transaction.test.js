@@ -34,13 +34,13 @@ describe("Transaction", function () {
   })
 
   it("should create a trace on demand", function () {
-    var trace = trans.getTrace()
+    var trace = trans.trace
     expect(trace).instanceOf(Trace)
     expect(trans.trace).equal(trace)
   })
 
   it("should have at most one associated trace", function () {
-    var trace = trans.getTrace()
+    var trace = trans.trace
     expect(trace).not.instanceof(Array)
   })
 
@@ -75,10 +75,6 @@ describe("Transaction", function () {
 
     it("should be timing its duration", function () {
       return expect(trans.timer.isActive()).true
-    })
-
-    it("should be created without an associated trace", function () {
-      expect(trans.trace).equal(null)
     })
 
     it("should have no associated URL (for hidden class)", function () {

@@ -8,7 +8,7 @@ var path         = require('path')
                      .child({component : 'TEST'})
   , shimmer      = require('../../lib/shimmer')
   , EventEmitter = require('events').EventEmitter
-  
+
 
 describe("the instrumentation injector", function () {
   var nodule = {
@@ -187,12 +187,12 @@ describe("the instrumentation injector", function () {
     })
 
     it("should push transactions through process.nextTick", function (done) {
-      expect(agent.getTransaction()).equal(undefined)
+      expect(agent.getTransaction()).equal(null)
 
       var synchronizer = new EventEmitter()
         , transactions = []
         , ids          = []
-        
+
 
       var spamTransaction = function (i) {
         var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
@@ -200,7 +200,7 @@ describe("the instrumentation injector", function () {
           transactions[i] = current
           ids[i]          = current.id
 
-          process.nextTick(agent.tracer.callbackProxy(function cb_callbackProxy() {
+          process.nextTick(agent.tracer.bindFunction(function cb_bindFunction() {
             var lookup = agent.getTransaction()
             expect(lookup).equal(current)
 
@@ -227,12 +227,12 @@ describe("the instrumentation injector", function () {
     })
 
     it("should push transactions through setTimeout", function (done) {
-      expect(agent.getTransaction()).equal(undefined)
+      expect(agent.getTransaction()).equal(null)
 
       var synchronizer = new EventEmitter()
         , transactions = []
         , ids          = []
-        
+
 
       var spamTransaction = function (i) {
         var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
@@ -240,7 +240,7 @@ describe("the instrumentation injector", function () {
           transactions[i] = current
           ids[i]          = current.id
 
-          setTimeout(agent.tracer.callbackProxy(function cb_callbackProxy() {
+          setTimeout(agent.tracer.bindFunction(function cb_bindFunction() {
             var lookup = agent.getTransaction()
             expect(lookup).equal(current)
 
@@ -269,24 +269,24 @@ describe("the instrumentation injector", function () {
     })
 
     it("should push transactions through EventEmitters", function (done) {
-      expect(agent.getTransaction()).equal(undefined)
+      expect(agent.getTransaction()).equal(null)
 
       var eventer      = new EventEmitter()
         , transactions = []
         , ids          = []
-        
+
 
       var eventTransaction = function (j) {
         var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
           var current = agent.getTransaction()
             , id      = current.id
             , name    = ('ttest' + (j + 1))
-            
+
 
           transactions[j] = current
           ids[j]          = id
 
-          eventer.on(name, agent.tracer.callbackProxy(function cb_callbackProxy() {
+          eventer.on(name, agent.tracer.bindFunction(function cb_bindFunction() {
             var lookup = agent.getTransaction()
             expect(lookup).equal(current)
             expect(lookup.id).equal(id)
@@ -316,14 +316,14 @@ describe("the instrumentation injector", function () {
     })
 
     it("should handle whatever ridiculous nonsense you throw at it", function (done) {
-      expect(agent.getTransaction()).equal(undefined)
+      expect(agent.getTransaction()).equal(null)
 
       var synchronizer = new EventEmitter()
         , eventer      = new EventEmitter()
         , transactions = []
         , ids = []
         , doneCount = 0
-        
+
 
       var verify = function (i, phase, passed) {
         var lookup = agent.getTransaction()
@@ -341,15 +341,14 @@ describe("the instrumentation injector", function () {
       })
 
       var createTimer = function (trans, j) {
-        var wrapped = agent.tracer.segmentProxy(function cb_segmentProxy() {
-          setTimeout(agent.tracer.callbackProxy(function cb_callbackProxy() {
-            var current = agent.getTransaction()
+        var wrapped = agent.tracer.wrapFunctionFirst('createTimer', null, setImmediate)
 
-            verify(j, 'createTimer', current)
-            eventer.emit('rntest', current, j)
-          }), 0)
+        wrapped(function() {
+          var current = agent.getTransaction()
+
+          verify(j, 'createTimer', current)
+          eventer.emit('rntest', current, j)
         })
-        wrapped()
       }
 
       var createTicker = function (j) {
@@ -360,7 +359,7 @@ describe("the instrumentation injector", function () {
 
           verify(j, 'createTicker', current)
 
-          process.nextTick(agent.tracer.callbackProxy(function cb_callbackProxy() {
+          process.nextTick(agent.tracer.bindFunction(function cb_bindFunction() {
             verify(j, 'nextTick', current)
             createTimer(current, j)
           }))

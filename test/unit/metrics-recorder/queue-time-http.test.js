@@ -9,7 +9,7 @@ var path        = require('path')
   
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root.add('placeholder')
+  var segment = options.transaction.trace.root.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 

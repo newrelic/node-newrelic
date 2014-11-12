@@ -13,7 +13,7 @@ function recordExternal(segment, scope) {
 }
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root.add('placeholder')
+  var segment = options.transaction.trace.root.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -99,7 +99,7 @@ describe("recordExternal", function () {
   })
 
   it("should report exclusive time correctly", function () {
-    var root   = trans.getTrace().root
+    var root   = trans.trace.root
       , parent = root.add('/parent',   recordExternal)
       , child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
       , child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))

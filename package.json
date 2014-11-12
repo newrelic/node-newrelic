@@ -70,7 +70,6 @@
     "test": "make test"
   },
   "dependencies": {
-    "continuation-local-storage": "^3.1.0",
     "json-stringify-safe": "^5.0.0",
     "https-proxy-agent": "^0.3.5",
     "semver": "^4.2.0",
@@ -78,7 +77,6 @@
     "readable-stream": "^1.1.13"
   },
   "bundledDependencies": [
-    "continuation-local-storage",
     "json-stringify-safe",
     "https-proxy-agent",
     "semver",
@@ -91,6 +89,7 @@
     "async": "*",
     "carrier": "*",
     "chai": "^1.10.0",
+    "concat-stream": "^1.4.7",
     "connect": "*",
     "cover": "*",
     "express": "*",
@@ -120,6 +119,7 @@
     "sinon": "*",
     "split": "*",
     "tap": "*",
+    "temp": "^0.8.1",
     "through": "^2.3.6",
     "wrench": "*"
   },

@@ -52,7 +52,7 @@ test("harvesting with a mocked collector that returns 413 after connect", functi
 
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    agent.traces.trace = transaction.getTrace()
+    agent.traces.trace = transaction.trace
 
     agent.harvest(function cb_harvest(error) {
       t.notOk(error, "no error received on 413")
@@ -108,7 +108,7 @@ test("discarding metrics and errors after a 413", function (t) {
   agent.start(function cb_start() {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    agent.traces.trace = transaction.getTrace()
+    agent.traces.trace = transaction.trace
 
     agent.harvest(function cb_harvest(error) {
       t.notOk(error, "shouldn't have gotten back error for 413")

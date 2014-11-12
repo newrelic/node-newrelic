@@ -1,9 +1,8 @@
 'use strict'
 
-var path   = require('path')
-  , expect = require('chai').expect
-  , helper = require('../../lib/agent_helper.js')
-  , API    = require('../../../api.js')
+var expect = require('chai').expect
+var helper = require('../../lib/agent_helper.js')
+var API = require('../../../api.js')
 
 
 describe('The custom instrumentation API', function () {
@@ -23,7 +22,7 @@ describe('The custom instrumentation API', function () {
   describe('when creating a segment', function () {
     it('should work in a clean transaction', function (done) {
       agent.on('transactionFinished', function (transaction) {
-        var trace = transaction.getTrace()
+        var trace = transaction.trace
         expect(trace).to.exist()
         expect(trace.root.children).to.have.length(1)
         var segment = trace.root.children[0]
@@ -41,7 +40,9 @@ describe('The custom instrumentation API', function () {
 
     it('should work nested in a segment', function (done) {
       agent.on('transactionFinished', function (transaction) {
-        var trace = transaction.getTrace()
+        var trace = transaction.trace
+        expect(trace).to.exist()
+        var trace = transaction.trace
         expect(trace).to.exist()
         expect(trace.root.children).to.have.length(1)
         var parentSegment = trace.root.children[0]
@@ -53,17 +54,20 @@ describe('The custom instrumentation API', function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment('parent')
-        var markedFunction = api.createTracer('custom:segment', function () {
-          transaction.end()
+        agent.tracer.addSegment('parent', null, null, false, function() {
+          var markedFunction = api.createTracer('custom:segment', function () {
+            transaction.end()
+          })
+          markedFunction()
         })
-        markedFunction()
       })
     })
 
     it('should work with a segment nested in it', function (done) {
       agent.on('transactionFinished', function (transaction) {
-        var trace = transaction.getTrace()
+        var trace = transaction.trace
+        expect(trace).to.exist()
+        var trace = transaction.trace
         expect(trace).to.exist()
         expect(trace.root.children).to.have.length(1)
         var customSegment = trace.root.children[0]
@@ -76,7 +80,7 @@ describe('The custom instrumentation API', function () {
 
       helper.runInTransaction(agent, function (transaction) {
         var markedFunction = api.createTracer('custom:segment', function () {
-          agent.tracer.addSegment('child')
+          agent.tracer.createSegment('child')
           transaction.end()
         })
         markedFunction()
@@ -100,7 +104,9 @@ describe('The custom instrumentation API', function () {
       agent.config.feature_flag.custom_instrumentation = false
 
       agent.on('transactionFinished', function (transaction) {
-        var trace = transaction.getTrace()
+        var trace = transaction.trace
+        expect(trace).to.exist()
+        var trace = transaction.trace
         expect(trace).to.exist()
         expect(trace.root.children).to.have.length(0)
         done()
@@ -141,8 +147,8 @@ describe('The custom instrumentation API', function () {
 
     it('should include end time if transaction ends in callback', function (done) {
       agent.on('transactionFinished', function (transaction) {
-        var segment = transaction.getTrace().root.children[0]
-        expect(segment.getDurationInMillis()).greaterThan(1)
+        var segment = transaction.trace.root.children[0]
+        expect(segment.getDurationInMillis()).greaterThan(0)
         done()
       })
 
@@ -181,7 +187,7 @@ describe('The custom instrumentation API', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
 
-        var trace = tx.getTrace()
+        var trace = tx.trace
         expect(trace.root.children).to.have.length(1)
 
         // clean up tx so it doesn't cause other problems
@@ -197,7 +203,7 @@ describe('The custom instrumentation API', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.be.equal(outerTx)
 
-        var trace = tx.getTrace()
+        var trace = tx.trace
         expect(trace.root.children).to.have.length(1)
 
         done()
@@ -214,7 +220,7 @@ describe('The custom instrumentation API', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.be.equal(outerTx)
 
-        var trace = tx.getTrace()
+        var trace = tx.trace
         expect(trace.root.children).to.have.length(1)
         var child = trace.root.children[0]
         expect(child.name).to.equal('outer')
@@ -224,9 +230,10 @@ describe('The custom instrumentation API', function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment('outer')
-        txHandler(transaction)
-        transaction.end()
+        agent.tracer.addSegment('outer', null, null, false, function() {
+          txHandler(transaction)
+          transaction.end()
+        })
       })
     })
 
@@ -340,7 +347,7 @@ describe('The custom instrumentation API', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
 
-        var trace = tx.getTrace()
+        var trace = tx.trace
         expect(trace.root.children).to.have.length(1)
 
         // clean up tx so it doesn't cause other problems
@@ -356,7 +363,7 @@ describe('The custom instrumentation API', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.be.equal(outerTx)
 
-        var trace = tx.getTrace()
+        var trace = tx.trace
         expect(trace.root.children).to.have.length(1)
 
         done()
@@ -373,7 +380,7 @@ describe('The custom instrumentation API', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.be.equal(outerTx)
 
-        var trace = tx.getTrace()
+        var trace = tx.trace
         expect(trace.root.children).to.have.length(1)
         var child = trace.root.children[0]
         expect(child.name).to.equal('outer')
@@ -383,9 +390,10 @@ describe('The custom instrumentation API', function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment('outer')
-        txHandler(transaction)
-        transaction.end()
+        agent.tracer.addSegment('outer', null, null, false, function() {
+          txHandler(transaction)
+          transaction.end()
+        })
       })
     })
 

@@ -71,16 +71,17 @@ describe("the New Relic agent API", function () {
 
         helper.runInTransaction(agent, function (transaction) {
           // grab segment
-          segment = agent.tracer.addSegment(NAME)
+          agent.tracer.addSegment(NAME, null, null, false, function() {
+            // HTTP instrumentation sets URL as soon as it knows it
+            segment = agent.tracer.getSegment()
+            transaction.url = URL
+            transaction.verb = 'POST'
 
-          // HTTP instrumentation sets URL as soon as it knows it
-          transaction.url = URL
-          transaction.verb = 'POST'
+            // NAME THE TRANSACTION
+            api.setTransactionName('Test')
 
-          // NAME THE TRANSACTION
-          api.setTransactionName('Test')
-
-          transaction.end()
+            transaction.end()
+          })
         })
       })
 
@@ -109,7 +110,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -135,7 +136,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment(NAME)
+        agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -159,7 +160,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -187,16 +188,17 @@ describe("the New Relic agent API", function () {
 
         helper.runInTransaction(agent, function (transaction) {
           // grab segment
-          segment = agent.tracer.addSegment(NAME)
+          agent.tracer.addSegment(NAME, null, null, false, function() {
+            // HTTP instrumentation sets URL as soon as it knows it
+            segment = agent.tracer.getSegment()
+            transaction.url = URL
+            transaction.verb = 'POST'
 
-          // HTTP instrumentation sets URL as soon as it knows it
-          transaction.url = URL
-          transaction.verb = 'POST'
+            // NAME THE CONTROLLER
+            api.setControllerName('Test')
 
-          // NAME THE CONTROLLER
-          api.setControllerName('Test')
-
-          transaction.end()
+            transaction.end()
+          })
         })
       })
 
@@ -225,7 +227,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment = agent.tracer.addSegment(NAME)
+        segment = agent.tracer.createSegment(NAME)
 
         transaction.url = URL
 
@@ -251,7 +253,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -274,7 +276,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -293,7 +295,7 @@ describe("the New Relic agent API", function () {
     describe("inside a transaction", function () {
       it("should have set the value properly", function (done) {
         agent.on('transactionFinished', function (transaction) {
-          var parameters = transaction.getTrace().custom
+          var parameters = transaction.trace.custom
           expect(parameters['TestName']).equal('TestValue')
 
           done()
@@ -308,7 +310,7 @@ describe("the New Relic agent API", function () {
 
       it("should keep the most-recently seen value", function (done) {
         agent.on('transactionFinished', function (transaction) {
-          var parameters = transaction.getTrace().custom
+          var parameters = transaction.trace.custom
           expect(parameters['TestName']).equal('Third')
 
           done()
@@ -325,7 +327,7 @@ describe("the New Relic agent API", function () {
 
       it("should roll with it if custom params are gone", function () {
         helper.runInTransaction(agent, function (transaction) {
-          var trace = transaction.getTrace()
+          var trace = transaction.trace
           delete trace.custom
           expect(function () {
             api.addCustomParameter('TestName', 'TestValue')
@@ -337,7 +339,7 @@ describe("the New Relic agent API", function () {
         agent.config.ignored_params.push('ignore_me')
 
         agent.on('transactionFinished', function (transaction) {
-          var parameters = transaction.getTrace().custom
+          var parameters = transaction.trace.custom
           should.not.exist(parameters['ignore_me'])
 
           done()
@@ -427,7 +429,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -449,7 +451,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = '/test/31337/related'
         transaction.verb = 'GET'
 
@@ -528,7 +530,7 @@ describe("the New Relic agent API", function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        segment          = agent.tracer.addSegment(NAME)
+        segment          = agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -563,7 +565,6 @@ describe("the New Relic agent API", function () {
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
 
-        should.exist(transaction.error)
         expect(transaction.ignore).equal(false)
 
         done()
@@ -589,7 +590,6 @@ describe("the New Relic agent API", function () {
         expect(caught[4].userAttributes.hi).equal('yo')
         should.not.exist(caught[4].ignored)
 
-        should.exist(transaction.error)
         expect(transaction.ignore).equal(false)
 
         agent.config.ignored_params = orig
@@ -612,7 +612,6 @@ describe("the New Relic agent API", function () {
         expect(caught[2]).equal('not an Error')
         expect(caught[3]).equal('Object')
 
-        should.exist(transaction.error)
         expect(transaction.ignore).equal(false)
 
         done()
@@ -634,7 +633,6 @@ describe("the New Relic agent API", function () {
         expect(caught[2]).equal('')
         expect(caught[3]).equal('Error')
 
-        should.exist(transaction.error)
         expect(transaction.ignore).equal(false)
 
         done()
@@ -672,7 +670,6 @@ describe("the New Relic agent API", function () {
         expect(caught[2]).equal('busted, bro')
         expect(caught[3]).equal('Error')
 
-        should.exist(transaction.error)
         expect(transaction.ignore).equal(false)
 
         done()
@@ -694,7 +691,6 @@ describe("the New Relic agent API", function () {
         expect(caught[4].userAttributes.a).equal(1)
         expect(caught[4].userAttributes.steak).equal('sauce')
 
-        should.exist(transaction.error)
         expect(transaction.ignore).equal(false)
 
         done()

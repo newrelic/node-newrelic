@@ -31,7 +31,7 @@ try {
 
 if (oracle) {
   test('Oracle instrumentation', oracleSetup(runTest, 5))
-} else if(process.env.NR_NODE_TEST_FORCE_ALL) {
+} else if (process.env.NR_NODE_TEST_FORCE_ALL) {
   test('Oracle must be installed', function(t) {
     t.fail('Oracle must be installed')
     t.end()
@@ -61,13 +61,13 @@ function runTest(t) {
  */
 function oracleSetup(runTest, plan) {
   return function(t) {
-    if(plan) {
+    if (plan) {
       t.plan(plan)
     }
 
     oracle.connect(connectData, function (error, client) {
       if (error) {
-        if(error.message === 'ORA-21561: OID generation failed') {
+        if (error.message === 'ORA-21561: OID generation failed') {
           console.error('you may need to add your hostname to your hosts file: `echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts`')
         }
         throw error
@@ -148,7 +148,7 @@ var verify = function (t, transaction, expected) {
     'should have correct number of unscoped metrics'
   )
 
-  var trace = transaction.getTrace()
+  var trace = transaction.trace
   t.ok(trace, 'trace should exist')
   t.ok(trace.root, 'root element should exist')
   t.equals(
@@ -370,7 +370,7 @@ function nextRowsTest(t) {
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
           t.equals(rows[0][COL], colVal, 'Oracle client should still work')
 
-          var trace = transaction.getTrace()
+          var trace = transaction.trace
           var getSegment = getSelectSegment(trace.root.children[0], insertCount)
           getSegment.timer.end()
 
@@ -448,7 +448,7 @@ function preparedTest(t) {
 
           t.equals(unscopedNames.length, expectedNames.length, 'should have correct number of unscoped metrics')
 
-          var trace = transaction.getTrace()
+          var trace = transaction.trace
           t.ok(trace, 'trace should exist')
           t.ok(trace.root, 'root element should exist')
           t.equals(

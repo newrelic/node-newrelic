@@ -1,16 +1,16 @@
 'use strict'
 
 var test   = require('tap').test
-  , logger = require('../../../lib/logger')
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
+var logger = require('../../../lib/logger')
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
 
 
 var DBUSER = 'test_user'
-  , DBNAME = 'agent_integration'
+var DBNAME = 'agent_integration'
 
 
-test("Basic run through mysql functionality",
+test('Basic run through mysql functionality',
      {timeout : 30 * 1000},
      function (t) {
   // t.plan(9);
@@ -45,14 +45,14 @@ test("Basic run through mysql functionality",
         })
 
         client.on('error', function (err) {
-          poolLogger.error("MySQL connection errored out, destroying connection")
+          poolLogger.error('MySQL connection errored out, destroying connection')
           poolLogger.error(err)
           pool.destroy(client)
         })
 
         client.connect(function cb_connect(err) {
           if (err) {
-            poolLogger.error("MySQL client failed to connect. Does database %s exist?",
+            poolLogger.error('MySQL client failed to connect. Does database %s exist?',
                              DBNAME)
           }
 
@@ -61,7 +61,7 @@ test("Basic run through mysql functionality",
       },
 
       destroy : function (client) {
-        poolLogger.info("Destroying MySQL connection")
+        poolLogger.info('Destroying MySQL connection')
         client.end()
       }
     })
@@ -73,14 +73,14 @@ test("Basic run through mysql functionality",
 
         pool.acquire(function cb_acquire(err, client) {
           if (err) {
-            poolLogger.error("Failed to get connection from the pool: %s", err)
+            poolLogger.error('Failed to get connection from the pool: %s', err)
 
             if (counter < 10) {
               pool.destroy(client)
               withRetry.getClient(callback, counter)
             }
             else {
-              return callback(new Error("Couldn't connect to DB after 10 attempts."))
+              return callback(new Error('Couldn\'t connect to DB after 10 attempts.'))
             }
           }
           else {
@@ -111,18 +111,18 @@ test("Basic run through mysql functionality",
      * TEST GOES HERE
      *
      */
-    t.notOk(agent.getTransaction(), "no transaction should be in play yet")
+    t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
-      t.ok(agent.getTransaction(), "we should be in a transaction")
+      t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function cb_getClient(err, client) {
         if (err) return t.fail(err)
 
-        t.ok(agent.getTransaction(), "generic-pool should not lose the transaction")
+        t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         client.query('SELECT 1', function (err) {
           if (err) return t.fail(err)
 
-          t.ok(agent.getTransaction(), "MySQL query should not lose the transaction")
+          t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
 
           t.end()

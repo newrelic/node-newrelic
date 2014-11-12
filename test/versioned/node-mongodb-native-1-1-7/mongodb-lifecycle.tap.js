@@ -99,26 +99,26 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
                 t.deepEquals(item, hunx, "MongoDB should still work.")
 
+                var trace = transaction.trace
+                t.ok(trace, "trace should exist.")
+                t.ok(trace.root, "root element should exist.")
+                t.ok(trace.root.children.length >= 1,
+                         "There should be at least one child.")
+
+                var insertSegment = trace.root.children[0]
+                t.ok(insertSegment, "trace segment for insert should exist")
+                t.equals(insertSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/insert",
+                         "should register the insert")
+                t.equals(insertSegment.children.length, 1, "insert should have a child")
+
+                var findSegment = insertSegment.children[0].children[0]
+                t.ok(findSegment, "trace segment for findOne should exist")
+                t.equals(findSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/findOne",
+                         "should register the findOne")
+                t.equals(findSegment.children[0].children.length, 0,
+                         "find should leave us here at the end")
+
                 transaction.end(function() {
-                  var trace = transaction.getTrace()
-                  t.ok(trace, "trace should exist.")
-                  t.ok(trace.root, "root element should exist.")
-                  t.equals(trace.root.children.length, 1,
-                           "There should be only one child.")
-
-                  var insertSegment = trace.root.children[0]
-                  t.ok(insertSegment, "trace segment for insert should exist")
-                  t.equals(insertSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/insert",
-                           "should register the insert")
-                  t.equals(insertSegment.children.length, 1, "insert should have a child")
-
-                  var findSegment = insertSegment.children[0]
-                  t.ok(findSegment, "trace segment for findOne should exist")
-                  t.equals(findSegment.name, "Datastore/statement/MongoDB/" + COLLECTION + "/findOne",
-                           "should register the findOne")
-                  t.equals(findSegment.children.length, 0,
-                           "find should leave us here at the end")
-
                   db.close(function cb_close(error) {
                     if (error) t.fail(error)
 
@@ -133,7 +133,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
     })
 
     t.test("with a Cursor", function (t) {
-      t.plan(12)
+      t.plan(11)
 
       var agent = helper.instrumentMockedAgent()
       var mongodb = require('mongodb')
@@ -159,7 +159,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "basic insert should be recorded with cursor"
         )
         t.equals(
-          agent.metrics.getMetric('Datastore/operation/MongoDB/find').callCount,
+          agent.metrics.getMetric('Datastore/operation/MongoDB/toArray').callCount,
           2,
           "basic find should be recorded with cursor"
         )
@@ -169,7 +169,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "collection insertion should be recorded from cursor"
         )
         t.equals(
-          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/find').callCount,
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/toArray').callCount,
           2,
           "collection find should be recorded from cursor"
         )
@@ -180,17 +180,21 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           "scoped MongoDB insert should be recorded from cursor"
         )
         t.equals(
-          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/find',
+          agent.metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/toArray',
                                   'Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert').callCount,
           2,
           "scoped MongoDB find should be recorded from cursor"
         )
+
+        // disabled until metric explosions can be handled by server
+        /*
         var instance = 'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port
         t.equals(
           agent.metrics.getMetric(instance).callCount,
           3,
           "number of calls to the local MongoDB instance should be recorded"
         )
+        */
       })
 
       db.open(function cb_open(error, db) {

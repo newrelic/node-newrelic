@@ -9,7 +9,7 @@ var path            = require('path')
 
 
 function makeSegment(options) {
-  var segment = options.transaction.getTrace().root
+  var segment = options.transaction.trace.root
                   .add('Datastore/statement/MySQL/users/select')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
@@ -71,18 +71,25 @@ describe("record ParsedStatement with MySQL", function () {
     it("should record no scoped metrics", function () {
       recordMySQL(segment, undefined)
 
-      var result = [
-        [{name : "Datastore/statement/MySQL/users/select"},
-         [1,0,0,0,0,0]],
-        [{name : "Datastore/operation/MySQL/select"},
-         [1,0,0,0,0,0]],
-        [{name : "Datastore/allOther"},
-         [1,0,0,0,0,0]],
-        [{name : "Datastore/all"},
-         [1,0,0,0,0,0]],
-        [{name : "Datastore/instance/MySQL/localhost:3306"},
-         [1,0,0,0,0,0]]
-      ]
+      var result = [[
+        {name: 'Datastore/operation/MySQL/select'},
+        [1, 0, 0, 0, 0, 0]
+      ], [
+        {name: 'Datastore/allOther'},
+        [1, 0, 0, 0, 0, 0]
+      ], [
+        {name: 'Datastore/MySQL/allOther'},
+        [1, 0, 0, 0, 0, 0]
+      ], [
+        {name: 'Datastore/MySQL/all'},
+        [1, 0, 0, 0, 0, 0]
+      ], [
+        {name: 'Datastore/all'},
+        [1, 0, 0, 0, 0, 0]
+      ], [
+        {name: 'Datastore/statement/MySQL/users/select'},
+        [1, 0, 0, 0, 0, 0]
+      ]]
 
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
@@ -91,36 +98,45 @@ describe("record ParsedStatement with MySQL", function () {
   describe("with scope", function () {
     it("should record scoped metrics", function () {
       record({
-        transaction : trans,
-        url : '/test',
-        code : 200,
-        apdexT : 10,
-        duration : 30,
-        exclusive : 2,
+        transaction: trans,
+        url: '/test',
+        code: 200,
+        apdexT: 10,
+        duration: 30,
+        exclusive: 2,
       })
 
-      var result = [
-        [{name  : "Datastore/statement/MySQL/users/select"},
-         [1,0.030,0.002,0.030,0.030,0.000900]],
-        [{name  : "Datastore/operation/MySQL/select"},
-         [1,0.030,0.002,0.030,0.030,0.000900]],
-        [{name  : "Datastore/allWeb"},
-         [1,0.030,0.002,0.030,0.030,0.000900]],
-        [{name  : "Datastore/all"},
-        [1,0.030,0.002,0.030,0.030,0.000900]],
-        [{name  : "Datastore/instance/MySQL/localhost:3306"},
-        [1,0.030,0.002,0.030,0.030,0.000900]],
-        [{name  : "Datastore/statement/MySQL/users/select",
-          scope : "WebTransaction/NormalizedUri/*"},
-         [1,0.030,0.002,0.030,0.030,0.000900]],
-      ]
-
+      var result = [[
+        {name: 'Datastore/operation/MySQL/select'},
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ], [
+        {name: 'Datastore/allWeb'},
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ], [
+        {name: 'Datastore/MySQL/allWeb'},
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ], [
+        {name: 'Datastore/MySQL/all'},
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ], [
+        {name: 'Datastore/all'},
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ], [
+        {name: 'Datastore/statement/MySQL/users/select'},
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ], [
+        {
+          name: 'Datastore/statement/MySQL/users/select',
+          scope: 'WebTransaction/NormalizedUri/*'
+        },
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ]]
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
   })
 
   it("should report exclusive time correctly", function () {
-    var root   = trans.getTrace().root
+    var root   = trans.trace.root
       , parent = root.add('Datastore/statement/MySQL/users/select',
                           makeRecorder('users', 'select'))
       , child1 = parent.add('Datastore/statement/MySQL/users/insert',
@@ -134,25 +150,37 @@ describe("record ParsedStatement with MySQL", function () {
     child1.setDurationInMillis(16, 11)
     child2.setDurationInMillis( 5,  2)
 
-
-    var result = [
-      [{name : "Datastore/statement/MySQL/users/select"},
-       [1,0.032,0.011,0.032,0.032,0.001024]],
-      [{name : "Datastore/operation/MySQL/select"},
-       [1,0.032,0.011,0.032,0.032,0.001024]],
-      [{name : "Datastore/allOther"},
-       [3,0.053,0.027,0.005,0.032,0.001305]],
-      [{name : "Datastore/all"},
-       [3,0.053,0.027,0.005,0.032,0.001305]],
-      [{name : "Datastore/statement/MySQL/users/insert"},
-       [1,0.016,0.011,0.016,0.016,0.000256]],
-      [{name : "Datastore/operation/MySQL/insert"},
-       [1,0.016,0.011,0.016,0.016,0.000256]],
-      [{name : "Datastore/statement/MySQL/cache/update"},
-       [1,0.005,0.005,0.005,0.005,0.000025]],
-      [{name : "Datastore/operation/MySQL/update"},
-       [1,0.005,0.005,0.005,0.005,0.000025]]
-    ]
+    var result = [[
+      {name: 'Datastore/operation/MySQL/select'},
+      [1, 0.032, 0.011, 0.032, 0.032, 0.001024]
+    ], [
+      {name: 'Datastore/allOther'},
+      [3, 0.053, 0.027, 0.005, 0.032, 0.001305]
+    ], [
+      {name: 'Datastore/MySQL/allOther'},
+      [3, 0.053, 0.027, 0.005, 0.032, 0.001305]
+    ], [
+      {name: 'Datastore/MySQL/all'},
+      [3, 0.053, 0.027, 0.005, 0.032, 0.001305]
+    ], [
+      {name: 'Datastore/all'},
+      [3, 0.053, 0.027, 0.005, 0.032, 0.001305]
+    ], [
+      {name: 'Datastore/statement/MySQL/users/select'},
+      [1, 0.032, 0.011, 0.032, 0.032, 0.001024]
+    ], [
+      {name: 'Datastore/operation/MySQL/insert'},
+      [1, 0.016, 0.011, 0.016, 0.016, 0.000256]
+    ], [
+      {name: 'Datastore/statement/MySQL/users/insert'},
+      [1, 0.016, 0.011, 0.016, 0.016, 0.000256]
+    ], [
+      {name: 'Datastore/operation/MySQL/update'},
+      [1, 0.005, 0.005, 0.005, 0.005, 0.000025]
+    ], [
+      {name: 'Datastore/statement/MySQL/cache/update'},
+      [1, 0.005, 0.005, 0.005, 0.005, 0.000025]
+    ]]
 
     trans.end(function() {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))

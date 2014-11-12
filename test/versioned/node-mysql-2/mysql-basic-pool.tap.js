@@ -1,32 +1,32 @@
 'use strict'
 
-var path   = require('path')
-  , assert = require('assert')
-  , test   = require('tap').test
-  , logger = require('../../../lib/logger')
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
-  
+var assert = require('assert')
+var test = require('tap').test
+var logger = require('../../../lib/logger')
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
+
 
 var DBUSER = 'test_user'
-  , DBNAME = 'agent_integration'
-  , config = {
+var DBNAME = 'agent_integration'
+
+var config = {
     connectionLimit : 10,
-    host            : params.mysql_host,
-    port            : params.mysql_port,
-    user            : DBUSER,
-    database        : DBNAME,
+    host : params.mysql_host,
+    port : params.mysql_port,
+    user : DBUSER,
+    database : DBNAME,
   }
-  
+
 
 // we use this to uniquely identify transactions in each test
 var uid_counter = 0
 
 test('See if mysql is running', function(t){
   var agent
-    , mysql
-    , pool
-    
+  var mysql
+  var pool
+
 
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
@@ -35,7 +35,9 @@ test('See if mysql is running', function(t){
     pool  = mysql.createPool(config)
 
     pool.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
-      if(err) throw new Error('Are you sure mysql is running at ' + config.host)
+      if (err) {
+        throw new Error('Are you sure mysql is running at ' + config.host)
+      }
       t.end()
       helper.unloadAgent(agent)
       pool.end()
@@ -44,10 +46,10 @@ test('See if mysql is running', function(t){
 
 })
 
-test("bad config", function (t) {
+test('bad config', function (t) {
   var agent
-    , badConfig
-    , mysql
+  var badConfig
+  var mysql
 
   agent = helper.instrumentMockedAgent()
   mysql = require('mysql')
@@ -93,13 +95,10 @@ test("bad config", function (t) {
 // TODO: test .query without callback
 // TODO: test notice errors
 // TODO: test sql capture
-test("mysql built-in connction pools",
-     {timeout : 30 * 1000},
-     function (t) {
-
+test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
   var agent
-    , pool
-    , mysql
+  var pool
+  var mysql
 
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
@@ -109,7 +108,7 @@ test("mysql built-in connction pools",
 
     // make sure a connection exists in the pool before any tests are run
     // we want to make sure connections are allocated outside any transaction
-    // this is to avoid tests that "happen" to work because of how CLS works
+    // this is to avoid tests that 'happen' to work because of how CLS works
     t.test('primer', function(_t){
       pool.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
         _t.notOk(err, 'are you sure mysql is running?')
@@ -118,13 +117,12 @@ test("mysql built-in connction pools",
       })
     })
 
-    t.test('ensure host and port are set on segment', function(_t){
+    t.test('ensure host and port are set on segment', function(_t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
-          var seg
-
+          var seg = agent.tracer.getTransaction().trace.root.children[0]
           _t.notOk(err, 'no errors')
-          _t.ok(seg = agent.tracer.getSegment(), 'there is a sgment')
+          _t.ok(seg, 'there is a sgment')
           _t.equal(seg.host, config.host, 'set host')
           _t.equal(seg.port, config.port, 'set port')
           _t.end()
@@ -155,9 +153,9 @@ test("mysql built-in connction pools",
 
     t.test('pool.query', function(_t){
       helper.runInTransaction(agent, function transactionInScope() {
-        pool.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
+        pool.query('SELECT 1 + 1 AS solution123123123123', function(err, rows, fields) {
           var transxn = agent.getTransaction()
-          var segment = agent.tracer.getSegment()
+          var segment = agent.tracer.getSegment().parent
 
           _t.ifError(err, 'no error ocurred')
           _t.ok(transxn, 'transaction should exit')
@@ -172,11 +170,11 @@ test("mysql built-in connction pools",
       })
     })
 
-    t.test('pool.query with values', function(_t){
+    t.test('pool.query with values', function(_t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.query('SELECT ? + ? AS solution', [1, 1], function(err, rows, fields) {
           var transxn = agent.getTransaction()
-          var segment = agent.tracer.getSegment()
+          var segment = agent.tracer.getSegment().parent
 
           _t.ifError(err, 'no error ocurred')
           _t.ok(transxn, 'transaction should exit')
@@ -191,7 +189,7 @@ test("mysql built-in connction pools",
       })
     })
 
-    t.test('pool.getConnectino -> connection.query', function(_t){
+    t.test('pool.getConnectino -> connection.query', function(_t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.getConnection(function shouldBeWrapped(err, connection) {
           _t.ifError(err, 'should not have error')
@@ -199,7 +197,7 @@ test("mysql built-in connction pools",
 
           connection.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -216,7 +214,7 @@ test("mysql built-in connction pools",
       })
     })
 
-    t.test('pool.getConnectino -> connection.query', function(_t){
+    t.test('pool.getConnectino -> connection.query', function(_t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.getConnection(function shouldBeWrapped(err, connection) {
           _t.ifError(err, 'should not have error')
@@ -224,7 +222,7 @@ test("mysql built-in connction pools",
 
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -316,7 +314,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -369,7 +367,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1, 1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -422,7 +420,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -474,7 +472,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -528,7 +526,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment()
+            var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
             _t.ok(transxn, 'transaction should exit')
@@ -547,7 +545,6 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
 
       })
     })
-
   })
 
   this.tearDown(function(){

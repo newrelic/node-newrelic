@@ -55,7 +55,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    agent.traces.trace = transaction.getTrace()
+    agent.traces.trace = transaction.trace
 
     agent.harvest(function cb_harvest(error) {
       t.ok(error, "error received on 503")
@@ -112,7 +112,7 @@ test("merging metrics and errors after a 503", function (t) {
   agent.start(function cb_start() {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    agent.traces.trace = transaction.getTrace()
+    agent.traces.trace = transaction.trace
 
     agent.harvest(function cb_harvest(error) {
       t.ok(error, "should have gotten back error for 503")

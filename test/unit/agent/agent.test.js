@@ -209,42 +209,6 @@ describe("the New Relic agent", function () {
 
         })
       })
-
-      describe("with tracer tracing enabled", function () {
-        var debugged
-        var config
-
-
-        beforeEach(function () {
-          config = configurator.initialize({debug : {tracer_tracing : true}})
-          debugged = new Agent(config)
-        })
-
-        it("should not crash on instantiation", function () {
-          expect(function () { debugged = new Agent(config); }).not.throws()
-        })
-
-        it("doesn't blow up when dumping describer", function (done) {
-          var transaction
-
-          // use this to get the traced transactions
-          var proxy = debugged.tracer.transactionProxy(function cb_transactionProxy() {
-            transaction = debugged.getTransaction()
-          })
-
-          // make sure transactionProxy is still synchronous
-          proxy()
-          should.exist(transaction)
-
-
-          debugged.on('transactionFinished', function () {
-            should.exist(transaction.describer)
-            done()
-          })
-
-          transaction.end()
-        })
-      })
     })
 
     describe("with naming rules configured", function () {
@@ -646,7 +610,7 @@ describe("the New Relic agent", function () {
       it("should capture the trace off a finished transaction", function (done) {
         var trans = new Transaction(agent)
         // need to initialize the trace
-        trans.getTrace().setDurationInMillis(2100)
+        trans.trace.setDurationInMillis(2100)
 
         agent.once('transactionFinished', function () {
           var trace = agent.traces.trace
@@ -662,7 +626,7 @@ describe("the New Relic agent", function () {
       it("should capture the synthetic trace off a finished transaction", function (done) {
         var trans = new Transaction(agent)
         // need to initialize the trace
-        trans.getTrace().setDurationInMillis(2100)
+        trans.trace.setDurationInMillis(2100)
         trans.syntheticsData = {
           version: 1,
           accountId: 357,
@@ -794,10 +758,10 @@ describe("the New Relic agent", function () {
 
       it("shouldn't aggregate trace when transaction is ignored", function () {
         /* Top-level *and* second-level methods are bound into EEs, so mock the
-         * transaction trace getter instead.
+         * transaction trace record method instead.
          */
         var mock = sinon.mock(transaction)
-        mock.expects('getTrace').never()
+        mock.expects('record').never()
 
         transaction.end()
       })
@@ -1173,7 +1137,7 @@ describe("the New Relic agent", function () {
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
-      transaction.getTrace().setDurationInMillis(4001)
+      transaction.trace.setDurationInMillis(4001)
       transaction.end()
 
       var metricData =
@@ -1208,7 +1172,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       transaction.setName('/test/path/31337', 501)
       agent.errors.add(transaction, new Error('application code error'))
-      transaction.getTrace().setDurationInMillis(4001)
+      transaction.trace.setDurationInMillis(4001)
       transaction.end()
 
       var metricData =
@@ -1250,7 +1214,7 @@ describe("the New Relic agent", function () {
     it("should bail informatively when sending metric data", function (done) {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
-      transaction.getTrace().setDurationInMillis(4001)
+      transaction.trace.setDurationInMillis(4001)
       transaction.setName('/test/path/31337', 501)
       transaction.end()
 
@@ -1263,7 +1227,7 @@ describe("the New Relic agent", function () {
     it("should bail informatively when sending error data", function (done) {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
-      transaction.getTrace().setDurationInMillis(4001)
+      transaction.trace.setDurationInMillis(4001)
       transaction.setName('/test/path/31337', 501)
       transaction.end()
 
@@ -1276,7 +1240,7 @@ describe("the New Relic agent", function () {
     it("should bail informatively when sending transaction trace", function (done) {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
-      transaction.getTrace().setDurationInMillis(4001)
+      transaction.trace.setDurationInMillis(4001)
       transaction.setName('/test/path/31337', 501)
       transaction.end()
 

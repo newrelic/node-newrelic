@@ -23,7 +23,7 @@ describe("when there are parameters on transaction", function () {
   })
 
   it("event should contain those parameters", function (){
-    var par = trans.getTrace().parameters
+    var par = trans.trace.parameters
     par['test'] = 'TEST'
     agent._addEventFromTransaction(trans)
 
@@ -142,7 +142,7 @@ describe("on transaction finished", function () {
   it("should contain custom parameters", function () {
     var trans = new Transaction(agent)
 
-    trans.getTrace().custom['a'] = 'b'
+    trans.trace.custom['a'] = 'b'
     trans.end(function() {
       var event = agent.events.toArray()[0]
       expect(event[1].a).equals('b')
