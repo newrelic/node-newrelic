@@ -707,4 +707,84 @@ describe("built-in http module instrumentation", function () {
       })
     })
   })
+
+  describe('request headers for outbound request', function () {
+    it('should preserve headers regardless of format', function(done) {
+      var encKey = 'gringletoes'
+      var agent = helper.instrumentMockedAgent(
+        {cat: true},
+        {encoding_key: encKey, obfuscatedId: 'o123'}
+      )
+      var http = require('http')
+      var had_expect = 0
+
+      var server = http.createServer(function(req, res) {
+        if(req.headers.expect) {
+          had_expect++
+          expect(req.headers.expect).equal('100-continue')
+        }
+        expect(req.headers.a).equal('1')
+        expect(req.headers.b).equal('2')
+        expect(req.headers['x-newrelic-id']).equal('o123')
+        res.end()
+        req.resume()
+      })
+
+      server.listen(4123, function() {
+        helper.runInTransaction(agent, obj_request)
+      })
+
+      function obj_request() {
+        addSegment()
+        var req = http.request(
+          {host : 'localhost', port : 4123, headers: {a: 1, b: 2}},
+          function(res) {
+            res.resume()
+            array_request()
+          }
+        )
+        req.end()
+      }
+
+      function array_request() {
+        addSegment()
+        var req = http.request(
+          {host : 'localhost', port : 4123, headers: [['a', 1], ['b', 2]]},
+          function(res) {
+            res.resume()
+            expect_request()
+          }
+        )
+        req.end()
+      }
+
+      function expect_request() {
+        addSegment()
+        var req = http.request(
+          {host : 'localhost', port : 4123, headers: {a: 1, b: 2, expect: '100-continue'}},
+          function(res) {
+            res.resume()
+            end_test()
+          }
+        )
+        req.end()
+      }
+
+      function end_test() {
+        expect(had_expect).equal(1)
+        agent.getTransaction().end()
+        helper.unloadAgent(agent)
+        server.close(done)
+      }
+    })
+
+    function addSegment() {
+      var transaction = agent.getTransaction()
+      transaction.webSegment = {
+        getDurationInMillis: function fake() {
+          return 1000;
+        }
+      }
+    }
+  })
 })
