@@ -44,7 +44,7 @@ function oracleSetup(runTest) {
                 console.log('there was an error dropping the test table', error)
             }
 
-            client.execute(tableCreate, [], function (err, result) {
+            client.execute(tableCreate, [], function (err) {
                 if (err) {
                     throw err
                 }
@@ -178,7 +178,7 @@ test('Oracle instrumentation', function (t) {
 
                 oracle.connect(connectData, function (err, client) {
 
-                    if (err) return t.fail(error)
+                    if (err) return t.fail(err)
                     client.execute(insQuery, [pkVal, colVal], function (error, ok) {
                         if (error) return t.fail(error)
                         t.ok(agent.getTransaction(), 'transaction should still be visible')
