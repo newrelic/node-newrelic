@@ -1,12 +1,13 @@
 'use strict'
 
-var util      = require('util')
-  , logger    = require('./lib/logger').child({component : 'api'})
-  , NAMES     = require('./lib/metrics/names')
-  , recordWeb = require('./lib/metrics/recorders/http.js')
-  , recordBackground = require('./lib/metrics/recorders/other.js')
-  , customRecorder = require('./lib/metrics/recorders/custom')
-  , hashes    = require('./lib/util/hashes')
+var util = require('util')
+var logger = require('./lib/logger').child({component : 'api'})
+var NAMES = require('./lib/metrics/names')
+var recordWeb = require('./lib/metrics/recorders/http.js')
+var recordBackground = require('./lib/metrics/recorders/other.js')
+var customRecorder = require('./lib/metrics/recorders/custom')
+var hashes = require('./lib/util/hashes')
+var stringify = require('json-stringify-safe')
 
 
 /*
@@ -33,6 +34,8 @@ var RUM_ISSUES = [
 var CUSTOM_BLACKLIST = [
   'nr_flatten_leading'
 ]
+
+var CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
 /**
  * The exported New Relic API. This contains all of the functions meant to be
@@ -625,6 +628,88 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
     max: 0,
     sumOfSquares: 0
   })
+}
+
+API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
+  // FLAG: custom_events
+  if (!this.agent.config.feature_flag.custom_events) {
+    return
+  }
+
+  if (!this.agent.config.custom_insights_events.enabled) {
+    return
+  }
+  // Check all the arguments before bailing to give maximum information in a
+  // single invocation.
+  var fail = false
+
+  if (!eventType || typeof eventType !== 'string') {
+    logger.warn(
+      'recordCustomEvent requires a string for its first argument, got %s (%s)',
+      stringify(eventType),
+      typeof eventType
+    )
+    fail = true
+  } else if (!CUSTOM_EVENT_TYPE_REGEX.test(eventType)) {
+    logger.warn(
+      'recordCustomEvent eventType of %s is invalid, it must match /%s/',
+      eventType,
+      CUSTOM_EVENT_TYPE_REGEX.source
+    )
+    fail = true
+  } else if (eventType.length > 255) {
+    logger.warn(
+      'recordCustomEvent eventType must have a length less than 256, got %s (%s)',
+      eventType,
+      eventType.length
+    )
+    fail = true
+  }
+  // If they don't pass an attributes object, or the attributes argument is not
+  // an object, or if it is an object and but is actually an array, log a
+  // warning and set the fail bit.
+  if (!attributes || typeof attributes !== 'object' || Array.isArray(attributes)) {
+    logger.warn(
+      'recordCustomEvent requires an object for its second argument, got %s (%s)',
+      stringify(attributes),
+      typeof attributes
+    )
+    fail = true
+  } else if (_checkKeyLength(attributes, 255)) {
+    fail = true
+  }
+
+  if (fail) {
+    return
+  }
+
+  var instrinics = {
+    type: eventType,
+    timestamp: Date.now(),
+    source: 'Customer'
+  }
+
+  this.agent.customEvents.add([instrinics, attributes])
+}
+
+
+function _checkKeyLength(object, maxLength) {
+  var keys = Object.keys(object)
+  var badKey = false
+  var len = keys.length
+  var key = '' // init to string because gotta go fast
+  for (var i = 0; i < len; i++) {
+    key = keys[i]
+    if (key.length > maxLength) {
+      logger.warn(
+        'recordCustomEvent requires keys to be less than 256 chars got %s (%s)',
+        key,
+        key.length
+      )
+      badKey = true
+    }
+  }
+  return badKey
 }
 
 module.exports = API

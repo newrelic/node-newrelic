@@ -14,8 +14,8 @@ describe("the stubbed New Relic agent API", function () {
     api = new API()
   })
 
-  it("should export 14 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(14)
+  it("should export 15 API calls", function () {
+    expect(Object.keys(api.constructor.prototype).length).equal(15)
   })
 
   it("exports a transaction naming function", function () {
@@ -144,8 +144,31 @@ describe("the stubbed New Relic agent API", function () {
     expect(api.recordMetric).a('function')
   })
 
+  it('should not throw when calling the metric recorder', function () {
+    expect(function () {
+      api.recordMetric('metricname', 1)
+    }).not.throws()
+  })
+
   it('exports a metric increment function', function () {
-    should.exist(api.setTransactionName)
-    expect(api.setTransactionName).a('function')
+    should.exist(api.incrementMetric)
+    expect(api.incrementMetric).a('function')
+  })
+
+  it('should not throw when calling a metric incrementor', function () {
+    expect(function () {
+      api.incrementMetric('metric name')
+    }).not.throws()
+  })
+
+  it('exports a record custom event function', function () {
+    should.exist(api.recordCustomEvent)
+    expect(api.recordCustomEvent).a('function')
+  })
+
+  it('should not throw when calling the custom metric recorder', function () {
+    expect(function () {
+      api.recordCustomEvent('EventName', {id: 10})
+    }).not.throws()
   })
 })

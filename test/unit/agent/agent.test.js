@@ -1,7 +1,6 @@
 'use strict'
 
-var path         = require('path')
-  , sinon        = require('sinon')
+var sinon        = require('sinon')
   , chai         = require('chai')
   , should       = chai.should()
   , expect       = chai.expect
@@ -11,7 +10,7 @@ var path         = require('path')
   , configurator = require('../../../lib/config.js')
   , Agent        = require('../../../lib/agent.js')
   , Transaction  = require('../../../lib/transaction')
-  
+
 
 /*
  *
@@ -20,7 +19,7 @@ var path         = require('path')
  */
 var RUN_ID = 1337
   , URL    = 'https://collector.newrelic.com'
-  
+
 
 describe("the New Relic agent", function () {
   before(function () {
@@ -175,7 +174,7 @@ describe("the New Relic agent", function () {
           debugged.once('transactionFinished', function () {
             var supportability = debugged.config.debug.supportability
               , metric = supportability.getMetric('Supportability/Transaction/Count')
-              
+
 
             should.exist(metric)
             expect(metric.callCount).equal(1)
@@ -208,7 +207,7 @@ describe("the New Relic agent", function () {
       describe("with tracer tracing enabled", function () {
         var debugged
           , config
-          
+
 
         beforeEach(function () {
           config = configurator.initialize({debug : {tracer_tracing : true}})
@@ -658,7 +657,7 @@ describe("the New Relic agent", function () {
       var NAME     = 'Custom/Test/events'
         , SCOPE    = 'TEST'
         , METRICID = 17
-        
+
 
       beforeEach(function () {
         agent.config.run_id = RUN_ID
@@ -881,7 +880,7 @@ describe("the New Relic agent", function () {
       agent.collector.metricData = function (payload) {
         var metrics = payload[3]
           , metric  = metrics.getMetric('Errors/all')
-          
+
 
         should.exist(metric)
         expect(metric.callCount).equal(3)

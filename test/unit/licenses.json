@@ -1,6 +1,5 @@
 {
   "async-listener": "BSD-2-Clause",
-  "bunyan": "MIT*",
   "continuation-local-storage": "BSD",
   "emitter-listener" : "BSD-2-Clause",
   "json-stringify-safe": "BSD",

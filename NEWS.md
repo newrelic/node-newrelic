@@ -1,3 +1,18 @@
+## v1.13.3 (2014-11-13):
+
+* Fixed a bug in Cross Application Tracing where the agent would sometimes
+  attempt to set a header after headers had already been sent.
+
+* Replaced the logger with one that is handles file writes properly lowering
+  overall resource usage.
+
+  This is a small change with a large impact. `fs.createWriteStream` returns
+  whether data was queued or not. If it is queued it is recommended to wait on a
+  `drain` event but this isn't manditory. Most loggers we've found ignore this
+  event which leads to many writes getting buffered and a rapid increase in
+  native heap size as well as lowering the process's ability to respond to
+  requests.
+
 ### v1.13.2 (2014-11-06):
 
 * Updated support for hapi 7.2 and higher.
