@@ -13,6 +13,7 @@ var tap = require('tap')
     }
     , agent = helper.instrumentMockedAgent()
     , oracle = require('oracle')
+    , async = require('async')
 
 
 //constants for table creation and db connection
@@ -38,16 +39,13 @@ function oracleSetup(runTest) {
         var tableCreate = 'CREATE TABLE ' + TABLE + ' (' + PK + ' NUMBER PRIMARY KEY, '
         tableCreate += COL + ' VARCHAR2(50))'
 
-        client.execute(tableDrop, [], function (error) {
-            if (error) {
-                // i don't really care if tableDrop fails, as long as we can create the table we are okay
-                console.log('there was an error dropping the test table', error)
-            }
+        client.execute(tableDrop, [], function () {
 
             client.execute(tableCreate, [], function (err) {
                 if (err) {
                     throw err
                 }
+
                 client.close()
                 runTest()
             })
@@ -55,12 +53,24 @@ function oracleSetup(runTest) {
     })
 }
 
+function getSelectSegment(setSegment, insertCallCount) {
+    // loop through all of the insert segments to get to the select segment
+    var getSegment = setSegment.children[0]
+    for (var i = 1; i < insertCallCount; i++) {
+        getSegment = getSegment.children[0]
+    }
+    return getSegment
+}
+
 /**
  *
  * @param t - test object
  * @param transaction - new relic transaction
  */
-function verify(t, transaction) {
+function verify(t, transaction, callCount, insertCallCount, selectCallCount) {
+    callCount = callCount || 2
+    insertCallCount = insertCallCount || 1
+    selectCallCount = selectCallCount || 1
     setImmediate(function () {
 
         t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
@@ -68,14 +78,14 @@ function verify(t, transaction) {
         var unscoped = transaction.metrics.unscoped
 
         var expected = {
-            'Datastore/all': 2,
-            'Datastore/allOther': 2,
-            'Datastore/operation/Oracle/insert': 1,
-            'Datastore/operation/Oracle/select': 1
+            'Datastore/all': callCount,
+            'Datastore/allOther': callCount,
+            'Datastore/operation/Oracle/insert': insertCallCount,
+            'Datastore/operation/Oracle/select': selectCallCount
         }
 
-        expected['Datastore/statement/Oracle/' + TABLE + '/insert'] = 1
-        expected['Datastore/statement/Oracle/' + TABLE + '/select'] = 1
+        expected['Datastore/statement/Oracle/' + TABLE + '/insert'] = insertCallCount
+        expected['Datastore/statement/Oracle/' + TABLE + '/select'] = selectCallCount
 
         var expectedNames = Object.keys(expected)
         var unscopedNames = Object.keys(unscoped)
@@ -92,17 +102,22 @@ function verify(t, transaction) {
         var trace = transaction.getTrace()
         t.ok(trace, 'trace should exist')
         t.ok(trace.root, 'root element should exist')
-
         t.equals(trace.root.children.length, 1,
             'there should be only one child of the root')
         var setSegment = trace.root.children[0]
+
+        // todo: figure out how to register host and port
+        //t.equals(setSegment.host, params.oracle_host, 'should register the host')
+        //t.equals(setSegment.port, params.oracle_port, 'should register the port')
 
         t.ok(setSegment, 'trace segment for insert should exist')
         t.equals(setSegment.name, 'Datastore/statement/Oracle/' + TABLE + '/insert',
             'should register the query call')
         t.equals(setSegment.children.length, 1,
             'set should have an only child')
-        var getSegment = setSegment.children[0]
+
+        var getSegment = getSelectSegment(setSegment, insertCallCount)
+
         t.ok(getSegment, 'trace segment for select should exist')
 
         if (!getSegment) return t.end()
@@ -118,11 +133,10 @@ function verify(t, transaction) {
 }
 
 test('Oracle instrumentation', function (t) {
-    t.plan(2)
+    t.plan(4)
 
     oracleSetup(runTest)
     function runTest() {
-
 
         t.test('simple query with prepared statement and connectSync', function (t) {
             t.notOk(agent.getTransaction(), 'no transaction should be in play')
@@ -133,7 +147,7 @@ test('Oracle instrumentation', function (t) {
                 t.equal(tx, transaction, 'We got the same transaction')
 
                 var colVal = 'Hello'
-                var pkVal = 112
+                var pkVal = 111
                 var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' + COL
                 insQuery += ') VALUES (:1, :2)'
 
@@ -147,8 +161,8 @@ test('Oracle instrumentation', function (t) {
                     var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
                     selQuery += PK + '=' + pkVal
 
-                    client.execute(selQuery, [], function (error, value) {
-                        if (error) return t.fail(error)
+                    client.execute(selQuery, [], function (err, value) {
+                        if (err) return t.fail(err)
                         t.ok(agent.getTransaction(), 'transaction should still still be visible')
                         t.equals(value[0][COL], colVal, 'Oracle client should still work')
 
@@ -159,8 +173,6 @@ test('Oracle instrumentation', function (t) {
                     })
                 })
             })
-
-
         })
 
         t.test('simple query with prepared statement and connect', function (t) {
@@ -172,7 +184,7 @@ test('Oracle instrumentation', function (t) {
                 t.equal(tx, transaction, 'We got the same transaction')
 
                 var colVal = 'Hello'
-                var pkVal = 111
+                var pkVal = 211
                 var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' + COL
                 insQuery += ') VALUES(:1, :2)'
 
@@ -187,8 +199,8 @@ test('Oracle instrumentation', function (t) {
                         var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
                         selQuery += PK + '=' + pkVal
 
-                        client.execute(selQuery, [], function (error, value) {
-                            if (error) return t.fail(error)
+                        client.execute(selQuery, [], function (er, value) {
+                            if (er) return t.fail(er)
                             t.ok(agent.getTransaction(), 'transaction should still still be visible')
                             t.equals(value[0][COL], colVal, 'Oracle client should still work')
 
@@ -202,6 +214,116 @@ test('Oracle instrumentation', function (t) {
             })
 
 
+        })
+
+        t.test('query using reader and nextRow', function (t) {
+
+            function nextRowTest() {
+
+                t.notOk(agent.getTransaction(), 'no transaction should be in play')
+                helper.runInTransaction(agent, function transactionInScope(tx) {
+                    var transaction = agent.getTransaction()
+                    t.ok(transaction, 'transaction should be visible')
+                    t.equal(tx, transaction, 'We got the same transaction')
+
+                    var colVal = 'Hello'
+                    var pkVal = 311
+                    var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' + COL
+                    insQuery += ') VALUES(:1, :2)'
+
+                    oracle.connect(connectData, function (err, client) {
+
+                        if (err) return t.fail(err)
+
+                        client.execute(insQuery, [pkVal, colVal], function (error, ok) {
+                            if (error) return t.fail(error)
+                            t.ok(agent.getTransaction(), 'transaction should still be visible')
+                            t.ok(ok, 'everything should be peachy after setting')
+
+                            var selQuery = 'SELECT * FROM ' + TABLE
+                            var reader = client.reader(selQuery, [])
+
+                            reader.nextRow(function (er, row) {
+                                if (er) return t.fail(er)
+                                t.ok(agent.getTransaction(), 'transaction should still still be visible')
+                                t.equals(row[COL], colVal, 'Oracle client should still work')
+
+                                reader.nextRow(function (er2, row2) {
+                                    if (er2) return t.fail(er2)
+                                    t.ok(agent.getTransaction(), 'transaction should still still be visible')
+                                    t.equals(row2, undefined, 'Oracle client should still work')
+
+                                    transaction.end(function () {
+                                        client.close()
+                                        verify(t, transaction, 2, 1)
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            }
+            oracleSetup(nextRowTest)
+        })
+
+        t.test('query using reader and nextRows', function (t) {
+
+            t.notOk(agent.getTransaction(), 'no transaction should be in play')
+            helper.runInTransaction(agent, function transactionInScope(tx) {
+                var transaction = agent.getTransaction()
+                t.ok(transaction, 'transaction should be visible')
+                t.equal(tx, transaction, 'We got the same transaction')
+
+                var colVal = 'Hello'
+                var pkVal = 411
+                var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' + COL
+                insQuery += ') VALUES(:1, :2)'
+
+                oracle.connect(connectData, function (err, client) {
+
+                    if (err) return t.fail(err)
+
+                    var insertCount = 0;
+
+                    // insert 5 rows
+                    async.whilst(
+                        function () {
+                            return insertCount < 5
+                        },
+                        function (callback) {
+                            client.execute(insQuery, [pkVal, colVal], function (error, ok) {
+                                if (error) return t.fail(error)
+                                t.ok(agent.getTransaction(), 'transaction should still be visible')
+                                t.ok(ok, 'everything should be peachy after setting')
+                                insertCount++
+                                pkVal++
+                                callback()
+                            })
+                        },
+                        testRead
+                    )
+
+                    function testRead() {
+                        var selQuery = 'SELECT * FROM ' + TABLE
+                        var reader = client.reader(selQuery, [])
+
+                        reader.nextRows(5, function (error, rows) {
+                            if (error) return t.fail(error)
+                            t.ok(agent.getTransaction(), 'transaction should still still be visible')
+                            t.equals(rows[0][COL], colVal, 'Oracle client should still work')
+
+                            var trace = transaction.getTrace()
+                            var getSegment = getSelectSegment(trace.root.children[0], insertCount)
+                            getSegment.timer.end()
+
+                            transaction.end(function () {
+                                client.close()
+                                verify(t, transaction, 6, 5)
+                            })
+                        })
+                    }
+                })
+            })
         })
 
         t.tearDown(function () {
