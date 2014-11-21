@@ -1,3 +1,7 @@
+## v1.13.4 (2014-11-20):
+
+ * Added support for the the aggregate method on mongodb collections
+
 ## v1.13.3 (2014-11-13):
 
 * Fixed a bug in Cross Application Tracing where the agent would sometimes
