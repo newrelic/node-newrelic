@@ -226,7 +226,7 @@ function runWithTransaction(context, t, callback) {
 }
 
 test("agent instrumentation of node-mongodb-native", function (t) {
-  t.plan(15)
+  t.plan(16)
 
   helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(error, app) {
     if (error) return t.fail(error)
@@ -1305,6 +1305,43 @@ test("agent instrumentation of node-mongodb-native", function (t) {
                 verifyNoStats(t, agent, 'remove')
               })
             })
+          })
+        })
+      })
+    })
+
+    t.test("aggregate", function (t) {
+      t.plan(2)
+
+      t.test("inside transaction", function (t) {
+        t.plan(9)
+
+        runWithTransaction(this, t, function (agent, collection, transaction) {
+          collection.aggregate([{$match: {id: 1}}], function (error, data) {
+            if (error) { t.fail(error); return t.end(); }
+
+            t.ok(agent.getTransaction(), "transaction should still be visible")
+
+            t.deepEqual(data, [])
+
+            transaction.end(function() {
+              verifyTrace(t, transaction, 'aggregate')
+            })
+          })
+        })
+      })
+
+      t.test("outside transaction", function (t) {
+        t.plan(7)
+
+        runWithoutTransaction(this, t, function (agent, collection) {
+          collection.aggregate([{$match: {id: 1}}], function (error, data) {
+            if (error) { t.fail(error); return t.end(); }
+            t.notOk(agent.getTransaction(), "should have no transaction")
+
+            t.deepEqual(data, [])
+
+            verifyNoStats(t, agent, 'aggregate')
           })
         })
       })
