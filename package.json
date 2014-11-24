@@ -80,6 +80,7 @@
     "connect": "*",
     "cover": "*",
     "express": "*",
+    "express-enrouten": "^1.1.1",
     "generic-pool": "*",
     "glob": "~3.2.9",
     "hapi": "*",
