@@ -1,3 +1,6 @@
+/**
+ * This test checks for regressions on the route stack manipulation for Express apps.
+ */
 'use strict'
 
 var path    = require('path')
@@ -6,7 +9,7 @@ var path    = require('path')
     , helper  = require('../../lib/agent_helper.js')
 
 
-test("Express 4 router introspection", function (t) {
+test("Express 4 + express-enrouten compatibility test", function (t) {
     t.plan(2)
 
     var agent   = helper.instrumentMockedAgent()
