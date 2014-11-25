@@ -1,6 +1,6 @@
 ## v1.14.0 (2014-11-25):
 
-* The node agent now instrument connections to Oracle Databases using the
+* The node agent now instruments connections to Oracle Databases using the
   `oracle` driver. This patch was contributed by
   [ryanwilliamquinn](https://github.com/ryanwilliamquinn)
 
