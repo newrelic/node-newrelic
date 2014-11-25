@@ -1,6 +1,16 @@
+## v1.14.0 (2014-11-25):
+
+* The node agent now instrument connections to Oracle Databases using the
+  `oracle` driver. This patch was contributed by
+  [ryanwilliamquinn](https://github.com/ryanwilliamquinn)
+
+* Fixed an issue that would break kraken apps when the node agent was enabled.
+  This patch was contributed by [Lenny Markus](https://github.com/lmarkus)
+
 ## v1.13.4 (2014-11-20):
 
- * Added support for the the aggregate method on mongodb collections
+* Added support for the the aggregate method on mongodb collections. This patch
+  was contributed by [taxilian](https://github.com/taxilian)
 
 ## v1.13.3 (2014-11-13):
 
