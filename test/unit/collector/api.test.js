@@ -6,13 +6,13 @@ var path   = require('path')
   , expect = chai.expect
   , should = chai.should()
   , API    = require('../../../lib/collector/api.js')
-  
+
 
 var HOST   = 'collector.newrelic.com'
   , PORT   = 80
   , URL    = 'http://' + HOST
   , RUN_ID = 1337
-  
+
 
 function generate(method, runID) {
   var fragment = '/agent_listener/invoke_raw_method?' +
@@ -64,7 +64,7 @@ describe("CollectorAPI", function () {
       var bad
         , ssc
         , raw
-        
+
 
       var valid = {
         capture_params : true,
@@ -141,7 +141,7 @@ describe("CollectorAPI", function () {
       describe("receiving no hostname from get_redirect_host", function () {
         var captured
           , ssc
-          
+
 
         before(function (done) {
           var redirection = nock(URL)
@@ -177,12 +177,12 @@ describe("CollectorAPI", function () {
       describe("receiving a weirdo redirect name from get_redirect_host", function () {
         var captured
           , ssc
-          
+
 
         before(function (done) {
           var redirection = nock(URL)
                               .post(generate('get_redirect_host'))
-                              .reply(200, {return_value : HOST + ':chug:8080'})
+                              .reply(200, {return_value : HOST + ':chug:8089'})
           var connect = nock(URL)
                           .post(generate('connect'))
                           .reply(200, {return_value : {agent_run_id : RUN_ID}})
@@ -217,7 +217,7 @@ describe("CollectorAPI", function () {
       describe("receiving no config back from connect", function () {
         var captured
           , ssc
-          
+
 
         before(function (done) {
           var redirection = nock(URL)
@@ -288,7 +288,7 @@ describe("CollectorAPI", function () {
         var captured
           , data
           , raw
-          
+
 
         before(function (done) {
           var redirection = nock(URL).post(generate('get_redirect_host')).reply(200)
@@ -329,7 +329,7 @@ describe("CollectorAPI", function () {
         var captured
           , data
           , raw
-          
+
 
         before(function (done) {
           var redirection = nock(URL)
@@ -373,7 +373,7 @@ describe("CollectorAPI", function () {
         var captured
           , data
           , raw
-          
+
 
         var response = {
           exception : {
@@ -435,7 +435,7 @@ describe("CollectorAPI", function () {
         var bad
           , ssc
           , raw
-          
+
 
         var valid = {
           capture_params : true,
@@ -484,7 +484,7 @@ describe("CollectorAPI", function () {
         var bad
           , ssc
           , raw
-          
+
 
         var valid = {
           capture_params : true,
@@ -496,8 +496,8 @@ describe("CollectorAPI", function () {
         before(function (done) {
           var redirection = nock(URL)
                               .post(generate('get_redirect_host'))
-                              .reply(200, {return_value : HOST + ':8080'})
-          var connection = nock(URL + ':8080')
+                              .reply(200, {return_value : HOST + ':8089'})
+          var connection = nock(URL + ':8089')
                               .post(generate('connect'))
                               .reply(200, response)
 
@@ -526,7 +526,7 @@ describe("CollectorAPI", function () {
         })
 
         it("should have the correct port number", function () {
-          expect(api._agent.config.port).equal('8080')
+          expect(api._agent.config.port).equal('8089')
         })
 
         it("should have a run ID", function () {
@@ -546,7 +546,7 @@ describe("CollectorAPI", function () {
         var bad
           , ssc
           , raw
-          
+
 
         var valid = {
           capture_params : true,
@@ -562,7 +562,7 @@ describe("CollectorAPI", function () {
             , failure     = nock(URL).post(redirectURL).reply(503)
             , success     = nock(URL).post(redirectURL).reply(200, {return_value : HOST})
             , connection  = nock(URL).post(generate('connect')).reply(200, response)
-            
+
 
           api.connect(function test(error, response, json) {
             bad = error
@@ -601,7 +601,7 @@ describe("CollectorAPI", function () {
         var bad
           , ssc
           , raw
-          
+
 
         var valid = {
           capture_params : true,
@@ -617,7 +617,7 @@ describe("CollectorAPI", function () {
             , failure     = nock(URL).post(redirectURL).times(5).reply(503)
             , success     = nock(URL).post(redirectURL).reply(200, {return_value : HOST})
             , connection  = nock(URL).post(generate('connect')).reply(200, response)
-            
+
 
           api.connect(function test(error, response, json) {
             bad = error
@@ -658,14 +658,14 @@ describe("CollectorAPI", function () {
         var captured
           , body
           , raw
-          
+
 
         before(function (done) {
           fast()
 
           var redirectURL = generate('get_redirect_host')
             , failure     = nock(URL).post(redirectURL).times(6).reply(503)
-            
+
 
           api.connect(function test(error, response, json) {
             captured = error
@@ -703,7 +703,7 @@ describe("CollectorAPI", function () {
         var captured
           , data
           , raw
-          
+
 
         var response = {
           exception : {
@@ -716,7 +716,7 @@ describe("CollectorAPI", function () {
           fast()
           var redirectURL = generate('get_redirect_host')
             , failure     = nock(URL).post(redirectURL).times(6).reply(200, response)
-            
+
 
           api.connect(function test(error, response, json) {
             captured = error
@@ -762,7 +762,7 @@ describe("CollectorAPI", function () {
         var captured
           , data
           , raw
-          
+
 
         var response = {
           exception : {
@@ -777,7 +777,7 @@ describe("CollectorAPI", function () {
           var redirectURL = generate('get_redirect_host')
             , failure     = nock(URL).post(redirectURL).reply(503)
             , license     = nock(URL).post(redirectURL).times(5).reply(200, response)
-            
+
 
           api.connect(function test(error, response, json) {
             captured = error
@@ -870,7 +870,7 @@ describe("CollectorAPI", function () {
       var bad
         , nothing
         , raw
-        
+
 
       var response = {return_value : []}
 
@@ -933,7 +933,7 @@ describe("CollectorAPI", function () {
       var bad
         , nothing
         , raw
-        
+
 
       var response = {return_value : []}
 
@@ -1000,7 +1000,7 @@ describe("CollectorAPI", function () {
       var bad
         , nothing
         , raw
-        
+
 
       var response = {return_value : []}
 
@@ -1064,7 +1064,7 @@ describe("CollectorAPI", function () {
       var bad
         , nothing
         , raw
-        
+
 
       var response = {return_value : []}
 
@@ -1120,7 +1120,7 @@ describe("CollectorAPI", function () {
       var bad
         , nothing
         , raw
-        
+
 
       var response = {return_value : []}
 
@@ -1170,7 +1170,7 @@ describe("CollectorAPI", function () {
       var bad
         , nothing
         , raw
-        
+
 
       var response = {return_value : null}
 
@@ -1210,7 +1210,7 @@ describe("CollectorAPI", function () {
         var captured
           , body
           , raw
-          
+
 
         before(function (done) {
           api._agent.config.run_id = RUN_ID

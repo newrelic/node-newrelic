@@ -9,11 +9,11 @@ var path    = require('path')
   , codec   = require('../../lib/util/codec.js')
   , logger  = require('../../lib/logger.js')
                 .child({component : 'fake_collector'})
-  
+
 
 var DEFAULT_HOST = 'collector.lvh.me'
   , ACTUAL_HOST  = 'collector-1.lvh.me'
-  , PORT         = 8080
+  , PORT         = 8089
   , PATHS        = {
       connect   : path.join(__dirname, 'schemas/connect.json'),
       container : path.join(__dirname, 'schemas/transaction_sample_data.json'),
@@ -23,7 +23,7 @@ var DEFAULT_HOST = 'collector.lvh.me'
       sql       : path.join(__dirname, 'schemas/sql_trace_data.json'),
       sqlParams : path.join(__dirname, 'schemas/sql_params.json')
     }
-  
+
 
 var schemas = {}
 Object.keys(PATHS).forEach(function cb_forEach(key) {

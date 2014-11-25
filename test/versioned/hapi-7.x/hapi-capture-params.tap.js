@@ -11,7 +11,7 @@ var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
-  
+
 
 
 test("Hapi capture params support", function (t) {
@@ -20,8 +20,8 @@ test("Hapi capture params support", function (t) {
   t.test("simple case with no params", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8080)
-      
+      , server = hapi.createServer('localhost', 8089)
+
 
     // disabled by default
     agent.config.capture_params = true
@@ -47,7 +47,7 @@ test("Hapi capture params support", function (t) {
     })
 
     server.start(function () {
-      request.get('http://localhost:8080/test/',
+      request.get('http://localhost:8089/test/',
                   {json : true},
                   function (error, res, body) {
 
@@ -60,8 +60,8 @@ test("Hapi capture params support", function (t) {
   t.test("case with route params", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8080)
-      
+      , server = hapi.createServer('localhost', 8089)
+
 
     // disabled by default
     agent.config.capture_params = true
@@ -87,7 +87,7 @@ test("Hapi capture params support", function (t) {
     })
 
     server.start(function () {
-      request.get('http://localhost:8080/test/1337/',
+      request.get('http://localhost:8089/test/1337/',
                   {json : true},
                   function (error, res, body) {
 
@@ -100,8 +100,8 @@ test("Hapi capture params support", function (t) {
   t.test("case with query params", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8080)
-      
+      , server = hapi.createServer('localhost', 8089)
+
 
     // disabled by default
     agent.config.capture_params = true
@@ -127,7 +127,7 @@ test("Hapi capture params support", function (t) {
     })
 
     server.start(function () {
-      request.get('http://localhost:8080/test/?name=hapi',
+      request.get('http://localhost:8089/test/?name=hapi',
                   {json : true},
                   function (error, res, body) {
 
@@ -140,8 +140,8 @@ test("Hapi capture params support", function (t) {
  t.test("case with both route and query params", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8080)
-      
+      , server = hapi.createServer('localhost', 8089)
+
 
     // disabled by default
     agent.config.capture_params = true
@@ -167,7 +167,7 @@ test("Hapi capture params support", function (t) {
     })
 
     server.start(function () {
-      request.get('http://localhost:8080/test/1337/?name=hapi',
+      request.get('http://localhost:8089/test/1337/?name=hapi',
                   {json : true},
                   function (error, res, body) {
 

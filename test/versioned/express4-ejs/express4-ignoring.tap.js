@@ -5,7 +5,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  
+
 
 test("ignoring an Express 4 route", function (t) {
   t.plan(7)
@@ -15,7 +15,7 @@ test("ignoring an Express 4 route", function (t) {
     , express = require('express')
     , app     = express()
     , server  = require('http').createServer(app)
-    
+
 
   this.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
@@ -44,8 +44,8 @@ test("ignoring an Express 4 route", function (t) {
     res.end()
   })
 
-  server.listen(8080, function () {
-    request.get('http://localhost:8080/polling/31337',
+  server.listen(8089, function () {
+    request.get('http://localhost:8089/polling/31337',
                 {json : true},
                 function (error, res, body) {
 

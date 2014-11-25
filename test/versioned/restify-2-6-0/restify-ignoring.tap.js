@@ -5,7 +5,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  
+
 
 test("Restify router introspection", function (t) {
   t.plan(7)
@@ -13,7 +13,7 @@ test("Restify router introspection", function (t) {
   var agent  = helper.instrumentMockedAgent()
     , api    = new API(agent)
     , server = require('restify').createServer()
-    
+
 
   this.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
@@ -42,8 +42,8 @@ test("Restify router introspection", function (t) {
     next()
   })
 
-  server.listen(8080, function () {
-    request.get('http://localhost:8080/polling/31337',
+  server.listen(8089, function () {
+    request.get('http://localhost:8089/polling/31337',
                 {json : true},
                 function (error, res, body) {
 

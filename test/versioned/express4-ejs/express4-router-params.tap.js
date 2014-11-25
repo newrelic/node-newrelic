@@ -4,7 +4,7 @@ var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
-  
+
 
 test("Express 4 router introspection", function (t) {
   t.plan(12)
@@ -13,7 +13,7 @@ test("Express 4 router introspection", function (t) {
     , express = require('express')
     , app     = express()
     , server  = require('http').createServer(app)
-    
+
 
   this.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
@@ -47,8 +47,8 @@ test("Express 4 router introspection", function (t) {
     res.end()
   })
 
-  server.listen(8080, function () {
-    request.get('http://localhost:8080/test/31337',
+  server.listen(8089, function () {
+    request.get('http://localhost:8089/test/31337',
                 {json : true},
                 function (error, res, body) {
 

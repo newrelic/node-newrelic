@@ -5,7 +5,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  
+
 
 test("Restify router introspection", function (t) {
   t.plan(3)
@@ -13,7 +13,7 @@ test("Restify router introspection", function (t) {
   var agent  = helper.instrumentMockedAgent()
     , server = require('restify').createServer()
     , api    = new API(agent)
-    
+
 
   agent.config.application_id = '12345'
   agent.config.browser_monitoring.browser_key = '12345'
@@ -32,8 +32,8 @@ test("Restify router introspection", function (t) {
     next()
   })
 
-  server.listen(8080, function () {
-    request.get('http://localhost:8080/test/31337',
+  server.listen(8089, function () {
+    request.get('http://localhost:8089/test/31337',
                 {json : true},
                 function (error, res, body) {
 

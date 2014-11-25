@@ -12,7 +12,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  
+
 
 test("ignoring a Hapi route", function (t) {
   t.plan(7)
@@ -20,8 +20,8 @@ test("ignoring a Hapi route", function (t) {
   var agent  = helper.instrumentMockedAgent()
     , api    = new API(agent)
     , hapi   = require('hapi')
-    , server = hapi.createServer('localhost', 8080)
-    
+    , server = hapi.createServer('localhost', 8089)
+
 
   this.tearDown(function () {
     server.stop(function () {
@@ -54,7 +54,7 @@ test("ignoring a Hapi route", function (t) {
   })
 
   server.start(function () {
-    request.get('http://localhost:8080/order/31337',
+    request.get('http://localhost:8089/order/31337',
                 {json : true},
                 function (error, res, body) {
 

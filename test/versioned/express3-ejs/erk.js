@@ -3,7 +3,7 @@
 var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
-  
+
 
 // bootstrap instrumentation
 helper.instrumentMockedAgent()
@@ -12,15 +12,15 @@ helper.instrumentMockedAgent()
 var express = require('express')
   , app     = express()
   , server  = require('http').createServer(app)
-  
+
 
 app.get('/test/:id', function (req, res, next) {
   process.nextTick(function cb_nextTick() { throw new Error('threw in a timer', next); })
 })
 
-server.listen(8080, function () {
+server.listen(8089, function () {
   process.on('message', function (code) {
-    request.get('http://localhost:8080/test/31337', function () {
+    request.get('http://localhost:8089/test/31337', function () {
       process.exit(code)
     })
   })

@@ -12,8 +12,13 @@ test('all instrumented modules should be detected when uninstrumented',
   // Include pg.js special case
   INSTRUMENTATIONS.push('pg.js')
 
+  var loaded = []
+
   INSTRUMENTATIONS.forEach(function(module) {
-    require(module)
+    try {
+      require(module)
+      loaded.push(module)
+    } catch(err) {}
   })
 
   var uninstrumented = require('../../lib/uninstrumented')
@@ -38,7 +43,7 @@ test('all instrumented modules should be detected when uninstrumented',
 
   t.ok(flagMetrics[0][1].callCount > 0, 'Callcount for uninstrumented flag metric > 0 (' + flagMetrics[0][1].callCount + ')')
 
-  INSTRUMENTATIONS.forEach(function(module) {
+  loaded.forEach(function(module) {
     var found = false
 
     metricsJSON.forEach(function(metric) {

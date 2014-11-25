@@ -33,9 +33,9 @@ test("DataSender (callback style) talking to fake collector", function (t) {
         return t.end()
       }
 
-      t.equal(results, 'collector-1.lvh.me:8080', 'parsed result should come through')
+      t.equal(results, 'collector-1.lvh.me:8089', 'parsed result should come through')
       t.notOk(json.validations, "fake collector should find no irregularities")
-      t.equal(json.return_value, 'collector-1.lvh.me:8080',
+      t.equal(json.return_value, 'collector-1.lvh.me:8089',
               "collector returns expected collector redirect")
 
       t.end()

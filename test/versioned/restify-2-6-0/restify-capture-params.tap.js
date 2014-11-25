@@ -4,7 +4,7 @@ var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
-  
+
 
 test("Restify capture params introspection", function (t) {
   t.plan(4)
@@ -14,7 +14,7 @@ test("Restify capture params introspection", function (t) {
 
     var agent  = helper.instrumentMockedAgent()
       , server = require('restify').createServer()
-      
+
 
     agent.config.capture_params = true
 
@@ -35,8 +35,8 @@ test("Restify capture params introspection", function (t) {
       next()
     })
 
-    server.listen(8080, function () {
-      request.get('http://localhost:8080/test',
+    server.listen(8089, function () {
+      request.get('http://localhost:8089/test',
                   {json : true},
                   function (error, res, body) {
         t.equal(res.statusCode, 200, "nothing exploded")
@@ -50,7 +50,7 @@ test("Restify capture params introspection", function (t) {
 
     var agent  = helper.instrumentMockedAgent()
       , server = require('restify').createServer()
-      
+
 
     agent.config.capture_params = true
 
@@ -73,8 +73,8 @@ test("Restify capture params introspection", function (t) {
       next()
     })
 
-    server.listen(8080, function () {
-      request.get('http://localhost:8080/test/1337',
+    server.listen(8089, function () {
+      request.get('http://localhost:8089/test/1337',
                   {json : true},
                   function (error, res, body) {
         t.equal(res.statusCode, 200, "nothing exploded")
@@ -88,7 +88,7 @@ test("Restify capture params introspection", function (t) {
 
     var agent  = helper.instrumentMockedAgent()
       , server = require('restify').createServer()
-      
+
 
     agent.config.capture_params = true
 
@@ -110,8 +110,8 @@ test("Restify capture params introspection", function (t) {
       next()
     })
 
-    server.listen(8080, function () {
-      request.get('http://localhost:8080/test?name=restify',
+    server.listen(8089, function () {
+      request.get('http://localhost:8089/test?name=restify',
                   {json : true},
                   function (error, res, body) {
         t.equal(res.statusCode, 200, "nothing exploded")
@@ -125,7 +125,7 @@ test("Restify capture params introspection", function (t) {
 
     var agent  = helper.instrumentMockedAgent()
       , server = require('restify').createServer()
-      
+
 
     agent.config.capture_params = true
 
@@ -147,8 +147,8 @@ test("Restify capture params introspection", function (t) {
       next()
     })
 
-    server.listen(8080, function () {
-      request.get('http://localhost:8080/test/1337?name=restify',
+    server.listen(8089, function () {
+      request.get('http://localhost:8089/test/1337?name=restify',
                   {json : true},
                   function (error, res, body) {
         t.equal(res.statusCode, 200, "nothing exploded")

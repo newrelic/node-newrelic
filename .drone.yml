@@ -1,8 +1,8 @@
-image: node
+image: node-agent-test
 git:
   depth: 1
 script:
-  - bash -c 'source /home/ubuntu/nvm/nvm.sh && nvm install 0.10 && curl -L https://npmjs.org/install.sh | sh && echo "Running tests for node.js latest 0.10" && npm test'
+  - make drone
 services:
   - orchardup/mysql
   - dockerfile/mongodb
@@ -10,3 +10,4 @@ services:
   - library/redis
   - zmarcantel/cassandra
   - zaiste/postgresql
+  - alexeiled/docker-oracle-xe-11g

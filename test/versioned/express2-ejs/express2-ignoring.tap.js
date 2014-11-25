@@ -5,7 +5,7 @@ var path    = require('path')
   , request = require('request')
   , helper  = require('../../lib/agent_helper.js')
   , API     = require('../../../api.js')
-  
+
 
 test("ignoring an Express 3 route", function (t) {
   t.plan(7)
@@ -13,7 +13,7 @@ test("ignoring an Express 3 route", function (t) {
   var agent = helper.instrumentMockedAgent()
     , api   = new API(agent)
     , app   = require('express').createServer()
-    
+
 
   this.tearDown(function cb_tearDown() {
     app.close(function cb_close() {
@@ -42,8 +42,8 @@ test("ignoring an Express 3 route", function (t) {
     res.end()
   })
 
-  app.listen(8080, function () {
-    request.get('http://localhost:8080/polling/31337',
+  app.listen(8089, function () {
+    request.get('http://localhost:8089/polling/31337',
                 function (error, res, body) {
 
       t.equal(res.statusCode, 400, "got expected error")

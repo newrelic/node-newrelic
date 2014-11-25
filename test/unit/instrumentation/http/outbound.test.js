@@ -42,11 +42,11 @@ describe("instrumentOutbound", function () {
     })
 
     it("should accept port and provide default hostname", function () {
-      test(8080, 'localhost', 8080)
+      test(8089, 'localhost', 8089)
     })
 
     it("should accept port and hostname", function () {
-      test(8080, 'me', 8080, 'me')
+      test(8089, 'me', 8089, 'me')
     })
 
     it("should set default port on null port", function () {

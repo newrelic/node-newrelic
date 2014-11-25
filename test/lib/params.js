@@ -22,8 +22,7 @@ module.exports = {
 
   oracle_host: process.env.NR_NODE_TEST_ORACLE_HOST || 'localhost',
   oracle_port: process.env.NR_NODE_TEST_ORACLE_PORT || 1521,
-  oracle_user: process.env.NR_NODE_TEST_ORACLE_USER || 'docker',
-  oracle_pass: process.env.NR_NODE_TEST_ORACLE_PASS || 'docker',
+  oracle_user: process.env.NR_NODE_TEST_ORACLE_USER || 'system',
+  oracle_pass: process.env.NR_NODE_TEST_ORACLE_PASS || 'oracle',
   oracle_db: process.env.NR_NODE_TEST_ORACLE_DB || 'xe'
-
 }

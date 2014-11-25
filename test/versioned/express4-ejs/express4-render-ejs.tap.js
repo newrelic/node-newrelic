@@ -65,8 +65,8 @@ test("the express router should go through a whole request lifecycle", function 
   })
 
   server = require('http').createServer(router)
-  server.listen(8080, function(){
-    request.get('http://localhost:8080/test', function (error, response, body) {
+  server.listen(8089, function(){
+    request.get('http://localhost:8089/test', function (error, response, body) {
       server.close()
 
       t.ifError(error)

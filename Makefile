@@ -44,6 +44,17 @@ build: clean node_modules
 
 test: unit integration
 
+drone:
+	npm install
+	npm install oracle
+	make test-force-all
+
+test-force-all:
+	export NR_NODE_TEST_FORCE_ALL=true
+	npm install
+	npm install oracle
+	make test
+
 test-clean:
 	rm -rf test/integration/test-mongodb
 	rm -rf test/integration/test-mysql
@@ -166,6 +177,11 @@ services:
 	  docker start nr_node_postgres; \
 	else \
 	  docker run -d --name nr_node_postgres -p 5432:5432 zaiste/postgresql; \
+	fi
+	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_oracle[^a-zA-Z_]"; then \
+	  docker start nr_node_oracle; \
+	else \
+	  docker run -d --name nr_node_oracle -p 1521:1521 alexeiled/docker-oracle-xe-11g; \
 	fi
 
 	@echo "\nTo run individual integration tests, run 'source test/docker_env_vars.sh' to set\

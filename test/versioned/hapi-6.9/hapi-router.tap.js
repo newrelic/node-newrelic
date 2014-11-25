@@ -11,7 +11,7 @@ var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
   , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
-  
+
 
 function verifier(t, finished) {
   return function (transaction) {
@@ -39,8 +39,8 @@ test("Hapi router introspection", function (t) {
   t.test("simple case using server.route", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8080)
-      
+      , server = hapi.createServer('localhost', 8089)
+
 
     // disabled by default
     agent.config.capture_params = true
@@ -64,7 +64,7 @@ test("Hapi router introspection", function (t) {
     server.route(route)
 
     server.start(function () {
-      request.get('http://localhost:8080/test/31337',
+      request.get('http://localhost:8089/test/31337',
                   {json : true},
                   function (error, res, body) {
 
@@ -77,8 +77,8 @@ test("Hapi router introspection", function (t) {
   t.test("less simple case (server.addRoute & route.config.handler)", function (t) {
     var agent  = helper.instrumentMockedAgent()
       , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8080)
-      
+      , server = hapi.createServer('localhost', 8089)
+
 
     agent.config.capture_params = true
 
@@ -105,7 +105,7 @@ test("Hapi router introspection", function (t) {
     server.route(route)
 
     server.start(function () {
-      request.get('http://localhost:8080/test/31337',
+      request.get('http://localhost:8089/test/31337',
                   {json : true},
                   function (error, res, body) {
 
