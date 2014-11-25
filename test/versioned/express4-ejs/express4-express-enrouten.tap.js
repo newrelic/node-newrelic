@@ -25,12 +25,12 @@ test("Express 4 + express-enrouten compatibility test", function (t) {
   })
 
   //New Relic + express-enrouten used to have a bug, where any routes after the first one would be lost.
-  server.listen(8080, function () {
-    request.get('http://localhost:8080/', function (error, res, body) {
+  server.listen(8089, function () {
+    request.get('http://localhost:8089/', function (error, res, body) {
       t.equal(res.statusCode, 200, 'First Route loaded')
     })
 
-    request.get('http://localhost:8080/foo', function (error, res, body) {
+    request.get('http://localhost:8089/foo', function (error, res, body) {
       t.equal(res.statusCode, 200, 'Second Route loaded')
     })
   })
