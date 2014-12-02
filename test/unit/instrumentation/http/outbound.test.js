@@ -5,6 +5,7 @@ var path   = require('path')
   , events = require('events')
   , chai   = require('chai')
   , expect = chai.expect
+  , nock   = require('nock')
   , helper = require('../../../lib/agent_helper')
   , NAMES  = require('../../../../lib/metrics/names.js')
   , instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
@@ -275,5 +276,38 @@ describe('should add data from cat header to segment', function () {
 
       req.end()
     }
+  })
+})
+
+describe("when working with http.request", function () {
+  var agent
+    , HOSTNAME = 'localhost'
+    , PORT     = 8890
+
+  before(function () {
+    agent = helper.instrumentMockedAgent()
+    nock.disableNetConnect()
+  })
+
+  after(function () {
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+  })
+
+  it("should accept port and hostname", function (done) {
+    var host = "http://www.google.com"
+    var path = "/index.html"
+    nock(host).get(path).reply(200, "Hello from Google")
+
+    helper.runInTransaction(agent, function (transaction) {
+      http.get("http://www.google.com/index.html", function (res) {
+        var segment = agent.tracer.getSegment()
+
+        expect(segment.name).equal('External/www.google.com/index.html')
+        res.resume()
+        transaction.end()
+        done()
+      })
+    })
   })
 })

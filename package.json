@@ -38,6 +38,11 @@
       "name": "Jeff Olfert",
       "email": "jolfert@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Wilson Bilkovich",
+      "email": "wbilkovich@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",

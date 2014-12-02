@@ -116,9 +116,9 @@ test('cross application tracing full integration', function (t) {
       var unscoped = trans.metrics.unscoped
       var caMetric = format('ClientApplication/%s/all', CROSS_PROCESS_ID)
       t.ok(unscoped[caMetric], 'middle generated a ClientApplication metric')
-      var eaMetric = format('ExternalApp/localhost/%s/all', CROSS_PROCESS_ID)
+      var eaMetric = format('ExternalApp/localhost:%s/%s/all', END_PORT, CROSS_PROCESS_ID)
       t.ok(unscoped[eaMetric], 'middle generated a ExternalApp metric')
-      var etMetric = format('ExternalTransaction/localhost/%s/Custom//middle/end',
+      var etMetric = format('ExternalTransaction/localhost:%s/%s/Custom//middle/end', END_PORT,
                             CROSS_PROCESS_ID)
       t.ok(unscoped[etMetric], 'middle generated a ExternalTransaction metric')
       t.equal(Object.keys(unscoped).length, 12, 'middle should only have expected unscoped metrics')
@@ -160,11 +160,11 @@ test('cross application tracing full integration', function (t) {
       t.ok(intrinsic['nr.alternatePathHashes'], 'middle should have an nr.alternatePathHashes on event')
     },
     function startTest(trans, slot) {
-      // check the unscoped metics
+      // check the unscoped metrics
       var unscoped = trans.metrics.unscoped
-      var eaMetric = format('ExternalApp/localhost/%s/all', CROSS_PROCESS_ID)
+      var eaMetric = format('ExternalApp/localhost:%s/%s/all', MIDDLE_PORT, CROSS_PROCESS_ID)
       t.ok(unscoped[eaMetric], 'start generated a ExternalApp metric')
-      var etMetric = format('ExternalTransaction/localhost/%s/Custom//start/middle',
+      var etMetric = format('ExternalTransaction/localhost:%s/%s/Custom//start/middle', MIDDLE_PORT,
                             CROSS_PROCESS_ID)
       t.ok(unscoped[etMetric], 'start generated a ExternalTransaction metric')
       t.equal(Object.keys(unscoped).length, 11, 'start should only have expected unscoped metrics')
