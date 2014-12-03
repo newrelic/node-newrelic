@@ -140,6 +140,19 @@ describe("collector response parser", function () {
       parser(null, exception)
     })
 
+    it("should use a specific error message when the server response cannot be parsed", function (done) {
+      function callback(error) {
+        expect(error.message).equal('Unexpected token <')
+        should.not.exist(error.laterErrors)
+        done()
+      }
+
+      var exception = '<html><body>hi</body></html>'
+
+      var parser = parse(methodName, response, callback)
+      parser(null, exception)
+    })
+
     it("shouldn't error on a server exception with no error message", function (done) {
       function callback(error) {
         expect(error.class).equal('RuntimeError')
