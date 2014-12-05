@@ -183,9 +183,9 @@ var validators = {
     if (!version) {
       validation.query_errors.push("protocol_version not set")
     }
-    else if ((version < 9 || version > 13)) {
+    else if ((version < 9 || version > 15)) {
       validation.query_errors.push(
-        util.format("protocol_version %d is not between 9 and 13", version)
+        util.format("protocol_version %d is not between 9 and 15", version)
       )
     }
 

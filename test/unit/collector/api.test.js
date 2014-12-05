@@ -16,7 +16,7 @@ var HOST   = 'collector.newrelic.com'
 
 function generate(method, runID) {
   var fragment = '/agent_listener/invoke_raw_method?' +
-    'marshal_format=json&protocol_version=12&' +
+    'marshal_format=json&protocol_version=14&' +
     'license_key=license%20key%20here&method=' + method
 
   if (runID) fragment += '&run_id=' + runID

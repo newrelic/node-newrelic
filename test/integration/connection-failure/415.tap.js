@@ -6,7 +6,7 @@ var path         = require('path')
   , configurator = require('../../../lib/config.js')
   , Agent        = require('../../../lib/agent.js')
   , Transaction  = require('../../../lib/transaction')
-  
+
 
 nock.disableNetConnect()
 
@@ -15,11 +15,11 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
     , url         = 'https://collector.newrelic.com'
     , agent       = new Agent(configurator.initialize())
     , transaction = new Transaction(agent)
-    
+
 
   function path(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=12&' +
+      'marshal_format=json&protocol_version=14&' +
       'license_key=license%20key%20here&method=' + method
 
     if (runID) fragment += '&run_id=' + runID
@@ -38,7 +38,7 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(415)
     , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(415)
     , sendTrace   = nock(url).post(path('transaction_sample_data', RUN_ID)).reply(415)
-    
+
 
   var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200)
 
@@ -74,11 +74,11 @@ test("discarding metrics and errors after a 415", function (t) {
     , url         = 'https://collector.newrelic.com'
     , agent       = new Agent(configurator.initialize())
     , transaction = new Transaction(agent)
-    
+
 
   function path(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=12&' +
+      'marshal_format=json&protocol_version=14&' +
       'license_key=license%20key%20here&method=' + method
 
     if (runID) fragment += '&run_id=' + runID

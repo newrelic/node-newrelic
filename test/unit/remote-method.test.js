@@ -10,7 +10,7 @@ var path         = require('path')
 
 function generate(method, runID) {
   var fragment = '/agent_listener/invoke_raw_method?' +
-    'marshal_format=json&protocol_version=12&' +
+    'marshal_format=json&protocol_version=14&' +
     'license_key=license%20key%20here&method=' + method
 
   if (runID) fragment += '&run_id=' + runID
@@ -459,8 +459,8 @@ describe("RemoteMethod", function () {
       parsed = reconstitute(method._path())
     })
 
-    it("should say that it supports protocol 12", function () {
-      expect(parsed.query.protocol_version).equal('12')
+    it("should say that it supports protocol 14", function () {
+      expect(parsed.query.protocol_version).equal('14')
     })
 
     it("should tell the collector it's sending JSON", function () {
