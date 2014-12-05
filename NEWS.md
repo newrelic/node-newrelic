@@ -1,4 +1,12 @@
-## v1.14.0 (2014-11-25):
+### v1.14.1 (2014-12-05):
+
+* Fixed a bug that caused some outbound http requests to show up in the
+  New Relic UI as requests to `localhost` rather than the specified domain.
+
+* The agent no longer reports errors from outbound http requests if they were
+  handled by the user's application
+
+### v1.14.0 (2014-11-25):
 
 * The node agent now instruments connections to Oracle Databases using the
   `oracle` driver. This patch was contributed by
@@ -7,12 +15,12 @@
 * Fixed an issue that would break kraken apps when the node agent was enabled.
   This patch was contributed by [Lenny Markus](https://github.com/lmarkus)
 
-## v1.13.4 (2014-11-20):
+### v1.13.4 (2014-11-20):
 
 * Added support for the the aggregate method on mongodb collections. This patch
   was contributed by [taxilian](https://github.com/taxilian)
 
-## v1.13.3 (2014-11-13):
+### v1.13.3 (2014-11-13):
 
 * Fixed a bug in Cross Application Tracing where the agent would sometimes
   attempt to set a header after headers had already been sent.
