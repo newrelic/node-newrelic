@@ -8,7 +8,7 @@ var path            = require('path')
   , configurator    = require('../../lib/config')
   , TraceAggregator = require('../../lib/transaction/trace/aggregator')
   , Transaction     = require('../../lib/transaction')
-  
+
 
 describe('TraceAggregator', function () {
   var agent
@@ -187,7 +187,7 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
-      
+
 
     aggregator.reported = 10; // needed to override "first 5"
 
@@ -215,7 +215,7 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
       , transaction = new Transaction(agent)
-      
+
 
     aggregator.reported = 10; // needed to override "first 5"
 
@@ -288,8 +288,10 @@ describe('TraceAggregator', function () {
 
         aggregator.harvest(function cb_harvest(error, traceData) {
           expect(traceData).an('array')
-          expect(traceData.length).equal(8)
-          expect(traceData[2]).equal('WebTransaction/Uri/test')
+          expect(traceData.length).equal(1)
+          var trace = traceData[0]
+          expect(trace.length).equal(10)
+          expect(trace[2]).equal('WebTransaction/Uri/test')
 
           done()
         })
@@ -411,6 +413,52 @@ describe('TraceAggregator', function () {
         aggregator.reset(transaction.getTrace())
 
         aggregator.harvest(looper)
+      })
+    })
+  })
+
+  it("should reset the syntheticsTraces when resetting trace", function (done) {
+    agent.config.apdex_t = 0
+    var config = configurator.initialize({
+      apdex_t : 0,
+      transaction_tracer : {
+        enabled : true
+      }
+    })
+
+    var aggregator = new TraceAggregator(config)
+
+    var verifier = function (encoded, shouldExist) {
+      if (shouldExist) {
+        should.exist(encoded)
+      }
+      else {
+        should.not.exist(encoded)
+      }
+    }
+
+    aggregator.add(createTransaction('/testOne', 503))
+    aggregator.harvest(function cb_harvest(error, encoded, trace) {
+      verifier(encoded, true)
+      aggregator.reset(trace)
+
+      var synthTransaction = createTransaction('/testTwo', 406)
+      synthTransaction.syntheticsData = {
+        version: 1,
+        accountId: 357,
+        resourceId: 'resId',
+        jobId: 'jobId',
+        monitorId: 'monId'
+      }
+
+      aggregator.add(synthTransaction)
+      expect(aggregator.trace).not.exist()
+      expect(aggregator.syntheticsTraces).length(1)
+      aggregator.harvest(function cb_harves(error, encoded, trace) {
+        expect(aggregator.syntheticsTraces).length(1)
+        aggregator.reset(trace)
+        expect(aggregator.syntheticsTraces).length(0)
+        done()
       })
     })
   })

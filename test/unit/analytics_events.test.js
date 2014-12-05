@@ -153,8 +153,9 @@ describe("on transaction finished", function () {
     var trans = new Transaction(agent)
     agent.events.limit = 10
 
-    for (var i=0; i<20; i++)
+    for (var i=0; i<20; i++) {
       agent._addEventFromTransaction(trans)
+    }
 
     expect(agent.events.toArray().length).equals(10)
   })
@@ -165,11 +166,12 @@ describe("on transaction finished", function () {
     }
 
     var trans = new Transaction(agent)
-    for (var i=0; i<20; i++)
+    for (var i=0; i<20; i++) {
       agent._addEventFromTransaction(trans)
+    }
 
     agent._sendEvents(function(err){
-      expect(err).exists
+      expect(err).exist()
       expect(agent.events.toArray().length).equals(20)
       done()
     })
@@ -181,11 +183,12 @@ describe("on transaction finished", function () {
     }
 
     var trans = new Transaction(agent)
-    for (var i=0; i<20; i++)
+    for (var i=0; i<20; i++) {
       agent._addEventFromTransaction(trans)
+    }
 
     agent._sendEvents(function(err){
-      expect(err).not.exists
+      expect(err).not.exist()
       expect(agent.events.toArray().length).equals(0)
       done()
     })
@@ -197,11 +200,12 @@ describe("on transaction finished", function () {
     }
 
     var trans = new Transaction(agent)
-    for (var i=0; i<20; i++)
+    for (var i=0; i<20; i++) {
       agent._addEventFromTransaction(trans)
+    }
 
     agent._sendEvents(function(err){
-      expect(err).not.exists
+      expect(err).exist()
       expect(agent.events.toArray().length).equals(0)
       done()
     })

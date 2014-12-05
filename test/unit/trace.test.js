@@ -126,8 +126,10 @@ describe('Trace', function () {
         encoded, // compressed segment / segment data
         '',                         // FIXME: depends on RUM token in session
         null,                       // reserved, always NULL
-        false                       // FIXME: RUM2 session persistence, not
+        false,                      // FIXME: RUM2 session persistence, not
                                     //        worrying about it for now
+        null,                       // FIXME: xraysessionid
+        null                        // syntheticsResourceId
       ]
 
       transaction.getTrace().generateJSON(function cb_generateJSON(err, traceJSON) {

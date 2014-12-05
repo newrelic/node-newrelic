@@ -686,6 +686,30 @@ describe("the New Relic agent", function () {
 
         trans.end()
       })
+
+      it("should capture the synthetic trace off a finished transaction", function (done) {
+        var trans = new Transaction(agent)
+        // need to initialize the trace
+        trans.getTrace().setDurationInMillis(2100)
+        trans.syntheticsData = {
+          version: 1,
+          accountId: 357,
+          resourceId: 'resId',
+          jobId: 'jobId',
+          monitorId: 'monId'
+        }
+
+        agent.once('transactionFinished', function () {
+          expect(agent.traces.trace).not.exist()
+          expect(agent.traces.syntheticsTraces).length(1)
+          var trace = agent.traces.syntheticsTraces[0]
+          expect(trace.getDurationInMillis(), "same trace just passed in").equal(2100)
+
+          return done()
+        })
+
+        trans.end()
+      })
     })
 
     describe("when apdex_t changes", function () {

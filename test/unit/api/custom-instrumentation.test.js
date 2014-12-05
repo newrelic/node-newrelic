@@ -24,7 +24,7 @@ describe('The custom instrumentation API', function () {
     it('should work in a clean transaction', function (done) {
       agent.on('transactionFinished', function (transaction) {
         var trace = transaction.getTrace()
-        expect(trace).to.exist
+        expect(trace).to.exist()
         expect(trace.root.children).to.have.length(1)
         var segment = trace.root.children[0]
         expect(segment.name).to.equal('custom:segment')
@@ -42,7 +42,7 @@ describe('The custom instrumentation API', function () {
     it('should work nested in a segment', function (done) {
       agent.on('transactionFinished', function (transaction) {
         var trace = transaction.getTrace()
-        expect(trace).to.exist
+        expect(trace).to.exist()
         expect(trace.root.children).to.have.length(1)
         var parentSegment = trace.root.children[0]
         expect(parentSegment.name).to.equal('parent')
@@ -64,7 +64,7 @@ describe('The custom instrumentation API', function () {
     it('should work with a segment nested in it', function (done) {
       agent.on('transactionFinished', function (transaction) {
         var trace = transaction.getTrace()
-        expect(trace).to.exist
+        expect(trace).to.exist()
         expect(trace.root.children).to.have.length(1)
         var customSegment = trace.root.children[0]
         expect(customSegment.name).to.equal('custom:segment')
@@ -101,7 +101,7 @@ describe('The custom instrumentation API', function () {
 
       agent.on('transactionFinished', function (transaction) {
         var trace = transaction.getTrace()
-        expect(trace).to.exist
+        expect(trace).to.exist()
         expect(trace.root.children).to.have.length(0)
         done()
       })
@@ -166,20 +166,20 @@ describe('The custom instrumentation API', function () {
     it('should create a transaction', function (done) {
       var txHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
         expect(tx.url).to.be.equal('/custom/transaction')
         // clean up tx so it doesn't cause other problems
         tx.end()
         done()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
     })
 
     it('should create an outermost segment', function (done) {
       var txHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
 
         var trace = tx.getTrace()
         expect(trace.root.children).to.have.length(1)
@@ -246,7 +246,7 @@ describe('The custom instrumentation API', function () {
     it('should create proper metrics', function (done) {
       var txHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
 
         var expectedMetrics = [
           {"name": "WebTransaction"},
@@ -263,23 +263,23 @@ describe('The custom instrumentation API', function () {
         })
         done()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
     })
 
     it('it should create a new transaction when nested within a background transaction', function (done) {
       var bgHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
         expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job')
-        expect(tx.webSegment).to.not.exist
-        expect(tx.bgSegment).to.exist
+        expect(tx.webSegment).to.not.exist()
+        expect(tx.bgSegment).to.exist()
         var webHandler = api.createWebTransaction('/custom/transaction', function () {
           var tx = agent.tracer.getTransaction()
-          expect(tx).to.exist
+          expect(tx).to.exist()
           expect(tx.url).to.be.equal('/custom/transaction')
-          expect(tx.webSegment).to.exist
-          expect(tx.bgSegment).to.not.exist
+          expect(tx.webSegment).to.exist()
+          expect(tx.bgSegment).to.not.exist()
           // clean up tx so it doesn't cause other problems
           tx.end()
           done()
@@ -288,7 +288,7 @@ describe('The custom instrumentation API', function () {
         // clean up tx so it doesn't cause other problems
         tx.end()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       bgHandler()
     })
 
@@ -324,21 +324,21 @@ describe('The custom instrumentation API', function () {
     it('should create a transaction', function (done) {
       var txHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
         expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job')
 
         // clean up tx so it doesn't cause other problems
         tx.end()
         done()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
     })
 
     it('should create an outermost segment', function (done) {
         var txHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
 
         var trace = tx.getTrace()
         expect(trace.root.children).to.have.length(1)
@@ -405,7 +405,7 @@ describe('The custom instrumentation API', function () {
     it('should create proper metrics with default group name', function (done) {
       var txHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
 
         var expectedMetrics = [
           {"name": "OtherTransaction/Nodejs/background:job"},
@@ -420,14 +420,14 @@ describe('The custom instrumentation API', function () {
         })
         done()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
     })
 
     it('should create proper metrics with group name', function (done) {
       var txHandler = api.createBackgroundTransaction('background:job', 'thinger', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
 
         var expectedMetrics = [
           {"name": "OtherTransaction/thinger/background:job"},
@@ -442,23 +442,23 @@ describe('The custom instrumentation API', function () {
         })
         done()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
     })
 
     it('it should create a new transaction when nested within a background transaction', function (done) {
       var webHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()
-        expect(tx).to.exist
+        expect(tx).to.exist()
         expect(tx.url).to.be.equal('/custom/transaction')
-        expect(tx.webSegment).to.exist
-        expect(tx.bgSegment).to.not.exist
+        expect(tx.webSegment).to.exist()
+        expect(tx.bgSegment).to.not.exist()
         var bgHandler = api.createBackgroundTransaction('background:job', function () {
           var tx = agent.tracer.getTransaction()
-          expect(tx).to.exist
+          expect(tx).to.exist()
           expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job')
-          expect(tx.webSegment).to.not.exist
-          expect(tx.bgSegment).to.exist
+          expect(tx.webSegment).to.not.exist()
+          expect(tx.bgSegment).to.exist()
           // clean up tx so it doesn't cause other problems
           tx.end()
           done()
@@ -467,7 +467,7 @@ describe('The custom instrumentation API', function () {
         // clean up tx so it doesn't cause other problems
         tx.end()
       })
-      expect(agent.tracer.getTransaction()).to.not.exist
+      expect(agent.tracer.getTransaction()).to.not.exist()
       webHandler()
     })
 
@@ -482,7 +482,7 @@ describe('The custom instrumentation API', function () {
 
   it('endTransaction should not throw an exception if there is no transaction active', function () {
     var tx = agent.tracer.getTransaction()
-    expect(tx).to.not.exist
+    expect(tx).to.not.exist()
     expect(function () {
       api.endTransaction()
     }).to.not.throw

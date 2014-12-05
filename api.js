@@ -550,6 +550,7 @@ API.prototype.endTransaction = function endTransaction() {
   var tx = tracer.getTransaction()
 
   if (tx) {
+    // TODO: Log transaction name as well.
     logger.debug('ending transaction with id: %s', tx.id)
     if (tx.webSegment) {
       tx.webSegment.markAsWeb(tx.url)

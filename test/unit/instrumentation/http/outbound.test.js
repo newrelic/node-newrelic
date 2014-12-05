@@ -1,21 +1,20 @@
 'use strict'
 
-var path   = require('path')
-  , http   = require('http')
-  , events = require('events')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , nock   = require('nock')
-  , helper = require('../../../lib/agent_helper')
-  , NAMES  = require('../../../../lib/metrics/names.js')
-  , instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
-  , hashes             = require('../../../../lib/util/hashes')
+var http = require('http')
+var events = require('events')
+var chai = require('chai')
+var expect = chai.expect
+var helper = require('../../../lib/agent_helper')
+var NAMES = require('../../../../lib/metrics/names.js')
+var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
+var hashes = require('../../../../lib/util/hashes')
+var nock = require('nock')
 
 
 describe("instrumentOutbound", function () {
   var agent
-    , HOSTNAME = 'localhost'
-    , PORT     = 8890
+  var HOSTNAME = 'localhost'
+  var PORT = 8890
 
 
   before(function () {
@@ -60,23 +59,23 @@ describe("instrumentOutbound", function () {
   })
 
   it("should strip query parameters from path in transaction trace segment", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      var path  = '/asdf'
-        , name  = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
+      var path = '/asdf'
+      var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
 
-      req.path  = '/asdf?a=b&another=yourself&thing&grownup=true'
+      req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
       instrumentOutbound(agent, req, HOSTNAME, PORT)
       expect(transaction.getTrace().root.children[0].name).equal(name)
     })
   })
 
   it("should save query parameters from path if capture is defined", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       agent.config.capture_params = true
-      req.path  = '/asdf?a=b&another=yourself&thing&grownup=true'
+      req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
       instrumentOutbound(agent, req, HOSTNAME, PORT)
       expect(transaction.getTrace().root.children[0].parameters).deep.equal({
         "a"                            : "b",
@@ -89,7 +88,7 @@ describe("instrumentOutbound", function () {
   })
 
   it("should not accept an undefined path", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
     helper.runInTransaction(agent, function () {
       expect(function () {
         instrumentOutbound(agent, req, HOSTNAME, PORT)
@@ -98,30 +97,30 @@ describe("instrumentOutbound", function () {
   })
 
   it("should accept a simple path with no parameters", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      var path  = '/newrelic'
-        , name  = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
-      req.path  = path
+      var path = '/newrelic'
+      var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
+      req.path = path
       instrumentOutbound(agent, req, HOSTNAME, PORT)
       expect(transaction.getTrace().root.children[0].name).equal(name)
     })
   })
 
   it("should purge trailing slash", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      var path  = '/newrelic/'
-        , name  = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
-      req.path  = path
+      var path = '/newrelic/'
+      var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
+      req.path = path
       instrumentOutbound(agent, req, HOSTNAME, PORT)
       expect(transaction.getTrace().root.children[0].name).equal(name)
     })
   })
 
   it("should throw if hostname is undefined", function () {
-    var req  = new events.EventEmitter()
-      , undef
+    var req = new events.EventEmitter()
+    var undef
 
 
     helper.runInTransaction(agent, function () {
@@ -133,7 +132,7 @@ describe("instrumentOutbound", function () {
   })
 
   it("should throw if hostname is null", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
 
 
     helper.runInTransaction(agent, function () {
@@ -145,7 +144,7 @@ describe("instrumentOutbound", function () {
   })
 
   it("should throw if hostname is an empty string", function () {
-    var req  = new events.EventEmitter()
+    var req = new events.EventEmitter()
     helper.runInTransaction(agent, function () {
       req.path = '/newrelic'
       expect(function TestUndefinedHostname() {
@@ -155,8 +154,8 @@ describe("instrumentOutbound", function () {
   })
 
   it("should throw if port is undefined", function () {
-    var req  = new events.EventEmitter()
-      , undef
+    var req = new events.EventEmitter()
+    var undef
 
 
     helper.runInTransaction(agent, function () {

@@ -1,12 +1,12 @@
 'use strict'
 
-var chai         = require('chai')
-  , should       = chai.should()
-  , expect       = chai.expect
-  , EventEmitter = require('events').EventEmitter
-  , helper       = require('../../../lib/agent_helper')
-  , hashes       = require('../../../../lib/util/hashes')
-  , semver       = require('semver')
+var chai = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var EventEmitter = require('events').EventEmitter
+var helper = require('../../../lib/agent_helper')
+var hashes = require('../../../../lib/util/hashes')
+var semver = require('semver')
 
 
 var NEWRELIC_ID_HEADER = 'x-newrelic-id'
@@ -15,7 +15,7 @@ var NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
 
 describe("built-in http module instrumentation", function () {
   var http
-    , agent
+  var agent
 
 
   var PAYLOAD = JSON.stringify({msg : 'ok'})
@@ -71,9 +71,9 @@ describe("built-in http module instrumentation", function () {
 
   describe("with outbound request mocked", function () {
     var agent
-      , http
-      , options
-      , callback
+    var http
+    var options
+    var callback
 
 
     beforeEach(function () {
@@ -81,7 +81,7 @@ describe("built-in http module instrumentation", function () {
       var initialize = require('../../../../lib/instrumentation/core/http')
       http = {
         request : function request(_options, _callback) {
-          options  = _options
+          options = _options
           callback = _callback
 
           var requested = new EventEmitter()
@@ -114,12 +114,12 @@ describe("built-in http module instrumentation", function () {
 
   describe("when running a request", function () {
     var transaction
-      , fetchedStatusCode
-      , fetchedBody
+    var fetchedStatusCode
+    var fetchedBody
 
 
     before(function (done) {
-      http  = require('http')
+      http = require('http')
       agent = helper.instrumentMockedAgent()
 
       var external = http.createServer(function cb_createServer(request, response) {
@@ -259,7 +259,7 @@ describe("built-in http module instrumentation", function () {
     })
 
     beforeEach(function () {
-      http  = require('http')
+      http = require('http')
       agent = helper.instrumentMockedAgent()
     })
 
