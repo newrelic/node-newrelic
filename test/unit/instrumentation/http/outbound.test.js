@@ -245,4 +245,35 @@ describe('should add data from cat header to segment', function () {
       }).end()
     })
   })
+
+  it('should collect errors only if they are not being handled', function(done) {
+    helper.runInTransaction(agent, handled)
+
+    function handled() {
+      var req = http.get({host : 'localhost', port : 123456}, function() {})
+
+      req.on('close', function() {
+        expect(agent.errors.errors.length).equal(0)
+        unhandled()
+      })
+
+      req.on('error', function(err) {
+        expect(err.message).equal('connect ECONNREFUSED')
+      })
+
+      req.end()
+    }
+
+    function unhandled() {
+      var req = http.get({host : 'localhost', port : 123456}, function() {})
+
+      req.on('close', function() {
+        expect(agent.errors.errors.length).equal(1)
+        expect(agent.errors.errors[0][2]).equal('connect ECONNREFUSED')
+        done()
+      })
+
+      req.end()
+    }
+  })
 })
