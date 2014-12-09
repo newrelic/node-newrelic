@@ -107,7 +107,8 @@
     "split": "*",
     "tap": "*",
     "through": "^2.3.6",
-    "wrench": "*"
+    "wrench": "*",
+    "cassandra-driver": "~1.0.2"
   },
   "repository": {
     "type": "git",
