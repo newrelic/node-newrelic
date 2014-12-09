@@ -38,7 +38,7 @@ test("Hapi vhost support", function (t) {
 
     server.route({
       method: 'GET',
-      path: '/test/{id}/',
+      path: '/test/',
       vhost: 'localhost',
       handler: function (request, reply) {
         t.ok(agent.getTransaction(), "transaction is available")
