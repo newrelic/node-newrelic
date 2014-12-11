@@ -477,7 +477,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
       tx.id
     )
     tx.partialName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + url
-    tx.setName(url, 0)
+    tx.url = url
     tx.webSegment = tracer.addSegment(url, recordWeb)
 
     return callback.apply(this, arguments)
@@ -553,6 +553,7 @@ API.prototype.endTransaction = function endTransaction() {
     if (tx.webSegment) {
       tx.webSegment.markAsWeb(tx.url)
       tx.webSegment.end()
+      tx.setName(tx.url, 0)
     }
     tx.end()
   } else {

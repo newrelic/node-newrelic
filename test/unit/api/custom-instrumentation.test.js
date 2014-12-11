@@ -299,6 +299,20 @@ describe('The custom instrumentation API', function () {
       var value = txHandler()
       expect(value).to.be.equal('a thing')
     })
+
+    it('should allow changing the transaction name', function (done) {
+      var txHandler = api.createWebTransaction('/custom/transaction', function (outerTx) {
+        var tx = agent.tracer.getTransaction()
+
+        api.setTransactionName('new_name')
+        api.endTransaction()
+
+        expect(tx.name).to.be.equal('WebTransaction/Custom/new_name')
+        done()
+      })
+
+      txHandler()
+    })
   })
 
   describe('when creating an background transaction', function () {
