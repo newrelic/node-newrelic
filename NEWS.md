@@ -1,3 +1,10 @@
+### v1.14.2 (2014-12-11):
+
+* Added support for Hapi v8.
+
+* [briandela](https://github.com/briandela) contributed a fix for an crash that
+  would occur when using hapi with vhosts.
+
 ### v1.14.1 (2014-12-05):
 
 * Fixed a bug that caused some outbound http requests to show up in the
