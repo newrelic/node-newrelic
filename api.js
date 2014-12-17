@@ -518,46 +518,10 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
     callback && callback.name
   )
 
-  var tracer  = this.agent.tracer
+  var tx = new Transaction(this.agent);
+  tx.setBackgroundName(name, group);
 
-  return tracer.transactionNestProxy('bg', tracer.segmentProxy(function(){
-    var tx = tracer.getTransaction()
-
-    logger.debug(
-      'creating background transaction %s:%s (%s) with transaction id: %s',
-      name,
-      group,
-      callback && callback.name,
-      tx.id
-    )
-
-    tx.setBackgroundName(name, group)
-    tx.bgSegment = tracer.addSegment(name, recordBackground)
-    tx.bgSegment.partialName = group
-
-    return callback.apply(this, arguments)
-  }))
-}
-
-API.prototype.endTransaction = function endTransaction() {
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return
-  }
-
-  var tracer = this.agent.tracer
-  var tx = tracer.getTransaction()
-
-  if (tx) {
-    logger.debug('ending transaction with id: %s', tx.id)
-    if (tx.webSegment) {
-      tx.webSegment.markAsWeb(tx.url)
-      tx.webSegment.end()
-    }
-    tx.end()
-  } else {
-    logger.debug('endTransaction() called while not in a transaction.')
-  }
+  callback(tx);
 }
 
 API.prototype.recordMetric = function recordMetric(name, value) {
