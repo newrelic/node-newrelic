@@ -1,3 +1,13 @@
+### v1.14.3 (2014-12-18):
+
+* Improved the Express instrumentation to be more defensive before doing
+  property lookups, fixing a crash that could happen in an exceptional state.
+
+* Improved logging when the New Relic agent cannot connect to New Relic servers.
+
+* Make Cross Application Tracer header injection less aggressive fixing
+  interaction with other libraries such as riak-js.
+
 ### v1.14.2 (2014-12-11):
 
 * Added support for Hapi v8.
