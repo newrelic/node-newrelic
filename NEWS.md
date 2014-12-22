@@ -1,3 +1,11 @@
+### v1.14.4 (2014-12-22):
+
+* Custom web transactions can have their names changed by `nr.setTransactionName()`.
+  Thanks to [Matt Lavin](https://github.com/mdlavin) for this patch!
+
+* Fixed a bug where Express instrumentation could crash if transaction state was
+  lost in a sub router.
+
 ### v1.14.3 (2014-12-18):
 
 * Improved the Express instrumentation to be more defensive before doing
