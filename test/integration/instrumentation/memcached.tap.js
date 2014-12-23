@@ -5,12 +5,12 @@ var path   = require('path')
   , test   = tap.test
   , helper = require('../../lib/agent_helper')
   , params = require('../../lib/params')
-  
+
 
 test("memcached instrumentation should find memcached calls in the transaction trace",
      {timeout : 5000},
      function (t) {
-  t.plan(29)
+  t.plan(33)
 
   var self = this
   helper.bootstrapMemcached(function cb_bootstrapMemcached(error, app) {
@@ -116,6 +116,19 @@ test("memcached instrumentation should find memcached calls in the transaction t
           t.equals(getSegment.children.length, 0,
                    "get should leave us here at the end")
         })
+      })
+    })
+
+    t.notOk(agent.getTransaction(), "no transaction should be in play")
+
+    // memcached.version() is one of the calls that gets the second argument to
+    // command.
+    helper.runInTransaction(agent, function transactionInScope() {
+      t.ok(agent.getTransaction(), 'new transaction started')
+
+      memcached.version(function (error, ok) {
+        t.notOk(error, 'version should not throw an error')
+        t.ok(ok, 'got a version')
       })
     })
   })
