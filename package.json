@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "1.14.4",
+  "version": "1.14.5",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
