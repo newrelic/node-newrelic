@@ -1,15 +1,14 @@
 'use strict'
 
-var path         = require('path')
-  , chai         = require('chai')
-  , expect       = chai.expect
-  , should       = chai.should()
-  , helper       = require('../lib/agent_helper')
-  , config       = require('../../lib/config.default')
-  , ErrorTracer  = require('../../lib/error')
-  , Transaction  = require('../../lib/transaction')
-  , semver       = require('semver')
-
+var chai = require('chai')
+var expect = chai.expect
+var should = chai.should()
+var helper = require('../lib/agent_helper')
+var config = require('../../lib/config.default')
+var ErrorTracer = require('../../lib/error')
+var Transaction = require('../../lib/transaction')
+var semver = require('semver')
+var API = require('../../api.js')
 
 function createTransaction(agent, code) {
   var transaction = new Transaction(agent)
@@ -896,5 +895,21 @@ describe("ErrorTracer", function () {
         expect(params.stack_trace[0]).equal("Error: sample error")
       })
     })
+  })
+
+  describe('it should copy parameters from background transactions', function() {
+    var agent = helper.loadMockedAgent()
+    var tracer = agent.errors
+    var api = new API(agent)
+
+    api.createBackgroundTransaction('job', function () {
+      api.addCustomParameter('jobType', 'timer')
+      api.noticeError(new Error('record an error'))
+      agent.getTransaction().end(function() {
+        expect(tracer.errors.length).equal(1)
+        expect(tracer.errors[0][2]).equal('record an error')
+        helper.unloadAgent(agent)
+      })
+    })()
   })
 })
