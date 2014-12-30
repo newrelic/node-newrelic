@@ -1,3 +1,11 @@
+### v1.14.5 (2014-12-30):
+
+* Errors that occur in background transactions now have custom parameters copied
+  onto them in the same manner as web transactions.
+
+* Memcached instrumentation updated to account for additional arguments that
+  might be passed to the command function that the agent wraps.
+
 ### v1.14.4 (2014-12-22):
 
 * Custom web transactions can have their names changed by `nr.setTransactionName()`.
