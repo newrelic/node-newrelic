@@ -10,7 +10,7 @@ var path   = require('path')
 test("memcached instrumentation should find memcached calls in the transaction trace",
      {timeout : 5000},
      function (t) {
-  t.plan(29)
+  t.plan(32)
 
   var self = this
   helper.bootstrapMemcached(function cb_bootstrapMemcached(error, app) {
@@ -19,7 +19,22 @@ test("memcached instrumentation should find memcached calls in the transaction t
     var agent = helper.instrumentMockedAgent()
     var Memcached = require('memcached')
 
-    var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+    var servers = [
+      params.memcached_host + ':' + params.memcached_port,
+      params.memcached_host + ':' + params.memcached_port_2
+    ]
+
+    var memcached = new Memcached(servers)
+
+    // Here we fake out the hash ring so we can artificially force our
+    // two keys to spread across the two different servers and thus
+    // prove we can support a multi-server setup.
+    var fakeHashRing = {
+      get: function get(key) {
+        return key === 'otherkey' ? servers[1] : servers[0]
+      }
+    }
+    memcached.HashRing = fakeHashRing
 
     // need to capture parameters
     agent.config.capture_params = true
@@ -105,15 +120,23 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "should register the set")
           t.equals(setSegment.parameters.key, "[\"otherkey\"]",
                    "should have the set key as a parameter")
-          t.equals(setSegment.children.length, 1,
-                   "set should have an only child")
+          t.equals(setSegment.children.length, 2,
+                   "set should have the two gets as children")
 
-          var getSegment = setSegment.children[0]
-          t.equals(getSegment.name, "Datastore/operation/Memcache/get",
-                   "should register the get")
-          t.equals(getSegment.parameters.key, "[[\"testkey\",\"otherkey\"]]",
+          var getSegment1 = setSegment.children[0]
+          t.equals(getSegment1.name, "Datastore/operation/Memcache/get",
+                   "should register the first get")
+          t.equals(getSegment1.parameters.key, "[[\"testkey\",\"otherkey\"]]",
                    "should have the multiple keys fetched as a parameter")
-          t.equals(getSegment.children.length, 0,
+          t.equals(getSegment1.children.length, 0,
+                   "get should leave us here at the end")
+
+          var getSegment2 = setSegment.children[1]
+          t.equals(getSegment2.name, "Datastore/operation/Memcache/get",
+                   "should register the second get")
+          t.equals(getSegment2.parameters.key, "[[\"testkey\",\"otherkey\"]]",
+                   "should have the multiple keys fetched as a parameter")
+          t.equals(getSegment2.children.length, 0,
                    "get should leave us here at the end")
         })
       })

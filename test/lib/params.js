@@ -1,6 +1,7 @@
 module.exports = {
   memcached_host: process.env.NR_NODE_TEST_MEMCACHED_HOST || 'localhost',
   memcached_port: process.env.NR_NODE_TEST_MEMCACHED_PORT || 11211,
+  memcached_port_2: process.env.NR_NODE_TEST_MEMCACHED_PORT_2 || 11212,
 
   mongodb_host: process.env.NR_NODE_TEST_MONGODB_HOST || 'localhost',
   mongodb_port: process.env.NR_NODE_TEST_MONGODB_PORT || 27017,
