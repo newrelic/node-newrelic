@@ -1,15 +1,16 @@
 'use strict'
 
-var sinon        = require('sinon')
-  , chai         = require('chai')
-  , should       = chai.should()
-  , expect       = chai.expect
-  , nock         = require('nock')
-  , helper       = require('../../lib/agent_helper.js')
-  , sampler      = require('../../../lib/sampler.js')
-  , configurator = require('../../../lib/config.js')
-  , Agent        = require('../../../lib/agent.js')
-  , Transaction  = require('../../../lib/transaction')
+var sinon = require('sinon')
+var chai = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var nock = require('nock')
+var semver = require('semver')
+var helper = require('../../lib/agent_helper.js')
+var sampler = require('../../../lib/sampler.js')
+var configurator = require('../../../lib/config.js')
+var Agent = require('../../../lib/agent.js')
+var Transaction = require('../../../lib/transaction')
 
 
 /*
@@ -18,7 +19,7 @@ var sinon        = require('sinon')
  *
  */
 var RUN_ID = 1337
-  , URL    = 'https://collector.newrelic.com'
+var URL = 'https://collector.newrelic.com'
 
 
 describe("the New Relic agent", function () {
@@ -178,7 +179,7 @@ describe("the New Relic agent", function () {
         it("should find an internal metric for transaction processed", function (done) {
           debugged.once('transactionFinished', function () {
             var supportability = debugged.config.debug.supportability
-              , metric = supportability.getMetric('Supportability/Transaction/Count')
+            var metric = supportability.getMetric('Supportability/Transaction/Count')
 
 
             should.exist(metric)
@@ -212,7 +213,7 @@ describe("the New Relic agent", function () {
 
       describe("with tracer tracing enabled", function () {
         var debugged
-          , config
+        var config
 
 
         beforeEach(function () {
@@ -371,6 +372,44 @@ describe("the New Relic agent", function () {
 
           done()
         })
+      })
+
+      it("should say why startup failed with proxy enabled on versions other than 0.10", function (done) {
+        if (semver.satisfies(process.version, '~0.10')) {
+          // Skip because this test only applies to non 0.10 versions.
+          return done()
+        }
+
+        agent.config.proxy = 'fake://url'
+
+        agent.collector.connect = function () {
+          agent.config.proxy = undefined
+          done(new Error("shouldn't be called"))
+        }
+
+        agent.start(function cb_start(error) {
+          expect(error.message).equal("Proxies are only available on node ~0.10.")
+          agent.config.proxy = undefined
+          done()
+        })
+      })
+
+
+
+      it("should call connect when using proxy on 0.10", function (done) {
+        if (!semver.satisfies(process.version, '~0.10')) {
+          // Skip because this test only applies to 0.10 versions.
+          return done()
+        }
+
+        agent.config.proxy = 'fake://url'
+
+        agent.collector.connect = function (callback) {
+          should.exist(callback)
+          callback()
+        }
+
+        agent.start(done)
       })
 
       it("should call connect when config is correct", function (done) {
@@ -663,8 +702,8 @@ describe("the New Relic agent", function () {
 
     describe("when parsing metric mappings", function () {
       var NAME     = 'Custom/Test/events'
-        , SCOPE    = 'TEST'
-        , METRICID = 17
+      var SCOPE    = 'TEST'
+      var METRICID = 17
 
 
       beforeEach(function () {
@@ -887,7 +926,7 @@ describe("the New Relic agent", function () {
 
       agent.collector.metricData = function (payload) {
         var metrics = payload[3]
-          , metric  = metrics.getMetric('Errors/all')
+        var metric  = metrics.getMetric('Errors/all')
 
 
         should.exist(metric)

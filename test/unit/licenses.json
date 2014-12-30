@@ -1,9 +1,9 @@
 {
   "async-listener": "BSD-2-Clause",
   "continuation-local-storage": "BSD",
-  "emitter-listener" : "BSD-2-Clause",
+  "emitter-listener": "BSD-2-Clause",
   "json-stringify-safe": "BSD",
   "proxying-agent": "MIT",
-  "shimmer" : "BSD",
-  "yakaa" : "MIT"
+  "shimmer": "BSD",
+  "yakaa": "MIT"
 }

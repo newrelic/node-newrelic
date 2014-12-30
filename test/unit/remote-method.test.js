@@ -151,7 +151,7 @@ describe("RemoteMethod", function () {
         should.exist(error)
 
         // https://github.com/joyent/node/commit/7295bb9435c
-        expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)$/)
+        expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?$/)
 
         done()
       })

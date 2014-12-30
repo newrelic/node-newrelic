@@ -251,7 +251,7 @@ describe('should add data from cat header to segment', function () {
     helper.runInTransaction(agent, handled)
 
     function handled() {
-      var req = http.get({host : 'localhost', port : 123456}, function() {})
+      var req = http.get({host : 'localhost', port : 12345}, function() {})
 
       req.on('close', function() {
         expect(agent.errors.errors.length).equal(0)
@@ -266,7 +266,7 @@ describe('should add data from cat header to segment', function () {
     }
 
     function unhandled() {
-      var req = http.get({host : 'localhost', port : 123456}, function() {})
+      var req = http.get({host : 'localhost', port : 12345}, function() {})
 
       req.on('close', function() {
         expect(agent.errors.errors.length).equal(1)
