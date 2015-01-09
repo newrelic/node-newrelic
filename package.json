@@ -68,7 +68,7 @@
     "continuation-local-storage": "^3.1.0",
     "json-stringify-safe": "^5.0.0",
     "proxying-agent": "^0.1.6",
-    "yakaa": "^1.0.0"
+    "yakaa": "^1.0.1"
   },
   "bundledDependencies": [
     "continuation-local-storage",
