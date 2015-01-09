@@ -67,7 +67,7 @@ test-ci: node_modules sub_node_modules $(CERTIFICATE)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
-	@$(MOCHA) test/unit --recursive
+	@$(MOCHA) -c test/unit --recursive
 
 sub_node_modules: $(SUBNPM)
 
