@@ -1,3 +1,11 @@
+### v1.14.6 (2015-01-09):
+
+* The agent now logs the actual error when log file parsing fails. Thanks to
+  [knownasilya](https://github.com/knownasilya) for this patch!
+
+* Fixed a crash where if domains were enabled config serialization would fail
+  due to circular objects.
+
 ### v1.14.5 (2014-12-30):
 
 * Errors that occur in background transactions now have custom parameters copied
