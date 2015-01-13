@@ -113,3 +113,45 @@ test('app should be at top of stack when mounted', function (t) {
     res.send(agent.getTransaction().partialName)
   }
 })
+
+test('should not pass wrong args when transaction is not present', function (t) {
+  t.plan(5)
+
+  var agent = helper.instrumentMockedAgent()
+  var express = require('express')
+  var main = express()
+  var router = new express.Router()
+  var router2 = new express.Router()
+  var server = http.createServer(main)
+  var args
+
+  main.use('/', router)
+  main.use('/', router2)
+
+  this.tearDown(function() {
+    helper.unloadAgent(agent)
+    server.close()
+  })
+
+  router.get('/', function(req, res, next) {
+    args = [req, res]
+    agent.getTransaction().end(function() {
+      next()
+    })
+  })
+
+  router2.get('/', function(req, res, next) {
+    t.equal(req, args[0])
+    t.equal(res, args[1])
+    t.equal(typeof next, 'function')
+    res.send('ok')
+  })
+
+  server.listen(4123, function(err) {
+    request.get('http://localhost:4123/', function(err, res, body) {
+      t.notOk(err)
+      t.equal(body, 'ok')
+      t.end()
+    })
+  })
+})
