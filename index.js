@@ -13,7 +13,9 @@ try {
   logger.debug("Process was running %s seconds before agent was loaded.",
                process.uptime())
 
-  if (process.version && process.version.split('.')[1] < 6) {
+  var major =  parseInt(process.version.split('.')[0]);
+  var minor =  process.version.split('.')[1];
+  if (process.version && (major === 0) && (minor < 6)) {
     message = "New Relic for Node.js requires a version of Node equal to or\n" +
               "greater than 0.6.0. Not starting!"
 
