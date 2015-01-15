@@ -15,9 +15,9 @@ try {
 
   var major =  parseInt(process.version.split('.')[0]);
   var minor =  process.version.split('.')[1];
-  if (process.version && (major === 0) && (minor < 6)) {
+  if (process.version && (major === 0) && (minor < 8)) {
     message = "New Relic for Node.js requires a version of Node equal to or\n" +
-              "greater than 0.6.0. Not starting!"
+              "greater than 0.8.0. Not starting!"
 
     logger.error(message)
     throw new Error(message)
