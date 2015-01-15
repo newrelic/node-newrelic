@@ -1,5 +1,8 @@
 'use strict'
 
+// For consistent results, unset this in case the user had it set in their environment when testing.
+delete process.env.NODE_ENV;
+
 var path        = require('path')
   , fs          = require('fs')
   , spawn       = require('child_process').spawn
