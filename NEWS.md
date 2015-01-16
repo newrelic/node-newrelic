@@ -1,3 +1,13 @@
+### v1.14.7 (2015-01-16):
+
+* Fixed a crash in express instrumentation in the handling of sub-routers.
+
+* Fixed a crash in http outbound connections when CAT is enabled and another
+  library has frozen the http request headers.
+
+* Updated version checking to allow versions of the runtime >= 1.0.0. Thanks to
+  [Mark Stosberg](https://github.com/markstos) for this patch!
+
 ### v1.14.6 (2015-01-09):
 
 * The agent now logs the actual error when log file parsing fails. Thanks to
@@ -20,7 +30,7 @@
   Thanks to [Matt Lavin](https://github.com/mdlavin) for this patch!
 
 * Fixed a bug where Express instrumentation could crash if transaction state was
-  lost in a sub router.
+  lost in a sub-router.
 
 ### v1.14.3 (2014-12-18):
 
