@@ -1,3 +1,8 @@
+### v1.15.0 (2015-01-23):
+
+* Added an API for recording custom insights events. Read more about this in our
+  [documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-agent-api#custom-events-api)
+
 ### v1.14.7 (2015-01-16):
 
 * Fixed a crash in express instrumentation in the handling of sub-routers.
