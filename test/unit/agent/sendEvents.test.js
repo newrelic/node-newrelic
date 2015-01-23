@@ -115,7 +115,7 @@ describe('the New Relic agent', function () {
       agent = helper.loadMockedAgent()
 
       agent.collector = {
-        analyticsEvents: function (_events, callback) {
+        customEvents: function (_events, callback) {
           events = _events
           process.nextTick(function () {
             callback(error)
@@ -144,7 +144,7 @@ describe('the New Relic agent', function () {
 
     it('should not try to send if there are no events', function (done) {
       agent.collector = {
-        analyticsEvents: function (_events, callback) {
+        customEvents: function (_events, callback) {
           throw new Error('What is this, how did you get here?')
           process.nextTick(callback)
         }

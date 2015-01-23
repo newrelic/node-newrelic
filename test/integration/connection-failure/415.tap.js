@@ -27,6 +27,9 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
     return fragment
   }
 
+  // manually harvesting
+  agent.config.no_immediate_harvest = true
+
   var redirect = nock(url).post(path('get_redirect_host'))
                    .reply(200, {return_value : "collector.newrelic.com"})
 
@@ -54,7 +57,7 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
 
     agent.harvest(function cb_harvest(error) {
       t.notOk(error, "no error received on 415")
-      t.ok(sendMetrics.isDone(), "sent metrics...")
+      t.ok(sendMetrics.isDone(), "initial sent metrics...")
       t.ok(sendErrors.isDone(),  "...and then sent error data...")
       t.ok(sendTrace.isDone(),   "...and then sent trace, even though all returned 413")
 
@@ -85,6 +88,9 @@ test("discarding metrics and errors after a 415", function (t) {
 
     return fragment
   }
+
+  // manually harvesting
+  agent.config.no_immediate_harvest = true
 
   nock(url).post(path('get_redirect_host'))
            .reply(200, {return_value : "collector.newrelic.com"})

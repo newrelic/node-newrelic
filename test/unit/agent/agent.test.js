@@ -152,6 +152,10 @@ describe("the New Relic agent", function () {
             nock(URL)
               .post(helper.generateCollectorPath('agent_settings', RUN_ID))
               .reply(200, {return_value : []})
+          var metrics =
+            nock(URL)
+              .post(helper.generateCollectorPath('metric_data', RUN_ID))
+              .reply(200, {return_value : []})
           var shutdown =
             nock(URL)
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
@@ -164,6 +168,7 @@ describe("the New Relic agent", function () {
             connect.done()
             debugged.stop(function cb_stop() {
               settings.done()
+              metrics.done()
               shutdown.done()
               done()
             })
@@ -196,11 +201,12 @@ describe("the New Relic agent", function () {
           }
 
           var transaction = new Transaction(debugged)
-          transaction.end()
-
-          debugged._sendMetrics(function cb__sendMetrics() {
-            done()
+          transaction.end(function cb_transactionEnd() {
+            debugged._sendMetrics(function cb__sendMetrics() {
+              done()
+            })
           })
+
         })
       })
 
@@ -416,6 +422,9 @@ describe("the New Relic agent", function () {
         var origInterval = global.setInterval
         global.setInterval = function (callback) { return setTimeout(callback, 0); }
 
+        // manually harvesting
+        agent.config.no_immediate_harvest = true
+
         var redirect =
           nock(URL)
             .post(helper.generateCollectorPath('get_redirect_host'))
@@ -428,10 +437,6 @@ describe("the New Relic agent", function () {
           nock(URL)
             .post(helper.generateCollectorPath('agent_settings', RUN_ID))
             .reply(200, {return_value : []})
-        var metrics =
-          nock(URL)
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []})
 
         agent.start(function cb_start() {
           setTimeout(function () {
@@ -440,7 +445,6 @@ describe("the New Relic agent", function () {
             redirect.done()
             connect.done()
             settings.done()
-            metrics.done()
             done()
           }, 15)
         })
@@ -601,6 +605,9 @@ describe("the New Relic agent", function () {
         var settings = nock(URL)
                           .post(helper.generateCollectorPath('agent_settings', 404))
                           .reply(200, {return_value : config})
+        var metrics = nock(URL)
+                          .post(helper.generateCollectorPath('metric_data', 404))
+                          .reply(200, {return_value : []})
         var shutdown = nock(URL)
                           .post(helper.generateCollectorPath('shutdown', 404))
                           .reply(200, {return_value : null})
@@ -618,6 +625,7 @@ describe("the New Relic agent", function () {
 
           agent.stop(function cb_stop() {
             settings.done()
+            metrics.done()
             shutdown.done()
             done()
           })

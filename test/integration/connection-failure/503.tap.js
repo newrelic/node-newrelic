@@ -26,6 +26,8 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 
     return fragment
   }
+  // manually harvesting
+  agent.config.no_immediate_harvest = true
 
   var returned = {return_value : {}}
 
@@ -59,7 +61,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
       t.ok(error, "error received on 503")
       t.equal(error.message, 'Got HTTP 503 in response to metric_data.',
               "got expected error message")
-      t.ok(sendMetrics.isDone(), "sent metrics...")
+      t.ok(sendMetrics.isDone(), "initial sent metrics...")
       t.notOk(sendErrors.isDone(),  "...but didn't send error data...")
       t.notOk(sendTrace.isDone(),   "...and also didn't send trace, because of 503")
 
@@ -90,6 +92,8 @@ test("merging metrics and errors after a 503", function (t) {
 
     return fragment
   }
+  // manually harvesting
+  agent.config.no_immediate_harvest = true
 
   nock(url).post(path('get_redirect_host'))
            .reply(200, {return_value : "collector.newrelic.com"})
@@ -131,7 +135,38 @@ test("merging metrics and errors after a 503", function (t) {
             sumOfSquares   : 0,
             callCount      : 1
           }
-        ]],
+        ],
+        [{
+            "name" : "Supportability/Events/Customer/Dropped" // != undefined
+          },{
+            "total" : 0, // != undefined
+            "totalExclusive" : 0, // != undefined
+            "min" : 0, // != undefined
+            "max" : 0, // != undefined
+            "sumOfSquares" : 0, // != undefined
+            "callCount" : 0 // != undefined
+          }], // != undefined
+        [{
+            "name" : "Supportability/Events/Customer/Seen" // != undefined
+          },{
+            "total" : 0, // != undefined
+            "totalExclusive" : 0, // != undefined
+            "min" : 0, // != undefined
+            "max" : 0, // != undefined
+            "sumOfSquares" : 0, // != undefined
+            "callCount" : 0 // != undefined
+          }], // != undefined
+        [{
+            "name" : "Supportability/Events/Customer/Sent" // != undefined
+          },{
+            "total" : 0, // != undefined
+            "totalExclusive" : 0, // != undefined
+            "min" : 0, // != undefined
+            "max" : 0, // != undefined
+            "sumOfSquares" : 0, // != undefined
+            "callCount" : 0 // != undefined
+          }]
+        ],
         "metrics were merged"
       )
 
