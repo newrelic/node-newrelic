@@ -176,7 +176,7 @@ services:
 	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_postgres[^a-zA-Z_]"; then \
 	  docker start nr_node_postgres; \
 	else \
-	  docker run -d --name nr_node_postgres -p 5432:5432 zaiste/postgresql; \
+	  docker run -d --name nr_node_postgres -p 5432:5432 postgres:9.2; \
 	fi
 	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_oracle[^a-zA-Z_]"; then \
 	  docker start nr_node_oracle; \
