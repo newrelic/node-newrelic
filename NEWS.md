@@ -1,6 +1,14 @@
+### v1.15.1 (2015-01-30):
+
+* Preliminary Node.js 0.12 support.
+
+  HTTP proxies are not supported on 0.12 yet. We don't recommend running the
+  Agent on Node.js 0.11.15+ in production, but if you are testing on it, please
+  let us know of any issues you encounter.
+
 ### v1.15.0 (2015-01-23):
 
-* Added an API for recording custom insights events. Read more about this in our
+* Added an API for recording custom Insights events. Read more about this in our
   [documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-agent-api#custom-events-api)
 
 ### v1.14.7 (2015-01-16):
