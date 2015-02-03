@@ -9,5 +9,5 @@ services:
   - borja/docker-memcached
   - library/redis
   - zmarcantel/cassandra
-  - zaiste/postgresql
+  - library/postgres:9.2
   - alexeiled/docker-oracle-xe-11g
