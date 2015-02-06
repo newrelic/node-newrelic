@@ -17,6 +17,7 @@ var used = [
   'postgres',
   'proxy',
   'released',
+  'synthetics',
   'unreleased',
 ]
 

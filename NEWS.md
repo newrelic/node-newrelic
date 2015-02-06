@@ -1,3 +1,10 @@
+### v1.16.1 (2015-02-06):
+
+* Now New Relic Synthetics transaction tracing is on by default.
+
+  The previous release had the Synthetics transaction tracing feature turned off
+  by default.
+
 ### v1.16.0 (2015-02-06):
 
 * Added support for New Relic Synthetics transaction tracing.
