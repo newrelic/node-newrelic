@@ -83,7 +83,7 @@
     "architect": "*",
     "async": "*",
     "carrier": "*",
-    "chai": "*",
+    "chai": "^1.10.0",
     "connect": "*",
     "cover": "*",
     "express": "*",
