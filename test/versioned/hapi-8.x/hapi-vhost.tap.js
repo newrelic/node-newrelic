@@ -51,8 +51,19 @@ test("Hapi vhost support", function (t) {
       }
     })
 
+    server.route({
+      method: 'GET',
+      path: '/test/{id}/2',
+      vhost: 'localhost',
+      handler: function (request, reply) {
+        t.ok(agent.getTransaction(), "transaction is available")
+
+        reply({status : 'ok'})
+      }
+    })
+
     server.start(function () {
-      request.get('http://localhost:8089/test/1337/?name=hapi',
+      request.get('http://localhost:8089/test/1337/2?name=hapi',
                   {json : true},
                   function (error, res, body) {
 
