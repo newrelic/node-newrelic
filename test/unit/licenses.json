@@ -3,7 +3,12 @@
   "continuation-local-storage": "BSD",
   "emitter-listener": "BSD-2-Clause",
   "json-stringify-safe": "BSD",
-  "proxying-agent": "MIT",
   "shimmer": "BSD",
-  "yakaa": "MIT"
+  "yakaa": "MIT",
+  "https-proxy-agent": "MIT",
+  "agent-base": "MIT",
+  "debug": "MIT*",
+  "extend": "MIT*",
+  "ms": "MIT*",
+  "semver": "BSD"
 }

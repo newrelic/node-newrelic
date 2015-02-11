@@ -67,14 +67,14 @@
   "dependencies": {
     "continuation-local-storage": "^3.1.0",
     "json-stringify-safe": "^5.0.0",
-    "proxying-agent": "^0.1.6",
+    "https-proxy-agent": "^0.3.5",
     "semver": "^4.2.0",
     "yakaa": "^1.0.1"
   },
   "bundledDependencies": [
     "continuation-local-storage",
     "json-stringify-safe",
-    "proxying-agent",
+    "https-proxy-agent",
     "semver",
     "yakaa"
   ],
@@ -108,7 +108,6 @@
     "redis": "*",
     "request": "*",
     "restify": "~2.6.3",
-    "semver": "^4.1.0",
     "sequelize": "*",
     "should": "*",
     "sinon": "*",

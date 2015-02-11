@@ -1,16 +1,17 @@
 'use strict'
 
 var path         = require('path')
-  , http         = require('http')
-  , https        = require('https')
-  , test         = require('tap').test
-  , fmt          = require('util').format
-  , join         = require('path').join
-  , setup        = require('proxy')
-  , read         = require('fs').readFileSync
-  , configurator = require('../../lib/config')
-  , Agent        = require('../../lib/agent')
-  , CollectorAPI = require('../../lib/collector/api.js')
+var net          = require('net')
+var http         = require('http')
+var https        = require('https')
+var test         = require('tap').test
+var fmt          = require('util').format
+var join         = require('path').join
+var setup        = require('proxy')
+var read         = require('fs').readFileSync
+var configurator = require('../../lib/config')
+var Agent        = require('../../lib/agent')
+var CollectorAPI = require('../../lib/collector/api.js')
 
 
 test("support ssl to the proxy", function (t) {
@@ -188,39 +189,41 @@ test("proxy agent with plain text to collector", function (t) {
 })
 
 test("proxy authentication should set headers", function (t) {
-  t.plan(1)
+  t.plan(2)
 
-  var server = http.createServer(function (req, res){
-    t.equal(req.headers['proxy-authorization'], 'Basic YTpi')
+  var server = net.createServer()
 
-    res.end()
+  server.on('connection', function (socket) {
+    socket.on('data', function (chunk) {
+      var data = chunk.toString().split('\r\n')
+      t.equal(data[0], 'CONNECT staging-collector.newrelic.com:80 HTTP/1.1')
+      t.equal(data[1], 'Proxy-Authorization: Basic YTpi')
+      server.close()
+    })
+    socket.end()
   })
+
   var port = 0
 
   server.listen(port, function () {
     port = server.address().port
 
     var config = configurator.initialize({
-          'app_name'    : 'node.js Tests',
-          'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
-          'host'        : 'staging-collector.newrelic.com',
-          'port'        : 80,
-          'proxy'       : fmt('http://a:b@localhost:%d', port),
-          'ssl'         : false,
-          'logging'     : {
-            'level' : 'trace'
-          }
-        })
-      , agent = new Agent(config)
-      , api   = new CollectorAPI(agent)
+      'app_name'    : 'node.js Tests',
+      'license_key' : 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+      'host'        : 'staging-collector.newrelic.com',
+      'port'        : 80,
+      'proxy'       : fmt('http://a:b@localhost:%d', port),
+      'ssl'         : false,
+      'logging'     : { 'level' : 'trace' }
+    })
+    var agent = new Agent(config)
+    var api   = new CollectorAPI(agent)
 
-
-    api._methods.redirect.invoke(null, function cb_invoke() {
-      server.close()
+    api.connect(function cb_connect() {
       t.end()
     })
   })
-
 })
 
 test("no proxy set should not use proxy agent", function (t) {

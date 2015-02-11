@@ -298,6 +298,6 @@ bunyan                      http://opensource.org/licenses/MIT
 continuation-local-storage  http://opensource.org/licenses/BSD-2-Clause
 emitter-listener            http://opensource.org/licenses/BSD-2-Clause
 json-stringify-safe         http://opensource.org/licenses/BSD-2-Clause
-proxying-agent              http://opensource.org/licenses/MIT
+https-proxy-agent           http://opensource.org/licenses/MIT
 shimmer                     http://opensource.org/licenses/BSD-2-Clause
 yakaa                       http://opensource.org/licenses/MIT

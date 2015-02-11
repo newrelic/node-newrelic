@@ -5,7 +5,6 @@ var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
 var nock = require('nock')
-var semver = require('semver')
 var helper = require('../../lib/agent_helper.js')
 var sampler = require('../../../lib/sampler.js')
 var configurator = require('../../../lib/config.js')
@@ -374,34 +373,7 @@ describe("the New Relic agent", function () {
         })
       })
 
-      it("should say why startup failed with proxy enabled on versions other than 0.10", function (done) {
-        if (semver.satisfies(process.version, '~0.10')) {
-          // Skip because this test only applies to non 0.10 versions.
-          return done()
-        }
-
-        agent.config.proxy = 'fake://url'
-
-        agent.collector.connect = function () {
-          agent.config.proxy = undefined
-          done(new Error("shouldn't be called"))
-        }
-
-        agent.start(function cb_start(error) {
-          expect(error.message).equal("Proxies are only available on node ~0.10.")
-          agent.config.proxy = undefined
-          done()
-        })
-      })
-
-
-
-      it("should call connect when using proxy on 0.10", function (done) {
-        if (!semver.satisfies(process.version, '~0.10')) {
-          // Skip because this test only applies to 0.10 versions.
-          return done()
-        }
-
+      it("should call connect when using proxy", function (done) {
         agent.config.proxy = 'fake://url'
 
         agent.collector.connect = function (callback) {
