@@ -1,3 +1,12 @@
+### v1.16.2 (2015-02-13):
+
+* Enable http/https proxy features on all supported Node versions.
+  
+  Supported versions: Node.js 0.8, 0.10, 0.12 and io.js 1.x.
+
+* Fixed a bug in vhost detection in Hapi 8. This bug would result in a crash for
+  users of vhosts.
+
 ### v1.16.1 (2015-02-06):
 
 * Now New Relic Synthetics transaction tracing is on by default.
