@@ -2,6 +2,7 @@
 
 var path = require('path')
   , chai = require('chai')
+  , fs = require('fs')
   , expect = chai.expect
   , logger = require('../../lib/logger')
   
@@ -20,4 +21,18 @@ describe("Logger", function () {
       expect(function () { logger.level('verbose'); })
     })
   })
+})
+
+describe('Log file', function(){
+
+  beforeEach(function(){
+    logger.filepath = 'test.log'
+  })
+
+  it('should not be created if logger is disabled', function(){
+    logger.enabled = false
+    logger.error('test')
+    expect(fs.existsSync(logger.filepath)).equal(false)
+  })
+
 })
