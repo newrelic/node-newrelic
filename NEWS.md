@@ -1,3 +1,11 @@
+### v1.16.3 (2015-02-20):
+
+* Fixed a bug in hapi 8 view segments. Previously, the segments weren't being
+  ended when the view ended.
+
+* Added a configuration option to completely disable logging. `logger.enabled`
+  defaults to true, if set to false it wont try to create the log file.
+
 ### v1.16.2 (2015-02-13):
 
 * Enable http/https proxy features on all supported Node versions.
