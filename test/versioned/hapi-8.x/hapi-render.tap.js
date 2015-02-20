@@ -7,35 +7,38 @@ if (process.version.split('.')[1] < 10) {
   process.exit(0)
 }
 
-var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
-  , API     = require(path.join('..', '..', '..', 'api.js'))
+var path = require('path')
+var util = require('util')
+var test = require('tap').test
+var request = require('request')
+var helper = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper'))
+var API = require(path.join('..', '..', '..', 'api.js'))
 
 
 var TEST_PATH = '/test'
-  , TEST_PORT = 9876
-  , TEST_HOST = 'localhost'
-  , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-  , BODY      = "<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "  <title>yo dawg</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "  <p>I heard u like HTML.</p>\n" +
-                "</body>\n" +
-                "</html>\n"
+var TEST_PORT = 9876
+var TEST_HOST = 'localhost'
+var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+var BODY = "<!DOCTYPE html>\n" +
+           "<html>\n" +
+           "<head>\n" +
+           "  <title>yo dawg</title>\n" +
+           "</head>\n" +
+           "<body>\n" +
+           "  <p>I heard u like HTML.</p>\n" +
+           "</body>\n" +
+           "</html>\n"
 
 
 test("agent instrumentation of Hapi", function (t) {
   t.plan(4)
 
+
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = new hapi.Server()
+    var hapi   = require('hapi')
+    var server = new hapi.Server()
+    var transaction
 
     server.connection({
       host: TEST_HOST,
@@ -47,9 +50,10 @@ test("agent instrumentation of Hapi", function (t) {
     agent.config.apdex_t = 1
 
     server.route({
-      method  : 'GET',
-      path    : TEST_PATH,
-      handler : function (request, reply) {
+      method: 'GET',
+      path: TEST_PATH,
+      handler: function (request, reply) {
+        transaction = agent.getTransaction()
         reply({yep : true})
       }
     })
@@ -94,11 +98,9 @@ test("agent instrumentation of Hapi", function (t) {
     })
   })
 
-  t.test("using EJS templates",
-       {timeout : 1000},
-       function (t) {
+  t.test("using EJS templates", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
+    var hapi   = require('hapi')
 
 
     var server = new hapi.Server()
@@ -123,10 +125,22 @@ test("agent instrumentation of Hapi", function (t) {
       }
     })
 
-    agent.once('transactionFinished', function () {
+    agent.once('transactionFinished', function (tx) {
       var stats = agent.metrics.getMetric('View/index/Rendering')
       t.equal(stats.callCount, 1, "should note the view rendering")
+      verifyEnded(tx.trace.root, tx)
     })
+
+    function verifyEnded (root, tx) {
+      for (var i = 0, len = root.children.length; i < len; i++) {
+        var segment = root.children[i]
+        t.ok(
+          segment.timer.hasEnd(),
+          util.format('verify %s (%s) has ended', segment.name, tx.id)
+        )
+        if (segment.children) verifyEnded(segment, tx)
+      }
+    }
 
     server.start(function () {
       request(TEST_URL, function (error, response, body) {
@@ -147,8 +161,8 @@ test("agent instrumentation of Hapi", function (t) {
        {timeout : 1000},
        function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , api    = new API(agent)
+    var hapi   = require('hapi')
+    var api    = new API(agent)
 
 
     agent.config.application_id = '12345'
@@ -201,8 +215,8 @@ test("agent instrumentation of Hapi", function (t) {
 
   t.test("should trap errors correctly", function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = new hapi.Server()
+    var hapi   = require('hapi')
+    var server = new hapi.Server()
 
     server.connection({
       host: TEST_HOST,
