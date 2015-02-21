@@ -1,3 +1,7 @@
+### v1.16.4 (2015-02-20):
+
+* Fixed a bug in the logger to respect the configured log level in all cases.
+
 ### v1.16.3 (2015-02-20):
 
 * Fixed a bug in hapi 8 view segments. Previously, the segments weren't being
