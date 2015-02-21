@@ -84,6 +84,32 @@ describe('logger', function() {
     })
   })
 
+  it('and its children should only log expected levels', function(done) {
+    var child = logger.child({aChild: true})
+
+    child.trace('trace')
+    child.debug('debug')
+    child.info('info')
+    child.warn('warn')
+    child.error('error')
+    child.fatal('fatal')
+    logger.once('readable', function() {
+      expect(results.length).equal(4)
+      compare_entry(results[0], 'info', 30, ['aChild'].concat(DEFAULT_KEYS))
+      compare_entry(results[1], 'warn', 40, ['aChild'].concat(DEFAULT_KEYS))
+      compare_entry(results[2], 'error', 50, ['aChild'].concat(DEFAULT_KEYS))
+      compare_entry(results[3], 'fatal', 60, ['aChild'].concat(DEFAULT_KEYS))
+
+      logger.level('trace')
+      child.trace('trace')
+      child.debug('debug')
+      expect(results.length).equal(6)
+      compare_entry(results[4], 'trace', 10, ['aChild'].concat(DEFAULT_KEYS))
+      compare_entry(results[5], 'debug', 20, ['aChild'].concat(DEFAULT_KEYS))
+      done()
+    })
+  })
+
   it('should be togglable', function(done) {
     logger.info('on')
     logger.enabled = false
@@ -148,7 +174,7 @@ describe('logger write queue', function() {
         compare_entry(parts[0], 'b', 30)
         compare_entry(parts[1], 'c', 30)
         compare_entry(parts[2], 'd', 30)
-    
+
         return Logger.prototype.push.call(this, str)
       }
 
