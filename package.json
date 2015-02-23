@@ -74,14 +74,16 @@
     "json-stringify-safe": "^5.0.0",
     "https-proxy-agent": "^0.3.5",
     "semver": "^4.2.0",
-    "yakaa": "^1.0.1"
+    "yakaa": "^1.0.1",
+    "readable-stream": "^1.1.13"
   },
   "bundledDependencies": [
     "continuation-local-storage",
     "json-stringify-safe",
     "https-proxy-agent",
     "semver",
-    "yakaa"
+    "yakaa",
+    "readable-stream"
   ],
   "devDependencies": {
     "JSV": "~4.0.2",

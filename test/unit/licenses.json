@@ -1,14 +1,19 @@
 {
   "async-listener": "BSD-2-Clause",
   "continuation-local-storage": "BSD",
+  "core-util-is": "MIT",
   "emitter-listener": "BSD-2-Clause",
   "json-stringify-safe": "BSD",
   "shimmer": "BSD",
   "yakaa": "MIT",
   "https-proxy-agent": "MIT",
+  "inherits": "ISC",
+  "isarray": "MIT",
   "agent-base": "MIT",
   "debug": "MIT*",
   "extend": "MIT*",
   "ms": "MIT*",
-  "semver": "BSD"
+  "readable-stream": "MIT",
+  "semver": "BSD",
+  "string_decoder": "MIT"
 }

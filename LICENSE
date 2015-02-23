@@ -301,3 +301,8 @@ json-stringify-safe         http://opensource.org/licenses/BSD-2-Clause
 https-proxy-agent           http://opensource.org/licenses/MIT
 shimmer                     http://opensource.org/licenses/BSD-2-Clause
 yakaa                       http://opensource.org/licenses/MIT
+readable-stream             http://opensource.org/licenses/MIT
+core-util-is                http://opensource.org/licenses/MIT
+inherits                    http://opensource.org/licenses/ISC
+isarray                     http://opensource.org/licenses/MIT
+string_decoder              http://opensource.org/licenses/MIT

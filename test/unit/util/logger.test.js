@@ -2,7 +2,6 @@ var Logger = require('../../../lib/util/logger')
 var chai = require('chai')
 var expect = chai.expect
 var through = require('through')
-var stream = require('stream')
 
 var DEFAULT_KEYS = [
   'hostname',
@@ -20,23 +19,22 @@ describe('logger', function() {
 
   beforeEach(function() {
     results = []
-    resultStream = through(add_result)
     logger = Logger({
       name: 'my-logger',
       level: 'info',
       hostname: 'my-host',
-      stream: resultStream
+      stream: through(addResult)
     })
   })
 
-  function add_result(data) {
+  function addResult(data) {
     results = results.concat(data.toString().split('\n').filter(Boolean).map(JSON.parse))
   }
 
   it('should interpolate values', function(done) {
     logger.info('%d: %s', 1, 'a')
     logger.info('123', 4, '5')
-    logger.once('readable', function(){
+    process.nextTick(function(){
       expect(results.length).equal(2)
       compare_entry(results[0], '1: a', 30)
       compare_entry(results[1], '123 4 5', 30)
@@ -47,7 +45,7 @@ describe('logger', function() {
   it('should support prepended extras', function(done) {
     logger.info({a: 1, b: 2}, '%d: %s', 1, 'a')
     logger.info({a: 1, b: 2}, '123', 4, '5')
-    logger.once('readable', function(){
+    process.nextTick(function(){
       var keys = ['a', 'b'].concat(DEFAULT_KEYS)
       expect(results.length).equal(2)
       compare_entry(results[0], '1: a', 30, keys)
@@ -67,7 +65,7 @@ describe('logger', function() {
     logger.warn('warn')
     logger.error('error')
     logger.fatal('fatal')
-    logger.once('readable', function() {
+    process.nextTick(function() {
       expect(results.length).equal(4)
       compare_entry(results[0], 'info', 30)
       compare_entry(results[1], 'warn', 40)
@@ -86,6 +84,7 @@ describe('logger', function() {
 
   it('and its children should only log expected levels', function(done) {
     var child = logger.child({aChild: true})
+    var grandchild = child.child({aGrandchild: true})
 
     child.trace('trace')
     child.debug('debug')
@@ -93,19 +92,29 @@ describe('logger', function() {
     child.warn('warn')
     child.error('error')
     child.fatal('fatal')
-    logger.once('readable', function() {
-      expect(results.length).equal(4)
+    grandchild.trace('trace')
+    grandchild.debug('debug')
+    grandchild.info('info')
+    grandchild.warn('warn')
+    grandchild.error('error')
+    grandchild.fatal('fatal')
+    process.nextTick(function() {
+      expect(results.length).equal(8)
       compare_entry(results[0], 'info', 30, ['aChild'].concat(DEFAULT_KEYS))
       compare_entry(results[1], 'warn', 40, ['aChild'].concat(DEFAULT_KEYS))
       compare_entry(results[2], 'error', 50, ['aChild'].concat(DEFAULT_KEYS))
       compare_entry(results[3], 'fatal', 60, ['aChild'].concat(DEFAULT_KEYS))
+      compare_entry(results[4], 'info', 30, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      compare_entry(results[5], 'warn', 40, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      compare_entry(results[6], 'error', 50, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      compare_entry(results[7], 'fatal', 60, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
 
       logger.level('trace')
       child.trace('trace')
-      child.debug('debug')
-      expect(results.length).equal(6)
-      compare_entry(results[4], 'trace', 10, ['aChild'].concat(DEFAULT_KEYS))
-      compare_entry(results[5], 'debug', 20, ['aChild'].concat(DEFAULT_KEYS))
+      grandchild.debug('debug')
+      expect(results.length).equal(10)
+      compare_entry(results[8], 'trace', 10, ['aChild'].concat(DEFAULT_KEYS))
+      compare_entry(results[9], 'debug', 20, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
       done()
     })
   })
@@ -113,7 +122,7 @@ describe('logger', function() {
   it('should be togglable', function(done) {
     logger.info('on')
     logger.enabled = false
-    logger.on('readable', function(){
+    process.nextTick(function(){
       expect(results.length).equal(1)
       logger.info('off')
       expect(results.length).equal(1)
@@ -122,14 +131,14 @@ describe('logger', function() {
   })
 
   it('should support child loggers', function(done) {
-    var child_a = logger.child({a: 1})
-    var child_b = logger.child({b: 2, c: 3})
-    var child_c = child_b.child({c: 6})
-    child_a.info('hello a')
-    child_b.info({b: 5}, 'hello b')
-    child_c.info({a: 10}, 'hello c')
+    var childA = logger.child({a: 1})
+    var childB = logger.child({b: 2, c: 3})
+    var childC = childB.child({c: 6})
+    childA.info('hello a')
+    childB.info({b: 5}, 'hello b')
+    childC.info({a: 10}, 'hello c')
 
-    logger.on('readable', function(){
+    process.nextTick(function(){
       expect(results.length).equal(3)
       expect(results[0].a).equal(1)
       compare_entry(results[1], 'hello b', 30, ['b', 'c'].concat(DEFAULT_KEYS))
@@ -148,9 +157,23 @@ describe('logger', function() {
     var obj = {a: 1, b: 2}
     obj.self = obj
     logger.info('JSON: %s', obj)
-    logger.on('readable', function(){
+    process.nextTick(function(){
       expect(results.length).equal(1)
       compare_entry(results[0], 'JSON: {"a":1,"b":2,"self":"[Circular ~]"}', 30)
+      done()
+    })
+  })
+
+  it('fail gracefully on unstringifiable objects', function(done){
+    var badObj = {
+      get testData () {
+        throw new Exception()
+      }
+    }
+    logger.info('JSON: %s', badObj)
+    process.nextTick(function(){
+      expect(results.length).equal(1)
+      compare_entry(results[0], 'JSON: [UNPARSABLE OBJECT]', 30)
       done()
     })
   })
@@ -170,12 +193,15 @@ describe('logger write queue', function() {
     logger.once('readable', function() {
 
       logger.push = function(str){
-        var parts = str.split('\n').filter(Boolean).map(function(a){return a.toString()}).map(JSON.parse)
-        compare_entry(parts[0], 'b', 30)
-        compare_entry(parts[1], 'c', 30)
-        compare_entry(parts[2], 'd', 30)
+        var pushed = Logger.prototype.push.call(this, str)
+        if(pushed){
+          var parts = str.split('\n').filter(Boolean).map(function(a){return a.toString()}).map(JSON.parse)
+          compare_entry(parts[0], 'b', 30)
+          compare_entry(parts[1], 'c', 30)
+          compare_entry(parts[2], 'd', 30)
+        }
 
-        return Logger.prototype.push.call(this, str)
+        return pushed
       }
 
       logger.info('b')
@@ -184,7 +210,7 @@ describe('logger write queue', function() {
 
       logger.read()
 
-      logger.once('readable', function(){
+      process.nextTick(function(){
         done()
       })
 
