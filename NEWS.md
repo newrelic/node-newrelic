@@ -1,3 +1,15 @@
+### v1.17.0 (2015-02-25):
+
+* Added instrumentation for modules in node core.
+* Added support for native Promises in Node.js 0.12 and io.js 1.x.
+* Traces will now contain separate segments for async waits and callbacks.
+* Updated instrumentation for MongoDB to support previously un-instrumented
+  methods for 1.x and 2.x versions of the node-mongodb-native driver.
+* Fixed a bug in the recording of transaction metrics. Previously this would
+  cause a duplicate of the transaction metric to be displayed in the
+  transaction breakdown chart
+
+
 ### v1.16.4 (2015-02-20):
 
 * Fixed a bug in the logger to respect the configured log level in all cases.
@@ -13,7 +25,7 @@
 ### v1.16.2 (2015-02-13):
 
 * Enable http/https proxy features on all supported Node versions.
-  
+
   Supported versions: Node.js 0.8, 0.10, 0.12 and io.js 1.x.
 
 * Fixed a bug in vhost detection in Hapi 8. This bug would result in a crash for
