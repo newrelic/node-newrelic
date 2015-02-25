@@ -6,7 +6,7 @@ var path        = require('path')
   , helper      = require('../../lib/agent_helper')
   , recordWeb   = require('../../../lib/metrics/recorders/http')
   , Transaction = require('../../../lib/transaction')
-  
+
 
 function makeSegment(options) {
   var segment = options.transaction.trace.root.add('placeholder')
@@ -21,7 +21,7 @@ function record(options) {
 
   var segment     = makeSegment(options)
     , transaction = options.transaction
-    
+
 
   transaction.setName(options.url, options.code)
   transaction.queueTime = options.queueTime
@@ -32,7 +32,7 @@ function record(options) {
 describe("when recording queueTime", function () {
   var agent
     , trans
-    
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -60,9 +60,7 @@ describe("when recording queueTime", function () {
       [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'WebFrontend/QueueTime'},          [1,2.2,2.2,2.2,2.2,4.840000000000001]],
       [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
-      [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]],
-      [{name  : 'WebTransaction/NormalizedUri/*',
-        scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
     ]
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
   })
@@ -83,9 +81,7 @@ describe("when recording queueTime", function () {
       [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
-      [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]],
-      [{name  : 'WebTransaction/NormalizedUri/*',
-        scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
     ]
     expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
   })

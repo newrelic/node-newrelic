@@ -79,8 +79,6 @@ describe("recordWeb", function () {
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,  0.06,  0.06,        0]],
           [{name  : 'Apdex'},                          [1,     0,     0,  0.06,  0.06,        0]],
-          [{name  : 'WebTransaction/NormalizedUri/*',
-            scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
         ]
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
       })
@@ -100,9 +98,7 @@ describe("recordWeb", function () {
           [{name  : 'HttpDispatcher'},                 [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
           [{name  : 'Apdex/NormalizedUri/*'},          [0,     1,   0,  0.05,  0.05,        0]],
-          [{name  : 'Apdex'},                          [0,     1,   0,  0.05,  0.05,        0]],
-          [{name  : 'WebTransaction/NormalizedUri/*',
-            scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.1, 0.055, 0.055, 0.003025]]
+          [{name  : 'Apdex'},                          [0,     1,   0,  0.05,  0.05,        0]]
         ]
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
       })
@@ -122,9 +118,7 @@ describe("recordWeb", function () {
           [{name  : 'HttpDispatcher'},                 [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'WebTransaction/NormalizedUri/*',
-            scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]]
+          [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]]
         ]
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
       })
@@ -164,9 +158,7 @@ describe("recordWeb", function () {
           [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]],
-          [{name  : 'WebTransaction/NormalizedUri/*',
-            scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
+          [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]]
         ]
         expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
       })
@@ -200,9 +192,7 @@ describe("recordWeb", function () {
         [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
-        [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]],
-        [{name  : 'WebTransaction/NormalizedUri/*',
-          scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
+        [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
       ]
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
@@ -232,9 +222,7 @@ describe("recordWeb", function () {
         [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,   0.2,   0.2,        0]],
-        [{name  : 'Apdex'},                          [0,     0,     1,   0.2,   0.2,        0]],
-        [{name  : 'WebTransaction/NormalizedUri/*',
-          scope : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]]
+        [{name  : 'Apdex'},                          [0,     0,     1,   0.2,   0.2,        0]]
       ]
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
@@ -261,9 +249,7 @@ describe("recordWeb", function () {
         [{name  : 'HttpDispatcher'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
         [{name  : 'WebTransaction/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
         [{name  : 'Apdex/TestJS//key/:id'},          [0,   1,   0, 0.667, 0.667,    0]],
-        [{name  : 'Apdex'},                          [0,   0,   1,   0.2,   0.2,    0]],
-        [{name  : 'WebTransaction/TestJS//key/:id',
-          scope : 'WebTransaction/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]]
+        [{name  : 'Apdex'},                          [0,   0,   1,   0.2,   0.2,    0]]
       ]
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })

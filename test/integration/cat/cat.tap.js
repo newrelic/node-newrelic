@@ -12,7 +12,7 @@ var CROSS_PROCESS_ID = '1337#7331'
 
 
 test('cross application tracing full integration', function (t) {
-  t.plan(61)
+  t.plan(57)
   var feature_flag = {
     cat: true
   }
@@ -81,16 +81,7 @@ test('cross application tracing full integration', function (t) {
       var caMetric = format('ClientApplication/%s/all', CROSS_PROCESS_ID)
       t.ok(unscoped[caMetric], 'end generated a ClientApplication metric')
       t.equal(Object.keys(unscoped).length, 6, 'end should only have expected unscoped metrics')
-
-      var scoped = trans.metrics.scoped
-      t.ok(scoped['WebTransaction/Custom//middle/end'], 'end generated a scoped metric block')
-      if (scoped['WebTransaction/Custom//middle/end']) {
-        var scopedKeys = Object.keys(scoped['WebTransaction/Custom//middle/end'])
-        t.equal(scopedKeys.length, 1, 'end should only generate a incoming request metric')
-        if (scopedKeys.length === 1) {
-          t.notEqual(scopedKeys[0].split('/')[0], 'External', 'middle should not generate an "External" metric')
-        }
-      }
+      t.equal(Object.keys(trans.metrics.scoped).length, 0, 'should have no scoped metrics')
 
       // Check the intrinsic parameters
       var trace = trans.trace
@@ -109,7 +100,6 @@ test('cross application tracing full integration', function (t) {
       t.ok(intrinsic['nr.referringPathHash'], 'end should have an nr.referringPathHash on event')
       t.ok(intrinsic['nr.referringTransactionGuid'], 'end should have an nr.referringTransactionGuid on event')
       t.notOk(intrinsic['nr.alternatePathHashes'], 'end should not have an nr.alternatePathHashes on event')
-
     },
     function middleTest(trans, slot) {
       // check the unscoped metrics
@@ -130,11 +120,12 @@ test('cross application tracing full integration', function (t) {
         t.ok(scoped['WebTransaction/Custom//start/middle'][etMetric],
              'middle generated a ExternalTransaction scoped metric')
         var scopedKeys = Object.keys(scoped['WebTransaction/Custom//start/middle'])
-        t.equal(scopedKeys.length, 2, 'middle should only be the inbound and outbound request.')
-        if (scopedKeys.length === 2) {
-          t.notEqual(scopedKeys[0].split('/')[0], 'External', 'middle should not generate an "External" metric')
-          t.notEqual(scopedKeys[1].split('/')[0], 'External', 'middle should not generate an "External" metric')
-        }
+        t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
+        t.deepEqual(
+          scopedKeys,
+          ['ExternalTransaction/localhost:10002/1337#7331/Custom//middle/end'],
+          'should have expected scoped metric name'
+        )
       }
 
       // check the intrinsic parameters
@@ -176,11 +167,12 @@ test('cross application tracing full integration', function (t) {
         t.ok(scoped['WebTransaction/Custom//start'][etMetric],
              'start generated a ExternalTransaction scoped metric')
         var scopedKeys = Object.keys(scoped['WebTransaction/Custom//start'])
-        t.equal(scopedKeys.length, 2, 'start should only be the inbound and outbound request.')
-        if (scopedKeys.length === 2) {
-          t.notEqual(scopedKeys[0].split('/')[0], 'External', 'start should not generate an "External" metric')
-          t.notEqual(scopedKeys[1].split('/')[0], 'External', 'start should not generate an "External" metric')
-        }
+        t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
+        t.deepEqual(
+          scopedKeys,
+          ['ExternalTransaction/localhost:10001/1337#7331/Custom//start/middle'],
+          'should have expected scoped metric name'
+        )
       }
 
       // check the intrinsic parameters
@@ -204,6 +196,8 @@ test('cross application tracing full integration', function (t) {
       t.notOk(intrinsic['nr.referringPathHash'], 'start should not have an nr.referringPathHash on event')
       t.notOk(intrinsic['nr.referringTransactionGuid'], 'start should not have an nr.referringTransactionGuid on event')
       t.ok(intrinsic['nr.alternatePathHashes'], 'start should have an nr.alternatePathHashes on event')
+
+      t.end()
     }
   ]
 })
