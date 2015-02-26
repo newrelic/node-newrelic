@@ -1,0 +1,9 @@
+{
+  "name": "nr-cassandra-driver-1.x-test",
+  "version": "0.0.0",
+  "license": "proprietary",
+  "dependencies": {
+    "cassandra-driver": "^1.0.3"
+  },
+  "private": true
+}
