@@ -93,9 +93,9 @@ function oracleSetup(runTest, plan) {
 
 function getSelectSegment(setSegment, otherCallCount) {
   // loop through all of the insert segments to get to the select segment
-  var getSegment = setSegment.children[0]
+  var getSegment = setSegment.children[0].children[0]
   for (var i = 1; i < otherCallCount; i++) {
-    getSegment = getSegment.children[0]
+    getSegment = getSegment.children[0].children[0]
   }
   return getSegment
 }
@@ -121,6 +121,8 @@ var verify = function (t, transaction, expected) {
   var expectedMetrics = {
     'Datastore/all': callCount,
     'Datastore/allOther': callCount,
+    'Datastore/Oracle/all': callCount,
+    'Datastore/Oracle/allOther': callCount,
     'Datastore/operation/Oracle/insert': insertCallCount,
     'Datastore/operation/Oracle/select': selectCallCount
   }
@@ -184,8 +186,16 @@ var verify = function (t, transaction, expected) {
   t.equals(getSegment.name, expected.getName, 'should register the query call')
   t.equals(
     getSegment.children.length,
+    1,
+    'get should have a callback'
+  )
+
+  var callback = getSegment.children[0]
+
+  t.equals(
+    callback.children.length,
     0,
-    'get should leave us here at the end'
+    'callback should not have any children'
   )
 
   t.ok(getSegment._isEnded(), 'trace segment should have ended')
@@ -429,6 +439,8 @@ function preparedTest(t) {
           var expected = {
             'Datastore/all': callCount,
             'Datastore/allOther': callCount,
+            'Datastore/Oracle/all': callCount,
+            'Datastore/Oracle/allOther': callCount,
             'Datastore/operation/Oracle/insert': insertCallCount,
             'Datastore/operation/Oracle/select': selectCallCount
           }
@@ -475,7 +487,7 @@ function preparedTest(t) {
             'set should have 1 children for this test'
           )
 
-          var getSegment = setSegment.children[0]
+          var getSegment = setSegment.children[0].children[0]
 
           t.ok(getSegment, 'trace segment for select should exist')
 
@@ -486,12 +498,22 @@ function preparedTest(t) {
             'Datastore/statement/Oracle/' + TABLE + '/Connection.execute/select',
             'should register the query call'
           )
+          t.ok(getSegment._isEnded(), 'trace segment should have ended')
+
           t.equals(
             getSegment.children.length,
-            0,
-            'get should leave us here at the end'
+            1,
+            'get should have a callback'
           )
-          t.ok(getSegment._isEnded(), 'trace segment should have ended')+
+
+          var callback = getSegment.children[0]
+
+          t.equals(
+            callback.children.length,
+            0,
+            'callback should not have any children'
+          )
+
           t.end()
         })
       })
