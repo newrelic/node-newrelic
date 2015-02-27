@@ -1,0 +1,7 @@
+{
+  "name": "pg-3-test",
+  "dependencies": {
+    "pg": "^3.0.0"
+  },
+  "private": true
+}
