@@ -261,7 +261,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         var get = children[0] || {}
         key = (get.parameters || {}).key
         t.equal(get.name, 'Datastore/operation/Redis/get', "first child segment is get")
-        t.equal(key, '["sess:' + SESSION_ID + '"]',
+        t.equal(key, '"sess:' + SESSION_ID + '"',
                 "operation is session load")
         t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
@@ -271,7 +271,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         children = hgetall.children[0].children || []
         t.equal(hgetall.name, 'Datastore/operation/Redis/hgetall',
                 "second child segment is hgetall")
-        t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
+        t.equal(key, '"rooms:' + ROOM_ID + ':info"',
                 "operation is room info load")
         t.equal(
           children.length, 1,
@@ -283,12 +283,12 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         children = smembers.children[0].children || []
         t.equal(smembers.name, 'Datastore/operation/Redis/smembers',
                 "hgetall child is smembers")
-        t.equal(key, '["rooms:' + ROOM_ID + ':online"]',
+        t.equal(key, '"rooms:' + ROOM_ID + ':online"',
                 "operation is load set of online users")
         t.equal(children.length, 4, "smembers has four children")
 
         // Redis roundtrip isn't deterministic
-        var users = /\[\"users:twitter:(drugleaf|othiym23|izs):status\"\]/
+        var users = /\"users:twitter:(drugleaf|othiym23|izs):status\"/
 
         get = children[0] || {}
         key = (get.parameters || {}).key
@@ -316,7 +316,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         children = smembers.children[0].children || []
         t.equal(smembers.name, 'Datastore/operation/Redis/smembers',
                 "fourth child is smembers")
-        t.equal(key, '["test:public:rooms"]',
+        t.equal(key, '"test:public:rooms"',
                 "operation is load set of public rooms")
         t.equal(children.length, 1, "smembers has one child")
 
@@ -325,7 +325,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         children = hgetall.children || []
         t.equal(hgetall.name, 'Datastore/operation/Redis/hgetall',
                 "child segment is hgetall")
-        t.equal(key, '["rooms:' + ROOM_ID + ':info"]',
+        t.equal(key, '"rooms:' + ROOM_ID + ':info"',
                 "operation is room info load")
         t.ok(children.length >= 1, "hgetallhave a callback segment")
 
@@ -333,7 +333,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         key = (get.parameters || {}).key
         children = get.children[0].children || []
         t.equal(get.name, 'Datastore/operation/Redis/get', "first hgetall child is get")
-        t.equal(key, '["users:twitter:othiym23:status"]',
+        t.equal(key, '"users:twitter:othiym23:status"',
                 "fetched status of othiym23")
         t.ok(children.length >= 2, "get has two children")
 
@@ -344,7 +344,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         var setex = children[1] || {}
         key = (setex.parameters || {}).key
         t.equal(setex.name, 'Datastore/operation/Redis/setex', "view child is setex")
-        t.equal(key, '["sess:' + SESSION_ID + '"]',
+        t.equal(key, '"sess:' + SESSION_ID + '"',
                 "updated session status")
         t.equal((setex.children || {}).length, 1, "setex has a callback segment")
       })

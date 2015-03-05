@@ -57,7 +57,7 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
           t.ok(setSegment, "trace segment for set should exist")
           t.equals(setSegment.name, "Datastore/operation/Redis/set",
                    "should register the set")
-          t.equals(setSegment.parameters.key, "[\"testkey\"]",
+          t.equals(setSegment.parameters.key, "\"testkey\"",
                    "should have the set key as a parameter")
           t.equals(setSegment.children.length, 1,
                    "set should have an only child")
@@ -66,7 +66,7 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
           t.ok(getSegment, "trace segment for get should exist")
           t.equals(getSegment.name, "Datastore/operation/Redis/get",
                    "should register the get")
-          t.equals(getSegment.parameters.key, "[\"testkey\"]",
+          t.equals(getSegment.parameters.key, "\"testkey\"",
                    "should have the get key as a parameter")
           t.ok(getSegment.children.length >= 1,
                    "get should have a callback segment")

@@ -57,7 +57,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
           t.ok(setSegment, "trace segment for set should exist")
           t.equals(setSegment.name, "Datastore/operation/Memcache/set",
                    "should register the set")
-          t.equals(setSegment.parameters.key, "[\"testkey\"]",
+          t.equals(setSegment.parameters.key, "\"testkey\"",
                    "should have the set key as a parameter")
           t.ok(setSegment.children.length >= 1, "set should have a callback segment")
 
@@ -65,7 +65,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
           t.ok(getSegment, "trace segment for get should exist")
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get")
-          t.equals(getSegment.parameters.key, "[\"testkey\"]",
+          t.equals(getSegment.parameters.key, "\"testkey\"",
                    "should have the get key as a parameter")
           t.ok(getSegment.children.length >= 1,
                    "get should leave us here at the end")
@@ -100,7 +100,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
           var setSegment = trace.root.children[0]
           t.equals(setSegment.name, "Datastore/operation/Memcache/set",
                    "should register the set")
-          t.equals(setSegment.parameters.key, "[\"otherkey\"]",
+          t.equals(setSegment.parameters.key, "\"otherkey\"",
                    "should have the set key as a parameter")
           t.ok(setSegment.children.length >= 1,
                    "set should have a callback segment")
@@ -108,7 +108,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
           var getSegment = setSegment.children[1].children[0]
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get")
-          t.equals(getSegment.parameters.key, "[[\"testkey\",\"otherkey\"]]",
+          t.equals(getSegment.parameters.key, "[\"testkey\",\"otherkey\"]",
                    "should have the multiple keys fetched as a parameter")
           t.ok(
             getSegment.children.length >= 1,
