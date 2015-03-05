@@ -1,3 +1,8 @@
+### v1.17.1 (2015-03-05):
+* Added instrumentation support for Postgres 4.x.
+* Added instrumentation support for Datastax's Cassandra driver.
+* Updated Oracle instrumentation to collect new datastore metrics.
+
 ### v1.17.0 (2015-02-25):
 
 * Added instrumentation for modules in node core.
