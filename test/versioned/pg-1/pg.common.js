@@ -122,9 +122,7 @@ module.exports = function runTests(agent, pg, name) {
     t.plan(5)
     postgresSetup(runTest)
     function runTest () {
-
       t.test('simple query with prepared statement', function (t) {
-
         var client = new pg.Client(CON_STRING)
 
         t.notOk(agent.getTransaction(), 'no transaction should be in play')

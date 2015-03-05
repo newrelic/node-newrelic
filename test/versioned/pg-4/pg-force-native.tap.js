@@ -1,1 +1,1 @@
-../pg-1/pg-force-native.tap.js
+../pg-3/pg-force-native.tap.js
