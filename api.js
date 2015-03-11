@@ -554,9 +554,9 @@ API.prototype.endTransaction = function endTransaction() {
     // TODO: Log transaction name as well.
     logger.debug('ending transaction with id: %s', tx.id)
     if (tx.webSegment) {
+      tx.setName(tx.url, 0)
       tx.webSegment.markAsWeb(tx.url)
       tx.webSegment.end()
-      tx.setName(tx.url, 0)
     } else if (tx.bgSegment) {
       tx.bgSegment.end()
     }

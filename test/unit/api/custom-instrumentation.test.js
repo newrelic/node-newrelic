@@ -250,6 +250,19 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
+    it('should set name of webSegment correctly', function (done) {
+      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+        var tx = agent.tracer.getTransaction()
+
+        expect(tx.webSegment.name).to.equal('/custom/transaction')
+        api.endTransaction()
+        expect(tx.webSegment.name).to.equal('WebTransaction/Custom//custom/transaction')
+
+        done()
+      })
+      txHandler()
+    })
+
     it('should create proper metrics', function (done) {
       var txHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()

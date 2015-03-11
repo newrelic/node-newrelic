@@ -10,7 +10,7 @@ var path       = require('path')
 
 test("built-in http instrumentation should handle internal & external requests",
      function (t) {
-  t.plan(11)
+  t.plan(13)
 
   var agent = helper.instrumentMockedAgent()
 
@@ -96,6 +96,13 @@ test("built-in http instrumentation should handle internal & external requests",
         , stats = agent.metrics.getOrCreateMetric(scope)
         , found = false
 
+
+      t.equals(transaction.name, scope, 'transaction name should be set')
+      t.equals(
+        transaction.name,
+        transaction.webSegment.name,
+        'webSegment name should match transaction name'
+      )
 
       t.equals(stats.callCount, 2,
                "should record unscoped path stats after a normal request")
