@@ -1,3 +1,8 @@
+### v1.17.2 (2015-03-12):
+* Fixed a bug that interfered with listing the routes in Express apps.
+* Fixed a bug that caused custom transaction names to appear as "unknown".
+* Added more log detail when instrumentation fails to load.
+
 ### v1.17.1 (2015-03-05):
 * Added instrumentation support for Postgres 4.x.
 * Added instrumentation support for Datastax's Cassandra driver.
