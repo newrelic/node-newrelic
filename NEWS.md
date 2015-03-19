@@ -1,3 +1,12 @@
+### v1.17.3 (2015-03-19):
+* Fixed a bug where external requests report times longer than the
+  transactions that initiated them. 
+  
+  External request segments are now always ended when an error occurs.
+
+* Fixed a bug that produced incorrect transaction names for some routes
+  in express2 and express3.
+
 ### v1.17.2 (2015-03-12):
 * Fixed a bug that interfered with listing the routes in Express apps.
 * Fixed a bug that caused custom transaction names to appear as "unknown".
