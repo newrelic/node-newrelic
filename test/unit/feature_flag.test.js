@@ -12,6 +12,7 @@ var used = [
   'custom_instrumentation',
   'custom_metrics',
   'express4',
+  'express5',
   'insights',
   'mysql_pool',
   'postgres',
