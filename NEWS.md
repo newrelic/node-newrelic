@@ -1,7 +1,11 @@
+### v1.18.0 (2015-03-26):
+* Reduce agent CPU overhead by omitting `setImmediate` from traces.
+* Mitigate a Node.js memory leak that can occur during TLS connections.
+
 ### v1.17.3 (2015-03-19):
 * Fixed a bug where external requests report times longer than the
-  transactions that initiated them. 
-  
+  transactions that initiated them.
+
   External request segments are now always ended when an error occurs.
 
 * Fixed a bug that produced incorrect transaction names for some routes
