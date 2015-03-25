@@ -23,9 +23,11 @@ test('setImmediate', function testSetImmediate(t) {
   }
 
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function transactionWrapper() {
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
     timers.setImmediate(function anonymous() {
-      verifySegments(t, agent, 'timers.setImmediate')
+      t.equal(agent.getTransaction(), transaction)
+      t.equal(agent.getTransaction().trace.root.children.length, 0)
+      t.end()
     })
   })
 })
@@ -56,9 +58,11 @@ test('global setImmediate', function testSetImmediate(t) {
   }
 
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function transactionWrapper() {
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
     setImmediate(function anonymous() {
-      verifySegments(t, agent, 'timers.setImmediate')
+      t.equal(agent.getTransaction(), transaction)
+      t.equal(agent.getTransaction().trace.root.children.length, 0)
+      t.end()
     })
   })
 })
@@ -119,9 +123,8 @@ test('clearImmediate', function testNextTick(t) {
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
       var timer = setImmediate(fail)
-      t.notOk(transaction.trace.root.children[0].ignore)
+      t.notOk(transaction.trace.root.children[0])
       clearImmediate(timer)
-      t.ok(transaction.trace.root.children[0].ignore)
       setImmediate(t.end.bind(t))
     })
   })

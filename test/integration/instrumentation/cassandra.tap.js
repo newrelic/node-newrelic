@@ -172,7 +172,7 @@ test("Cassandra instrumentation",
                    "should register the executeAsPrepared")
             t.ok(setSegment.children.length >= 1,
                    "set should have a callback segment")
-            var getSegment = setSegment.children[1].children[0]
+            var getSegment = setSegment.children[0].children[0]
             t.ok(getSegment, "trace segment for get should exist")
             t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
                    "should register the execute")
