@@ -125,6 +125,21 @@ describe('ErrorTracer', function () {
     tracer = new ErrorTracer(config.config)
   })
 
+  it('should preserve the name field on errors', function () {
+    var agent = helper.loadMockedAgent()
+    var tracer = agent.errors
+    var api = new API(agent)
+
+    var testError = new Error("EVERYTHING IS BROKEN")
+    testError.name = "GAMEBREAKER"
+
+    api.noticeError(testError)
+    var error = tracer.errors[0]
+    expect(error[error.length - 2]).equal(testError.name)
+    helper.unloadAgent(agent)
+
+  })
+
   it('shouldn\'t gather errors if it\'s switched off by config', function () {
     var error = new Error('this error will never be seen')
     config.config.error_collector.enabled = false
