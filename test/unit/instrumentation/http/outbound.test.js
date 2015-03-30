@@ -10,7 +10,7 @@ var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumenta
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
 
-describe("instrumentOutbound", function () {
+describe('instrumentOutbound', function () {
   var agent
   var HOSTNAME = 'localhost'
   var PORT = 8890
@@ -24,7 +24,7 @@ describe("instrumentOutbound", function () {
     helper.unloadAgent(agent)
   })
 
-  describe("when working with http.createClient", function () {
+  describe('when working with http.createClient', function () {
     before(function () {
       // capture the deprecation warning here
       http.createClient()
@@ -36,133 +36,167 @@ describe("instrumentOutbound", function () {
       expect(client.host).equal(expectedHost)
     }
 
-    it("should provide default port and hostname", function () {
+    it('should provide default port and hostname', function () {
       test(80, 'localhost')
     })
 
-    it("should accept port and provide default hostname", function () {
+    it('should accept port and provide default hostname', function () {
       test(8089, 'localhost', 8089)
     })
 
-    it("should accept port and hostname", function () {
+    it('should accept port and hostname', function () {
       test(8089, 'me', 8089, 'me')
     })
 
-    it("should set default port on null port", function () {
+    it('should set default port on null port', function () {
       test(80, 'me', null, 'me')
     })
 
-    it("should provide default port and hostname on nulls", function () {
+    it('should provide default port and hostname on nulls', function () {
       test(80, 'localhost', null, null)
     })
   })
 
-  it("should strip query parameters from path in transaction trace segment", function () {
+  it('should strip query parameters from path in transaction trace segment', function () {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       var path = '/asdf'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-
-      req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
-      instrumentOutbound(agent, req, HOSTNAME, PORT)
+      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
     })
   })
 
-  it("should save query parameters from path if capture is defined", function () {
+  it('should save query parameters from path if capture is defined', function () {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       agent.config.capture_params = true
-      req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
-      instrumentOutbound(agent, req, HOSTNAME, PORT)
+      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
       expect(transaction.trace.root.children[0].parameters).deep.equal({
-        "a"                            : "b",
-        "nr_exclusive_duration_millis" : null,
-        "another"                      : "yourself",
-        "thing"                        : true,
-        "grownup"                      : "true"
+        'a'                            : 'b',
+        'nr_exclusive_duration_millis' : null,
+        'another'                      : 'yourself',
+        'thing'                        : true,
+        'grownup'                      : 'true'
       })
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
     })
   })
 
-  it("should not accept an undefined path", function () {
+  it('should not accept an undefined path', function () {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function () {
       expect(function () {
-        instrumentOutbound(agent, req, HOSTNAME, PORT)
+        instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
       }).to.throw(Error)
     })
+
+    function makeFakeRequest() {
+      return req
+    }
   })
 
-  it("should accept a simple path with no parameters", function () {
+  it('should accept a simple path with no parameters', function () {
     var req = new events.EventEmitter()
+    var path = '/newrelic'
     helper.runInTransaction(agent, function (transaction) {
-      var path = '/newrelic'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, req, HOSTNAME, PORT)
+      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
+
+    function makeFakeRequest() {
+      req.path = path
+      return req
+    }
   })
 
-  it("should purge trailing slash", function () {
+  it('should purge trailing slash', function () {
     var req = new events.EventEmitter()
+    var path = '/newrelic/'
     helper.runInTransaction(agent, function (transaction) {
-      var path = '/newrelic/'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, req, HOSTNAME, PORT)
+      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
+
+    function makeFakeRequest() {
+      req.path = path
+      return req
+    }
   })
 
-  it("should throw if hostname is undefined", function () {
+  it('should throw if hostname is undefined', function () {
     var req = new events.EventEmitter()
     var undef
 
-
     helper.runInTransaction(agent, function () {
-      req.path = '/newrelic'
       expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, req, undef, PORT)
+        instrumentOutbound(agent, undef, PORT, makeFakeRequest)
       }).to.throw(Error)
     })
+
+    function makeFakeRequest() {
+      req.path = '/newrelic'
+      return req
+    }
   })
 
-  it("should throw if hostname is null", function () {
+  it('should throw if hostname is null', function () {
     var req = new events.EventEmitter()
 
-
     helper.runInTransaction(agent, function () {
-      req.path = '/newrelic'
       expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, req, null, PORT)
+        instrumentOutbound(agent, null, PORT, makeFakeRequest)
       }).to.throw(Error)
     })
+
+    function makeFakeRequest() {
+      req.path = '/newrelic'
+      return req
+    }
   })
 
-  it("should throw if hostname is an empty string", function () {
+  it('should throw if hostname is an empty string', function () {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function () {
-      req.path = '/newrelic'
       expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, req, '', PORT)
+        instrumentOutbound(agent, '', PORT, makeFakeRequest)
       }).to.throw(Error)
     })
+
+    function makeFakeRequest() {
+      req.path = '/newrelic'
+      return req
+    }
   })
 
-  it("should throw if port is undefined", function () {
+  it('should throw if port is undefined', function () {
     var req = new events.EventEmitter()
     var undef
 
-
     helper.runInTransaction(agent, function () {
-      req.path = '/newrelic'
       expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, req, 'hostname', undef)
+        instrumentOutbound(agent, 'hostname', undef, makeFakeRequest)
       }).to.throw(Error)
     })
+
+    function makeFakeRequest() {
+      req.path = '/newrelic'
+      return req
+    }
   })
 })
 
@@ -213,7 +247,7 @@ describe('should add data from cat header to segment', function () {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[1]
+        var segment = agent.tracer.getTransaction().trace.root.children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
@@ -230,7 +264,7 @@ describe('should add data from cat header to segment', function () {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[1]
+        var segment = agent.tracer.getTransaction().trace.root.children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
@@ -277,7 +311,7 @@ describe('should add data from cat header to segment', function () {
   })
 })
 
-describe("when working with http.request", function () {
+describe('when working with http.request', function () {
   var agent
     , HOSTNAME = 'localhost'
     , PORT     = 8890
@@ -292,13 +326,13 @@ describe("when working with http.request", function () {
     helper.unloadAgent(agent)
   })
 
-  it("should accept port and hostname", function (done) {
-    var host = "http://www.google.com"
-    var path = "/index.html"
-    nock(host).get(path).reply(200, "Hello from Google")
+  it('should accept port and hostname', function (done) {
+    var host = 'http://www.google.com'
+    var path = '/index.html'
+    nock(host).get(path).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, function (transaction) {
-      http.get("http://www.google.com/index.html", function (res) {
+      http.get('http://www.google.com/index.html', function (res) {
         var segment = agent.tracer.getSegment()
 
         expect(segment.name).equal('External/www.google.com/index.html')
@@ -310,12 +344,12 @@ describe("when working with http.request", function () {
   })
 
   it('should start and end segment', function (done) {
-    var host = "http://www.google.com"
-    var path = "/index.html"
-    nock(host).get(path).reply(200, "Hello from Google")
+    var host = 'http://www.google.com'
+    var path = '/index.html'
+    nock(host).get(path).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, function (transaction) {
-      http.get("http://www.google.com/index.html", function (res) {
+      http.get('http://www.google.com/index.html', function (res) {
         var segment = agent.tracer.getSegment()
 
         expect(segment.timer.hrstart).instanceof(Array)
