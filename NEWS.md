@@ -1,6 +1,36 @@
+### v1.18.1 (2015-04-02):
+* Names assigned to errors via `Error.name` now appear in the UI.
+
+  Previously, the name of an error in the UI appeared as `Error.constructor.name`
+  or with a default of `Error`. Now the common pattern of `Error.name`
+  is respected and takes precedence.
+
+* Child segments of external calls will now be nested correctly.
+
+  This change causes segments that make up external calls to nest
+  under the call correctly. Previously, the child segments appeared
+  as siblings to external calls.
+
+* The `request_uri` attribute on errors will now only include the path
+  without any parameters.
+
+  This behavior now matches the other New Relic agents.
+
 ### v1.18.0 (2015-03-26):
 * Reduce agent CPU overhead by omitting `setImmediate` from traces.
+    
+  The change to `setImmediate` makes that function behave the same way
+  as `nextTick` and other frequently-called functions that are already
+  elided from Transaction Traces.
+
 * Mitigate a Node.js memory leak that can occur during TLS connections.
+
+  There is an outstanding Node.js Core memory leak involving TLS
+  connections. Clients specifying certificates, such as the New Relic
+  Agent, quickly reveal this leak. We now mitigate this issue by using
+  the default client certificates where possible. A new log message
+  will be printed when the TLS memory leak workaround can not be used,
+  such as when using a custom certificate with an HTTPS proxy.
 
 ### v1.17.3 (2015-03-19):
 * Fixed a bug where external requests report times longer than the
