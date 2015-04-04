@@ -1,7 +1,7 @@
 'use strict'
 
 var util = require('util')
-var logger = require('./lib/logger').child({component : 'api'})
+var logger = require('./lib/logger').child({component: 'api'})
 var NAMES = require('./lib/metrics/names')
 var recordWeb = require('./lib/metrics/recorders/http.js')
 var recordBackground = require('./lib/metrics/recorders/other.js')
@@ -67,8 +67,7 @@ API.prototype.setTransactionName = function setTransactionName(name) {
     if (transaction && transaction.url) {
       logger.error("Must include name in setTransactionName call for URL %s.",
                    transaction.url)
-    }
-    else {
+    } else {
       logger.error("Must include name in setTransactionName call.")
     }
 
@@ -107,8 +106,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
     if (transaction && transaction.url) {
       logger.error("Must include name in setControllerName call for URL %s.",
                    transaction.url)
-    }
-    else {
+    } else {
       logger.error("Must include name in setControllerName call.")
     }
 
@@ -282,7 +280,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
    * Output an HTML comment and log a warning the comment is meant to be
    * innocuous to the end user.
    */
-  function _gracefail(num){
+  function _gracefail(num) {
     logger.warn(RUM_ISSUES[num])
     return '<!-- NREUM: (' + num + ') -->'
   }
@@ -312,13 +310,13 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
    */
   if (!name) return _gracefail(3)
 
-  var time  = trans.timer.getDurationInMillis()
+  var time = trans.timer.getDurationInMillis()
 
   /*
    * Only the first 13 chars of the license should be used for hashing with
    * the transaction name.
    */
-  var key   = config.license_key.substr(0, 13)
+  var key = config.license_key.substr(0, 13)
   var appid = config.application_id
 
   /* This is only going to work if the agent has successfully handshaked with
@@ -352,23 +350,23 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
 
   // This hash gets written directly into the browser.
   var rum_hash = {
-    agent           : browser_monitoring.js_agent_file,
-    beacon          : browser_monitoring.beacon,
-    errorBeacon     : browser_monitoring.error_beacon,
-    licenseKey      : licenseKey,
-    applicationID   : appid,
-    applicationTime : time,
-    transactionName : hashes.obfuscateNameUsingKey(name, key),
-    queueTime       : trans.queueTime,
-    ttGuid          : trans.id,
+    agent: browser_monitoring.js_agent_file,
+    beacon: browser_monitoring.beacon,
+    errorBeacon: browser_monitoring.error_beacon,
+    licenseKey: licenseKey,
+    applicationID: appid,
+    applicationTime: time,
+    transactionName: hashes.obfuscateNameUsingKey(name, key),
+    queueTime: trans.queueTime,
+    ttGuid: trans.id,
 
     // we don't use these parameters yet
-    agentToken      : null
+    agentToken: null
   }
 
   // if debugging, do pretty format of JSON
   var tabs = config.browser_monitoring.debug ? 2 : 0
-    , json = JSON.stringify(rum_hash, null, tabs)
+  var json = JSON.stringify(rum_hash, null, tabs)
 
 
   // the complete header to be written to the browser
@@ -414,25 +412,26 @@ API.prototype.createTracer = function createTracer(name, callback) {
 
   var tracer = this.agent.tracer
   var txn = tracer.getTransaction()
-  if (txn) {
+  if (!txn) {
     logger.debug(
-      'creating tracer %s (%s) on transaction %s.',
-      name,
-      callback && callback.name,
-      txn.id
-    )
-
-    var segment = tracer.createSegment(name, customRecorder)
-    segment.start()
-    return tracer.bindFunction(callback, segment, true)
-  } else {
-    logger.debug(
-      'createTracer called with %s (%s) outside of a transaction, unable to create tracer.',
+      'createTracer called with %s (%s) outside of a transaction, ' +
+        'unable to create tracer.',
       name,
       callback && callback.name
     )
     return callback
   }
+
+  logger.debug(
+    'creating tracer %s (%s) on transaction %s.',
+    name,
+    callback && callback.name,
+    txn.id
+  )
+
+  var segment = tracer.createSegment(name, customRecorder)
+  segment.start()
+  return tracer.bindFunction(callback, segment, true)
 }
 
 API.prototype.createWebTransaction = function createWebTransaction(url, callback) {
@@ -464,7 +463,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     callback && callback.name
   )
 
-  var tracer  = this.agent.tracer
+  var tracer = this.agent.tracer
 
   return tracer.transactionNestProxy('web', function createWebSegment() {
     var tx = tracer.getTransaction()
@@ -485,7 +484,9 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
   })
 }
 
-API.prototype.createBackgroundTransaction = function createBackgroundTransaction(name, group, callback) {
+API.prototype.createBackgroundTransaction = createBackgroundTransaction
+
+function createBackgroundTransaction(name, group, callback) {
   if (callback === undefined && typeof group === 'function') {
     callback = group
     group = 'Nodejs'
@@ -502,7 +503,9 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
   }
 
   if (typeof callback !== 'function') {
-    logger.warn('createBackgroundTransaction called with a callback arg that is not a function')
+    logger.warn(
+      'createBackgroundTransaction called with a callback arg that is not a function'
+    )
     fail = true
   }
 
@@ -519,7 +522,7 @@ API.prototype.createBackgroundTransaction = function createBackgroundTransaction
     callback && callback.name
   )
 
-  var tracer  = this.agent.tracer
+  var tracer = this.agent.tracer
 
   return tracer.transactionNestProxy('bg', function createBackgroundSegment() {
     var tx = tracer.getTransaction()

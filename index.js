@@ -33,8 +33,7 @@ try {
   var config = require('./lib/config.js').initialize()
   if (!config.agent_enabled) {
     logger.info("Module not enabled in configuration; not starting.")
-  }
-  else {
+  } else {
     /* Only load the rest of the module if configuration is available and the
      * configurator didn't throw.
      *
@@ -61,16 +60,15 @@ try {
     agent.start(function cb_start(error) {
       if (!error) return logger.debug("New Relic for Node.js is connected to New Relic.")
 
-      var message = "New Relic for Node.js halted startup due to an error:"
-      logger.error(error, message)
+      var errorMessage = "New Relic for Node.js halted startup due to an error:"
+      logger.error(error, errorMessage)
 
-      console.error(message)
+      console.error(errorMessage)
       console.error(error.stack)
     })
   }
-}
-catch (error) {
-  var message = "New Relic for Node.js was unable to bootstrap itself due to an error:"
+} catch (error) {
+  message = "New Relic for Node.js was unable to bootstrap itself due to an error:"
   logger.error(error, message)
 
   console.error(message)
@@ -80,8 +78,7 @@ catch (error) {
 var API
 if (agent) {
   API = require('./api.js')
-}
-else {
+} else {
   API = require('./stub_api.js')
 }
 module.exports = new API(agent)

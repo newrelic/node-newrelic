@@ -1,51 +1,55 @@
 'use strict'
 
-var path    = require('path')
-  , logger  = require('./lib/logger.js')
-  , RealAPI = require('./api.js')
+var logger = require('./lib/logger.js')
+var RealAPI = require('./api.js')
 
 
-function stubFunction (name) {
-  // jshint -W061
+function stubFunction(name) {
+  /*eslint-disable no-eval*/
   return eval("(function () {return function " + name + "() {" +
               "logger.debug('Not calling " + name + " because New Relic is disabled.');" +
               "}}())")
+  /*eslint-enable no-eval*/
 }
 
 function Stub() {}
 
-var keys   = Object.keys(RealAPI.prototype)
-  , length = keys.length
+var keys = Object.keys(RealAPI.prototype)
+var length = keys.length
 
 
 /* This way the stub API doesn't have to be updated in lockstep with the regular
  * API.
  */
 for (var i = 0; i < length; i++) {
-  var name = keys[i]
-  Stub.prototype[name] = stubFunction(name)
+  var functionName = keys[i]
+  Stub.prototype[functionName] = stubFunction(functionName)
 }
+Stub.prototype.createTracer = createTracer
+Stub.prototype.createWebTransaction = createWebTransaction
+Stub.prototype.createBackgroundTransaction = createBackgroundTransaction
+Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
 
-// this code gets injected into HTML templates
-// and we don't want it to return undefined/null
-Stub.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(){
+// This code gets injected into HTML templates
+// and we don't want it to return undefined/null.
+function getBrowserTimingHeader() {
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.')
   return ''
 }
 
-// Normally the follow 3 calls return a wrapped callback, instead we should just
-// return the callback in its unwrapped state.
-Stub.prototype.createTracer = function(name, callback) {
+// Normally the following 3 calls return a wrapped callback, instead we
+// should just return the callback in its unwrapped state.
+function createTracer(name, callback) {
   logger.debug('Not calling createTracer because New Relic is disabled.')
   return callback
 }
 
-Stub.prototype.createWebTransaction = function(url, callback) {
+function createWebTransaction(url, callback) {
   logger.debug('Not calling createWebTransaction because New Relic is disabled.')
   return callback
 }
 
-Stub.prototype.createBackgroundTransaction = function(name, group, callback) {
+function createBackgroundTransaction(name, group, callback) {
   logger.debug('Not calling createBackgroundTransaction because New Relic is disabled.')
   return (callback === undefined) ? group : callback
 }
