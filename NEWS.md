@@ -1,3 +1,11 @@
+### v1.18.2 (2015-04-09):
+
+* Wrapped all our calls to `JSON.stringify` in try/catch.
+
+  Previously, only calls that were considered unsafe due to external
+  data input were wrapped. We are taking a more defensive stance and
+  wrapping them all now.
+
 ### v1.18.1 (2015-04-02):
 * Names assigned to errors via `Error.name` now appear in the UI.
 
