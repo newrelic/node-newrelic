@@ -2,11 +2,11 @@
 /*jshint expr:true*/
 
 var helper = require('../../lib/agent_helper.js')
-  , chai = require('chai')
-  , assert = chai.assert
-  , Transaction = require('../../../lib/transaction')
-  , tests = require('../../lib/cross_agent_tests/cat_map.json')
-  , _isValidReferringHash = require('../../../lib/instrumentation/core/http.js')._isValidReferringHash
+var chai = require('chai')
+var assert = chai.assert
+var Transaction = require('../../../lib/transaction')
+var tests = require('../../lib/cross_agent_tests/cat/cat_map.json')
+var cat = require('../../../lib/util/cat.js')
 
 
 function mockTransaction(agent, test, duration) {
@@ -17,17 +17,18 @@ function mockTransaction(agent, test, duration) {
   trans.timer.duration = duration
   trans.timer.start = 2
   trans.id = test.transactionGuid
-  trans.webSegment = {getDurationInMillis: function () {return trans.timer.duration}}
+  trans.webSegment = {
+    getDurationInMillis: function () {
+      return trans.timer.duration
+    }
+  }
 
   // CAT data
-
   if (test.inboundPayload) {
-    trans.tripId = test.inboundPayload[2]
-    trans.referringTransactionGuid = test.inboundPayload[0]
-
-    if (_isValidReferringHash(test.inboundPayload[3])) {
-      trans.referringPathHash = test.inboundPayload[3]
-    }
+    cat.parsedHeadersToTrans(test.inboundPayload[0], test.inboundPayload, trans)
+  } else {
+    // Simulate the headers being unparsable or not existing
+    cat.parsedHeadersToTrans(null, null, trans)
   }
 
   if (test.outboundRequests) {
@@ -43,7 +44,7 @@ describe('when CAT is disabled', function () {
   var agent
 
   before(function() {
-    agent = helper.loadMockedAgent({cat: false});
+    agent = helper.loadMockedAgent({cat: false})
   })
 
   after(function() {
@@ -74,9 +75,10 @@ describe('when CAT is enabled', function () {
 
   before(function() {
     // App name from test data
-    // encoding_key from ben in agent dev
     agent = helper.loadMockedAgent({cat: true})
-    agent.config.applications = function newFake() {return ['testAppName'];}
+    agent.config.applications = function newFake() {
+      return ['testAppName']
+    }
   })
 
   after(function() {

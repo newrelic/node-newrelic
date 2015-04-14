@@ -26,7 +26,6 @@ test('background transactions should not blow up with CAT', function (t) {
   var server = http.createServer(function (req, res) {
     t.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')
     t.ok(req.headers['x-newrelic-transaction'], 'got incoming x-newrelic-transaction')
-    console.log(req.headers)
     req.resume()
     res.end()
   })
