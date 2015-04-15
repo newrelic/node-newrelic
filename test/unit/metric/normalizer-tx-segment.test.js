@@ -19,13 +19,13 @@ describe('The TxSegmentNormalizer', function () {
   it('should accept arrays to load', function () {
     var input = [
       {
-        "prefix": "WebTrans",
+        "prefix": "WebTrans/foo",
         "terms": ["one", "two"]
       }
     ]
     var normalizer = new TxSegmentNormalizer()
     normalizer.load(input)
-    expect(normalizer.terms).equal(input)
+    expect(normalizer.terms).deep.equal(input)
   })
 })
 

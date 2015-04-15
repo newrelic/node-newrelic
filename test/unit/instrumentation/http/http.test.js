@@ -381,7 +381,7 @@ describe("built-in http module instrumentation", function () {
         '789',
         false,
         'trip-id-1',
-        '!1234abcd'
+        {}
       ]
       var headers = {}
       headers[NEWRELIC_TRANSACTION_HEADER] = hashes.obfuscateNameUsingKey(
