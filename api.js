@@ -640,11 +640,6 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
 }
 
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
-  // FLAG: custom_events
-  if (!this.agent.config.feature_flag.custom_events) {
-    return
-  }
-
   if (!this.agent.config.custom_insights_events.enabled) {
     return
   }

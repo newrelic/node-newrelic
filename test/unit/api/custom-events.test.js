@@ -11,7 +11,7 @@ describe('The custom events API', function () {
   var api
 
   beforeEach(function () {
-    agent = helper.loadMockedAgent({custom_events: true})
+    agent = helper.loadMockedAgent()
     api = new API(agent)
   })
 
