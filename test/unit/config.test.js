@@ -257,6 +257,18 @@ describe("the agent configuration", function () {
       delete configuration.newrelic_home
     })
 
+    it("should be able to create a flat JSONifiable version", function () {
+      var pub = configuration.publicSettings()
+
+      // The object returned from Config.publicSettings
+      // should not have any values of type object
+      for (var key in pub) {
+        if (pub[key] !== null) {
+          expect(typeof pub[key]).not.equal('object')
+        }
+      }
+    })
+
     it("should have no application name", function () {
       expect(configuration.app_name).eql([])
     })
