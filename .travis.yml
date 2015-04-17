@@ -1,0 +1,19 @@
+language: node_js
+node_js:
+  - "0.12"
+  - "0.10"
+  - "0.8"
+  - "0.12.2"
+  - "0.12.1"
+  - "0.12.0"
+  - "0.10.38"
+  - "0.10.37"
+  - "0.10.36"
+  - "0.10.35"
+  - "iojs"
+  - "iojs-v1.6.3"
+  - "iojs-v1.6.4"
+  - "iojs-v1.7.0"
+  - "iojs-v1.8.1"
+before_install: 'make update_npm_global'
+script: 'make unit'
