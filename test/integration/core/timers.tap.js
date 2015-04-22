@@ -88,6 +88,29 @@ test('nextTick', function testNextTick(t) {
   })
 })
 
+test('nextTick with extra args', function testNextTick(t) {
+  var original = process.nextTick
+  process.nextTick = multiArgNextTick
+  var agent = setupAgent(t)
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    process.nextTick(function callback() {
+      t.equal(agent.getTransaction(), transaction)
+      t.equal(agent.getTransaction().trace.root.children.length, 0)
+      t.deepEqual([].slice.call(arguments), [1, 2, 3])
+      process.nextTick = original
+      t.end()
+    }, 1, 2, 3)
+  })
+
+  function multiArgNextTick(fn) {
+    var args = [].slice.call(arguments, 1)
+    original(function callFn() {
+      fn.apply(this, args)
+    })
+  }
+})
+
+
 test('clearTimeout', function testNextTick(t) {
   var agent = setupAgent(t)
   var timer = setTimeout(fail)
