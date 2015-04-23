@@ -560,10 +560,10 @@ describe("the agent configuration", function () {
       expect(config.high_security).equal(false)
     })
 
-    it("should configure param capture", function () {
+    it("should reject capture_params", function () {
       expect(config.capture_params).equal(false)
       config.onConnect({'capture_params' : true})
-      expect(config.capture_params).equal(true)
+      expect(config.capture_params).equal(false)
     })
 
     it("should configure ignored params", function () {

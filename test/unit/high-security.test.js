@@ -1,12 +1,11 @@
 'use strict'
 
 var path   = require('path')
-  , chai   = require('chai')
-  , helper = require('../lib/agent_helper.js')
-  , facts  = require('../../lib/collector/facts.js')
-  , API    = require('../../api.js')
-  , Config = require('../../lib/config')
-  
+var chai   = require('chai')
+var helper = require('../lib/agent_helper.js')
+var facts  = require('../../lib/collector/facts.js')
+var API    = require('../../api.js')
+var Config = require('../../lib/config')
 
 var should = chai.should()
 
@@ -14,8 +13,7 @@ describe('high security mode', function () {
 
   describe('config to be sent during connect', function () {
     var agent
-      , api
-      
+    var api
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -77,11 +75,11 @@ describe('high security mode', function () {
         config.ssl.should.equal(false)
       })
 
-      it('should accept enabling capture_params', function () {
+      it('should reject enabling capture_params', function () {
         // disabled by default, but lets make sure.
         config.capture_params = false
         config.onConnect({capture_params: true})
-        config.capture_params.should.equal(true)
+        config.capture_params.should.equal(false)
       })
     })
   })
@@ -154,8 +152,7 @@ describe('high security mode', function () {
 
   describe('affect custom params', function () {
     var agent
-      , api
-      
+    var api
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
