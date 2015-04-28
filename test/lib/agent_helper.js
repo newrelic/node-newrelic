@@ -145,6 +145,24 @@ var helper = module.exports = {
   },
 
   /**
+   * Proxy for runInTransaction that names the transaction that the
+   * callback is executed in
+   */
+  runInNamedTransaction : function runInNamedTransaction(agent, type, callback) {
+    if (callback === undefined && typeof type === 'function') {
+      callback = type
+      type = undefined
+    }
+
+
+    return helper.runInTransaction(agent, type, function wrappedCallback(transaction) {
+      transaction.name = 'TestTransaction'
+      return callback(transaction)
+    })
+
+  },
+
+  /**
    * Stub to bootstrap a memcached instance
    *
    * @param Function callback The operations to be performed while the server

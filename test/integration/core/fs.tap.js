@@ -7,10 +7,21 @@ var fs = require('fs')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
 
+var NAMES = require('../../../lib/metrics/names')
+
 // delete temp files before process exits
 temp.track()
 
 var tempDir = temp.mkdirSync('fs-tests')
+
+function checkMetric(names, agent, scope) {
+  var res = true
+  var metrics = scope ? agent.metrics.scoped[scope] : agent.metrics.unscoped
+  names.forEach(function cb_forEach(name) {
+    res = res && metrics[NAMES.FS.PREFIX + name]
+  })
+  return res
+}
 
 test('rename', function(t) {
   var name = path.join(tempDir, 'rename-me')
@@ -18,7 +29,7 @@ test('rename', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.rename(name, newName, function(err) {
       t.notOk(err, 'should not error')
       helper.unloadAgent(agent)
@@ -27,9 +38,16 @@ test('rename', function(t) {
       t.equal(
         fs.readFileSync(newName, 'utf8'),
         content,
-        'file with new name shuold have expected contents'
+        'file with new name should have expected contents'
       )
-      verifySegments(t, agent, 'fs.rename')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'rename')
+
+      trans.end(function cb_metricCheck() {
+        t.ok(
+          checkMetric(['rename'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -39,7 +57,7 @@ test('truncate', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.truncate(name, 4, function(err) {
       t.notOk(err, 'should not error')
       helper.unloadAgent(agent)
@@ -48,7 +66,14 @@ test('truncate', function(t) {
         content.slice(0, 4),
         'content should be truncated'
       )
-      verifySegments(t, agent, 'fs.truncate', ['fs.open'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'truncate', [NAMES.FS.PREFIX + 'open'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['open', 'truncate'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -59,7 +84,7 @@ test('ftruncate', function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.ftruncate(fd, 4, function(err) {
       t.notOk(err, 'should not error')
       helper.unloadAgent(agent)
@@ -68,7 +93,14 @@ test('ftruncate', function(t) {
         content.slice(0, 4),
         'content should be truncated'
       )
-      verifySegments(t, agent, 'fs.ftruncate')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'ftruncate')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['ftruncate'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -80,10 +112,17 @@ test('chown', function(t) {
   var agent = setupAgent(t)
   var uid = 0
   var gid = 0
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.chown(name, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
-      verifySegments(t, agent, 'fs.chown')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'chown')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['chown'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -96,10 +135,17 @@ test('fchown', function(t) {
   var agent = setupAgent(t)
   var uid = 0
   var gid = 0
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.fchown(fd, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
-      verifySegments(t, agent, 'fs.fchown')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'fchown')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['fchown'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -111,10 +157,17 @@ test('lchown', function(t) {
   var agent = setupAgent(t)
   var uid = 0
   var gid = 0
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.lchown(name, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
-      verifySegments(t, agent, 'fs.lchown', ['fs.open'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', [NAMES.FS.PREFIX + 'open'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['lchown', 'open'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -125,12 +178,19 @@ test('chmod', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
   t.equal((fs.statSync(name).mode & 511).toString(8), '755')
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.chmod(name, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
       t.equal((fs.statSync(name).mode & 511).toString(8), '777')
-      verifySegments(t, agent, 'fs.chmod')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'chmod')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['chmod'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -141,12 +201,19 @@ test('lchmod', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
   t.equal((fs.statSync(name).mode & 511).toString(8), '755')
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.lchmod(name, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
       t.equal((fs.statSync(name).mode & 511).toString(8), '777')
-      verifySegments(t, agent, 'fs.lchmod', ['fs.open'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchmod', [NAMES.FS.PREFIX + 'open'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['lchmod', 'open'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -158,12 +225,19 @@ test('fchmod', function(t) {
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
   t.equal((fs.statSync(name).mode & 511).toString(8), '755')
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.fchmod(fd, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
       t.equal((fs.statSync(name).mode & 511).toString(8), '777')
-      verifySegments(t, agent, 'fs.fchmod')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'fchmod')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['fchmod'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -173,11 +247,18 @@ test('stat', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.stat(name, function(err, stat) {
       t.equal(err, null, 'should not error')
       t.equal((stat.mode & 511).toString(8), '755')
-      verifySegments(t, agent, 'fs.stat')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'stat')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['stat'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -187,11 +268,18 @@ test('lstat', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.lstat(name, function(err, stat) {
       t.equal(err, null, 'should not error')
       t.equal((stat.mode & 511).toString(8), '755')
-      verifySegments(t, agent, 'fs.lstat')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'lstat')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['lstat'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -202,11 +290,18 @@ test('fstat', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.fstat(fd, function(err, stat) {
       t.equal(err, null, 'should not error')
       t.equal((stat.mode & 511).toString(8), '755')
-      verifySegments(t, agent, 'fs.fstat')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'fstat')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['fstat'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -217,7 +312,7 @@ test('link', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.link(name, link, function(err) {
       t.equal(err, null, 'should not error')
       t.equal(
@@ -226,7 +321,14 @@ test('link', function(t) {
         'should point to the same file'
       )
 
-      verifySegments(t, agent, 'fs.link')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'link')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['link'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -237,7 +339,7 @@ test('symlink', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.symlink(name, link, function(err) {
       t.equal(err, null, 'should not error')
       t.equal(
@@ -246,7 +348,14 @@ test('symlink', function(t) {
         'should point to the same file'
       )
 
-      verifySegments(t, agent, 'fs.symlink')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'symlink')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['symlink'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -258,12 +367,19 @@ test('readlink', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   fs.symlinkSync(name, link)
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.readlink(link, function(err, target) {
       t.equal(err, null, 'should not error')
       t.equal(target, name, 'should point to the same file')
 
-      verifySegments(t, agent, 'fs.readlink')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'readlink')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['readlink'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -276,11 +392,18 @@ test('realpath', function(t) {
   fs.symlinkSync(name, link)
   var real = fs.realpathSync(name)
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.realpath(link, function(err, target) {
       t.equal(err, null, 'should not error')
       t.equal(target, real, 'should point to the same file')
-      verifySegments(t, agent, 'fs.realpath', ['fs.lstat'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath', [NAMES.FS.PREFIX + 'lstat'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['lstat', 'realpath'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -292,11 +415,18 @@ test('unlink', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   fs.symlinkSync(name, link)
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.unlink(link, function(err) {
       t.equal(err, null, 'should not error')
       t.notOk(fs.existsSync(link), 'link should not exist')
-      verifySegments(t, agent, 'fs.unlink')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'unlink')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['unlink'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -304,12 +434,19 @@ test('unlink', function(t) {
 test('mkdir', function(t) {
   var name = path.join(tempDir, 'mkdir')
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.mkdir(name, function(err) {
       t.equal(err, null, 'should not error')
       t.ok(fs.existsSync(name), 'dir should exist')
       t.ok(fs.readdirSync(name), 'dir should be readable')
-      verifySegments(t, agent, 'fs.mkdir')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'mkdir')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['mkdir'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -318,11 +455,18 @@ test('rmdir', function(t) {
   var name = path.join(tempDir, 'rmdir')
   var agent = setupAgent(t)
   fs.mkdirSync(name)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.rmdir(name, function(err) {
       t.equal(err, null, 'should not error')
       t.notOk(fs.existsSync(name), 'dir should not exist')
-      verifySegments(t, agent, 'fs.rmdir')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'rmdir')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['rmdir'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -331,11 +475,18 @@ test('readdir', function(t) {
   var name = path.join(tempDir, 'readdir')
   var agent = setupAgent(t)
   fs.mkdirSync(name)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.readdir(name, function(err, data) {
       t.equal(err, null, 'should not error')
       t.deepEqual(data, [], 'should get list of contents')
-      verifySegments(t, agent, 'fs.readdir')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'readdir')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['readdir'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -346,10 +497,17 @@ test('close', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.close(fd, function(err) {
       t.equal(err, null, 'should not error')
-      verifySegments(t, agent, 'fs.close')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'close')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['close'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -359,11 +517,18 @@ test('open', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.open(name, 'r+', function(err, fd) {
       t.equal(err, null, 'should not error')
       t.ok(fd, 'should get a file descriptor')
-      verifySegments(t, agent, 'fs.open')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'open')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['open'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -376,13 +541,20 @@ test('utimes', function(t) {
   var accessed = 5
   var modified = 15
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.utimes(name, accessed, modified, function(err) {
       t.notOk(err, 'should not error')
       var stats = fs.statSync(name)
       t.equal(stats.atime.toISOString(), '1970-01-01T00:00:05.000Z')
       t.equal(stats.mtime.toISOString(), '1970-01-01T00:00:15.000Z')
-      verifySegments(t, agent, 'fs.utimes')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'utimes')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['utimes'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -396,13 +568,20 @@ test('futimes', function(t) {
   var accessed = 5
   var modified = 15
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.futimes(fd, accessed, modified, function(err) {
       t.notOk(err, 'should not error')
       var stats = fs.statSync(name)
       t.equal(stats.atime.toISOString(), '1970-01-01T00:00:05.000Z')
       t.equal(stats.mtime.toISOString(), '1970-01-01T00:00:15.000Z')
-      verifySegments(t, agent, 'fs.futimes')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'futimes')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['futimes'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -414,10 +593,17 @@ test('fsync', function(t) {
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.fsync(fd, function(err) {
       t.notOk(err, 'should not error')
-      verifySegments(t, agent, 'fs.fsync')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'fsync')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['fsync'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -428,11 +614,18 @@ test('readFile', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.readFile(name, function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString('utf8'), content)
-      verifySegments(t, agent, 'fs.readFile', ['fs.open'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'readFile', [NAMES.FS.PREFIX + 'open'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['open', 'readFile'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -442,11 +635,18 @@ test('writeFile', function(t) {
   var content = 'some-content'
   var agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.writeFile(name, content, function(err) {
       t.notOk(err, 'should not error')
       t.equal(fs.readFileSync(name).toString('utf8'), content)
-      verifySegments(t, agent, 'fs.writeFile', ['fs.open'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'writeFile', [NAMES.FS.PREFIX + 'open'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['writeFile', 'open'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -457,11 +657,18 @@ test('appendFile', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.appendFile(name, '123', function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(fs.readFileSync(name).toString('utf-8'), content + '123')
-      verifySegments(t, agent, 'fs.appendFile', ['fs.writeFile'])
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'appendFile', [NAMES.FS.PREFIX + 'writeFile'])
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['appendFile', 'writeFile'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
@@ -472,10 +679,17 @@ test('exists', function(t) {
   fs.writeFileSync(name, content, {mode: '0755'})
   var agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
+  helper.runInNamedTransaction(agent, function(trans) {
     fs.exists(name, function(exists) {
       t.ok(exists, 'should exist')
-      verifySegments(t, agent, 'fs.exists')
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'exists')
+
+      trans.end(function checkMetrics() {
+        t.ok(
+          checkMetric(['exists'], agent, trans.name),
+          'metric should exist after transaction end'
+        )
+      })
     })
   })
 })
