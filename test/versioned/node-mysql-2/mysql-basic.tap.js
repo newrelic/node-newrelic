@@ -106,29 +106,86 @@ test('Basic run through mysql functionality',
       })
     })
 
-    /*
-     *
-     * TEST GOES HERE
-     *
-     */
-    t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
-    helper.runInTransaction(agent, function transactionInScope() {
-      t.ok(agent.getTransaction(), 'we should be in a transaction')
+    t.plan(4)
 
-      withRetry.getClient(function cb_getClient(err, client) {
-        if (err) return t.fail(err)
+    t.test('basic transaction', function testTransaction(t) {
+      t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
+      helper.runInTransaction(agent, function transactionInScope() {
+        t.ok(agent.getTransaction(), 'we should be in a transaction')
 
-        t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
-        client.query('SELECT 1', function (err) {
+        withRetry.getClient(function cb_getClient(err, client) {
           if (err) return t.fail(err)
 
-          t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
-          withRetry.release(client)
+          t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
+          client.query('SELECT 1', function (err) {
+            if (err) return t.fail(err)
 
-          t.end()
+            t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
+            withRetry.release(client)
+            agent.getTransaction().end(t.end.bind(t))
+          })
         })
       })
+    })
 
+    t.test('query with values', function testCallbackOnly(t) {
+      t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
+      helper.runInTransaction(agent, function transactionInScope() {
+        t.ok(agent.getTransaction(), 'we should be in a transaction')
+
+        withRetry.getClient(function cb_getClient(err, client) {
+          if (err) return t.fail(err)
+
+          t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
+          client.query('SELECT 1', [], function (err) {
+            if (err) return t.fail(err)
+
+            t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
+            withRetry.release(client)
+            agent.getTransaction().end(t.end.bind(t))
+          })
+        })
+      })
+    })
+
+    t.test('query with options object rather than sql', function testCallbackOnly(t) {
+      t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
+      helper.runInTransaction(agent, function transactionInScope() {
+        t.ok(agent.getTransaction(), 'we should be in a transaction')
+
+        withRetry.getClient(function cb_getClient(err, client) {
+          if (err) return t.fail(err)
+
+          t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
+          client.query({sql: 'SELECT 1'}, function (err) {
+            if (err) return t.fail(err)
+
+            t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
+            withRetry.release(client)
+            agent.getTransaction().end(t.end.bind(t))
+          })
+        })
+      })
+    })
+
+    t.test('query with options object and values', function testCallbackOnly(t) {
+      t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
+      helper.runInTransaction(agent, function transactionInScope() {
+        t.ok(agent.getTransaction(), 'we should be in a transaction')
+
+        withRetry.getClient(function cb_getClient(err, client) {
+          if (err) return t.fail(err)
+
+          t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
+          client.query({sql: 'SELECT 1'}, [], function (err) {
+            if (err) return t.fail(err)
+
+            t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
+            withRetry.release(client)
+            agent.getTransaction().end(t.end.bind(t))
+          })
+        })
+      })
     })
   }.bind(this))
 })
