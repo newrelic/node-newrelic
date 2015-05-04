@@ -9,6 +9,20 @@ var agent
 var agentVersion = require('./package.json').version
 logger.trace("Using New Relic for Node.js version %s.", agentVersion)
 
+if (require.cache.__NR_cache) {
+  logger.warn(
+    'Attempting to load a second copy of newrelic from %s, using cache instead',
+    __dirname
+  )
+  module.exports = require.cache.__NR_cache
+  return
+}
+
+logger.debug(
+  'Loading agent from %s',
+  __dirname
+)
+
 try {
   logger.debug("Process was running %s seconds before agent was loaded.",
                process.uptime())
@@ -81,4 +95,5 @@ if (agent) {
 } else {
   API = require('./stub_api.js')
 }
-module.exports = new API(agent)
+
+require.cache.__NR_cache = module.exports = new API(agent)
