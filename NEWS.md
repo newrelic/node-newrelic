@@ -1,3 +1,15 @@
+### v1.19.0 (2015-05-06):
+
+* Fixed a bug with error handling.
+
+    Previously the agent could crash applications in certain situations
+    where `null` was thrown rather than an `Error` object.
+
+* Filesystem interactions are now recorded in metrics
+
+  The time spent in filesystem functions during a transaction will now
+  be displayed in the transaction overview page per operation.
+
 ### v1.18.5 (2015-05-01):
 
 * Fixed a bug in environment variable based configuration.
