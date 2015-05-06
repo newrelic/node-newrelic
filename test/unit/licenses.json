@@ -9,7 +9,7 @@
   "extend": "MIT*",
   "ms": "MIT*",
   "readable-stream": "MIT",
-  "semver": "BSD",
+  "semver": "ISC",
   "string_decoder": "MIT",
   "yakaa": "MIT"
 }
