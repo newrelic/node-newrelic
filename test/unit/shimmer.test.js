@@ -341,7 +341,7 @@ describe("the instrumentation injector", function () {
       })
 
       var createTimer = function (trans, j) {
-        var wrapped = agent.tracer.wrapFunctionFirst('createTimer', null, setImmediate)
+        var wrapped = agent.tracer.wrapFunctionFirst('createTimer', null, process.nextTick)
 
         wrapped(function() {
           var current = agent.getTransaction()
