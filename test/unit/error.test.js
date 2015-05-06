@@ -912,6 +912,22 @@ describe('ErrorTracer', function () {
     })
   })
 
+  describe('it should allow throwing null', function() {
+    var agent = helper.loadMockedAgent()
+    var api = new API(agent)
+
+    var tx = api.createBackgroundTransaction('job', function () {
+      throw null
+    })
+
+    try {
+      tx()
+    } catch(err) {
+      expect(err).equal(null)
+      helper.unloadAgent(agent)
+    }
+  })
+
   describe('it should copy parameters from background transactions', function() {
     var agent = helper.loadMockedAgent()
     var tracer = agent.errors
