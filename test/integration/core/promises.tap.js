@@ -3,6 +3,7 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
+var util = require('util')
 
 if (!global.Promise) {
   test = function noop() {
@@ -452,4 +453,99 @@ test('Promise.defer reject', function testDeferReject(t) {
       t.end()
     }
   })
+})
+
+test('instanceof Promise should not break', function testDeferReject(t) {
+  t.plan(4)
+  var OriginalPromise = Promise
+  t.equal(OriginalPromise.__NR_original, void 0, 'should not be wrapped')
+  var agent = helper.loadTestAgent(t)
+  t.equal(Promise.__NR_original, OriginalPromise, 'should be wrapped')
+
+  helper.runInTransaction(agent, function inTransaction() {
+    var p = new Promise(function acceptIt(accept) {
+      accept()
+    })
+
+    t.ok(p instanceof Promise, 'instanceof should work on wrapped Promise')
+    t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
+    t.end()
+  })
+})
+
+test('should throw when called without executor', function testNoExecutor(t) {
+  var OriginalPromise = Promise
+  var unwrappedError, wrappedError
+  var wrapped, unwrapped
+  helper.loadTestAgent(t)
+  t.plan(5)
+
+
+  try {
+    unwrapped = new OriginalPromise(null)
+  } catch (err) {
+    unwrappedError = err
+  }
+
+  try {
+    wrapped = new Promise(null)
+  } catch (err) {
+    wrappedError = err
+  }
+
+  t.equal(wrapped, void 0, 'should not be set')
+  t.equal(unwrapped, void 0, 'should not be set')
+  t.ok(unwrappedError instanceof Error, 'should error')
+  t.ok(wrappedError instanceof Error, 'should error')
+  t.equal(wrappedError.message, unwrappedError.message, 'should have same message')
+
+  t.end()
+})
+
+test('should work if something else wraps promises first', function testWrapSecond(t) {
+  var OriginalPromise = Promise
+
+  util.inherits(WrappedPromise, Promise)
+  global.Promise = WrappedPromise
+
+  function WrappedPromise(executor) {
+    var promise = new OriginalPromise(executor)
+    promise.__proto__ = WrappedPromise.prototype
+    return promise
+  }
+
+  helper.loadTestAgent(t)
+  t.plan(3)
+
+  var p = new Promise(function noop() {})
+
+  t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
+  t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
+  t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
+
+  t.end()
+})
+
+test('should work if something else wraps promises after', function testWrapFirst(t) {
+  var OriginalPromise = Promise
+
+  helper.loadTestAgent(t)
+  util.inherits(WrappedPromise, Promise)
+  global.Promise = WrappedPromise
+
+  function WrappedPromise(executor) {
+    var promise = new OriginalPromise(executor)
+    promise.__proto__ = WrappedPromise.prototype
+    return promise
+  }
+
+  t.plan(3)
+
+  var p = new Promise(function noop() {})
+
+  t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
+  t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
+  t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
+
+  t.end()
 })
