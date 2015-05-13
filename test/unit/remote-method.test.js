@@ -1,11 +1,12 @@
 'use strict'
 
-var path         = require('path')
-  , url          = require('url')
-  , chai         = require('chai')
-  , expect       = chai.expect
-  , should       = chai.should()
-  , RemoteMethod = require('../../lib/collector/remote-method.js')
+var path = require('path')
+var url = require('url')
+var chai = require('chai')
+var expect = chai.expect
+var should = chai.should()
+var RemoteMethod = require('../../lib/collector/remote-method.js')
+var semver = require('semver')
 
 
 function generate(method, runID) {
@@ -34,7 +35,7 @@ describe("RemoteMethod", function () {
 
   describe("_safeRequest", function () {
     var method
-      , options
+    var options
 
 
     beforeEach(function () {
@@ -139,7 +140,11 @@ describe("RemoteMethod", function () {
       var method = new RemoteMethod('TEST', {host : 'localhost', port : 8765})
       method.invoke({message : 'none'}, function (error) {
         should.exist(error)
-        expect(error.message).equal('connect ECONNREFUSED')
+        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
+          expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
+        } else {
+          expect(error.message).equal('connect ECONNREFUSED')
+        }
 
         done()
       })
@@ -151,7 +156,7 @@ describe("RemoteMethod", function () {
         should.exist(error)
 
         // https://github.com/joyent/node/commit/7295bb9435c
-        expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?$/)
+        expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?( failed.domain.cxlrg:80)?$/)
 
         done()
       })
@@ -160,10 +165,10 @@ describe("RemoteMethod", function () {
 
   describe("when posting to collector", function () {
     var RUN_ID = 1337
-      , URL    = 'http://collector.newrelic.com'
-      , nock
-      , method
-      , sendMetrics
+    var URL    = 'http://collector.newrelic.com'
+    var nock
+    var method
+    var sendMetrics
 
 
     before(function () {
@@ -262,7 +267,7 @@ describe("RemoteMethod", function () {
     describe("and parsing response", function () {
       describe("that indicated success", function () {
         var getRedirectHost
-          , response = {
+        var response = {
               return_value : 'collector-42.newrelic.com'
             }
 
@@ -439,10 +444,10 @@ describe("RemoteMethod", function () {
 
   describe("when generating a request URL", function () {
     var TEST_RUN_ID  = Math.floor(Math.random() * 3000)
-      , TEST_METHOD  = 'TEST_METHOD'
-      , TEST_LICENSE = 'hamburtson'
-      , config
-      , parsed
+    var TEST_METHOD  = 'TEST_METHOD'
+    var TEST_LICENSE = 'hamburtson'
+    var config
+    var parsed
 
 
     function reconstitute(generated) {
@@ -495,12 +500,12 @@ describe("RemoteMethod", function () {
 
   describe("when generating the User-Agent string", function () {
     var TEST_VERSION = '0-test'
-      , ua
+    var ua
 
 
     before(function () {
       var config = {version : '0-test'}
-        , method = new RemoteMethod('test', config)
+      var method = new RemoteMethod('test', config)
 
 
       ua = method._userAgent()

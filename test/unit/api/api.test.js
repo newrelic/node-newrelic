@@ -1,18 +1,19 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , helper = require('../../lib/agent_helper.js')
-  , API    = require('../../../api.js')
+var path = require('path')
+var chai = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var helper = require('../../lib/agent_helper.js')
+var API = require('../../../api.js')
+var semver = require('semver')
 
 
 describe("the New Relic agent API", function () {
-  var URL     = '/test/path/31337'
-    , NAME    = 'WebTransaction/Uri/test/path/31337'
-    , agent
-    , api
+  var URL = '/test/path/31337'
+  var NAME = 'WebTransaction/Uri/test/path/31337'
+  var agent
+  var api
 
 
   beforeEach(function () {
@@ -57,7 +58,7 @@ describe("the New Relic agent API", function () {
   describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment
-        , transaction
+      var transaction
 
 
       beforeEach(function (done) {
@@ -174,7 +175,7 @@ describe("the New Relic agent API", function () {
   describe("when explicitly naming controllers", function () {
     describe("in the simplest case", function () {
       var segment
-        , transaction
+      var transaction
 
 
       beforeEach(function (done) {
@@ -395,7 +396,11 @@ describe("the New Relic agent API", function () {
       })
 
       it("should leave the passed-in pattern alone", function () {
-        expect(mine.pattern.source).equal('^/test/.*')
+        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
+          expect(mine.pattern.source).equal('^\\/test\\/.*')
+        } else {
+          expect(mine.pattern.source).equal('^/test/.*')
+        }
       })
 
       it("should have the correct replacement", function () {
@@ -492,7 +497,11 @@ describe("the New Relic agent API", function () {
       })
 
       it("should leave the passed-in pattern alone", function () {
-        expect(mine.pattern.source).equal('^/test/.*')
+        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
+          expect(mine.pattern.source).equal('^\\/test\\/.*')
+        } else {
+          expect(mine.pattern.source).equal('^/test/.*')
+        }
       })
 
       it("should have the correct replacement", function () {

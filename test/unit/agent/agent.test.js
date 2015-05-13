@@ -7,6 +7,7 @@ var expect = chai.expect
 var nock = require('nock')
 var helper = require('../../lib/agent_helper.js')
 var sampler = require('../../../lib/sampler.js')
+var semver = require('semver')
 var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
@@ -228,7 +229,12 @@ describe("the New Relic agent", function () {
         expect(rules.length).equal(2)
         // because of unshift, rules are in reverse of config order
         expect(rules[0].pattern.source).equal('^\\/u')
-        expect(rules[1].pattern.source).equal('^/t')
+
+        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
+            expect(rules[1].pattern.source).equal('^\\/t')
+        } else {
+            expect(rules[1].pattern.source).equal('^/t')
+        }
       })
     })
 

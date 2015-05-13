@@ -1,16 +1,17 @@
 'use strict'
 
-var path       = require('path')
-  , chai       = require('chai')
-  , expect     = chai.expect
-  , Normalizer = require('../../../lib/metrics/normalizer')
+var path = require('path')
+var chai = require('chai')
+var expect = chai.expect
+var Normalizer = require('../../../lib/metrics/normalizer')
+var semver = require('semver')
   
 
 describe ("MetricNormalizer", function () {
   var normalizer
 
   beforeEach(function () {
-    var config = {enforce_backstop : true}
+    var config = {enforce_backstop: true}
     normalizer = new Normalizer(config, 'URL')
   })
 
@@ -19,7 +20,7 @@ describe ("MetricNormalizer", function () {
   })
 
   it("should throw when instantiated without type", function () {
-    var config = {enforce_backstop : true}
+    var config = {enforce_backstop: true}
     expect(function () { normalizer = new Normalizer(config); }).throws()
   })
 
@@ -41,59 +42,65 @@ describe ("MetricNormalizer", function () {
            function () {
     beforeEach(function () {
       normalizer.load([
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^(test_match_nothing)$',
-         replace_all : false, ignore : false, replacement : '\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all : false, ignore : false, replacement : '/*.\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^(test_match_nothing)$',
-         replace_all : false, ignore : false, replacement : '\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '^(test_match_nothing)$',
-         replace_all : false, ignore : false, replacement : '\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all : false, ignore : false, replacement : '/*.\\1'},
-        {each_segment : false, eval_order : 0, terminate_chain : true,
-         match_expression : '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all : false, ignore : false, replacement : '/*.\\1'},
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : '^[0-9][0-9a-f_,.-]*$',
-         replace_all : false, ignore : false, replacement : '*'},
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : '^[0-9][0-9a-f_,.-]*$',
-         replace_all : false, ignore : false, replacement : '*'},
-        {each_segment : true, eval_order : 1, terminate_chain : false,
-         match_expression : '^[0-9][0-9a-f_,.-]*$',
-         replace_all : false, ignore : false, replacement : '*'},
-        {each_segment : false, eval_order : 2, terminate_chain : false,
-         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
-        {each_segment : false, eval_order : 2, terminate_chain : false,
-         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all : false, ignore : false, replacement : '\\1/.*\\2'},
-        {each_segment : false, eval_order : 2, terminate_chain : false,
-         match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+        {each_segment: false, eval_order: 0, terminate_chain: true,
+         match_expression: '^(test_match_nothing)$',
+         replace_all: false, ignore: false, replacement: '\\1'},
+        {each_segment: false, eval_order: 0, terminate_chain: true,
+         match_expression: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+         replace_all: false, ignore: false, replacement: '/*.\\1'},
+        {each_segment: false, eval_order: 0, terminate_chain: true,
+         match_expression: '^(test_match_nothing)$',
+         replace_all: false, ignore: false, replacement: '\\1'},
+        {each_segment: false, eval_order: 0, terminate_chain: true,
+         match_expression: '^(test_match_nothing)$',
+         replace_all: false, ignore: false, replacement: '\\1'},
+        {each_segment: false, eval_order: 0, terminate_chain: true,
+         match_expression: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+         replace_all: false, ignore: false, replacement: '/*.\\1'},
+        {each_segment: false, eval_order: 0, terminate_chain: true,
+         match_expression: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
+         replace_all: false, ignore: false, replacement: '/*.\\1'},
+        {each_segment: true, eval_order: 1, terminate_chain: false,
+         match_expression: '^[0-9][0-9a-f_,.-]*$',
+         replace_all: false, ignore: false, replacement: '*'},
+        {each_segment: true, eval_order: 1, terminate_chain: false,
+         match_expression: '^[0-9][0-9a-f_,.-]*$',
+         replace_all: false, ignore: false, replacement: '*'},
+        {each_segment: true, eval_order: 1, terminate_chain: false,
+         match_expression: '^[0-9][0-9a-f_,.-]*$',
+         replace_all: false, ignore: false, replacement: '*'},
+        {each_segment: false, eval_order: 2, terminate_chain: false,
+         match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+         replace_all: false, ignore: false, replacement: '\\1/.*\\2'},
+        {each_segment: false, eval_order: 2, terminate_chain: false,
+         match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+         replace_all: false, ignore: false, replacement: '\\1/.*\\2'},
+        {each_segment: false, eval_order: 2, terminate_chain: false,
+         match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+         replace_all: false, ignore: false, replacement: '\\1/.*\\2'}
       ])
     })
 
     it("should eliminate duplicate rules as part of loading them", function () {
+      var patternWithSlash
+      if (semver.satisfies(process.versions.node, '>=1.0.0')) {
+        patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
+      } else {
+        patternWithSlash = '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
+      }
       var reduced = [
-        {eachSegment : false, precedence : 0, isTerminal : true,
-         replacement : '$1', replaceAll : false, ignore : false,
+        {eachSegment: false, precedence: 0, isTerminal: true,
+         replacement: '$1', replaceAll: false, ignore: false,
          pattern: '^(test_match_nothing)$'},
-        {eachSegment : false, precedence : 0, isTerminal : true,
-         replacement : '/*.$1', replaceAll : false, ignore : false,
+        {eachSegment: false, precedence: 0, isTerminal: true,
+         replacement: '/*.$1', replaceAll: false, ignore: false,
          pattern: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$'},
-        {eachSegment : true, precedence : 1, isTerminal : false,
-         replacement : '*', replaceAll : false, ignore : false,
+        {eachSegment: true, precedence: 1, isTerminal: false,
+         replacement: '*', replaceAll: false, ignore: false,
          pattern: '^[0-9][0-9a-f_,.-]*$'},
-        {eachSegment : false, precedence : 2, isTerminal : false,
-         replacement : '$1/.*$2', replaceAll : false, ignore : false,
-         pattern: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'}
+        {eachSegment: false, precedence: 2, isTerminal: false,
+         replacement: '$1/.*$2', replaceAll: false, ignore: false,
+         pattern: patternWithSlash}
       ]
 
       expect(normalizer.rules.map(function cb_map(r) { return r.toJSON(); })).eql(reduced)
@@ -114,9 +121,9 @@ describe ("MetricNormalizer", function () {
 
   it("should ignore a matching name", function () {
     normalizer.load([
-      {each_segment : false, eval_order : 0, terminate_chain : true,
-       match_expression : '^/long_polling$',
-       replace_all : false, ignore : true, replacement : '*'}
+      {each_segment: false, eval_order: 0, terminate_chain: true,
+       match_expression: '^/long_polling$',
+       replace_all: false, ignore: true, replacement: '*'}
     ])
 
     expect(normalizer.isIgnored('/long_polling')).equal(true)
@@ -124,12 +131,12 @@ describe ("MetricNormalizer", function () {
 
   it("should apply rules by precedence", function () {
     normalizer.load([
-      {each_segment : true, eval_order : 1, terminate_chain : false,
-       match_expression : 'mochi',
-       replace_all : false, ignore : false, replacement : 'millet'},
-      {each_segment : false, eval_order : 0, terminate_chain : false,
-       match_expression : '/rice$',
-       replace_all : false, ignore : false, replacement : '/mochi'}
+      {each_segment: true, eval_order: 1, terminate_chain: false,
+       match_expression: 'mochi',
+       replace_all: false, ignore: false, replacement: 'millet'},
+      {each_segment: false, eval_order: 0, terminate_chain: false,
+       match_expression: '/rice$',
+       replace_all: false, ignore: false, replacement: '/mochi'}
     ])
 
     expect(normalizer.normalize('/rice/is/not/rice'))
@@ -138,12 +145,12 @@ describe ("MetricNormalizer", function () {
 
   it("should terminate when indicated by rule", function () {
     normalizer.load([
-      {each_segment : true, eval_order : 1, terminate_chain : false,
-       match_expression : 'mochi',
-       replace_all : false, ignore : false, replacement : 'millet'},
-      {each_segment : false, eval_order : 0, terminate_chain : true,
-       match_expression : '/rice$',
-       replace_all : false, ignore : false, replacement : '/mochi'}
+      {each_segment: true, eval_order: 1, terminate_chain: false,
+       match_expression: 'mochi',
+       replace_all: false, ignore: false, replacement: 'millet'},
+      {each_segment: false, eval_order: 0, terminate_chain: true,
+       match_expression: '/rice$',
+       replace_all: false, ignore: false, replacement: '/mochi'}
     ])
 
     expect(normalizer.normalize('/rice/is/not/rice'))

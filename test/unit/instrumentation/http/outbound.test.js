@@ -9,6 +9,7 @@ var NAMES = require('../../../../lib/metrics/names.js')
 var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
+var semver = require('semver')
 
 describe('instrumentOutbound', function () {
   var agent
@@ -291,7 +292,7 @@ describe('should add data from cat header to segment', function () {
       })
 
       req.on('error', function(err) {
-        expect(err.message).equal('connect ECONNREFUSED')
+        expect(err.message).match(/connect ECONNREFUSED( 127.0.0.1:12345)?/)
       })
 
       req.end()
@@ -302,7 +303,7 @@ describe('should add data from cat header to segment', function () {
 
       req.on('close', function() {
         expect(agent.errors.errors.length).equal(1)
-        expect(agent.errors.errors[0][2]).equal('connect ECONNREFUSED')
+        expect(agent.errors.errors[0][2]).match(/connect ECONNREFUSED( 127.0.0.1:12345)?/)
         done()
       })
 
@@ -313,8 +314,8 @@ describe('should add data from cat header to segment', function () {
 
 describe('when working with http.request', function () {
   var agent
-    , HOSTNAME = 'localhost'
-    , PORT     = 8890
+  var HOSTNAME = 'localhost'
+  var PORT = 8890
 
   before(function () {
     agent = helper.instrumentMockedAgent()
