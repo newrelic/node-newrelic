@@ -13,7 +13,7 @@
     "ejs": "~0.8"
   },
   "devDependencies": {
-    "tap": "*",
+    "tap": "0.7.1",
     "request": "*"
   },
   "private": true

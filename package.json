@@ -117,7 +117,7 @@
     "should": "*",
     "sinon": "*",
     "split": "*",
-    "tap": "*",
+    "tap": "^0.7.1",
     "temp": "^0.8.1",
     "through": "^2.3.6",
     "wrench": "*"

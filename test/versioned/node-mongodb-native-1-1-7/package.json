@@ -12,7 +12,7 @@
     "mongodb": "1.1.7"
   },
   "devDependencies": {
-    "tap": "*"
+    "tap": "0.7.1"
   },
   "private": true
 }

@@ -12,7 +12,7 @@
     "connect": "1.x"
   },
   "devDependencies": {
-    "tap": "*"
+    "tap": "0.7.1"
   },
   "private": true
 }

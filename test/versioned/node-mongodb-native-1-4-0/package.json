@@ -12,7 +12,7 @@
     "mongodb": "1.4.0-rc3"
   },
   "devDependencies": {
-    "tap": "*",
+    "tap": "0.7.1",
     "trycatch": "*"
   },
   "private": true

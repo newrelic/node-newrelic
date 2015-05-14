@@ -12,7 +12,7 @@
     "mongodb": "^2.0.1"
   },
   "devDependencies": {
-    "tap": "*",
+    "tap": "0.7.1",
     "trycatch": "*"
   },
   "private": true

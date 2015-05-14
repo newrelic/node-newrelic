@@ -12,7 +12,7 @@
     "mysql": "~0.9"
   },
   "devDependencies": {
-    "tap": "*"
+    "tap": "0.7.1"
   },
   "private": true
 }
