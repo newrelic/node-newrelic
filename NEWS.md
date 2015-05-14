@@ -1,3 +1,12 @@
+### v1.19.0 (2015-05-14):
+
+* Fixed a bug in native ES6 Promise instrumentation.
+
+  Previously the Promise instrumentation would cause `instanceof Promise`
+  to return false even if the object was a promise.  This also caused an
+  incompatibility with async-listener. `instanceof` checks will now work on
+  both the wrapped and unwrapped Promise object.
+
 ### v1.19.0 (2015-05-06):
 
 * Fixed a bug with error handling.
