@@ -252,6 +252,34 @@ describe("the agent configuration", function () {
         expect(tc.labels).equal('key:value;a:b;')
       })
     })
+
+    it('should pickup record_sql', function () {
+      idempotentEnv('NEW_RELIC_RECORD_SQL', 'raw', function (tc) {
+        should.exist(tc.transaction_tracer.record_sql)
+        expect(tc.transaction_tracer.record_sql).equal('raw')
+      })
+    })
+
+    it('should pickup explain_threshold', function () {
+      idempotentEnv('NEW_RELIC_EXPLAIN_THRESHOLD', '100', function (tc) {
+        should.exist(tc.transaction_tracer.explain_threshold)
+        expect(tc.transaction_tracer.explain_threshold).equal(100)
+      })
+    })
+
+    it('should pickup slow_sql.enabled', function () {
+      idempotentEnv('NEW_RELIC_SLOW_SQL_ENABLED', 'true', function (tc) {
+        should.exist(tc.labels)
+        expect(tc.slow_sql.enabled).equal(true)
+      })
+    })
+
+    it('should pickup slow_sql.max_samples', function () {
+      idempotentEnv('NEW_RELIC_MAX_SQL_SAMPLES', '100', function (tc) {
+        should.exist(tc.slow_sql.max_samples)
+        expect(tc.slow_sql.max_samples).equal(100)
+      })
+    })
   })
 
   describe("with default properties", function () {
@@ -359,6 +387,22 @@ describe("the agent configuration", function () {
 
     it("should collect one slow transaction trace per harvest cycle", function () {
       expect(configuration.transaction_tracer.top_n).equal(20)
+    })
+
+    it("should not record by default sql", function () {
+      expect(configuration.transaction_tracer.record_sql).equal('off')
+    })
+
+    it("should have an explain threshold of 500ms", function () {
+      expect(configuration.transaction_tracer.explain_threshold).equal(500)
+    })
+
+    it("should not capture slow queries", function () {
+      expect(configuration.slow_sql.enabled).equal(false)
+    })
+
+    it("should capture a maximum of 10 slow-queries per harvest", function () {
+      expect(configuration.slow_sql.max_samples).equal(10)
     })
 
     it("should not debug internal metrics", function () {
@@ -613,6 +657,30 @@ describe("the agent configuration", function () {
       expect(config.web_transactions_apdex).eql({})
       config.onConnect({'web_transactions_apdex' : apdexes})
       expect(config.web_transactions_apdex).eql(apdexes)
+    })
+
+    it('should not configure record_sql', function () {
+      expect(config.transaction_tracer.record_sql).equal('off')
+      config.onConnect({'transaction_tracer.record_sql': 'raw'})
+      expect(config.transaction_tracer.record_sql).equal('off')
+    })
+
+    it('should not configure explain_threshold', function () {
+      expect(config.transaction_tracer.explain_threshold).equal(500)
+      config.onConnect({'transaction_tracer.explain_threshold': 100})
+      expect(config.transaction_tracer.explain_threshold).equal(500)
+    })
+
+    it('should not configure slow_sql.enabled', function () {
+      expect(config.slow_sql.enabled).equal(false)
+      config.onConnect({'transaction_tracer.enabled': true})
+      expect(config.slow_sql.enabled).equal(false)
+    })
+
+    it('should not configure slow_sql.max_samples', function () {
+      expect(config.slow_sql.max_samples).equal(10)
+      config.onConnect({'transaction_tracer.max_samples': 5})
+      expect(config.slow_sql.max_samples).equal(10)
     })
 
     it("shouldn't blow up when sampling_rate is received", function () {
@@ -922,6 +990,30 @@ describe("the agent configuration", function () {
       expect(config.ignored_params).eql([])
       config.onConnect({'ignored_params' : ['a', 'b']})
       expect(config.ignored_params).eql([])
+    })
+
+    it('should not configure record_sql', function () {
+      expect(config.transaction_tracer.record_sql).equal('off')
+      config.onConnect({'transaction_tracer.record_sql': 'raw'})
+      expect(config.transaction_tracer.record_sql).equal('off')
+    })
+
+    it('should not configure explain_threshold', function () {
+      expect(config.transaction_tracer.explain_threshold).equal(500)
+      config.onConnect({'transaction_tracer.explain_threshold': 100})
+      expect(config.transaction_tracer.explain_threshold).equal(500)
+    })
+
+    it('should not configure slow_sql.enabled', function () {
+      expect(config.slow_sql.enabled).equal(false)
+      config.onConnect({'transaction_tracer.enabled': true})
+      expect(config.slow_sql.enabled).equal(false)
+    })
+
+    it('should not configure slow_sql.max_samples', function () {
+      expect(config.slow_sql.max_samples).equal(10)
+      config.onConnect({'transaction_tracer.max_samples': 5})
+      expect(config.slow_sql.max_samples).equal(10)
     })
 
     it("should ignore sampling_rate", function () {

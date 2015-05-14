@@ -4,12 +4,6 @@
     "browser": false
   },
   "global": [
-    "after",
-    "afterEach",
-    "before",
-    "beforeEach",
-    "describe",
-    "it"
   ],
   "rules": {
     "brace-style": 2,

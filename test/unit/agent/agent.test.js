@@ -62,6 +62,10 @@ describe("the New Relic agent", function () {
       should.exist(agent.errors)
     })
 
+    it("has query tracer", function () {
+      should.exist(agent.queries)
+    })
+
     it("uses an aggregator to apply top N slow trace logic", function () {
       should.exist(agent.traces)
     })
@@ -152,11 +156,11 @@ describe("the New Relic agent", function () {
           var settings =
             nock(URL)
               .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-              .reply(200, {return_value : []})
+              .reply(200, {return_value: []})
           var metrics =
             nock(URL)
               .post(helper.generateCollectorPath('metric_data', RUN_ID))
-              .reply(200, {return_value : []})
+              .reply(200, {return_value: []})
           var shutdown =
             nock(URL)
               .post(helper.generateCollectorPath('shutdown', RUN_ID))
@@ -381,7 +385,7 @@ describe("the New Relic agent", function () {
         var metrics =
           nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value : []})
+            .reply(200, {return_value: []})
 
         agent.collector.connect = function (callback) {
           callback(null, {agent_run_id : RUN_ID})
@@ -417,7 +421,7 @@ describe("the New Relic agent", function () {
         var settings =
           nock(URL)
             .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-            .reply(200, {return_value : []})
+            .reply(200, {return_value: []})
 
         agent.start(function cb_start() {
           setTimeout(function () {
@@ -446,7 +450,7 @@ describe("the New Relic agent", function () {
         var settings =
           nock(URL)
             .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-            .reply(200, {return_value : []})
+            .reply(200, {return_value: []})
         var metrics =
           nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -588,7 +592,7 @@ describe("the New Relic agent", function () {
                           .reply(200, {return_value : config})
         var metrics = nock(URL)
                           .post(helper.generateCollectorPath('metric_data', 404))
-                          .reply(200, {return_value : []})
+                          .reply(200, {return_value: []})
         var shutdown = nock(URL)
                           .post(helper.generateCollectorPath('shutdown', 404))
                           .reply(200, {return_value : null})
@@ -864,7 +868,7 @@ describe("the New Relic agent", function () {
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
 
       // need metrics or agent won't make a call against the collector
       agent.metrics.measureMilliseconds('Test/bogus', null, 1)
@@ -995,11 +999,11 @@ describe("the New Relic agent", function () {
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
 
       agent.errors.add(null, new TypeError('no method last on undefined'))
       agent.errors.add(null, new Error('application code error'))
@@ -1025,11 +1029,11 @@ describe("the New Relic agent", function () {
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
 
       agent.errors.add(null, new TypeError('no method last on undefined'))
       agent.errors.add(null, new Error('application code error'))
@@ -1051,6 +1055,164 @@ describe("the New Relic agent", function () {
       })
     })
 
+    it("doesn't send queries when slow_sql is disabled", function (done) {
+      var settings =
+        nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value: []})
+
+      var metricData =
+        nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value: []})
+
+      agent.config.slow_sql.enabled = true
+      agent.config.transaction_tracer.record_sql = 'raw'
+
+      agent.queries.addQuery(
+        new FakeSegment('test', 700),
+        'mysql',
+        'select * from foo',
+        new Error()
+      )
+
+      expect(Object.keys(agent.queries.samples).length).equal(1)
+      agent.config.onConnect({collect_errors : false})
+      // do this here so error traces get collected but not sent
+      agent.config.slow_sql.enabled = false
+
+
+      agent.harvest(function cb_harvest(error) {
+        should.not.exist(error)
+
+        metricData.done()
+
+        // Wait for agent_settings command to be sent after event emitted from onConnect
+        setTimeout(function() {
+          settings.done()
+          done()
+        }, 15)
+      })
+
+      function FakeSegment(name, duration) {
+        this.name = name
+        this.parameters = {}
+        this.getDurationInMillis = function getDurationInMillis() {
+          return duration
+        }
+      }
+    })
+
+    it("sends query trace when there's a trace to send", function (done) {
+      var transaction = new Transaction(agent)
+      transaction.setName('/test/path/31337', 501)
+      transaction.trace.setDurationInMillis(4001)
+      transaction.end()
+
+      agent.config.slow_sql.enabled = true
+      agent.config.transaction_tracer.record_sql = 'raw'
+
+      agent.queries.addQuery(
+        transaction.trace.root,
+        'mysql',
+        'select * from foo',
+        new Error()
+      )
+
+      var metricData =
+        nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value: []})
+      var eventData =
+        nock(URL)
+          .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
+          .reply(200, {return_value: []})
+      var transactionSampleData =
+        nock(URL)
+          .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
+          .reply(200, {return_value : null})
+      var errorData =
+        nock(URL)
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, {return_value : null})
+      var queryData =
+        nock(URL)
+          .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
+          .reply(200, {return_value : null})
+
+
+
+      agent.harvest(function cb_harvest(error) {
+        should.not.exist(error)
+
+        metricData.done()
+        eventData.done()
+        queryData.done()
+        transactionSampleData.done()
+        done()
+      })
+    })
+
+    it("merges queries when send fails", function (done) {
+      var transaction = new Transaction(agent)
+      transaction.setName('/test/path/31337', 501)
+      transaction.trace.setDurationInMillis(4001)
+      transaction.end()
+
+      agent.config.slow_sql.enabled = true
+      agent.config.transaction_tracer.record_sql = 'raw'
+
+      agent.queries.addQuery(
+        transaction.trace.root,
+        'mysql',
+        'select * from foo',
+        new Error()
+      )
+
+      var metricData =
+        nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value: []})
+      var eventData =
+        nock(URL)
+          .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
+          .reply(200, {return_value: []})
+      var transactionSampleData =
+        nock(URL)
+          .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
+          .reply(200, {return_value : null})
+      var errorData =
+        nock(URL)
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, {return_value : null})
+      var queryData =
+        nock(URL)
+          .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
+          .reply(500, {return_value : null})
+
+
+      var sendQueries = agent._sendQueries
+
+      agent._sendQueries = function mockSendQueries() {
+        expect(Object.keys(agent.queries.samples).length).equal(1)
+        sendQueries.apply(this, arguments)
+        expect(Object.keys(agent.queries.samples).length).equal(0)
+      }
+
+      agent.harvest(function cb_harvest(error) {
+        expect(Object.keys(agent.queries.samples).length).equal(1)
+        expect(error.statusCode).equal(500)
+
+        metricData.done()
+        eventData.done()
+        queryData.done()
+        transactionSampleData.done()
+        done()
+      })
+
+
+    })
+
     it("doesn't send transaction traces when slow traces disabled", function (done) {
       var transaction = new Transaction(agent)
       transaction.setName('/test/path/31337', 501)
@@ -1062,15 +1224,15 @@ describe("the New Relic agent", function () {
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var eventData =
         nock(URL)
           .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
@@ -1105,15 +1267,15 @@ describe("the New Relic agent", function () {
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var eventData =
         nock(URL)
           .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
@@ -1149,11 +1311,11 @@ describe("the New Relic agent", function () {
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var eventData =
         nock(URL)
           .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))
@@ -1184,7 +1346,7 @@ describe("the New Relic agent", function () {
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value : []})
+          .reply(200, {return_value: []})
       var errorData =
         nock(URL)
           .post(helper.generateCollectorPath('error_data', RUN_ID))

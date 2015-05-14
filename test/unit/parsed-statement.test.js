@@ -216,3 +216,190 @@ describe('recording database metrics', function () {
     })
   })
 })
+
+describe('recording slow queries', function() {
+  describe('with model', function() {
+    var transaction
+    var segment
+    var agent
+
+    before(function () {
+      agent = helper.loadMockedAgent(null, {
+        slow_sql: {enabled: true},
+        transaction_tracer: {
+          record_sql: 'obfuscated'
+        }
+      })
+
+      var ps = new ParsedStatement(
+        'MySql',
+        'select',
+        'foo',
+        'select * from foo where a=1'
+      )
+
+      transaction = new Transaction(agent)
+      segment = transaction.trace.add('test')
+
+      segment.setDurationInMillis(503)
+      ps.recordMetrics(segment, 'TEST')
+
+      var ps2 = new ParsedStatement(
+        'MySql',
+        'select',
+        'foo',
+        'select * from foo where a=2'
+      )
+
+      var segment2 = transaction.trace.add('test')
+      segment2.setDurationInMillis(501)
+      ps2.recordMetrics(segment2, 'TEST')
+
+      transaction.end()
+    })
+
+    after(function () {
+      helper.unloadAgent(agent)
+    })
+
+    it('should update segment names', function() {
+      expect(segment.name).equal('Datastore/statement/MySql/foo/select')
+    })
+
+    it('should capture queries', function() {
+      var keys = Object.keys(agent.queries.samples)
+      expect(keys.length).equal(1)
+
+      var sample = agent.queries.samples[keys[0]]
+      var trace = sample.trace
+
+      expect(sample.total).equal(1.004)
+      expect(sample.totalExclusive).equal(1.004)
+      expect(sample.min).equal(0.501)
+      expect(sample.max).equal(0.503)
+      expect(sample.sumOfSquares).equal(0.50401)
+      expect(sample.callCount).equal(2)
+      expect(trace.obfuscated).equal('select * from foo where a=?')
+      expect(trace.normalized).equal('select*fromfoowherea=?')
+      expect(trace.id).equal(35940)
+      expect(trace.query).equal('select * from foo where a=1')
+      expect(trace.metric).equal('Datastore/statement/MySql/foo/select')
+      expect(typeof trace.trace).equal('string')
+    })
+  })
+
+  describe('without model', function() {
+    var transaction
+    var segment
+    var agent
+
+    before(function () {
+      agent = helper.loadMockedAgent(null, {
+        slow_sql: {enabled: true},
+        transaction_tracer: {
+          record_sql: 'obfuscated'
+        }
+      })
+
+      var ps = new ParsedStatement(
+        'MySql',
+        'select',
+        null,
+        'select * from foo where a=1'
+      )
+
+      transaction = new Transaction(agent)
+      segment = transaction.trace.add('test')
+
+      segment.setDurationInMillis(503)
+      ps.recordMetrics(segment, 'TEST')
+
+      var ps2 = new ParsedStatement(
+        'MySql',
+        'select',
+        null,
+        'select * from foo where a=2'
+      )
+
+      var segment2 = transaction.trace.add('test')
+      segment2.setDurationInMillis(501)
+      ps2.recordMetrics(segment2, 'TEST')
+
+      transaction.end()
+    })
+
+    after(function () {
+      helper.unloadAgent(agent)
+    })
+
+    it('should update segment names', function() {
+      expect(segment.name).equal('Datastore/operation/MySql/select')
+    })
+
+    it('should capture queries', function() {
+      var keys = Object.keys(agent.queries.samples)
+      expect(keys.length).equal(1)
+
+      var sample = agent.queries.samples[keys[0]]
+      var trace = sample.trace
+
+      expect(sample.total).equal(1.004)
+      expect(sample.totalExclusive).equal(1.004)
+      expect(sample.min).equal(0.501)
+      expect(sample.max).equal(0.503)
+      expect(sample.sumOfSquares).equal(0.50401)
+      expect(sample.callCount).equal(2)
+      expect(trace.obfuscated).equal('select * from foo where a=?')
+      expect(trace.normalized).equal('select*fromfoowherea=?')
+      expect(trace.id).equal(35940)
+      expect(trace.query).equal('select * from foo where a=1')
+      expect(trace.metric).equal('Datastore/operation/MySql/select')
+      expect(typeof trace.trace).equal('string')
+    })
+  })
+
+  describe('without query', function() {
+    var transaction
+    var segment
+    var agent
+
+    before(function () {
+      agent = helper.loadMockedAgent(null, {
+        slow_sql: {enabled: true},
+        transaction_tracer: {
+          record_sql: 'obfuscated'
+        }
+      })
+
+      var ps = new ParsedStatement('MySql', 'select', null, null)
+
+      transaction = new Transaction(agent)
+      segment = transaction.trace.add('test')
+
+      segment.setDurationInMillis(503)
+      ps.recordMetrics(segment, 'TEST')
+
+      var ps2 = new ParsedStatement('MySql', 'select', null, null)
+
+      var segment2 = transaction.trace.add('test')
+      segment2.setDurationInMillis(501)
+      ps2.recordMetrics(segment2, 'TEST')
+
+      transaction.end()
+    })
+
+    after(function () {
+      helper.unloadAgent(agent)
+    })
+
+    it('should update segment names', function() {
+      expect(segment.name).equal('Datastore/operation/MySql/select')
+    })
+
+    it('should not capture queries', function() {
+      var keys = Object.keys(agent.queries.samples)
+      console.log(agent.queries.samples)
+      expect(keys.length).equal(0)
+    })
+  })
+})

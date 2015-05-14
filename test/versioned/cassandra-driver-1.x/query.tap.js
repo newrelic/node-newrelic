@@ -146,11 +146,30 @@ test('Cassandra instrumentation', {timeout : 5000}, function testInstrumentation
             t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
 
             transaction.end(function end() {
+              checkMetric('Datastore/operation/Cassandra/insert', 1)
+              checkMetric('Datastore/allOther', 2)
+              checkMetric('Datastore/Cassandra/allOther', 2)
+              checkMetric('Datastore/Cassandra/all', 2)
+              checkMetric('Datastore/all', 2)
+              checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
+              checkMetric('Datastore/operation/Cassandra/select', 1)
+              checkMetric('Datastore/statement/Cassandra/test.testFamily/select', 1)
+
               t.end()
             })
           })
         })
       })
+
+      function checkMetric(name, count, scoped) {
+        var metric = agent.metrics[scoped ? 'scoped' : 'unscoped'][name]
+        t.equal(metric.callCount, count)
+        t.ok(metric.total, 'should have set total')
+        t.ok(metric.totalExclusive, 'should have set totalExclusive')
+        t.ok(metric.min, 'should have set min')
+        t.ok(metric.max, 'should have set max')
+        t.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+      }
     })
 
     t.tearDown(function tearDown() {

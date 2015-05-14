@@ -139,6 +139,39 @@ describe('high security mode', function () {
         config._applyHighSecurity()
       })
 
+      it('should detect that slow_sql is enabled', function (done) {
+        var config = new Config({'high_security': true})
+        config.slow_sql.enabled = true
+        config.on('slow_sql.enabled', function(value) {
+          value.should.equal(false)
+          config.slow_sql.enabled.should.equal(false)
+          done()
+        })
+        config._applyHighSecurity()
+      })
+
+      it('should detect that record_sql is raw', function (done) {
+        var config = new Config({'high_security': true})
+        config.transaction_tracer.record_sql = 'raw'
+        config.on('transaction_tracer.record_sql', function(value) {
+          value.should.equal('off')
+          config.transaction_tracer.record_sql.should.equal('off')
+          done()
+        })
+        config._applyHighSecurity()
+      })
+
+      it('should detect that record_sql is obfuscated', function (done) {
+        var config = new Config({'high_security': true})
+        config.transaction_tracer.record_sql = 'obfuscated'
+        config.on('transaction_tracer.record_sql', function(value) {
+          value.should.equal('off')
+          config.transaction_tracer.record_sql.should.equal('off')
+          done()
+        })
+        config._applyHighSecurity()
+      })
+
       it('should detect no problems', function () {
         var config = new Config({high_security: true})
         config.ssl = true

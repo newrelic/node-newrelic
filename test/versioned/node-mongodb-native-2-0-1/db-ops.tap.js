@@ -1,3 +1,5 @@
+'use strict'
+
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')

@@ -52,7 +52,6 @@ function cassSetup (runTest) {
       }
     ],
     function(err, results) {
-      console.log(err)
       if (err) {
        throw err
       }
