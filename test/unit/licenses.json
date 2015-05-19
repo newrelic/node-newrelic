@@ -1,6 +1,6 @@
 {
   "core-util-is": "MIT",
-  "json-stringify-safe": "BSD",
+  "json-stringify-safe": "ISC",
   "https-proxy-agent": "MIT",
   "inherits": "ISC",
   "isarray": "MIT",
