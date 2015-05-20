@@ -1,4 +1,4 @@
-### v1.19.0 (2015-05-14):
+### v1.19.1 (2015-05-14):
 
 * Fixed a bug in native ES6 Promise instrumentation.
 
