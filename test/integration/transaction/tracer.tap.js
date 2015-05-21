@@ -106,7 +106,7 @@ test('bind + capture error', function testThrows(t) {
   var tracer = agent.tracer
   var error = new Error('oh no!!')
   var name = 'some custom transaction name'
-  t.plan(5)
+  t.plan(7)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     var other = tracer.createSegment('other')
@@ -115,6 +115,8 @@ test('bind + capture error', function testThrows(t) {
       var logged = agent.errors.errors[0]
       t.equal(tracer.getSegment(), null)
       t.equal(err, error)
+      t.equal(Object.keys(error).length, 0, 'error should not have any extra properties')
+      t.notOk(err.__NR_transaction, 'should not hold onto transaction')
       t.equal(name, logged[1])
       t.equal(error.message, logged[2])
       t.end()

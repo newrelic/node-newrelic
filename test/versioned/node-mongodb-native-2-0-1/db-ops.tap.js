@@ -17,7 +17,7 @@ mongoTest('open', [], function openTest(t, agent) {
       t.equal(transaction.trace.root.children.length, 1)
       var parent = transaction.trace.root.children[0]
       t.equal(parent.name, 'Datastore/operation/MongoDB/open')
-      t.notEqual(parent.children.indexOf(segment), 1)
+      t.notEqual(parent.children.indexOf(segment), -1)
       db.close()
       t.end()
     })
