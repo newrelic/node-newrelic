@@ -1,26 +1,25 @@
 'use strict'
 
-var path         = require('path')
-  , chai         = require('chai')
-  , expect       = chai.expect
-  , helper       = require('../lib/agent_helper')
-  , logger       = require('../../lib/logger')
-                     .child({component : 'TEST'})
-  , shimmer      = require('../../lib/shimmer')
-  , EventEmitter = require('events').EventEmitter
+var chai = require('chai')
+var expect = chai.expect
+var helper = require('../lib/agent_helper')
+var logger = require('../../lib/logger')
+                     .child({component: 'TEST'})
+var shimmer = require('../../lib/shimmer')
+var EventEmitter = require('events').EventEmitter
 
 
 describe("the instrumentation injector", function () {
   var nodule = {
-    c : 2,
-    ham : 'ham',
-    doubler : function (x, cb) {
+    c: 2,
+    ham: 'ham',
+    doubler: function (x, cb) {
       cb(this.c + x * 2)
     },
-    tripler : function (y, cb) {
+    tripler: function (y, cb) {
       cb(this.c + y * 3)
     },
-    hammer : function (h, cb) {
+    hammer: function (h, cb) {
       cb(this.ham + h)
     }
   }
@@ -51,7 +50,7 @@ describe("the instrumentation injector", function () {
     var simple
 
     beforeEach(function () {
-      simple = {target : true}
+      simple = {target: true}
     })
 
     it("shouldn't throw if called with no params", function () {
@@ -69,25 +68,25 @@ describe("the instrumentation injector", function () {
     it("shouldn't throw if property to be replaced is omitted", function () {
       expect(function () {
         shimmer.wrapDeprecated(simple, 'nodule', null,
-                               {get : function () {}, set : function () {}})
+                               {get: function () {}, set: function () {}})
       }).not.throws()
     })
 
     it("shouldn't throw if getter is omitted", function () {
       expect(function () {
-        shimmer.wrapDeprecated(simple, 'nodule', 'target', {set : function () {}})
+        shimmer.wrapDeprecated(simple, 'nodule', 'target', {set: function () {}})
       }).not.throws()
     })
 
     it("shouldn't throw if setter is omitted", function () {
       expect(function () {
-        shimmer.wrapDeprecated(simple, 'nodule', 'target', {get : function () {}})
+        shimmer.wrapDeprecated(simple, 'nodule', 'target', {get: function () {}})
       }).not.throws()
     })
 
     it("should replace a property with an accessor", function (done) {
       var original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
-        get : function () {
+        get: function () {
           // test will only complete if this is called
           done()
           return false
@@ -101,10 +100,10 @@ describe("the instrumentation injector", function () {
     it("should invoke the setter when the accessor is used", function (done) {
       var test = 'ham'
       var original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
-        get : function () {
+        get: function () {
           return test
         },
-        set : function (value) {
+        set: function (value) {
           expect(value).equal('eggs')
           done()
         }
@@ -190,15 +189,15 @@ describe("the instrumentation injector", function () {
       expect(agent.getTransaction()).equal(null)
 
       var synchronizer = new EventEmitter()
-        , transactions = []
-        , ids          = []
+      var transactions = []
+      var ids = []
 
 
       var spamTransaction = function (i) {
         var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
-          var current     = agent.getTransaction()
+          var current = agent.getTransaction()
           transactions[i] = current
-          ids[i]          = current.id
+          ids[i] = current.id
 
           process.nextTick(agent.tracer.bindFunction(function cb_bindFunction() {
             var lookup = agent.getTransaction()
@@ -230,15 +229,15 @@ describe("the instrumentation injector", function () {
       expect(agent.getTransaction()).equal(null)
 
       var synchronizer = new EventEmitter()
-        , transactions = []
-        , ids          = []
+      var transactions = []
+      var ids = []
 
 
       var spamTransaction = function (i) {
         var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
-          var current     = agent.getTransaction()
+          var current = agent.getTransaction()
           transactions[i] = current
-          ids[i]          = current.id
+          ids[i] = current.id
 
           setTimeout(agent.tracer.bindFunction(function cb_bindFunction() {
             var lookup = agent.getTransaction()
@@ -271,20 +270,20 @@ describe("the instrumentation injector", function () {
     it("should push transactions through EventEmitters", function (done) {
       expect(agent.getTransaction()).equal(null)
 
-      var eventer      = new EventEmitter()
-        , transactions = []
-        , ids          = []
+      var eventer = new EventEmitter()
+      var transactions = []
+      var ids = []
 
 
       var eventTransaction = function (j) {
         var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
           var current = agent.getTransaction()
-            , id      = current.id
-            , name    = ('ttest' + (j + 1))
+          var id = current.id
+          var name = ('ttest' + (j + 1))
 
 
           transactions[j] = current
-          ids[j]          = id
+          ids[j] = id
 
           eventer.on(name, agent.tracer.bindFunction(function cb_bindFunction() {
             var lookup = agent.getTransaction()
@@ -319,10 +318,10 @@ describe("the instrumentation injector", function () {
       expect(agent.getTransaction()).equal(null)
 
       var synchronizer = new EventEmitter()
-        , eventer      = new EventEmitter()
-        , transactions = []
-        , ids = []
-        , doneCount = 0
+      var eventer = new EventEmitter()
+      var transactions = []
+      var ids = []
+      var doneCount = 0
 
 
       var verify = function (i, phase, passed) {
@@ -353,9 +352,9 @@ describe("the instrumentation injector", function () {
 
       var createTicker = function (j) {
         return agent.tracer.transactionProxy(function cb_transactionProxy() {
-          var current     = agent.getTransaction()
+          var current = agent.getTransaction()
           transactions[j] = current
-          ids[j]          = current.id
+          ids[j] = current.id
 
           verify(j, 'createTicker', current)
 

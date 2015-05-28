@@ -11,6 +11,8 @@ var semver = require('semver')
 var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
+var clearAWSCache = require('../../../lib/aws-info').clearCache
+var clearSystemCache = require('../../../lib/system-info').clearCache
 
 
 /*
@@ -21,10 +23,31 @@ var Transaction = require('../../../lib/transaction')
 var RUN_ID = 1337
 var URL = 'https://collector.newrelic.com'
 
+var awsHost = "http://169.254.169.254"
+
+var awsResponses = {
+  "instance-type": "test.type",
+  "instance-id": "test.id",
+  "placement/availability-zone": "us-west-2b"
+}
+
+var awsRedirect
+
+function refreshAWSEndpoints() {
+    clearAWSCache()
+    clearSystemCache()
+    awsRedirect = nock(awsHost)
+    for (var awsPath in awsResponses) {
+      var redirect = awsRedirect.get('/2008-02-01/meta-data/' + awsPath)
+      redirect.reply(200, awsResponses[awsPath])
+    }
+}
+
 
 describe("the New Relic agent", function () {
   before(function () {
     nock.disableNetConnect()
+    refreshAWSEndpoints()
   })
 
   after(function () {
@@ -137,6 +160,7 @@ describe("the New Relic agent", function () {
         })
 
         it("should set apdexT on the supportability metrics on connect", function (done) {
+
           var config = configurator.initialize({
             license_key : 'license key here',
             debug       : {internal_metrics   : true}
@@ -173,6 +197,7 @@ describe("the New Relic agent", function () {
             connect.done()
             debugged.stop(function cb_stop() {
               settings.done()
+              awsRedirect.done()
               metrics.done()
               shutdown.done()
               done()
@@ -428,6 +453,7 @@ describe("the New Relic agent", function () {
             global.setInterval = origInterval
 
             redirect.done()
+            awsRedirect.done()
             connect.done()
             settings.done()
             done()
@@ -463,6 +489,7 @@ describe("the New Relic agent", function () {
 
             redirect.done()
             connect.done()
+            awsRedirect.done()
             settings.done()
             metrics.done()
             done()
@@ -611,6 +638,7 @@ describe("the New Relic agent", function () {
           agent.stop(function cb_stop() {
             settings.done()
             metrics.done()
+            awsRedirect.done()
             shutdown.done()
             done()
           })

@@ -5,6 +5,10 @@ exports.config = {
     level : 'trace',
     filepath : '../../../newrelic_agent.log'
   },
+  utilization: {
+    detect_aws: false,
+    detect_docker: false
+  },
   transaction_tracer : {
     enabled : true
   }

@@ -25,8 +25,9 @@ describe('high security mode', function () {
     })
 
     it('should contain high_security', function () {
-      var factoids = facts(agent)
-      factoids.high_security.should.not.equal(null)
+      facts(agent, function getFacts(factoids) {
+        factoids.high_security.should.not.equal(null)
+      })
     })
   })
 

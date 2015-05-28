@@ -347,7 +347,7 @@ describe('when working with http.request', function () {
   it('should start and end segment', function (done) {
     var host = 'http://www.google.com'
     var path = '/index.html'
-    nock(host).get(path).reply(200, 'Hello from Google')
+    nock(host).get(path).delay(10).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, function (transaction) {
       http.get('http://www.google.com/index.html', function (res) {
