@@ -45,13 +45,102 @@ test('then', function testThen(t) {
   })
 })
 
+test('multi then', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).then(next, fail).then(done, fail)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        accept(15)
+        reject(10)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 15, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+      return val
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 15, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi then async', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).then(next, fail).then(done, fail)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        accept(15)
+        reject(10)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 15, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+      return new Promise(function wait(accept) {
+        setTimeout(function resolve() {
+          segment = agent.tracer.getSegment()
+          accept(val)
+        }, 0)
+      })
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 15, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+
 test('chain', function testChain(t) {
   t.plan(4)
   var agent = helper.loadTestAgent(t)
   var segment
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
-    new Promise(executor).chain(done)
+    new Promise(executor).chain(done, fail)
 
     function executor(accept, reject) {
       setTimeout(function resolve() {
@@ -66,6 +155,94 @@ test('chain', function testChain(t) {
       process.nextTick(function finish() {
         t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
         t.equal(val, 15, 'value should be preserved')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi chain', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).chain(next, fail).chain(done, fail)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        accept(15)
+        reject(10)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 15, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+      return val
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 15, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi chain async', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).chain(next, fail).chain(done, fail)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        accept(15)
+        reject(10)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 15, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+      return new Promise(function wait(accept) {
+        setTimeout(function resolve() {
+          segment = agent.tracer.getSegment()
+          accept(val)
+        }, 0)
+      })
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 15, 'should resolve with the correct value')
         t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
         t.end()
@@ -113,6 +290,94 @@ test('then reject', function testThenReject(t) {
   })
 })
 
+test('multi then reject', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).then(fail, next).then(fail, done)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        reject(10)
+        accept(15)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 10, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+      throw val
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi then async reject', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).then(fail, next).then(fail, done)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        reject(10)
+        accept(15)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 10, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+      return new Promise(function wait(accept, reject) {
+        setTimeout(function resolve() {
+          segment = agent.tracer.getSegment()
+          reject(val)
+        }, 0)
+      })
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
 test('chain reject', function testChainReject(t) {
   t.plan(4)
   var agent = helper.loadTestAgent(t)
@@ -134,6 +399,94 @@ test('chain reject', function testChainReject(t) {
       process.nextTick(function finish() {
         t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
         t.equal(val, 10, 'value should be preserved')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi chain reject', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).chain(fail, next).chain(fail, done)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        reject(10)
+        accept(15)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 10, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+      throw val
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi chain async reject', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).chain(fail, next).chain(fail, done)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        reject(10)
+        accept(15)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 10, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+      return new Promise(function wait(accept, reject) {
+        setTimeout(function resolve() {
+          segment = agent.tracer.getSegment()
+          reject(val)
+        }, 0)
+      })
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'should resolve with the correct value')
         t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
         t.end()
@@ -172,6 +525,94 @@ test('catch', function testCatch(t) {
 
         t.end()
       })
+    }
+  })
+})
+
+test('multi catch', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).catch(next).catch(done)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        reject(10)
+        accept(15)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 10, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+      throw val
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
+    }
+  })
+})
+
+test('multi catch async', function testThen(t) {
+  t.plan(7)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).catch(next).catch(done)
+
+    function executor(accept, reject) {
+      setTimeout(function resolve() {
+        segment = agent.tracer.getSegment()
+        reject(10)
+        accept(15)
+      }, 0)
+    }
+
+    function next(val) {
+      t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+      t.equal(val, 10, 'should resolve with the correct value')
+      t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+      return new Promise(function wait(accept, reject) {
+        setTimeout(function resolve() {
+          segment = agent.tracer.getSegment()
+          reject(val)
+        }, 0)
+      })
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'should resolve with the correct value')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+
+    function fail() {
+      t.fail('should not be called')
+      t.end()
     }
   })
 })
@@ -548,4 +989,30 @@ test('should work if something else wraps promises after', function testWrapFirs
   t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
 
   t.end()
+})
+
+test('throw in executor', function testCatch(t) {
+  t.plan(4)
+  var agent = helper.loadTestAgent(t)
+  var segment
+
+  helper.runInTransaction(agent, function inTransaction(transaction) {
+    new Promise(executor).catch(done)
+
+    function executor() {
+      segment = agent.tracer.getSegment()
+      throw 10
+    }
+
+    function done(val) {
+      t.equal(this, void 0, 'context should be undefined')
+      process.nextTick(function finish() {
+        t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
+        t.equal(val, 10, 'value should be preserved')
+        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+
+        t.end()
+      })
+    }
+  })
 })
