@@ -1,3 +1,17 @@
+### v1.20.0 (2015-06-05):
+
+* Triaged a defect in native promise instrumentation
+
+  Transactions used to be lost acrossed chained `.then` calls.  The way
+  promises are wrapped has been changed to fix this issue.
+
+* Added support for Slow Queries
+
+  Slow Query information will now appear in the UI for Node agent users.
+  This feature allows you to see a trace for slow datastore queries.
+  Read more about this feature in our
+  [documentation](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/viewing-slow-query-details)
+  
 ### v1.19.2 (2015-05-21):
 
 * Fixed an issue with Error tracing
