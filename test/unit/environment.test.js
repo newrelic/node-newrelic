@@ -1,16 +1,16 @@
 'use strict'
 
 // For consistent results, unset this in case the user had it set in their environment when testing.
-delete process.env.NODE_ENV;
+delete process.env.NODE_ENV
 
-var path        = require('path')
-  , fs          = require('fs')
-  , spawn       = require('child_process').spawn
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , should      = chai.should()
-  , environment = require('../../lib/environment')
-  
+var path = require('path')
+var fs = require('fs')
+var spawn = require('child_process').spawn
+var chai = require('chai')
+var expect = chai.expect
+var should = chai.should()
+var environment = require('../../lib/environment')
+var semver = require('semver')
 
 function find(settings, name) {
   var items = settings.filter(function cb_filter(candidate) {
@@ -36,7 +36,7 @@ describe("the environment scraper", function () {
     var dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['custom', 'another'])
 
-    expect(function () { environment.clearDispatcher(); }).not.throws()
+    expect(function () { environment.clearDispatcher() }).not.throws()
   })
 
   it("should allow clearing of the framework", function () {
@@ -46,7 +46,7 @@ describe("the environment scraper", function () {
     var frameworks = environment.get('Framework')
     expect(frameworks).include.members(['custom', 'another'])
 
-    expect(function () { environment.clearFramework(); }).not.throws()
+    expect(function () { environment.clearFramework() }).not.throws()
   })
 
   it("should persist dispatcher between toJSON()s", function () {
@@ -81,7 +81,8 @@ describe("the environment scraper", function () {
   it("should know the Node.js version", function () {
     should.exist(find(settings, 'Node.js version'))
   })
-  //expected to be run when NODE_ENV is unset
+
+  // expected to be run when NODE_ENV is unset
   it("should not find a value for NODE_ENV", function () {
     expect(environment.get('NODE_ENV')).to.be.empty
   })
@@ -110,7 +111,11 @@ describe("the environment scraper", function () {
       })
 
       it("should know whether V8 was dynamically linked in", function () {
-        should.exist(find(settings, 'Dynamically linked to V8?'))
+        // As of 1.7.0 this is no longer possible
+        // https://github.com/nodejs/io.js/commit/d726a177ed
+        if (semver.satisfies(process.versions.node, '<1.7.0')) {
+          should.exist(find(settings, 'Dynamically linked to V8?'))
+        }
       })
 
       it("should know whether Zlib was dynamically linked in", function () {
@@ -158,20 +163,19 @@ describe("the environment scraper", function () {
 
   it("should not crash when given a file in NODE_PATH", function (done) {
     var env = {
-      NODE_PATH : path.join(__dirname, "environment.test.js"),
-      PATH      : process.env.PATH
+      NODE_PATH: path.join(__dirname, "environment.test.js"),
+      PATH: process.env.PATH
     }
 
     var opt = {
-      env   : env,
-      stdio : 'inherit',
-      cwd   : path.join(__dirname, '..')
+      env: env,
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..')
     }
 
     var exec = process.argv[0]
-      , args = [path.join(__dirname, '../helpers/environment.child.js')]
-      , proc = spawn(exec, args, opt)
-      
+    var args = [path.join(__dirname, '../helpers/environment.child.js')]
+    var proc = spawn(exec, args, opt)
 
     proc.on('exit', function (code) {
       expect(code).equal(0)
@@ -182,9 +186,9 @@ describe("the environment scraper", function () {
 
   it("should not crash when encountering a dangling symlink", function (done) {
     var opt = {
-      stdio : 'pipe',
-      env   : process.env,
-      cwd   : path.join(__dirname, '../helpers'),
+      stdio: 'pipe',
+      env: process.env,
+      cwd: path.join(__dirname, '../helpers'),
     }
 
     var nmod = path.join(__dirname, '../helpers/node_modules')
@@ -192,7 +196,7 @@ describe("the environment scraper", function () {
     var dest = path.join(nmod, 'b')
 
     // cleanup in case dest is dirty
-    try {fs.unlinkSync(dest);} catch(e) {}
+    try {fs.unlinkSync(dest)} catch(e) {}
     if (!fs.existsSync(nmod)) fs.mkdirSync(nmod)
 
     fs.writeFileSync(into, 'hello world')
@@ -200,9 +204,8 @@ describe("the environment scraper", function () {
     fs.unlinkSync(into)
 
     var exec = process.argv[0]
-      , args = [path.join(__dirname, '../helpers/environment.child.js')]
-      , proc = spawn(exec, args, opt)
-      
+    var args = [path.join(__dirname, '../helpers/environment.child.js')]
+    var proc = spawn(exec, args, opt)
 
     proc.stdout.pipe(process.stderr)
     proc.stderr.pipe(process.stderr)

@@ -90,6 +90,20 @@ describe('the New Relic agent', function () {
       expect(agent.metrics.getMetric(CUSTOM_EVENTS.SENT).callCount).equal(1)
     })
 
+    it('should create a new reservoir with the correct size', function () {
+      agent.config.custom_insights_events.max_samples_stored = 1337
+      // specifically create a reservoir with a different size
+      var r = new Reservoir()
+      r.limit = 100
+      // add events to force _processCustomEvents to replace the reservoir
+      r.add({id: 1})
+      r.add({id: 2})
+      agent.customEvents = r
+      agent._processCustomEvents()
+      expect(agent.customEvents).not.equal(r)
+      expect(agent.customEvents.limit).equal(1337)
+    })
+
     it('should create supportability metrics even when empty', function () {
       var r = new Reservoir()
       agent.customEvents = r
