@@ -58,6 +58,11 @@ function API(agent) {
  *                      Relic UI. Will be prefixed with 'Custom/' when sent.
  */
 API.prototype.setTransactionName = function setTransactionName(name) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setTransactionName'
+  )
+  metric.incrementCallCount()
+
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn("No transaction found when setting name to '%s'.", name)
@@ -97,6 +102,11 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  *                        to the HTTP method used for the request.
  */
 API.prototype.setControllerName = function setControllerName(name, action) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setControllerName'
+  )
+  metric.incrementCallCount()
+
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn("No transaction found when setting controller to %s.", name)
@@ -127,6 +137,11 @@ API.prototype.setControllerName = function setControllerName(name, action) {
  * @param {string} value The value you want displayed. Must be serializable.
  */
 API.prototype.addCustomParameter = function addCustomParameter(name, value) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomParameter'
+  )
+  metric.incrementCallCount()
+
   // If high security mode is on, custom params are disabled
   if (this.agent.config.high_security === true) {
     // we only want to log this warning once
@@ -183,6 +198,11 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
  * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
  */
 API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setIgnoreTransaction'
+  )
+  metric.incrementCallCount()
+
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn("No transaction found to ignore.")
@@ -201,6 +221,12 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
  *                                  the New Relic UI.
  */
 API.prototype.noticeError = function noticeError(error, customParameters) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/noticeError'
+  )
+  metric.incrementCallCount()
+
+
   if (typeof error === 'string') error = new Error(error)
   var transaction = this.agent.tracer.getTransaction()
   this.agent.errors.add(transaction, error, customParameters)
@@ -235,6 +261,12 @@ API.prototype.noticeError = function noticeError(error, customParameters) {
  * @param {string} name    The name to use for the transaction.
  */
 API.prototype.addNamingRule = function addNamingRule(pattern, name) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addNamingRule'
+  )
+  metric.incrementCallCount()
+
+
   if (!name) return logger.error("Simple naming rules require a replacement name.")
 
   this.agent.userNormalizer.addSimple(pattern, '/' + name)
@@ -254,6 +286,11 @@ API.prototype.addNamingRule = function addNamingRule(pattern, name) {
  * @param {RegExp} pattern The pattern to ignore.
  */
 API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addIgnoringRule'
+  )
+  metric.incrementCallCount()
+
   if (!pattern) return logger.error("Must include a URL pattern to ignore.")
 
   this.agent.userNormalizer.addSimple(pattern, null)
@@ -273,6 +310,11 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  * @returns {string} the <script> header to be injected
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getBrowserTimingHeader'
+  )
+  metric.incrementCallCount()
+
   var config = this.agent.config
 
   /* Gracefully fail.
@@ -388,6 +430,11 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
  * find the current transaction and segment.
  */
 API.prototype.createTracer = function createTracer(name, callback) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/createTracer'
+  )
+  metric.incrementCallCount()
+
   // FLAG: custom_instrumentation
   if (!this.agent.config.feature_flag.custom_instrumentation) {
     return callback
@@ -435,6 +482,11 @@ API.prototype.createTracer = function createTracer(name, callback) {
 }
 
 API.prototype.createWebTransaction = function createWebTransaction(url, callback) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/createWebTransaction'
+  )
+  metric.incrementCallCount()
+
   // FLAG: custom_instrumentation
   if (!this.agent.config.feature_flag.custom_instrumentation) {
     return callback
@@ -487,6 +539,11 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
 API.prototype.createBackgroundTransaction = createBackgroundTransaction
 
 function createBackgroundTransaction(name, group, callback) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/createBackgroundTransaction'
+  )
+  metric.incrementCallCount()
+
   if (callback === undefined && typeof group === 'function') {
     callback = group
     group = 'Nodejs'
@@ -545,6 +602,11 @@ function createBackgroundTransaction(name, group, callback) {
 }
 
 API.prototype.endTransaction = function endTransaction() {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/endTransaction'
+  )
+  metric.incrementCallCount()
+
   // FLAG: custom_instrumentation
   if (!this.agent.config.feature_flag.custom_instrumentation) {
     return
@@ -570,6 +632,11 @@ API.prototype.endTransaction = function endTransaction() {
 }
 
 API.prototype.recordMetric = function recordMetric(name, value) {
+  var supportMetric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/recordMetric'
+  )
+  supportMetric.incrementCallCount()
+
   // FLAG: custom_metrics
   if (!this.agent.config.feature_flag.custom_metrics) {
     return
@@ -616,6 +683,11 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 }
 
 API.prototype.incrementMetric = function incrementMetric(name, value) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/incrementMetric'
+  )
+  metric.incrementCallCount()
+
   // FLAG: custom_metrics
   if (!this.agent.config.feature_flag.custom_metrics) {
     return
@@ -640,6 +712,11 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
 }
 
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
+  )
+  metric.incrementCallCount()
+
   if (!this.agent.config.custom_insights_events.enabled) {
     return
   }
