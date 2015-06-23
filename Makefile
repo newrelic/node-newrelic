@@ -193,10 +193,14 @@ update_cross_agent_tests:
 	rm -rf test/lib/cross_agent_tests/.git
 
 # versions prior to 1.4(ish) can't upgrade themselves directly to latest so hop to 1.4.28 first.
+# Only upgrade to latest if we are on node 0.x	
 update_npm_global:
 	if npm -v | grep -q "^1"; then \
 	  npm install -g npm@1.4.28; \
 	fi
-	npm install -g npm@latest
+
+	if node -v | grep -q "^v0"; then \
+	  npm install -g npm@latest; \
+	fi
 
 	echo "\nUpgrading npm is expected to have many warnings due to tolerance changes over the years.\n"

@@ -13,7 +13,7 @@ node_js:
   - "iojs"
   - "iojs-v1.6.3"
   - "iojs-v1.6.4"
-  - "iojs-v1.7.0"
+  - "iojs-v1.7.1"
   - "iojs-v1.8.1"
 before_install: 'make update_npm_global'
 script: 'make unit'
