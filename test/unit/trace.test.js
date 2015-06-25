@@ -149,6 +149,20 @@ describe('Trace', function () {
       })
     })
   })
+  
+  it('should send host display name when set by user', function () {
+    agent.config.process_host.display_name = 'test-value'
+
+    var trace = new Trace(new Transaction(agent))
+
+    expect(trace.parameters).deep.equal({'host.displayName': 'test-value'})
+  })
+
+  it('should not send host display name when not set by user', function () {
+    var trace = new Trace(new Transaction(agent))
+
+    expect(trace.parameters).deep.equal({})
+  })
 
   it('should produce human-readable JSON of the entire trace graph')
 

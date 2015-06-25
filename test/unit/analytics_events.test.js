@@ -31,7 +31,32 @@ describe("when there are parameters on transaction", function () {
     var agentAttrs = 2
     expect(agent.events.toArray()[first][agentAttrs].test).equals('TEST')
   })
+})
 
+describe("when host name is specified by user", function () {
+  var agent
+  var trans
+
+
+  beforeEach(function () {
+    agent = helper.loadMockedAgent()
+    agent.config.process_host.display_name = 'test-value'
+    trans = new Transaction(agent)
+  })
+
+  afterEach(function () {
+    helper.unloadAgent(agent)
+  })
+
+  it("name should be sent with event", function () {
+    agent._addEventFromTransaction(trans)
+
+    var first = 0
+    var agentAttrs = 2
+    expect(agent.events.toArray()[first][agentAttrs]).deep.equals({
+      'host.displayName': 'test-value'
+    })
+  })
 })
 
 describe("when analytics events are disabled", function () {

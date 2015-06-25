@@ -69,7 +69,7 @@ describe('agent attribute format', function () {
     var params = error.errors[0][PARAMS]
 
     expect(params.agentAttributes).deep.equals({
-      a: 'A',
+      a: 'A'
     })
   })
 
@@ -80,7 +80,7 @@ describe('agent attribute format', function () {
     var params = error.errors[0][PARAMS]
 
     expect(params.userAttributes).deep.equals({
-      a: 'A',
+      a: 'A'
     })
   })
 
@@ -115,7 +115,47 @@ describe('agent attribute format', function () {
 
     expect(params.userAttributes).deep.equals({})
   })
+})
 
+describe('display name', function () {
+  var PARAMS = 4
+
+  var agent, trans, error
+
+  beforeEach(function () {
+    agent = helper.loadMockedAgent()
+    agent.config.capture_params = true
+  })
+
+  afterEach(function () {
+    helper.unloadAgent(agent)
+  })
+
+  it('should be in agent attributes if set by user', function () {
+    agent.config.process_host.display_name = 'test-value'
+
+    trans = new Transaction(agent)
+    trans.url = '/'
+
+    error = agent.errors
+    error.add(trans, new Error())
+    var params = error.errors[0][PARAMS]
+
+    expect(params.agentAttributes).deep.equals({
+      'host.displayName': 'test-value'
+    })
+  })
+
+  it('should not be in agent attributes if not set by user', function () {
+    trans = new Transaction(agent)
+    trans.url = '/'
+
+    error = agent.errors
+    error.add(trans, new Error())
+    var params = error.errors[0][PARAMS]
+
+    expect(params.agentAttributes).deep.equals({})
+  })
 })
 
 describe('ErrorTracer', function () {

@@ -12,6 +12,12 @@ var HOST = 'collector.newrelic.com'
 var PORT = 80
 var URL = 'http://' + HOST
 var RUN_ID = 1337
+function getDisplayHost() {
+  return HOST
+}
+function getHostnameSafe() {
+  return HOST
+}
 if (!global.setImmediate) global.setImmediate = function (fn) {global.setTimeout(fn, 0)}
 
 
@@ -40,6 +46,8 @@ describe("CollectorAPI", function () {
       state: function () {},
       config: {
         host: HOST,
+        getDisplayHost: getDisplayHost,
+        getHostnameSafe: getHostnameSafe,
         port: PORT,
         license_key: 'license key here',
         utilization: {
@@ -1330,6 +1338,8 @@ describe("CollectorAPI", function () {
     beforeEach(function () {
       var config = {
         host: HOST,
+        getDisplayHost: getDisplayHost,
+        getHostnameSafe: getHostnameSafe,
         port: PORT,
         license_key: 'license key here',
         run_id: 31337,
