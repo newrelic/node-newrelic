@@ -29,7 +29,9 @@ test("Restify router introspection", function (t) {
     t.notOk(agent.traces.trace, "should have no transaction trace")
 
     var metrics = agent.metrics.unscoped
-    t.equal(Object.keys(metrics).length, 0, "no metrics added to agent collection")
+    t.equal(Object.keys(metrics).length, 1,
+      "only supportability metrics added to agent collection"
+    )
 
     var errors = agent.errors.errors
     t.equal(errors.length, 0, "no errors noticed")
