@@ -1,3 +1,18 @@
+### v1.21.0 (2015-07-10):
+
+* Added configurable host names.
+
+  The agent now has configuration settings to allow configuration of
+  custom host names. Set `process_host.display_name` to enable this.
+
+  If this conifig is not set, the agent will continue to use the host
+  name found through an `os.hostname()` call. Should this lookup fail
+  somehow, `process_host.ipv_preference` can now be set to `4` or `6`
+  to configure the type of ip address displayed in place of the host
+  name.
+
+
+
 ### v1.20.2 (2015-06-23):
 
 * Fixed a bug where custom events weren't being sent.
