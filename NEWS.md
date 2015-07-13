@@ -1,3 +1,11 @@
+### v1.21.1 (2015-07-13):
+
+* Moved `concat-stream` from dev dependencies to production dependencies.
+
+  Last week we released v1.21.0 but forgot to move a dependency. We've
+  removed v1.21.0 from npmjs.org and this release contains the changes
+  from that version.
+
 ### v1.21.0 (2015-07-10):
 
 * Added configurable host names.
