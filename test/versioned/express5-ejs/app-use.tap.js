@@ -1,7 +1,7 @@
 'use strict'
 
 var test = require('tap').test
-var helper  = require('../../lib/agent_helper')
+var helper = require('../../lib/agent_helper')
 var request = require('request')
 var http = require('http')
 
@@ -50,8 +50,8 @@ test('app should be at top of stack when mounted', function (t) {
     server.close()
   })
 
-  main.use('/:app', app)
   main.use('/:router', router)
+  main.use('/:app', app)
   app.use('/nestedApp', app2)
   router.use('/nestedRouter', router2)
   app.get('/:child/app', respond)

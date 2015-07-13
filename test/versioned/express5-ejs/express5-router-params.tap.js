@@ -1,18 +1,18 @@
 'use strict'
 
-var path    = require('path')
-var test    = require('tap').test
+var path = require('path')
+var test = require('tap').test
 var request = require('request')
-var helper  = require('../../lib/agent_helper.js')
+var helper = require('../../lib/agent_helper.js')
 
 
 test("Express 5 router introspection", function (t) {
   t.plan(12)
 
-  var agent   = helper.instrumentMockedAgent({express5:true})
+  var agent = helper.instrumentMockedAgent({express5: true})
   var express = require('express')
-  var app     = express()
-  var server  = require('http').createServer(app)
+  var app = express()
+  var server = require('http').createServer(app)
 
 
   this.tearDown(function cb_tearDown() {
@@ -43,17 +43,16 @@ test("Express 5 router introspection", function (t) {
   app.get('/test/:id', function (req, res) {
     t.ok(agent.getTransaction(), "transaction is available")
 
-    res.send({status : 'ok'})
+    res.send({status: 'ok'})
     res.end()
   })
 
   server.listen(8089, function () {
     request.get('http://localhost:8089/test/31337',
-                {json : true},
+                {json: true},
                 function (error, res, body) {
-
       t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, {status : 'ok'}, "got expected response")
+      t.deepEqual(body, {status: 'ok'}, "got expected response")
     })
   })
 })

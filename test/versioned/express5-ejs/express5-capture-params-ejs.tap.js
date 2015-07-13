@@ -3,18 +3,17 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path    = require('path')
-var test    = require('tap').test
+var path = require('path')
+var test = require('tap').test
 var request = require('request')
-var helper  = require('../../lib/agent_helper')
-var API     = require('../../../api.js')
-  
+var helper = require('../../lib/agent_helper')
+var API = require('../../../api.js')
+
 
 // CONSTANTS
 var TEST_PORT = 9876
 var TEST_HOST = 'localhost'
-var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT
-  
+var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
 
 
 test("test capture_params for express", function (t) {
@@ -23,7 +22,6 @@ test("test capture_params for express", function (t) {
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
-      
 
     this.tearDown(function () {
       server.close()
@@ -39,11 +37,11 @@ test("test capture_params for express", function (t) {
     app.get('/user/', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
-      res.send({yep : true})
+      res.send({yep: true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {}, 'parameters should be empty')
     })
@@ -54,7 +52,7 @@ test("test capture_params for express", function (t) {
 
         t.ok(/application\/json/.test(response.headers['content-type']),
              "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        t.deepEqual(JSON.parse(body), {"yep": true}, "Express correctly serves.")
       })
     })
   })
@@ -64,7 +62,6 @@ test("test capture_params for express", function (t) {
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
-      
 
     this.tearDown(function () {
       server.close()
@@ -80,11 +77,11 @@ test("test capture_params for express", function (t) {
     app.get('/user/:id', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
-      res.send({yep : true})
+      res.send({yep: true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {id: 5},
                   'parameters should include route params')
@@ -96,17 +93,16 @@ test("test capture_params for express", function (t) {
 
         t.ok(/application\/json/.test(response.headers['content-type']),
              "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        t.deepEqual(JSON.parse(body), {"yep": true}, "Express correctly serves.")
       })
     })
   })
 
-  t.test("query variables", {timeout : 1000}, function (t) {
+  t.test("query variables", {timeout: 1000}, function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
-      
 
     this.tearDown(function () {
       server.close()
@@ -122,11 +118,11 @@ test("test capture_params for express", function (t) {
     app.get('/user/', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
-      res.send({yep : true})
+      res.send({yep: true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {name: 'bob'},
                   'parameters should include query params')
@@ -138,7 +134,7 @@ test("test capture_params for express", function (t) {
 
         t.ok(/application\/json/.test(response.headers['content-type']),
              "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        t.deepEqual(JSON.parse(body), {"yep": true}, "Express correctly serves.")
       })
     })
   })
@@ -148,7 +144,6 @@ test("test capture_params for express", function (t) {
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
-      
 
     this.tearDown(function () {
       server.close()
@@ -164,11 +159,11 @@ test("test capture_params for express", function (t) {
     app.get('/user/:id', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
-      res.send({yep : true})
+      res.send({yep: true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {id: 5, name: 'bob'},
                   'parameters should include query params')
@@ -180,7 +175,7 @@ test("test capture_params for express", function (t) {
 
         t.ok(/application\/json/.test(response.headers['content-type']),
              "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        t.deepEqual(JSON.parse(body), {"yep": true}, "Express correctly serves.")
       })
     })
   })
@@ -189,7 +184,6 @@ test("test capture_params for express", function (t) {
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
-      
 
     this.tearDown(function () {
       server.close()
@@ -206,7 +200,7 @@ test("test capture_params for express", function (t) {
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function (transaction) {
       t.deepEqual(transaction.trace.parameters, {id: 6},
                   'parameters should include query params')
       t.end()

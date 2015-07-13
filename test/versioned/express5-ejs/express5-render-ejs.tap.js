@@ -3,19 +3,19 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path    = require('path')
-var test    = require('tap').test
+var path = require('path')
+var test = require('tap').test
 var request = require('request')
-var helper  = require('../../lib/agent_helper')
-var API     = require('../../../api.js')
+var helper = require('../../lib/agent_helper')
+var API = require('../../../api.js')
 
 
 var TEST_PATH = '/test'
 var TEST_PORT = 9876
 var TEST_HOST = 'localhost'
-var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-var DELAY     = 600
-var BODY      = "<!DOCTYPE html>\n" +
+var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+var DELAY = 600
+var BODY = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "  <title>yo dawg</title>\n" +
@@ -29,7 +29,7 @@ var BODY      = "<!DOCTYPE html>\n" +
 // Regression test for issue 154
 // https://github.com/newrelic/node-newrelic/pull/154
 test("using only the express router", function (t) {
-  var agent = helper.instrumentMockedAgent({express5:true})
+  var agent = helper.instrumentMockedAgent({express5: true})
   var router = require('express').Router()
 
   this.tearDown(function cb_tearDown() {
@@ -49,7 +49,7 @@ test("using only the express router", function (t) {
 })
 
 test("the express router should go through a whole request lifecycle", function (t) {
-  var agent = helper.instrumentMockedAgent({express5:true})
+  var agent = helper.instrumentMockedAgent({express5: true})
   var router = require('express').Router()
   var server
 
@@ -64,7 +64,11 @@ test("the express router should go through a whole request lifecycle", function 
     res.end()
   })
 
-  server = require('http').createServer(router)
+  server = require('http').createServer(function (req, res) {
+    return router(req, res, function () {
+      console.log('request is done')
+    })
+  })
   server.listen(8089, function(){
     request.get('http://localhost:8089/test', function (error, response, body) {
       server.close()
@@ -78,8 +82,8 @@ test("the express router should go through a whole request lifecycle", function 
 test("agent instrumentation of Express 5", function (t) {
   t.plan(6)
 
-  t.test("for a normal request", {timeout : 1000}, function (t) {
-    var agent = helper.instrumentMockedAgent({express5:true})
+  t.test("for a normal request", {timeout: 1000}, function (t) {
+    var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -93,7 +97,7 @@ test("agent instrumentation of Express 5", function (t) {
     agent.config.apdex_t = 1
 
     app.get(TEST_PATH, function (req, res) {
-      res.send({yep : true})
+      res.send({yep: true})
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
@@ -102,7 +106,7 @@ test("agent instrumentation of Express 5", function (t) {
 
         t.ok(/application\/json/.test(response.headers['content-type']),
              "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        t.deepEqual(JSON.parse(body), {"yep": true}, "Express correctly serves.")
 
         var stats
 
@@ -134,10 +138,10 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test("using EJS templates",
-       {timeout : 1000},
+       {timeout: 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent({express5:true})
-    var app    = require('express')()
+    var agent = helper.instrumentMockedAgent({express5: true})
+    var app = require('express')()
     var server = require('http').createServer(app)
 
 
@@ -171,12 +175,12 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test("should generate rum headers",
-       {timeout : 1000},
+       {timeout: 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent({express5:true})
-    var app    = require('express')()
+    var agent = helper.instrumentMockedAgent({express5: true})
+    var app = require('express')()
     var server = require('http').createServer(app)
-    var api    = new API(agent)
+    var api = new API(agent)
 
 
     agent.config.application_id = '12345'
@@ -193,7 +197,7 @@ test("agent instrumentation of Express 5", function (t) {
 
     app.get(TEST_PATH, function (req, res) {
       var rum = api.getBrowserTimingHeader()
-      t.equal(rum.substr(0,7), '<script')
+      t.equal(rum.substr(0, 7), '<script')
       res.render('index', { title: 'yo dawg', rum: rum })
     })
 
@@ -214,11 +218,14 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test("should trap errors correctly", function (t) {
-    var agent = helper.instrumentMockedAgent({express5:true})
+    var agent = helper.instrumentMockedAgent({express5: true})
 
-    var app    = require('express')()
+    var express = require('express')
+    var app = express()
     var server = require('http').createServer(app)
+    var router = new express.Router()
 
+    app.use(router)
 
     this.tearDown(function cb_tearDown() {
       server.close()
@@ -231,8 +238,8 @@ test("agent instrumentation of Express 5", function (t) {
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
-      t.equal(app.router.stack.length, 2,
-              "2 middleware functions: router, error trapper")
+      t.equal(app.router.stack.length, 3,
+              "3 middleware functions: handle, router, error trapper")
       t.equal(app.router.stack[app.router.stack.length - 1].handle.name, 'sentinel',
               "error handler is last function in middleware chain")
 
@@ -240,7 +247,7 @@ test("agent instrumentation of Express 5", function (t) {
         var layer = app.router.stack[i]
         // route middleware doesn't have a name, sentinel is our error handler,
         // neither should be wrapped.
-        if (layer.handle.name && layer.handle.name !== 'sentinel') {
+        if (layer.name && layer.name !== 'sentinel' && layer.name !== 'handle') {
           t.equal(typeof layer.handle.__NR_original, 'function',
                   'all middlewares are wrapped')
         }
@@ -268,10 +275,10 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test("should measure request duration properly (NA-46)",
-       {timeout : 2 * 1000},
+       {timeout: 2 * 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent({express5:true})
-    var app    = require('express')()
+    var agent = helper.instrumentMockedAgent({express5: true})
+    var app = require('express')()
     var server = require('http').createServer(app)
 
 
@@ -316,10 +323,10 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test("should capture URL correctly when configured with a prefix",
-         {timeout : 2 * 1000},
+         {timeout: 2 * 1000},
          function (t) {
-    var agent  = helper.instrumentMockedAgent({express5:true})
-    var app    = require('express')()
+    var agent = helper.instrumentMockedAgent({express5: true})
+    var app = require('express')()
     var server = require('http').createServer(app)
 
 
