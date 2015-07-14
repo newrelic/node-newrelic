@@ -7,6 +7,7 @@ INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
 INTEGRATION  += test/versioned/*/*.tap.js
+SMOKE        = test/smoke/*.tap.js
 # subcomponents manage their own modules
 NPMDIRS =  $(wildcard test/lib/bootstrap/*)
 NPMDIRS += $(wildcard test/versioned/*)
@@ -23,14 +24,14 @@ CASERIAL     = test/lib/ca-serial
 CERTIFICATE  = test/lib/self-signed-test-certificate.crt
 SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
-.PHONY: all build test-cov test clean notes pending pending-core test-clean
-.PHONY: unit integration ssl ca-gen
+.PHONY: all build test-cov test clean notes pending pending-core
+.PHONY: unit integration ssl ca-gen smoke
 .PHONY: sub_node_modules $(SUBNPM)
 
 all: build test
 
 clean:
-	find . -depth -type d -name node_modules -print0 | xargs -0 rm -r
+	find . -depth -type d -name node_modules -print0 | xargs -0 rm -rf
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 	rm -rf $(SSLKEY) $(CACERT) $(CAINDEX) $(CASERIAL) $(CERTIFICATE)
 	rm -rf test/lib/*.old test/lib/*.attr
@@ -54,11 +55,6 @@ test-force-all:
 	npm install
 	npm install oracle
 	make test
-
-test-clean:
-	rm -rf test/integration/test-mongodb
-	rm -rf test/integration/test-mysql
-	rm newrelic_agent.log
 
 test-ci: node_modules sub_node_modules $(CERTIFICATE)
 	@rm -f newrelic_agent.log
@@ -89,6 +85,12 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	  export NR_NODE_TEST_POSTGRES_HOST=$${HOST}; \
 	fi; \
 	time $(TAP) $(INTEGRATION)
+
+smoke: clean
+	npm install --production
+	@$(MAKE) -s -C 'test/smoke' node_modules
+	npm install tap@0.7.1 # Test runner
+	time $(TAP) $(SMOKE)
 
 coverage: clean node_modules $(CERTIFICATE)
 	@$(COVER) run $(MOCHA_NOBIN) -- test/unit --recursive
