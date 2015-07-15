@@ -159,12 +159,17 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('prepareJSON', function testPrepareJSON() {
     describe('webTransaction when record_sql is "raw"', function testWebTransaction() {
-      it('should record work when empty', function testRaw(done) {
-        var queries = new Tracer({
+
+      var queries
+
+      beforeEach(function () {
+        queries = new Tracer({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
         })
+      })
 
+      it('should record work when empty', function testRaw(done) {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.deepEqual(data, [], 'should return empty array')
@@ -173,11 +178,6 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new Tracer({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
-
         addQuery(queries, 600, '/abc')
 
         queries.prepareJSON(function preparedJSON(err, data) {
@@ -208,17 +208,16 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new Tracer({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
-
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc')
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
+
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
 
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
@@ -244,17 +243,16 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new Tracer({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
-
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc', 'drop table users')
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
-          assert.equal(data.length, 2, 'should be 1 sample query')
+          assert.equal(data.length, 2, 'should be 2 sample queries')
+
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
 
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
@@ -365,6 +363,10 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
+
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
@@ -400,6 +402,10 @@ describe('Query Tracer', function testQueryTracer() {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 1 sample query')
+
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
 
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
@@ -510,6 +516,10 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
+
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
@@ -545,6 +555,10 @@ describe('Query Tracer', function testQueryTracer() {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 1 sample query')
+
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
 
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
@@ -655,6 +669,10 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
+
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
@@ -690,6 +708,10 @@ describe('Query Tracer', function testQueryTracer() {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 1 sample query')
+
+          data.sort(function (lhs, rhs) {
+            return rhs[2] - lhs[2]
+          })
 
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
