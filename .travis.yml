@@ -6,10 +6,19 @@ node_js:
   - "iojs-v1"
   - "iojs-v2"
 env:
-  - SUITE=unit
   - SUITE=smoke
+  - SUITE=unit
+  - SUITE=integration
+services:
+  - memcached
+  - mongodb
+  - mysql
+  - redis
+  - cassandra
+  - postgres
 before_install:
   - sudo apt-get install -qq time
   - make update_npm_global
+  - if [ "$SUITE" = "integration" ]; then make sub_node_modules; fi
 install: if [ "$SUITE" != "smoke" ]; then npm install; fi
 script: make $SUITE
