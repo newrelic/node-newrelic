@@ -9,8 +9,9 @@ INTEGRATION  += test/integration/*/*/*.tap.js
 INTEGRATION  += test/versioned/*/*.tap.js
 SMOKE        = test/smoke/*.tap.js
 # subcomponents manage their own modules
-NPMDIRS =  $(wildcard test/lib/bootstrap/*)
-NPMDIRS += $(wildcard test/versioned/*)
+PACKAGES = $(shell find . -name package.json -and -not -path '*/node_modules/*' -and -not -path '*/example*')
+# strip the package.json from the results
+NPMDIRS = $(PACKAGES:/package.json=)
 SUBNPM = $(NPMDIRS:%=npm-%)
 # SSL
 SSLKEY       = test/lib/test-key.key
@@ -68,7 +69,7 @@ unit: node_modules
 sub_node_modules: $(SUBNPM)
 
 $(SUBNPM):
-	@$(MAKE) -s -C $(@:npm-%=%) node_modules
+	@cd $(@:npm-%=%) && npm install
 
 ca-gen:
 	@./bin/update-ca-bundle.sh
@@ -88,8 +89,8 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 
 smoke: clean
 	npm install --production
-	@$(MAKE) -s -C 'test/smoke' node_modules
 	npm install tap@0.7.1 # Test runner
+	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 
 coverage: clean node_modules $(CERTIFICATE)
