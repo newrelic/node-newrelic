@@ -150,27 +150,31 @@ test('fchown', function(t) {
   })
 })
 
-test('lchown', function(t) {
-  var name = path.join(tempDir, 'chown-me')
-  var content = 'some-content'
-  fs.writeFileSync(name, content)
-  var agent = setupAgent(t)
-  var uid = 0
-  var gid = 0
-  helper.runInNamedTransaction(agent, function(trans) {
-    fs.lchown(name, uid, gid, function(err) {
-      t.ok(err, 'should error for non root users')
-      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', [NAMES.FS.PREFIX + 'open'])
+// Only exists on Darwin currently, using this check to catch if it
+// appears in other versions too.
+if (fs.lchown !== undefined) {
+  test('lchown', function(t) {
+    var name = path.join(tempDir, 'chown-me')
+    var content = 'some-content'
+    fs.writeFileSync(name, content)
+    var agent = setupAgent(t)
+    var uid = 0
+    var gid = 0
+    helper.runInNamedTransaction(agent, function(trans) {
+      fs.lchown(name, uid, gid, function(err) {
+        t.ok(err, 'should error for non root users')
+        verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', [NAMES.FS.PREFIX + 'open'])
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['lchown', 'open'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
+        trans.end(function checkMetrics() {
+          t.ok(
+            checkMetric(['lchown', 'open'], agent, trans.name),
+            'metric should exist after transaction end'
+          )
+        })
       })
     })
   })
-})
+}
 
 test('chmod', function(t) {
   var name = path.join(tempDir, 'chmod-me')
@@ -195,28 +199,32 @@ test('chmod', function(t) {
   })
 })
 
-test('lchmod', function(t) {
-  var name = path.join(tempDir, 'lchmod-me')
-  var content = 'some-content'
-  fs.writeFileSync(name, content, {mode: '0755'})
-  var agent = setupAgent(t)
-  t.equal((fs.statSync(name).mode & 511).toString(8), '755')
-  helper.runInNamedTransaction(agent, function(trans) {
-    fs.lchmod(name, '0777', function(err) {
-      t.equal(err, null, 'should not error')
-      helper.unloadAgent(agent)
-      t.equal((fs.statSync(name).mode & 511).toString(8), '777')
-      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchmod', [NAMES.FS.PREFIX + 'open'])
+// Only exists on Darwin currently, using this check to catch if it
+// appears in other versions too.
+if (fs.lchmod !== undefined) {
+  test('lchmod', function(t) {
+    var name = path.join(tempDir, 'lchmod-me')
+    var content = 'some-content'
+    fs.writeFileSync(name, content, {mode: '0755'})
+    var agent = setupAgent(t)
+    t.equal((fs.statSync(name).mode & 511).toString(8), '755')
+    helper.runInNamedTransaction(agent, function(trans) {
+      fs.lchmod(name, '0777', function(err) {
+        t.equal(err, null, 'should not error')
+        helper.unloadAgent(agent)
+        t.equal((fs.statSync(name).mode & 511).toString(8), '777')
+        verifySegments(t, agent, NAMES.FS.PREFIX + 'lchmod', [NAMES.FS.PREFIX + 'open'])
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['lchmod', 'open'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
+        trans.end(function checkMetrics() {
+          t.ok(
+            checkMetric(['lchmod', 'open'], agent, trans.name),
+            'metric should exist after transaction end'
+          )
+        })
       })
     })
   })
-})
+}
 
 test('fchmod', function(t) {
   var name = path.join(tempDir, 'fchmod-me')
