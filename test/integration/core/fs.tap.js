@@ -793,7 +793,11 @@ test('watch emitter', function(t) {
       var watcher = fs.watch(tempDir)
 
       watcher.on('change', function(ev, file) {
-        t.equal(ev, 'rename')
+        if (process.platform === 'darwin') {
+          t.equal(ev, 'rename')
+        } else {
+          t.equal(ev, 'change')
+        }
         t.equal(file, 'watch')
         t.equal(
           agent.getTransaction(),
