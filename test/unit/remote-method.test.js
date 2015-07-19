@@ -443,7 +443,7 @@ describe("RemoteMethod", function () {
   })
 
   describe("when generating a request URL", function () {
-    var TEST_RUN_ID  = Math.floor(Math.random() * 3000)
+    var TEST_RUN_ID  = Math.floor(Math.random() * 3000) + 1
     var TEST_METHOD  = 'TEST_METHOD'
     var TEST_LICENSE = 'hamburtson'
     var config
