@@ -11,7 +11,8 @@ test('exec', function(t) {
   helper.runInTransaction(agent, function() {
     cp.exec('ls', {cwd: __dirname}, function(err, stdout, stderr) {
       t.notOk(err, 'should not error')
-      t.equal(stdout, fs.readdirSync(__dirname).join('\n') + '\n')
+      var files = stdout.trim().split('\n').sort()
+      t.deepEqual(files, fs.readdirSync(__dirname).sort())
       t.equal(stderr, '')
       verifySegments(t, agent, 'child_process.exec', ['child_process.execFile'])
     })
