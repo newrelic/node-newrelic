@@ -2,6 +2,7 @@ MOCHA        = node_modules/.bin/mocha
 MOCHA_NOBIN  = node_modules/.bin/_mocha
 COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
+ESLINT       = node_modules/.bin/eslint
 NODE_VERSION = $(shell node --version)
 INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
@@ -26,7 +27,7 @@ CERTIFICATE  = test/lib/self-signed-test-certificate.crt
 SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 
 .PHONY: all build test-cov test clean notes pending pending-core
-.PHONY: unit integration ssl ca-gen smoke
+.PHONY: unit integration ssl ca-gen smoke lint
 .PHONY: sub_node_modules $(SUBNPM)
 
 all: build test
@@ -46,10 +47,8 @@ build: clean node_modules
 
 test: unit integration
 
-drone:
-	npm install
-	npm install oracle
-	make test-force-all
+lint: node_modules
+	$(ESLINT) ./*.js lib
 
 test-force-all:
 	export NR_NODE_TEST_FORCE_ALL=true

@@ -9,6 +9,7 @@ env:
   - SUITE=smoke
   - SUITE=unit
   - SUITE=integration
+  - SUITE=lint
 services:
   - memcached
   - mongodb
