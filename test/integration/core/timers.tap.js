@@ -157,27 +157,6 @@ test('clearImmediate', function testNextTick(t) {
   }
 })
 
-test('clearImmediate', function testNextTick(t) {
-  var agent = setupAgent(t)
-  var timer = setInterval(fail)
-
-  clearInterval(timer)
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    process.nextTick(function callback() {
-      var timer = setInterval(fail)
-      t.notOk(transaction.trace.root.children[0].ignore)
-      clearInterval(timer)
-      t.notOk(transaction.trace.root.children[0].ignore)
-      setImmediate(t.end.bind(t))
-    })
-  })
-
-  function fail() {
-    t.fail()
-  }
-})
-
 test('clearTimeout', function testNextTick(t) {
   var agent = setupAgent(t)
   var timer = setTimeout(fail)

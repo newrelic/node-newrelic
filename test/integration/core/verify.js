@@ -28,8 +28,8 @@ function verifySegments(t, agent, name, extras, done) {
 
   t.ok(callback.timer.start, 'callback should have started')
   t.notOk(callback.timer.touched, 'callback should not have ended')
-  setImmediate(function() {
+  setTimeout(function() {
     t.ok(callback.timer.touched, 'callback should have ended')
     done ? done() : t.end()
-  })
+  }, 0)
 }

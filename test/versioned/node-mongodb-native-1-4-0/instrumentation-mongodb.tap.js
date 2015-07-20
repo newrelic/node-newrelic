@@ -140,7 +140,7 @@ function verifyTrace(t, segment, operation, done) {
 
 // +11 asserts
 function verifyTraceNoCallback(t, segment, operation, verifier) {
-  setImmediate(function cb_setImmediate() {
+  setTimeout(function cb_setTimeout() {
     try {
       var transaction = segment.transaction
       var trace = transaction.trace
@@ -167,7 +167,7 @@ function verifyTraceNoCallback(t, segment, operation, verifier) {
       t.fail(error)
       t.end()
     }
-  })
+  }, 0)
 }
 
 // +5 asserts
