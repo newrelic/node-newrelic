@@ -11,8 +11,5 @@
   "dependencies": {
     "mongodb": "1.1.7"
   },
-  "devDependencies": {
-    "tap": "0.7.1"
-  },
   "private": true
 }

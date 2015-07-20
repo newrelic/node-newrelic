@@ -11,8 +11,5 @@
   "engines": {
     "node": "0.9.2"
   },
-  "devDependencies": {
-    "tap": "0.7.1"
-  },
   "private": true
 }

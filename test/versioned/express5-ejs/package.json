@@ -9,12 +9,7 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "express": "visionmedia/express#5.0",
-    "ejs": "~0.8"
-  },
-  "devDependencies": {
-    "tap": "0.7.1",
-    "request": "*"
+    "express": "visionmedia/express#5.0"
   },
   "private": true
 }

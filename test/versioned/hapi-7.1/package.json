@@ -9,12 +9,7 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "hapi": "^7.1",
-    "ejs": "~0.8.5"
-  },
-  "devDependencies": {
-    "tap": "0.7.1",
-    "request": "*"
+    "hapi": "^7.1"
   },
   "private": true
 }

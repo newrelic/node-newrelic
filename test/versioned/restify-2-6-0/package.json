@@ -11,9 +11,5 @@
   "dependencies": {
     "restify": "2.6.0"
   },
-  "devDependencies": {
-    "tap": "0.7.1",
-    "request": "*"
-  },
   "private": true
 }

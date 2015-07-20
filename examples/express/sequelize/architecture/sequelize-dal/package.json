@@ -3,7 +3,11 @@
   "version": "0.0.0",
   "main": "index.js",
   "plugin": {
-    "consumes": ["mysqldProcess"],
-    "provides": ["sequelizeDAL"]
+    "consumes": [
+      "mysqldProcess"
+    ],
+    "provides": [
+      "sequelizeDAL"
+    ]
   }
 }

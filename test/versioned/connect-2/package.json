@@ -11,8 +11,5 @@
   "dependencies": {
     "connect": "2.x"
   },
-  "devDependencies": {
-    "tap": "0.7.1"
-  },
   "private": true
 }

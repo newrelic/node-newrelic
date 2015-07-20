@@ -11,9 +11,6 @@
   "dependencies": {
     "mongodb": "1.4.0-rc3"
   },
-  "devDependencies": {
-    "tap": "0.7.1",
-    "trycatch": "*"
-  },
+  "devDependencies": {},
   "private": true
 }

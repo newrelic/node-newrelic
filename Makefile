@@ -64,6 +64,7 @@ test-ci: node_modules sub_node_modules $(CERTIFICATE)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
+	@cd test && npm install
 	@$(MOCHA) -c test/unit --recursive
 
 sub_node_modules: $(SUBNPM)
@@ -87,9 +88,8 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	fi; \
 	time $(TAP) $(INTEGRATION)
 
-smoke: clean
+smoke: clean node_modules
 	npm install --production
-	npm install tap@0.7.1 # Test runner
 	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 

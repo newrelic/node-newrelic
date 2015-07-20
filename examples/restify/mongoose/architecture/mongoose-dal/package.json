@@ -3,7 +3,11 @@
   "version": "0.0.0",
   "main": "index.js",
   "plugin": {
-    "consumes": ["mongodbProcess"],
-    "provides": ["mongooseDAL"]
+    "consumes": [
+      "mongodbProcess"
+    ],
+    "provides": [
+      "mongooseDAL"
+    ]
   }
 }

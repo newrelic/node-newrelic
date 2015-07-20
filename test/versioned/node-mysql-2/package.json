@@ -12,8 +12,5 @@
     "mysql": "~2",
     "generic-pool": "~2"
   },
-  "devDependencies": {
-    "tap": "0.7.1"
-  },
   "private": true
 }
