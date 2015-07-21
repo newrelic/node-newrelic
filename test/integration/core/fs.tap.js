@@ -626,11 +626,24 @@ test('readFile', function(t) {
     fs.readFile(name, function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString('utf8'), content)
-      verifySegments(t, agent, NAMES.FS.PREFIX + 'readFile', [NAMES.FS.PREFIX + 'open'])
+
+      var expectFSOpen = true
+      // io.js changed their implementation of fs.readFile to use process.binding.
+      // This caused the file opening not to be added to the trace when using io.js.
+      // By checking this value, we can determine whether or not to expect it.
+      if (agent.getTransaction().trace.root.children[0].children.length === 1) {
+        expectFSOpen = false
+      }
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'readFile',
+        expectFSOpen ? [NAMES.FS.PREFIX + 'open'] : []
+      )
 
       trans.end(function checkMetrics() {
         t.ok(
-          checkMetric(['open', 'readFile'], agent, trans.name),
+          checkMetric(
+            expectFSOpen ? ['open', 'readFile'] : ['readFile'],
+            agent, trans.name
+          ),
           'metric should exist after transaction end'
         )
       })
@@ -826,10 +839,12 @@ test('watchFile', function(t) {
     helper.runInTransaction(agent, function(trans) {
       fs.watchFile(name, onChange)
 
-      function onChange(prev, cur) {
+      function onChange(cur, prev) {
         t.notEqual(prev.atime.toISOString(), cur.atime.toISOString())
         t.notEqual(prev.mtime.toISOString(), cur.mtime.toISOString())
-        t.equal(prev.ctime.toISOString(), cur.ctime.toISOString())
+        t.ok(prev.ctime.toISOString() <= cur.ctime.toISOString(),
+          'ctime modified as expected'
+        )
 
         t.equal(
           agent.getTransaction(),
