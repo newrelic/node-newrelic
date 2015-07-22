@@ -1,20 +1,20 @@
 'use strict'
 
-var path = require('path')
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper.js')
-var API = require('../../../api.js')
-var skip = require('./skip')
+var path    = require('path')
+  , test    = require('tap').test
+  , request = require('request')
+  , helper  = require('../../lib/agent_helper.js')
+  , API     = require('../../../api.js')
 
-test("ignoring an Express 4 route", {skip: skip()}, function (t) {
+
+test("ignoring an Express 4 route", function (t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent()
-  var api = new API(agent)
-  var express = require('express')
-  var app = express()
-  var server = require('http').createServer(app)
+  var agent   = helper.instrumentMockedAgent()
+    , api     = new API(agent)
+    , express = require('express')
+    , app     = express()
+    , server  = require('http').createServer(app)
 
 
   this.tearDown(function cb_tearDown() {

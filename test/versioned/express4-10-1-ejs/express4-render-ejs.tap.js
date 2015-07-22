@@ -3,32 +3,32 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path = require('path')
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api.js')
-var skip = require('./skip')
+var path    = require('path')
+  , test    = require('tap').test
+  , request = require('request')
+  , helper  = require('../../lib/agent_helper')
+  , API     = require('../../../api.js')
+
 
 var TEST_PATH = '/test'
-var TEST_PORT = 9876
-var TEST_HOST = 'localhost'
-var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-var DELAY = 600
-var BODY = "<!DOCTYPE html>\n" +
-           "<html>\n" +
-           "<head>\n" +
-           "  <title>yo dawg</title>\n" +
-           "</head>\n" +
-           "<body>\n" +
-           "  <p>I heard u like HTML.</p>\n" +
-           "</body>\n" +
-           "</html>\n"
+  , TEST_PORT = 9876
+  , TEST_HOST = 'localhost'
+  , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+  , DELAY     = 600
+  , BODY      = "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "  <title>yo dawg</title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "  <p>I heard u like HTML.</p>\n" +
+                "</body>\n" +
+                "</html>\n"
 
 
 // Regression test for issue 154
 // https://github.com/newrelic/node-newrelic/pull/154
-test("using only the express router", {skip: skip()}, function (t) {
+test("using only the express router", function (t) {
   var agent = helper.instrumentMockedAgent()
   var router = require('express').Router()
 
@@ -48,7 +48,7 @@ test("using only the express router", {skip: skip()}, function (t) {
   t.end()
 })
 
-test("the express router should go through a whole request lifecycle", {skip: skip()}, function (t) {
+test("the express router should go through a whole request lifecycle", function (t) {
   var agent = helper.instrumentMockedAgent()
   var router = require('express').Router()
   var server
@@ -75,13 +75,13 @@ test("the express router should go through a whole request lifecycle", {skip: sk
   })
 })
 
-test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
+test("agent instrumentation of Express 4", function (t) {
   t.plan(6)
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent = helper.instrumentMockedAgent()
-    var app = require('express')()
-    var server = require('http').createServer(app)
+      , app = require('express')()
+      , server = require('http').createServer(app)
 
 
     this.tearDown(function cb_tearDown() {
@@ -137,8 +137,8 @@ test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
        {timeout : 1000},
        function (t) {
     var agent  = helper.instrumentMockedAgent()
-    var app    = require('express')()
-    var server = require('http').createServer(app)
+      , app    = require('express')()
+      , server = require('http').createServer(app)
 
 
     this.tearDown(function cb_tearDown() {
@@ -174,9 +174,9 @@ test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
        {timeout : 1000},
        function (t) {
     var agent  = helper.instrumentMockedAgent()
-    var app    = require('express')()
-    var server = require('http').createServer(app)
-    var api    = new API(agent)
+      , app    = require('express')()
+      , server = require('http').createServer(app)
+      , api    = new API(agent)
 
 
     agent.config.application_id = '12345'
@@ -217,7 +217,7 @@ test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
     var agent = helper.instrumentMockedAgent()
 
     var app    = require('express')()
-    var server = require('http').createServer(app)
+      , server = require('http').createServer(app)
 
 
     this.tearDown(function cb_tearDown() {
@@ -271,8 +271,8 @@ test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
        {timeout : 2 * 1000},
        function (t) {
     var agent  = helper.instrumentMockedAgent()
-    var app    = require('express')()
-    var server = require('http').createServer(app)
+      , app    = require('express')()
+      , server = require('http').createServer(app)
 
 
     this.tearDown(function cb_tearDown() {
@@ -319,8 +319,8 @@ test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
          {timeout : 2 * 1000},
          function (t) {
     var agent  = helper.instrumentMockedAgent()
-    var app    = require('express')()
-    var server = require('http').createServer(app)
+      , app    = require('express')()
+      , server = require('http').createServer(app)
 
 
     this.tearDown(function cb_tearDown() {

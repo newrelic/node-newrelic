@@ -1,13 +1,19 @@
 'use strict'
 
-var path = require('path')
-var test = require('tap').test
-var helper = require('../../lib/agent_helper.js')
-var skip = require('./skip')
+var path    = require('path')
+  , test    = require('tap').test
+  , helper  = require('../../lib/agent_helper.js')
+  
+/*
+ *
+ * CONSTANTS
+ *
+ */
 
-test("Express 4 detection", {skip: skip()}, function (t) {
+test("Express 4 detection", function (t) {
   var agent   = helper.instrumentMockedAgent()
-  var express = require('express')
+    , express = require('express')
+    
 
   this.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
@@ -17,4 +23,5 @@ test("Express 4 detection", {skip: skip()}, function (t) {
   // express 4 chunk that we wrap.
   t.ok(express.Router.process_params.__NR_unwrap)
   t.end()
+
 })

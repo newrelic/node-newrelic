@@ -1,18 +1,18 @@
 'use strict'
 
-var path = require('path')
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper.js')
-var skip = require('./skip')
+var path    = require('path')
+  , test    = require('tap').test
+  , request = require('request')
+  , helper  = require('../../lib/agent_helper.js')
 
-test("Express 4 router introspection", {skip: skip()}, function (t) {
+
+test("Express 4 router introspection", function (t) {
   t.plan(11)
 
-  var agent = helper.instrumentMockedAgent()
-  var express = require('express')
-  var app = express()
-  var server  = require('http').createServer(app)
+  var agent   = helper.instrumentMockedAgent()
+    , express = require('express')
+    , app     = express()
+    , server  = require('http').createServer(app)
 
 
   this.tearDown(function cb_tearDown() {

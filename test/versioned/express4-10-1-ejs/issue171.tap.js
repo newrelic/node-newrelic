@@ -1,17 +1,16 @@
 'use strict'
 
-var path = require('path')
-var helper = require('../../lib/agent_helper.js')
-var skip = require('./skip')
+var path   = require('path')
+  , helper = require('../../lib/agent_helper.js')
 
 helper.instrumentMockedAgent()
 
 var test = require('tap').test
-var http = require('http')
-var app = require('express')()
+  , http = require('http')
+  , app  = require('express')()
   
 
-test("adding 'handle' middleware", {skip: skip()}, function (t) {
+test("adding 'handle' middleware", function (t) {
   t.plan(2)
 
   function handle(err, req, res, next) {

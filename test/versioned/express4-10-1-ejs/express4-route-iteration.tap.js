@@ -1,16 +1,16 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper.js')
-var skip = require('./skip')
+var test    = require('tap').test
+var helper  = require('../../lib/agent_helper.js')
 
-test("new relic should not break route iteration", {skip: skip()}, function (t) {
+
+test("new relic should not break route iteration", function (t) {
   t.plan(1)
-  var agent = helper.instrumentMockedAgent()
+  var agent   = helper.instrumentMockedAgent()
   var express = require('express')
-  var router = new express.Router()
-  var childA = new express.Router()
-  var childB = new express.Router()
+  var router  = new express.Router()
+  var childA   = new express.Router()
+  var childB   = new express.Router()
 
 
   this.tearDown(function cb_tearDown() {
