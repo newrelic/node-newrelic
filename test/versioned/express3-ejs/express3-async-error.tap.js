@@ -1,9 +1,8 @@
 'use strict'
 
 var path = require('path')
-  , test = require('tap').test
-  , fork = require('child_process').fork
-  
+var test = require('tap').test
+var fork = require('child_process').fork
 
 /*
  *

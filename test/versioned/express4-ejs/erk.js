@@ -1,8 +1,8 @@
 'use strict'
 
-var path    = require('path')
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper.js')
+var path = require('path')
+var request = require('request')
+var helper = require('../../lib/agent_helper.js')
 
 
 // bootstrap instrumentation
@@ -10,8 +10,8 @@ helper.instrumentMockedAgent()
 
 // once instrumentation is bootstrapped
 var express = require('express')
-  , app     = express()
-  , server  = require('http').createServer(app)
+var app = express()
+var server = require('http').createServer(app)
 
 
 app.get('/test/:id', function (req, res, next) {
