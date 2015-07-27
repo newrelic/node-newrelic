@@ -637,7 +637,7 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 ### New Relic features available for other platforms not yet in Node.js
 
 * custom metrics
-* slow SQL traces and explain plans
+* explain plans
 * garbage collector instrumentation
 * thread profiling
 * X-ray transactions (depends on thread profiling)
