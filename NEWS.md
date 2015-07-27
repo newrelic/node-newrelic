@@ -1,3 +1,14 @@
+### v1.21.2 (2015-08-06):
+
+* Corrected a defect in the handling of uncaught exceptions
+
+  This defect was surfaced in versions of node that did not have
+  `process._fatalException`, namely v0.8. When an uncaught exception
+  occurs, the agent now records the error and passes it along to the other
+  uncaught exception handlers that have been registered.  This was
+  inverted before, passing along errors when there were no other error
+  handlers present and rethrowing otherwise.
+
 ### v1.21.1 (2015-07-13):
 
 * Moved `concat-stream` from dev dependencies to production dependencies.
