@@ -94,7 +94,6 @@ var helper = module.exports = {
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
-
     return agent
   },
 
@@ -108,6 +107,17 @@ var helper = module.exports = {
     shimmer.unpatchModule()
     shimmer.unwrapAll()
     shimmer.debug = false
+
+    // On v0.8 each mocked agent will add an uncaughtException handler
+    // that needs to be removed on unload
+    var listeners = process.listeners('uncaughtException')
+    for (var i = 0, len = listeners.length; i < len; ++i) {
+      var handler = listeners[i]
+      if (typeof handler === 'function'
+          && handler.name === '__NR_uncaughtExceptionHandler') {
+        process.removeListener('uncaughtException', handler)
+      }
+    }
 
     if (agent === _agent) _agent = null
   },
