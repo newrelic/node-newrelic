@@ -1,8 +1,8 @@
 language: node_js
 node_js:
-  - "0.12"
-  - "0.10"
   - "0.8"
+  - "0.10"
+  - "0.12"
   - "iojs-v1"
   - "iojs-v2"
 env:
@@ -10,13 +10,15 @@ env:
   - SUITE=unit
   - SUITE=integration
   - SUITE=lint
+addons:
+  postgresql: "9.3"
 services:
   - memcached
   - mongodb
   - mysql
   - redis
   - cassandra
-  - postgres
+  - postgresql
 before_install:
   - sudo apt-get install -qq time
   - make update_npm_global
