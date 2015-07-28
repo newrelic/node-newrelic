@@ -1,19 +1,20 @@
 'use strict'
 
-var path   = require('path')
-  , tap    = require('tap')
-  , test   = tap.test
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
+var path = require('path')
+var tap = require('tap')
+var test = tap.test
+var semver = require('semver')
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
 
 
 // CONSTANTS
 var COLLECTION = 'test_1_1_7'
-  , COLLECTION_CURSOR = COLLECTION + '_cursor'
-
+var COLLECTION_CURSOR = COLLECTION + '_cursor'
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
-     {timeout : 15000},
+     {timeout: 15000,
+      skip: semver.satisfies(process.version, ">=0.12")},
      function (t) {
   t.plan(2)
 
@@ -26,8 +27,8 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
       var agent = helper.instrumentMockedAgent()
       var mongodb = require('mongodb')
-      var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true})
-      var db = new mongodb.Db('integration', server, {safe : true})
+      var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect: true})
+      var db = new mongodb.Db('integration', server, {safe: true})
 
       this.tearDown(function cb_tearDown() {
         db.close(true, function (error) {
@@ -76,7 +77,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       db.open(function cb_open(error, db) {
         if (error) return t.fail(error)
 
-        db.createCollection(COLLECTION, {safe : true}, function (error, collection) {
+        db.createCollection(COLLECTION, {safe: true}, function (error, collection) {
           if (error) return t.fail(error)
           t.notOk(agent.getTransaction(), "no transaction should be in play yet")
 
@@ -86,13 +87,13 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
             // hardcode this because we're creating the transactional scope ourselves
             transaction.name = 'Datastore/statement/MongoDB/' + COLLECTION + '/insert'
 
-            var hunx = {id : 1, hamchunx : "verbloks"}
+            var hunx = {id: 1, hamchunx: "verbloks"}
             collection.insert(hunx, function insertCallback(error) {
               if (error) return t.fail(error)
 
               t.ok(agent.getTransaction(), "transaction should still be visible")
 
-              collection.findOne({id : 1}, function findOneCallback(error, item) {
+              collection.findOne({id: 1}, function findOneCallback(error, item) {
                 if (error) return t.fail(error)
 
                 t.ok(agent.getTransaction(), "transaction should still still be visible")
@@ -137,8 +138,8 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
 
       var agent = helper.instrumentMockedAgent()
       var mongodb = require('mongodb')
-      var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect : true})
-      var db = new mongodb.Db('integration', server, {safe : true})
+      var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect: true})
+      var db = new mongodb.Db('integration', server, {safe: true})
 
       this.tearDown(function cb_tearDown() {
         db.close(true, function (error) {
@@ -206,9 +207,9 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
           helper.runInTransaction(agent, function transactionInScope(transaction) {
             // hardcode this because we're creating the transactional scope ourselves
             transaction.name = 'Datastore/statement/MongoDB/' + COLLECTION_CURSOR + '/insert'
-            var hunx = {id : 1, hamchunx : "verbloks"}
+            var hunx = {id: 1, hamchunx: "verbloks"}
             collection.insert(hunx, function () {
-              var cursor = collection.find({id : 1})
+              var cursor = collection.find({id: 1})
               t.ok(cursor, "cursor should be returned by callback-less find")
 
               cursor.toArray(function cb_toArray(error, results) {
@@ -217,7 +218,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
                 t.equals(results.length, 1, "should be one result")
                 t.equals(results[0].hamchunx, 'verbloks', "driver should still work")
 
-                var cursor2 = collection.find({id : 2})
+                var cursor2 = collection.find({id: 2})
                 cursor2.toArray(function cb_toArray(error, results) {
                   if (error) return t.fail(error)
 
