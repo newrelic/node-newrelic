@@ -828,8 +828,11 @@ test('watch (file)', function(t) {
     helper.runInTransaction(agent, function(trans) {
       var watcher = fs.watch(name, function(ev, file) {
         t.equal(ev, 'change')
+
+        // watch doesn't return the filename when watching files on OSX
+        // on versions <0.12...
         if (process.platform !== 'darwin' ||
-          !semver.satisfies(process.version, '<0.10')) {
+          semver.satisfies(process.version, '>=0.12.x')) {
           t.equal(file, 'watch-file')
         }
         t.equal(
