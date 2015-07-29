@@ -158,7 +158,7 @@ services:
 	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_mongodb[^a-zA-Z_]"; then \
 	  docker start nr_node_mongodb; \
 	else \
-	  docker run -d --name nr_node_mongodb -p 27017:27017 library/mongo; \
+	  docker run -d --name nr_node_mongodb -p 27017:27017 library/mongo:2; \
 	fi
 	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_mysql[^a-zA-Z_]"; then \
 	  docker start nr_node_mysql; \
