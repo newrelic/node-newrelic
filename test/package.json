@@ -37,7 +37,6 @@
     "sinon": "*",
     "temp": "^0.8.1",
     "through": "^2.3.6",
-    "trycatch": "*",
     "wrench": "*"
   },
   "private": true
