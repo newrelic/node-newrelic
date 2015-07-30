@@ -5,6 +5,11 @@ var async = require('async')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 
+// Cassandra driver doesn't have support for v0.8. It uses the stream API introduced
+// in v0.10. https://github.com/jorgebay/node-cassandra-cql/issues/11
+var semver = require('semver')
+if (semver.satisfies(process.versions.node, '<0.10.x')) return
+
 var agent = helper.instrumentMockedAgent()
 var cassandra = require('cassandra-driver')
 
@@ -65,11 +70,11 @@ function cassSetup(runTest) {
   }
 }
 
-test('Cassandra instrumentation', {timeout : 5000}, function testInstrumentation(t) {
+test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(t) {
   t.plan(1)
   cassSetup(runTest)
 
-  function runTest () {
+  function runTest() {
     t.test('executeBatch', function (t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -78,7 +83,7 @@ test('Cassandra instrumentation', {timeout : 5000}, function testInstrumentation
         t.equal(tx, transaction, 'We got the same transaction')
         var colValArr = ['Jim', 'Bob', 'Joe']
         var pkValArr = [111, 222, 333]
-        var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' +  COL
+        var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' + COL
         insQuery += ') VALUES(?, ?);'
 
         var insArr = [
@@ -130,7 +135,8 @@ test('Cassandra instrumentation', {timeout : 5000}, function testInstrumentation
               'set should have atleast a dns lookup and callback child'
             )
 
-            var getSegment = setSegment.children[setSegment.children.length - 1].children[0]
+            var childIndex = setSegment.children.length - 1
+            var getSegment = setSegment.children[childIndex].children[0]
             t.ok(getSegment, 'trace segment for select should exist')
             t.equals(
               getSegment.name,

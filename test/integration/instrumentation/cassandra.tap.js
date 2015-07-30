@@ -6,13 +6,17 @@ var params = require('../../lib/params')
 var test = tap.test
 var helper = require('../../lib/agent_helper')
 
+// Cassandra driver doesn't have support for v0.8. It uses the stream API introduced
+// in v0.10. https://github.com/jorgebay/node-cassandra-cql/issues/11
+var semver = require('semver')
+if (semver.satisfies(process.versions.node, '<0.10.x')) return
 
 var agent = helper.instrumentMockedAgent()
 var cassandra = require('node-cassandra-cql')
-var client = new cassandra.Client({hosts: [params.cassandra_host  + ":"
+var client = new cassandra.Client({hosts: [params.cassandra_host + ":"
     + params.cassandra_port]})
 
-//constants for keyspace and table creation
+// constants for keyspace and table creation
 var KS = 'test'
 var FAM = 'testFamily'
 var PK = 'pk_column'
@@ -26,9 +30,8 @@ var COL = 'test_column'
  *
  * @param Callback function to set off running the tests
  */
-function cassSetup (runTest) {
-
-  var setupClient = new cassandra.Client({hosts: [params.cassandra_host  + ":"
+function cassSetup(runTest) {
+  var setupClient = new cassandra.Client({hosts: [params.cassandra_host + ":"
     + params.cassandra_port]})
 
   var ksDrop = 'DROP KEYSPACE IF EXISTS ' + KS + ';'
@@ -63,12 +66,11 @@ function cassSetup (runTest) {
 
 
 test("Cassandra instrumentation",
-    {timeout : 5000},
+    {timeout: 5000},
       function (t) {
         t.plan(2)
   cassSetup(runTest)
-  function runTest () {
-
+  function runTest() {
     t.test("executeBatch", function (t) {
       t.notOk(agent.getTransaction(), "no transaction should be in play")
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -77,7 +79,7 @@ test("Cassandra instrumentation",
         t.equal(tx, transaction, 'We got the same transaction')
         var colValArr = ['Jim', 'Bob', 'Joe']
         var pkValArr = [111, 222, 333]
-        var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' +  COL
+        var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' + COL
         insQuery += ') VALUES(?, ?);'
 
         var insArr = [
@@ -92,7 +94,7 @@ test("Cassandra instrumentation",
           {
             query: insQuery,
             params: [pkValArr[2], colValArr[2]]
-          },
+          }
         ]
 
         client.executeBatch(insArr, function (error, ok) {
@@ -107,7 +109,9 @@ test("Cassandra instrumentation",
             if (error) return t.fail(error)
 
             t.ok(agent.getTransaction(), "transaction should still still be visible")
-            t.equals(value.rows[0][COL], colValArr[0], "Cassandra client should still work")
+            t.equals(value.rows[0][COL], colValArr[0],
+              "Cassandra client should still work"
+            )
 
             var trace = transaction.trace
             t.ok(trace, "trace should exist")
@@ -145,7 +149,7 @@ test("Cassandra instrumentation",
         t.equal(tx, transaction, 'We got the same transaction')
         var colVal = 'Jim'
         var pkVal = 444
-        var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' +  COL
+        var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' + COL
         insQuery += ') VALUES(?, ?);'
         client.executeAsPrepared(insQuery, [pkVal, colVal], function (error, ok) {
           if (error) return t.fail(error)
@@ -190,7 +194,6 @@ test("Cassandra instrumentation",
     t.tearDown(function () {
       helper.unloadAgent(agent)
       client.shutdown()
-
     })
   }
 })
