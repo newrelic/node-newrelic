@@ -185,15 +185,15 @@ test("agent instrumentation of Hapi", function (t) {
   })
 
   t.test("should trap errors correctly", function (t) {
-    var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = hapi.createServer(TEST_HOST, TEST_PORT)
+    var agent = helper.instrumentMockedAgent()
+    var hapi = require('hapi')
+    var server = hapi.createServer(TEST_HOST, TEST_PORT, {debug: false})
 
 
     server.route({
-      method  : 'GET',
-      path    : TEST_PATH,
-      handler : function () {
+      method: 'GET',
+      path: TEST_PATH,
+      handler: function () {
         var hmm
         hmm.ohno.failure.is.terrible()
       }
