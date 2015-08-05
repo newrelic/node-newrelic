@@ -538,7 +538,6 @@ describe('ErrorTracer', function () {
       var transaction = new Transaction(agent)
       var exception = new TypeError('Dare to be different!')
 
-
       tracer.add(transaction, exception)
       errorJSON = tracer.errors[0]
     })
@@ -588,7 +587,6 @@ describe('ErrorTracer', function () {
 
       var transaction = new Transaction(agent)
       var exception = new TypeError('wanted JSON, got XML')
-
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
 
@@ -652,7 +650,6 @@ describe('ErrorTracer', function () {
       var transaction = new Transaction(agent)
       var exception = 'Dare to be different!'
 
-
       tracer.add(transaction, exception)
       errorJSON = tracer.errors[0]
     })
@@ -700,7 +697,6 @@ describe('ErrorTracer', function () {
 
       var transaction = new Transaction(agent)
       var exception = 'wanted JSON, got XML'
-
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
 
@@ -762,7 +758,6 @@ describe('ErrorTracer', function () {
 
       var transaction = new Transaction(agent)
       var exception = new Error('500 test error')
-
 
       transaction.exceptions.push(exception)
       transaction.url = '/test-request/zxrkbl'

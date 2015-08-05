@@ -1,18 +1,19 @@
 'use strict'
 
-var path    = require('path')
-  , chai    = require('chai')
-  , expect  = chai.expect
-  , helper  = require('../lib/agent_helper')
+var path = require('path')
+var chai = require('chai')
+var expect = chai.expect
+var helper = require('../lib/agent_helper')
+var segment = require('../../lib/transaction/trace/segment')
 
 
 describe('Tracer', function () {
   var agent
-    , tracer
+  var tracer
 
 
   beforeEach(function () {
-    agent  = helper.loadMockedAgent()
+    agent = helper.loadMockedAgent()
     tracer = agent.tracer
   })
 
@@ -38,6 +39,24 @@ describe('Tracer', function () {
     it('should not try to wrap a null handler', function () {
       helper.runInTransaction(agent, function () {
         expect(tracer.bindFunction(null)).equal(null)
+      })
+    })
+  })
+
+  describe('when handling immutable errors', function () {
+    it('should not break', function () {
+      var error = new Error()
+      Object.freeze(error)
+      tracer.error(error)
+    })
+    it('should not break in annotation process', function () {
+      helper.runInTransaction(agent, function (trans) {
+        function wrapMe() {
+          var err = new Error("FIREBOMB")
+          Object.freeze(err)
+          throw err
+        }
+      expect(tracer.bindFunction(wrapMe, new segment(trans, 'name'))).throws()
       })
     })
   })
