@@ -256,6 +256,18 @@ describe('ErrorTracer', function () {
       expect(metric.callCount).equal(2)
     })
 
+    it('should ignore errors if related transaction is ignored', function () {
+      var transaction = createTransaction(agent, 500)
+      transaction.ignore = true
+
+      // add errors by various means
+      tracer.add(transaction, new Error("no"))
+      transaction.exceptions.push(new Error('ignored'))
+      tracer.onTransactionFinished(transaction, agent.metrics)
+
+      expect(tracer.errorCount).equal(0)
+    })
+
     it('should ignore 404 errors for transactions', function () {
       tracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics)
       // 404 errors are ignored by default
@@ -300,7 +312,7 @@ describe('ErrorTracer', function () {
 
   describe('with no error and a transaction with status code', function () {
     var agent
-      , tracer
+    var tracer
 
 
     beforeEach(function () {
@@ -321,8 +333,8 @@ describe('ErrorTracer', function () {
 
   describe('with no error and a transaction with a status code', function () {
     var agent
-      , tracer
-      , errorJSON
+    var tracer
+    var errorJSON
 
 
     beforeEach(function () {
@@ -368,9 +380,9 @@ describe('ErrorTracer', function () {
 
   describe('with no error and a transaction with an URL and status code', function () {
     var agent
-      , tracer
-      , errorJSON
-      , params
+    var tracer
+    var errorJSON
+    var params
 
 
     beforeEach(function () {
@@ -468,8 +480,8 @@ describe('ErrorTracer', function () {
 
   describe('with a thrown TypeError object and no transaction', function () {
     var agent
-      , tracer
-      , errorJSON
+    var tracer
+    var errorJSON
 
 
     beforeEach(function () {
@@ -515,8 +527,8 @@ describe('ErrorTracer', function () {
 
   describe('with a thrown TypeError object and a transaction with no URL', function () {
     var agent
-      , tracer
-      , errorJSON
+    var tracer
+    var errorJSON
 
 
     beforeEach(function () {
@@ -524,7 +536,7 @@ describe('ErrorTracer', function () {
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
-        , exception   = new TypeError('Dare to be different!')
+      var exception = new TypeError('Dare to be different!')
 
 
       tracer.add(transaction, exception)
@@ -564,9 +576,9 @@ describe('ErrorTracer', function () {
 
   describe('with a thrown TypeError object and a transaction with an URL', function () {
     var agent
-      , tracer
-      , errorJSON
-      , params
+    var tracer
+    var errorJSON
+    var params
 
 
     beforeEach(function () {
@@ -575,7 +587,7 @@ describe('ErrorTracer', function () {
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
-        , exception   = new TypeError('wanted JSON, got XML')
+      var exception = new TypeError('wanted JSON, got XML')
 
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
@@ -629,8 +641,8 @@ describe('ErrorTracer', function () {
 
   describe('with a thrown string and a transaction with no URL', function () {
     var agent
-      , tracer
-      , errorJSON
+    var tracer
+    var errorJSON
 
 
     beforeEach(function () {
@@ -638,7 +650,7 @@ describe('ErrorTracer', function () {
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
-        , exception   = 'Dare to be different!'
+      var exception = 'Dare to be different!'
 
 
       tracer.add(transaction, exception)
@@ -676,9 +688,9 @@ describe('ErrorTracer', function () {
 
   describe('with a thrown string and a transaction with an URL', function () {
     var agent
-      , tracer
-      , errorJSON
-      , params
+    var tracer
+    var errorJSON
+    var params
 
 
     beforeEach(function () {
@@ -687,7 +699,7 @@ describe('ErrorTracer', function () {
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
-        , exception   = 'wanted JSON, got XML'
+      var exception = 'wanted JSON, got XML'
 
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
@@ -740,8 +752,8 @@ describe('ErrorTracer', function () {
 
   describe('with an internal server error (500) and an exception', function () {
     var agent
-      , name = 'WebTransaction/Uri/test-request/zxrkbl'
-      , error
+    var name = 'WebTransaction/Uri/test-request/zxrkbl'
+    var error
 
 
     beforeEach(function (done) {
@@ -749,7 +761,7 @@ describe('ErrorTracer', function () {
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
-        , exception   = new Error('500 test error')
+      var exception = new Error('500 test error')
 
 
       transaction.exceptions.push(exception)
@@ -798,8 +810,8 @@ describe('ErrorTracer', function () {
 
   describe('with a tracer unavailable (503) error', function () {
     var agent
-      , name = 'WebTransaction/Uri/test-request/zxrkbl'
-      , error
+    var name = 'WebTransaction/Uri/test-request/zxrkbl'
+    var error
 
 
     beforeEach(function (done) {
@@ -863,10 +875,10 @@ describe('ErrorTracer', function () {
 
   describe('when using the async listener', function () {
     var mochaHandlers
-      , agent
-      , transaction
-      , active
-      , json
+    var agent
+    var transaction
+    var active
+    var json
 
     // Everything after this only works on 0.9 or later
     if (!semver.satisfies(process.versions.node, '>=0.9.0')) return

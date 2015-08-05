@@ -41,12 +41,12 @@ describe("RemoteMethod", function () {
     beforeEach(function () {
       method = new RemoteMethod('test')
       options = {
-        host       : 'collector.newrelic.com',
-        port       : 80,
-        onError    : function error() {},
-        onResponse : function response() {},
-        body       : [],
-        path       : '/nonexistent'
+        host: 'collector.newrelic.com',
+        port: 80,
+        onError: function error() {},
+        onResponse: function response() {},
+        body: [],
+        path: '/nonexistent'
       }
     })
 
@@ -95,8 +95,8 @@ describe("RemoteMethod", function () {
   describe("when calling a method on the collector", function () {
     it("should pass error to the callback when serialization fails", function (done) {
       var config = {
-        port : 80,
-        host : 'collector.newrelic.com'
+        port: 80,
+        host: 'collector.newrelic.com'
       }
 
       var method = new RemoteMethod('test', config)
@@ -111,7 +111,7 @@ describe("RemoteMethod", function () {
     })
 
     it("shouldn't throw when dealing with compressed data", function (done) {
-      var method = new RemoteMethod('test', {host : 'localhost'})
+      var method = new RemoteMethod('test', {host: 'localhost'})
       method._shouldCompress = function () { return true; }
       method._safeRequest = function (options) {
         expect(options.body.readUInt8(0)).equal(120)
@@ -124,7 +124,7 @@ describe("RemoteMethod", function () {
     })
 
     it("shouldn't throw when preparing uncompressed data", function (done) {
-      var method = new RemoteMethod('test', {host : 'localhost'})
+      var method = new RemoteMethod('test', {host: 'localhost'})
       method._safeRequest = function (options) {
         expect(options.body).equal('"data"')
 
@@ -137,8 +137,8 @@ describe("RemoteMethod", function () {
 
   describe("when the connection fails", function () {
     it("should return the connection failure", function (done) {
-      var method = new RemoteMethod('TEST', {host : 'localhost', port : 8765})
-      method.invoke({message : 'none'}, function (error) {
+      var method = new RemoteMethod('TEST', {host: 'localhost', port: 8765})
+      method.invoke({message: 'none'}, function (error) {
         should.exist(error)
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
           expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
@@ -151,7 +151,7 @@ describe("RemoteMethod", function () {
     })
 
     it("should correctly handle a DNS lookup failure", function (done) {
-      var method = new RemoteMethod('TEST', {host : 'failed.domain.cxlrg', port : 80})
+      var method = new RemoteMethod('TEST', {host: 'failed.domain.cxlrg', port: 80})
       method.invoke([], function (error) {
         should.exist(error)
 
@@ -165,7 +165,7 @@ describe("RemoteMethod", function () {
 
   describe("when posting to collector", function () {
     var RUN_ID = 1337
-    var URL    = 'http://collector.newrelic.com'
+    var URL = 'http://collector.newrelic.com'
     var nock
     var method
     var sendMetrics
@@ -183,16 +183,16 @@ describe("RemoteMethod", function () {
 
     beforeEach(function () {
       var config = {
-        host        : 'collector.newrelic.com',
-        port        : 80,
-        run_id      : RUN_ID,
-        license_key : 'license key here'
+        host: 'collector.newrelic.com',
+        port: 80,
+        run_id: RUN_ID,
+        license_key: 'license key here'
       }
       method = new RemoteMethod('metric_data', config)
     })
 
     it("should pass through error when compression fails", function (done) {
-      var method = new RemoteMethod('test', {host : 'localhost'})
+      var method = new RemoteMethod('test', {host: 'localhost'})
       method._shouldCompress = function () { return true; }
       // zlib.deflate really wants a stringlike entity
       method._post(-1, function (error) {
@@ -207,7 +207,7 @@ describe("RemoteMethod", function () {
         // nock ensures the correct URL is requested
         sendMetrics = nock(URL)
                         .post(generate('metric_data', RUN_ID))
-                        .reply(200, {return_value : []})
+                        .reply(200, {return_value: []})
       })
 
       it("should invoke the callback without error", function (done) {
@@ -268,15 +268,15 @@ describe("RemoteMethod", function () {
       describe("that indicated success", function () {
         var getRedirectHost
         var response = {
-              return_value : 'collector-42.newrelic.com'
+              return_value: 'collector-42.newrelic.com'
             }
 
 
         beforeEach(function () {
           var config = {
-            host        : 'collector.newrelic.com',
-            port        : 80,
-            license_key : 'license key here'
+            host: 'collector.newrelic.com',
+            port: 80,
+            license_key: 'license key here'
           }
           method = new RemoteMethod('get_redirect_host', config)
 
@@ -313,9 +313,9 @@ describe("RemoteMethod", function () {
       describe("that indicated a New Relic error", function () {
         var metricData
         var response = {
-          exception : {
-            message    : "Configuration has changed, need to restart agent.",
-            error_type : "NewRelic::Agent::ForceRestartException"
+          exception: {
+            message: "Configuration has changed, need to restart agent.",
+            error_type: "NewRelic::Agent::ForceRestartException"
           }
         }
 
@@ -367,9 +367,9 @@ describe("RemoteMethod", function () {
 
     beforeEach(function () {
       var config = {
-        host       : 'collector.newrelic.com',
-        port       : '80',
-        run_id     : 12
+        host: 'collector.newrelic.com',
+        port: '80',
+        run_id: 12
       }
       var body = 'test☃'
       var method = new RemoteMethod(body, config)
@@ -407,9 +407,9 @@ describe("RemoteMethod", function () {
 
     beforeEach(function () {
       var config = {
-        host       : 'collector.newrelic.com',
-        port       : '80',
-        run_id     : 12
+        host: 'collector.newrelic.com',
+        port: '80',
+        run_id: 12
       }
       var body = 'test☃'
       var method = new RemoteMethod(body, config)
@@ -443,8 +443,8 @@ describe("RemoteMethod", function () {
   })
 
   describe("when generating a request URL", function () {
-    var TEST_RUN_ID  = Math.floor(Math.random() * 3000) + 1
-    var TEST_METHOD  = 'TEST_METHOD'
+    var TEST_RUN_ID = Math.floor(Math.random() * 3000) + 1
+    var TEST_METHOD = 'TEST_METHOD'
     var TEST_LICENSE = 'hamburtson'
     var config
     var parsed
@@ -456,9 +456,9 @@ describe("RemoteMethod", function () {
 
     beforeEach(function () {
       config = {
-        host        : 'collector.newrelic.com',
-        port        : 80,
-        license_key : TEST_LICENSE
+        host: 'collector.newrelic.com',
+        port: 80,
+        license_key: TEST_LICENSE
       }
       var method = new RemoteMethod(TEST_METHOD, config)
       parsed = reconstitute(method._path())
@@ -504,7 +504,7 @@ describe("RemoteMethod", function () {
 
 
     before(function () {
-      var config = {version : '0-test'}
+      var config = {version: '0-test'}
       var method = new RemoteMethod('test', config)
 
 
