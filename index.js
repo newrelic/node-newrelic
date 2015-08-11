@@ -15,7 +15,7 @@ if (require.cache.__NR_cache) {
     __dirname
   )
   module.exports = require.cache.__NR_cache
-  return
+  ; return
 }
 
 logger.debug(
