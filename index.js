@@ -14,7 +14,7 @@ if (require.cache.__NR_cache) {
     'Attempting to load a second copy of newrelic from %s, using cache instead',
     __dirname
   )
-  module.exports = require.cache.__NR_cache
+  module.exports = require.cache.__NR_cache;
   return
 }
 
