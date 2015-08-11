@@ -1,11 +1,11 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , fs     = require('fs')
-  , Config = require('../../lib/config')
+var path = require('path')
+var chai = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var fs = require('fs')
+var Config = require('../../lib/config')
 
 
 function idempotentEnv(name, value, callback) {
@@ -21,12 +21,10 @@ function idempotentEnv(name, value, callback) {
   try {
     var tc = Config.initialize({})
     callback(tc)
-  }
-  finally {
+  } finally {
     if (is) {
       process.env[name] = saved
-    }
-    else {
+    } else {
       delete process.env[name]
     }
   }
@@ -99,6 +97,21 @@ describe("the agent configuration", function () {
         should.exist(tc.logging.level)
         expect(tc.logging.level).equal('XXNOEXIST')
       })
+    })
+    
+    it("should have log level aliases", function () {
+      var logAliases = {
+        'verbose': 'trace',
+        'debugging': 'debug',
+        'warning': 'warn',
+        'err': 'error'
+      }
+      for (var key in logAliases) {
+        idempotentEnv('NEW_RELIC_LOG_LEVEL', key, function (tc) {
+          should.exist(tc.logging.level)
+            expect(tc.logging.level).equal(logAliases[key])
+        })
+      }
     })
 
     it("should pick up the log filepath", function () {
@@ -208,8 +221,8 @@ describe("the agent configuration", function () {
         function (tc) {
           should.exist(tc.rules.name)
           expect(tc.rules.name).eql([
-            {name : 'u', pattern : '^t'},
-            {name : 't', pattern : '^u'},
+            {name: 'u', pattern: '^t'},
+            {name: 't', pattern: '^u'},
           ])
         }
       )
@@ -518,6 +531,13 @@ describe("the agent configuration", function () {
     })
   })
 
+  describe("when setting log level via config constructor", function () {
+    it("should have log aliases", function () {
+      var config = new Config({'logging': {'level': 'verbose'}})
+      expect(config.logging.level).equal('trace')
+    })
+  })
+
   describe("when receiving server-side configuration", function () {
     var config
 
@@ -526,49 +546,49 @@ describe("the agent configuration", function () {
     })
 
     it("should set the agent run ID", function () {
-      config.onConnect({'agent_run_id' : 1234})
+      config.onConnect({'agent_run_id': 1234})
       expect(config.run_id).equal(1234)
     })
 
     it("should set the application ID", function () {
-      config.onConnect({'application_id' : 76543})
+      config.onConnect({'application_id': 76543})
       expect(config.application_id).equal(76543)
     })
 
     it("should always respect collect_traces", function () {
       expect(config.collect_traces).equal(true)
-      config.onConnect({'collect_traces' : false})
+      config.onConnect({'collect_traces': false})
       expect(config.collect_traces).equal(false)
     })
 
     it("should disable the transaction tracer when told to", function () {
       expect(config.transaction_tracer.enabled).equal(true)
-      config.onConnect({'transaction_tracer.enabled' : false})
+      config.onConnect({'transaction_tracer.enabled': false})
       expect(config.transaction_tracer.enabled).equal(false)
     })
 
     it("should always respect collect_errors", function () {
       expect(config.collect_errors).equal(true)
-      config.onConnect({'collect_errors' : false})
+      config.onConnect({'collect_errors': false})
       expect(config.collect_errors).equal(false)
     })
 
     it("should disable the error tracer when told to", function () {
       expect(config.error_collector.enabled).equal(true)
-      config.onConnect({'error_collector.enabled' : false})
+      config.onConnect({'error_collector.enabled': false})
       expect(config.error_collector.enabled).equal(false)
     })
 
     it("should set apdex_t", function () {
       expect(config.apdex_t).equal(0.1)
       config.on('apdex_t', function (value) { expect(value).equal(0.05); })
-      config.onConnect({'apdex_t' : 0.05})
+      config.onConnect({'apdex_t': 0.05})
       expect(config.apdex_t).equal(0.05)
     })
 
     it("should map transaction_tracer.transaction_threshold", function () {
       expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
-      config.onConnect({'transaction_tracer.transaction_threshold' : 0.75})
+      config.onConnect({'transaction_tracer.transaction_threshold': 0.75})
       expect(config.transaction_tracer.transaction_threshold).equal(0.75)
     })
 
@@ -578,7 +598,7 @@ describe("the agent configuration", function () {
         done()
       })
 
-      config.onConnect({'url_rules' : [{name : 'sample_rule'}]})
+      config.onConnect({'url_rules': [{name : 'sample_rule'}]})
     })
 
     it("should map metric naming rules to the metric name normalizer", function (done) {
@@ -587,7 +607,7 @@ describe("the agent configuration", function () {
         done()
       })
 
-      config.onConnect({'metric_name_rules' : [{name : 'sample_rule'}]})
+      config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
     })
 
     it("should map transaction naming rules to the transaction name normalizer",
@@ -597,56 +617,56 @@ describe("the agent configuration", function () {
         done()
       })
 
-      config.onConnect({'transaction_name_rules' : [{name : 'sample_rule'}]})
+      config.onConnect({'transaction_name_rules': [{name : 'sample_rule'}]})
     })
 
     it("should log the product level", function () {
       expect(config.product_level).equal(0)
-      config.onConnect({'product_level' : 30})
+      config.onConnect({'product_level': 30})
       expect(config.product_level).equal(30)
     })
 
     it("should reject high_security", function () {
-      config.onConnect({'high_security' : true})
+      config.onConnect({'high_security': true})
       expect(config.high_security).equal(false)
     })
 
     it("should reject capture_params", function () {
       expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params' : true})
+      config.onConnect({'capture_params': true})
       expect(config.capture_params).equal(false)
     })
 
     it("should configure ignored params", function () {
       expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params' : ['a', 'b']})
+      config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql(['a', 'b'])
     })
 
     it("should configure ignored params without stomping local config", function () {
       config.ignored_params = ['b', 'c']
 
-      config.onConnect({'ignored_params' : ['a', 'b']})
+      config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql(['b', 'c', 'a'])
     })
 
     describe("when handling embedded agent_config", function () {
       it("shouldn't blow up when agent_config is passed in", function () {
         expect(function () {
-          config.onConnect({'agent_config' : {}})
+          config.onConnect({'agent_config': {}})
         }).not.throws()
       })
 
       it("should ignore status codes set on the server", function () {
-        config.onConnect({'agent_config' : {
-          'error_collector.ignore_status_codes' : [401, 409, 415]
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': [401, 409, 415]
         }})
         expect(config.error_collector.ignore_status_codes).eql([404, 401, 409, 415])
       })
 
       it("should ignore status codes set on the server as strings", function () {
-        config.onConnect({'agent_config' : {
-          'error_collector.ignore_status_codes' : ['401', '409', '415']
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': ['401', '409', '415']
         }})
         expect(config.error_collector.ignore_status_codes).eql([404, 401, 409, 415])
       })
@@ -655,7 +675,7 @@ describe("the agent configuration", function () {
     it("should load named transaction apdexes", function () {
       var apdexes = {"WebTransaction/Custom/UrlGenerator/en/betting/Football" : 7.0}
       expect(config.web_transactions_apdex).eql({})
-      config.onConnect({'web_transactions_apdex' : apdexes})
+      config.onConnect({'web_transactions_apdex': apdexes})
       expect(config.web_transactions_apdex).eql(apdexes)
     })
 
@@ -685,103 +705,103 @@ describe("the agent configuration", function () {
 
     it("shouldn't blow up when sampling_rate is received", function () {
       expect(function () {
-        config.onConnect({'sampling_rate' : 0})
+        config.onConnect({'sampling_rate': 0})
       }).not.throws()
     })
 
     it("shouldn't blow up when cross_process_id is received", function () {
       expect(function () {
-        config.onConnect({'cross_process_id' : 'junk'})
+        config.onConnect({'cross_process_id': 'junk'})
       }).not.throws()
     })
 
     it("shouldn't blow up when cross_application_tracing is received", function () {
       expect(function () {
-        config.onConnect({'cross_application_tracing' : true})
+        config.onConnect({'cross_application_tracing': true})
       }).not.throws()
     })
 
     it("shouldn't blow up when encoding_key is received", function () {
       expect(function () {
-        config.onConnect({'encoding_key' : 'hamsnadwich'})
+        config.onConnect({'encoding_key': 'hamsnadwich'})
       }).not.throws()
     })
 
     it("shouldn't blow up when trusted_account_ids is received", function () {
       expect(function () {
-        config.onConnect({'trusted_account_ids' : [1, 2, 3]})
+        config.onConnect({'trusted_account_ids': [1, 2, 3]})
       }).not.throws()
     })
 
     it("shouldn't blow up when high_security is received", function () {
       expect(function () {
-        config.onConnect({'high_security' : true})
+        config.onConnect({'high_security': true})
       }).not.throws()
     })
 
     it("shouldn't blow up when ssl is received", function () {
       expect(function () {
-        config.onConnect({'ssl' : true})
+        config.onConnect({'ssl': true})
       }).not.throws()
     })
 
     it("shouldn't blow up when transaction_tracer.record_sql is received", function () {
       expect(function () {
-        config.onConnect({'transaction_tracer.record_sql' : true})
+        config.onConnect({'transaction_tracer.record_sql': true})
       }).not.throws()
     })
 
     it("shouldn't blow up when slow_sql.enabled is received", function () {
       expect(function () {
-        config.onConnect({'slow_sql.enabled' : true})
+        config.onConnect({'slow_sql.enabled': true})
       }).not.throws()
     })
 
     it("shouldn't blow up when rum.load_episodes_file is received", function () {
       expect(function () {
-        config.onConnect({'rum.load_episodes_file' : true})
+        config.onConnect({'rum.load_episodes_file': true})
       }).not.throws()
     })
 
     it("shouldn't blow up when beacon is received", function () {
       expect(function () {
-        config.onConnect({'beacon' : 'beacon-0.newrelic.com'})
+        config.onConnect({'beacon': 'beacon-0.newrelic.com'})
       }).not.throws()
     })
 
     it("shouldn't blow up when beacon is received", function () {
       expect(function () {
-        config.onConnect({'error_beacon' : null})
+        config.onConnect({'error_beacon': null})
       }).not.throws()
     })
 
     it("shouldn't blow up when js_agent_file is received", function () {
       expect(function () {
-        config.onConnect({'js_agent_file' : 'jxc4afffef.js'})
+        config.onConnect({'js_agent_file': 'jxc4afffef.js'})
       }).not.throws()
     })
 
     it("shouldn't blow up when js_agent_loader_file is received", function () {
       expect(function () {
-        config.onConnect({'js_agent_loader_file' : 'nr-js-bootstrap.js'})
+        config.onConnect({'js_agent_loader_file': 'nr-js-bootstrap.js'})
       }).not.throws()
     })
 
     it("shouldn't blow up when episodes_file is received", function () {
       expect(function () {
-        config.onConnect({'episodes_file' : 'js-agent.newrelic.com/nr-100.js'})
+        config.onConnect({'episodes_file': 'js-agent.newrelic.com/nr-100.js'})
       }).not.throws()
     })
 
     it("shouldn't blow up when episodes_url is received", function () {
       expect(function () {
-        config.onConnect({'episodes_url' : 'https://js-agent.newrelic.com/nr-100.js'})
+        config.onConnect({'episodes_url': 'https://js-agent.newrelic.com/nr-100.js'})
       }).not.throws()
     })
 
     it("shouldn't blow up when browser_key is received", function () {
       expect(function () {
-        config.onConnect({'browser_key' : 'beefchunx'})
+        config.onConnect({'browser_key': 'beefchunx'})
       }).not.throws()
     })
 
@@ -789,7 +809,7 @@ describe("the agent configuration", function () {
     function () {
       config.transaction_events.enabled = true
       expect(function () {
-        config.onConnect({'collect_analytics_events' : false})
+        config.onConnect({'collect_analytics_events': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
     })
@@ -797,7 +817,7 @@ describe("the agent configuration", function () {
     it("shouldn't blow up when transaction_events.max_samples_stored is received",
     function () {
       expect(function () {
-        config.onConnect({'transaction_events.max_samples_stored' : 10})
+        config.onConnect({'transaction_events.max_samples_stored': 10})
       }).not.throws()
       expect(config.transaction_events.max_samples_stored).equals(10)
     })
@@ -805,14 +825,14 @@ describe("the agent configuration", function () {
     it("shouldn't blow up when transaction_events.max_samples_per_minute is received",
     function () {
       expect(function () {
-        config.onConnect({'transaction_events.max_samples_per_minute' : 1})
+        config.onConnect({'transaction_events.max_samples_per_minute': 1})
       }).not.throws()
       expect(config.transaction_events.max_samples_per_minute).equals(1)
     })
 
     it("shouldn't blow up when transaction_events.enabled is received", function () {
       expect(function () {
-        config.onConnect({'transaction_events.enabled' : false})
+        config.onConnect({'transaction_events.enabled': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
     })
@@ -826,7 +846,7 @@ describe("the agent configuration", function () {
           done()
         })
 
-        config.onConnect({'data_report_period' : 45})
+        config.onConnect({'data_report_period': 45})
       })
 
       it("should update data_report_period only when it is changed", function () {
@@ -836,7 +856,7 @@ describe("the agent configuration", function () {
           throw new Error('should never get here')
         })
 
-        config.onConnect({'data_report_period' : 60})
+        config.onConnect({'data_report_period': 60})
       })
     })
 
@@ -848,7 +868,7 @@ describe("the agent configuration", function () {
           done()
         })
 
-        config.onConnect({'apdex_t' : 0.75})
+        config.onConnect({'apdex_t': 0.75})
       })
 
       it("should update its apdex_t only when it has changed", function () {
@@ -858,7 +878,7 @@ describe("the agent configuration", function () {
           throw new Error('should never get here')
         })
 
-        config.onConnect({'apdex_t' : 0.1})
+        config.onConnect({'apdex_t': 0.1})
       })
     })
   })
@@ -891,25 +911,25 @@ describe("the agent configuration", function () {
     })
 
     it("should still set agent_run_id", function () {
-      config.onConnect({'agent_run_id' : 1234})
+      config.onConnect({'agent_run_id': 1234})
       expect(config.run_id).equal(1234)
     })
 
     it("should always respect collect_traces", function () {
       expect(config.collect_traces).equal(true)
-      config.onConnect({'collect_traces' : false})
+      config.onConnect({'collect_traces': false})
       expect(config.collect_traces).equal(false)
     })
 
     it("should always respect collect_errors", function () {
       expect(config.collect_errors).equal(true)
-      config.onConnect({'collect_errors' : false})
+      config.onConnect({'collect_errors': false})
       expect(config.collect_errors).equal(false)
     })
 
     it("should still log product_level", function () {
       expect(config.product_level).equal(0)
-      config.onConnect({'product_level' : 30})
+      config.onConnect({'product_level': 30})
       expect(config.product_level).equal(30)
     })
 
@@ -919,7 +939,7 @@ describe("the agent configuration", function () {
         done()
       })
 
-      config.onConnect({'url_rules' : [{name : 'sample_rule'}]})
+      config.onConnect({'url_rules': [{name : 'sample_rule'}]})
     })
 
     it("should still pass metric_name_rules to the metric name normalizer",
@@ -929,7 +949,7 @@ describe("the agent configuration", function () {
         done()
       })
 
-      config.onConnect({'metric_name_rules' : [{name : 'sample_rule'}]})
+      config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
     })
 
     it("should still pass transaction_name_rules to the transaction name normalizer",
@@ -939,56 +959,56 @@ describe("the agent configuration", function () {
         done()
       })
 
-      config.onConnect({'transaction_name_rules' : [{name : 'sample_rule'}]})
+      config.onConnect({'transaction_name_rules': [{name : 'sample_rule'}]})
     })
 
     it("shouldn't configure apdex_t", function () {
       expect(config.apdex_t).equal(0.1)
       config.on('apdex_t', function () { throw new Error("shouldn't happen"); })
-      config.onConnect({'apdex_t' : 0.05})
+      config.onConnect({'apdex_t': 0.05})
       expect(config.apdex_t).equal(0.1)
     })
 
     it("shouldn't configure named transaction apdexes", function () {
       var apdexes = {"WebTransaction/Custom/UrlGenerator/en/betting/Football" : 7.0}
       expect(config.web_transactions_apdex).eql({})
-      config.onConnect({'web_transactions_apdex' : apdexes})
+      config.onConnect({'web_transactions_apdex': apdexes})
       expect(config.web_transactions_apdex).eql({})
     })
 
     it("shouldn't configure data_report_period", function () {
       expect(config.data_report_period).equal(60)
-      config.onConnect({'data_report_period' : 45})
+      config.onConnect({'data_report_period': 45})
       expect(config.data_report_period).equal(60)
     })
 
     it("shouldn't configure transaction_tracer.enabled", function () {
       expect(config.transaction_tracer.enabled).equal(true)
-      config.onConnect({'transaction_tracer.enabled' : false})
+      config.onConnect({'transaction_tracer.enabled': false})
       expect(config.transaction_tracer.enabled).equal(true)
     })
 
     it("shouldn't configure error_tracer.enabled", function () {
       expect(config.error_collector.enabled).equal(true)
-      config.onConnect({'error_collector.enabled' : false})
+      config.onConnect({'error_collector.enabled': false})
       expect(config.error_collector.enabled).equal(true)
     })
 
     it("shouldn't configure transaction_tracer.transaction_threshold", function () {
       expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
-      config.onConnect({'transaction_tracer.transaction_threshold' : 0.75})
+      config.onConnect({'transaction_tracer.transaction_threshold': 0.75})
       expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
     })
 
     it("shouldn't configure capture_params", function () {
       expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params' : true})
+      config.onConnect({'capture_params': true})
       expect(config.capture_params).equal(false)
     })
 
     it("shouldn't configure ignored_params", function () {
       expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params' : ['a', 'b']})
+      config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql([])
     })
 
@@ -1018,57 +1038,57 @@ describe("the agent configuration", function () {
 
     it("should ignore sampling_rate", function () {
       expect(function () {
-        config.onConnect({'sampling_rate' : 0})
+        config.onConnect({'sampling_rate': 0})
       }).not.throws()
     })
 
     it("should ignore ssl", function () {
       expect(config.ssl).eql(true)
       expect(function () {
-        config.onConnect({'ssl' : false})
+        config.onConnect({'ssl': false})
       }).not.throws()
       expect(config.ssl).eql(true)
     })
 
     it("should ignore cross_process_id", function () {
       expect(function () {
-        config.onConnect({'cross_process_id' : 'junk'})
+        config.onConnect({'cross_process_id': 'junk'})
       }).not.throws()
     })
 
     it("should ignore cross_application_tracing", function () {
       expect(function () {
-        config.onConnect({'cross_application_tracing' : true})
+        config.onConnect({'cross_application_tracing': true})
       }).not.throws()
     })
 
     it("should ignore encoding_key", function () {
       expect(function () {
-        config.onConnect({'encoding_key' : true})
+        config.onConnect({'encoding_key': true})
       }).not.throws()
     })
 
     it("should ignore trusted_account_ids", function () {
       expect(function () {
-        config.onConnect({'trusted_account_ids' : [1, 2, 3]})
+        config.onConnect({'trusted_account_ids': [1, 2, 3]})
       }).not.throws()
     })
 
     it("should ignore transaction_tracer.record_sql", function () {
       expect(function () {
-        config.onConnect({'transaction_tracer.record_sql' : true})
+        config.onConnect({'transaction_tracer.record_sql': true})
       }).not.throws()
     })
 
     it("should ignore slow_sql.enabled", function () {
       expect(function () {
-        config.onConnect({'slow_sql.enabled' : true})
+        config.onConnect({'slow_sql.enabled': true})
       }).not.throws()
     })
 
     it("should ignore rum.load_episodes_file", function () {
       expect(function () {
-        config.onConnect({'rum.load_episodes_file' : true})
+        config.onConnect({'rum.load_episodes_file': true})
       }).not.throws()
     })
   })

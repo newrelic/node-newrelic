@@ -1,3 +1,5 @@
+'use strict'
+
 var Logger = require('../../../lib/util/logger')
 var chai = require('chai')
 var expect = chai.expect
@@ -34,7 +36,7 @@ describe('logger', function() {
   it('should interpolate values', function(done) {
     logger.info('%d: %s', 1, 'a')
     logger.info('123', 4, '5')
-    process.nextTick(function(){
+    process.nextTick(function() {
       expect(results.length).equal(2)
       compare_entry(results[0], '1: a', 30)
       compare_entry(results[1], '123 4 5', 30)
@@ -42,10 +44,15 @@ describe('logger', function() {
     })
   })
 
+  it('should default to error level logging', function() {
+    logger.level('donkey kong')
+    expect(logger._level).equal(50)
+  })
+
   it('should support prepended extras', function(done) {
     logger.info({a: 1, b: 2}, '%d: %s', 1, 'a')
     logger.info({a: 1, b: 2}, '123', 4, '5')
-    process.nextTick(function(){
+    process.nextTick(function() {
       var keys = ['a', 'b'].concat(DEFAULT_KEYS)
       expect(results.length).equal(2)
       compare_entry(results[0], '1: a', 30, keys)
@@ -122,7 +129,7 @@ describe('logger', function() {
   it('should be togglable', function(done) {
     logger.info('on')
     logger.enabled = false
-    process.nextTick(function(){
+    process.nextTick(function() {
       expect(results.length).equal(1)
       logger.info('off')
       expect(results.length).equal(1)
@@ -138,7 +145,7 @@ describe('logger', function() {
     childB.info({b: 5}, 'hello b')
     childC.info({a: 10}, 'hello c')
 
-    process.nextTick(function(){
+    process.nextTick(function() {
       expect(results.length).equal(3)
       expect(results[0].a).equal(1)
       compare_entry(results[1], 'hello b', 30, ['b', 'c'].concat(DEFAULT_KEYS))
@@ -157,21 +164,21 @@ describe('logger', function() {
     var obj = {a: 1, b: 2}
     obj.self = obj
     logger.info('JSON: %s', obj)
-    process.nextTick(function(){
+    process.nextTick(function() {
       expect(results.length).equal(1)
       compare_entry(results[0], 'JSON: {"a":1,"b":2,"self":"[Circular ~]"}', 30)
       done()
     })
   })
 
-  it('fail gracefully on unstringifiable objects', function(done){
+  it('fail gracefully on unstringifiable objects', function(done) {
     var badObj = {
       get testData () {
         throw new Exception()
       }
     }
     logger.info('JSON: %s', badObj)
-    process.nextTick(function(){
+    process.nextTick(function() {
       expect(results.length).equal(1)
       compare_entry(results[0], 'JSON: [UNPARSABLE OBJECT]', 30)
       done()
@@ -181,21 +188,21 @@ describe('logger', function() {
 
 describe('logger write queue', function() {
   it('should buffer writes', function(done) {
-
     var bigString = new Array(16 * 1024).join('a')
 
     var logger = Logger({
       name: 'my-logger',
       level: 'info',
-      hostname: 'my-host',
+      hostname: 'my-host'
     })
 
     logger.once('readable', function() {
-
-      logger.push = function(str){
+      logger.push = function(str) {
         var pushed = Logger.prototype.push.call(this, str)
-        if(pushed){
-          var parts = str.split('\n').filter(Boolean).map(function(a){return a.toString()}).map(JSON.parse)
+        if (pushed) {
+          var parts = str.split('\n').filter(Boolean).map(function(a) {
+            return a.toString()
+          }).map(JSON.parse)
           compare_entry(parts[0], 'b', 30)
           compare_entry(parts[1], 'c', 30)
           compare_entry(parts[2], 'd', 30)
@@ -210,14 +217,11 @@ describe('logger write queue', function() {
 
       logger.read()
 
-      process.nextTick(function(){
+      process.nextTick(function() {
         done()
       })
-
     })
-
     logger.info(bigString)
-
   })
 })
 
