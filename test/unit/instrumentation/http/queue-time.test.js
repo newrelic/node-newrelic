@@ -1,21 +1,19 @@
 'use strict'
 
-var path         = require('path')
-  , assert       = require('assert')
-  , chai         = require('chai')
-  , http         = require('http')
-  , should       = chai.should()
-  , expect       = chai.expect
-  , EventEmitter = require('events').EventEmitter
-  , helper       = require('../../../lib/agent_helper')
-  
+var path = require('path')
+var assert = require('assert')
+var chai = require('chai')
+var http = require('http')
+var should = chai.should()
+var expect = chai.expect
+var EventEmitter = require('events').EventEmitter
+var helper = require('../../../lib/agent_helper')
 
 describe("built-in http queueTime", function () {
   var agent
-    , testDate
-    , PORT
-    , THRESHOLD
-    
+  var testDate
+  var PORT
+  var THRESHOLD
 
   before(function () {
     agent = helper.instrumentMockedAgent()
@@ -40,12 +38,14 @@ describe("built-in http queueTime", function () {
 
     server.listen(PORT, function () {
       var port = server.address().port
-      var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": "t="+ testDate
+      var opts = {
+        host: 'localhost',
+        port: port,
+        headers: {
+          "x-request-start": "t=" + (testDate - 10)
+        }
       }
-    }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
@@ -63,12 +63,14 @@ describe("built-in http queueTime", function () {
 
     server.listen(PORT, function () {
       var port = server.address().port
-      var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": "alskdjf"
+      var opts = {
+        host: 'localhost',
+        port: port,
+        headers: {
+          "x-request-start": "alskdjf"
+        }
       }
-    }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
@@ -87,12 +89,14 @@ describe("built-in http queueTime", function () {
 
     server.listen(PORT, function () {
       var port = server.address().port
-      var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": testDate
+      var opts = {
+        host: 'localhost',
+        port: port,
+        headers: {
+          "x-request-start": testDate - 10
+        }
       }
-    }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
@@ -111,12 +115,14 @@ describe("built-in http queueTime", function () {
 
     server.listen(PORT, function () {
       var port = server.address().port
-      var opts = {host : 'localhost', port : port, headers: {
-        "x-queue-start": testDate
+      var opts = {
+        host: 'localhost',
+        port: port,
+        headers: {
+          "x-queue-start": testDate - 10
+        }
       }
-    }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
@@ -135,11 +141,14 @@ describe("built-in http queueTime", function () {
 
     server.listen(PORT, function () {
       var port = server.address().port
-      var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": testDate * 1e3
-      }}
+      var opts = {
+        host: 'localhost',
+        port: port,
+        headers: {
+          "x-request-start": (testDate - 10) * 1e3
+        }
+      }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
@@ -158,11 +167,14 @@ describe("built-in http queueTime", function () {
 
       server.listen(PORT, function () {
         var port = server.address().port
-        var opts = {host : 'localhost', port : port, headers: {
-        "x-queue-start": testDate * 1e6
-      }}
+        var opts = {
+          host: 'localhost',
+          port: port,
+          headers: {
+            "x-queue-start": (testDate - 10) * 1e6
+          }
+        }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
@@ -181,11 +193,14 @@ describe("built-in http queueTime", function () {
 
     server.listen(PORT, function () {
       var port = server.address().port
-      var opts = {host : 'localhost', port : port, headers: {
-        "x-request-start": testDate / 1e3
-      }}
+      var opts = {
+        host: 'localhost',
+        port: port,
+        headers: {
+          "x-request-start": (testDate - 10) / 1e3
+        }
+      }
       http.get(opts, function () {
-
         server.close()
         return done()
       })
