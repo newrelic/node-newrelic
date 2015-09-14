@@ -5,6 +5,8 @@ node_js:
   - "0.12"
   - "iojs-v1"
   - "iojs-v2"
+  - "iojs-v3"
+  - "4"
 env:
   - SUITE=smoke
   - SUITE=unit
@@ -29,3 +31,7 @@ before_install:
   - if [ "$SUITE" = "integration" ]; then make sub_node_modules; fi
 install: if [ "$SUITE" != "smoke" ]; then npm install; fi
 script: make $SUITE
+matrix:
+  allow_failures:
+    - node_js: "4"
+    - node_js: "iojs-v3"

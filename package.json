@@ -53,6 +53,11 @@
       "name": "Jonathan Merrill",
       "email": "jmerrill@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Martin Kuba",
+      "email": "mkuba@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
