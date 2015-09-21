@@ -1,3 +1,13 @@
+### v1.22.1 (2015-08-20):
+
+* Express and Connect instrumentation will no longer crash on Node 4
+
+  As of ES6, the `Function.name` attribute will track if the function
+  is a getter/a setter/is bound to (i.e. `fn.bind().name ->` `'bound ' +
+  fn.name`).  This new behavior caused the agent to crash on start up due to the
+  way connect and express are instrumented.  The agent is now more defensive of
+  future implementations of ES6.
+
 ### v1.22.0 (2015-08-20):
 
 * Errors will now respect its transaction's ignore state.
