@@ -9,6 +9,7 @@ var path    = require('path')
   , shimmer = require('../../../lib/shimmer')
   , helper  = require('../../lib/agent_helper')
   , API     = require('../../../api.js')
+  , fs      = require('fs')
   
 
 var TEST_PATH = '/test'
@@ -172,10 +173,17 @@ test("agent instrumentation of Express 2", function (t) {
     var agent = helper.instrumentMockedAgent()
 
     // see shimmer.reinstrument for info on why this is here
-    shimmer.reinstrument(
-      agent,
-      path.join(__dirname, 'node_modules/express/node_modules/connect')
-    )
+    var pathName = path.join(__dirname, 'node_modules/express/node_modules/connect')
+    // as of npm v3, dependencies are flattened into the root
+    // node_modules
+    if (fs.existsSync(pathName)) {
+      shimmer.reinstrument(
+        agent,
+        path.join(__dirname, 'node_modules/express/node_modules/connect')
+      )
+    } else {
+      shimmer.reinstrument(agent, path.join(__dirname, 'node_modules/connect'))
+    }
 
     var app = require('express').createServer()
 
