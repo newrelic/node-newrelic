@@ -40,6 +40,17 @@ describe("environmental sampler", function () {
     expect(stats.callCount).equal(1)
     expect(stats.max).above(1); // maybe someday this test will fail
   })
+  it("should catch if process.memoryUsage throws an error", function () {
+    var oldProcessMem = process.memoryUsage
+    process.memoryUsage = function () {
+      throw new Error('your computer is on fire')
+    }
+    sampler.sampleMemory(agent)()
+
+    var stats = agent.metrics.getOrCreateMetric('Memory/Physical')
+    expect(stats.callCount).equal(0)
+    process.memoryUsage = oldProcessMem
+  })
 
   it("should have some rough idea of how deep the event queue is", function (done) {
     sampler.checkEvents(agent)()
