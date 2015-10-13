@@ -283,12 +283,12 @@ describe('should add data from cat header to segment', function () {
   it('should collect errors only if they are not being handled', function(done) {
     helper.runInTransaction(agent, handled)
 
-    function handled() {
+    function handled(transaction) {
       var req = http.get({host : 'localhost', port : 12345}, function() {})
 
       req.on('close', function() {
-        expect(agent.errors.errors.length).equal(0)
-        unhandled()
+        expect(transaction.exceptions).length(0)
+        unhandled(transaction)
       })
 
       req.on('error', function(err) {
@@ -298,12 +298,12 @@ describe('should add data from cat header to segment', function () {
       req.end()
     }
 
-    function unhandled() {
+    function unhandled(transaction) {
       var req = http.get({host : 'localhost', port : 12345}, function() {})
 
       req.on('close', function() {
-        expect(agent.errors.errors.length).equal(1)
-        expect(agent.errors.errors[0][2]).match(/connect ECONNREFUSED( 127.0.0.1:12345)?/)
+        expect(transaction.exceptions).length(1)
+        expect(transaction.exceptions[0][0].message).match(/connect ECONNREFUSED( 127.0.0.1:12345)?/)
         done()
       })
 

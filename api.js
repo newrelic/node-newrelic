@@ -229,7 +229,8 @@ API.prototype.noticeError = function noticeError(error, customParameters) {
 
   if (typeof error === 'string') error = new Error(error)
   var transaction = this.agent.tracer.getTransaction()
-  this.agent.errors.add(transaction, error, customParameters)
+
+  this.agent.errors.addUserError(transaction, error, customParameters)
 }
 
 /**

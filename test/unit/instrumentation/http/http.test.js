@@ -242,6 +242,10 @@ describe("built-in http module instrumentation", function () {
 
     it("should capture metrics for the last byte to exit as part of a response")
     it("should capture metrics for the last byte to enter as part of a request")
+
+    it("should set transaction.port to the server's port", function() {
+      expect(transaction.port).equal(8123)
+    })
   })
 
   describe("with error monitor", function () {

@@ -18,7 +18,6 @@ var RUN_ID = 1337
 describe('the New Relic agent', function () {
   before(function () {
     nock.disableNetConnect()
-    console.log('called')
   })
 
   after(function () {
@@ -43,13 +42,25 @@ describe('the New Relic agent', function () {
       helper.unloadAgent(agent)
     })
 
+    it('should report the reservoir size and number of events seen', function (done) {
+      var r = new Reservoir()
+      var e = {id: 1}
+      r.add(e)
+      agent.events = r
+      agent._sendEvents(function cb__sendEvents() {
+        expect(events[1].reservoir_size).equals(r.limit)
+        expect(events[1].events_seen).equals(1)
+        done()
+      })
+    })
+
     it('should pass events to server', function (done) {
       var r = new Reservoir()
       var e = {id: 1}
       r.add(e)
       agent.events = r
       agent._sendEvents(function cb__sendEvents() {
-        expect(events[1][0]).equals(e)
+        expect(events[2][0]).equals(e)
         done()
       })
     })

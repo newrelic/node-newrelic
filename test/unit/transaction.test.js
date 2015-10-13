@@ -433,4 +433,63 @@ describe("Transaction", function () {
       expect(transaction.alternatePathHashes()).equal(null)
     })
   })
+
+  describe('hasErrors', function() {
+    var transaction
+
+    beforeEach(function() {
+      transaction = new Transaction(agent)
+    })
+
+    it('should return true if exceptions property is not empty', function() {
+      expect(transaction.hasErrors()).equal(false)
+      transaction.exceptions.push(new Error())
+      expect(transaction.hasErrors()).equal(true)
+    })
+
+    it('should return true if statusCode is an error', function() {
+      transaction.statusCode = 500
+      expect(transaction.hasErrors()).equal(true)
+    })
+  })
+
+  describe('getIntrinsicAttributes', function() {
+    var transaction
+
+    beforeEach(function() {
+      transaction = new Transaction(agent)
+    })
+
+    it('includes CAT attributes', function() {
+      transaction.tripId = '3456'
+      transaction.referringTransactionGuid = '1234'
+      agent.config.cross_process_id = '2345'
+
+      var attributes = transaction.getIntrinsicAttributes()
+      expect(attributes.referring_transaction_guid).equal('1234')
+      expect(attributes.client_cross_process_id).equal('2345')
+      expect(attributes.path_hash).to.be.a('string')
+      expect(attributes.trip_id).equal('3456')
+    })
+
+    it('includes Synthetics attributes', function() {
+      transaction.syntheticsData = {
+        version: 1,
+        accountId: 123,
+        resourceId: 'resId',
+        jobId: 'jobId',
+        monitorId: 'monId'
+      }
+
+      var attributes = transaction.getIntrinsicAttributes()
+      expect(attributes.synthetics_resource_id).equal('resId')
+      expect(attributes.synthetics_job_id).equal('jobId')
+      expect(attributes.synthetics_monitor_id).equal('monId')
+    })
+
+    it('returns different object every time', function() {
+      expect(transaction.getIntrinsicAttributes()).not.equal(
+            transaction.getIntrinsicAttributes())
+    })
+  })
 })

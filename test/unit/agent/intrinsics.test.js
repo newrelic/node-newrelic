@@ -4,6 +4,7 @@
 var helper = require('../../lib/agent_helper.js')
 var chai = require('chai')
 var assert = chai.assert
+var sinon = require('sinon')
 var Transaction = require('../../../lib/transaction')
 var tests = require('../../lib/cross_agent_tests/cat/cat_map.json')
 var cat = require('../../../lib/util/cat.js')
@@ -63,10 +64,30 @@ describe('when CAT is disabled', function () {
         timestamp: 2,
         type: 'Transaction',
         webDuration: 5,
+        error: false
       }
 
       assert.deepEqual(attrs, expected)
     })
+  })
+
+  it("should call transaction.hasErrors() for error attribute", function() {
+    var trans = new Transaction(agent)
+    var mock, attrs
+
+    mock = sinon.mock(trans)
+    mock.expects('hasErrors').returns(true)
+    attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    mock.verify()
+    mock.restore()
+    assert.equal(true, attrs.error)
+
+    mock = sinon.mock(trans)
+    mock.expects('hasErrors').returns(false)
+    attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    mock.verify()
+    mock.restore()
+    assert.equal(false, attrs.error)
   })
 })
 
@@ -101,6 +122,7 @@ describe('when CAT is enabled', function () {
         timestamp: 2,
         type: 'Transaction',
         webDuration: duration/1000,
+        error: false,
         'nr.guid': test.expectedIntrinsicFields['nr.guid'],
         'nr.pathHash': test.expectedIntrinsicFields['nr.pathHash'],
         'nr.referringPathHash': test.expectedIntrinsicFields['nr.referringPathHash'],

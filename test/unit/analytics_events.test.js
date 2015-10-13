@@ -148,10 +148,11 @@ describe("on transaction finished", function () {
       expect(event[0].name).to.equal(trans.name)
       expect(event[0].duration).to.equal(trans.timer.duration)
       expect(event[0].type).to.equal('Transaction')
+      expect(event[0].type).to.equal(false)
     })
   })
-
-  it("should contain user and agent attirbutes", function () {
+  
+  it("should contain user and agent attributes", function () {
     var trans = new Transaction(agent)
 
     trans.end(function() {

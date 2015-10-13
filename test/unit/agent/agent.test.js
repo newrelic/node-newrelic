@@ -880,6 +880,9 @@ describe("the New Relic agent", function () {
         license_key : 'license key here'
       })
       agent = new Agent(config)
+
+      // turn off error events, so that does not interfere with this test
+      agent.config.error_collector.capture_events = false
     })
 
     it("harvest requires a callback", function () {
@@ -937,6 +940,9 @@ describe("the New Relic agent", function () {
     })
 
     it("resets error count after harvest", function (done) {
+      // turn off error events, so that does not interfere with this test
+      agent.config.error_collector.capture_events = false
+
       agent.errors.add(null, new TypeError('no method last on undefined'))
       agent.errors.add(null, new Error('application code error'))
       agent.errors.add(null, new RangeError('stack depth exceeded'))
@@ -961,6 +967,9 @@ describe("the New Relic agent", function () {
     })
 
     it("resets error count after harvest when error collector is off", function (done) {
+      // turn off error events, so that does not interfere with this test
+      agent.config.error_collector.capture_events = false
+
       agent.errors.add(null, new TypeError('no method last on undefined'))
       agent.errors.add(null, new Error('application code error'))
       agent.errors.add(null, new RangeError('stack depth exceeded'))
@@ -974,8 +983,6 @@ describe("the New Relic agent", function () {
         // that harvest doesn't hang.
         cb()
       }
-
-
 
       agent.harvest(function cb_harvest() {
         expect(agent.errors.errorCount).equal(0)
@@ -1054,6 +1061,9 @@ describe("the New Relic agent", function () {
     })
 
     it("doesn't send errors when server disables collect_errors", function (done) {
+      // turn off error events, so that does not interfere with this test
+      agent.config.error_collector.capture_events = false
+
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))

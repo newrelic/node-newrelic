@@ -6,7 +6,7 @@ var path         = require('path')
   , configurator = require('../../../lib/config.js')
   , Agent        = require('../../../lib/agent.js')
   , Transaction  = require('../../../lib/transaction')
-
+  , mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
 
 nock.disableNetConnect()
 
@@ -39,11 +39,16 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
                    .reply(200, {return_value : []})
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(415)
+    , sendEvents = nock(url).post(path('analytic_event_data', RUN_ID)).reply(415)
     , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(415)
+    , sendErrorEvents = nock(url).post(path('error_event_data', RUN_ID)).reply(415)
     , sendTrace   = nock(url).post(path('transaction_sample_data', RUN_ID)).reply(415)
 
 
   var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200)
+
+  // setup nock for AWS
+  mockAWSInfo()
 
   agent.start(function cb_start(error, config) {
     t.notOk(error, 'got no error on connection')
@@ -53,18 +58,22 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
 
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    agent.traces.trace = transaction.trace
+    transaction.end(function() {      
+      agent.traces.trace = transaction.trace
 
-    agent.harvest(function cb_harvest(error) {
-      t.notOk(error, "no error received on 415")
-      t.ok(sendMetrics.isDone(), "initial sent metrics...")
-      t.ok(sendErrors.isDone(),  "...and then sent error data...")
-      t.ok(sendTrace.isDone(),   "...and then sent trace, even though all returned 413")
+      agent.harvest(function cb_harvest(error) {
+        t.notOk(error, "no error received on 415")
+        t.ok(sendMetrics.isDone(), "initial sent metrics...")
+        t.ok(sendEvents.isDone(), "...and then sent events...")
+        t.ok(sendErrors.isDone(),  "...and then sent error data...")
+        t.ok(sendTrace.isDone(),   "...and then sent trace, even though all returned 413")
+        t.ok(sendErrorEvents.isDone(), "... and then sent error events")
 
-      agent.stop(function cb_stop() {
-        t.ok(settings.isDone(), "got agent_settings message")
-        t.ok(sendShutdown.isDone(), "got shutdown message")
-        t.end()
+        agent.stop(function cb_stop() {
+          t.ok(settings.isDone(), "got agent_settings message")
+          t.ok(sendShutdown.isDone(), "got shutdown message")
+          t.end()
+        })
       })
     })
   })

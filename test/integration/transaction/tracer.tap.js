@@ -117,7 +117,8 @@ test('bind + capture error', function testThrows(t) {
       t.equal(err, error)
       t.equal(Object.keys(error).length, 0, 'error should not have any extra properties')
       t.notOk(err.__NR_transaction, 'should not hold onto transaction')
-      t.equal(name, logged[1])
+      // global error is not tied to a transaction, so its name should not be the transaction name
+      t.notEqual(name, logged[1])
       t.equal(error.message, logged[2])
       t.end()
     })

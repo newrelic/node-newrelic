@@ -87,7 +87,7 @@ test('cross application tracing full integration', function (t) {
       var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'end should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'end should have a path_hash variable')
-      t.ok(trace.intrinsics['cross_process_id'], 'end should have a cross_process_id variable')
+      t.ok(trace.intrinsics['client_cross_process_id'], 'end should have a client_cross_process_id variable')
       t.ok(trace.intrinsics['referring_transaction_guid'], 'end should have a referring_transaction_guid variable')
 
       // check the insights event.
@@ -132,7 +132,7 @@ test('cross application tracing full integration', function (t) {
       var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'middle should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'middle should have a path_hash variable')
-      t.ok(trace.intrinsics['cross_process_id'], 'middle should have a cross_process_id variable')
+      t.ok(trace.intrinsics['client_cross_process_id'], 'middle should have a client_cross_process_id variable')
       t.ok(trace.intrinsics['referring_transaction_guid'], 'middle should have a referring_transaction_guid variable')
 
       // check the external segment for its properties
@@ -179,7 +179,7 @@ test('cross application tracing full integration', function (t) {
       var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'start should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'start should have a path_hash variable')
-      t.ok(trace.intrinsics['cross_process_id'], 'start should have a cross_process_id variable')
+      t.ok(trace.intrinsics['client_cross_process_id'], 'start should have a client_cross_process_id variable')
       t.notOk(trace.intrinsics['referring_transaction_guid'], 'start should not have a referring_transaction_guid variable')
 
       // check the external segment for its properties

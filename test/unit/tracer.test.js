@@ -44,11 +44,6 @@ describe('Tracer', function () {
   })
 
   describe('when handling immutable errors', function () {
-    it('should not break', function () {
-      var error = new Error()
-      Object.freeze(error)
-      tracer.error(error)
-    })
     it('should not break in annotation process', function () {
       helper.runInTransaction(agent, function (trans) {
         function wrapMe() {
