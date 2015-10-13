@@ -240,7 +240,7 @@ test("agent instrumentation of Express 4", function (t) {
         var layer = app._router.stack[i]
         // route middleware doesn't have a name, sentinel is our error handler,
         // neither should be wrapped.
-        if (layer.handle.name && layer.handle.name !== 'sentinel') {
+        if (layer.route === undefined && layer.handle.name !== 'sentinel') {
           t.equal(typeof layer.handle.__NR_original, 'function',
                   'all middlewares are wrapped')
         }
