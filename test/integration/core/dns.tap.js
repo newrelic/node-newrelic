@@ -20,10 +20,10 @@ test('lookup', function(t) {
 test('resolve', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    dns.resolve('localhost', function(err, ips) {
+    dns.resolve('example.com', function(err, ips) {
       t.notOk(err, 'should not error')
       t.equal(ips.length, 1)
-      t.equal(ips[0], '127.0.0.1')
+      t.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
       verifySegments(t, agent, 'dns.resolve', ['dns.resolve4'])
     })
   })
@@ -32,10 +32,10 @@ test('resolve', function(t) {
 test('resolve4', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    dns.resolve4('localhost', function(err, ips) {
+    dns.resolve4('example.com', function(err, ips) {
       t.notOk(err, 'should not error')
       t.equal(ips.length, 1)
-      t.equal(ips[0], '127.0.0.1')
+      t.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
       verifySegments(t, agent, 'dns.resolve4')
     })
   })
