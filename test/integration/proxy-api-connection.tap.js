@@ -61,7 +61,6 @@ test("support ssl to the proxy", function (t) {
       })
     })
   })
-
 })
 
 test("setting proxy_port should use the proxy agent", function (t) {
@@ -106,7 +105,6 @@ test("setting proxy_port should use the proxy agent", function (t) {
       })
     })
   })
-
 })
 
 test("proxy agent with SSL tunnel to collector", function (t) {
@@ -152,7 +150,6 @@ test("proxy agent with SSL tunnel to collector", function (t) {
       })
     })
   })
-
 })
 
 test("proxy agent with plain text to collector", function (t) {
@@ -199,7 +196,6 @@ test("proxy agent with plain text to collector", function (t) {
       })
     })
   })
-
 })
 
 test("proxy authentication should set headers", function (t) {

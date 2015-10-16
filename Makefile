@@ -13,7 +13,6 @@ SMOKE        = test/smoke/*.tap.js
 PACKAGES = $(shell find . -name package.json -and -not -path '*/node_modules/*' -and -not -path '*/example*')
 # strip the package.json from the results
 NPMDIRS = $(PACKAGES:/package.json=)
-SUBNPM = $(NPMDIRS:%=npm-%)
 # SSL
 SSLKEY       = test/lib/test-key.key
 # certificate authority, so curl doesn't complain
@@ -66,10 +65,9 @@ unit: node_modules
 	@cd test && npm install
 	@$(MOCHA) -c test/unit --recursive
 
-sub_node_modules: $(SUBNPM)
-
-$(SUBNPM):
-	@cd $(@:npm-%=%) && npm install
+sub_node_modules:
+	@cd test && npm install glob@~3.2.9
+	@node test/bin/install_sub_deps
 
 ca-gen:
 	@./bin/update-ca-bundle.sh

@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+// vim: ft=javascript
+'use strict'
+
+var path = require('path')
+var glob = require('glob')
+var exec = require('child_process').exec
+
+var options = {
+}
+
+glob('**/test/**/package.json', options, function getPackages(err, packages) {
+  var correctPackages = packages.filter(function (line) {
+    return !/node_modules|example/.test(line)
+  })
+  var finishInstall = generateFinish(correctPackages.length)
+  correctPackages.forEach(function (packageJsonPath) {
+    var packagePath = path.resolve(packageJsonPath).split('/').slice(0, -1).join('/')
+    console.log('installing deps in ' + packagePath)
+    exec('cd ' + packagePath + '&&npm i', function (err, stdout, stderr) {
+      if (err) {
+        finishInstall(err, packagePath)
+      } else {
+        finishInstall(stderr, packagePath)
+      }
+    })
+  })
+})
+
+function generateFinish(numTasks) {
+  var counter = 0
+  var erroredBuilds = []
+  return function finish(err, packagePath) {
+    if (err) {
+      erroredBuilds.push([packagePath, err])
+    }
+    if (++counter === numTasks && erroredBuilds.length > 0) {
+      console.log('The following test modules failed to build:')
+      erroredBuilds.forEach(function printErrors(build) {
+        console.log('-----------------------------------------------------------')
+        console.log(build[0] + ' failed intalling with the following error:')
+        console.log(build[1])
+        console.log('-----------------------------------------------------------')
+      })
+    }
+  }
+}

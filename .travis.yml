@@ -23,15 +23,16 @@ services:
 before_install:
   - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
   - echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
-  - sudo apt-get update
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
   - sudo apt-get install -y mongodb-org
   - mongod --version
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - sudo apt-get install -qq time
   - make update_npm_global
-  - if [ "$SUITE" = "integration" ]; then make sub_node_modules; fi
 install: if [ "$SUITE" != "smoke" ]; then npm install; fi
 script: make $SUITE
 matrix:
   allow_failures:
-    - node_js: "4"
     - node_js: "iojs-v3"
