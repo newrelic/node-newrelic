@@ -766,8 +766,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
 
   var instrinics = {
     type: eventType,
-    timestamp: Date.now(),
-    source: 'Customer'
+    timestamp: Date.now()
   }
 
   this.agent.customEvents.add([instrinics, attributes])

@@ -43,7 +43,6 @@ describe('The custom events API', function () {
     var myEvent = popTopCustomEvent(agent)
     expect(myEvent[0]).to.exist()
     expect(myEvent[0].type).to.equal('EventName')
-    expect(myEvent[0].source).to.equal('Customer')
     expect(myEvent[0].timestamp).to.be.at.least(when)
   })
 
