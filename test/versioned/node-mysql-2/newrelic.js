@@ -9,7 +9,12 @@ exports.config = {
     detect_aws: false,
     detect_docker: false
   },
+  slow_sql: {
+    enabled: true,
+  },
   transaction_tracer : {
+    record_sql: 'raw',
+    explain_threshold: 0,
     enabled : true
   }
 }

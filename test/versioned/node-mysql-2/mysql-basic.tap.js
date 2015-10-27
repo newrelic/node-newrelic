@@ -122,7 +122,15 @@ test('Basic run through mysql functionality',
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
             withRetry.release(client)
-            agent.getTransaction().end(t.end.bind(t))
+            agent.getTransaction().end(function checkQueries() {
+              var queryKeys = Object.keys(agent.queries.samples)
+              t.ok(queryKeys.length > 0, 'there should be a query sample')
+              queryKeys.forEach(function testSample (key) {
+                var query = agent.queries.samples[key]
+                t.ok(query.total > 0, 'the samples should have positive duration')
+              })
+              t.end()
+            })
           })
         })
       })
@@ -142,7 +150,15 @@ test('Basic run through mysql functionality',
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
             withRetry.release(client)
-            agent.getTransaction().end(t.end.bind(t))
+            agent.getTransaction().end(function checkQueries() {
+              var queryKeys = Object.keys(agent.queries.samples)
+              t.ok(queryKeys.length > 0, 'there should be a query sample')
+              queryKeys.forEach(function testSample (key) {
+                var query = agent.queries.samples[key]
+                t.ok(query.total > 0, 'the samples should have positive duration')
+              })
+              t.end()
+            })
           })
         })
       })
@@ -162,7 +178,15 @@ test('Basic run through mysql functionality',
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
             withRetry.release(client)
-            agent.getTransaction().end(t.end.bind(t))
+            agent.getTransaction().end(function checkQueries() {
+              var queryKeys = Object.keys(agent.queries.samples)
+              t.ok(queryKeys.length > 0, 'there should be a query sample')
+              queryKeys.forEach(function testSample (key) {
+                var query = agent.queries.samples[key]
+                t.ok(query.total > 0, 'the samples should have positive duration')
+              })
+              t.end()
+            })
           })
         })
       })
@@ -182,7 +206,15 @@ test('Basic run through mysql functionality',
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
             withRetry.release(client)
-            agent.getTransaction().end(t.end.bind(t))
+            agent.getTransaction().end(function checkQueries() {
+              var queryKeys = Object.keys(agent.queries.samples)
+              t.ok(queryKeys.length > 0, 'there should be a query sample')
+              queryKeys.forEach(function testSample (key) {
+                var query = agent.queries.samples[key]
+                t.ok(query.total > 0, 'the samples should have positive duration')
+              })
+              t.end()
+            })
           })
         })
       })
