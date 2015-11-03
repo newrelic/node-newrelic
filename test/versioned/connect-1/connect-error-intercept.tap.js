@@ -1,5 +1,8 @@
 'use strict'
 
+var semver = require('semver')
+if (semver.satisfies(process.versions.node, '<4.0')) return
+
 var path   = require ('path')
   , tap    = require('tap')
   , test   = tap.test
