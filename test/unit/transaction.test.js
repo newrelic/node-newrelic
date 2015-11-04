@@ -198,6 +198,31 @@ describe("Transaction", function () {
       expect(trans.name).equal('WebTransaction/NormalizedUri/config')
     })
 
+    describe("getName", function () {
+      it("should return null if the transaction doesn't have a name, partialName, or url", function () {
+        expect(trans.getName()).equal(null)
+      })
+
+      it("partial name should remain unset if it wasn't set before", function () {
+        trans.url = '/some/pathname'
+        expect(trans.partialName).equal(null)
+        expect(trans.getName()).equal('WebTransaction/NormalizedUri/*')
+        expect(trans.partialName).equal(null)
+      })
+
+      it("should return the right name if partialName and url are set", function () {
+        trans.partialName = 'Framework/verb/route'
+        trans.url = '/route'
+        expect(trans.getName()).equal('WebTransaction/Framework/verb/route')
+        expect(trans.partialName).equal('Framework/verb/route')
+      })
+
+      it("should return the name if it has already been set", function () {
+        trans.name = 'OtherTransaction/foo/bar'
+        expect(trans.getName()).equal('OtherTransaction/foo/bar')
+      })
+    })
+
     describe("with no partial name set", function () {
       it("produces a normalized (backstopped) name when status is 200", function () {
         trans.setName('/test/string?do=thing&another=thing', 200)

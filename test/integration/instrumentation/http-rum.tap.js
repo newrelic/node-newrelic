@@ -58,7 +58,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
               data.transactionName,
               agent.config.license_key.substr(0,13)
             )
-            t.equal(tx, 'NormalizedUri/WORKING', 'url normalized before RUM')
+            t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'url normalized before RUM')
           }
         })
         t.end()
@@ -106,7 +106,7 @@ test('custom web transactions should have rules applied for RUM', function (t) {
           data.transactionName,
           agent.config.license_key.substr(0,13)
         )
-        t.equal(tx, 'NormalizedUri/WORKING', 'url normalized before RUM')
+        t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'url normalized before RUM')
       }
     })
     t.end()
