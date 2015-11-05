@@ -1,3 +1,11 @@
+### v1.23.1 (2015-11-05):
+
+* `newrelic.getBrowserTimingHeader()` API now includes the full transaction name.
+
+  Previously, the agent would use a fragment of the transaction name, causing
+  Browser Monitoring transactions and APM transactions to not be cross linked.
+  This change makes the cross linking work correctly.
+
 ### v1.23.0 (2015-10-29):
 
 * The New Relic Node Agent now officially supports Node v4!
