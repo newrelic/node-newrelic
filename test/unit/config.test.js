@@ -293,6 +293,13 @@ describe("the agent configuration", function () {
         expect(tc.slow_sql.max_samples).equal(100)
       })
     })
+
+    it('should pick up logging.enabled', function () {
+      idempotentEnv('NEW_RELIC_LOG_ENABLED', 'false', function (tc) {
+        should.exist(tc.logging.enabled)
+        expect(tc.logging.enabled).equal(false)
+      })
+    })
   })
 
   describe("with default properties", function () {
