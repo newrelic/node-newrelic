@@ -939,6 +939,57 @@ describe("the New Relic agent", function () {
       agent.harvest(function nop() {})
     })
 
+    it("reports web transactions error count", function (done) {
+      var transaction = new Transaction(agent)
+      transaction.url = '/some/path'
+      expect(transaction.isWeb()).to.be.true
+
+      agent.errors.add(transaction, new TypeError('no method last on undefined'))
+      agent.errors.add(transaction, new Error('application code error'))
+      agent.errors.add(transaction, new RangeError('stack depth exceeded'))
+
+      agent.collector.metricData = function (payload) {
+        var metrics = payload[3]
+        var metric  = metrics.getMetric('Errors/allWeb')
+
+        should.exist(metric)
+        expect(metric.callCount).equal(3)
+
+        done()
+      }
+
+      transaction.end(harvest)
+
+      function harvest() {
+        agent.harvest(function nop() {})
+      }
+    })
+
+    it("reports background transactions error count", function (done) {
+      var transaction = new Transaction(agent)
+      expect(transaction.isWeb()).to.be.false
+
+      agent.errors.add(transaction, new TypeError('no method last on undefined'))
+      agent.errors.add(transaction, new Error('application code error'))
+      agent.errors.add(transaction, new RangeError('stack depth exceeded'))
+
+      agent.collector.metricData = function (payload) {
+        var metrics = payload[3]
+        var metric  = metrics.getMetric('Errors/allOther')
+
+        should.exist(metric)
+        expect(metric.callCount).equal(3)
+
+        done()
+      }
+
+      transaction.end(harvest)
+
+      function harvest() {
+        agent.harvest(function nop() {})
+      }
+    })
+
     it("resets error count after harvest", function (done) {
       // turn off error events, so that does not interfere with this test
       agent.config.error_collector.capture_events = false

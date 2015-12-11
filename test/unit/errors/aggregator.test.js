@@ -11,12 +11,27 @@ var semver = require('semver')
 var API = require('../../../api.js')
 var NAMES = require('../../../lib/metrics/names.js')
 
-function createTransaction(agent, code) {
-  var transaction = new Transaction(agent)
-  transaction.name = 'WebTransaction/TestJS/path'
-  transaction.statusCode = code
 
+function createTransaction(agent, code, isWeb) {
+  if (typeof isWeb === 'undefined') isWeb = true
+
+  var transaction = new Transaction(agent)
+  if (isWeb) {
+    transaction.name = 'WebTransaction/TestJS/path'
+    transaction.url = '/TestJS/path'
+    transaction.statusCode = code
+  } else {
+    transaction.name = 'OtherTransaction'
+  }
   return transaction
+}
+
+function createWebTransaction(agent, code) {
+  return createTransaction(agent, code)
+}
+
+function createBackgroundTransaction(agent) {
+  return createTransaction(agent, null, false)
 }
 
 describe('agent attribute format', function () {
@@ -255,6 +270,17 @@ describe('ErrorAggregator', function () {
         Object.freeze(error)
         aggregator.add(error)
       })
+    })
+  })
+
+  describe('getErrors', function() {
+    it('returns collected errors', function() {
+      var agent = helper.loadMockedAgent()
+
+      agent.errors.add(null, new Error('some error'))
+      var errors = agent.errors.getErrors()
+      expect(errors).length(1)
+      helper.unloadAgent(agent)
     })
   })
 
@@ -1101,6 +1127,183 @@ describe('ErrorAggregator', function () {
         helper.unloadAgent(agent)
       })
     })()
+  })
+
+  describe('getTotalErrorCount()', function() {
+    var agent, aggregator
+
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+      aggregator = agent.errors
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+    })
+
+    describe('returns total of all collected errors', function() {
+      it('without transaction', function() {
+        aggregator.add(null, new Error('error1'))
+        expect(aggregator.getTotalErrorCount()).equal(1)
+      })
+
+      it('with web transaction', function(done) {
+        var transaction = createWebTransaction(agent)
+        expect(transaction.isWeb()).to.be.true
+        aggregator.add(transaction, new Error('error1'))
+
+        transaction.end(function() {
+          expect(aggregator.getTotalErrorCount()).equal(1)
+          done()
+        })
+      })
+
+      it('with background transaction', function(done) {
+        var transaction = createBackgroundTransaction(agent)
+        expect(transaction.isWeb()).to.be.false
+        aggregator.add(transaction, new Error('error1'))
+
+        transaction.end(function() {
+          expect(aggregator.getTotalErrorCount()).equal(1)
+          done()
+        })
+      })
+    })
+  })
+
+  describe('getWebTransactionsErrorCount()', function() {
+    var agent, aggregator
+
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+      aggregator = agent.errors
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+    })
+
+    describe('returns total of web transactions errors', function() {
+      it('without transaction', function() {
+        aggregator.add(null, new Error('error1'))
+        expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+      })
+
+      it('with web transaction', function(done) {
+        var transaction = createWebTransaction(agent)
+        expect(transaction.isWeb()).to.be.true
+        aggregator.add(transaction, new Error('error1'))
+
+        transaction.end(function() {
+          expect(aggregator.getWebTransactionsErrorCount()).equal(1)
+          done()
+        })
+      })
+
+      it('with background transaction', function(done) {
+        var transaction = createBackgroundTransaction(agent)
+        expect(transaction.isWeb()).to.be.false
+        aggregator.add(transaction, new Error('error1'))
+
+        transaction.end(function() {
+          expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+          done()
+        })
+      })
+    })
+  })
+
+  describe('getBackgroundTransactionsErrorCount()', function() {
+    var agent, aggregator
+
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+      aggregator = agent.errors
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+    })
+
+    describe('returns total of background transactions errors', function() {
+      it('without transaction', function() {
+        aggregator.add(null, new Error('error1'))
+        expect(aggregator.getBackgroundTransactionsErrorCount()).equal(0)
+      })
+
+      it('with web transaction', function(done) {
+        var transaction = createWebTransaction(agent)
+        expect(transaction.isWeb()).to.be.true
+        aggregator.add(transaction, new Error('error1'))
+
+        transaction.end(function() {
+          expect(aggregator.getBackgroundTransactionsErrorCount()).equal(0)
+          done()
+        })
+      })
+
+      it('with background transaction', function(done) {
+        var transaction = createBackgroundTransaction(agent)
+        expect(transaction.isWeb()).to.be.false
+        aggregator.add(transaction, new Error('error1'))
+
+        transaction.end(function() {
+          expect(aggregator.getBackgroundTransactionsErrorCount()).equal(1)
+          done()
+        })
+      })
+    })
+  })
+
+  describe('clearErrors()', function() {
+    var agent, aggregator
+
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+      aggregator = agent.errors
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+    })
+
+    it('clears collected errors', function() {
+      aggregator.add(null, new Error('error1'))
+      expect(aggregator.getErrors()).length(1)
+      aggregator.clearErrors()
+      expect(aggregator.getErrors()).length(0)
+    })
+
+    it('clears total error count', function() {
+      aggregator.add(null, new Error('error1'))
+      expect(aggregator.getTotalErrorCount()).equal(1)
+      aggregator.clearErrors()
+      expect(aggregator.getTotalErrorCount()).equal(0)
+    })
+
+    it('clears web tx error count', function(done) {
+      var transaction = createWebTransaction(agent)
+      aggregator.add(transaction, new Error('error1'))
+
+      transaction.end(function() {
+        expect(aggregator.getWebTransactionsErrorCount()).equal(1)
+        aggregator.clearErrors()
+        expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+        done()
+      })
+    })
+
+    it('clears background tx error count', function(done) {
+      var transaction = createBackgroundTransaction(agent)
+      aggregator.add(transaction, new Error('error1'))
+
+      transaction.end(function() {
+        expect(aggregator.getBackgroundTransactionsErrorCount()).equal(1)
+        aggregator.clearErrors()
+        expect(aggregator.getBackgroundTransactionsErrorCount()).equal(0)
+        done()
+      })
+    })
   })
 })
 

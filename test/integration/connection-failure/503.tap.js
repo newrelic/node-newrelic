@@ -155,6 +155,28 @@ test("merging metrics and errors after a 503", function (t) {
               callCount      : 1
             }
           ],
+          [
+            {name : "Errors/allWeb"},
+            {
+              total          : 0,
+              totalExclusive : 0,
+              min            : 0,
+              max            : 0,
+              sumOfSquares   : 0,
+              callCount      : 0
+            }
+          ],
+          [
+            {name : "Errors/allOther"},
+            {
+              total          : 0,
+              totalExclusive : 0,
+              min            : 0,
+              max            : 0,
+              sumOfSquares   : 0,
+              callCount      : 1
+            }
+          ],
           [{
               "name" : "Supportability/Events/Customer/Dropped" // != undefined
             },{
