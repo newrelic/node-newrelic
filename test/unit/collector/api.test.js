@@ -1187,62 +1187,6 @@ describe("CollectorAPI", function () {
     })
   })
 
-  describe("sqlTraceData", function () {
-    it("requires slow SQL data to send", function () {
-      expect(function () { api.sqlTraceData(null, function () {}) })
-        .throws("must pass slow SQL to send")
-    })
-
-    it("requires a callback", function () {
-      expect(function () { api.sqlTraceData([], null) })
-        .throws("callback is required")
-    })
-
-    describe("on the happy path", function () {
-      var bad
-      var nothing
-      var raw
-
-
-      var response = {return_value: []}
-
-      before(function (done) {
-        api._agent.config.run_id = RUN_ID
-        var shutdown = nock(URL)
-                         .post(generate('sql_trace_data', RUN_ID))
-                         .reply(200, response)
-
-        // Node doesn't even support SQL traces yet, but it was easy to implement
-        var trace = []
-
-        api.sqlTraceData([trace], function test(error, response, json) {
-          bad = error
-          nothing = response
-          raw = json
-
-          shutdown.done()
-          done()
-        })
-      })
-
-      after(function () {
-        api._agent.config.run_id = undefined
-      })
-
-      it("should not error out", function () {
-        should.not.exist(bad)
-      })
-
-      it("should return empty data array", function () {
-        expect(nothing).eql([])
-      })
-
-      it("should pass through exactly what it got back from the server", function () {
-        expect(raw).eql(response)
-      })
-    })
-  })
-
   describe("shutdown", function () {
     it("requires a callback", function () {
       expect(function () { api.shutdown(null) }).throws("callback is required")
