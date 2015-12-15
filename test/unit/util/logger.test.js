@@ -65,6 +65,20 @@ describe('logger', function() {
     })
   })
 
+  it('should support prepended extras from Error objects', function(done) {
+    var error = new Error('error1')
+    expect(error.message).to.not.be.undefined
+    expect(error.stack).to.not.be.undefined
+
+    logger.info(error, 'log message')
+    process.nextTick(function() {
+      var log1 = results[0]
+      expect(log1.message).equal(error.message)
+      expect(log1.stack).equal(error.stack)
+      done()
+    })
+  })
+
   it('should only log expected levels', function(done) {
     logger.trace('trace')
     logger.debug('debug')
@@ -156,6 +170,22 @@ describe('logger', function() {
       expect(results[2].a).equal(10)
       expect(results[2].b).equal(2)
       expect(results[2].c).equal(6)
+      done()
+    })
+  })
+
+  it('should support child loggers with prepended extras from Error objects', function(done) {
+    var error = new Error('error1')
+    expect(error.message).to.not.be.undefined
+    expect(error.stack).to.not.be.undefined
+
+    var child = logger.child({a: 1})
+    child.info(error, 'log message')
+
+    process.nextTick(function() {
+      var log1 = results[0]
+      expect(log1.message).equal(error.message)
+      expect(log1.stack).equal(error.stack)
       done()
     })
   })
