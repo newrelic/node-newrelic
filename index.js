@@ -46,10 +46,12 @@ function initialize() {
     logger.debug("Process title is %s.", process.title)
     logger.debug("Application was invoked as %s.", process.argv.join(' '))
 
-    /* Loading the configuration can throw if a configuration file isn't found and
-     * the environment variable NEW_RELIC_NO_CONFIG_FILE isn't set.
-     */
-    var config = require('./lib/config.js').initialize()
+    var config = require('./lib/config.js').getOrCreateConfig()
+
+    // Get the initialized logger as we likely have a bootstrap logger which
+    // just pipes to stdout.
+    logger = require('./lib/logger.js')
+
     if (!config.agent_enabled) {
       logger.info("Module not enabled in configuration; not starting.")
     } else {
