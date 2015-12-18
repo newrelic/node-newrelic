@@ -13,6 +13,7 @@ env:
   - SUITE=unit
   - SUITE=integration
   - SUITE=lint
+  - SUITE=prerelease
 addons:
   postgresql: "9.3"
 services:
@@ -38,3 +39,4 @@ matrix:
     - node_js: "iojs-v1"
     - node_js: "iojs-v2"
     - node_js: "iojs-v3"
+    - env: SUITE=prerelease

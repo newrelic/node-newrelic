@@ -30,8 +30,8 @@ test('app should be at top of stack when mounted', function (t) {
 
   t.equal(
     main._router.stack.length,
-    4,
-    '4 middleware functions: query parser, Express, child, error trapper'
+    3,
+    '3 middleware functions: query parser, Express, child'
   )
 })
 

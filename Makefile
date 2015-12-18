@@ -9,6 +9,7 @@ INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
 INTEGRATION  += test/versioned/*/*.tap.js
 SMOKE        = test/smoke/*.tap.js
+PRERELEASE	 = test/prerelease/*/*.tap.js
 # subcomponents manage their own modules
 PACKAGES = $(shell find . -name package.json -and -not -path '*/node_modules/*' -and -not -path '*/example*')
 # strip the package.json from the results
@@ -72,8 +73,8 @@ sub_node_modules:
 ca-gen:
 	@./bin/update-ca-bundle.sh
 
-integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
-	@HOST=`boot2docker ip 2>/dev/null`; \
+docker:
+	@HOST=`docker-machine ip default 2>/dev/null`; \
 	if test "$${HOST}"; then \
 	  echo "Using boot2docker host through IP $${HOST}"; \
 	  export NR_NODE_TEST_MEMCACHED_HOST=$${HOST}; \
@@ -83,7 +84,17 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE)
 	  export NR_NODE_TEST_CASSANDRA_HOST=$${HOST}; \
 	  export NR_NODE_TEST_POSTGRES_HOST=$${HOST}; \
 	fi; \
+
+integration: node_modules ca-gen $(CERTIFICATE) docker
+	@cd test && npm install glob@~3.2.9
+	@node test/bin/install_sub_deps integration
+	@node test/bin/install_sub_deps versioned
 	time $(TAP) $(INTEGRATION)
+
+prerelease: node_modules ca-gen $(CERTIFICATE) docker
+	@cd test && npm install glob@~3.2.9
+	@node test/bin/install_sub_deps prerelease
+	time $(TAP) $(PRERELEASE)
 
 smoke: clean node_modules
 	npm install --production

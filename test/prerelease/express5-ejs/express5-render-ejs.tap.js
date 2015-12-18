@@ -238,16 +238,13 @@ test("agent instrumentation of Express 5", function (t) {
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
-      t.equal(app.router.stack.length, 3,
+      t.equal(app.router.stack.length, 2,
               "3 middleware functions: handle, router, error trapper")
-      t.equal(app.router.stack[app.router.stack.length - 1].handle.name, 'sentinel',
-              "error handler is last function in middleware chain")
 
       for (var i = 0; i < app.router.stack.length; i++) {
         var layer = app.router.stack[i]
-        // route middleware doesn't have a name, sentinel is our error handler,
-        // neither should be wrapped.
-        if (layer.name && layer.name !== 'sentinel' && layer.name !== 'handle') {
+        // route middleware doesn't have a name, and should not be wrapped.
+        if (layer.name && layer.name !== 'handle') {
           t.equal(typeof layer.handle.__NR_original, 'function',
                   'all middlewares are wrapped')
         }
@@ -349,7 +346,7 @@ test("agent instrumentation of Express 5", function (t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
         t.equals(body, BODY, "response and original page text match")
 
-        var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//')
+        var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//test')
         t.ok(stats, "Statistics should have been found for request.")
 
         t.end()

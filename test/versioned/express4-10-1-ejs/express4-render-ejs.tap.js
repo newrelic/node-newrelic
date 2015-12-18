@@ -231,10 +231,8 @@ test("agent instrumentation of Express 4", function (t) {
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
-      t.equal(app._router.stack.length, 4,
-              "4 middleware functions: query parser, Express, router, error trapper")
-      t.equal(app._router.stack[app._router.stack.length - 1].handle.name, 'sentinel',
-              "error handler is last function in middleware chain")
+      t.equal(app._router.stack.length, 3,
+              "4 middleware functions: query parser, Express, router")
 
       for (var i = 0; i < app._router.stack.length; i++) {
         var layer = app._router.stack[i]
@@ -342,7 +340,7 @@ test("agent instrumentation of Express 4", function (t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
         t.equals(body, BODY, "response and original page text match")
 
-        var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//')
+        var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//test')
         t.ok(stats, "Statistics should have been found for request.")
 
         t.end()

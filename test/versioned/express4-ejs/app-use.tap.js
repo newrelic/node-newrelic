@@ -14,7 +14,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
     helper.unloadAgent(agent)
   })
 
-  t.plan(2)
+  t.plan(1)
 
   var main = express()
   var child = express()
@@ -28,12 +28,6 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
   })
 
   main.use(child)
-
-  t.equal(
-    main._router.stack.length,
-    4,
-    '4 middleware functions: query parser, Express, child, error trapper'
-  )
 })
 
 test('app should be at top of stack when mounted', {skip: skip()}, function (t) {

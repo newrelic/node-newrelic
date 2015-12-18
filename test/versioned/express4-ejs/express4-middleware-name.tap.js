@@ -3,8 +3,8 @@ var helper = require('../../lib/agent_helper')
 var semver = require('semver')
 
 
-test('should name middleware correctly', 
-    {skip: semver.satisfies(process.version, '<4')}, 
+test('should name middleware correctly',
+    {skip: semver.satisfies(process.version, '<4')},
     function (t) {
 
   var agent = helper.instrumentMockedAgent()
@@ -19,10 +19,10 @@ test('should name middleware correctly',
 
   app.use('/', testMiddleware.bind(null))
 
-  server = app.listen(0, function() { 
-    t.equal(app._router.stack.length, 4,
-            '4 middleware functions: query parser, Express, router, error trapper')
-  
+  server = app.listen(0, function() {
+    t.equal(app._router.stack.length, 3,
+            '3 middleware functions: query parser, Express, router')
+
     var count = 0
     for (var i = 0; i < app._router.stack.length; i++) {
       var layer = app._router.stack[i]

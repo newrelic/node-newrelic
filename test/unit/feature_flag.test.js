@@ -13,6 +13,7 @@ var used = [
   'custom_metrics',
   'express4',
   'express5',
+  'express_segments',
   'insights',
   'mysql_pool',
   'postgres',
