@@ -1,3 +1,21 @@
+### v1.24.1 (2015-12-30):
+
+* Error totals are now reported.
+  
+  The agent now reports metrics that reflect the total number of errors that
+  have occurred in web and background transactions.
+
+* Disabling SSL no longer requires the setting of a port.
+  
+  Previously, the agent required changing `port` in the config to `80` when
+  disabling SSL. The agent will now default to port 80 if a port is not supplied and SSL
+  is turned off.
+
+* Logging functions have been improved.
+
+  The agent will now properly log error stack traces and can rate limit logging
+  messages. To aid in debugging we have provided more logging about the public API.
+
 ### v1.24.0 (2015-11-18):
 
 * Advanced Analytics for APM Errors
