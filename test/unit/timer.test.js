@@ -4,7 +4,7 @@ var path = require('path')
   , chai = require('chai')
   , expect = chai.expect
   , Timer = require('../../lib/timer')
-  
+
 
 describe('Timer', function () {
   it("should know when it's active", function () {
@@ -110,5 +110,68 @@ describe('Timer', function () {
         done()
       }, 20)
     }, 20)
+  })
+
+  describe('endsAfter indicates whether the timer ended after another timer',
+      function() {
+    var start, first, second
+
+    beforeEach(function() {
+      start = Date.now()
+      first = new Timer()
+      first.setDurationInMillis(10, start)
+      second = new Timer()
+    })
+
+    it('with the same start and duration',
+        function() {
+      second.setDurationInMillis(10, start)
+      expect(second.endsAfter(first)).equal(false)
+    })
+
+    it('with longer duration',
+        function() {
+      second.setDurationInMillis(11, start)
+      expect(second.endsAfter(first)).equal(true)
+    })
+
+    it('with shorter duration',
+        function() {
+      second.setDurationInMillis(9, start)
+      expect(second.endsAfter(first)).equal(false)
+    })
+
+    it('with earlier start', function() {
+      second.setDurationInMillis(10, start - 1)
+      expect(second.endsAfter(first)).equal(false)
+    })
+
+    it('with later start', function() {
+      second.setDurationInMillis(10, start + 1)
+      expect(second.endsAfter(first)).equal(true)
+    })
+  })
+
+  describe('overwriteDurationInMillis', function() {
+    it('stops the timer', function() {
+      var timer = new Timer()
+      timer.begin()
+      expect(timer.isActive()).equal(true)
+
+      timer.overwriteDurationInMillis(10)
+      expect(timer.isActive()).equal(false)
+    })
+
+    it('overwrites duration recorded by end() and touch()', function(done) {
+      var timer = new Timer()
+      timer.begin()
+      setTimeout(function() {
+        expect(timer.getDurationInMillis() >= 2).equal(true)
+
+        timer.overwriteDurationInMillis(1)
+        expect(timer.getDurationInMillis()).equal(1)
+        done()
+      }, 2)
+    })
   })
 })

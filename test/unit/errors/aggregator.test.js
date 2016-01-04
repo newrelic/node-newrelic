@@ -1113,7 +1113,7 @@ describe('ErrorAggregator', function () {
     }
   })
 
-  it('should copy parameters from background transactions', function() {
+  it('should copy parameters from background transactions', function(done) {
     var agent = helper.loadMockedAgent()
     var tracer = agent.errors
     var api = new API(agent)
@@ -1125,6 +1125,7 @@ describe('ErrorAggregator', function () {
         expect(tracer.errors.length).equal(1)
         expect(tracer.errors[0][2]).equal('record an error')
         helper.unloadAgent(agent)
+        done()
       })
     })()
   })

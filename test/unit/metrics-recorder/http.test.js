@@ -3,6 +3,7 @@
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
+var assertMetrics = require('../../lib/metrics_helper').assertMetrics
 var recordWeb = require('../../../lib/metrics/recorders/http')
 var Transaction = require('../../../lib/transaction')
 
@@ -57,7 +58,7 @@ describe("recordWeb", function () {
 
     it("should record no metrics", function () {
       recordWeb(segment, undefined)
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify([]))
+      assertMetrics(trans.metrics, [], true)
     })
   })
 
@@ -75,12 +76,14 @@ describe("recordWeb", function () {
 
         var result = [
           [{name  : 'WebTransaction'},                 [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransactionTotalTime'},        [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'HttpDispatcher'},                 [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,  0.06,  0.06,        0]],
           [{name  : 'Apdex'},                          [1,     0,     0,  0.06,  0.06,        0]],
         ]
-        expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+        assertMetrics(trans.metrics, result, true)
       })
 
       it("should infer a tolerable end-user experience", function () {
@@ -94,13 +97,15 @@ describe("recordWeb", function () {
         })
 
         var result = [
-          [{name  : 'WebTransaction'},                 [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransaction'},                 [1,0.055,0.1,0.055,0.055,0.003025]],
+          [{name  : 'WebTransactionTotalTime'},        [1,0.1,0.1,0.1,0.1,0.010000000000000002]],
           [{name  : 'HttpDispatcher'},                 [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1,0.1,0.1,0.1,0.1,0.010000000000000002]],
           [{name  : 'Apdex/NormalizedUri/*'},          [0,     1,   0,  0.05,  0.05,        0]],
           [{name  : 'Apdex'},                          [0,     1,   0,  0.05,  0.05,        0]]
         ]
-        expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+        assertMetrics(trans.metrics, result, true)
       })
 
       it("should infer a frustrating end-user experience", function () {
@@ -115,12 +120,14 @@ describe("recordWeb", function () {
 
         var result = [
           [{name  : 'WebTransaction'},                 [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransactionTotalTime'},        [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'HttpDispatcher'},                 [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,  0.01,  0.01,        0]],
           [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]]
         ]
-        expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+        assertMetrics(trans.metrics, result, true)
       })
 
       it("should chop query strings delimited by ? from request URLs", function () {
@@ -155,12 +162,14 @@ describe("recordWeb", function () {
 
         var result = [
           [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+          [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,  0.01,  0.01,        0]],
           [{name  : 'Apdex'},                          [0,     0,     1,  0.01,  0.01,        0]]
         ]
-        expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+        assertMetrics(trans.metrics, result, true)
       })
     })
   })
@@ -174,7 +183,7 @@ describe("recordWeb", function () {
         [{name : 'Apdex/Uri/test'}, [1, 0, 0, 0.1, 0.1, 0]]
       ]
       expect(agent.config.error_collector.ignore_status_codes).deep.equal([404])
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+      assertMetrics(trans.metrics, result, true)
     })
 
     it("should handle ignored codes for the whole transaction", function () {
@@ -189,12 +198,14 @@ describe("recordWeb", function () {
 
       var result = [
         [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
         [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
       ]
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+      assertMetrics(trans.metrics, result, true)
     })
 
     it("should otherwise mark error status codes as frustrating", function () {
@@ -204,7 +215,7 @@ describe("recordWeb", function () {
       var result = [
         [{name : 'Apdex/Uri/test'}, [0, 0, 1, 0.1, 0.1, 0]]
       ]
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+      assertMetrics(trans.metrics, result, true)
     })
 
     it("should handle non-ignored codes for the whole transaction", function () {
@@ -221,10 +232,12 @@ describe("recordWeb", function () {
         [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+        [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{name  : 'Apdex/NormalizedUri/*'},          [0,     0,     1,   0.2,   0.2,        0]],
         [{name  : 'Apdex'},                          [0,     0,     1,   0.2,   0.2,        0]]
       ]
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+      assertMetrics(trans.metrics, result, true)
     })
 
     it("should reflect key transaction apdexT", function () {
@@ -248,10 +261,12 @@ describe("recordWeb", function () {
         [{name  : 'WebTransaction'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
         [{name  : 'HttpDispatcher'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
         [{name  : 'WebTransaction/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [{name  : 'WebTransactionTotalTime/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [{name  : 'WebTransactionTotalTime'},        [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
         [{name  : 'Apdex/TestJS//key/:id'},          [0,   1,   0, 0.667, 0.667,    0]],
         [{name  : 'Apdex'},                          [0,   0,   1,   0.2,   0.2,    0]]
       ]
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+      assertMetrics(trans.metrics, result, true)
     })
   })
 })

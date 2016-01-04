@@ -64,15 +64,21 @@ describe('TraceSegment', function () {
   })
 
   it('allows the timer to be updated without ending it', function () {
-    var segment = new TraceSegment({}, 'UnitTest')
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
+
+    var segment = new TraceSegment(trans, 'UnitTest')
     segment.start()
     segment.touch()
     expect(segment.timer.isRunning()).equal(true)
     expect(segment.getDurationInMillis()).above(0)
+
+    helper.unloadAgent(agent)
   })
 
   it('accepts a callback that records metrics associated with this segment',
      function (done) {
+
     var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     var trace = trans.trace
@@ -84,6 +90,23 @@ describe('TraceSegment', function () {
 
     segment.end()
     trans.end()
+  })
+
+  it('updates root segment timer whend end() is called', function(done) {
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
+    var trace = trans.trace
+    var segment = new TraceSegment(trans, 'Test')
+
+    segment.setDurationInMillis(10, 0)
+
+    setTimeout(function() {
+      expect(trace.root.timer.duration).equal(null)
+      segment.end()
+      expect(trace.root.timer.duration).equal(segment.timer.duration)
+      helper.unloadAgent(agent)
+      done()
+    }, 10)
   })
 
   describe('with children created from URLs', function () {
@@ -331,9 +354,14 @@ describe('TraceSegment', function () {
 
   describe('when ended', function () {
     it('stops its timer', function () {
-      var segment = new TraceSegment({}, 'UnitTest')
+      var agent = helper.loadMockedAgent()
+      var trans = new Transaction(agent)
+
+      var segment = new TraceSegment(trans, 'UnitTest')
       segment.end()
       expect(segment.timer.isRunning()).equal(false)
+
+      helper.unloadAgent(agent)
     })
 
     it('knows its exclusive duration')

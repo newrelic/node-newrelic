@@ -80,7 +80,7 @@ test('cross application tracing full integration', function (t) {
       var unscoped = trans.metrics.unscoped
       var caMetric = format('ClientApplication/%s/all', CROSS_PROCESS_ID)
       t.ok(unscoped[caMetric], 'end generated a ClientApplication metric')
-      t.equal(Object.keys(unscoped).length, 6, 'end should only have expected unscoped metrics')
+      t.equal(Object.keys(unscoped).length, 8, 'end should only have expected unscoped metrics')
       t.equal(Object.keys(trans.metrics.scoped).length, 0, 'should have no scoped metrics')
 
       // Check the intrinsic parameters
@@ -111,7 +111,7 @@ test('cross application tracing full integration', function (t) {
       var etMetric = format('ExternalTransaction/localhost:%s/%s/Custom//middle/end', END_PORT,
                             CROSS_PROCESS_ID)
       t.ok(unscoped[etMetric], 'middle generated a ExternalTransaction metric')
-      t.equal(Object.keys(unscoped).length, 12, 'middle should only have expected unscoped metrics')
+      t.equal(Object.keys(unscoped).length, 14, 'middle should only have expected unscoped metrics')
 
       // check the scoped metrics
       var scoped = trans.metrics.scoped
@@ -158,7 +158,7 @@ test('cross application tracing full integration', function (t) {
       var etMetric = format('ExternalTransaction/localhost:%s/%s/Custom//start/middle', MIDDLE_PORT,
                             CROSS_PROCESS_ID)
       t.ok(unscoped[etMetric], 'start generated a ExternalTransaction metric')
-      t.equal(Object.keys(unscoped).length, 11, 'start should only have expected unscoped metrics')
+      t.equal(Object.keys(unscoped).length, 13, 'start should only have expected unscoped metrics')
 
       // check the scoped metrics
       var scoped = trans.metrics.scoped

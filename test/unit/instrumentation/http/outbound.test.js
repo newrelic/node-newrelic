@@ -360,9 +360,9 @@ describe('when working with http.request', function () {
         res.on('end', function onEnd() {
           expect(segment.timer.hrDuration).instanceof(Array)
           expect(segment.timer.duration).above(0)
+          transaction.end()
           done()
         })
-        transaction.end()
       })
     })
   })

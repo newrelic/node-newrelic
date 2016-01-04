@@ -1,11 +1,12 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , helper      = require('../../lib/agent_helper')
-  , recordWeb   = require('../../../lib/metrics/recorders/http')
-  , Transaction = require('../../../lib/transaction')
+var path = require('path')
+var chai = require('chai')
+var expect = chai.expect
+var helper = require('../../lib/agent_helper')
+var assertMetrics = require('../../lib/metrics_helper').assertMetrics
+var recordWeb = require('../../../lib/metrics/recorders/http')
+var Transaction = require('../../../lib/transaction')
 
 
 function makeSegment(options) {
@@ -19,8 +20,8 @@ function makeSegment(options) {
 function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
-  var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var segment = makeSegment(options)
+  var transaction = options.transaction
 
 
   transaction.setName(options.url, options.code)
@@ -31,7 +32,7 @@ function record(options) {
 
 describe("when recording queueTime", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {
@@ -56,13 +57,15 @@ describe("when recording queueTime", function () {
 
     var result = [
       [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'WebFrontend/QueueTime'},          [1,2.2,2.2,2.2,2.2,4.840000000000001]],
       [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
       [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
     ]
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    assertMetrics(trans.metrics, result, true)
   })
 
   it("zero times should not record a metric", function () {
@@ -78,11 +81,13 @@ describe("when recording queueTime", function () {
 
     var result = [
       [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
       [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
     ]
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    assertMetrics(trans.metrics, result, true)
   })
 })

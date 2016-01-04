@@ -55,6 +55,8 @@ describe('Trace', function () {
     transaction.url  = URL
     transaction.verb = 'GET'
 
+    transaction.timer.setDurationInMillis(DURATION)
+
     var trace = transaction.trace
     var start = trace.root.timer.start
     expect(start, 'root segment\'s start time').above(0)
@@ -149,7 +151,7 @@ describe('Trace', function () {
       })
     })
   })
-  
+
   it('should send host display name when set by user', function () {
     agent.config.process_host.display_name = 'test-value'
 
@@ -198,6 +200,199 @@ describe('Trace', function () {
 
       segment.end()
       transaction.end()
+    })
+
+    it('should report total time', function () {
+      trace.setDurationInMillis(40, 0)
+      var child = trace.add('Custom/Test18/Child1')
+      child.setDurationInMillis(27, 0)
+      var seg = child.add('UnitTest')
+      seg.setDurationInMillis(9, 1)
+      var seg = child.add('UnitTest1')
+      seg.setDurationInMillis(13, 1)
+      var seg = child.add('UnitTest2')
+      seg.setDurationInMillis(9, 16)
+      var seg = child.add('UnitTest2')
+      seg.setDurationInMillis(14, 16)
+      expect(trace.getTotalTimeDurationInMillis()).equal(48)
+    })
+
+    it('should report total time on branched traces', function () {
+      trace.setDurationInMillis(40, 0)
+      var child = trace.add('Custom/Test18/Child1')
+      child.setDurationInMillis(27, 0)
+      var seg1 = child.add('UnitTest')
+      seg1.setDurationInMillis(9, 1)
+      var seg = child.add('UnitTest1')
+      seg.setDurationInMillis(13, 1)
+      seg = seg1.add('UnitTest2')
+      seg.setDurationInMillis(9, 16)
+      seg = seg1.add('UnitTest2')
+      seg.setDurationInMillis(14, 16)
+      expect(trace.getTotalTimeDurationInMillis()).equal(48)
+    })
+
+    it('should report the expected trees for trees with uncollected segments',
+        function () {
+      var expectedTrace = [
+        0,
+        27,
+        "Root",
+        {
+          "nr_exclusive_duration_millis": 3
+        },
+        [
+          [
+            1,
+            10,
+            "first",
+            {
+              "nr_exclusive_duration_millis": 9
+            },
+            [
+              [
+                16,
+                25,
+                "first-first",
+                {
+                  "nr_exclusive_duration_millis": 9
+                },
+                []
+              ]
+            ]
+          ],
+          [
+            1,
+            14,
+            "second",
+            {
+              "nr_exclusive_duration_millis": 13
+            },
+            [
+              [
+                16,
+                25,
+                "second-first",
+                {
+                  "nr_exclusive_duration_millis": 9
+                },
+                []
+              ],
+              [
+                16,
+                25,
+                "second-second",
+                {
+                  "nr_exclusive_duration_millis": 9
+                },
+                []
+              ]
+            ]
+          ]
+        ]
+      ]
+      trace.setDurationInMillis(40, 0)
+      var child = trace.add('Root')
+      child.setDurationInMillis(27, 0)
+      var seg1 = child.add('first')
+      seg1.setDurationInMillis(9, 1)
+      var seg2 = child.add('second')
+      seg2.setDurationInMillis(13, 1)
+      var seg = seg1.add('first-first')
+      seg.setDurationInMillis(9, 16)
+      seg = seg1.add('first-second')
+      seg.setDurationInMillis(14, 16)
+      seg._collect = false
+      seg = seg2.add('second-first')
+      seg.setDurationInMillis(9, 16)
+      seg = seg2.add('second-second')
+      seg.setDurationInMillis(9, 16)
+      expect(child.toJSON()).deep.equal(expectedTrace)
+    })
+
+    it('should report the expected trees for branched trees', function () {
+      var expectedTrace = [
+        0,
+        27,
+        "Root",
+        {
+          "nr_exclusive_duration_millis": 3
+        },
+        [
+          [
+            1,
+            10,
+            "first",
+            {
+              "nr_exclusive_duration_millis": 9
+            },
+            [
+              [
+                16,
+                25,
+                "first-first",
+                {
+                  "nr_exclusive_duration_millis": 9
+                },
+                []
+              ],
+              [
+                16,
+                30,
+                "first-second",
+                {
+                  "nr_exclusive_duration_millis": 14
+                },
+                []
+              ]
+            ]
+          ],
+          [
+            1,
+            14,
+            "second",
+            {
+              "nr_exclusive_duration_millis": 13
+            },
+            [
+              [
+                16,
+                25,
+                "second-first",
+                {
+                  "nr_exclusive_duration_millis": 9
+                },
+                []
+              ],
+              [
+                16,
+                25,
+                "second-second",
+                {
+                  "nr_exclusive_duration_millis": 9
+                },
+                []
+              ]
+            ]
+          ]
+        ]
+      ]
+      trace.setDurationInMillis(40, 0)
+      var child = trace.add('Root')
+      child.setDurationInMillis(27, 0)
+      var seg1 = child.add('first')
+      seg1.setDurationInMillis(9, 1)
+      var seg2 = child.add('second')
+      seg2.setDurationInMillis(13, 1)
+      var seg = seg1.add('first-first')
+      seg.setDurationInMillis(9, 16)
+      seg = seg1.add('first-second')
+      seg.setDurationInMillis(14, 16)
+      seg = seg2.add('second-first')
+      seg.setDurationInMillis(9, 16)
+      seg = seg2.add('second-second')
+      seg.setDurationInMillis(9, 16)
+      expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
     it('should measure exclusive time vs total time at each level of the graph',
@@ -270,17 +465,39 @@ describe('Trace', function () {
     })
 
     it('should be limited to 900 children', function () {
+      // They will be tagged as _collect = false after the limit runs out.
       for (var i = 0; i < 950; ++i) {
-        trace.add(i.toString(), noop)
+        var segment = trace.add(i.toString(), noop)
+        if (i < 900) {
+          expect(segment._collect).equal(true)
+        } else {
+          expect(segment._collect).equal(false)
+        }
       }
 
-      expect(trace.root.children.length).equal(900)
+      expect(trace.root.children.length).equal(950)
       expect(transaction._recorders.length).equal(950)
       trace.segmentCount = 0
       trace.root.children = []
       trace.recorders = []
 
       function noop(){}
+    })
+  })
+
+  describe('generateJSON', function() {
+    it('sends response time', function(done) {
+      var transaction = new Transaction(agent)
+      var tt = new Trace(transaction)
+
+      transaction.getResponseTimeInMillis = function() {
+        return 1234
+      }
+
+      tt.generateJSON(function(error, json, trace) {
+        expect(json[1]).equal(1234)
+        done()
+      })
     })
   })
 })

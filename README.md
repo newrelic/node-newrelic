@@ -132,10 +132,10 @@ For completeness, here's the rest of the list:
   configuration for this application. Defaults to false.
 * `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow transaction
   traces to New Relic. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_TRACER_THRESHOLD`: Duration (in seconds) at which a transaction
-  trace will count as slow and be sent to New Relic. Can also be set to
-  `apdex_f`, at which point it will set the trace threshold to 4 times the
-  current ApdexT.
+* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in seconds)
+  at which a transaction trace will count as slow and be sent to New Relic.
+  Can also be set to `apdex_f`, at which point it will set the trace threshold to 4 times
+  the current ApdexT. Defaults to `apdex_f`.
 * `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value in
   seconds.  This is more often than not set from the server. Defaults to 0.100.
 * `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on slow

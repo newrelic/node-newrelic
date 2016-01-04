@@ -492,4 +492,49 @@ describe("Transaction", function () {
             transaction.getIntrinsicAttributes())
     })
   })
+
+  describe('getResponseDurationInMillis', function() {
+    var transaction
+
+    beforeEach(function() {
+      transaction = new Transaction(agent)
+    })
+
+    it('for web transactions, should use the time from when the transaction was ' +
+        'created to when transaction.end() was called', function (done) {
+      transaction.url = 'someUrl'
+
+      // add a segment that will end after the transaction ends
+      var childSegment = transaction.trace.add('child')
+      childSegment.start()
+
+      transaction.end(function() {
+        childSegment.end()
+
+        // response time should equal the transaction timer duration
+        expect(transaction.getResponseTimeInMillis()).equal(
+          transaction.timer.getDurationInMillis())
+
+        done()
+      })
+    })
+
+    it('for background transactions, should report response time equal to ' +
+        'transaction trace duration', function(done) {
+
+      // add a segment that will end after the transaction ends
+      var bgTransactionSegment = transaction.trace.add('backgroundWork')
+      bgTransactionSegment.start()
+
+      transaction.end(function() {
+        bgTransactionSegment.end()
+
+        // response time should equal the full duration of the trace
+        expect(transaction.getResponseTimeInMillis()).equal(
+          transaction.trace.getDurationInMillis())
+
+        done()
+      })
+    })
+  })
 })
