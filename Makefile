@@ -159,37 +159,37 @@ $(CERTIFICATE): $(CACERT)
 	@rm -f server.csr
 
 services:
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_memcached[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_memcached"; then \
 	  docker start nr_node_memcached; \
 	else \
 	  docker run -d --name nr_node_memcached -p 11211:11211 borja/docker-memcached; \
 	fi
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_mongodb[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_mongodb"; then \
 	  docker start nr_node_mongodb; \
 	else \
 	  docker run -d --name nr_node_mongodb -p 27017:27017 library/mongo:2; \
 	fi
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_mysql[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_mysql"; then \
 	  docker start nr_node_mysql; \
 	else \
 	  docker run -d --name nr_node_mysql -p 3306:3306 orchardup/mysql; \
 	fi
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_redis[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_redis"; then \
 	  docker start nr_node_redis; \
 	else \
 	  docker run -d --name nr_node_redis -p 6379:6379 redis; \
 	fi
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_cassandra[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_cassandra"; then \
 	  docker start nr_node_cassandra; \
 	else \
 	  docker run -d --name nr_node_cassandra -p 9042:9042 zmarcantel/cassandra; \
 	fi
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_postgres[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_postgres"; then \
 	  docker start nr_node_postgres; \
 	else \
 	  docker run -d --name nr_node_postgres -p 5432:5432 postgres:9.2; \
 	fi
-	if docker ps -a | grep -q "[^a-zA-Z_]nr_node_oracle[^a-zA-Z_]"; then \
+	if docker ps -a | grep -q "nr_node_oracle"; then \
 	  docker start nr_node_oracle; \
 	else \
 	  docker run -d --name nr_node_oracle -p 1521:1521 alexeiled/docker-oracle-xe-11g; \
