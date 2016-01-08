@@ -1,6 +1,6 @@
  #!/bin/bash
 
-IP=`boot2docker ip 2>/dev/null`
+IP=`docker-machine ip default 2>/dev/null`
 
 export NR_NODE_TEST_CASSANDRA_HOST=$IP
 export NR_NODE_TEST_MEMCACHED_HOST=$IP
