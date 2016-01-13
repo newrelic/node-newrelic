@@ -1,6 +1,11 @@
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var semver = require('semver')
+if (semver.satisfies(process.version, '0.8')) {
+  console.log('The latest versions of the mongo driver are not compatible with v0.8')
+  return
+}
 
 collectionTest('aggregate', function aggregateTest(t, collection, verify) {
   collection.aggregate(

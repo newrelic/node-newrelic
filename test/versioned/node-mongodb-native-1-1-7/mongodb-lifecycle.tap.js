@@ -14,7 +14,7 @@ var COLLECTION_CURSOR = COLLECTION + '_cursor'
 
 test("MongoDB instrumentation should put DB calls in the transaction trace",
      {timeout: 15000,
-      skip: semver.satisfies(process.version, ">=0.12")},
+      skip: !semver.satisfies(process.version, "0.10")},
      function (t) {
   t.plan(2)
 

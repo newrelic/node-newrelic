@@ -3,6 +3,7 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var semver = require('semver')
 
 
 /*
@@ -228,7 +229,9 @@ function runWithTransaction(context, t, callback) {
   })
 }
 
-test('agent instrumentation of node-mongodb-native', function (t) {
+test('agent instrumentation of node-mongodb-native',
+  {skip: semver.satisfies(process.version, '0.8')},
+  function (t) {
   t.plan(16)
 
   helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(error, app) {

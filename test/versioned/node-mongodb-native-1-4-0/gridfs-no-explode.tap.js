@@ -1,12 +1,15 @@
 'use strict'
 
 var path = require('path')
-  , test = require('tap').test
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
+var test = require('tap').test
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
+var semver = require('semver')
   
 
-test("agent instrumentation of MongoDB when GridFS is used", function (t) {
+test("agent instrumentation of MongoDB when GridFS is used",
+  {skip: semver.satisfies(process.version, '0.8')},
+  function (t) {
   var context = this
   helper.bootstrapMongoDB([], function cb_bootstrapMongoDB(err, app) {
     if (err) {
@@ -30,7 +33,7 @@ test("agent instrumentation of MongoDB when GridFS is used", function (t) {
         })
 
         var GridStore = mongodb.GridStore
-          , gs        = new GridStore(db, 'RandomFileName' + Math.random(), 'w')
+        var gs = new GridStore(db, 'RandomFileName' + Math.random(), 'w')
           
 
         gs.open(function cb_open(err, gridfile) {

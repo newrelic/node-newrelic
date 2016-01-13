@@ -1,28 +1,32 @@
 'use strict'
 
-var path   = require('path')
-  , test   = require('tap').test
-  , helper = require('../../lib/agent_helper')
-  , params = require('../../lib/params')
+var path = require('path')
+var test = require('tap').test
+var helper = require('../../lib/agent_helper')
+var params = require('../../lib/params')
+var semver = require('semver')
 
 
 // CONSTANTS
 var DB_COLLECTION = 'test_express'
-  , DB_URL = 'mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration'
+var DB_URL = 'mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration'
 
 
-test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, function (t) {
+test("Express 3 using async in routes with MongoDB",
+    {timeout : Infinity,
+     skip: semver.satisfies(process.version, "0.8")},
+    function (t) {
   t.plan(24)
 
-  var agent        = helper.instrumentMockedAgent()
-    , createServer = require('http').createServer
-    , request      = require('request')
-    , async        = require('async')
-    , mongodb      = require('mongodb')
-    , ObjectID     = mongodb.ObjectID
-    , Server       = mongodb.Server
-    , Db           = mongodb.Db
-    , Collection   = mongodb.Collection
+  var agent = helper.instrumentMockedAgent()
+  var createServer = require('http').createServer
+  var request = require('request')
+  var async = require('async')
+  var mongodb = require('mongodb')
+  var ObjectID = mongodb.ObjectID
+  var Server = mongodb.Server
+  var Db = mongodb.Db
+  var Collection = mongodb.Collection
 
   process.nr_agent = agent
 
@@ -70,9 +74,9 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
         if (!obj) return next(new Error("Couldn't load entity."))
 
         for (var i = 0; i < req.body.length; i++) {
-          var item       = req.body[i]
-            , collection = (item.type === 'star') ? obj.star : obj.seen
-            , index      = collection.indexOf(item.id)
+          var item = req.body[i]
+          var collection = (item.type === 'star') ? obj.star : obj.seen
+          var index = collection.indexOf(item.id)
 
 
           if (item.status) {
@@ -85,7 +89,7 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
           }
         }
 
-        obj.metrics.postsRead    = obj.seen.length
+        obj.metrics.postsRead = obj.seen.length
         obj.metrics.postsClicked = obj.star.length
 
         update(obj, next)
@@ -104,12 +108,12 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
   }
 
   function bootstrapExpress() {
-    var express        = require('express')
-      , app            = express()
-      , bodyParser     = express.bodyParser()
-      , methodOverride = express.methodOverride()
-      , router         = app.router
-      , errorHandler   = express.errorHandler()
+    var express = require('express')
+    var app = express()
+    var bodyParser = express.bodyParser()
+    var methodOverride = express.methodOverride()
+    var router = app.router
+    var errorHandler = express.errorHandler()
 
 
 
@@ -203,8 +207,8 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
       }
 
       function verifier(transaction) {
-        var trace    = transaction.trace
-          , children = trace.root.children || []
+        var trace = transaction.trace
+        var children = trace.root.children || []
 
 
         t.equal(children.length, 1, "only one child of root node")
