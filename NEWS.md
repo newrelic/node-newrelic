@@ -1,4 +1,4 @@
-### v1.25.0 (2016-01-14):
+### v1.25.0 (2016-01-20):
 
 * Added support for the new [Response Time Line](https://docs.newrelic.com/docs/data-analysis/user-interface-functions/response-time) and better representation of asynchronous data.
 
