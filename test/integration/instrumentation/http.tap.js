@@ -362,3 +362,54 @@ test("built-in http instrumentation making outbound requests obsoletely", functi
     })
   })
 })
+
+test("built-in http instrumentation should not crash for requests that are in progress" +
+  " when the server is closed", function(t) {
+  t.plan(5)
+
+  var agent = helper.instrumentMockedAgent()
+
+  this.tearDown(function cb_tearDown() {
+    helper.unloadAgent(agent)
+  })
+
+  var count = 0
+  var closing = false
+  var server = http.createServer(function(req, res) {
+    count++
+
+    if (count === 1) {
+      t.ok(true, 'request #1 was received')
+      res.end()
+
+      closing = true
+      server.close()
+    } else {
+      t.ok(true, 'request #2 was received')
+      t.notOk(!closing,
+        'server should be in the middle of closing when request #2 is handled')
+      res.end()
+    }
+  })
+
+  server.listen(0, function() {
+    // make two quick requests
+    makeRequest(function() {
+      t.ok(true, 'request #1 got response')
+    })
+
+    makeRequest(function() {
+      t.ok(true, 'request #2 got response')
+    })
+  })
+
+  function makeRequest(callback) {
+    var options = {
+      hostname: 'localhost',
+      port: server.address().port,
+      path: '/',
+      agent: false
+    }
+    http.request(options, callback).end()
+  }
+})
