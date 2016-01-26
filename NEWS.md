@@ -1,3 +1,13 @@
+### v1.25.1 (2016-01-26):
+
+* Corrected an issue where the agent would sometimes crash looking up the port
+  of the HTTP server that a request came from.
+
+  Previously, the agent assumed the HTTP server would always have an address,
+  unfortunately this isn't the case if the HTTP server's `.close()` has been
+  called.
+
+
 ### v1.25.0 (2016-01-20):
 
 * Added support for the new [Response Time Line](https://docs.newrelic.com/docs/data-analysis/user-interface-functions/response-time) and better representation of asynchronous data.
