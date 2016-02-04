@@ -592,13 +592,11 @@ describe('ErrorAggregator', function () {
     var transaction = new Transaction(agent)
     transaction.statusCode = 501
 
-    transaction.trace.parameters = {
-      test_param: 'a value',
-      thing: 5
-    }
+    transaction.addAgentAttribute('test_param', 'a value')
+    transaction.addAgentAttribute('thing', 5)
 
     tracer.add(transaction, null)
-    agent.errors.onTransactionFinished(transaction, agent.metrics)
+    agent._transactionFinished(transaction)
 
     var errorJSON = tracer.errors[0]
     var params = errorJSON[4]

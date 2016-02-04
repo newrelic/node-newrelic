@@ -27,7 +27,7 @@ test('errors in web transactions should gather the query params', function (t) {
     })
   })
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function () {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -46,10 +46,21 @@ test('errors in web transactions should gather the query params', function (t) {
     )
 
     // agent/query parameters
+    // on older versions of node the content length and response message
+    // will be omitted
+    var expectedValue = 6
+    var keys = ['response.headers.contentLength', 'httpResponseMessage']
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i]
+      var value = attributes.agentAttributes[key]
+      if (value) {
+        expectedValue++
+      }
+    }
     t.equal(
       Object.keys(attributes.agentAttributes).length,
-      2,
-      'should have collected the query params'
+      expectedValue,
+      'should have collected the query, request, and response params'
     )
     t.equal(
       attributes.agentAttributes.some,
@@ -92,7 +103,7 @@ test('multiple errors in web transactions should gather the query params', funct
     })
   })
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function () {
     agent.errors.errors.forEach(function (error) {
       t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
@@ -119,10 +130,21 @@ test('multiple errors in web transactions should gather the query params', funct
       )
 
       // agent/query parameters
+      // on older versions of node the content length and response message
+      // will be omitted
+      var expectedValue = 6
+      var keys = ['response.headers.contentLength', 'httpResponseMessage']
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i]
+        var value = attributes.agentAttributes[key]
+        if (value) {
+          expectedValue++
+        }
+      }
       t.equal(
         Object.keys(attributes.agentAttributes).length,
-        2,
-        'should have collected the query params'
+        expectedValue,
+        'should have collected the query, request, and response params'
       )
       t.equal(
         attributes.agentAttributes.some,
@@ -173,7 +195,7 @@ test('errors in web transactions should gather and merge custom params', functio
     })
   })
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function () {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -198,10 +220,21 @@ test('errors in web transactions should gather and merge custom params', functio
     t.equal(ua.postErrorReplace, 'this one is better', 'replace custom param from after error')
 
     // agent/query parameters
+    // on older versions of node the content length and response message
+    // will be omitted
+    var expectedValue = 4
+    var keys = ['response.headers.contentLength', 'httpResponseMessage']
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i]
+      var value = attributes.agentAttributes[key]
+      if (value) {
+        expectedValue++
+      }
+    }
     t.equal(
       Object.keys(attributes.agentAttributes).length,
-      0,
-      'should have collected no agent params'
+      expectedValue,
+      'should have collected the query, request, and response params'
     )
     t.end()
   })
@@ -254,7 +287,7 @@ test('multiple errors in web tx should gather and merge custom params',  functio
     })
   })
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function () {
     agent.errors.errors.forEach(function (error) {
       var expectedParams
       if (errorData[0].name && errorData[0].name === error[2]) {
@@ -293,10 +326,21 @@ test('multiple errors in web tx should gather and merge custom params',  functio
       t.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
 
       // agent/query parameters
+      // on older versions of node the content length and response message
+      // will be omitted
+      var expectedValue = 4
+      var keys = ['response.headers.contentLength', 'httpResponseMessage']
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i]
+        var value = attributes.agentAttributes[key]
+        if (value) {
+          expectedValue++
+        }
+      }
       t.equal(
         Object.keys(attributes.agentAttributes).length,
-        0,
-        'should have collected no agent params'
+        expectedValue,
+        'should have collected the query, request, and response params'
       )
     })
     t.end()
@@ -318,7 +362,7 @@ test('errors in background transactions are collected with correct data', functi
   // start the transaction
   bg()
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function () {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -339,7 +383,7 @@ test('errors in background transactions are collected with correct data', functi
     t.equal(
       Object.keys(attributes.agentAttributes).length,
       0,
-      'should have collected no agent params'
+      'should have collected no agent attributes'
     )
     t.end()
   })

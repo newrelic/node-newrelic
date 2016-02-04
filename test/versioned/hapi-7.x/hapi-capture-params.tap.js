@@ -9,9 +9,9 @@ if (semver.satisfies(process.version, '<0.10')) {
 }
 
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
+var test    = require('tap').test
+var request = require('request')
+var helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
 
 
 
@@ -20,8 +20,8 @@ test("Hapi capture params support", function (t) {
 
   t.test("simple case with no params", function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8089)
+    var hapi   = require('hapi')
+    var server = hapi.createServer('localhost', 8089)
 
 
     // disabled by default
@@ -29,7 +29,24 @@ test("Hapi capture params support", function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {}, 'parameters should be empty')
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+        }, 'parameters should only have request/response params')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+        }, 'parameters should only have request/response params')
+      }
 
       helper.unloadAgent(agent)
       server.stop(function () {
@@ -60,8 +77,8 @@ test("Hapi capture params support", function (t) {
 
   t.test("case with route params", function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8089)
+    var hapi   = require('hapi')
+    var server = hapi.createServer('localhost', 8089)
 
 
     // disabled by default
@@ -69,7 +86,26 @@ test("Hapi capture params support", function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {id: 1337}, 'parameters should have id')
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "id" : "1337",
+        }, 'parameters should have id')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "id" : "1337",
+        }, 'parameters should have id')
+      }
 
       helper.unloadAgent(agent)
       server.stop(function () {
@@ -100,8 +136,8 @@ test("Hapi capture params support", function (t) {
 
   t.test("case with query params", function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8089)
+    var hapi   = require('hapi')
+    var server = hapi.createServer('localhost', 8089)
 
 
     // disabled by default
@@ -109,7 +145,26 @@ test("Hapi capture params support", function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {name: 'hapi'}, 'parameters should have name')
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "name" : "hapi"
+        }, 'parameters should have name')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "name" : "hapi"
+        }, 'parameters should have name')
+      }
 
       helper.unloadAgent(agent)
       server.stop(function () {
@@ -140,8 +195,8 @@ test("Hapi capture params support", function (t) {
 
  t.test("case with both route and query params", function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = hapi.createServer('localhost', 8089)
+    var hapi   = require('hapi')
+    var server = hapi.createServer('localhost', 8089)
 
 
     // disabled by default
@@ -149,7 +204,28 @@ test("Hapi capture params support", function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {id: 1337, name: 'hapi'}, 'parameters should have name and id')
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "id" : "1337",
+          "name" : "hapi"
+        }, 'parameters should have name and id')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "id" : "1337",
+          "name" : "hapi"
+        }, 'parameters should have name and id')
+      }
 
       helper.unloadAgent(agent)
       server.stop(function () {

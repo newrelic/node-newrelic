@@ -4,16 +4,16 @@
 process.env.NODE_ENV = 'test'
 
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper')
-  , API     = require('../../../api.js')
+var test    = require('tap').test
+var request = require('request')
+var helper  = require('../../lib/agent_helper')
+var API     = require('../../../api.js')
   
 
 // CONSTANTS
 var TEST_PORT = 9876
-  , TEST_HOST = 'localhost'
-  , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT
+var TEST_HOST = 'localhost'
+var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT
   
 
 
@@ -21,8 +21,8 @@ test("test capture_params for express", function (t) {
   t.test("no variables", function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express4: true})
-      , app = require('express')()
-      , server = require('http').createServer(app)
+    var app = require('express')()
+    var server = require('http').createServer(app)
       
 
     this.tearDown(function () {
@@ -45,7 +45,27 @@ test("test capture_params for express", function (t) {
 
     agent.on('transactionFinished', function (transaction){
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {}, 'parameters should be empty')
+      // on older versions of node response messages aren't included
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8"
+        }, 'parameters should only have the request/response params')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8"
+        }, 'parameters should only have the request/response params')
+      }
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
@@ -62,8 +82,8 @@ test("test capture_params for express", function (t) {
   t.test("route variables", function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express4: true})
-      , app = require('express')()
-      , server = require('http').createServer(app)
+    var app = require('express')()
+    var server = require('http').createServer(app)
       
 
     this.tearDown(function () {
@@ -86,8 +106,29 @@ test("test capture_params for express", function (t) {
 
     agent.on('transactionFinished', function (transaction){
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {id: 5},
-                  'parameters should include route params')
+      // on older versions of node response messages aren't included
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "id" : "5"
+        }, 'parameters should include route params')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "id" : "5"
+        }, 'parameters should include route params')
+      }
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
@@ -104,8 +145,8 @@ test("test capture_params for express", function (t) {
   t.test("query variables", {timeout : 1000}, function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express4: true})
-      , app = require('express')()
-      , server = require('http').createServer(app)
+    var app = require('express')()
+    var server = require('http').createServer(app)
       
 
     this.tearDown(function () {
@@ -128,8 +169,29 @@ test("test capture_params for express", function (t) {
 
     agent.on('transactionFinished', function (transaction){
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {name: 'bob'},
-                  'parameters should include query params')
+      // on older versions of node response messages aren't included
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "name" : "bob"
+        }, 'parameters should include query params')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "name" : "bob"
+        }, 'parameters should include query params')
+      }
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
@@ -146,8 +208,8 @@ test("test capture_params for express", function (t) {
   t.test("route and query variables", function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express4: true})
-      , app = require('express')()
-      , server = require('http').createServer(app)
+    var app = require('express')()
+    var server = require('http').createServer(app)
       
 
     this.tearDown(function () {
@@ -170,8 +232,31 @@ test("test capture_params for express", function (t) {
 
     agent.on('transactionFinished', function (transaction){
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {id: 5, name: 'bob'},
-                  'parameters should include query params')
+      // on older versions of node response messages aren't included
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "id" : "5",
+          "name" : "bob"
+        }, 'parameters should include query params')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.host" : "localhost:9876",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "response.headers.contentLength" : "12",
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "id" : "5",
+          "name" : "bob"
+        }, 'parameters should include query params')
+      }
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
@@ -187,8 +272,8 @@ test("test capture_params for express", function (t) {
 
   t.test("query params mask route parameters", function (t) {
     var agent = helper.instrumentMockedAgent()
-      , app = require('express')()
-      , server = require('http').createServer(app)
+    var app = require('express')()
+    var server = require('http').createServer(app)
       
 
     this.tearDown(function () {
@@ -206,9 +291,30 @@ test("test capture_params for express", function (t) {
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
-      t.deepEqual(transaction.trace.parameters, {id: 6},
-                  'parameters should include query params')
+    agent.on('transactionFinished', function (transaction) {
+      // on older versions of node response messages aren't included and
+      // 0 content lengths aren't included
+      var expectedValues = {
+            "request.headers.host" : "localhost:9876",
+            "request.method" : "GET",
+            "response.status" : 200,
+            "httpResponseCode": "200",
+            "id" : 5
+      }
+      var possibleExpected = {
+        "httpResponseMessage": "OK",
+        "response.headers.contentLength": 0
+      }
+      var keys = ['response.headers.contentLength', 'httpResponseMessage']
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i]
+        var value = transaction.trace.parameters[key]
+        if (value !== undefined) {
+          expectedValues[key] = possibleExpected[key]
+        }
+      }
+      t.deepEqual(transaction.trace.parameters,
+          expectedValues, 'parameters should include query params')
       t.end()
     })
 

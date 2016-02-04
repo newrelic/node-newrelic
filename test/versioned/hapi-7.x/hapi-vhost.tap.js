@@ -29,7 +29,24 @@ test("Hapi vhost support", function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {}, 'parameters should be empty')
+      if (transaction.trace.parameters.httpResponseMessage) {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+          "httpResponseMessage": "OK",
+        }, 'parameters should only have request/response params')
+      } else {
+        t.deepEqual(transaction.trace.parameters, {
+          "request.headers.accept" : "application/json",
+          "request.headers.host" : "localhost:8089",
+          "request.method" : "GET",
+          "response.status" : 200,
+          "httpResponseCode": "200",
+        }, 'parameters should only have request/response params')
+      }
 
       helper.unloadAgent(agent)
       server.stop(function () {
