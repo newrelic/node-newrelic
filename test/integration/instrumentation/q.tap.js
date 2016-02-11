@@ -69,6 +69,48 @@ test('Q.then', function testQNInvoke(t) {
     })
 })
 
+test('Q.then rejections', function testQNInvoke(t) {
+  var agent = setupAgent(t)
+  var Q = require('q')
+  var qContext = new QContext(t, agent)
+
+  var firstTest = Q.defer()
+  var secondTest = Q.defer()
+    
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    var thrownError = new Error('Unhandled error');
+    process.on('unhandledRejection', function rejectionHandler(error) {
+      if (error === thrownError) {
+        qContext.assertTransaction(transaction)
+        firstTest.resolve()
+      }
+    })
+
+    Q(true).then(function anonymous() {
+      throw thrownError
+    })
+  })
+
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    var thrownError = new Error('Unhandled error');
+    process.on('unhandledRejection', function rejectionHandler(error) {
+      if (error === thrownError) {
+        qContext.assertTransaction(transaction)
+        secondTest.resolve()
+      }
+    })
+
+    Q(true).then(function anonymous() {
+      throw thrownError
+    })
+  })
+
+  Q.all([firstTest, secondTest])
+    .then(function done() {
+      t.end()
+    })
+})
+
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
   t.tearDown(function tearDown() {
