@@ -1,3 +1,11 @@
+### v1.25.3 (2016-02-18):
+* Fixed crashing bug on unhandled rejections in Q.
+
+  Previously, the agent would cause the process to crash in the event of an
+  unhandled rejection.
+
+  Thanks to @mdlavin for this fix!
+
 ### v1.25.2 (2016-02-17):
 * Added Q instrumentation.
 
