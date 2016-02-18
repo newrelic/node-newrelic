@@ -350,3 +350,181 @@ test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
     })
   })
 })
+
+test("trapping errors", {skip: skip()}, function (t) {
+
+  t.test('collects the actual error object that is thrown', function(t) {
+    var agent = helper.instrumentMockedAgent()
+
+    var app    = require('express')()
+    var server = require('http').createServer(app)
+
+    this.tearDown(function cb_tearDown() {
+      server.close()
+      helper.unloadAgent(agent)
+    })
+
+    app.get(TEST_PATH, function() {
+      throw new Error('some error')
+    })
+
+    server.listen(TEST_PORT, TEST_HOST, function () {
+      request.get(TEST_URL, function (error, response, body) {
+        var errors = agent.errors.errors
+        t.equal(errors.length, 1, "there should be one error")
+        t.equal(errors[0][2], "some error", "got the expected error")
+        t.ok(errors[0][4].stack_trace, "has stack trace")
+
+        var metric = agent.metrics.getMetric('Apdex')
+        t.ok(metric.frustrating === 1, 'apdex should be frustrating')
+
+        t.end()
+      })
+    })
+  })
+
+  t.test('collects the error message when string is thrown',
+      function(t) {
+
+    var agent = helper.instrumentMockedAgent()
+
+    var app    = require('express')()
+    var server = require('http').createServer(app)
+
+    this.tearDown(function cb_tearDown() {
+      server.close()
+      helper.unloadAgent(agent)
+    })
+
+    app.get(TEST_PATH, function() {
+      throw 'some error'
+    })
+
+    server.listen(TEST_PORT, TEST_HOST, function () {
+      request.get(TEST_URL, function (error, response, body) {
+        var errors = agent.errors.errors
+        t.equal(errors.length, 1, "there should be one error")
+        t.equal(errors[0][2], "some error", "got the expected error")
+
+        var metric = agent.metrics.getMetric('Apdex')
+        t.ok(metric.frustrating === 1, 'apdex should be frustrating')
+
+        t.end()
+      })
+    })
+  })
+
+  t.test('collects the actual error object when error handler is used', function(t) {
+    var agent = helper.instrumentMockedAgent()
+
+    var app    = require('express')()
+    var server = require('http').createServer(app)
+
+    this.tearDown(function cb_tearDown() {
+      server.close()
+      helper.unloadAgent(agent)
+    })
+
+    app.get(TEST_PATH, function() {
+      throw new Error('some error')
+    })
+
+    app.use(function errorHandler(err, rer, res, next) {
+      res.status(400).end()
+    })
+
+    server.listen(TEST_PORT, TEST_HOST, function () {
+      request.get(TEST_URL, function (error, response, body) {
+        var errors = agent.errors.errors
+        t.equal(errors.length, 1, "there should be one error")
+        t.equal(errors[0][2], "some error", "got the expected error")
+        t.ok(errors[0][4].stack_trace, "has stack trace")
+
+        var metric = agent.metrics.getMetric('Apdex')
+        t.ok(metric.frustrating === 1, 'apdex should be frustrating')
+
+        t.end()
+      })
+    })
+  })
+
+  // Some error handlers might sanitize the error object, removing stack and/or message
+  // properties, so that it can be serialized and sent back in the response body.
+  // We use message and stack properties to identify an Error object, so in this case
+  // we want to at least collect the HTTP error based on the status code.
+  t.test('should trap errors when error handler sets HTTP status code and removes stack' +
+      'and message properties from the error object', function(t) {
+
+    var agent = helper.instrumentMockedAgent()
+
+    var app    = require('express')()
+    var server = require('http').createServer(app)
+
+    this.tearDown(function cb_tearDown() {
+      server.close()
+      helper.unloadAgent(agent)
+    })
+
+    var error = new Error('some error')
+    app.get(TEST_PATH, function () {
+      throw error
+    })
+
+    app.use(function errorHandler(err, rer, res, next) {
+      delete err.message
+      delete err.stack
+      res.status(400).send(err)
+    })
+
+    server.listen(TEST_PORT, TEST_HOST, function () {
+      request.get(TEST_URL, function (error, response, body) {
+        var errors = agent.errors.errors
+        t.equal(errors.length, 1, "there should be one error")
+        t.equal(errors[0][2], "HttpError 400", "got the expected error")
+
+        var metric = agent.metrics.getMetric('Apdex')
+        t.ok(metric.frustrating === 1, 'apdex should be frustrating')
+
+        t.end()
+      })
+    })
+  })
+
+  t.test('should trap errors when error handler sets HTTP status code and removes stack' +
+      'and message properties from the error object', function(t) {
+
+    var agent = helper.instrumentMockedAgent()
+
+    var app    = require('express')()
+    var server = require('http').createServer(app)
+
+    this.tearDown(function cb_tearDown() {
+      server.close()
+      helper.unloadAgent(agent)
+    })
+
+    var error = new Error('some error')
+    app.get(TEST_PATH, function () {
+      throw error
+    })
+
+    app.use(function errorHandler(err, rer, res, next) {
+      delete err.message
+      delete err.stack
+      next(err)
+    })
+
+    server.listen(TEST_PORT, TEST_HOST, function () {
+      request.get(TEST_URL, function (error, response, body) {
+        var errors = agent.errors.errors
+        t.equal(errors.length, 1, "there should be one error")
+        t.equal(errors[0][2], "HttpError 500", "got the expected error")
+
+        var metric = agent.metrics.getMetric('Apdex')
+        t.ok(metric.frustrating === 1, 'apdex should be frustrating')
+
+        t.end()
+      })
+    })
+  })
+})

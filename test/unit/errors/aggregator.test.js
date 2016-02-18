@@ -348,6 +348,36 @@ describe('ErrorAggregator', function () {
       expect(metric.callCount).equal(2)
     })
 
+    it('should increment error metrics correctly', function () {
+      var transaction = createTransaction(agent, 200)
+
+      tracer.add(transaction, new Error('error1'))
+      tracer.add(transaction, new Error('error2'))
+
+      tracer.onTransactionFinished(transaction, agent.metrics)
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+      expect(metric.callCount).equal(2)
+    })
+
+    it('should increment error metrics correctly with user errors', function () {
+      var api = new API(agent)
+      var transaction = createTransaction(agent, 200)
+
+      var currentTransaction
+      agent.tracer.getTransaction = function() {
+        return transaction
+      }
+
+      api.noticeError(new Error('error1'))
+      api.noticeError(new Error('error2'))
+
+      tracer.onTransactionFinished(transaction, agent.metrics)
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+      expect(metric.callCount).equal(2)
+    })
+
     it('should ignore errors if related transaction is ignored', function () {
       var transaction = createTransaction(agent, 500)
       transaction.ignore = true
@@ -358,6 +388,9 @@ describe('ErrorAggregator', function () {
       tracer.onTransactionFinished(transaction, agent.metrics)
 
       expect(tracer.errorCount).equal(0)
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+      expect(metric).to.be.undefined
     })
 
     it('should ignore 404 errors for transactions', function () {
@@ -369,6 +402,9 @@ describe('ErrorAggregator', function () {
       tracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics)
 
       expect(tracer.errorCount).equal(1)
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+      expect(metric.callCount).equal(1)
     })
 
     it('should ignore 404 errors for transactions with exceptions attached', function () {
@@ -385,6 +421,9 @@ describe('ErrorAggregator', function () {
       tracer.onTransactionFinished(ignored, agent.metrics)
 
       expect(tracer.errorCount).equal(1)
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+      expect(metric.callCount).equal(1)
     })
 
     it('should collect exceptions added with noticeError() API even if the status ' +
@@ -410,6 +449,9 @@ describe('ErrorAggregator', function () {
       expect(tracer.errorCount).equal(1)
       var collectedErrors = tracer.errors
       expect(collectedErrors[0][2]).equal('should go through')
+
+      var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+      expect(metric.callCount).equal(1)
     })
   })
 
