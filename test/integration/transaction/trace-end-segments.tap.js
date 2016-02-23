@@ -115,4 +115,50 @@ test('touched custom segment should have its timer ended', function (t) {
   })
 })
 
+test('ending segment early adds Truncated prefix to its name', function (t) {
+  var agent = helper.loadTestAgent(t)
+  var newrelic = new API(agent)
+  helper.runInTransaction(agent, function (transaction) {
+    var segmentName = 'my-tracer'
+    var tracedFn = newrelic.createTracer(segmentName, noop)
+
+    var parent = agent.tracer.getSegment()
+    var segment = parent.children[0]
+
+    // In a timeout to give it some duration above 0.
+    setTimeout(function () {
+      transaction.end(function () {
+        t.equal(segment.name, 'Truncated/my-tracer')
+        // end the segment
+        tracedFn()
+        t.equal(segment.name, 'Truncated/my-tracer')
+        t.end()
+      })
+    }, 50)
+  })
+})
+
+test('segment ended before transaction ends should not have Truncated prefix in its name',
+    function (t) {
+  var agent = helper.loadTestAgent(t)
+  var newrelic = new API(agent)
+  helper.runInTransaction(agent, function (transaction) {
+    var segmentName = 'my-tracer'
+    var tracedFn = newrelic.createTracer(segmentName, noop)
+
+    var parent = agent.tracer.getSegment()
+    var segment = parent.children[0]
+
+    // In a timeout to give it some duration above 0.
+    setTimeout(function () {
+      // end the segment
+      tracedFn()
+      transaction.end(function () {
+        t.equal(segment.name, 'my-tracer')
+        t.end()
+      })
+    }, 50)
+  })
+})
+
 function noop () {}

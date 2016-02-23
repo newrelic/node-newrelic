@@ -35,6 +35,24 @@ test('first two segments are built-in Express middlewares', function(t) {
   })
 })
 
+test('middleware with child segment gets named correctly', function(t) {
+  setup(t)
+
+  app.all('/test', function(req, res) {
+    setTimeout(function() {
+      res.end()
+    }, 1)
+  })
+
+  runTest(t, function(segments, transaction) {
+    checkMetrics(t, transaction.metrics, [
+      NAMES.EXPRESS.MIDDLEWARE + 'anonymous//test'
+    ])
+
+    t.end()
+  })
+})
+
 test('segments for route handler', function(t) {
   setup(t)
 

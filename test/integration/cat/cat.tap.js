@@ -25,7 +25,7 @@ test('cross application tracing full integration', function (t) {
                                                      config.encoding_key)
   var agent = helper.instrumentMockedAgent(feature_flag, config)
   // require http after creating the agent
-  var http = require('http');
+  var http = require('http')
   var api = new API(agent)
 
   var serversToStart = 3
@@ -41,7 +41,9 @@ test('cross application tracing full integration', function (t) {
   var start = generateServer(http, api, START_PORT, started, function (req, res) {
     http.get(generateUrl(MIDDLE_PORT, 'start/middle'), function (externRes) {
       externRes.resume()
-      res.end()
+      externRes.on('end', function() {
+        res.end()
+      })
     })
   })
 
@@ -50,7 +52,9 @@ test('cross application tracing full integration', function (t) {
     t.ok(req.headers['x-newrelic-transaction'], 'middle received x-newrelic-transaction from start')
     http.get(generateUrl(END_PORT, 'middle/end'), function (externRes) {
       externRes.resume()
-      res.end()
+      externRes.on('end', function() {
+        res.end()
+      })
     })
   })
 

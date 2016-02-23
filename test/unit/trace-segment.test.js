@@ -92,7 +92,7 @@ describe('TraceSegment', function () {
     trans.end()
   })
 
-  it('updates root segment timer whend end() is called', function(done) {
+  it('updates root segment timer when end() is called', function(done) {
     var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     var trace = trans.trace

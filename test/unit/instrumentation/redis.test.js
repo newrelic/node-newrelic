@@ -125,12 +125,12 @@ describe('agent instrumentation of Redis', function () {
         var transaction = agent.getTransaction()
         should.exist(transaction)
 
-        client.PING()
+        client.PING(function cb_PING(error, results) {
+          transaction.end()
+        })
 
         should.exist(connection.on_data)
         connection.on_data(new Buffer('+PONG\r\n'))
-
-        transaction.end()
       })
     })
 
@@ -182,12 +182,12 @@ describe('agent instrumentation of Redis', function () {
         var transaction = agent.getTransaction()
         should.exist(transaction)
 
-        client.PING(1, 2)
+        client.PING(1, 2, function (error, results) {
+          transaction.end()
+        })
 
         should.exist(connection.on_data)
         connection.on_data(new Buffer('+PONG\r\n'))
-
-        transaction.end()
       })
     })
   })

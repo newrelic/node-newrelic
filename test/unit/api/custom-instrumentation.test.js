@@ -32,7 +32,7 @@ describe('The custom instrumentation API', function () {
 
       helper.runInTransaction(agent, function (transaction) {
         var markedFunction = api.createTracer('custom:segment', function () {
-          transaction.end()
+          process.nextTick(transaction.end.bind(transaction))
         })
         markedFunction()
       })
@@ -54,9 +54,12 @@ describe('The custom instrumentation API', function () {
       })
 
       helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment('parent', null, null, false, function() {
+        agent.tracer.addSegment('parent', null, null, false, function(parentSegment) {
           var markedFunction = api.createTracer('custom:segment', function () {
-            transaction.end()
+            process.nextTick(function() {
+              parentSegment.end()
+              transaction.end()
+            })
           })
           markedFunction()
         })
@@ -80,8 +83,11 @@ describe('The custom instrumentation API', function () {
 
       helper.runInTransaction(agent, function (transaction) {
         var markedFunction = api.createTracer('custom:segment', function () {
-          agent.tracer.createSegment('child')
-          transaction.end()
+          var childSegment = agent.tracer.createSegment('child')
+          process.nextTick(function() {
+            childSegment.end()
+            transaction.end()
+          })
         })
         markedFunction()
       })
@@ -128,7 +134,7 @@ describe('The custom instrumentation API', function () {
 
       helper.runInTransaction(agent, function (transaction) {
         var markedFunction = api.createTracer('custom:segment', function () {
-          transaction.end()
+          process.nextTick(transaction.end.bind(transaction))
         })
         markedFunction()
       })
