@@ -1,3 +1,11 @@
+### v1.25.4 (2016-02-24):
+
+* Added more HTTP request/response parameters to transactions.
+
+  The agent now collects additional request/response HTTP headers (e.g. contentType, HTTP method, response status code).  These can be used to filter and group errors in the Error analytics page, as well as events in Insights.
+
+* Fixed an issue with collecting errors when an Express error handler removed message and stack properties from the error object.
+
 ### v1.25.3 (2016-02-18):
 * Fixed crashing bug on unhandled rejections in Q.
 
@@ -69,12 +77,12 @@
 ### v1.24.1 (2015-12-30):
 
 * Error totals are now reported.
-  
+
   The agent now reports metrics that reflect the total number of errors that
   have occurred in web and background transactions.
 
 * Disabling SSL no longer requires the setting of a port.
-  
+
   Previously, the agent required changing `port` in the config to `80` when
   disabling SSL. The agent will now default to port 80 if a port is not supplied and SSL
   is turned off.
@@ -247,7 +255,7 @@
   This feature allows you to see a trace for slow datastore queries.
   Read more about this feature in our
   [documentation](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/viewing-slow-query-details)
-  
+
 ### v1.19.2 (2015-05-21):
 
 * Fixed an issue with Error tracing
