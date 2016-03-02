@@ -166,8 +166,7 @@ describe('Timer', function () {
       var timer = new Timer()
       timer.begin()
       setTimeout(function() {
-        expect(timer.getDurationInMillis() >= 2).equal(true)
-
+        expect(timer.getDurationInMillis() > 1).equal(true)
         timer.overwriteDurationInMillis(1)
         expect(timer.getDurationInMillis()).equal(1)
         done()

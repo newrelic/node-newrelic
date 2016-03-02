@@ -229,7 +229,8 @@ test('Basic run through mysql functionality',
               t.ok(results && ended, 'result and end events should occur')
               var traceRoot = transaction.trace.root
               var traceRootDuration = traceRoot.timer.getDurationInMillis()
-              var queryNodeDuration = traceRoot.children[0].timer.getDurationInMillis()
+              var segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
+              var queryNodeDuration = segment.timer.getDurationInMillis()
               t.ok(Math.abs(duration - queryNodeDuration) < 1,
                   'query duration should be roughly be the time between query and end')
               t.ok(traceRootDuration - queryNodeDuration > 900,
@@ -343,3 +344,12 @@ test('Basic run through mysql functionality',
     })
   }.bind(this))
 })
+
+function findSegment(root, segmentName) {
+  for (var i = 0; i < root.children.length; i++) {
+    var segment = root.children[i]
+    if (segment.name === segmentName) {
+      return segment
+    }
+  }
+}

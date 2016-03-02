@@ -303,6 +303,10 @@ describe("built-in http module instrumentation", function () {
     })
 
     describe("for http.request", function () {
+      // this scenario is specifically broken on Node 5.7.1, see
+      // https://github.com/nodejs/node/issues/5555
+      if (!semver.satisfies(process.versions.node, '==5.7.1')) return
+
       it("should trace errors in listeners", function (done) {
         var server
         process.once('uncaughtException', function () {
@@ -314,10 +318,8 @@ describe("built-in http module instrumentation", function () {
         })
 
         server = http.createServer(function cb_createServer(request, response) {
-          response.writeHead(200,
-                             {'Content-Length' : PAYLOAD.length,
-                              'Content-Type'   : 'application/json'})
-          response.end(PAYLOAD)
+          response.writeHead(200, {'Content-Type': 'text/plain'})
+          response.end()
         })
 
         server.listen(8183, function () {
@@ -327,7 +329,6 @@ describe("built-in http module instrumentation", function () {
         })
       })
     })
-
   })
 
   describe('inbound http requests when cat is enabled', function () {

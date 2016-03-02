@@ -26,7 +26,9 @@ test("Agent should send metrics to staging-collector.newrelic.com", function (t)
     t.notOk(error, "started without error")
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
-    t.equal(agent.metrics.toJSON().length, 1, "only one metric")
+
+    var metrics = agent.metrics.toJSON()
+    t.ok(findMetric(metrics, 'TEST/discard'), 'the test metric should be present')
 
     agent._sendMetrics(function cb__sendMetrics(error) {
       t.notOk(error, "sent metrics without error")
@@ -39,3 +41,10 @@ test("Agent should send metrics to staging-collector.newrelic.com", function (t)
     })
   })
 })
+
+function findMetric(metrics, name) {
+  for (var i = 0; i < metrics.length; i++) {
+    var metric = metrics[i]
+    if (metric[0].name === name) return metric
+  }
+}

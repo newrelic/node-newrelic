@@ -9,7 +9,8 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "express": "~4"
+    "express": "~4",
+    "express-enrouten": "^1.1.1"
   },
   "private": true
 }
