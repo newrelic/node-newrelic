@@ -1,3 +1,19 @@
+### v1.25.5 (2016-03-09):
+
+* Added instrumentation of Bluebird promises.
+
+  Previously, the transaction state could get lost when multiple promises resolved
+  close to each other.
+
+* Fixed issue with PostgreSQL native instrumentation.
+
+  Previously, calling `require('pg').native` more than once was causing
+  the agent to crash.
+
+* Fixed issue with hapi instrumentation not returning value from Server.connection().
+
+* Various improvements to tests to make them more stable.
+
 ### v1.25.4 (2016-02-24):
 
 * Added more HTTP request/response parameters to transactions.
