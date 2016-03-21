@@ -58,6 +58,11 @@
       "name": "Martin Kuba",
       "email": "mkuba@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Natalie Wolfe",
+      "email": "nwolfe@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",

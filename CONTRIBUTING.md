@@ -58,8 +58,8 @@ If you have these services available on non-standard ports or elsewhere on your
 network, you can use the following environment variables to tell the tests where
 they are:
 
-* NR_NODE_TEST_\<service\>_HOST
-* NR_NODE_TEST_\<service\>_PORT
+* NR_NODE\_TEST_&lt;service&gt;\_HOST
+* NR_NODE\_TEST_&lt;service&gt;\_PORT
 
 The service token is the all-caps version of the service name listed above.
 
