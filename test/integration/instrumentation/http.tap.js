@@ -414,6 +414,7 @@ test("built-in http instrumentation should not crash for requests that are in pr
   }
 })
 
+
 // NODE-999
 test("built-in http instrumentation should not crash when server does not have addess",
     function(t) {
@@ -423,6 +424,7 @@ test("built-in http instrumentation should not crash when server does not have a
 
   this.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
+    server.close()
   })
 
   var server = http.createServer(function(req, res) {
@@ -438,7 +440,6 @@ test("built-in http instrumentation should not crash when server does not have a
     server.address = null
     t.notOk(server.address, 'should not have address')
 
-    // make two quick requests
     makeRequest(function() {
       t.ok(true, 'request #1 got response')
     })
