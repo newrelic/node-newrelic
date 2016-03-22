@@ -20,8 +20,8 @@ test('then', function testThen(t) {
     new Promise(executor).then(done, fail)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         accept(15)
         reject(10)
       }, 0)
@@ -54,8 +54,8 @@ test('multi then', function testThen(t) {
     new Promise(executor).then(next, fail).then(done, fail)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         accept(15)
         reject(10)
       }, 0)
@@ -95,8 +95,8 @@ test('multi then async', function testThen(t) {
     new Promise(executor).then(next, fail).then(done, fail)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         accept(15)
         reject(10)
       }, 0)
@@ -108,8 +108,8 @@ test('multi then async', function testThen(t) {
       t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
       return new Promise(function wait(accept) {
+        segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
-          segment = agent.tracer.getSegment()
           accept(val)
         }, 0)
       })
@@ -143,8 +143,8 @@ test('chain', function testChain(t) {
     new Promise(executor).chain(done, fail)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         accept(15)
         reject(10)
       }, 0)
@@ -177,8 +177,8 @@ test('multi chain', function testThen(t) {
     new Promise(executor).chain(next, fail).chain(done, fail)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         accept(15)
         reject(10)
       }, 0)
@@ -218,8 +218,8 @@ test('multi chain async', function testThen(t) {
     new Promise(executor).chain(next, fail).chain(done, fail)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         accept(15)
         reject(10)
       }, 0)
@@ -231,8 +231,8 @@ test('multi chain async', function testThen(t) {
       t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
       return new Promise(function wait(accept) {
+        segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
-          segment = agent.tracer.getSegment()
           accept(val)
         }, 0)
       })
@@ -265,8 +265,8 @@ test('then reject', function testThenReject(t) {
     new Promise(executor).then(fail, done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -299,8 +299,8 @@ test('multi then reject', function testThen(t) {
     new Promise(executor).then(fail, next).then(fail, done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -340,8 +340,8 @@ test('multi then async reject', function testThen(t) {
     new Promise(executor).then(fail, next).then(fail, done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -353,8 +353,8 @@ test('multi then async reject', function testThen(t) {
       t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
       return new Promise(function wait(accept, reject) {
+        segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
-          segment = agent.tracer.getSegment()
           reject(val)
         }, 0)
       })
@@ -387,8 +387,8 @@ test('chain reject', function testChainReject(t) {
     new Promise(executor).chain(fail, done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -421,8 +421,8 @@ test('multi chain reject', function testThen(t) {
     new Promise(executor).chain(fail, next).chain(fail, done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -462,8 +462,8 @@ test('multi chain async reject', function testThen(t) {
     new Promise(executor).chain(fail, next).chain(fail, done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -475,8 +475,8 @@ test('multi chain async reject', function testThen(t) {
       t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
       return new Promise(function wait(accept, reject) {
+        segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
-          segment = agent.tracer.getSegment()
           reject(val)
         }, 0)
       })
@@ -509,8 +509,8 @@ test('catch', function testCatch(t) {
     new Promise(executor).catch(done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -538,8 +538,8 @@ test('multi catch', function testThen(t) {
     new Promise(executor).catch(next).catch(done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -579,8 +579,8 @@ test('multi catch async', function testThen(t) {
     new Promise(executor).catch(next).catch(done)
 
     function executor(accept, reject) {
+      segment = agent.tracer.getSegment()
       setTimeout(function resolve() {
-        segment = agent.tracer.getSegment()
         reject(10)
         accept(15)
       }, 0)
@@ -592,8 +592,8 @@ test('multi catch async', function testThen(t) {
       t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
       return new Promise(function wait(accept, reject) {
+        segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
-          segment = agent.tracer.getSegment()
           reject(val)
         }, 0)
       })
@@ -624,8 +624,10 @@ test('Promise.resolve', function testResolve(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function resolve() {
-      segment = agent.tracer.getSegment()
-      Promise.resolve(15).then(done, fail)
+      Promise.resolve(15).then(function (val) {
+        segment = agent.tracer.getSegment()
+        return val
+      }).then(done, fail)
     }, 0)
 
     function done(val) {
@@ -653,8 +655,10 @@ test('Promise.accept', function testAccept(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function accept() {
-      segment = agent.tracer.getSegment()
-      Promise.accept(15).then(done, fail)
+      Promise.accept(15).then(function (val) {
+        segment = agent.tracer.getSegment()
+        return val
+      }).then(done, fail)
     }, 0)
 
     function done(val) {
@@ -683,8 +687,10 @@ test('Promise.reject', function testReject(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function reject() {
-      segment = agent.tracer.getSegment()
-      Promise.reject(10).then(fail, done)
+      Promise.reject(10).then(null, function (error) {
+        segment = agent.tracer.getSegment()
+        throw error
+      }).then(fail, done)
     }, 0)
 
     function done(val) {
@@ -713,10 +719,12 @@ test('Promise.all', function testAll(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function resolve() {
-      segment = agent.tracer.getSegment()
       var a = Promise.resolve(15)
       var b = Promise.resolve(25)
-      Promise.all([a, b]).then(done, fail)
+      Promise.all([a, b]).then(function (val){
+        segment = agent.tracer.getSegment()
+        return val
+      }).then(done, fail)
     }, 0)
 
     function done(val) {
@@ -744,10 +752,12 @@ test('Promise.all reject', function testAllReject(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function reject() {
-      segment = agent.tracer.getSegment()
       var a = Promise.resolve(15)
       var b = Promise.reject(10)
-      Promise.all([a, b]).then(fail, done)
+      Promise.all([a, b]).then(null, function (err){
+        segment = agent.tracer.getSegment()
+        throw err
+      }).then(fail, done)
     }, 0)
 
     function done(val) {
@@ -775,10 +785,12 @@ test('Promise.race', function testRace(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function resolve() {
-      segment = agent.tracer.getSegment()
       var a = Promise.resolve(15)
       var b = Promise.defer()
-      Promise.race([a, b.promise]).then(done, fail)
+      Promise.race([a, b.promise]).then(function (val){
+        segment = agent.tracer.getSegment()
+        return val
+      }).then(done, fail)
     }, 0)
 
     function done(val) {
@@ -806,10 +818,12 @@ test('Promise.race reject', function testRaceReject(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function reject() {
-      segment = agent.tracer.getSegment()
       var a = Promise.defer()
       var b = Promise.reject(10)
-      Promise.race([a.promise, b]).then(fail, done)
+      Promise.race([a.promise, b]).then(null, function(err){
+        segment = agent.tracer.getSegment()
+        throw err
+      }).then(fail, done)
     }, 0)
 
     function done(val) {
@@ -831,16 +845,14 @@ test('Promise.race reject', function testRaceReject(t) {
 })
 
 test('Promise.defer', function testDefer(t) {
-  t.plan(4)
+  t.plan(3)
   var agent = helper.loadTestAgent(t)
-  var segment
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     var p = Promise.defer()
     p.promise.then(done, fail)
 
     setTimeout(function resolve() {
-      segment = agent.tracer.getSegment()
       p.resolve(15)
       p.reject(10)
     }, 0)
@@ -850,7 +862,6 @@ test('Promise.defer', function testDefer(t) {
       process.nextTick(function finish() {
         t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
         t.deepEqual(val, 15, 'value should be preserved')
-        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
         t.end()
       })
@@ -864,16 +875,14 @@ test('Promise.defer', function testDefer(t) {
 })
 
 test('Promise.defer reject', function testDeferReject(t) {
-  t.plan(4)
+  t.plan(3)
   var agent = helper.loadTestAgent(t)
-  var segment
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     var p = Promise.defer()
     p.promise.then(fail, done)
 
     setTimeout(function reject() {
-      segment = agent.tracer.getSegment()
       p.reject(10)
       p.resolve(15)
     }, 0)
@@ -883,7 +892,6 @@ test('Promise.defer reject', function testDeferReject(t) {
       process.nextTick(function finish() {
         t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
         t.deepEqual(val, 10, 'value should be preserved')
-        t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
 
         t.end()
       })
