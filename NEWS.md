@@ -1,3 +1,19 @@
+### v1.26.0 (2016-03-23):
+
+* Express instrumentation has been fundamentally reworked.
+
+  This refactor includes a few bug fixes around error handling and transaction
+  naming, as well as optional higher resolution traces.
+
+  The agent will not report errors handled in an error handler it is monitoring - this
+  is more in line with how the agent does error handling in other contexts.
+
+  The agent will now name transactions correctly when an application responds
+  from a middleware.
+
+  Setting `feature_flag.express_segments` to true in the agent config will
+  make the agent report the amount of time spent in each individual middleware per request
+
 ### v1.25.5 (2016-03-09):
 
 * Added instrumentation of Bluebird promises.
