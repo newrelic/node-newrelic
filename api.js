@@ -777,6 +777,27 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   this.agent.customEvents.add([instrinics, attributes])
 }
 
+/**
+ * Forcibly sends data to monitoring
+ * @param {function}[callback]  - callback function, that runs when data are already sent
+ */
+API.prototype.sendData = function sendData(callback) {
+    var self = this;
+    self.agent.collector.connect(function (error) {
+        if (error) {
+            logger.error(error);
+        }
+        self.agent.harvest(function (err) {
+            if (err) {
+                logger.error(err);
+            }
+            if (typeof callback === 'function') {
+                callback();
+            }
+        });
+    });
+};
+
 
 function _checkKeyLength(object, maxLength) {
   var keys = Object.keys(object)
