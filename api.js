@@ -782,6 +782,10 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  * @param {function}[callback]  - callback function, that runs when data are already sent
  */
 API.prototype.sendData = function sendData(callback) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+      NAMES.SUPPORTABILITY.API + '/sendData'
+  );
+  metric.incrementCallCount();
     var self = this;
     self.agent.collector.connect(function (error) {
         if (error) {
