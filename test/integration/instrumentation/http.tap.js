@@ -413,3 +413,44 @@ test("built-in http instrumentation should not crash for requests that are in pr
     http.request(options, callback).end()
   }
 })
+
+// NODE-999
+test("built-in http instrumentation should not crash when server does not have addess",
+    function(t) {
+  t.plan(3)
+
+  var agent = helper.instrumentMockedAgent()
+
+  this.tearDown(function cb_tearDown() {
+    helper.unloadAgent(agent)
+  })
+
+  var server = http.createServer(function(req, res) {
+    res.end()
+  })
+
+  var port
+  server.listen(0, function() {
+    port = server.address().port
+    t.ok(server.address, 'has address')
+
+    // remove address function
+    server.address = null
+    t.notOk(server.address, 'should not have address')
+
+    // make two quick requests
+    makeRequest(function() {
+      t.ok(true, 'request #1 got response')
+    })
+  })
+
+  function makeRequest(callback) {
+    var options = {
+      hostname: 'localhost',
+      port: port,
+      path: '/',
+      agent: false
+    }
+    http.request(options, callback).end()
+  }
+})
