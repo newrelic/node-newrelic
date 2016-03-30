@@ -600,4 +600,60 @@ function runTests(flags) {
       })
     })
   })
+
+  test('layer wrapping', function(t) {
+    t.plan(1)
+
+    // Set up the test.
+    var agent = helper.instrumentMockedAgent(flags)
+    var app = require('express')()
+    var server = require('http').createServer(app)
+    this.tearDown(function cb_tearDown() {
+      server.close()
+      helper.unloadAgent(agent)
+    })
+
+    // Add our route.
+    app.get(TEST_PATH, function(req, res, next) {
+      res.send('bar')
+    })
+
+    // Proxy the last layer on the stack.
+    var stack = app._router.stack
+    stack[stack.length - 1] = makeProxyLayer(stack[stack.length - 1])
+
+    // Make our request.
+    server.listen(TEST_PORT, TEST_HOST, function() {
+      request.get(TEST_URL, function (err, response, body) {
+        t.equals(body, 'bar', 'should not fail with a proxy layer')
+        t.end()
+      })
+    })
+  })
+}
+
+/**
+ * Wraps a layer in a proxy with all of the layer's prototype's methods directly
+ * on itself.
+ *
+ * @param {express.Layer} layer - The layer to proxy.
+ *
+ * @return {object} A POD object with all the fields of the layer copied over.
+ */
+function makeProxyLayer(layer) {
+  var fakeLayer = {
+    handle_request: function(){ layer.handle_request.apply(layer, arguments) },
+    handle_error: function(){ layer.handle_error.apply(layer, arguments) }
+  }
+  Object.keys(layer).forEach(function(k){
+    if (!fakeLayer[k]) {
+      fakeLayer[k] = layer[k]
+    }
+  })
+  Object.keys(layer.constructor.prototype).forEach(function(k){
+    if (!fakeLayer[k]) {
+      fakeLayer[k] = layer[k]
+    }
+  })
+  return fakeLayer
 }
