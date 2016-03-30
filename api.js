@@ -778,29 +778,26 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
 }
 
 /**
- * Forcibly sends data to monitoring
- * @param {function}[callback]  - callback function, that runs when data are already sent
+ * Shuts down the NR agent
+ * @param {object} [options=] - object with shut down options
+ * @param {boolean} [options.collectPendingData=] - boolean value that tells if NR agent must forsibly send pending data
+ * @param {function} [callback=new Function()]  - callback function, that runs when agent stopped
  */
-API.prototype.sendData = function sendData(callback) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-      NAMES.SUPPORTABILITY.API + '/sendData'
-  );
-  metric.incrementCallCount();
-    var self = this;
-    self.agent.collector.connect(function (error) {
-        if (error) {
-            logger.error(error);
-        }
-        self.agent.harvest(function (err) {
-            if (err) {
-                logger.error(err);
-            }
-            if (typeof callback === 'function') {
-                callback();
-            }
-        });
-    });
-};
+API.prototype.shutdown = function shutdown(options, cb) {
+    var metric = this.agent.metrics.getOrCreateMetric(
+        NAMES.SUPPORTABILITY.API + '/shutdown'
+    );
+    metric.incrementCallCount();
+    var callback = cb || new Function();
+    var agent = this.agent
+    if (options && options.collectPendingData) {
+        agent.harvest(function() {
+            agent.stop(callback)
+        })
+    } else {
+        agent.stop(callback)
+    }
+}
 
 
 function _checkKeyLength(object, maxLength) {
