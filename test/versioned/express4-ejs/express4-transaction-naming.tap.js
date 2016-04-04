@@ -231,6 +231,25 @@ function runTests(flags) {
     runTest(t, '/router1/router2/path1', '/:router1/:router2/path1')
   })
 
+  test('using two routers and final callback handler for success', function(t){
+        setup(t)
+
+    var router1 = express.Router()
+    var router2 = express.Router()
+
+    app.use('/:router1', router1)
+    router1.use('/:router2', router2)
+
+    router2.get('/path1', function(req, res, next) {
+      next();
+    })
+
+    app.use(function(req, res, next){
+      res.end();
+    })
+    runTest(t, '/router1/router2/path1', '/:router1/:router2/path1')
+  })
+
   function setup(t) {
     agent = helper.instrumentMockedAgent(flags)
     express = require('express')
