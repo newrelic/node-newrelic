@@ -7,6 +7,7 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper.js')
 var API = require('../../../api.js')
 var semver = require('semver')
+var sinon = require('sinon')
 
 
 describe("the New Relic agent API", function () {
@@ -784,6 +785,77 @@ describe("the New Relic agent API", function () {
       agent.config.feature_flag.custom_metrics = false
       api.incrementMetric('/Custom/metric/thing')
       api.recordMetric('/Custom/metric/thing', 3)
+    })
+  })
+
+  describe('shutdown', function() {
+    it('exports a shutdown function', function () {
+      should.exist(api.shutdown)
+      expect(api.shutdown).a('function')
+    })
+
+    it('calls agent stop', function() {
+      var mock = sinon.mock(agent)
+      mock.expects('stop').once()
+      api.shutdown()
+      mock.verify()
+    })
+
+    it('calls harvest when options.collectPendingData is true', function() {
+      var mock = sinon.mock(agent)
+      mock.expects('harvest').once()
+      api.shutdown({collectPendingData: true})
+      mock.verify()
+    })
+
+    it('calls stop after harvest', function() {
+      var mock = sinon.mock(agent)
+
+      agent.harvest = function(cb) {
+        process.nextTick(cb)
+      }
+
+      mock.expects('stop').once()
+      api.shutdown({collectPendingData: true}, function() {
+        mock.verify()
+      })
+    })
+
+    it('calls stop when harvest errors', function() {
+      var mock = sinon.mock(agent)
+
+      agent.harvest = function(cb) {
+        process.nextTick(function() {
+          cb(new Error('some error'))
+        })
+      }
+
+      mock.expects('stop').once()
+      api.shutdown({collectPendingData: true}, function() {
+        mock.verify()
+      })
+    })
+
+    it('accepts callback as second argument', function() {
+      agent.stop = function(cb) {
+        cb()
+      }
+      var callback = sinon.spy()
+      api.shutdown({}, callback)
+      expect(callback.called).to.be.true
+    })
+
+    it('accepts callback as first argument', function() {
+      agent.stop = function(cb) {
+        cb()
+      }
+      var callback = sinon.spy()
+      api.shutdown(callback)
+      expect(callback.called).to.be.true
+    })
+
+    it('does not error when no callback is provided', function() {
+      expect(function() { api.shutdown() }).not.throws()
     })
   })
 })
