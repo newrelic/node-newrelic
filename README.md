@@ -501,6 +501,22 @@ context if called from within transaction scope. If custom parameters are
 passed in on an object literal, they will be passed back to New Relic for
 display.
 
+#### newrelic.shutdown([options], callback)
+
+Use this method to gracefully shut down the agent.  When called with
+`options.collectPendingData` set to true, the agent will send any pending data to
+the New Relic servers before shutting down.  This is useful when you want to shut down
+the Node process and make sure that all transactions and/or errors are captured by
+New Relic.
+
+Example of collecting pending data before shutting down the process:
+
+```javascript
+newrelic.shutdown({ collectPendingData: true }, function(error) {
+  process.exit()
+})
+```
+
 ### Custom Instrumentation
 
 Custom transaction should be used for instrumenting `socket.io` or other
