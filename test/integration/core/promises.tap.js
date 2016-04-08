@@ -11,6 +11,7 @@ if (!global.Promise) {
   }
 }
 
+
 test('then', function testThen(t) {
   t.plan(4)
   var agent = helper.loadTestAgent(t)

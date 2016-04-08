@@ -17,6 +17,7 @@ var used = [
   'insights',
   'mysql_pool',
   'postgres',
+  'promise_segments',
   'proxy',
   'released',
   'synthetics',
