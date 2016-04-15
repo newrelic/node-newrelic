@@ -143,8 +143,18 @@ test('createInflateRaw', {skip: semver.satisfies(process.version, "<0.10")}, fun
 function testStream(t, method, src, out) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function(transaction) {
+    var concatStream = concat(check)
+
+    // The check callback is called when the stream finishes.  In Node 0.10 this happens
+    // in a different async context, so wrapping the emitter to preserve current
+    // transaction in the event handlers.  This is an issue with the underlying stream
+    // that concat-stream uses, not zlib per se.
+    if (semver.satisfies(process.version, '0.10')) {
+      agent.tracer.bindEmitter(concatStream)
+    }
+
     var stream = zlib[method]()
-    stream.pipe(concat(check))
+    stream.pipe(concatStream)
     stream.end(src)
 
     function check(result) {

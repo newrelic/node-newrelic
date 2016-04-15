@@ -293,6 +293,7 @@ function runTest(t, endpoint, callback) {
 
   var server = app.listen(function(){
     makeRequest(server, endpoint, function(response) {
+      response.resume()
     })
   })
   t.tearDown(function cb_tearDown() {
