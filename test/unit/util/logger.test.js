@@ -46,7 +46,7 @@ describe('logger', function() {
 
   it('should default to error level logging', function() {
     logger.level('donkey kong')
-    expect(logger._level).equal(50)
+    expect(logger.options._level).equal(50)
   })
 
   it('should support prepended extras', function(done) {
@@ -140,13 +140,56 @@ describe('logger', function() {
     })
   })
 
-  it('should be togglable', function(done) {
+  it('and its children should be togglable', function(done) {
+    var child = logger.child({aChild: true})
+    var grandchild = child.child({aGrandchild: true})
+
     logger.info('on')
-    logger.enabled = false
+    child.info('on')
+    grandchild.info('on')
+    logger.setEnabled(false)
     process.nextTick(function() {
-      expect(results.length).equal(1)
+      expect(results.length).equal(3)
       logger.info('off')
-      expect(results.length).equal(1)
+      child.info('off')
+      grandchild.info('off')
+      expect(results.length).equal(3)
+      done()
+    })
+  })
+
+  it('state should be synced between parent and child', function(done) {
+    var child = logger.child({aChild: true})
+    var grandchild = child.child({aGrandchild: true})
+
+    logger.info('on')
+    child.info('on')
+    grandchild.info('on')
+    child.setEnabled(false)
+    process.nextTick(function() {
+      expect(results.length).equal(3)
+      logger.info('off')
+      child.info('off')
+      grandchild.info('off')
+      expect(results.length).equal(3)
+      done()
+    })
+  })
+
+  it('state should work on arbitrarily deep child loggers', function(done) {
+    var child = logger.child({aChild: true})
+    var grandchild = child.child({aGrandchild: true})
+
+    logger.info('on')
+    child.info('on')
+    grandchild.info('on')
+    grandchild.setEnabled(false)
+    process.nextTick(function() {
+      expect(results.length).equal(3)
+      logger.info('off')
+      child.info('off')
+      grandchild.info('off')
+      expect(results.length).equal(3)
       done()
     })
   })
