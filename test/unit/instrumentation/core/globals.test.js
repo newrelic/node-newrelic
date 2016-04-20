@@ -7,10 +7,22 @@ var expect = chai.expect
 
 if (global.Promise) {
   describe('Unhandled rejection', function () {
-    var agent
+    var agent = null
+    var hasEvent = false
 
-    before(function () {
-      agent = helper.instrumentMockedAgent()
+    before(function(done) {
+      // The `unhandledRejection` event has not existed as long as unhandled
+      // rejections have. Thus we need to check if this even got triggered at
+      // all before looking for the error on the transaction in the tests.
+      Promise.reject('testing event')
+      process.once('unhandledRejection', function() {
+        hasEvent = true
+      })
+
+      setTimeout(function(){
+        agent = helper.instrumentMockedAgent()
+        done()
+      }, 15)
     })
 
     after(function () {
@@ -20,20 +32,25 @@ if (global.Promise) {
     it('should be associated with the transction if there is one', function(done){
       helper.runInTransaction(agent, function (transaction) {
         var rejected = Promise.reject('test rejection')
-        var emitted = false
-
-        // The `unhandledRejection` event has not existed as long as unhandled
-        // rejections have. Thus we need to check if this even got triggered at
-        // all before looking for the error on the transaction.
-        process.once('unhandledRejection', function(){
-          emitted = true
-        })
 
         setTimeout(function () {
-          if (emitted) {
+          if (hasEvent) {
             expect(transaction.exceptions.length).to.equal(1)
             expect(transaction.exceptions[0][0]).to.equal('test rejection')
           }
+          done();
+        }, 15)
+      })
+    })
+
+    it('should not report it if there is another handler', function(done){
+      process.once('unhandledRejection', function(){})
+
+      helper.runInTransaction(agent, function (transaction) {
+        var rejected = Promise.reject('test rejection')
+
+        setTimeout(function () {
+          expect(transaction.exceptions.length).to.equal(0)
           done();
         }, 15)
       })
