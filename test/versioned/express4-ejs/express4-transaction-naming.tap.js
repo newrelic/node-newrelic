@@ -231,6 +231,36 @@ function runTests(flags) {
     runTest(t, '/router1/router2/path1', '/:router1/:router2/path1')
   })
 
+  test('transactions running in parallel should be recorded correctly', function(t) {
+    setup(t)
+    var router1 = express.Router()
+    var router2 = express.Router()
+
+    app.use('/:router1', router1)
+    router1.use('/:router2', router2)
+
+    router2.get('/path1', function(req, res) {
+      setTimeout(function () {
+        res.end()
+      }, 0)
+    })
+
+    var numTests = 4
+    var runner = makeMultiRunner(t,
+      '/router1/router2/path1',
+      '/:router1/:router2/path1',
+      numTests
+    )
+    var server = app.listen(function() {
+      t.tearDown(function cb_tearDown() {
+        server.close()
+      })
+      for (var i = 0; i < numTests; i++) {
+        runner(server)
+      }
+    })
+  })
+
   function setup(t) {
     agent = helper.instrumentMockedAgent(flags)
     express = require('express')
@@ -240,6 +270,27 @@ function runTests(flags) {
     })
   }
 
+  function makeMultiRunner(t, endpoint, expectedName, numTests) {
+    var done = 0
+    var seen = []
+    if (!expectedName) expectedName = endpoint
+    agent.on('transactionFinished', function (transaction) {
+      t.ok(seen.indexOf(transaction) === -1,
+          'should never see the finishing transaction twice')
+      seen.push(transaction)
+      t.equal(transaction.name, 'WebTransaction/Expressjs/GET/' + expectedName,
+        "transaction has expected name")
+      transaction.end()
+      if (++done === numTests) {
+        done = 0
+        t.end()
+      }
+    })
+    return function runMany(server) {
+      makeRequest(server, endpoint)
+    }
+  }
+
   function runTest(t, endpoint, expectedName) {
     if (!expectedName) expectedName = endpoint
     agent.on('transactionFinished', function (transaction) {
@@ -247,7 +298,7 @@ function runTests(flags) {
         "transaction has expected name")
       t.end()
     })
-    var server = app.listen(function(){
+    var server = app.listen(function() {
       makeRequest(server, endpoint)
     })
     t.tearDown(function cb_tearDown() {
@@ -260,6 +311,3 @@ function runTests(flags) {
     http.request({port: port, path: path}, callback).end()
   }
 }
-
-
-
