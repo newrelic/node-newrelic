@@ -1,0 +1,13 @@
+{
+  "name": "tests",
+  "version": "0.0.0",
+  "description": "dev deps for testing",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Martin Kuba <mkuba@newrelic.com>",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "bluebird": "2.x"
+  },
+  "private": true
+}

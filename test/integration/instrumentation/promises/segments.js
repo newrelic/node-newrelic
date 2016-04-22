@@ -146,7 +146,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
         [
           'Promise startSomeWork',
           [
-            'Promise#then catchHandler',
+            'Promise#catch catchHandler',
           ]
         ]
       ])
@@ -182,7 +182,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
               [
                 'Promise startSomeWork',
                 [
-                  'Promise#then catchHandler'
+                  'Promise#catch catchHandler'
                 ]
               ]
             ]
