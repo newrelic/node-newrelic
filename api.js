@@ -79,7 +79,7 @@ API.prototype.setTransactionName = function setTransactionName(name) {
     return
   }
 
-  transaction.partialName = NAMES.CUSTOM + '/' + name
+  transaction.forceName = NAMES.CUSTOM + '/' + name
 }
 
 /**
@@ -124,7 +124,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
   }
 
   action = action || transaction.verb || 'GET'
-  transaction.partialName = NAMES.CONTROLLER + '/' + name + '/' + action
+  transaction.forceName = NAMES.CONTROLLER + '/' + name + '/' + action
 }
 
 /**
