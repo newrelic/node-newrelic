@@ -28,10 +28,7 @@ cache:
   directories:
   - $HOME/.npm
 before_install:
-  - if [ "$SUITE" = "integration" ]; then ./bin/travis-install-mongo.sh; fi
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-  - sudo apt-get install -qq time
+  - ./bin/travis-setup.sh
   - make update_npm_global
 install: if [ "$SUITE" != "smoke" ]; then npm install; fi
 script: make $SUITE
