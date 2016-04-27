@@ -443,11 +443,22 @@ test('realpath', function(t) {
     fs.realpath(link, function(err, target) {
       t.equal(err, null, 'should not error')
       t.equal(target, real, 'should point to the same file')
-      verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath', [NAMES.FS.PREFIX + 'lstat'])
+
+      if (semver.satisfies(process.versions.node, '>=6.0.0')) {
+        verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath')
+      } else {
+        verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath',
+          [NAMES.FS.PREFIX + 'lstat'])
+      }
 
       trans.end(function checkMetrics() {
+        var expectedMetrics = ['lstat', 'realpath']
+        // Node 6 changed implementation of fs.realpath()
+        if (semver.satisfies(process.versions.node, '>=6.0.0')) {
+          expectedMetrics = ['realpath']
+        }
         t.ok(
-          checkMetric(['lstat', 'realpath'], agent, trans.name),
+          checkMetric(expectedMetrics, agent, trans.name),
           'metric should exist after transaction end'
         )
       })

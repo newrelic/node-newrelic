@@ -5,7 +5,8 @@ var path   = require('path')
   , expect = chai.expect
   , should = chai.should()
   , parse  = require('../../../lib/collector/parse-response.js')
-  
+  , semver = require('semver')
+
 
 describe("collector response parser", function () {
   it("should throw if called without a collector method name", function () {
@@ -36,7 +37,7 @@ describe("collector response parser", function () {
   describe("when initialized properly and response status is 200", function () {
     var response = {statusCode : 200}
       , methodName = 'TEST'
-      
+
 
     it("should pass through return value", function (done) {
       function callback(error, returned) {
@@ -142,7 +143,11 @@ describe("collector response parser", function () {
 
     it("should use a specific error message when the server response cannot be parsed", function (done) {
       function callback(error) {
-        expect(error.message).equal('Unexpected token <')
+        var expectedErrorMessage = 'Unexpected token <'
+        if (semver.satisfies(process.versions.node, '>=6.0.0')) {
+          expectedErrorMessage = 'Unexpected token < in JSON at position 0'
+        }
+        expect(error.message).equal(expectedErrorMessage)
         should.not.exist(error.laterErrors)
         done()
       }
@@ -200,7 +205,13 @@ describe("collector response parser", function () {
     it("should pass back passed in errors but retain parse errors", function (done) {
       function callback(error) {
         expect(error.laterErrors.length).equal(1)
-        expect(error.laterErrors[0].message).equal("Unexpected token u")
+
+        var expectedErrorMessage = 'Unexpected token u'
+        if (semver.satisfies(process.versions.node, '>=6.0.0')) {
+          expectedErrorMessage = 'Unexpected token u in JSON at position 0'
+        }
+
+        expect(error.laterErrors[0].message).equal(expectedErrorMessage)
         done()
       }
 
@@ -260,7 +271,7 @@ describe("collector response parser", function () {
   describe("when initialized properly and response status is 503", function () {
     var response = {statusCode : 503}
       , methodName = 'TEST'
-      
+
 
     it("should pass through return value despite weird status code", function (done) {
       function callback(error, returned) {
