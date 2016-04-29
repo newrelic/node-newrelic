@@ -266,6 +266,104 @@ test('router with subapp', function(t) {
   })
 })
 
+test('mounted middleware', function(t) {
+  setup(t)
+
+  app.use('/test', function myHandler(req, res) {
+    res.end()
+  })
+
+  runTest(t, function(segments, transaction) {
+    t.equal(segments[2].name, NAMES.EXPRESS.MIDDLEWARE + 'myHandler')
+
+    checkMetrics(t, transaction.metrics, [
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'
+    ])
+
+    t.end()
+  })
+})
+
+test('error middleware', function(t) {
+  setup(t)
+
+  app.get('/test', function(req, res) {
+    throw new Error('some error')
+  })
+
+  app.use(function myErrorHandler(err, req, res, next) {
+    res.end()
+  })
+
+  runTest(t, function(segments, transaction) {
+    console.log(JSON.stringify(transaction.trace.root.toJSON(), null, 2))
+    t.equal(segments[3].name, NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler')
+
+    // checkMetrics(t, transaction.metrics, [
+    //   NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'
+    // ])
+
+    t.end()
+  })
+})
+
+test('when using a route variable', function(t) {
+  setup(t)
+
+  app.get('/:foo/:bar', function myHandler(req, res) {
+    res.end()
+  })
+
+  runTest(t, '/a/b', function(segments, transaction) {
+    t.equal(segments[2].children[0].name, NAMES.EXPRESS.MIDDLEWARE + 'myHandler')
+
+    checkMetrics(t, transaction.metrics, [
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//:foo/:bar'
+    ], '/:foo/:bar')
+
+    t.end()
+  })
+})
+
+test('when using a string pattern in path', function(t) {
+  setup(t)
+
+  app.get('/ab?cd', function myHandler(req, res) {
+    res.end()
+  })
+
+  runTest(t, '/abcd', function(segments, transaction) {
+    t.equal(segments[2].name, 'Expressjs/Route Path: /ab?cd')
+    t.equal(segments[2].children[0].name, NAMES.EXPRESS.MIDDLEWARE + 'myHandler')
+
+    checkMetrics(t, transaction.metrics, [
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//ab?cd'
+    ], '/ab?cd')
+
+    t.end()
+  })
+})
+
+test('when using a regular expression in path', function(t) {
+  setup(t)
+
+  app.get(/a/, function myHandler(req, res) {
+    console.log('in route handler')
+    res.end()
+  })
+
+  runTest(t, '/a', function(segments, transaction) {
+    t.equal(segments[2].name, 'Expressjs/Route Path: /a/')
+    t.equal(segments[2].children[0].name, NAMES.EXPRESS.MIDDLEWARE + 'myHandler')
+
+    checkMetrics(t, transaction.metrics, [
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a/'
+    ], '/a')
+
+    t.end()
+  })
+})
+
 function setup(t) {
   agent = helper.instrumentMockedAgent({
     express_segments: true
@@ -296,6 +394,7 @@ function runTest(t, endpoint, callback) {
       response.resume()
     })
   })
+
   t.tearDown(function cb_tearDown() {
     server.close()
   })
