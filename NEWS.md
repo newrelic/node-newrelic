@@ -1,3 +1,10 @@
+### v1.27.1 (2016-05-03):
+
+* Fixed issue with checking listener count for uncaughtException and unhandledRejection
+  global events.
+
+* Fixed a number of issues with promise instrumentation of Bluebird.
+
 ### v1.27.0 (2016-04-21):
 
 * Added a .npmignore file to exclude non-essential files.
@@ -88,7 +95,7 @@
   the address() getter.
 
 * Fixed issue with Express instrumentation when a wrapped layer object was
-  missing a method. 
+  missing a method.
 
 * Added more logging around the CAT feature.
 
