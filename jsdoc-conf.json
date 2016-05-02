@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "markdown": {
+  },
+  "templates": {
+    "cleverLinks": true
+  }
+}

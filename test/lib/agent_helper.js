@@ -145,7 +145,7 @@ var helper = module.exports = {
 
     return agent.tracer.transactionProxy(function cb_transactionProxy() {
       var transaction = agent.getTransaction()
-      callback(transaction)
+      return callback(transaction)
     })() // <-- invoke immediately
   },
 
