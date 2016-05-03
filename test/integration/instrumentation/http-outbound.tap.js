@@ -79,3 +79,36 @@ test('external requests should have child segments', function testError(t) {
     })
   }
 })
+
+test('external https requests should not duplicate the external segment', function testError(t) {
+  var agent = helper.loadTestAgent(t)
+  var https = require('https')
+
+  helper.runInTransaction(agent, function inTransaction() {
+    var req = https.get('https://encrypted.google.com/', function onResonse(res) {
+      res.once('end', check)
+      res.resume()
+    })
+  })
+
+  function check() {
+    var segment = agent.tracer.getSegment()
+
+    t.equal(
+      segment.name,
+      'External/encrypted.google.com/',
+      'should be named'
+    )
+    t.ok(segment.timer.start, 'should have started')
+    t.ok(segment.timer.duration, 'should have ended')
+    t.equal(segment.children.length, 1, 'should have 1 child')
+
+    var notDuped = segment.children[0]
+    t.notEqual(
+        notDuped.name,
+        segment.name,
+        'should not be named the same as the external segment')
+
+    t.end()
+  }
+})

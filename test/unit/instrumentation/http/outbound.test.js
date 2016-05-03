@@ -9,7 +9,6 @@ var NAMES = require('../../../../lib/metrics/names.js')
 var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
-var semver = require('semver')
 
 describe('instrumentOutbound', function () {
   var agent
