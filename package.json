@@ -103,7 +103,7 @@
   "devDependencies": {
     "mocha": "*",
     "tap": "0.7.1",
-    "eslint": "^0.24.1"
+    "eslint": "^2.9.0"
   },
   "repository": {
     "type": "git",
