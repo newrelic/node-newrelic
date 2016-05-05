@@ -39,6 +39,48 @@ test('no transaction', function(t) {
   })
 })
 
+test('new Promise() throw', function(t) {
+  t.plan(2)
+
+  var agent = setupAgent(t)
+  var Promise = require('bluebird')
+
+  try {
+    (new Promise(function(resolve, reject) {
+      throw new Error('test error')
+    })).then(function() {
+      t.fail('Error should have been caught.')
+    }, function(err) {
+      t.ok(err, 'Error should go to the reject handler')
+      t.equal(err.message, 'test error', 'Error should be as expected')
+      t.end()
+    })
+  } catch (e) {
+    t.fail('Error should have passed to `reject`.')
+  }
+})
+
+test('new Promise() resolve then throw', function(t) {
+  t.plan(1)
+
+  var agent = setupAgent(t)
+  var Promise = require('bluebird')
+
+  try {
+    (new Promise(function(resolve, reject) {
+      resolve('foo')
+      throw new Error('test error')
+    })).then(function(res) {
+      t.equal(res, 'foo', 'promise should be resolved.')
+      t.end()
+    }, function(err) {
+      t.fail('Error should have been swallowed by promise.')
+    })
+  } catch (e) {
+    t.fail('Error should have passed to `reject`.')
+  }
+})
+
 test('Promise.resolve', function(t) {
   testPromiseClassMethod(t, 1, function resolveTest(Promise, name) {
     return Promise.resolve(name + ' resolve value')
