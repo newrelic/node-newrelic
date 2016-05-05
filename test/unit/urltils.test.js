@@ -150,21 +150,6 @@ describe('NR URL utilities', function () {
     })
   })
 
-  describe('getHeadersFromHeaderString', function () {
-    it('should return an object of header name and value pairs from a header string', function () {
-      var exampleInput = 'HTTP/1.1 404 Not Found\r\nX-Powered-By: Express\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: 45\r\nETag: W/"2d-+O+7jmB3UqTatBnw6I80rQ"\r\nDate: Tue, 23 Feb 2016 19:52:05 GMT\r\nConnection: keep-alive\r\n\r\n'
-      var output = urltils.getHeadersFromHeaderString(exampleInput)
-      var expectedOutput = { '52': '05 GMT',
-        'X-Powered-By': 'Express',
-        'Content-Type': 'text/html; charset=utf-8',
-        'Content-Length': '45',
-        ETag: 'W/"2d-+O+7jmB3UqTatBnw6I80rQ"',
-        Connection: 'keep-alive'
-      }
-      expect(output).deep.equal(expectedOutput)
-    })
-  })
-
   describe('isIgnoredError', function() {
     var config = {error_collector : {ignore_status_codes : []}}
 

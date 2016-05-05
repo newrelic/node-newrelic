@@ -240,6 +240,52 @@ describe('ErrorAggregator', function () {
     config.collect_errors = true
   })
 
+  it('should gather the same error in two transactions', function () {
+    var error = new Error('this happened once')
+    expect(tracer.errorCount).equal(0)
+    expect(tracer.errors.length).equal(0)
+
+    tracer.add(null, error)
+
+    expect(tracer.errorCount).equal(1)
+    expect(tracer.errors.length).equal(1)
+
+    tracer.clearErrors()
+
+    expect(tracer.errorCount).equal(0)
+    expect(tracer.errors.length).equal(0)
+
+    tracer.add(null, error)
+
+    expect(tracer.errorCount).equal(1)
+    expect(tracer.errors.length).equal(1)
+  })
+
+  it('should not gather the same error twice', function () {
+    var error = new Error('this happened once')
+    expect(tracer.errorCount).equal(0)
+    expect(tracer.errors.length).equal(0)
+
+    tracer.add(null, error)
+    tracer.add(null, error)
+
+    expect(tracer.errorCount).equal(1)
+    expect(tracer.errors.length).equal(1)
+  })
+
+  it('should not break on read only objects', function () {
+    var error = new Error('this happened once')
+    Object.freeze(error)
+    expect(tracer.errorCount).equal(0)
+    expect(tracer.errors.length).equal(0)
+
+    tracer.add(null, error)
+    tracer.add(null, error)
+
+    expect(tracer.errorCount).equal(1)
+    expect(tracer.errors.length).equal(1)
+  })
+
   it('should retain a maximum of 20 errors to send', function () {
     for (var i = 0; i < 5; i++) tracer.add(null, new Error('filling the queue'))
     expect(tracer.errors.length).equal(5)

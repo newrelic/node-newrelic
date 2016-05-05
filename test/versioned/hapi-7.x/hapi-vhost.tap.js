@@ -35,6 +35,8 @@ test("Hapi vhost support", function (t) {
           "request.headers.host" : "localhost:8089",
           "request.method" : "GET",
           "response.status" : 200,
+          "response.headers.contentLength" : 15,
+          "response.headers.contentType" : "application/json; charset=utf-8",
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
           "request_uri" : "/test/2"
@@ -45,6 +47,8 @@ test("Hapi vhost support", function (t) {
           "request.headers.host" : "localhost:8089",
           "request.method" : "GET",
           "response.status" : 200,
+          "response.headers.contentLength" : 15,
+          "response.headers.contentType" : "application/json; charset=utf-8",
           "httpResponseCode": "200",
           "request_uri" : "/test/2"
         }, 'parameters should only have request/response params')
