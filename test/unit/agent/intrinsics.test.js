@@ -8,6 +8,7 @@ var sinon = require('sinon')
 var Transaction = require('../../../lib/transaction')
 var tests = require('../../lib/cross_agent_tests/cat/cat_map.json')
 var cat = require('../../../lib/util/cat.js')
+var NAMES = require('../../../lib/metrics/names.js')
 
 
 function mockTransaction(agent, test, duration) {
@@ -69,6 +70,43 @@ describe('when CAT is disabled', function () {
 
       assert.deepEqual(attrs, expected)
     })
+  })
+
+  it('includes queueDuration', function() {
+    var trans = new Transaction(agent)
+    trans.measure(NAMES.QUEUETIME, null, 100)
+    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    assert.equal(attrs.queueDuration, 0.1)
+  })
+
+  it('includes externalDuration', function() {
+    var trans = new Transaction(agent)
+    trans.measure(NAMES.EXTERNAL.ALL, null, 100)
+    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    assert.equal(attrs.externalDuration, 0.1)    
+  })
+
+  it('includes databaseDuration', function() {
+    var trans = new Transaction(agent)
+    trans.measure(NAMES.DB.ALL, null, 100)
+    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    assert.equal(attrs.databaseDuration, 0.1)
+  })
+
+  it('includes externalCallCount', function() {
+    var trans = new Transaction(agent)
+    trans.measure(NAMES.EXTERNAL.ALL, null, 100)
+    trans.measure(NAMES.EXTERNAL.ALL, null, 100)
+    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    assert.equal(attrs.externalCallCount, 2)
+  })
+
+  it('includes databaseDuration', function() {
+    var trans = new Transaction(agent)
+    trans.measure(NAMES.DB.ALL, null, 100)
+    trans.measure(NAMES.DB.ALL, null, 100)
+    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    assert.equal(attrs.databaseCallCount, 2)
   })
 
   it("should call transaction.hasErrors() for error attribute", function() {
