@@ -5,6 +5,7 @@ var url = require('url')
 var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
+var Config = require('../../lib/config.js')
 var RemoteMethod = require('../../lib/collector/remote-method.js')
 var semver = require('semver')
 
@@ -92,28 +93,28 @@ describe("RemoteMethod", function () {
     })
   })
 
-  describe("when calling a method on the collector", function () {
-    it("should pass error to the callback when serialization fails", function (done) {
-      var config = {
+  describe("when calling a method on the collector", function() {
+    it("should pass error to the callback when serialization fails", function(done) {
+      var config = new Config({
         port: 80,
         host: 'collector.newrelic.com'
-      }
+      })
 
       var method = new RemoteMethod('test', config)
 
       var problematic = {}
       problematic.parent = problematic
 
-      method.invoke(problematic, function (error) {
+      method.invoke(problematic, function(error) {
         expect(error.message).equal('Converting circular structure to JSON')
         done()
       })
     })
 
-    it("shouldn't throw when dealing with compressed data", function (done) {
+    it("shouldn't throw when dealing with compressed data", function(done) {
       var method = new RemoteMethod('test', {host: 'localhost'})
-      method._shouldCompress = function () { return true; }
-      method._safeRequest = function (options) {
+      method._shouldCompress = function() { return true; }
+      method._safeRequest = function(options) {
         expect(options.body.readUInt8(0)).equal(120)
         expect(options.body.length).equal(14)
 
@@ -123,9 +124,9 @@ describe("RemoteMethod", function () {
       method.invoke('data')
     })
 
-    it("shouldn't throw when preparing uncompressed data", function (done) {
+    it("shouldn't throw when preparing uncompressed data", function(done) {
       var method = new RemoteMethod('test', {host: 'localhost'})
-      method._safeRequest = function (options) {
+      method._safeRequest = function(options) {
         expect(options.body).equal('"data"')
 
         return done()
@@ -156,7 +157,9 @@ describe("RemoteMethod", function () {
         should.exist(error)
 
         // https://github.com/joyent/node/commit/7295bb9435c
-        expect(error.message).match(/^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?( failed.domain.cxlrg:80)?$/)
+        expect(error.message).match(
+          /^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?( failed.domain.cxlrg:80)?$/
+        )
 
         done()
       })
@@ -167,6 +170,7 @@ describe("RemoteMethod", function () {
     var RUN_ID = 1337
     var URL = 'http://collector.newrelic.com'
     var nock
+    var config
     var method
     var sendMetrics
 
@@ -182,13 +186,20 @@ describe("RemoteMethod", function () {
     })
 
     beforeEach(function () {
-      var config = {
+      config = new Config({
         host: 'collector.newrelic.com',
         port: 80,
+        ssl: false,
         run_id: RUN_ID,
         license_key: 'license key here'
-      }
+      })
       method = new RemoteMethod('metric_data', config)
+    })
+
+    afterEach(function() {
+      config = null
+      method = null
+      nock.cleanAll()
     })
 
     it("should pass through error when compression fails", function (done) {
@@ -202,33 +213,81 @@ describe("RemoteMethod", function () {
       })
     })
 
-    describe("successfully", function () {
-      beforeEach(function () {
+    describe("successfully", function() {
+      beforeEach(function() {
         // nock ensures the correct URL is requested
         sendMetrics = nock(URL)
-                        .post(generate('metric_data', RUN_ID))
-                        .reply(200, {return_value: []})
+          .post(generate('metric_data', RUN_ID))
+          .matchHeader('Content-Encoding', 'identity')
+          .reply(200, {return_value: []})
       })
 
-      it("should invoke the callback without error", function (done) {
-        method._post('[]', function (error) {
+      it("should invoke the callback without error", function(done) {
+        method._post('[]', function(error) {
           should.not.exist(error)
           done()
         })
       })
 
-      it("should use the right URL", function (done) {
-        method._post('[]', function () {
-          expect(sendMetrics.isDone()).equal(true)
+      it("should use the right URL", function(done) {
+        method._post('[]', function(error) {
+          should.not.exist(error)
+          expect(sendMetrics.isDone()).to.be.true
           done()
         })
       })
 
-      it("should not throw when compressing", function (done) {
-        method._shouldCompress = function () { return true }
-        method._post('abc', function (error) {
-          expect(sendMetrics.isDone()).equal(true)
+      it("should respect the put_for_data_send config", function(done) {
+        nock.cleanAll()
+        var putMetrics = nock(URL)
+          .put(generate('metric_data', RUN_ID))
+          .reply(200, {return_value: []})
+
+        config.put_for_data_send = true
+        method._post('[]', function(error) {
+          should.not.exist(error)
+          expect(putMetrics.isDone()).to.be.true
           done()
+        })
+      })
+
+      describe('with compression', function() {
+        var sendDeflatedMetrics
+        var sendGzippedMetrics
+
+        beforeEach(function() {
+          sendDeflatedMetrics = nock(URL)
+            .post(generate('metric_data', RUN_ID))
+            .matchHeader('Content-Encoding', 'deflate')
+            .reply(200, {return_value: []})
+
+          sendGzippedMetrics = nock(URL)
+            .post(generate('metric_data', RUN_ID))
+            .matchHeader('Content-Encoding', 'gzip')
+            .reply(200, {return_value: []})
+        })
+
+        it("should default to deflated compression", function(done) {
+          method._shouldCompress = function() { return true }
+          method._post('[]', function(error) {
+            should.not.exist(error)
+            expect(sendMetrics.isDone()).to.be.false
+            expect(sendDeflatedMetrics.isDone()).to.be.true
+            expect(sendGzippedMetrics.isDone()).to.be.false
+            done()
+          })
+        })
+
+        it("should respect the compressed_content_encoding config", function(done) {
+          config.compressed_content_encoding = 'gzip'
+          method._shouldCompress = function() { return true }
+          method._post('[]', function(error) {
+            should.not.exist(error)
+            expect(sendMetrics.isDone()).to.be.false
+            expect(sendDeflatedMetrics.isDone()).to.be.false
+            expect(sendGzippedMetrics.isDone()).to.be.true
+            done()
+          })
         })
       })
     })
@@ -273,11 +332,12 @@ describe("RemoteMethod", function () {
 
 
         beforeEach(function () {
-          var config = {
+          var config = new Config({
             host: 'collector.newrelic.com',
             port: 80,
+            ssl: false,
             license_key: 'license key here'
-          }
+          })
           method = new RemoteMethod('get_redirect_host', config)
 
           getRedirectHost = nock(URL)
@@ -366,11 +426,11 @@ describe("RemoteMethod", function () {
     var headers
 
     beforeEach(function () {
-      var config = {
+      var config = new Config({
         host: 'collector.newrelic.com',
         port: '80',
         run_id: 12
-      }
+      })
       var body = 'test☃'
       var method = new RemoteMethod(body, config)
 
@@ -406,11 +466,11 @@ describe("RemoteMethod", function () {
     var headers
 
     beforeEach(function () {
-      var config = {
+      var config = new Config({
         host: 'collector.newrelic.com',
         port: '80',
         run_id: 12
-      }
+      })
       var body = 'test☃'
       var method = new RemoteMethod(body, config)
 
@@ -455,11 +515,11 @@ describe("RemoteMethod", function () {
     }
 
     beforeEach(function () {
-      config = {
+      config = new Config({
         host: 'collector.newrelic.com',
         port: 80,
         license_key: TEST_LICENSE
-      }
+      })
       var method = new RemoteMethod(TEST_METHOD, config)
       parsed = reconstitute(method._path())
     })
@@ -501,14 +561,22 @@ describe("RemoteMethod", function () {
   describe("when generating the User-Agent string", function () {
     var TEST_VERSION = '0-test'
     var ua
+    var version
+    var pkg
 
 
     before(function () {
-      var config = {version: '0-test'}
+      pkg = require('../../package.json')
+      version = pkg.version
+      pkg.version = TEST_VERSION
+      var config = new Config({})
       var method = new RemoteMethod('test', config)
 
-
       ua = method._userAgent()
+    })
+
+    after(function() {
+      pkg.version = version
     })
 
     it("should clearly indicate it's New Relic for Node", function () {

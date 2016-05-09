@@ -1,7 +1,8 @@
 'use strict'
 
 var assert = require('chai').assert
-var Tracer = require('../../lib/db/tracer')
+var Config = require('../../lib/config')
+var QueryTracer = require('../../lib/db/tracer')
 var codec = require('../../lib/util/codec')
 
 var FAKE_STACK = 'Error\nfake stack'
@@ -15,10 +16,10 @@ describe('Query Tracer', function testQueryTracer() {
     it('should not record if below threshold', testThreshold)
 
     function testOff() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: false},
         transaction_tracer: {record_sql: 'off', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -26,10 +27,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testUnknown() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: false},
         transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -37,10 +38,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testObfuscated() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: false},
         transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -51,10 +52,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testRaw() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: false},
         transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -65,10 +66,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testThreshold() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: false},
         transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 100)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -84,10 +85,10 @@ describe('Query Tracer', function testQueryTracer() {
     it('should not record if below threshold', testThreshold)
 
     function testOff() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'off', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -95,10 +96,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testUnknown() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -106,10 +107,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testObfuscated() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(segment.parameters, {
@@ -126,10 +127,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testRaw() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 1000)
       assert.deepEqual(segment.parameters, {
@@ -146,10 +147,10 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testThreshold() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      })
+      }))
 
       var segment = addQuery(queries, 100)
       assert.deepEqual(queries.samples, {}, 'should not collect sample')
@@ -162,10 +163,54 @@ describe('Query Tracer', function testQueryTracer() {
 
       var queries
 
-      beforeEach(function () {
-        queries = new Tracer({
+      beforeEach(function() {
+        queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+        }))
+      })
+
+      describe('and `simple_compression` is `false`', function() {
+        beforeEach(function() {
+          queries.config.simple_compression = false
+        })
+
+        it('should compress the query parameters', function(done) {
+          addQuery(queries, 600, '/abc')
+
+          queries.prepareJSON(function preparedJSON(err, data) {
+            var sample = data[0]
+
+            codec.decode(sample[9], function decoded(error, params) {
+              assert.equal(error, null, 'should not error')
+
+              var keys = Object.keys(params)
+
+              assert.deepEqual(keys, ['backtrace'])
+              assert.deepEqual(params.backtrace, 'fake stack', 'trace should match')
+              done()
+            })
+          })
+        })
+      })
+
+      describe('and `simple_compression` is `true`', function() {
+        beforeEach(function() {
+          queries.config.simple_compression = true
+        })
+
+        it('should not compress the query parameters', function(done) {
+          addQuery(queries, 600, '/abc')
+
+          queries.prepareJSON(function preparedJSON(err, data) {
+            var sample = data[0]
+            var params = sample[9]
+            var keys = Object.keys(params)
+
+            assert.deepEqual(keys, ['backtrace'])
+            assert.deepEqual(params.backtrace, 'fake stack', 'trace should match')
+            done()
+          })
         })
       })
 
@@ -303,10 +348,10 @@ describe('Query Tracer', function testQueryTracer() {
 
     describe('webTransaction when record_sql is "obfuscated"', function testWebTransaction() {
       it('should record work when empty', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -316,10 +361,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, '/abc')
 
@@ -351,10 +396,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc')
@@ -391,10 +436,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc', 'drop table users')
@@ -456,10 +501,10 @@ describe('Query Tracer', function testQueryTracer() {
 
     describe('backgroundTransaction when record_sql is "raw"', function testBackground() {
       it('should record work when empty', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
+        }))
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -469,10 +514,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, null)
 
@@ -504,10 +549,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -544,10 +589,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -609,10 +654,10 @@ describe('Query Tracer', function testQueryTracer() {
 
     describe('background when record_sql is "obfuscated"', function testBackground() {
       it('should record work when empty', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -622,10 +667,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, null)
 
@@ -657,10 +702,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -697,10 +742,10 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new Tracer({
+        var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
           transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        })
+        }))
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -763,10 +808,10 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('limiting to n slowest', function testRemoveShortest() {
     it('should limit to this.config.max_samples', function testMaxSamples() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true, max_samples: 2},
         transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      })
+      }))
 
       addQuery(queries, 600, null)
       addQuery(queries, 550, null, 'create table users')
@@ -787,15 +832,15 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('merging query tracers', function testMerging() {
     it('should merge queries correctly', function testMerge() {
-      var queries = new Tracer({
+      var queries = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      })
+      }))
 
-      var queries2 = new Tracer({
+      var queries2 = new QueryTracer(new Config({
         slow_sql: {enabled: true},
         transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      })
+      }))
 
       addQuery(queries, 600, null)
       addQuery(queries, 650, null, 'create table users')

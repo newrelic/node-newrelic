@@ -45,107 +45,28 @@ describe('Trace', function () {
     expect(function () { trace.add('Custom/Test17/Child1') }).not.throws()
   })
 
-  it('should produce a transaction trace in the collector\'s expected format',
-     function (done) {
-    var DURATION = 33
-    var URL = '/test?test=value'
-    agent.config.capture_params = true
+  it('should produce a transaction trace in the expected format', function(done) {
+    makeTrace(agent, function(err, details) {
+      if (err) {
+        return done(err)
+      }
 
-    var transaction = new Transaction(agent)
-    transaction.url  = URL
-    transaction.verb = 'GET'
-
-    transaction.timer.setDurationInMillis(DURATION)
-
-    var trace = transaction.trace
-    var start = trace.root.timer.start
-    expect(start, 'root segment\'s start time').above(0)
-    trace.setDurationInMillis(DURATION, 0)
-
-    var web = trace.root.add(URL)
-    transaction.setName(URL, 200)
-    web.markAsWeb(URL)
-    // top-level element will share a duration with the quasi-ROOT node
-    web.setDurationInMillis(DURATION, 0)
-
-    var db = web.add('Database/statement/AntiSQL/select/getSome')
-    db.setDurationInMillis(14, 3)
-
-    var memcache = web.add('Datastore/operation/Memcache/lookup')
-    memcache.setDurationInMillis(20, 8)
-
-    /*
-     * Segment data repeats the outermost data, nested, with the scope for the
-     * outermost version having its scope always set to 'ROOT'. The null bits
-     * are parameters, which are optional, and so far, unimplemented for Node.
-     */
-    var rootSegment = [
-      0,
-      DURATION,
-      'ROOT',
-      {nr_exclusive_duration_millis : 0},
-      [
-        [
-          0,
-          DURATION,
-          'WebTransaction/NormalizedUri/*',
-          {nr_exclusive_duration_millis : 8, test : 'value'},
-          [
-            // TODO: ensure that the ordering is correct WRT start time
-            db.toJSON(),
-            memcache.toJSON()
-          ]
-        ]
-      ]
-    ]
-
-    var rootNode = [
-      trace.root.timer.start / 1000,
-      {},
-      {
-        nr_flatten_leading : false
-      },
-      rootSegment,
-      {
-        agentAttributes: {
-          test : 'value'
-        },
-        userAttributes: {
-
-        },
-        intrinsics: {}
-      },
-      []  // FIXME: parameter groups
-    ]
-
-    codec.encode(rootNode, function (err, encoded) {
-      if (err) return done(err)
-
-      // See docs on Transaction.generateJSON for what goes in which field.
-      var expected = [
-        0,
-        DURATION,
-        'WebTransaction/NormalizedUri/*',  // scope
-        '/test',                    // URI path
-        encoded, // compressed segment / segment data
-        '',                         // FIXME: depends on RUM token in session
-        null,                       // reserved, always NULL
-        false,                      // FIXME: RUM2 session persistence, not
-                                    //        worrying about it for now
-        null,                       // FIXME: xraysessionid
-        null                        // syntheticsResourceId
-      ]
-
-      transaction.trace.generateJSON(function cb_generateJSON(err, traceJSON) {
-        if (err) return done(err)
+      details.trace.generateJSON(function(err, traceJSON) {
+        if (err) {
+          return done(err)
+        }
 
         codec.decode(traceJSON[4], function (derr, reconstituted) {
-          if (derr) return done(derr)
+          if (derr) {
+            return done(derr)
+          }
 
-          expect(reconstituted, 'reconstituted trace segments').deep.equal(rootNode)
-          expect(traceJSON,     'full trace JSON').deep.equal(expected)
+          expect(traceJSON, 'full trace JSON')
+            .to.deep.equal(details.expectedEncoding)
 
-          helper.unloadAgent(agent)
+          expect(reconstituted, 'reconstituted trace segments')
+            .to.deep.equal(details.rootNode)
+
           return done()
         })
       })
@@ -485,19 +406,163 @@ describe('Trace', function () {
     })
   })
 
-  describe('generateJSON', function() {
-    it('sends response time', function(done) {
-      var transaction = new Transaction(agent)
-      var tt = new Trace(transaction)
+  describe('#generateJSON', function() {
+    var details
 
-      transaction.getResponseTimeInMillis = function() {
+    beforeEach(function(done) {
+      makeTrace(agent, function(err, _details) {
+        details = _details
+        done(err)
+      })
+    })
+
+    it('should send response time', function(done) {
+      details.transaction.getResponseTimeInMillis = function() {
         return 1234
       }
 
-      tt.generateJSON(function(error, json, trace) {
+      details.trace.generateJSON(function(err, json, trace) {
+        expect(err).to.not.exist
         expect(json[1]).equal(1234)
         done()
       })
     })
+
+    describe('when `simple_compression` is `false`', function() {
+      it('should compress the segment arrays', function(done) {
+        details.trace.generateJSON(function(err, json, trace) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(json[4])
+            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+
+          codec.decode(json[4], function(err, data) {
+            if (err) {
+              return done(err)
+            }
+
+            expect(data).to.deep.equal(details.rootNode)
+            done()
+          })
+        })
+      })
+    })
+
+    describe('when `simple_compression` is `true`', function() {
+      beforeEach(function() {
+        agent.config.simple_compression = true
+      })
+
+      it('should not compress the segment arrays', function(done) {
+        details.trace.generateJSON(function(err, json, trace) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(json[4]).to.deep.equal(details.rootNode)
+          done()
+        })
+      })
+    })
   })
 })
+
+function makeTrace(agent, callback) {
+  var DURATION = 33
+  var URL = '/test?test=value'
+  agent.config.capture_params = true
+
+  var transaction = new Transaction(agent)
+  transaction.url  = URL
+  transaction.verb = 'GET'
+
+  transaction.timer.setDurationInMillis(DURATION)
+
+  var trace = transaction.trace
+  var start = trace.root.timer.start
+  expect(start, 'root segment\'s start time').above(0)
+  trace.setDurationInMillis(DURATION, 0)
+
+  var web = trace.root.add(URL)
+  transaction.setName(URL, 200)
+  web.markAsWeb(URL)
+  // top-level element will share a duration with the quasi-ROOT node
+  web.setDurationInMillis(DURATION, 0)
+
+  var db = web.add('Database/statement/AntiSQL/select/getSome')
+  db.setDurationInMillis(14, 3)
+
+  var memcache = web.add('Datastore/operation/Memcache/lookup')
+  memcache.setDurationInMillis(20, 8)
+
+  /*
+   * Segment data repeats the outermost data, nested, with the scope for the
+   * outermost version having its scope always set to 'ROOT'. The null bits
+   * are parameters, which are optional, and so far, unimplemented for Node.
+   */
+  var rootSegment = [
+    0,
+    DURATION,
+    'ROOT',
+    {nr_exclusive_duration_millis : 0},
+    [
+      [
+        0,
+        DURATION,
+        'WebTransaction/NormalizedUri/*',
+        {nr_exclusive_duration_millis : 8, test : 'value'},
+        [
+          // TODO: ensure that the ordering is correct WRT start time
+          db.toJSON(),
+          memcache.toJSON()
+        ]
+      ]
+    ]
+  ]
+
+  var rootNode = [
+    trace.root.timer.start / 1000,
+    {},
+    {
+      nr_flatten_leading : false
+    },
+    rootSegment,
+    {
+      agentAttributes: {
+        test : 'value'
+      },
+      userAttributes: {
+
+      },
+      intrinsics: {}
+    },
+    []  // FIXME: parameter groups
+  ]
+
+  codec.encode(rootNode, function(err, encoded) {
+    if (err) {
+      return callback(err)
+    }
+
+    callback(null, {
+      transaction: transaction,
+      trace: trace,
+      rootSegment: rootSegment,
+      rootNode: rootNode,
+      expectedEncoding: [
+        0,
+        DURATION,
+        'WebTransaction/NormalizedUri/*', // scope
+        '/test',  // URI path
+        encoded,  // compressed segment / segment data
+        '',       // FIXME: depends on RUM token in session
+        null,     // reserved, always NULL
+        false,    // FIXME: RUM2 session persistence, not worrying about it for now
+        null,     // FIXME: xraysessionid
+        null      // syntheticsResourceId
+      ]
+    })
+  })
+}
