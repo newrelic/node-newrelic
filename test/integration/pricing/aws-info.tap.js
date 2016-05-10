@@ -80,11 +80,13 @@ function testCases(cases) {
       }
     }
     if (!info) {
+      getAWSInfo.clearCache()
       nock.cleanAll()
       host = nock(hostUrl)
       testCases(cases)
     } else {
       checkCaching(function cacheCheck() {
+        getAWSInfo.clearCache()
         nock.cleanAll()
         host = nock(hostUrl)
         testCases(cases)

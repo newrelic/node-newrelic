@@ -6,6 +6,8 @@ var expect = chai.expect
 var should = chai.should()
 var helper = require('../lib/agent_helper.js')
 var facts = require('../../lib/collector/facts.js')
+var sysInfo = require('../../lib/system-info.js')
+var utilTests = require('../lib/cross_agent_tests/utilization/utilization_json.json')
 
 
 var EXPECTED = ['pid', 'host', 'language', 'app_name', 'labels', 'utilization',
@@ -111,6 +113,119 @@ describe("fun facts about apps that New Relic is interested in include", functio
       done()
     })
   })
+})
+
+describe('utilization', function () {
+  var agent
+  var awsInfo = require('../../lib/aws-info.js')
+  var inputKeys = [
+    'input_total_ram_mib',
+    'input_logical_processors',
+    'input_environment_variables',
+    'input_hostname',
+    'input_aws_id',
+    'input_aws_type',
+    'input_aws_zone'
+  ]
+
+  utilTests.forEach(function(test, index) {
+    it(test.testname, function(done) {
+      var awsInput = {}
+      var systemInput = {}
+      var mockHostname = false
+      var mockRam = false
+      var mockProc = false
+      var queryMap = {}
+      var oldEnvVars = {}
+
+      inputKeys.forEach(function setVal(key) {
+        if (Object.keys(test).indexOf(key) !== -1) {
+          var testValue = test[key]
+
+          switch (key) {
+            case 'input_environment_variables':
+              Object.keys(testValue).forEach(function (name) {
+                if (Object.hasOwnProperty.call(process.env, name)) {
+                  oldEnvVars[name] = process.env[name]
+                }
+                process.env[name] = testValue[name]
+              })
+              break
+            case 'input_aws_id':
+              queryMap['instance-id'] = testValue
+              break
+            case 'input_aws_type':
+              queryMap['instance-type'] = testValue
+              break
+            case 'input_aws_zone':
+              queryMap['placement/availability-zone'] = testValue
+              break
+            case 'input_hostname':
+              mockHostname = function () {
+                return testValue
+              }
+              break
+            case 'input_total_ram_mib':
+              mockRam = function (cb) {
+                return cb(testValue)
+              }
+              break
+            case 'input_logical_processors':
+              mockProc = function (cb) {
+                return cb({
+                  logical: testValue
+                })
+              }
+              break
+          }
+        }
+      })
+
+      agent = helper.loadMockedAgent()
+      var expected = test.expected_output_json
+      var oldGetHostname = agent.config.getHostnameSafe
+      var oldGetMemory = sysInfo._getMemoryStats
+      var oldGetProcessor = sysInfo._getProcessorStats
+      var oldDockerInfo = sysInfo._getDockerContainerId
+      // stub out docker container id query to make this consistent on
+      // all os
+      sysInfo._getDockerContainerId = function (agent, callback) {
+        return callback(null)
+      }
+      var oldAWSQuery = awsInfo._awsQuery
+      awsInfo._awsQuery = function (key, agent, callback) {
+        return callback(queryMap[key])
+      }
+      if (mockHostname) {
+        agent.config.getHostnameSafe = mockHostname
+        mockHostname = false
+      }
+      if (mockRam) {
+        sysInfo._getMemoryStats = mockRam
+        mockRam = false
+      }
+      if (mockProc) {
+        sysInfo._getProcessorStats = mockProc
+        mockProc = false
+      }
+      awsInfo.clearCache()
+      facts(agent, function getFacts(factsed) {
+        expect(factsed.utilization).deep.equals(expected)
+        Object.keys(oldEnvVars).forEach(function (name) {
+          process.env[name] = oldEnvVars[name]
+        })
+        agent.config.getHostnameSafe = oldGetHostname
+        sysInfo._getMemoryStats = oldGetMemory
+        sysInfo._getProcessorStats = oldGetProcessor
+        awsInfo._awsQuery = oldAWSQuery
+        awsInfo.clearCache()
+        sysInfo._getDockerContainerId = oldDockerInfo
+        helper.unloadAgent(agent)
+        done()
+      })
+    })
+  })
+
 })
 
 describe('display_host', function () {

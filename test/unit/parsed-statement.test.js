@@ -398,7 +398,6 @@ describe('recording slow queries', function() {
 
     it('should not capture queries', function() {
       var keys = Object.keys(agent.queries.samples)
-      console.log(agent.queries.samples)
       expect(keys.length).equal(0)
     })
   })

@@ -498,15 +498,14 @@
         "eggs"
       ]
     ],
-    "expectedIntrinsicFields": {
-      "nr.guid": "9323dc260548ed0e",
-      "nr.tripId": "7e249074f277923d",
-      "nr.pathHash": "3b0939af",
-      "nr.referringTransactionGuid": "b854df4feb2b1f06"
-    },
+    "expectedIntrinsicFields": {},
     "nonExpectedIntrinsicFields": [
-      "nr.alternatePathHashes",
-      "nr.referringPathHash"
+      "nr.guid",
+      "nr.tripId",
+      "nr.pathHash",
+      "nr.referringTransactionGuid",
+      "nr.referringPathHash",
+      "nr.alternatePathHashes"
     ]
   },
   {
@@ -542,14 +541,13 @@
       ["scrambled"],
       "5d2957be"
     ],
-    "expectedIntrinsicFields": {
-      "nr.guid": "9323dc260548ed0e",
-      "nr.tripId": "9323dc260548ed0e",
-      "nr.pathHash": "815b96d3",
-      "nr.referringTransactionGuid": "b854df4feb2b1f06",
-      "nr.referringPathHash": "5d2957be"
-    },
+    "expectedIntrinsicFields": {},
     "nonExpectedIntrinsicFields": [
+      "nr.guid",
+      "nr.tripId",
+      "nr.pathHash",
+      "nr.referringTransactionGuid",
+      "nr.referringPathHash",
       "nr.alternatePathHashes"
     ]
   },

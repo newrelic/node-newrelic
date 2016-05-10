@@ -105,6 +105,27 @@ describe("the agent configuration", function () {
       })
     })
 
+    it("should pick up the billing hostname", function () {
+      idempotentEnv('NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS', 123, function (tc) {
+        should.exist(tc.utilization.logical_processors)
+        expect(tc.utilization.logical_processors).equal('123')
+      })
+    })
+
+    it("should pick up the total ram of the system", function () {
+      idempotentEnv('NEW_RELIC_UTILIZATION_BILLING_HOSTNAME', 'a test string', function (tc) {
+        should.exist(tc.utilization.billing_hostname)
+        expect(tc.utilization.billing_hostname).equal('a test string')
+      })
+    })
+
+    it("should pick up the number of logical processors of the system", function () {
+      idempotentEnv('NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB', 123, function (tc) {
+        should.exist(tc.utilization.total_ram_mib)
+        expect(tc.utilization.total_ram_mib).equal('123')
+      })
+    })
+
     it("should pick up the proxy port", function () {
       idempotentEnv('NEW_RELIC_PROXY_PORT', 7777, function (tc) {
         should.exist(tc.proxy_port)

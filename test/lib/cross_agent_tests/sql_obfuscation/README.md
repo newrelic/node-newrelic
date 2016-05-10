@@ -7,8 +7,7 @@ test case are in the `sql` property of each object. Each test case also has an
 `obfuscated` property which is an array containing at least one valid output.
 
 Test cases also have a `dialects` property, which is an array of strings which
-specify which sql dialects the test should apply to. Currently the options are
-`mysql` and `postgres` This is relevant because PostgreSQL uses
+specify which sql dialects the test should apply to. See "SQL Syntax Documentation" list below. This is relevant because for example, PostgreSQL uses
 different identifier and string quoting rules than MySQL (most notably,
 double-quoted string literals are not allowed in PostgreSQL, where
 double-quotes are instead used around identifiers).

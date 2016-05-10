@@ -12,7 +12,6 @@ var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/aws-info').clearCache
-var clearSystemCache = require('../../../lib/system-info').clearCache
 
 
 /*
@@ -35,7 +34,6 @@ var awsRedirect
 
 function refreshAWSEndpoints() {
     clearAWSCache()
-    clearSystemCache()
     awsRedirect = nock(awsHost)
     for (var awsPath in awsResponses) {
       var redirect = awsRedirect.get('/2008-02-01/meta-data/' + awsPath)
