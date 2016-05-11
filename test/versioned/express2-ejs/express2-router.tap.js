@@ -1,19 +1,18 @@
 'use strict'
 
-var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper.js')
+var test    = require('tap').test
+var request = require('request')
+var helper  = require('../../lib/agent_helper.js')
 
 
-test("Express 2 router introspection", function (t) {
+test("Express 2 router introspection", function(t) {
   t.plan(12)
 
   var agent = helper.instrumentMockedAgent()
-    , app   = require('express').createServer()
+  var app   = require('express').createServer()
 
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
     app.close(function cb_close() {})
   })
@@ -21,7 +20,7 @@ test("Express 2 router introspection", function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Expressjs/GET//test/:id',
             "transaction has expected name")
     t.equal(transaction.url, '/test/31337', "URL is left alone")
@@ -62,7 +61,7 @@ test('Express 2 router middleware does not affect naming', function testMiddlewa
   var express = require('express')
   var app = express.createServer()
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
     app.close(function cb_close() {})
   })

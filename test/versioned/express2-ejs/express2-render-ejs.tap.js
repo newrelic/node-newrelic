@@ -4,20 +4,20 @@
 process.env.NODE_ENV = 'test'
 
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , shimmer = require('../../../lib/shimmer')
-  , helper  = require('../../lib/agent_helper')
-  , API     = require('../../../api.js')
-  , fs      = require('fs')
-  
+var test    = require('tap').test
+var request = require('request')
+var shimmer = require('../../../lib/shimmer')
+var helper  = require('../../lib/agent_helper')
+var API     = require('../../../api.js')
+var fs      = require('fs')
+
 
 var TEST_PATH = '/test'
-  , TEST_PORT = 9876
-  , TEST_HOST = 'localhost'
-  , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-  , DELAY     = 600
-  , BODY      = "<!DOCTYPE html>\n" +
+var TEST_PORT = 9876
+var TEST_HOST = 'localhost'
+var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+var DELAY     = 600
+var BODY      = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "  <title>yo dawg</title>\n" +
@@ -26,17 +26,17 @@ var TEST_PATH = '/test'
                 "  <p>I heard u like HTML.</p>\n" +
                 "</body>\n" +
                 "</html>\n"
-  
 
-test("agent instrumentation of Express 2", function (t) {
+
+test("agent instrumentation of Express 2", function(t) {
   t.plan(6)
 
-  t.test("for a normal request", {timeout : 1000}, function (t) {
+  t.test("for a normal request", {timeout : 1000}, function(t) {
     var agent = helper.instrumentMockedAgent()
-      , app   = require('express').createServer()
-      
+    var app   = require('express').createServer()
 
-    this.tearDown(function cb_tearDown() {
+
+    t.tearDown(function cb_tearDown() {
       app.close()
       helper.unloadAgent(agent)
     })
@@ -44,7 +44,7 @@ test("agent instrumentation of Express 2", function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    app.get(TEST_PATH, function (req, res) {
+    app.get(TEST_PATH, function(req, res) {
       res.send({yep : true})
     })
 
@@ -91,9 +91,9 @@ test("agent instrumentation of Express 2", function (t) {
        function (t) {
     var agent = helper.instrumentMockedAgent()
       , app   = require('express').createServer()
-      
 
-    this.tearDown(function cb_tearDown() {
+
+    t.tearDown(function cb_tearDown() {
       app.close()
       helper.unloadAgent(agent)
     })
@@ -129,13 +129,13 @@ test("agent instrumentation of Express 2", function (t) {
     var agent = helper.instrumentMockedAgent()
       , app   = require('express').createServer()
       , api   = new API(agent)
-      
+
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       app.close()
       helper.unloadAgent(agent)
     })
@@ -187,7 +187,7 @@ test("agent instrumentation of Express 2", function (t) {
 
     var app = require('express').createServer()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       app.close()
       helper.unloadAgent(agent)
     })
@@ -229,9 +229,9 @@ test("agent instrumentation of Express 2", function (t) {
          function (t) {
     var agent = helper.instrumentMockedAgent()
       , app   = require('express').createServer()
-      
 
-    this.tearDown(function cb_tearDown() {
+
+    t.tearDown(function cb_tearDown() {
       app.close()
       helper.unloadAgent(agent)
     })
@@ -276,9 +276,9 @@ test("agent instrumentation of Express 2", function (t) {
          function (t) {
     var agent = helper.instrumentMockedAgent()
       , app   = require('express').createServer()
-      
 
-    this.tearDown(function cb_tearDown() {
+
+    t.tearDown(function cb_tearDown() {
       app.close()
       helper.unloadAgent(agent)
     })

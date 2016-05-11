@@ -1,3 +1,5 @@
+'use strict'
+
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var semver = require('semver')
@@ -5,14 +7,14 @@ var semver = require('semver')
 
 test('should name middleware correctly',
     {skip: semver.satisfies(process.version, '<4')},
-    function (t) {
+    function(t) {
 
   var agent = helper.instrumentMockedAgent()
 
   var app = require('express')()
   var server
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })

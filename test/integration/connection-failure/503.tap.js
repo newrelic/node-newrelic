@@ -134,9 +134,6 @@ test("merging metrics and errors after a 503", function (t) {
         t.deepEqual(merged[1], 'trans1', "found scope in merged error")
         t.deepEqual(merged[2], 'test error', "found message in merged error")
 
-        console.log('asdfasdfasdfasfasd')
-        console.log(agent.metrics.toJSON())
-
         t.deepEqual(
           agent.metrics.toJSON(),
           [[
@@ -149,8 +146,7 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 1
             }
-          ],
-          [
+          ],[
             {name : "Errors/all"},
             {
               total          : 0,
@@ -160,8 +156,7 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 1
             }
-          ],
-          [
+          ],[
             {name : "Errors/allWeb"},
             {
               total          : 0,
@@ -171,8 +166,7 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 0
             }
-          ],
-          [
+          ],[
             {name : "Errors/allOther"},
             {
               total          : 0,
@@ -182,8 +176,30 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 1
             }
-          ],
-          [{
+          ],[
+            // Bluebird is a dependency of tap, and since tap is loaded before
+            // the agent, it will be caught in the "Uninstrumented" metrics.
+            {name: "Supportability/Uninstrumented"},
+            {
+              total          : 0,
+              totalExclusive : 0,
+              min            : 0,
+              max            : 0,
+              sumOfSquares   : 0,
+              callCount      : 1
+            }
+          ],[
+            {name: "Supportability/Uninstrumented/bluebird"},
+            {
+              total          : 0,
+              totalExclusive : 0,
+              min            : 0,
+              max            : 0,
+              sumOfSquares   : 0,
+              callCount      : 1
+            }
+          ],[
+            {
               "name" : "Supportability/Events/Customer/Dropped" // != undefined
             },{
               "total" : 0, // != undefined
@@ -192,8 +208,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 0 // != undefined
-            }], // != undefined
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/Customer/Seen" // != undefined
             },{
               "total" : 0, // != undefined
@@ -202,8 +219,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 0 // != undefined
-            }], // != undefined
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/Customer/Sent" // != undefined
             },{
               "total" : 0, // != undefined
@@ -212,8 +230,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 0 // != undefined
-            }],
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/TransactionError/Seen" // != undefined
             },{
               "total" : 0, // != undefined
@@ -222,8 +241,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 1 // != undefined
-            }],
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/TransactionError/Sent" // != undefined
             },{
               "total" : 0, // != undefined

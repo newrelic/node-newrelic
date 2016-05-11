@@ -2,7 +2,6 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var assertSegments = require('../../lib/metrics_helper').assertSegments
 var testPromiseSegments = require('../../integration/instrumentation/promises/segments.js')
 var testTransactionState = require('../../integration/instrumentation/promises/transaction-state.js')
 
@@ -11,12 +10,14 @@ test('transaction state', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
   testTransactionState(t, agent, Promise)
+  t.autoend()
 })
 
 test('segments', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
   testPromiseSegments(t, agent, Promise)
+  t.autoend()
 })
 
 test('no transaction', function(t) {

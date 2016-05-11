@@ -9,17 +9,12 @@ var params = require('../../lib/params')
 var DBUSER = 'test_user'
 var DBNAME = 'agent_integration'
 
-
-test('Basic run through mysql functionality',
-     {timeout : 30 * 1000},
-     function (t) {
-  // t.plan(9);
-
-  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
+test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent()
     var mysql   = require('mysql2')
-      , generic = require('generic-pool')
+    var generic = require('generic-pool')
 
 
     /*
@@ -34,9 +29,9 @@ test('Basic run through mysql functionality',
       max               : 6,
       idleTimeoutMillis : 250,
 
-      log : function (message) { poolLogger.info(message); },
+      log : function(message) { poolLogger.info(message); },
 
-      create : function (callback) {
+      create : function(callback) {
         var client = mysql.createConnection({
           user     : DBUSER,
           database : DBNAME,
@@ -44,7 +39,7 @@ test('Basic run through mysql functionality',
           port     : params.mysql_port
         })
 
-        client.on('error', function (err) {
+        client.on('error', function(err) {
           poolLogger.error('MySQL connection errored out, destroying connection')
           poolLogger.error(err)
           pool.destroy(client)
@@ -99,7 +94,7 @@ test('Basic run through mysql functionality',
       return t.end()
     }
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow()
         helper.unloadAgent(agent)

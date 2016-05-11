@@ -14,7 +14,7 @@ test("Express 4 router introspection", {skip: skip()}, function(t) {
   var server = require('http').createServer(app)
 
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
       helper.unloadAgent(agent)
     })

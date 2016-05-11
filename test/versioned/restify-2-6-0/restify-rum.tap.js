@@ -19,7 +19,7 @@ test("Restify router introspection", function (t) {
   agent.config.browser_monitoring.browser_key = '12345'
   agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
       helper.unloadAgent(agent)
     })

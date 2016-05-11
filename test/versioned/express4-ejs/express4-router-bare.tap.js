@@ -1,12 +1,11 @@
 'use strict'
 
-var path = require('path')
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper.js')
 var skip = require('./skip')
 
-test("Express 4 router introspection", {skip: skip()}, function (t) {
+test("Express 4 router introspection", {skip: skip()}, function(t) {
   t.plan(11)
 
   var agent = helper.instrumentMockedAgent()
@@ -15,7 +14,7 @@ test("Express 4 router introspection", {skip: skip()}, function (t) {
   var server  = require('http').createServer(app)
 
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
       helper.unloadAgent(agent)
     })
@@ -24,7 +23,7 @@ test("Express 4 router introspection", {skip: skip()}, function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Expressjs/GET//test',
             "transaction has expected name")
     t.equal(transaction.url, '/test', "URL is left alone")
@@ -39,17 +38,17 @@ test("Express 4 router introspection", {skip: skip()}, function (t) {
             "should have partial name for apdex")
   })
 
-  app.get('/test', function (req, res) {
+  app.get('/test', function(req, res) {
     t.ok(agent.getTransaction(), "transaction is available")
 
     res.send({status : 'ok'})
     res.end()
   })
 
-  server.listen(8089, function () {
+  server.listen(8089, function() {
     request.get('http://localhost:8089/test',
                 {json : true},
-                function (error, res, body) {
+                function(error, res, body) {
 
       t.equal(res.statusCode, 200, "nothing exploded")
       t.deepEqual(body, {status : 'ok'}, "got expected response")

@@ -1,5 +1,7 @@
 'use strict'
 
+process.env.NEW_RELIC_HOME = __dirname
+
 var test   = require('tap').test
 var logger = require('../../../lib/logger')
 var helper = require('../../lib/agent_helper')
@@ -10,17 +12,12 @@ var DBUSER = 'test_user'
 var DBNAME = 'agent_integration'
 
 
-test('Basic run through mysql functionality',
-     {timeout : 30 * 1000},
-     function (t) {
-  // t.plan(9);
-
-  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
+test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent()
     var mysql   = require('mysql')
     var generic = require('generic-pool')
-
 
     /*
      *
@@ -34,9 +31,9 @@ test('Basic run through mysql functionality',
       max: 6,
       idleTimeoutMillis : 250,
 
-      log : function (message) { poolLogger.info(message); },
+      log : function(message) { poolLogger.info(message); },
 
-      create : function (callback) {
+      create : function(callback) {
         var client = mysql.createConnection({
           user: DBUSER,
           database : DBNAME,
@@ -44,7 +41,7 @@ test('Basic run through mysql functionality',
           port: params.mysql_port
         })
 
-        client.on('error', function (err) {
+        client.on('error', function(err) {
           poolLogger.error('MySQL connection errored out, destroying connection')
           poolLogger.error(err)
           pool.destroy(client)
@@ -97,7 +94,7 @@ test('Basic run through mysql functionality',
       return t.end()
     }
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow()
         helper.unloadAgent(agent)
@@ -115,7 +112,7 @@ test('Basic run through mysql functionality',
           if (err) return t.fail(err)
 
           t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
-          client.query('SELECT 1', function (err) {
+          client.query('SELECT 1', function(err) {
             if (err) return t.fail(err)
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
@@ -123,7 +120,7 @@ test('Basic run through mysql functionality',
             agent.getTransaction().end(function checkQueries() {
               var queryKeys = Object.keys(agent.queries.samples)
               t.ok(queryKeys.length > 0, 'there should be a query sample')
-              queryKeys.forEach(function testSample (key) {
+              queryKeys.forEach(function testSample(key) {
                 var query = agent.queries.samples[key]
                 t.ok(query.total > 0, 'the samples should have positive duration')
               })
@@ -342,7 +339,7 @@ test('Basic run through mysql functionality',
         })
       })
     })
-  }.bind(this))
+  })
 })
 
 function findSegment(root, segmentName) {

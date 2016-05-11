@@ -23,7 +23,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -83,7 +83,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -145,7 +145,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -207,7 +207,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -270,7 +270,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })

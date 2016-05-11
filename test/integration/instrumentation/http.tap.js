@@ -1,11 +1,11 @@
 'use strict'
 
 var path       = require('path')
-  , tap        = require('tap')
-  , test       = tap.test
-  , http       = require('http')
-  , helper     = require('../../lib/agent_helper.js')
-  , StreamSink = require('../../../lib/util/stream-sink.js')
+var tap        = require('tap')
+var test       = tap.test
+var http       = require('http')
+var helper     = require('../../lib/agent_helper.js')
+var StreamSink = require('../../../lib/util/stream-sink.js')
 
 
 test("built-in http instrumentation should handle internal & external requests",
@@ -68,7 +68,7 @@ test("built-in http instrumentation should handle internal & external requests",
     req.end()
   })
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     external.close()
     server.close()
     helper.unloadAgent(agent)
@@ -86,7 +86,7 @@ test("built-in http instrumentation should handle internal & external requests",
     response.on('end', function () {
       if (!transaction) {
         t.fail("Transaction wasn't set by response handler")
-        return this.end()
+        return t.end()
       }
 
       t.equals(response.statusCode, 200, "should successfully fetch the page")
@@ -149,14 +149,24 @@ test("built-in http instrumentation should handle internal & external requests",
   })
 })
 
-test("built-in http instrumentation shouldn't swallow errors",
-     function (t) {
+test("built-in http instrumentation shouldn't swallow errors", function(t) {
   t.plan(8)
 
   var agent = helper.instrumentMockedAgent()
+  var listeners = []
 
   function handleRequest(req, res) {
-    process.once('uncaughtException', function (error) {
+    // Remove tap's uncaughtException handler for this test because we are
+    // testing an unhandled exception case.
+    listeners = process.listeners('uncaughtException')
+    process.removeAllListeners('uncaughtException')
+
+    process.on('uncaughtException', function(error) {
+      listeners.forEach(function(fn) {
+        process.on('uncaughtException', fn)
+      })
+      listeners = []
+
       t.ok(error, "got error in uncaughtException handler.")
       res.statusCode = 501
 
@@ -176,7 +186,7 @@ test("built-in http instrumentation shouldn't swallow errors",
       agent : false
     }
 
-    http.get(options, function (res) {
+    http.get(options, function(res) {
       t.equal(res.statusCode, 501, "got expected (error) status code")
 
       var errors = agent.errors.errors
@@ -191,9 +201,7 @@ test("built-in http instrumentation shouldn't swallow errors",
               "got the expected error")
 
       t.ok(second, "have the second error")
-
-      t.equal(second[2], "HttpError 501",
-              "got the expected error")
+      t.equal(second[2], "HttpError 501", "got the expected error")
 
       t.end()
     })
@@ -201,7 +209,12 @@ test("built-in http instrumentation shouldn't swallow errors",
 
   var server = http.createServer(handleRequest)
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
+    listeners.forEach(function(fn) {
+      process.on('uncaughtException', fn)
+    })
+    listeners = []
+
     server.close()
     helper.unloadAgent(agent)
   })
@@ -220,7 +233,7 @@ test("built-in http instrumentation making outbound requests", function (t) {
     res.end(body)
   })
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })
@@ -293,7 +306,7 @@ test("built-in http instrumentation making outbound requests obsoletely", functi
     res.end(body)
   })
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })
@@ -369,7 +382,7 @@ test("built-in http instrumentation should not crash for requests that are in pr
 
   var agent = helper.instrumentMockedAgent()
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
@@ -422,7 +435,7 @@ test("built-in http instrumentation should not crash when server does not have a
 
   var agent = helper.instrumentMockedAgent()
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
     server.close()
   })

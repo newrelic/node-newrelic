@@ -8,7 +8,7 @@ test("Express 5 detection", function (t) {
   var agent = helper.instrumentMockedAgent({express5: true})
   var express = require('express')
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
