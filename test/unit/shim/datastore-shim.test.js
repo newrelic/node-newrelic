@@ -5,6 +5,7 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var Shim = require('../../../lib/shim/shim')
 var DatastoreShim = require('../../../lib/shim/datastore-shim')
+var ParsedStatement = require('../../../lib/db/parsed-statement')
 
 describe('DatastoreShim', function() {
   var agent = null
@@ -131,73 +132,242 @@ describe('DatastoreShim', function() {
 
   describe('#recordOperation', function() {
     it('should not wrap non-function objects', function() {
-      var wrapped = shim.record(wrappable, function() {})
+      var wrapped = shim.recordOperation(wrappable)
       expect(wrapped).to.equal(wrappable)
       expect(shim.isWrapped(wrapped)).to.be.false
     })
 
-    it('should invoke the spec in the context of the wrapped function')
-
     describe('with no properties', function() {
-      it('should wrap the first parameter if no properties are given')
-      it('should wrap the first parameter if `null` is given for properties')
+      it('should wrap the first parameter if no properties are given', function() {
+        var wrapped = shim.recordOperation(wrappable.bar, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+
+      it('should wrap the first parameter if `null` is given for properties', function() {
+        var wrapped = shim.recordOperation(wrappable.bar, null, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
     })
 
     describe('with properties', function() {
-      it('should replace wrapped properties on the original object')
-      it('should mark wrapped properties as such')
-      it('should not mark unwrapped properties as wrapped')
+      it('should replace wrapped properties on the original object', function() {
+        var original = wrappable.bar
+        shim.recordOperation(wrappable, 'bar', {})
+        expect(wrappable.bar).to.not.equal(original)
+        expect(shim.isWrapped(wrappable.bar)).to.be.true
+        expect(shim.unwrap(wrappable.bar)).to.equal(original)
+      })
+
+      it('should not mark unwrapped properties as wrapped', function() {
+        shim.recordOperation(wrappable, 'name', {})
+        expect(shim.isWrapped(wrappable.name)).to.be.false
+      })
     })
 
     describe('wrapper', function() {
-      it('should create a datastore operation metric')
-      it('should execute the wrapped function')
+      it('should create a datastore operation metric', function() {
+        shim.recordOperation(wrappable, 'getActiveSegment')
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          var segment = wrappable.getActiveSegment()
+          expect(segment).to.not.equal(startingSegment)
+          expect(segment.name).to.equal('Datastore/operation/Cassandra//getActiveSegment')
+          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should execute the wrapped function', function() {
+        var executed = false
+        var toWrap = function() { executed = true }
+        var wrapped = shim.recordOperation(toWrap, {})
+
+        expect(executed).to.be.false
+        wrapped()
+        expect(executed).to.be.true
+      })
+
+      it('should invoke the spec in the context of the wrapped function', function() {
+        var original = wrappable.bar
+        var executed = false
+        shim.recordOperation(wrappable, 'bar', function(_, fn, name, args) {
+          executed = true
+          expect(fn).to.equal(original)
+          expect(name).to.equal('bar')
+          expect(this).to.equal(wrappable)
+          expect(args).to.deep.equal(['a', 'b', 'c'])
+
+          return {}
+        })
+
+        wrappable.bar('a', 'b', 'c')
+        expect(executed).to.be.true
+      })
+
+      it('should bind the callback if there is one', function() {
+        var cb = function() {}
+        var toWrap = function(wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        var wrapped = shim.recordOperation(toWrap, {callback: shim.LAST})
+        wrapped(cb)
+      })
     })
   })
 
   describe('#recordQuery', function() {
-    it('should not wrap non-function objects')
-    it('should invoke the spec in the context of the wrapped function')
+    it('should not wrap non-function objects', function() {
+      var wrapped = shim.recordQuery(wrappable)
+      expect(wrapped).to.equal(wrappable)
+      expect(shim.isWrapped(wrapped)).to.be.false
+    })
 
     describe('with no properties', function() {
-      it('should wrap the first parameter if no properties are given')
-      it('should wrap the first parameter if `null` is given for properties')
+      it('should wrap the first parameter if no properties are given', function() {
+        var wrapped = shim.recordQuery(wrappable.bar, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+
+      it('should wrap the first parameter if `null` is given for properties', function() {
+        var wrapped = shim.recordQuery(wrappable.bar, null, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
     })
 
     describe('with properties', function() {
-      it('should replace wrapped properties on the original object')
-      it('should mark wrapped properties as such')
-      it('should not mark unwrapped properties as wrapped')
+      it('should replace wrapped properties on the original object', function() {
+        var original = wrappable.bar
+        shim.recordQuery(wrappable, 'bar', {})
+        expect(wrappable.bar).to.not.equal(original)
+        expect(shim.isWrapped(wrappable.bar)).to.be.true
+        expect(shim.unwrap(wrappable.bar)).to.equal(original)
+      })
+
+      it('should not mark unwrapped properties as wrapped', function() {
+        shim.recordQuery(wrappable, 'name', {})
+        expect(shim.isWrapped(wrappable.name)).to.be.false
+      })
     })
 
     describe('wrapper', function() {
-      it('should create a datastore query metric')
-      it('should execute the wrapped function')
+      var query = null
+
+      beforeEach(function() {
+        query = 'SELECT property FROM my_table'
+      })
+
+      it('should create a datastore query metric', function() {
+        shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          var segment = wrappable.getActiveSegment(query)
+          expect(segment).to.not.equal(startingSegment)
+          expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
+          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should execute the wrapped function', function() {
+        var executed = false
+        var toWrap = function() { executed = true }
+        var wrapped = shim.recordQuery(toWrap, {})
+
+        expect(executed).to.be.false
+        wrapped()
+        expect(executed).to.be.true
+      })
     })
   })
 
   describe('#recordBatchQuery', function() {
-    it('should not wrap non-function objects')
-    it('should invoke the spec in the context of the wrapped function')
+    it('should not wrap non-function objects', function() {
+      var wrapped = shim.recordBatchQuery(wrappable)
+      expect(wrapped).to.equal(wrappable)
+      expect(shim.isWrapped(wrapped)).to.be.false
+    })
 
     describe('with no properties', function() {
-      it('should wrap the first parameter if no properties are given')
-      it('should wrap the first parameter if `null` is given for properties')
+      it('should wrap the first parameter if no properties are given', function() {
+        var wrapped = shim.recordBatchQuery(wrappable.bar, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+
+      it('should wrap the first parameter if `null` is given for properties', function() {
+        var wrapped = shim.recordBatchQuery(wrappable.bar, null, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
     })
 
     describe('with properties', function() {
-      it('should replace wrapped properties on the original object')
-      it('should mark wrapped properties as such')
-      it('should not mark unwrapped properties as wrapped')
+      it('should replace wrapped properties on the original object', function() {
+        var original = wrappable.bar
+        shim.recordBatchQuery(wrappable, 'bar', {})
+        expect(wrappable.bar).to.not.equal(original)
+        expect(shim.isWrapped(wrappable.bar)).to.be.true
+        expect(shim.unwrap(wrappable.bar)).to.equal(original)
+      })
+
+      it('should not mark unwrapped properties as wrapped', function() {
+        shim.recordBatchQuery(wrappable, 'name', {})
+        expect(shim.isWrapped(wrappable.name)).to.be.false
+      })
     })
 
     describe('wrapper', function() {
-      it('should create a datastore batch query metric')
-      it('should execute the wrapped function')
+      var query = null
+
+      beforeEach(function() {
+        query = 'SELECT property FROM my_table'
+      })
+
+      it('should create a datastore batch query metric', function() {
+        shim.recordBatchQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          var segment = wrappable.getActiveSegment(query)
+          expect(segment).to.not.equal(startingSegment)
+          expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select/batch')
+          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should execute the wrapped function', function() {
+        var executed = false
+        var toWrap = function() { executed = true }
+        var wrapped = shim.recordBatchQuery(toWrap, {})
+
+        expect(executed).to.be.false
+        wrapped()
+        expect(executed).to.be.true
+      })
     })
   })
 
   describe('#parseQuery', function() {
-    it('should parse a query string into a ParsedStatement')
+    it('should parse a query string into a ParsedStatement', function() {
+      var statement = shim.parseQuery('SELECT * FROM table')
+      expect(statement).to.be.an.instanceof(ParsedStatement)
+    })
   })
 })

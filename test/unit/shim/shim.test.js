@@ -1345,14 +1345,22 @@ describe('Shim', function() {
 })
 
 function testNonWritable(obj, key, value) {
+  // Skip this check on Node 0.8.x.
+  if (/^v0\.8\./.test(process.version)) {
+    return
+  }
+
   expect(function() {
-    obj[key] = 'foobar'
+    obj[key] = 'testNonWritable test value'
   }).to.throw(
     TypeError,
-    new RegExp('(?:read only property \'' + key + '\'|Cannot set property ' + key + ')')
+    new RegExp('(read only property \'' + key + '\'|Cannot set property ' + key + ')')
   )
 
   if (value) {
     expect(obj).to.have.property(key, value)
+  } else {
+    expect(obj).to.have.property(key)
+      .that.is.not.equal('testNonWritable test value')
   }
 }
