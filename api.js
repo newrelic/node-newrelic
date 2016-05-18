@@ -8,6 +8,7 @@ var recordBackground = require('./lib/metrics/recorders/other.js')
 var customRecorder = require('./lib/metrics/recorders/custom')
 var hashes = require('./lib/util/hashes')
 var stringify = require('json-stringify-safe')
+var shimmer = require('./lib/shimmer.js')
 
 
 /*
@@ -814,6 +815,43 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
 }
 
 /**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrument(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrument(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrument'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
  * Shuts down the agent.
  *
  * @param {object}  [options]                           object with shut down options
@@ -834,7 +872,7 @@ API.prototype.shutdown = function shutdown(options, cb) {
     if (typeof options === 'function') {
       callback = options
     } else {
-      callback = new Function()
+      callback = new Function() // eslint-disable-line no-new-func
     }
   }
 

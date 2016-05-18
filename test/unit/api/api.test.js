@@ -4,10 +4,11 @@ var path = require('path')
 var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
-var helper = require('../../lib/agent_helper.js')
-var API = require('../../../api.js')
+var helper = require('../../lib/agent_helper')
+var API = require('../../../api')
 var semver = require('semver')
 var sinon = require('sinon')
+var shimmer = require('../../../lib/shimmer')
 
 
 describe("the New Relic agent API", function () {
@@ -28,39 +29,43 @@ describe("the New Relic agent API", function () {
 
   it("exports a transaction naming function", function () {
     should.exist(api.setTransactionName)
-    expect(api.setTransactionName).a('function')
+    expect(api.setTransactionName).to.be.a('function')
   })
 
   it("exports a controller naming function", function () {
     should.exist(api.setControllerName)
-    expect(api.setControllerName).a('function')
+    expect(api.setControllerName).to.be.a('function')
   })
 
   it("exports a transaction ignoring function", function () {
     should.exist(api.setIgnoreTransaction)
-    expect(api.setIgnoreTransaction).a('function')
+    expect(api.setIgnoreTransaction).to.be.a('function')
   })
 
   it("exports a function for adding naming rules", function () {
     should.exist(api.addNamingRule)
-    expect(api.addNamingRule).a('function')
+    expect(api.addNamingRule).to.be.a('function')
   })
 
   it("exports a function for ignoring certain URLs", function () {
     should.exist(api.addIgnoringRule)
-    expect(api.addIgnoringRule).a('function')
+    expect(api.addIgnoringRule).to.be.a('function')
   })
 
   it("exports a function for adding custom parameters", function () {
     should.exist(api.addCustomParameter)
-    expect(api.addCustomParameter).a('function')
+    expect(api.addCustomParameter).to.be.a('function')
+  })
+
+  it("exports a function for adding custom instrumentation", function () {
+    should.exist(api.instrument)
+    expect(api.instrument).to.be.a('function')
   })
 
   describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment
       var transaction
-
 
       beforeEach(function (done) {
         agent.on('transactionFinished', function (t) {
@@ -856,6 +861,39 @@ describe("the New Relic agent API", function () {
 
     it('does not error when no callback is provided', function() {
       expect(function() { api.shutdown() }).not.throws()
+    })
+  })
+
+  describe('instrument', function() {
+    beforeEach(function() {
+      sinon.spy(shimmer, 'registerInstrumentation')
+    })
+
+    afterEach(function() {
+      shimmer.registerInstrumentation.restore()
+    })
+
+    it('should register the instrumentation with shimmer', function() {
+      var opts = {
+        moduleName: 'foobar',
+        onRequire: function(){}
+      }
+      api.instrument(opts)
+
+      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
+      var args = shimmer.registerInstrumentation.getCall(0).args
+      expect(args[0]).to.equal(opts)
+    })
+
+    it('should convert separate args into an options object', function() {
+      function onRequire(){}
+      function onError(){}
+      api.instrument('foobar', onRequire, onError)
+
+      var opts = shimmer.registerInstrumentation.getCall(0).args[0]
+      expect(opts).to.have.property('moduleName', 'foobar')
+      expect(opts).to.have.property('onRequire', onRequire)
+      expect(opts).to.have.property('onError', onError)
     })
   })
 })
