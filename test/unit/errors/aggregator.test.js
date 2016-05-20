@@ -4,13 +4,15 @@ var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
 var helper = require('../../lib/agent_helper')
-var config = require('../../../lib/config.default').config
+var configurator = require('../../../lib/config')
+var configDefaults = require('../../../lib/config.default').config
 var ErrorAggregator = require('../../../lib/errors/aggregator')
 var Transaction = require('../../../lib/transaction')
 var semver = require('semver')
 var API = require('../../../api.js')
 var NAMES = require('../../../lib/metrics/names.js')
 
+var config = configurator.initialize(configDefaults)
 
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') isWeb = true
@@ -1922,4 +1924,3 @@ describe('error events', function() {
     return events[0]
   }
 })
-

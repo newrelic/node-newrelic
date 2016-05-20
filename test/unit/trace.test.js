@@ -50,7 +50,6 @@ describe('Trace', function () {
       if (err) {
         return done(err)
       }
-
       details.trace.generateJSON(function(err, traceJSON) {
         if (err) {
           return done(err)
@@ -475,6 +474,7 @@ function makeTrace(agent, callback) {
   agent.config.capture_params = true
 
   var transaction = new Transaction(agent)
+  transaction.trace.parameters.request_uri = URL
   transaction.url  = URL
   transaction.verb = 'GET'
 

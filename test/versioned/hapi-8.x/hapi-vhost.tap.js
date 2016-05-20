@@ -19,7 +19,7 @@ test("Hapi vhost support", function (t) {
   t.plan(1)
 
   t.test("should not explode when using vhosts", function (t) {
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
       , hapi   = require('hapi')
       , server = new hapi.Server()
 
@@ -42,7 +42,8 @@ test("Hapi vhost support", function (t) {
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
           "id" : "1337",
-          "name" : "hapi"
+          "name" : "hapi",
+          "request_uri" : "/test/1337/2"
         }, 'parameters should have name and id')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -52,7 +53,8 @@ test("Hapi vhost support", function (t) {
           "response.status" : 200,
           "httpResponseCode": "200",
           "id" : "1337",
-          "name" : "hapi"
+          "name" : "hapi",
+          "request_uri" : "/test/1337/2"
         }, 'parameters should have name and id')
       }
 

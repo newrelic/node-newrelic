@@ -31,11 +31,12 @@ test("Agent should send metrics to staging-collector.newrelic.com", function (t)
     t.ok(findMetric(metrics, 'TEST/discard'), 'the test metric should be present')
 
     agent._sendMetrics(function cb__sendMetrics(error) {
-      t.notOk(error, "sent metrics without error")
+      if (!t.notOk(error, "sent metrics without error")) {
+        console.error(error)
+      }
 
       agent.stop(function cb_stop(error) {
         t.notOk(error, "stopped without error")
-
         t.end()
       })
     })

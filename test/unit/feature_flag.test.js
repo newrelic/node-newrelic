@@ -20,6 +20,7 @@ var used = [
   'promise_segments',
   'proxy',
   'released',
+  'send_request_uri_attribute',
   'synthetics',
   'unreleased',
 ]

@@ -12,7 +12,7 @@ test("Restify capture params introspection", function (t) {
   t.test('simple case with no params', function (t) {
     t.plan(5)
 
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
     var server = require('restify').createServer()
 
 
@@ -35,7 +35,8 @@ test("Restify capture params introspection", function (t) {
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "15",
-          "response.headers.contentType" : "application/json"
+          "response.headers.contentType" : "application/json",
+          "request_uri" : "/test"
         }, 'parameters should only have request/response params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -45,7 +46,8 @@ test("Restify capture params introspection", function (t) {
           "response.status" : 200,
           "httpResponseCode": "200",
           "response.headers.contentLength" : "15",
-          "response.headers.contentType" : "application/json"
+          "response.headers.contentType" : "application/json",
+          "request_uri" : "/test"
         }, 'parameters should only have request/response params')
       }
     })
@@ -70,7 +72,7 @@ test("Restify capture params introspection", function (t) {
   t.test('case with route params', function (t) {
     t.plan(5)
 
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
     var server = require('restify').createServer()
 
 
@@ -94,7 +96,8 @@ test("Restify capture params introspection", function (t) {
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
-          "id" : "1337"
+          "id" : "1337",
+          "request_uri" : "/test/1337"
         }, 'parameters should have id')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -105,7 +108,8 @@ test("Restify capture params introspection", function (t) {
           "httpResponseCode": "200",
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
-          "id" : "1337"
+          "id" : "1337",
+          "request_uri" : "/test/1337"
         }, 'parameters should have id')
       }
     })
@@ -130,7 +134,7 @@ test("Restify capture params introspection", function (t) {
   t.test('case with query params', function (t) {
     t.plan(5)
 
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
     var server = require('restify').createServer()
 
 
@@ -154,7 +158,8 @@ test("Restify capture params introspection", function (t) {
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
-          "name" : "restify"
+          "name" : "restify",
+          "request_uri" : "/test"
         }, 'parameters should have name')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -165,7 +170,8 @@ test("Restify capture params introspection", function (t) {
           "httpResponseCode": "200",
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
-          "name" : "restify"
+          "name" : "restify",
+          "request_uri" : "/test"
         }, 'parameters should have name')
       }
     })
@@ -190,7 +196,7 @@ test("Restify capture params introspection", function (t) {
   t.test('case with both route and query params', function (t) {
     t.plan(5)
 
-    var agent  = helper.instrumentMockedAgent()
+    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
     var server = require('restify').createServer()
 
 
@@ -215,7 +221,8 @@ test("Restify capture params introspection", function (t) {
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
           "id" : "1337",
-          "name" : "restify"
+          "name" : "restify",
+          "request_uri" : "/test/1337"
         }, 'parameters should have id and name')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -227,7 +234,8 @@ test("Restify capture params introspection", function (t) {
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
           "id" : "1337",
-          "name" : "restify"
+          "name" : "restify",
+          "request_uri" : "/test/1337"
         }, 'parameters should have id and name')
       }
     })

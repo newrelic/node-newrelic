@@ -8,22 +8,25 @@ var test    = require('tap').test
 var request = require('request')
 var helper  = require('../../lib/agent_helper')
 var API     = require('../../../api.js')
-  
+
 
 // CONSTANTS
 var TEST_PORT = 9876
 var TEST_HOST = 'localhost'
 var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT
-  
+
 
 
 test("test capture_params for express", function (t) {
   t.test("no variables", function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express4: true})
+    var agent = helper.instrumentMockedAgent({
+      express4: true,
+      send_request_uri_attribute: true
+    })
     var app = require('express')()
     var server = require('http').createServer(app)
-      
+
 
     this.tearDown(function () {
       server.close()
@@ -54,7 +57,8 @@ test("test capture_params for express", function (t) {
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "12",
-          "response.headers.contentType" : "application/json; charset=utf-8"
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "request_uri" : "/user/"
         }, 'parameters should only have the request/response params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -63,7 +67,8 @@ test("test capture_params for express", function (t) {
           "response.status" : 200,
           "httpResponseCode": "200",
           "response.headers.contentLength" : "12",
-          "response.headers.contentType" : "application/json; charset=utf-8"
+          "response.headers.contentType" : "application/json; charset=utf-8",
+          "request_uri" : "/user/"
         }, 'parameters should only have the request/response params')
       }
     })
@@ -81,10 +86,13 @@ test("test capture_params for express", function (t) {
 
   t.test("route variables", function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express4: true})
+    var agent = helper.instrumentMockedAgent({
+      express4: true,
+      send_request_uri_attribute: true
+    })
     var app = require('express')()
     var server = require('http').createServer(app)
-      
+
 
     this.tearDown(function () {
       server.close()
@@ -116,7 +124,8 @@ test("test capture_params for express", function (t) {
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
-          "id" : "5"
+          "id" : "5",
+          "request_uri" : "/user/5"
         }, 'parameters should include route params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -126,7 +135,8 @@ test("test capture_params for express", function (t) {
           "httpResponseCode": "200",
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
-          "id" : "5"
+          "id" : "5",
+          "request_uri" : "/user/5"
         }, 'parameters should include route params')
       }
     })
@@ -144,10 +154,13 @@ test("test capture_params for express", function (t) {
 
   t.test("query variables", {timeout : 1000}, function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express4: true})
+    var agent = helper.instrumentMockedAgent({
+      express4: true,
+      send_request_uri_attribute: true
+    })
     var app = require('express')()
     var server = require('http').createServer(app)
-      
+
 
     this.tearDown(function () {
       server.close()
@@ -179,7 +192,8 @@ test("test capture_params for express", function (t) {
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
-          "name" : "bob"
+          "name" : "bob",
+          "request_uri" : "/user/"
         }, 'parameters should include query params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -189,7 +203,8 @@ test("test capture_params for express", function (t) {
           "httpResponseCode": "200",
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
-          "name" : "bob"
+          "name" : "bob",
+          "request_uri" : "/user/"
         }, 'parameters should include query params')
       }
     })
@@ -207,10 +222,13 @@ test("test capture_params for express", function (t) {
 
   t.test("route and query variables", function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express4: true})
+    var agent = helper.instrumentMockedAgent({
+      express4: true,
+      send_request_uri_attribute: true
+    })
     var app = require('express')()
     var server = require('http').createServer(app)
-      
+
 
     this.tearDown(function () {
       server.close()
@@ -243,7 +261,8 @@ test("test capture_params for express", function (t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
-          "name" : "bob"
+          "name" : "bob",
+          "request_uri" : "/user/5"
         }, 'parameters should include query params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -254,7 +273,8 @@ test("test capture_params for express", function (t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
-          "name" : "bob"
+          "name" : "bob",
+          "request_uri" : "/user/5"
         }, 'parameters should include query params')
       }
     })
@@ -271,10 +291,13 @@ test("test capture_params for express", function (t) {
   })
 
   t.test("query params mask route parameters", function (t) {
-    var agent = helper.instrumentMockedAgent()
+    var agent = helper.instrumentMockedAgent({
+      express4: true,
+      send_request_uri_attribute: true
+    })
     var app = require('express')()
     var server = require('http').createServer(app)
-      
+
 
     this.tearDown(function () {
       server.close()
@@ -299,7 +322,8 @@ test("test capture_params for express", function (t) {
             "request.method" : "GET",
             "response.status" : 200,
             "httpResponseCode": "200",
-            "id" : 5
+            "id" : 5,
+            "request_uri": "/user/5"
       }
       var possibleExpected = {
         "httpResponseMessage": "OK",
