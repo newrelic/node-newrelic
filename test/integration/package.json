@@ -6,7 +6,8 @@
   "author": "Martin Kuba <mkuba@newrelic.com>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "express": "*"
+    "express": "*",
+    "redis": "*"
   },
   "private": true
 }

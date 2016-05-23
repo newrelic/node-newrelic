@@ -22,11 +22,11 @@ module.exports = function initialize(agent, redis) {
             REDIS.OPERATION + 'Unknown',
             recordRedis,
             original,
-            internalSendCommandWrapper
+            wrapper
           )
         }
       )
-    } else {
+    } else { 
       shimmer.wrapMethod(
         redisPrototype,
         'redis.RedisClient.prototype',
@@ -36,19 +36,27 @@ module.exports = function initialize(agent, redis) {
             REDIS.OPERATION + 'Unknown',
             recordRedis,
             original,
-            sendCommandWrapper
+            wrapper
           )
         }
       )
     }
+
   }
 
-  function sendCommandWrapper(segment, args, bind) {
+  function wrapper(segment, args, bind) {
+    debugger
     var position = args.length - 1
     var keys = args[1]
     var last = args[position]
 
-    segment.name = REDIS.OPERATION + (args[0] || 'unknown')
+    var command
+    if (typeof args[0] === 'string') {
+      command = args[0]
+    } else if (typeof args[0] === 'object' && args[0].command) {
+      command = args[0].command
+    }
+    segment.name = REDIS.OPERATION + (command || 'unknown')
 
     if (keys && typeof keys !== 'function') {
       urltils.copyParameters(agent.config,
@@ -66,25 +74,6 @@ module.exports = function initialize(agent, redis) {
     } else { // let's shove a callback in there for fun
       args.push(bind(null, true, true))
     }
-
-    return args
-  }
-
-  function internalSendCommandWrapper(segment, args, bind) {
-    var keys = args[0].args
-    var command = args[0].command
-    args[0].callback = bind(args[0].callback, true, true)
-
-    segment.name = REDIS.OPERATION + (command || 'unknown')
-
-    if (keys && typeof keys !== 'function') {
-      urltils.copyParameters(agent.config,
-        {key: stringifySync(keys[0], 'Unknown')}, segment.parameters)
-    }
-
-    // capture connection info for datastore instance metric
-    segment.port = this.port
-    segment.host = this.host
 
     return args
   }

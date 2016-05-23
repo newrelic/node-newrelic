@@ -1,0 +1,7 @@
+{
+  "name": "redis-1-test",
+  "dependencies": {
+    "redis": "^1.0.0"
+  },
+  "private": true
+}
