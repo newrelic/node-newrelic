@@ -3,6 +3,7 @@
 var nock = require('nock')
 var assert = require('chai').assert
 var fetchSystemInfo = require('../../../lib/system-info')
+var EventEmitter = require('events').EventEmitter
 
 var awsHost = "http://169.254.169.254"
 
@@ -17,12 +18,12 @@ for (var awsPath in awsResponses) {
   awsRedirect.get('/2008-02-01/meta-data/' + awsPath).reply(200, awsResponses[awsPath])
 }
 
-var fakeAgent = {
-  config: {
-    utilization: {
-      detect_aws: true,
-      detect_docker: false
-    }
+
+var fakeAgent = new EventEmitter()
+fakeAgent.config = {
+  utilization: {
+    detect_aws: true,
+    detect_docker: false
   }
 }
 
