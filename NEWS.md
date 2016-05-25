@@ -5,10 +5,6 @@
 * The following attributes are now sent to Insights along with transaction events:
   externalDuration, externalCallCount, and queueDuration.
 
-* Added advanced settings to control encoding and HTTP verb for communication
-  with the collector. This is useful in some deployment environments where the network
-  traffic needs to conform to specific rules.
-
 * Custom SSL certificates (from the agent configuration) are now used even when a proxy
   is not explicitly defined. This is useful in some environments that use an implicit
   proxy for all network traffic.
