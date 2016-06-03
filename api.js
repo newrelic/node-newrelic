@@ -621,8 +621,6 @@ API.prototype.endTransaction = function endTransaction() {
   var tx = tracer.getTransaction()
 
   if (tx) {
-    // TODO: Log transaction name as well.
-    logger.debug('ending transaction with id: %s', tx.id)
     if (tx.webSegment) {
       tx.setName(tx.url, 0)
       tx.webSegment.markAsWeb(tx.url)
@@ -630,6 +628,7 @@ API.prototype.endTransaction = function endTransaction() {
     } else if (tx.bgSegment) {
       tx.bgSegment.end()
     }
+    logger.debug('ending transaction with id: %s and name: %s', tx.id, tx.name)
     tx.end()
   } else {
     logger.debug('endTransaction() called while not in a transaction.')

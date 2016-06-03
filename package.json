@@ -73,6 +73,11 @@
       "name": "Natalie Wolfe",
       "email": "nwolfe@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Seth Shober",
+      "email": "sshober@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
