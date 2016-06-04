@@ -12,7 +12,7 @@
     "consistent-return": "off",
     "curly": "off",
     "eol-last": "error",
-    "eqeqeq": "error",
+    "eqeqeq": ["error", "smart"],
     "camelcase": "off",
     "dot-notation": "error",
     "func-names": "error",

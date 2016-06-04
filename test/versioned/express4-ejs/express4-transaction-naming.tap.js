@@ -140,6 +140,34 @@ function runTests(flags) {
     runTest(t, '/test/param', '/test')
   })
 
+  test('with error', function(t) {
+    setup(t)
+
+    app.get('/path1', function(req, res, next) {
+      next(new Error('some error'))
+    })
+
+    app.use(function(err, req, res, next) {
+      return res.status(500).end()
+    })
+
+    runTest(t, '/path1', '/path1')
+  })
+
+  test('with error and an error handler', function(t) {
+    setup(t)
+
+    app.get('/path1', function(req, res, next) {
+      next(new Error('some error'))
+    })
+
+    app.use(function(err, req, res, next) {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1')
+  })
+
   test('when router error is handled outside of the router', function(t) {
     setup(t)
 
@@ -185,7 +213,7 @@ function runTests(flags) {
       res.end()
     })
 
-    runTest(t, '/abcd', '/a')
+    runTest(t, '/abcd', '/a/')
   })
 
   test('when using router with a route variable', function(t) {

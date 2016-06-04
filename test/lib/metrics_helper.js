@@ -55,29 +55,48 @@ function assertMetrics(metrics, expected, exclusive,
 }
 
 /**
- * @param {TraceSegment} parent Parent segment
- * @param {Array} expected      Array of strings that represent segment names.
- *                              If an item in the array is another array, it represents
- *                              children of the previous item.
- * @param {bool} exact          If true, then the expected segments must match exactly,
- *                              including their position and children on all levels.
- *                              When false, then only check that each child exists.
+ * @param {TraceSegment} parent     Parent segment
+ * @param {Array} expected          Array of strings that represent segment names.
+ *                                  If an item in the array is another array, it
+ *                                  represents children of the previous item.
+ * @param {boolean} options.exact   If true, then the expected segments must match
+ *                                  exactly, including their position and children on all
+ *                                  levels.  When false, then only check that each child
+ *                                  exists.
+ * @param {array} options.exclude   Array of segment names that should be excluded from
+ *                                  validation.  This is useful, for example, when a
+ *                                  segment may or may not be created by code that is not
+ *                                  directly under test.  Only used when `exact` is true.
  */
-function assertSegments(parent, expected, exact) {
+function assertSegments(parent, expected, options) {
   var child
   var childCount = 0
 
   // rather default to what is more likely to fail than have a false test
-  if (typeof exact === 'undefined') {
-    exact = true
+  var exact = true
+  if (options && options.exact === false) {
+    exact = options.exact
+  } else if (options === false) {
+    exact = false
   }
 
+  function getChildren(parent) {
+    return parent.children.filter(function(item) {
+      if (exact && options && options.exclude) {
+        return (options.exclude.indexOf(item.name) === -1)
+      } else {
+        return true
+      }
+    })
+  }
+
+  var children = getChildren(parent)
   if (exact) {
     for (var i = 0; i < expected.length; ++i) {
       var sequenceItem = expected[i]
 
       if (typeof sequenceItem === 'string') {
-        child = parent.children[childCount++]
+        child = children[childCount++]
         assert.equal(
           child ? child.name : undefined,
           sequenceItem,
@@ -88,21 +107,23 @@ function assertSegments(parent, expected, exact) {
         // if the next expected item is not array, then check that the current child has no
         // children
         if (!Array.isArray(expected[i+1])) {
-          assert(child.children.length === 0, 'segment "' + child.name +
+          // var children = child.children
+          assert(getChildren(child).length === 0, 'segment "' + child.name +
             '" should not have any children')
         }
+
       } else if (typeof sequenceItem === 'object') {
-        assertSegments(child, sequenceItem)
+        assertSegments(child, sequenceItem, options)
       }
     }
 
     // check if correct number of children was found
     assert.equal(
-      parent.children.length,
+      children.length,
       childCount,
       format(
         'segment "%s" expected to have %j children, but got %j',
-        parent.name, childCount, parent.children.length
+        parent.name, childCount, children.length
       )
     )
   } else {

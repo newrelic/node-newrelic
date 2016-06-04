@@ -62,11 +62,17 @@ test('app should be at top of stack when mounted', function (t) {
 
   t.plan(10)
 
+  // store finished transactions
+  var finishedTransactions = {}
+  agent.on('transactionFinished', function(tx) {
+    finishedTransactions[tx.id] = tx
+  })
+
   server.listen(4123, function() {
     request.get('http://localhost:4123/myApp/myChild/app', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        body,
+        finishedTransactions[body].partialName,
         'Expressjs/GET//:app/:child/app',
         'should set partialName correctly for nested apps'
       )
@@ -75,7 +81,7 @@ test('app should be at top of stack when mounted', function (t) {
     request.get('http://localhost:4123/myApp/nestedApp  ', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        body,
+        finishedTransactions[body].partialName,
         'Expressjs/GET//:app/nestedApp/',
         'should set partialName correctly for deeply nested apps'
       )
@@ -84,7 +90,7 @@ test('app should be at top of stack when mounted', function (t) {
     request.get('http://localhost:4123/myApp/myChild/router', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        body,
+        finishedTransactions[body].partialName,
         'Expressjs/GET//:router/:child/router',
         'should set partialName correctly for nested routers'
       )
@@ -93,7 +99,7 @@ test('app should be at top of stack when mounted', function (t) {
     request.get('http://localhost:4123/myApp/nestedRouter', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        body,
+        finishedTransactions[body].partialName,
         'Expressjs/GET//:router/nestedRouter/',
         'should set partialName correctly for deeply nested routers'
       )
@@ -102,7 +108,7 @@ test('app should be at top of stack when mounted', function (t) {
     request.get('http://localhost:4123/foo/bar', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        body,
+        finishedTransactions[body].partialName,
         'Expressjs/GET//:foo/:bar',
         'should reset partialName after passing through a router without a matching route'
       )
@@ -110,7 +116,7 @@ test('app should be at top of stack when mounted', function (t) {
   })
 
   function respond(req, res) {
-    res.send(agent.getTransaction().partialName)
+    res.send(agent.getTransaction().id)
   }
 })
 
