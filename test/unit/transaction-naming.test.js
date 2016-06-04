@@ -24,7 +24,7 @@ describe("Transaction naming:", function () {
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
       transaction.setName('http://test.test.com/', 200)
-      expect(transaction.name).equal('WebTransaction/setByInstrumentation')
+      expect(transaction.name).equal('WebTransaction//setByInstrumentation')
       done()
     })
   })
@@ -94,5 +94,5 @@ describe("Transaction naming:", function () {
 })
 
 function simulateInstrumentation(transaction) {
-  transaction.partialName = 'setByInstrumentation'
+  transaction.nameState.appendPath('setByInstrumentation')
 }

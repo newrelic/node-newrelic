@@ -531,7 +531,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
       callback && callback.name,
       tx.id
     )
-    tx.partialName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + url
+    tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
     tx.url = url
     tx.applyUserNamingRules(tx.url)
     tx.webSegment = tracer.createSegment(url, recordWeb)

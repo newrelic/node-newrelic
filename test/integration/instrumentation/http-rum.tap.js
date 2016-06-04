@@ -35,7 +35,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
 
   var external = http.createServer(function cb_createServer(request, response) {
     t.equal(
-      agent.getTransaction().partialName,
+      agent.getTransaction()._partialName,
       'NormalizedUri/WORKING',
       'name rules should be applied'
     )

@@ -546,7 +546,7 @@ describe("built-in http module instrumentation", function () {
 
     it('should fall back to partial name if transaction.name is not set', function(done) {
       var server = http.createServer(function(req, res) {
-        agent.getTransaction().partialName = '/abc'
+        agent.getTransaction().nameState.appendPath('/abc')
         res.end()
       })
 
@@ -559,7 +559,7 @@ describe("built-in http module instrumentation", function () {
             res.headers['x-newrelic-app-data'],
             encKey
           ))
-          expect(data[1]).equal('/abc')
+          expect(data[1]).equal('Nodejs/abc')
           res.resume()
           server.close(done)
         })
@@ -668,12 +668,12 @@ describe("built-in http module instrumentation", function () {
       helper.runInTransaction(agent, function() {
         addSegment() // Add webSegment so everything works properly
         var transaction = agent.getTransaction()
-        transaction.partialName = '/xyz'
+        transaction.nameState.appendPath('/xyz')
         transaction.name = null
         transaction.referringPathHash = 'h/def'
         var pathHash = hashes.calculatePathHash(
           agent.config.applications()[0],
-          transaction.partialName,
+          transaction.nameState.getName(),
           transaction.referringPathHash
         )
 

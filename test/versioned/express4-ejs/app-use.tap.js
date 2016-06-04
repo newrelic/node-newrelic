@@ -67,7 +67,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
     request.get('http://localhost:4123/myApp/myChild/app', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        finishedTransactions[body].partialName,
+        finishedTransactions[body].nameState.getName(),
         'Expressjs/GET//:app/:child/app',
         'should set partialName correctly for nested apps'
       )
@@ -76,7 +76,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
     request.get('http://localhost:4123/myApp/nestedApp  ', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        finishedTransactions[body].partialName,
+        finishedTransactions[body].nameState.getName(),
         'Expressjs/GET//:app/nestedApp/',
         'should set partialName correctly for deeply nested apps'
       )
@@ -85,7 +85,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
     request.get('http://localhost:4123/myApp/myChild/router', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        finishedTransactions[body].partialName,
+        finishedTransactions[body].nameState.getName(),
         'Expressjs/GET//:router/:child/router',
         'should set partialName correctly for nested routers'
       )
@@ -94,7 +94,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
     request.get('http://localhost:4123/myApp/nestedRouter', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        finishedTransactions[body].partialName,
+        finishedTransactions[body].nameState.getName(),
         'Expressjs/GET//:router/nestedRouter/',
         'should set partialName correctly for deeply nested routers'
       )
@@ -104,7 +104,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
     request.get('http://localhost:4123/foo/bar', function(err, res, body) {
       t.notOk(err)
       t.equal(
-        finishedTransactions[body].partialName,
+        finishedTransactions[body].nameState.getName(),
         'Expressjs/GET//:foo/:bar',
         'should reset partialName after passing through a router without a matching route'
       )

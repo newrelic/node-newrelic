@@ -263,7 +263,6 @@ describe('The custom instrumentation API', function () {
         expect(tx.webSegment.name).to.equal('/custom/transaction')
         api.endTransaction()
         expect(tx.webSegment.name).to.equal('WebTransaction/Custom//custom/transaction')
-
         done()
       })
       txHandler()

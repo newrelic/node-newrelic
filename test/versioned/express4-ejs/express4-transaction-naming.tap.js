@@ -31,6 +31,29 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
+  test("transaction name with no matched routes",
+      function (t) {
+    setup(t)
+
+    app.get('/path1', function(req, res, next){
+      res.end()
+    })
+
+    var endpoint = '/asdf'
+
+    agent.on('transactionFinished', function (transaction) {
+      t.equal(transaction.name, 'WebTransaction/NormalizedUri/*',
+        "transaction has expected name")
+      t.end()
+    })
+    var server = app.listen(function() {
+      makeRequest(server, endpoint)
+    })
+    t.tearDown(function cb_tearDown() {
+      server.close()
+    })
+  })
+
   test("transaction name with route that has multiple handlers",
       function (t) {
     setup(t)

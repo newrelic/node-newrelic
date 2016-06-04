@@ -246,7 +246,7 @@ describe("recordWeb", function () {
         // just to make sure
         'WebTransaction/TestJS//another/:name' : 0.444
       }
-      trans.partialName = 'TestJS//key/:id'
+      trans.nameState.setName('TestJS', null, '/', '/key/:id')
 
       record({
         transaction : trans,

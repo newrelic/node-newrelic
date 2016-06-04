@@ -1,0 +1,11 @@
+{
+  "name": "director-1",
+  "version": "0.0.0",
+  "main": "director.tap.js",
+  "license": "proprietary",
+  "dependencies": {
+    "director": "^1.2.8",
+    "express": "^4.14.0"
+  },
+  "private": true
+}

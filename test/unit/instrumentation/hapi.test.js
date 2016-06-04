@@ -96,7 +96,7 @@ describe("an instrumented Hapi application", function () {
           method : 'GET',
           path : TEST_PATH,
           handler : function handler() {
-            expect(transaction.partialName).equal('Hapi/GET//test/{id}')
+            expect(transaction.nameState.getName()).equal('Hapi/GET//test/{id}')
             done()
           }
         }

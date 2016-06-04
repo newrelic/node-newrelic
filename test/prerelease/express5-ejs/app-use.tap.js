@@ -110,7 +110,7 @@ test('app should be at top of stack when mounted', function (t) {
   })
 
   function respond(req, res) {
-    res.send(agent.getTransaction().partialName)
+    res.send(agent.getTransaction().nameState.getName())
   }
 })
 
