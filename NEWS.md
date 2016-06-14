@@ -1,3 +1,17 @@
+### v1.28.1 (2016-06-15):
+
+* The following attributes are now sent to Insights along with transaction events:  databaseDuration, databaseCallCount.
+
+* Fixed a few issues with the Express instrumentation.
+
+  Middleware functions mounted with a path variable now generate the correct middleware metrics.  Routers mounted using route methods now generate the correct trace segments and times.  Routers mounted on root path are now not included in trace when they contain no matching routes.
+
+* Updated Redis instrumentation to work with version 2.x of the redis module.
+
+* Improvements to error tracking on systems that have a lot of errors.
+
+* Other minor changes to tests and logging.
+
 ### v1.28.0 (2016-05-25):
 
 * Express middleware metrics are now enabled by default.
