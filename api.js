@@ -541,6 +541,26 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
   })
 }
 
+/**
+ * Creates a function that represents a background transaction. It does not start the
+ * transaction automatically - the returned function needs to be invoked to start it.
+ * Inside the callback, the transaction must be ended by calling endTransaction().
+ *
+ *
+ * var newrelic = require('newrelic')
+ * var transaction = newrelic.createBackgroundTransaction('myTransaction', function() {
+ *   // do some work
+ *   newrelic.endTransaction()
+ * })
+ *
+ * @param {string}    name      The name of the transaction.  It is used to group related
+                                transactions in APM, so it should be a generic name,
+                                and not iclude any variable parameters.
+ * @param {string}    [group]   Optional, used for grouping background transactions in
+ *                              APM.  For more information see:
+ *                              https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
+ * @param {Function}  callback  Function that eoncompasses the background work to be run.
+ */
 API.prototype.createBackgroundTransaction = createBackgroundTransaction
 
 function createBackgroundTransaction(name, group, callback) {
