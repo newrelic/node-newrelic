@@ -174,7 +174,7 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
                'should register as SELECT')
 
       t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
-      t.equals(selectSegment.children[0].name, 'Callback: anonymous')
+      t.equals(selectSegment.children[0].name, 'Callback: <anonymous>')
 
       t.equals(
         selectSegment.children[0].children.length,
