@@ -486,7 +486,24 @@ API.prototype.createTracer = function createTracer(name, callback) {
   return tracer.bindFunction(callback, segment, true)
 }
 
-API.prototype.createWebTransaction = function createWebTransaction(url, callback) {
+/**
+ * Creates a function that represents a web transaction. It does not start the
+ * transaction automatically - the returned function needs to be invoked to start it.
+ * Inside the handler function, the transaction must be ended by calling endTransaction().
+ *
+ * @example
+ * var newrelic = require('newrelic')
+ * var transaction = newrelic.createWebTransaction('/some/url/path', function() {
+ *   // do some work
+ *   newrelic.endTransaction()
+ * })
+ *
+ * @param {string}    url       The URL of the transaction.  It is used to name and group
+                                related transactions in APM, so it should be a generic
+                                name and not iclude any variable parameters.
+ * @param {Function}  handle    Function that represents the transaction work.
+ */
+API.prototype.createWebTransaction = function createWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
   )
@@ -494,7 +511,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
 
   // FLAG: custom_instrumentation
   if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return callback
+    return handle
   }
 
   var fail = false
@@ -503,21 +520,21 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     fail = true
   }
 
-  if (typeof callback !== 'function') {
-    logger.warn('createWebTransaction called with a callback arg that is not a function')
+  if (typeof handle !== 'function') {
+    logger.warn('createWebTransaction called with a handle arg that is not a function')
     fail = true
   }
 
   if (fail) {
-    // If name is undefined but callback is defined we should make a best effort
+    // If name is undefined but handle is defined we should make a best effort
     // to return it so things don't crash.
-    return callback
+    return handle
   }
 
   logger.debug(
     'creating web transaction generator %s (%s).',
     url,
-    callback && callback.name
+    handle && handle.name
   )
 
   var tracer = this.agent.tracer
@@ -528,7 +545,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     logger.debug(
       'creating web transaction %s (%s) with transaction id: %s',
       url,
-      callback && callback.name,
+      handle && handle.name,
       tx.id
     )
     tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
@@ -537,45 +554,45 @@ API.prototype.createWebTransaction = function createWebTransaction(url, callback
     tx.webSegment = tracer.createSegment(url, recordWeb)
     tx.webSegment.start()
 
-    return tracer.bindFunction(callback, tx.webSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.webSegment).apply(this, arguments)
   })
 }
 
 /**
  * Creates a function that represents a background transaction. It does not start the
  * transaction automatically - the returned function needs to be invoked to start it.
- * Inside the callback, the transaction must be ended by calling endTransaction().
+ * Inside the handler function, the transaction must be ended by calling endTransaction().
  *
- *
+ * @example
  * var newrelic = require('newrelic')
  * var transaction = newrelic.createBackgroundTransaction('myTransaction', function() {
  *   // do some work
  *   newrelic.endTransaction()
  * })
  *
- * @param {string}    name      The name of the transaction.  It is used to group related
-                                transactions in APM, so it should be a generic name,
-                                and not iclude any variable parameters.
+ * @param {string}    name      The name of the transaction.  It is used to name and group
+                                related transactions in APM, so it should be a generic
+                                name and not iclude any variable parameters.
  * @param {string}    [group]   Optional, used for grouping background transactions in
  *                              APM.  For more information see:
  *                              https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
- * @param {Function}  callback  Function that eoncompasses the background work to be run.
+ * @param {Function}  handle    Function that represents the background work.
  */
 API.prototype.createBackgroundTransaction = createBackgroundTransaction
 
-function createBackgroundTransaction(name, group, callback) {
+function createBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createBackgroundTransaction'
   )
   metric.incrementCallCount()
 
-  if (callback === undefined && typeof group === 'function') {
-    callback = group
+  if (handle === undefined && typeof group === 'function') {
+    handle = group
     group = 'Nodejs'
   }
   // FLAG: custom_instrumentation
   if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return callback
+    return handle
   }
 
   var fail = false
@@ -584,24 +601,24 @@ function createBackgroundTransaction(name, group, callback) {
     fail = true
   }
 
-  if (typeof callback !== 'function') {
+  if (typeof handle !== 'function') {
     logger.warn(
-      'createBackgroundTransaction called with a callback arg that is not a function'
+      'createBackgroundTransaction called with a handle arg that is not a function'
     )
     fail = true
   }
 
   if (fail) {
-    // If name is undefined but callback is defined we should make a best effort
+    // If name is undefined but handle is defined we should make a best effort
     // to return it so things don't crash.
-    return callback
+    return handle
   }
 
   logger.debug(
     'creating background transaction generator %s:%s (%s)',
     name,
     group,
-    callback && callback.name
+    handle && handle.name
   )
 
   var tracer = this.agent.tracer
@@ -613,7 +630,7 @@ function createBackgroundTransaction(name, group, callback) {
       'creating background transaction %s:%s (%s) with transaction id: %s',
       name,
       group,
-      callback && callback.name,
+      handle && handle.name,
       tx.id
     )
 
@@ -622,7 +639,7 @@ function createBackgroundTransaction(name, group, callback) {
     tx.bgSegment.partialName = group
     tx.bgSegment.start()
 
-    return tracer.bindFunction(callback, tx.bgSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.bgSegment).apply(this, arguments)
   })
 }
 
