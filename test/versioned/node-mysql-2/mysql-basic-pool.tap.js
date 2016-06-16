@@ -120,14 +120,18 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
     t.test('ensure host and port are set on segment', function(_t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
-          var seg = agent.tracer.getTransaction().trace.root.children[0]
-          _t.notOk(err, 'no errors')
-          _t.ok(seg, 'there is a sgment')
-          _t.equal(seg.host, config.host, 'set host')
-          _t.equal(seg.port, config.port, 'set port')
-          _t.end()
+          var curtx = agent.tracer.getTransaction()
+          _t.ok(curtx, 'should have a transaction')
+          if (curtx) {
+            var seg = curtx.trace.root.children[0]
+            _t.notOk(err, 'no errors')
+            _t.ok(seg, 'there is a sgment')
+            _t.equal(seg.host, config.host, 'set host')
+            _t.equal(seg.port, config.port, 'set port')
+            curtx.end()
+          }
 
-          agent.getTransaction().end()
+          _t.end()
         })
       })
     })
@@ -135,11 +139,14 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
     t.test('query with error', function(_t){
       helper.runInTransaction(agent, function transactionInScope() {
         pool.query('BLARG', function(err, rows, fields) {
-          _t.ok(err)
-          _t.ok(agent.getTransaction(), 'transaction should exit')
+          var tx = agent.getTransaction()
+          _t.ok(err, 'should have passed through error')
+          _t.ok(tx, 'transaction should exist')
+          if (tx) {
+            tx.end()
+          }
           _t.end()
 
-          agent.getTransaction().end()
         })
       })
     })
@@ -158,8 +165,8 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
           var segment = agent.tracer.getSegment().parent
 
           _t.ifError(err, 'no error ocurred')
-          _t.ok(transxn, 'transaction should exit')
-          _t.ok(segment, 'segment should exit')
+          _t.ok(transxn, 'transaction should exist')
+          _t.ok(segment, 'segment should exist')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
           _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
@@ -174,17 +181,20 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.query('SELECT ? + ? AS solution', [1, 1], function(err, rows, fields) {
           var transxn = agent.getTransaction()
-          var segment = agent.tracer.getSegment().parent
+          _t.ok(transxn, 'transaction should exist')
+          if (transxn) {
+            var segment = agent.tracer.getSegment().parent
+            _t.ok(segment, 'segment should exist')
+            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+            transxn.end()
+          }
+
 
           _t.ifError(err, 'no error ocurred')
-          _t.ok(transxn, 'transaction should exit')
-          _t.ok(segment, 'segment should exit')
-          _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-          _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           _t.end()
 
-          agent.getTransaction().end()
         })
       })
     })
@@ -193,21 +203,23 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.getConnection(function shouldBeWrapped(err, connection) {
           _t.ifError(err, 'should not have error')
-          _t.ok(agent.getTransaction(), 'transaction should exit')
+          _t.ok(agent.getTransaction(), 'transaction should exist')
 
           connection.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
             var transxn = agent.getTransaction()
             var segment = agent.tracer.getSegment().parent
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.ok(segment, 'segment should exit')
+            _t.ok(transxn, 'transaction should exist')
+            _t.ok(segment, 'segment should exist')
             _t.ok(segment.timer.start > 0, 'starts at a postitive time')
             _t.ok(segment.timer.start <= Date.now(), 'starts in past')
             _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
-            agent.getTransaction().end()
+            if (transxn) {
+              transxn.end()
+            }
             connection.release()
           })
         })
@@ -218,21 +230,23 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.getConnection(function shouldBeWrapped(err, connection) {
           _t.ifError(err, 'should not have error')
-          _t.ok(agent.getTransaction(), 'transaction should exit')
+          _t.ok(agent.getTransaction(), 'transaction should exist')
 
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+            _t.ok(transxn, 'transaction should exist')
+            if (transxn) {
+              var segment = agent.tracer.getSegment().parent
+              _t.ok(segment, 'segment should exist')
+              _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+              _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+              _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+              transxn.end()
+            }
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
-            agent.getTransaction().end()
             connection.release()
           })
         })
@@ -290,7 +304,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
       helper.runInTransaction(agent, function(txn){
         poolCluster.getConnection(function (err, connection) {
           _t.ifError(err, 'should not have error')
-          _t.ok(agent.getTransaction(), 'transaction should exit')
+          _t.ok(agent.getTransaction(), 'transaction should exist')
           _t.equal(agent.getTransaction(), txn, 'transaction must be original')
           _t.end()
 
@@ -314,15 +328,18 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+            _t.ok(transxn, 'transaction should exist')
+            _t.strictEqual(transxn, txn, 'transaction must be same')
+
+            if (transxn) {
+              var segment = agent.tracer.getSegment().parent
+              _t.ok(segment, 'segment should exist')
+              _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+              _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+              _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+            }
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
             txn.end()
@@ -367,15 +384,18 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1, 1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+            _t.ok(transxn, 'transaction should exist')
+            _t.strictEqual(transxn, txn, 'transaction must be same')
+
+            if (transxn) {
+              var segment = agent.tracer.getSegment().parent
+              _t.ok(segment, 'segment should exist')
+              _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+              _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+              _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+            }
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
             txn.end()
@@ -420,15 +440,18 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+            _t.ok(transxn, 'transaction should exist')
+            _t.strictEqual(transxn, txn, 'transaction must be same')
+
+            if (transxn) {
+              var segment = agent.tracer.getSegment().parent
+              _t.ok(segment, 'segment should exist')
+              _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+              _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+              _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+            }
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
             txn.end()
@@ -472,15 +495,18 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+            _t.ok(transxn, 'transaction should exist')
+            _t.strictEqual(transxn, txn, 'transaction must be same')
+
+            if (transxn) {
+              var segment = agent.tracer.getSegment().parent
+              _t.ok(segment, 'segment should exist')
+              _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+              _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+              _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+            }
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
             txn.end()
@@ -526,15 +552,18 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
         helper.runInTransaction(agent, function(txn){
           connection.query('SELECT ? + ? AS solution', [1,1], function(err, rows, fields) {
             var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+            _t.ok(transxn, 'transaction should exist')
+            _t.strictEqual(transxn, txn, 'transaction must be same')
+
+            if (transxn) {
+              var segment = agent.tracer.getSegment().parent
+              _t.ok(segment, 'segment should exist')
+              _t.ok(segment.timer.start > 0, 'starts at a postitive time')
+              _t.ok(segment.timer.start <= Date.now(), 'starts in past')
+              _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+            }
 
             _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
             _t.end()
 
             txn.end()
@@ -547,7 +576,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
     })
   })
 
-  this.tearDown(function(){
+  t.tearDown(function(){
     helper.unloadAgent(agent)
   })
 
