@@ -10,6 +10,7 @@ var hashes = require('./lib/util/hashes')
 var stringify = require('json-stringify-safe')
 var shimmer = require('./lib/shimmer.js')
 
+var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
  *
@@ -848,6 +849,50 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
     }
   }
 
+  opts.type = MODULE_TYPE.GENERIC
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrumentDatastore(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentDatastore(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ *
+ * @param {string} [options.datastoreName]
+ *  If provided, this will be used for naming the metrics. Otherwise the
+ *  instrumentation will need set the datastore name manually.
+ */
+API.prototype.instrumentDatastore =
+function instrumentDatastore(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentDatastore'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.DATASTORE
   shimmer.registerInstrumentation(opts)
 }
 

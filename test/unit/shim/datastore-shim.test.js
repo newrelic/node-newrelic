@@ -53,7 +53,7 @@ describe('DatastoreShim', function() {
       // Test without datastore
       var _shim = null
       expect(function() {
-        new DatastoreShim(agent, 'test-cassandra')
+        _shim = new DatastoreShim(agent, 'test-cassandra')
       }).to.not.throw()
       expect(_shim).to.not.have.property('_metrics')
 
@@ -141,7 +141,7 @@ describe('DatastoreShim', function() {
 
     beforeEach(function() {
       // Use a shim without a parser set for these tests.
-      shim = new DatastoreShim(agent)
+      shim = new DatastoreShim(agent, 'test')
       shim._metrics = {PREFIX: ''}
     })
 
