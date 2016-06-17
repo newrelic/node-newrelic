@@ -16,30 +16,58 @@ describe('shimmer', function() {
     var onErrorArgs = null
     var counter = 0
     var moduleName = null
+    var instrumentationOpts = null
 
     before(function() {
       agent = helper.instrumentMockedAgent()
       moduleName = require.resolve('../helpers/module')
-      shimmer.registerInstrumentation({
+      instrumentationOpts = {
         moduleName: 'module.js',
         onRequire: function() {
-          console.log('onRequire')
+          ++counter
           onRequireArgs = arguments
         },
         onError: function() { onErrorArgs = arguments }
-      })
+      }
+      shimmer.registerInstrumentation(instrumentationOpts)
+    })
+
+    afterEach(function() {
+      counter = 0
+      onRequireArgs = null
+      onErrorArgs = null
+
+      delete instrumentationOpts.instrumented
+      delete require.cache[moduleName]
     })
 
     after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should be sent shimmer and the loaded module', function() {
+    it('should be sent a shim and the loaded module', function() {
       var mod = require(moduleName)
       expect(onRequireArgs.length).to.equal(3)
       expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
       expect(onRequireArgs[1]).to.equal(mod)
       expect(onRequireArgs[2]).to.equal('module.js')
+    })
+
+    it('should construct a DatastoreShim if the type is "datastore"', function() {
+      instrumentationOpts.type = 'datastore'
+      var mod = require(moduleName)
+      expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
+    })
+
+    it('should only run the instrumentation once', function() {
+      expect(counter).to.equal(0)
+      require(moduleName)
+      expect(counter).to.equal(1)
+      require(moduleName)
+      require(moduleName)
+      require(moduleName)
+      require(moduleName)
+      expect(counter).to.equal(1)
     })
   })
 
