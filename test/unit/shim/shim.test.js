@@ -12,7 +12,7 @@ describe('Shim', function() {
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
-    shim = new Shim(agent)
+    shim = new Shim(agent, 'test-module')
     wrappable = {
       name: 'this is a name',
       bar: function barsName() { return 'bar' },
@@ -33,7 +33,12 @@ describe('Shim', function() {
   describe('constructor', function() {
     it('should require an agent parameter', function() {
       expect(function() { new Shim() })
-        .to.throw(Error, 'Shim must be initialized with an agent.')
+        .to.throw(Error, /^Shim must be initialized with .*? agent/)
+    })
+
+    it('should require a module name parameter', function() {
+      expect(function() { new Shim(agent) })
+        .to.throw(Error, /^Shim must be initialized with .*? module name/)
     })
   })
 
@@ -114,7 +119,7 @@ describe('Shim', function() {
 
     it('should be the agent handed to the constructor', function() {
       var foo = {}
-      var s = new Shim(foo)
+      var s = new Shim(foo, 'test-module')
       expect(s.agent).to.equal(foo)
     })
   })
@@ -126,8 +131,19 @@ describe('Shim', function() {
 
     it('should be the tracer from the agent', function() {
       var foo = {tracer: {}}
-      var s = new Shim(foo)
+      var s = new Shim(foo, 'test-module')
       expect(s.tracer).to.equal(foo.tracer)
+    })
+  })
+
+  describe('#moduleName', function() {
+    it('should be a non-writable property', function() {
+      testNonWritable(shim, 'moduleName', 'test-module')
+    })
+
+    it('should be the name handed to the constructor', function() {
+      var s = new Shim(agent, 'some-module-name')
+      expect(s.moduleName).to.equal('some-module-name')
     })
   })
 
