@@ -14,7 +14,7 @@ describe('DatastoreShim', function() {
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
-    shim = new DatastoreShim(agent, DatastoreShim.CASSANDRA)
+    shim = new DatastoreShim(agent, 'test-cassandra', DatastoreShim.CASSANDRA)
     wrappable = {
       name: 'this is a name',
       bar: function barsName() { return 'bar' },
@@ -41,14 +41,19 @@ describe('DatastoreShim', function() {
   describe('constructor', function() {
     it('should require the `agent` parameter', function() {
       expect(function() { new DatastoreShim() })
-        .to.throw(Error, 'Shim must be initialized with an agent.')
+        .to.throw(Error, /^Shim must be initialized with .*? agent/)
+    })
+
+    it('should require the `moduleName` parameter', function() {
+      expect(function() { new DatastoreShim(agent) })
+        .to.throw(Error, /^Shim must be initialized with .*? module name/)
     })
 
     it('should take an optional `datastore`', function() {
       // Test without datastore
       var _shim = null
       expect(function() {
-        _shim = new DatastoreShim(agent)
+        new DatastoreShim(agent, 'test-cassandra')
       }).to.not.throw()
       expect(_shim).to.not.have.property('_metrics')
 
@@ -97,7 +102,7 @@ describe('DatastoreShim', function() {
 
     beforeEach(function() {
       // Use a shim without a datastore set for these tests.
-      shim = new DatastoreShim(agent)
+      shim = new DatastoreShim(agent, 'test-cassandra')
     })
 
     it('should accept the id of a well-known datastore', function() {
