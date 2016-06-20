@@ -199,7 +199,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
       })
     })
 
-    t.test('pool.getConnectino -> connection.query', function(_t) {
+    t.test('pool.getConnection -> connection.query', function(_t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.getConnection(function shouldBeWrapped(err, connection) {
           _t.ifError(err, 'should not have error')
@@ -226,7 +226,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
       })
     })
 
-    t.test('pool.getConnectino -> connection.query', function(_t) {
+    t.test('pool.getConnection -> connection.query', function(_t) {
       helper.runInTransaction(agent, function transactionInScope() {
         pool.getConnection(function shouldBeWrapped(err, connection) {
           _t.ifError(err, 'should not have error')
