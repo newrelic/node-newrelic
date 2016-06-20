@@ -30,7 +30,7 @@
     "no-multiple-empty-lines": "error",
     "no-new": "error",
     "no-new-func": "warn",
-    "no-shadow": "warn",
+    "no-shadow": ["warn", {"allow": ["shim"]}],
     "no-undef": "error",
     "no-underscore-dangle": "off",
     "no-unused-vars": "error",

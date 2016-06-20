@@ -92,17 +92,18 @@ test('Basic run through mysql functionality',
       }
     }
 
-    if (error) {
-      t.fail(error)
-      return t.end()
-    }
-
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow()
         helper.unloadAgent(agent)
       })
     })
+
+    if (error) {
+      t.fail(error)
+      console.log(error.stack)
+      return t.end()
+    }
 
     t.plan(7)
 

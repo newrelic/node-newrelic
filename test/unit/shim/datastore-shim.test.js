@@ -44,21 +44,22 @@ describe('DatastoreShim', function() {
         .to.throw(Error, 'Shim must be initialized with an agent.')
     })
 
-    it('should take an optional `datastoreId`', function() {
-      // Test without datastoreId
+    it('should take an optional `datastore`', function() {
+      // Test without datastore
+      var _shim = null
       expect(function() {
-        new DatastoreShim(agent)
+        _shim = new DatastoreShim(agent)
       }).to.not.throw()
+      expect(_shim).to.not.have.property('_metrics')
 
-      // Use one provided for all tests to check constructed with datastoreId
-      expect(shim).to.have.property('_datastoreId', DatastoreShim.CASSANDRA)
+      // Use one provided for all tests to check constructed with datastore
       expect(shim).to.have.property('_metrics')
     })
   })
 
   describe('well-known datastores', function() {
     it('should be enumerated on the class and prototype', function() {
-      var datastores = ['CASSANDRA', 'REDIS']
+      var datastores = ['CASSANDRA', 'MYSQL', 'REDIS']
       datastores.forEach(function(ds) {
         expect(DatastoreShim).to.have.property(ds)
         expect(shim).to.have.property(ds)
