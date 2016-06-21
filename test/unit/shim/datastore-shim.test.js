@@ -177,7 +177,7 @@ describe('DatastoreShim', function() {
           var startingSegment = agent.tracer.getSegment()
           var segment = wrappable.getActiveSegment()
           expect(segment).to.not.equal(startingSegment)
-          expect(segment.name).to.equal('Datastore/operation/Cassandra//getActiveSegment')
+          expect(segment.name).to.equal('Datastore/operation/Cassandra/getActiveSegment')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
       })
