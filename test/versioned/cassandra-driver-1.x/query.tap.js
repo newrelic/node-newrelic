@@ -156,8 +156,8 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
 
             transaction.end(function end() {
               checkMetric('Datastore/operation/Cassandra/insert', 1)
-              checkMetric('Datastore/allOther', 2)
-              checkMetric('Datastore/Cassandra/allOther', 2)
+              checkMetric('Datastore/allOther', 4)
+              checkMetric('Datastore/Cassandra/allOther', 4)
               checkMetric('Datastore/Cassandra/all', 2)
               checkMetric('Datastore/all', 2)
               checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)

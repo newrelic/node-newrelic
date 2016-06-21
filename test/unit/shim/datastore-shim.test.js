@@ -131,6 +131,77 @@ describe('DatastoreShim', function() {
     })
   })
 
+  describe('#setParser', function() {
+    var shim = null
+
+    beforeEach(function() {
+      // Use a shim without a parser set for these tests.
+      shim = new DatastoreShim(agent)
+      shim._metrics = {PREFIX: ''}
+    })
+
+    it('should default to an SQL parser', function() {
+      var query = 'SELECT 1 FROM test'
+      var parsed = shim.parseQuery(query)
+      expect(parsed.operation).to.equal('select')
+      expect(parsed.model).to.equal('test')
+      expect(parsed.raw).to.equal(query)
+    })
+
+    it('should allow for the parser to be set', function() {
+      var testValue = false
+      shim.setParser(function fakeParser(query) {
+        testValue = true
+        return {
+          operation: 'test'
+        }
+      })
+      shim.parseQuery()
+      expect(testValue).to.be.true
+    })
+
+    it('should have constants to set the query parser with', function() {
+      shim.setParser(shim.SQL_PARSER)
+      var query = 'SELECT 1 FROM test'
+      var parsed = shim.parseQuery(query)
+      expect(parsed.operation).to.equal('select')
+      expect(parsed.model).to.equal('test')
+      expect(parsed.raw).to.equal(query)
+    })
+
+    it('should not set parser to a new parser with invalid string', function() {
+      var testValue = false
+      shim.setParser(function fakeParser(query) {
+        testValue = true
+        return {
+          operation: 'test'
+        }
+      })
+      shim.setParser('bad string')
+      var query = 'SELECT 1 FROM test'
+      var parsed = shim.parseQuery(query)
+      expect(testValue).to.be.true
+    })
+
+    it('should not set parser to a new parser with an object', function() {
+      var testValue = false
+      shim.setParser(function fakeParser(query) {
+        testValue = true
+        return {
+          operation: 'test'
+        }
+      })
+      shim.setParser({
+        parser: function shouldNotBeCalled(){
+          throw new Error('get me outta here')
+        }
+      })
+      var query = 'SELECT 1 FROM test'
+      var parsed = shim.parseQuery(query)
+      expect(testValue).to.be.true
+    })
+  })
+
   describe('#recordOperation', function() {
     it('should not wrap non-function objects', function() {
       var wrapped = shim.recordOperation(wrappable)
