@@ -236,9 +236,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -271,9 +271,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
-          assert.equal(sample[6], 1.15, 'should match total')
-          assert.equal(sample[7], 0.55, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 1150, 'should match total')
+          assert.equal(sample[7], 550, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -306,9 +306,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -328,9 +328,9 @@ describe('Query Tracer', function testQueryTracer() {
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
-            assert.equal(sample2[6], 0.55, 'should match total')
-            assert.equal(sample2[7], 0.55, 'should match min')
-            assert.equal(sample2[8], 0.55, 'should match max')
+            assert.equal(sample2[6], 550, 'should match total')
+            assert.equal(sample2[7], 550, 'should match min')
+            assert.equal(sample2[8], 550, 'should match max')
 
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
@@ -379,9 +379,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -419,9 +419,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
-          assert.equal(sample[6], 1.15, 'should match total')
-          assert.equal(sample[7], 0.55, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 1150, 'should match total')
+          assert.equal(sample[7], 550, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -459,9 +459,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -481,9 +481,9 @@ describe('Query Tracer', function testQueryTracer() {
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
-            assert.equal(sample2[6], 0.55, 'should match total')
-            assert.equal(sample2[7], 0.55, 'should match min')
-            assert.equal(sample2[8], 0.55, 'should match max')
+            assert.equal(sample2[6], 550, 'should match total')
+            assert.equal(sample2[7], 550, 'should match min')
+            assert.equal(sample2[8], 550, 'should match max')
 
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
@@ -532,9 +532,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -572,9 +572,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
-          assert.equal(sample[6], 1.15, 'should match total')
-          assert.equal(sample[7], 0.55, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 1150, 'should match total')
+          assert.equal(sample[7], 550, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -612,9 +612,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -634,9 +634,9 @@ describe('Query Tracer', function testQueryTracer() {
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
-            assert.equal(sample2[6], 0.55, 'should match total')
-            assert.equal(sample2[7], 0.55, 'should match min')
-            assert.equal(sample2[8], 0.55, 'should match max')
+            assert.equal(sample2[6], 550, 'should match total')
+            assert.equal(sample2[7], 550, 'should match min')
+            assert.equal(sample2[8], 550, 'should match max')
 
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
@@ -685,9 +685,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -725,9 +725,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
-          assert.equal(sample[6], 1.15, 'should match total')
-          assert.equal(sample[7], 0.55, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 1150, 'should match total')
+          assert.equal(sample[7], 550, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -765,9 +765,9 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
-          assert.equal(sample[6], 0.6, 'should match total')
-          assert.equal(sample[7], 0.6, 'should match min')
-          assert.equal(sample[8], 0.6, 'should match max')
+          assert.equal(sample[6], 600, 'should match total')
+          assert.equal(sample[7], 600, 'should match min')
+          assert.equal(sample[8], 600, 'should match max')
 
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
@@ -787,9 +787,9 @@ describe('Query Tracer', function testQueryTracer() {
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
-            assert.equal(sample2[6], 0.55, 'should match total')
-            assert.equal(sample2[7], 0.55, 'should match min')
-            assert.equal(sample2[8], 0.55, 'should match max')
+            assert.equal(sample2[6], 550, 'should match total')
+            assert.equal(sample2[7], 550, 'should match min')
+            assert.equal(sample2[8], 550, 'should match max')
 
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
@@ -856,17 +856,17 @@ describe('Query Tracer', function testQueryTracer() {
       var select = queries.samples['select*fromfoowherea=?']
 
       assert.equal(select.callCount, 2, 'should have correct callCount')
-      assert.equal(select.max, 0.8, 'max should be set')
-      assert.equal(select.min, 0.6, 'min should be set')
-      assert.equal(select.total, 1.4, 'total should be set')
+      assert.equal(select.max, 800, 'max should be set')
+      assert.equal(select.min, 600, 'min should be set')
+      assert.equal(select.total, 1400, 'total should be set')
       assert.equal(select.trace.duration, 800, 'trace should be set')
 
       var create = queries.samples.createtableusers
 
       assert.equal(create.callCount, 2, 'should have correct callCount')
-      assert.equal(create.max, 0.65, 'max should be set')
-      assert.equal(create.min, 0.5, 'min should be set')
-      assert.equal(create.total, 1.15, 'total should be set')
+      assert.equal(create.max, 650, 'max should be set')
+      assert.equal(create.min, 500, 'min should be set')
+      assert.equal(create.total, 1150, 'total should be set')
       assert.equal(create.trace.duration, 650, 'trace should be set')
     })
   })

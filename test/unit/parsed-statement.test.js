@@ -273,11 +273,11 @@ describe('recording slow queries', function() {
       var sample = agent.queries.samples[keys[0]]
       var trace = sample.trace
 
-      expect(sample.total).equal(1.004)
-      expect(sample.totalExclusive).equal(1.004)
-      expect(sample.min).equal(0.501)
-      expect(sample.max).equal(0.503)
-      expect(sample.sumOfSquares).equal(0.50401)
+      expect(sample.total).equal(1004)
+      expect(sample.totalExclusive).equal(1004)
+      expect(sample.min).equal(501)
+      expect(sample.max).equal(503)
+      expect(sample.sumOfSquares).equal(504010)
       expect(sample.callCount).equal(2)
       expect(trace.obfuscated).equal('select * from foo where a=?')
       expect(trace.normalized).equal('select*fromfoowherea=?')
@@ -343,11 +343,11 @@ describe('recording slow queries', function() {
       var sample = agent.queries.samples[keys[0]]
       var trace = sample.trace
 
-      expect(sample.total).equal(1.004)
-      expect(sample.totalExclusive).equal(1.004)
-      expect(sample.min).equal(0.501)
-      expect(sample.max).equal(0.503)
-      expect(sample.sumOfSquares).equal(0.50401)
+      expect(sample.total).equal(1004)
+      expect(sample.totalExclusive).equal(1004)
+      expect(sample.min).equal(501)
+      expect(sample.max).equal(503)
+      expect(sample.sumOfSquares).equal(504010)
       expect(sample.callCount).equal(2)
       expect(trace.obfuscated).equal('select * from foo where a=?')
       expect(trace.normalized).equal('select*fromfoowherea=?')
