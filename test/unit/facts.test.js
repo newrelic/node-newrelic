@@ -12,7 +12,7 @@ var utilTests = require('../lib/cross_agent_tests/utilization/utilization_json.j
 
 var EXPECTED = ['pid', 'host', 'language', 'app_name', 'labels', 'utilization',
                 'agent_version', 'environment', 'settings', 'high_security',
-                'display_host']
+                'display_host', 'identifier']
 
 describe("fun facts about apps that New Relic is interested in include", function () {
   var agent
@@ -75,6 +75,17 @@ describe("fun facts about apps that New Relic is interested in include", functio
       var materialized = factsed.environment.toJSON()
       expect(materialized).an('array')
       expect(materialized).length.above(1)
+      done()
+    })
+  })
+
+  it("an 'identifier' for this agent", function (done) {
+    facts(agent, function(factsed) {
+      expect(factsed).to.have.property('identifier')
+      var identifier = factsed.identifier
+      expect(identifier).to.contain('nodejs')
+      expect(identifier).to.contain(factsed.host)
+      expect(identifier).to.contain(factsed.app_name.sort().join(','))
       done()
     })
   })
