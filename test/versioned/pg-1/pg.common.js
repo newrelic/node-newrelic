@@ -119,7 +119,7 @@ module.exports = function runTests(agent, pg, name) {
   }
 
   test('Postgres instrumentation: ' + name, function (t) {
-    t.plan(5)
+    t.plan(6)
     postgresSetup(runTest)
     function runTest () {
       t.test('simple query with prepared statement', function (t) {
@@ -312,6 +312,31 @@ module.exports = function runTests(agent, pg, name) {
           }).on('end', function ended() {
             client.end()
             t.end()
+          })
+        })
+      })
+
+      t.test('query.on should not create segments for row events', function (t) {
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_STRING)
+
+          client.connect(function (error) {
+            if (error) return t.fail(error)
+            var query = client.query('SELECT table_name FROM information_schema.tables')
+
+            query.on('error', function(err) {
+              t.error(err, 'error while querying')
+              t.end()
+            })
+
+            query.on('row', function onRow(row) {})
+
+            query.on('end', function ended() {
+              var segment = tx.trace.root.children[0].children[0]
+              t.equal(segment.children.length, 1)
+              client.end()
+              t.end()
+            })
           })
         })
       })
