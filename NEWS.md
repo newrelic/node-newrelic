@@ -1,20 +1,47 @@
+
+### v1.28.3 (2016-07-13):
+
+* Improved agent startup speed by ~10% by simplifying environment checks.
+
+  Removed prolific `fs.exists` and `fs.stat` checks, instead simply handling the
+  error for mis-used files which greatly reduces disk access.
+
+* Fixed a bug in agent connect that could cause an identity crisis under
+  specific use cases.
+
+  When using the agent with multiple app names, transaction information could be
+  misattributed to other services if they share the same first app name. This
+  resolves that by using all of the host names to uniquely identify the agent.
+
+* Added slightly more trace-level logging around the creation of segments.
+
+* Added examples for using the `newrelic.createBackgroundTransaction` method in
+  a number of different use cases.
+
+
 ### v1.28.2 (2016-07-07):
 
 * Director instrumentation that will now name the transaction correctly,
   as well as create segments corresponding to the handlers registered
   with director.
 
-* Transaction naming refactor - this should clear up some inconsistent naming issues in our router instrumentations.
+* Transaction naming refactor - this should clear up some inconsistent naming
+  issues in our router instrumentations.
 
-  Previously the instrumentation was tasked with the maintenance of the transaction state name, now this has been abstracted into its own class to be used by instrumentations.
+  Previously the instrumentation was tasked with the maintenance of the
+  transaction state name, now this has been abstracted into its own class to be
+  used by instrumentations.
 
-* Express instrumentation refactored to scope transaction storage to the incoming request object.
+* Express instrumentation refactored to scope transaction storage to the
+  incoming request object.
 
-  Previously the express instrumentation used a stack to track which router was expecting middleware to finish and keep track of which transaction is being executed.
-  The new implementation has a stronger guarantee on scoping work to the correct transaction.
+  Previously the express instrumentation used a stack to track which router was
+  expecting middleware to finish and keep track of which transaction is being
+  executed. The new implementation has a stronger guarantee on scoping work to
+  the correct transaction.
 
-* The agent now uses the correct units for slow queries - this fixes and
-  issue where query traces in the databases tab were slower than the reported maximum.
+* The agent now uses the correct units for slow queries - this fixes and issue
+  where query traces in the databases tab were slower than the reported maximum.
 
 
 ### v1.28.1 (2016-06-15):
