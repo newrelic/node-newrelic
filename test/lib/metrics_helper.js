@@ -3,6 +3,7 @@ var format = require('util').format
 
 exports.assertMetrics = assertMetrics
 exports.assertSegments = assertSegments
+exports.findSegment = findSegment
 
 function assertMetrics(metrics, expected, exclusive,
     assertValues) {
@@ -142,6 +143,20 @@ function assertSegments(parent, expected, options) {
         if (typeof expected[i+1] === 'object') {
           assertSegments(child, expected[i+1], exact)
         }
+      }
+    }
+  }
+}
+
+function findSegment(root, name) {
+  if (root.name === name) {
+    return root
+  } else if (root.children && root.children.length) {
+    for (var i = 0; i < root.children.length; i++) {
+      var child = root.children[i]
+      var found = findSegment(child, name)
+      if (found) {
+        return found
       }
     }
   }

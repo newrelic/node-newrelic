@@ -3,6 +3,7 @@
 var tap = require('tap')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
+var findSegment = require('../../lib/metrics_helper').findSegment
 var test = tap.test
 
 
@@ -332,7 +333,9 @@ module.exports = function runTests(agent, pg, name) {
             query.on('row', function onRow(row) {})
 
             query.on('end', function ended() {
-              var segment = tx.trace.root.children[0].children[0]
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/information_schema.tables/select')
+
               t.equal(segment.children.length, 1)
               client.end()
               t.end()
