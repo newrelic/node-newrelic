@@ -1,6 +1,11 @@
 
 ### v1.28.3 (2016-07-13):
 
+* Removed excessive segment creation from PG instrumentation.
+
+  For queries with many results we would create a segment for each result. This
+  would result in excessive object allocation and then cause harsh GC thrashing.
+
 * Improved agent startup speed by ~10% by simplifying environment checks.
 
   Removed prolific `fs.exists` and `fs.stat` checks, instead simply handling the
