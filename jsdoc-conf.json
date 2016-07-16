@@ -1,7 +1,6 @@
 {
   "opts": {
     "destination": "docs/",
-    "tutorials": "./examples",
     "readme": "./README.md"
   },
   "source": {

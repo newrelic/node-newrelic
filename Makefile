@@ -131,7 +131,8 @@ docs: node_modules
 	$(JSDOC) -c ./jsdoc-conf.json --private -r .
 
 public-docs: node_modules
-	$(JSDOC) -c ./jsdoc-conf.json api.js lib/shim/
+	$(JSDOC) -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/
+	cp examples/shim/*.png docs/
 
 $(SSLKEY):
 	@openssl genrsa -out $(SSLKEY) 1024
