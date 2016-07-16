@@ -119,9 +119,10 @@
     "yakaa"
   ],
   "devDependencies": {
+    "eslint": "^2.9.0",
+    "jsdoc": "^3.4.0",
     "mocha": "*",
-    "tap": "0.7.1",
-    "eslint": "^2.9.0"
+    "tap": "0.7.1"
   },
   "repository": {
     "type": "git",
