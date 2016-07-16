@@ -1,3 +1,5 @@
+'use strict'
+
 module.exports = {
   memcached_host: process.env.NR_NODE_TEST_MEMCACHED_HOST || 'localhost',
   memcached_port: process.env.NR_NODE_TEST_MEMCACHED_PORT || 11211,
