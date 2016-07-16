@@ -42,6 +42,11 @@ var CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 /**
  * The exported New Relic API. This contains all of the functions meant to be
  * used by New Relic customers. For now, that means transaction naming.
+ *
+ * You do not need to directly instantiate this class, as an instance of this is
+ * the return from `require('newrelic')`.
+ *
+ * @constructor
  */
 function API(agent) {
   this.agent = agent
@@ -314,7 +319,7 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
- * @returns {string} the <script> header to be injected
+ * @returns {string} The `<script>` header to be injected.
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   var metric = this.agent.metrics.getOrCreateMetric(

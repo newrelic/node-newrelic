@@ -1,9 +1,16 @@
 {
+  "opts": {
+    "destination": "docs/",
+    "tutorials": "./examples",
+    "readme": "./README.md"
+  },
+  "source": {
+    "exclude": ["node_modules", "test"],
+    "includePattern": ".+\\.js(doc)?$"
+  },
   "plugins": [
     "plugins/markdown"
   ],
-  "markdown": {
-  },
   "templates": {
     "cleverLinks": true
   }

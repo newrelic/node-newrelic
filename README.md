@@ -1,13 +1,31 @@
-[![npm status badge](https://nodei.co/npm/newrelic.png?stars=true&downloads=true)](https://nodei.co/npm/newrelic/)
+[![npm status badge][1]][2]
+
+# WARNING - Beta
+
+**This is beta software. For critical systems you should use the
+[stable New Relic package][3]**. The beta
+Node Agent requires a beta token. Getting a token is easy!
+
+ 1. Agree to the click-through Beta Agreement
+ 2. Once your account is approved, we will email you a beta token, usually
+    within the same business day.
+ 3. Add the beta token to your config (see below for details).
+
+Please join our Node Agent Beta Forum to tell us how the beta features in the
+Node Agent works for you, what you'd like to see and how we can improve it.
+We're eager to hear your feedback!
+
+Breaking changes may be made before release this is released.
+
 
 # New Relic for Node.js
 
 This package instruments your application for performance monitoring
-with [New Relic](http://newrelic.com).
+with [New Relic][4].
 
-Make sure you have a [New Relic account](http://newrelic.com) before
-starting. To see all the features, such as slow transaction traces, you will
-need a [New Relic Pro](http://newrelic.com/application-monitoring/features) subscription (or equivalent).
+Make sure you have a [New Relic account][4] before starting. To see all the
+features, such as slow transaction traces, you will need a [New Relic Pro][5]
+subscription (or equivalent).
 
 As with any instrumentation tool, please test before using in production.
 
@@ -24,9 +42,8 @@ As with any instrumentation tool, please test before using in production.
 
 ## Getting started
 
-1. [Install node](http://nodejs.org/#download). The agent runs on v0.8 and
-   higher, but some features (e.g. error tracing) depend on features introduced
-   in v0.10. Development work on this module is done with the latest
+1. [Install node](https://nodejs.org/#download). The agent runs on v0.10 and
+   higher. Development work on this module is done with the latest
    non-development release of Node.
 2. Verify your version of node came with a new enough version of npm using
    `npm -v`. We require version 1.4.28 or newer, and recommend using
@@ -40,7 +57,7 @@ As with any instrumentation tool, please test before using in production.
 6. Add `require('newrelic');` as the first line of the app's main module.
 
 If you wish to keep the configuration for the module separate from your
-application, the module will look for newrelic.js in the directory referenced
+application, the module will look for `newrelic.js` in the directory referenced
 by the environment variable `NEW_RELIC_HOME` if it's set.
 
 When you start your app, New Relic should start up with it and start reporting
@@ -59,7 +76,7 @@ If you're running on a version of npm before 1.4.28, or are interested in moving
 up to latest follow these steps:
 
 1. Run `npm -v` to make sure you have npm installed and working.
-2. If you are on linux/smartos/osx/*nix run `ls -l $(which npm)` and check to
+2. If you are on linux/smartos/osx/\*nix run `ls -l $(which npm)` and check to
    see if the file is owned by "root" or "admin". If so, prefix the next command
    with `sudo`.
 3. Run `npm install -g npm@latest` to upgrade npm itself.
@@ -76,10 +93,9 @@ that if you feel you've found a security issue, contact us at security@newrelic.
 ## Configuring the module
 
 The module can be tailored to your app's requirements, both from the server and
-via the newrelic.js configuration file you created. For complete details on
-what can be configured, refer to
-[`lib/config.default.js`](https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js),
-which documents the available variables and their default values.
+via the `newrelic.js` configuration file you created. For complete details on
+what can be configured, refer to [`lib/config.default.js`][6], which documents
+the available variables and their default values.
 
 In addition, for those of you running in PaaS environments like Heroku or
 Microsoft Azure, all of the configuration variables in `newrelic.js` have
@@ -101,7 +117,7 @@ Here's the list of the most important variables and their values:
   altogether. Use with care. This presumes that all important configuration
   will be available via environment variables, and some log messages assume
   that a config file exists.
-* `NEW_RELIC_HOME`: path to the directory in which you've placed newrelic.js.
+* `NEW_RELIC_HOME`: path to the directory in which you've placed `newrelic.js`.
 * `NEW_RELIC_USE_SSL`: Use SSL for communication with New Relic's servers.
   Enabled by default.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including the
@@ -132,10 +148,10 @@ For completeness, here's the rest of the list:
   configuration for this application. Defaults to false.
 * `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow transaction
   traces to New Relic. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in seconds)
-  at which a transaction trace will count as slow and be sent to New Relic.
-  Can also be set to `apdex_f`, at which point it will set the trace threshold to 4 times
-  the current ApdexT. Defaults to `apdex_f`.
+* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in
+  seconds) at which a transaction trace will count as slow and be sent to New
+  Relic. Can also be set to `apdex_f`, at which point it will set the trace
+  threshold to 4 times the current ApdexT. Defaults to `apdex_f`.
 * `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value in
   seconds.  This is more often than not set from the server. Defaults to 0.100.
 * `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on slow
@@ -187,11 +203,11 @@ enable browser timings.
 
 ### Basics
 
-- Insert the result of `newrelic.getBrowserTimingHeader()`
-into your html page.
+- Insert the result of `newrelic.getBrowserTimingHeader()` into your html page.
 - The browser timing headers should be placed in the beginning of your `<head>` tag.
-  - As an exception to the above, for maximum IE compatability, the results of `getBrowserTimingHeader()`
-should be placed *after* any `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
+  - As an exception to the above, for maximum IE compatability, the results of
+    `getBrowserTimingHeader()` should be placed *after* any
+    `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
 - Do *not* cache the header, call it once for every request.
 
 ### Example
@@ -504,10 +520,10 @@ display.
 #### newrelic.shutdown([options], callback)
 
 Use this method to gracefully shut down the agent.  When called with
-`options.collectPendingData` set to true, the agent will send any pending data to
-the New Relic servers before shutting down.  This is useful when you want to shut down
-the Node process and make sure that all transactions and/or errors are captured by
-New Relic.
+`options.collectPendingData` set to true, the agent will send any pending data
+to the New Relic servers before shutting down.  This is useful when you want to
+shut down the Node process and make sure that all transactions and/or errors are
+captured by New Relic.
 
 Example of collecting pending data before shutting down the process:
 
@@ -644,8 +660,8 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
   gratitude.
 * The CPU and memory overhead incurred by New Relic for Node is relatively
   minor (~1-10%, depending on how much of the instrumentation your apps end up
-  using).  GC activity is significantly increased while the agent is active,
-  due to the large number of ephemeral objects created by metrics gathering.
+  using). GC activity is significantly increased while the agent is active, due
+  to the large number of ephemeral objects created by metrics gathering.
 * When using Node's included clustering support, each worker process will open
   its own connection to New Relic's servers, and will incur its own overhead
   costs.
@@ -664,3 +680,11 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 New Relic for Node is free-to-use, proprietary software. Please see the full
 license (found in [LICENSE](LICENSE) in this distribution) for details on its license and
 the licenses of its dependencies.
+
+
+[1]: https://nodei.co/npm/@newrelic/beta-agent.png
+[2]: https://nodei.co/npm/@newrelic/beta-agent
+[3]: https://www.npmjs.com/package/newrelic
+[4]: https://newrelic.com
+[5]: https://newrelic.com/application-monitoring/features
+[6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js

@@ -3,6 +3,7 @@ MOCHA_NOBIN  = node_modules/.bin/_mocha
 COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
 ESLINT       = node_modules/.bin/eslint
+JSDOC        = node_modules/.bin/jsdoc
 NODE_VERSION = $(shell node --version)
 INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
@@ -37,6 +38,7 @@ clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 	rm -rf $(SSLKEY) $(CACERT) $(CAINDEX) $(CASERIAL) $(CERTIFICATE)
 	rm -rf test/lib/*.old test/lib/*.attr
+	rm -rf docs/
 
 node_modules: package.json
 	@rm -rf node_modules
@@ -124,6 +126,12 @@ pending-core: node_modules
 	@$(MOCHA) test/unit --recursive --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
 
 ssl: $(CERTIFICATE)
+
+docs: node_modules
+	$(JSDOC) -c ./jsdoc-conf.json --private -r .
+
+public-docs: node_modules
+	$(JSDOC) -c ./jsdoc-conf.json api.js lib/shim/
 
 $(SSLKEY):
 	@openssl genrsa -out $(SSLKEY) 1024
