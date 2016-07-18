@@ -255,8 +255,10 @@ test('agent instrumentation of node-mongodb-native',
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            verifyTrace(t, agent.tracer.getSegment(), 'insert')
-            transaction.end()
+            process.nextTick(function() {
+              transaction.end()
+              verifyTrace(t, agent.tracer.getSegment(), 'insert')
+            })
           })
         })
       })
@@ -384,8 +386,10 @@ test('agent instrumentation of node-mongodb-native',
                 t.ok(result, 'should have gotten back results')
                 cursor.nextObject(cb_nextObject)
               } else {
-                transaction.end(t.end.bind(t))
-                verifyTrace(t, agent.tracer.getSegment(), 'nextObject')
+                process.nextTick(function() {
+                  transaction.end(t.end.bind(t))
+                  verifyTrace(t, agent.tracer.getSegment(), 'nextObject')
+                })
               }
             }
 
@@ -771,8 +775,10 @@ test('agent instrumentation of node-mongodb-native',
             t.ok(result._id, 'should have evidence that it saved')
             t.ok(result.__saved, 'should have evidence we got our original document')
 
-            transaction.end()
-            verifyTrace(t, agent.tracer.getSegment(), 'save')
+            process.nextTick(function() {
+              transaction.end()
+              verifyTrace(t, agent.tracer.getSegment(), 'save')
+            })
           })
         })
       })
