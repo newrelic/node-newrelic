@@ -1,5 +1,4 @@
 {
-  "": ["proprietary"],
   "agent-base": "MIT",
   "concat-stream": "MIT",
   "core-util-is": "MIT",
