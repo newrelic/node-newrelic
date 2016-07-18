@@ -16,7 +16,9 @@ describe('Agent licenses', function() {
         var name = modver.split('@')[0]
 
         // Filter out the newrelic module entry itself
-        if (name === 'newrelic') continue
+        if (name === 'newrelic' || name === '') {
+          continue
+        }
 
         found[name] = modules[modver].licenses
       }
