@@ -1,5 +1,6 @@
 {
   "agent-base": "MIT",
+  "buffer-shims": "MIT",
   "concat-stream": "MIT",
   "core-util-is": "MIT",
   "debug": "MIT",
