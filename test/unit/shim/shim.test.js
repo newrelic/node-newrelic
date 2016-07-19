@@ -477,6 +477,39 @@ describe('Shim', function() {
       })
     })
 
+    describe('with internal segments', function() {
+      it('should not create a child segment', function() {
+        shim.record(wrappable, 'getActiveSegment', function() {
+          return {name: 'internal test segment', internal: true}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          startingSegment.internal = true
+          startingSegment.shim = shim
+          var segment = wrappable.getActiveSegment()
+          expect(segment).to.equal(startingSegment)
+          expect(segment.name).to.equal('ROOT')
+          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should still bind the callback', function() {
+        var wrapped = shim.record(function(cb) {
+          expect(shim.isWrapped(cb)).to.be.true
+        }, function(){
+          return {name: 'test segment', internal: true, callback: shim.LAST}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          startingSegment.internal = true
+          startingSegment.shim = shim
+          wrapped(function() {})
+        })
+      })
+    })
+
     describe('wrapper', function() {
       it('should create a segment', function() {
         shim.record(wrappable, 'getActiveSegment', function() {
