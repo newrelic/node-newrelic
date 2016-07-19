@@ -3,8 +3,8 @@
 # WARNING - Beta
 
 **This is beta software. For critical systems you should use the
-[stable New Relic package][3]**. The beta
-Node Agent requires a beta token. Getting a token is easy!
+[stable New Relic package][3]**. The beta Node Agent requires a beta token.
+Getting a token is easy!
 
  1. Agree to the click-through Beta Agreement
  2. Once your account is approved, we will email you a beta token, usually
@@ -15,7 +15,7 @@ Please join our Node Agent Beta Forum to tell us how the beta features in the
 Node Agent works for you, what you'd like to see and how we can improve it.
 We're eager to hear your feedback!
 
-Breaking changes may be made before release this is released.
+Breaking changes may be made before this is released.
 
 
 # New Relic for Node.js
