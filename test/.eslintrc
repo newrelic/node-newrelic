@@ -3,7 +3,8 @@
     "mocha": true
   },
   "rules": {
-    "max-nested-callbacks": 0,
-    "func-names": 0,
+    "max-nested-callbacks": "off",
+    "func-names": "off",
+    "no-shadow": ["warn", {"allow": ["t", "error"]}]
   }
 }

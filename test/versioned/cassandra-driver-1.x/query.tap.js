@@ -75,7 +75,7 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
   cassSetup(runTest)
 
   function runTest() {
-    t.test('executeBatch', function (t) {
+    t.test('executeBatch', function(t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -105,7 +105,7 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
 
           var selQuery = 'SELECT * FROM ' + KS + '.' + FAM + ' WHERE '
           selQuery += PK + ' = 111;'
-          client.execute(selQuery, function (error, value) {
+          client.execute(selQuery, function(error, value) {
             if (error) return t.fail(error)
 
             t.ok(
@@ -156,8 +156,8 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
 
             transaction.end(function end() {
               checkMetric('Datastore/operation/Cassandra/insert', 1)
-              checkMetric('Datastore/allOther', 4)
-              checkMetric('Datastore/Cassandra/allOther', 4)
+              checkMetric('Datastore/allOther', 2)
+              checkMetric('Datastore/Cassandra/allOther', 2)
               checkMetric('Datastore/Cassandra/all', 2)
               checkMetric('Datastore/all', 2)
               checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
