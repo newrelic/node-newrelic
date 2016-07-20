@@ -8,7 +8,7 @@ var chai     = require('chai')
 describe('database query parser', function () {
   describe('SELECT SQL', function () {
     it("should parse a simple query", function () {
-      var ps = parseSql('NoSQL', "Select * from dude")
+      var ps = parseSql('NoSQL', "Select\n *\n from dude")
       should.exist(ps)
 
       should.exist(ps.type)
@@ -51,7 +51,7 @@ describe('database query parser', function () {
 
       should.exist(ps.model)
       ps.model.should.equal('dude')
-      ps.raw.should.equal('DELETE\nfrom dude')
+      ps.raw.should.equal('DELETE from dude')
     })
 
     it("should parse a command with conditions", function () {
@@ -66,7 +66,7 @@ describe('database query parser', function () {
 
       should.exist(ps.model)
       ps.model.should.equal('dude')
-      ps.raw.should.equal('DELETE\nfrom dude where name = \'man\'')
+      ps.raw.should.equal('DELETE from dude where name = \'man\'')
     })
   })
 
@@ -100,7 +100,7 @@ describe('database query parser', function () {
 
       should.exist(ps.model)
       ps.model.should.equal('test')
-      ps.raw.should.equal('insert into\ntest\nselect * from dude')
+      ps.raw.should.equal('insert into test select * from dude')
     })
   })
 
@@ -116,7 +116,7 @@ describe('database query parser', function () {
       ps.operation.should.equal('other')
 
       should.not.exist(ps.model)
-      ps.raw.should.equal('bulge into\ndudes\nselect * from dude')
+      ps.raw.should.equal('bulge into dudes select * from dude')
     })
 
     it("should return 'other' when handed an object", function () {
