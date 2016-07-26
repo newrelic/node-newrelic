@@ -108,6 +108,18 @@ function addMetricsVerifierNoCallback(t, agent, operation, verifier) {
   })
 }
 
+// +4 asserts
+function verifyTraceNoCb(t, segment, operation, done) {
+  t.ok(segment, 'trace segment for ' + operation + ' should exist')
+  t.equals(segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
+           'should register the ' + operation)
+  t.ok(segment.children.length >= 0, 'should have at least one child')
+  t.ok(segment._isEnded(), 'should have ended')
+
+  // done and done!
+  done && done()
+}
+
 // +7 asserts
 function verifyTrace(t, segment, operation, done) {
   try {
@@ -118,49 +130,11 @@ function verifyTrace(t, segment, operation, done) {
     t.ok(trace.root.children[0], 'should have a child.')
     var op_segment = segment.parent
 
-    t.ok(op_segment, 'trace segment for ' + operation + ' should exist')
-    t.equals(op_segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
-             'should register the ' + operation)
-    t.ok(op_segment.children.length >= 0, 'should have at least one child')
-    t.ok(op_segment._isEnded(), 'should have ended')
+    verifyTraceNoCb(t, op_segment, operation, done)
   } catch (error) {
     t.fail(error)
     t.end()
   }
-
-  // done and done!
-  done && done()
-}
-
-// +11 asserts
-function verifyTraceNoCallback(t, segment, operation, verifier) {
-  setTimeout(function cb_setTimeout() {
-    try {
-      var transaction = segment.transaction
-      var trace = transaction.trace
-      t.ok(trace, 'trace should exist.')
-      t.ok(trace.root, 'root element should exist.')
-
-      var op_segment = trace.root.children[trace.root.children.length - 2]
-      t.ok(op_segment, 'trace segment for ' + operation + ' should exist')
-      t.equals(op_segment.children.length, 0, 'should not have children.')
-      t.equals(op_segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
-               'should register the ' + operation)
-      t.equals(op_segment.children.length, 0, 'should have no children')
-      t.ok(op_segment._isEnded(), 'should have ended')
-
-      var verify_segment = segment.parent
-
-      t.ok(verify_segment, 'trace segment for ' + verifier + ' should exist')
-      t.equals(verify_segment.name, 'Datastore/statement/MongoDB/' + COLLECTION + '/' + verifier,
-               'should register the ' + verifier)
-      t.ok(verify_segment.children.length >= 1, 'should have at least one child')
-      t.ok(verify_segment._isEnded(), 'should have ended')
-    } catch (error) {
-      t.fail(error)
-      t.end()
-    }
-  }, 0)
 }
 
 // +5 asserts
@@ -343,7 +317,7 @@ test('agent instrumentation of node-mongodb-native',
         })
 
         t.test('with selector, then each', {timeout: SLUG_FACTOR}, function (t) {
-          t.plan(15)
+          t.plan(12)
 
           runWithTransaction(this, t, function (agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'each')
@@ -363,7 +337,7 @@ test('agent instrumentation of node-mongodb-native',
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
               transaction.end()
-              verifyTrace(t, agent.tracer.getSegment(), 'each')
+              verifyTraceNoCb(t, agent.tracer.getSegment(), 'each')
             })
           })
         })
