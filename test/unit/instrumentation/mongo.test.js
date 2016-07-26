@@ -313,4 +313,182 @@ describe('agent instrumentation of MongoDB', function () {
       expect(segment.name).equals('Datastore/operation/MongoDB/GridFS-get')
     })
   })
+
+  describe('when using APM API', function(){
+    var agent
+    var grid
+    var collection
+    var db
+
+    before(function (done) {
+      var instrumentations = [
+        {
+          name: "Gridstore",
+          obj: StubGrid,
+          instrumentations: [
+            {
+              methods: [
+                "getc"
+              ],
+              options: {
+                callback: true
+              }
+            }
+          ]
+        },
+        {
+          name: "Collection",
+          obj: StubCollection,
+          instrumentations: [
+            {
+              methods: [
+                "find"
+              ],
+              options: {
+                callback: true
+              }
+            }
+          ]
+        },
+        {
+          name: "Cursor",
+          obj: StubCursor,
+          instrumentations: [
+            {
+              methods: [
+                "each"
+              ],
+              options: {
+                callback: true
+              }
+            }
+          ]
+        },
+        {
+          name: "Db",
+          obj: StubDb,
+          instrumentations: [
+            {
+              methods: [
+                "command"
+              ],
+              options: {
+                callback: true
+              }
+            }
+          ]
+        }
+      ]
+
+      function mongoInstrument (options, instrumentFunc) {
+        instrumentFunc(null, instrumentations)
+      }
+      function StubGrid () {}
+      function StubCollection () { this.collectionName = 'test' }
+      function StubCursor () { this.items = [] }
+      function StubDb () {}
+
+      StubGrid.prototype.getc = function getc(callback) {
+        process.nextTick(function cb_nextTick() { callback(null, 1); })
+      }
+
+      StubCollection.prototype.find = function find(query) {
+        var cursor = new StubCursor()
+        cursor.items = [1, 2]
+        return cursor
+      }
+
+      StubCursor.prototype.each = function each(callback) {
+        this._each(callback)
+      }
+
+      StubCursor.prototype._each = function _each(callback) {
+        var self = this
+        process.nextTick(function cb_nextTick() {
+          // debugger
+          if (self.items.length === 0) return
+          callback(null, self.items.pop())
+          _each(callback)
+        })
+      }
+
+      StubDb.prototype.command = function command(command, options, callback) {
+        process.nextTick(function cb_nextTick() { callback(null, 1); })
+      }
+
+      var mockodb = {
+        instrument : mongoInstrument,
+        GridStore: StubGrid,
+        Collection: StubCollection,
+        Cursor: StubCursor,
+        Db: StubDb
+      }
+
+      grid = new mockodb.GridStore()
+      collection = new mockodb.Collection()
+      db = new mockodb.Db()
+      var initialize = require('../../../lib/instrumentation/mongodb')
+
+
+      agent = helper.loadMockedAgent()
+      shim = new DatastoreShim(agent, 'mongodb')
+
+      initialize(agent, mockodb, 'mockodb', shim)
+      done()
+    })
+
+    after(function () {
+      helper.unloadAgent(agent)
+    })
+
+    it('should have the correct trace for Db ops', function() {
+      helper.runInTransaction(agent, function (trans) {
+        db.command({ping:1}, null, function (err, result) {
+          process.nextTick(function cb_nextTick() {
+            // need to generate the trace so exclusive times are added to segment parameters
+            trans.trace.generateJSON(function cb_generateJSON() {
+              var segment = trans.trace.root.children[0]
+              expect(segment.name).equals('Datastore/operation/MongoDB/command')
+              expect(segment.children.length).equals(1)
+              expect(segment.children[0].name).equals('Callback: <anonymous>')
+            })
+          })
+        })
+      })
+    })
+
+    it('should have the correct trace for Grid ops', function() {
+      helper.runInTransaction(agent, function (trans) {
+        grid.getc(function (err, chr) {
+          process.nextTick(function cb_nextTick() {
+            // need to generate the trace so exclusive times are added to segment parameters
+            trans.trace.generateJSON(function cb_generateJSON() {
+              var segment = trans.trace.root.children[0]
+              expect(segment.name).equals('Datastore/operation/MongoDB/GridFS-getc')
+              expect(segment.children.length).equals(1)
+              expect(segment.children[0].name).equals('Callback: <anonymous>')
+            })
+          })
+        })
+      })
+    })
+
+    it('should have the correct trace for Collection and Cursor querues', function() {
+      helper.runInTransaction(agent, function (trans) {
+        var cursor = collection.find()
+        cursor.each(function (err, item) {
+          process.nextTick(function cb_nextTick() {
+            // need to generate the trace so exclusive times are added to segment parameters
+            trans.trace.generateJSON(function cb_generateJSON() {
+              var root = trans.trace.root
+              expect(root.children.length).equals(2)
+              expect(root.children[0].name).equals('Datastore/statement/MongoDB/test/find')
+              expect(root.children[1].name).equals('Datastore/statement/MongoDB/unknown/each')
+              expect(root.children[1].children.length).equals(0, '"each" should have no child segments')
+            })
+          })
+        })
+      })
+    })
+  })
 })
