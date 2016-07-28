@@ -1,3 +1,40 @@
+
+### v2.0.0 / beta-39 (2016-08-04):
+
+* Dropped support for Nodejs < 0.10.
+
+  Starting with agent 2.0.0 we are no longer testing or supporting the agent on
+  Node.js prior to 0.10. Customers are strongly encouraged to follow best
+  practices and run supported versions of the Node.js runtime so that you can
+  get the latest and greatest New Relic features. For legacy Node support, agent
+  versions 1.x will continue to work, but we have no plans to backport any
+  future features or fixes.
+
+* Dropped support for `node-mysql` < 1.0.0.
+
+  Support for versions of the MySQL driver <1.0.0 has been removed. They will
+  not work with the agent versions >=2.0.0.
+
+* Improved API for writing instrumentation.
+
+  Introduced new classes for writing instrumentation, `Shim` and `DatastoreShim`.
+  These classes along with the new `newrelic.instrument` and
+  `newrelic.instrumentDatastore` methods make writing 3rd party instrumentation
+  much easier.
+
+* Rewrote instrumentation for Cassandra, Redis, ioredis, MySQL, and MongoDB.
+
+  These instrumentations were rewritten using the new `DatastoreShim` interface.
+  Their functionality is largely unchanged but the new code should be easier to
+  maintain and extend.
+
+* Added public API documentation.
+
+  Documentation for the New Relic agent API has been generated using JSDoc and
+  is now hosted on GitHub at https://newrelic.github.io/node-newrelic. There you
+  can find documentation on the new classes as well as the pre-existing API
+  methods.
+
 ### v1.29.0 (2016-08-03):
 
 * Reworked the SQL parser to handle new lines in the query.
@@ -40,7 +77,6 @@
 * Added examples for using the `newrelic.createBackgroundTransaction` method in
   a number of different use cases.
 
-
 ### v1.28.2 (2016-07-07):
 
 * Director instrumentation that will now name the transaction correctly,
@@ -64,7 +100,6 @@
 
 * The agent now uses the correct units for slow queries - this fixes and issue
   where query traces in the databases tab were slower than the reported maximum.
-
 
 ### v1.28.1 (2016-06-15):
 
