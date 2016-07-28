@@ -5,6 +5,7 @@ TAP          = node_modules/.bin/tap
 ESLINT       = node_modules/.bin/eslint
 JSDOC        = node_modules/.bin/jsdoc
 NODE_VERSION = $(shell node --version)
+PACKAGE_VERSION = $(shell node -e 'console.log(require("./package").version)')
 INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
@@ -132,7 +133,18 @@ docs: node_modules
 
 public-docs: node_modules
 	$(JSDOC) -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/
-	cp examples/shim/*.png docs/
+	cp examples/shim/*.png out/
+
+publish-docs:
+	git checkout gh-pages
+	git pull origin gh-pages
+	git merge -
+	make public-docs
+	git rm -r docs
+	mv out docs
+	git add docs
+	git commit -m "docs: update for ${PACKAGE_VERSION}"
+	git push origin gh-pages && git push public gh-pages:gh-pages
 
 $(SSLKEY):
 	@openssl genrsa -out $(SSLKEY) 1024

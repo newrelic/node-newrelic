@@ -1,6 +1,6 @@
 {
   "opts": {
-    "destination": "docs/",
+    "destination": "out/",
     "readme": "./README.md"
   },
   "source": {
