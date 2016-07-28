@@ -12,7 +12,7 @@ describe('DatastoreShim', function() {
   var shim = null
   var wrappable = null
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     shim = new DatastoreShim(agent, 'test-cassandra', DatastoreShim.CASSANDRA)
     wrappable = {
@@ -26,7 +26,7 @@ describe('DatastoreShim', function() {
     }
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
     agent = null
     shim = null
@@ -40,12 +40,12 @@ describe('DatastoreShim', function() {
 
   describe('constructor', function() {
     it('should require the `agent` parameter', function() {
-      expect(function() { new DatastoreShim() })
+      expect(function() { return new DatastoreShim() })
         .to.throw(Error, /^Shim must be initialized with .*? agent/)
     })
 
     it('should require the `moduleName` parameter', function() {
-      expect(function() { new DatastoreShim(agent) })
+      expect(function() { return new DatastoreShim(agent) })
         .to.throw(Error, /^Shim must be initialized with .*? module name/)
     })
 
@@ -156,12 +156,13 @@ describe('DatastoreShim', function() {
     it('should allow for the parser to be set', function() {
       var testValue = false
       shim.setParser(function fakeParser(query) {
+        expect(query).to.equal('foobar')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      shim.parseQuery()
+      shim.parseQuery('foobar')
       expect(testValue).to.be.true
     })
 
@@ -177,6 +178,7 @@ describe('DatastoreShim', function() {
     it('should not set parser to a new parser with invalid string', function() {
       var testValue = false
       shim.setParser(function fakeParser(query) {
+        expect(query).to.equal('SELECT 1 FROM test')
         testValue = true
         return {
           operation: 'test'
@@ -184,25 +186,26 @@ describe('DatastoreShim', function() {
       })
       shim.setParser('bad string')
       var query = 'SELECT 1 FROM test'
-      var parsed = shim.parseQuery(query)
+      shim.parseQuery(query)
       expect(testValue).to.be.true
     })
 
     it('should not set parser to a new parser with an object', function() {
       var testValue = false
       shim.setParser(function fakeParser(query) {
+        expect(query).to.equal('SELECT 1 FROM test')
         testValue = true
         return {
           operation: 'test'
         }
       })
       shim.setParser({
-        parser: function shouldNotBeCalled(){
+        parser: function shouldNotBeCalled() {
           throw new Error('get me outta here')
         }
       })
       var query = 'SELECT 1 FROM test'
-      var parsed = shim.parseQuery(query)
+      shim.parseQuery(query)
       expect(testValue).to.be.true
     })
   })
@@ -253,6 +256,7 @@ describe('DatastoreShim', function() {
           var startingSegment = agent.tracer.getSegment()
           var segment = wrappable.getActiveSegment()
           expect(segment).to.not.equal(startingSegment)
+          expect(segment.transaction).to.equal(tx)
           expect(segment.name).to.equal('Datastore/operation/Cassandra/getActiveSegment')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
@@ -355,6 +359,7 @@ describe('DatastoreShim', function() {
           var startingSegment = agent.tracer.getSegment()
           var segment = wrappable.getActiveSegment(query)
           expect(segment).to.not.equal(startingSegment)
+          expect(segment.transaction).to.equal(tx)
           expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
@@ -424,7 +429,9 @@ describe('DatastoreShim', function() {
           var startingSegment = agent.tracer.getSegment()
           var segment = wrappable.getActiveSegment(query)
           expect(segment).to.not.equal(startingSegment)
-          expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select/batch')
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('Datastore/statement/Cassandra/my_table/select/batch')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
       })
