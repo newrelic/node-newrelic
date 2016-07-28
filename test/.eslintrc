@@ -5,6 +5,7 @@
   "rules": {
     "max-nested-callbacks": "off",
     "func-names": "off",
-    "no-shadow": ["warn", {"allow": ["t", "error"]}]
+    "no-shadow": ["warn", {"allow": ["t", "shim", "error"]}],
+    "brace-style": ["error", "1tbs", {"allowSingleLine": true}]
   }
 }
