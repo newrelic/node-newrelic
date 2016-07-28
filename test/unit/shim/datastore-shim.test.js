@@ -20,7 +20,7 @@ describe('DatastoreShim', function() {
       bar: function barsName() { return 'bar' },
       fiz: function fizsName() { return 'fiz' },
       anony: function() {},
-      getActiveSegment: function() {
+      getActiveSegment: function getActiveSegment() {
         return agent.tracer.getSegment()
       }
     }
@@ -374,6 +374,44 @@ describe('DatastoreShim', function() {
         wrapped()
         expect(executed).to.be.true
       })
+
+      it('should bind the callback if there is one', function() {
+        var cb = function() {}
+        var toWrap = function(_query, wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        var wrapped = shim.recordQuery(toWrap, {
+          query: shim.FIRST,
+          callback: shim.LAST
+        })
+        wrapped(query, cb)
+      })
+
+      it('should bind the row callback if there is one', function() {
+        var cb = function() {}
+        var toWrap = function(_query, wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        var wrapped = shim.recordQuery(toWrap, {
+          query: shim.FIRST,
+          rowCallback: shim.LAST
+        })
+        wrapped(query, cb)
+      })
     })
   })
 
@@ -452,6 +490,96 @@ describe('DatastoreShim', function() {
     it('should parse a query string into a ParsedStatement', function() {
       var statement = shim.parseQuery('SELECT * FROM table')
       expect(statement).to.be.an.instanceof(ParsedStatement)
+    })
+  })
+
+  describe('#bindRowCallbackSegment', function() {
+    it('should wrap the identified argument', function() {
+      var args = [1, 2, wrappable.bar]
+      shim.bindRowCallbackSegment(args, shim.LAST)
+
+      expect(args[2]).to.not.equal(wrappable.bar)
+      expect(shim.isWrapped(args[2])).to.be.true
+      expect(shim.unwrap(args[2])).to.equal(wrappable.bar)
+    })
+
+    it('should not wrap if the index is invalid', function() {
+      var args = [1, 2, wrappable.bar]
+
+      expect(function() {
+        shim.bindRowCallbackSegment(args, 50)
+      }).to.not.throw()
+
+      expect(args[2]).to.equal(wrappable.bar)
+      expect(shim.isWrapped(args[2])).to.be.false
+    })
+
+
+    it('should not wrap the argument if it is not a function', function() {
+      var args = [1, 2, wrappable.bar]
+
+      expect(function() {
+        shim.bindRowCallbackSegment(args, 1)
+      }).to.not.throw()
+
+      expect(args[1]).to.equal(2)
+      expect(shim.isWrapped(args[1])).to.be.false
+      expect(args[2]).to.equal(wrappable.bar)
+      expect(shim.isWrapped(args[2])).to.be.false
+    })
+
+    it('should create a new segment on the first call', function() {
+      helper.runInTransaction(agent, function() {
+        var args = [1, 2, wrappable.getActiveSegment]
+        shim.bindRowCallbackSegment(args, shim.LAST)
+
+        // Check the segment
+        var segment = shim.getSegment()
+        var cbSegment = args[2]()
+        expect(cbSegment).to.not.equal(segment)
+        expect(segment.children).to.contain(cbSegment)
+      })
+    })
+
+    it('should not create a new segment for calls after the first', function() {
+      helper.runInTransaction(agent, function() {
+        var args = [1, 2, wrappable.getActiveSegment]
+        shim.bindRowCallbackSegment(args, shim.LAST)
+
+        // Check the segment from the first call.
+        var segment = shim.getSegment()
+        var cbSegment = args[2]()
+        expect(cbSegment).to.not.equal(segment)
+        expect(segment.children).to.contain(cbSegment)
+        expect(segment.children).to.have.length(1)
+
+        // Call it a second time and see if we have the same segment.
+        var cbSegment2 = args[2]()
+        expect(cbSegment2).to.equal(cbSegment)
+        expect(segment.children).to.have.length(1)
+      })
+    })
+
+    it('should name the segment based on number of calls', function() {
+      helper.runInTransaction(agent, function() {
+        var args = [1, 2, wrappable.getActiveSegment]
+        shim.bindRowCallbackSegment(args, shim.LAST)
+
+        // Check the segment from the first call.
+        var cbSegment = args[2]()
+        expect(cbSegment).to.have.property('name')
+          .match(/^1 calls.*?getActiveSegment/)
+
+        // Call it a second time and see if the name changed.
+        args[2]()
+        expect(cbSegment).to.have.property('name')
+          .match(/^2 calls.*?getActiveSegment/)
+
+        // And a third time, why not?
+        args[2]()
+        expect(cbSegment).to.have.property('name')
+          .match(/^3 calls.*?getActiveSegment/)
+      })
     })
   })
 })
