@@ -484,7 +484,7 @@ describe('agent instrumentation of MongoDB', function () {
               expect(root.children.length).equals(2)
               expect(root.children[0].name).equals('Datastore/statement/MongoDB/test/find')
               expect(root.children[1].name).equals('Datastore/statement/MongoDB/unknown/each')
-              expect(root.children[1].children.length).equals(0, '"each" should have no child segments')
+              expect(root.children[1].children.length).equals(1, '"each" should have no child segments')
             })
           })
         })
