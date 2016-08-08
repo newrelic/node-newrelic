@@ -9,31 +9,46 @@ var commands = {
 
   caughtUncaughtException: function(code) {
     // register a uncaughtException handler of our own
-    process.once('uncaughtException', function (e) {
+    process.once('uncaughtException', function(e) {
       process.send(e.message)
     })
 
-    process.nextTick(function (){
+    process.nextTick(function() {
       throw new Error(code)
     })
   },
 
+  domainUncaughtException: function(message) {
+    var domain = require('domain')
+    var d = domain.create()
+
+    d.on('error', sendErrors)
+
+    d.run(function() {
+      setTimeout(function() {
+        throw new Error(message)
+      }, 10)
+    })
+  },
+
   checkAgent: function(err) {
-    process.once('uncaughtException', function (e) {
-      setTimeout(function () {
-        process.send({
-          count: newrelic.agent.errors.errorCount,
-          messages: newrelic.agent.errors.errors.map(function (e) { return e[2] })
-        })
-      }, 15)
+    process.once('uncaughtException', function() {
+      setTimeout(sendErrors, 15)
     })
 
-    process.nextTick(function (){
+    process.nextTick(function() {
       throw new Error(err)
     })
   }
 }
 
-process.on('message', function (msg) {
+function sendErrors() {
+  process.send({
+    count: newrelic.agent.errors.errorCount,
+    messages: newrelic.agent.errors.errors.map(function(e) { return e[2] })
+  })
+}
+
+process.on('message', function(msg) {
   commands[msg.name](msg.args)
 })

@@ -1,13 +1,13 @@
-'use strict'; 
-var domain = require('domain'); 
+'use strict'
+
+var domain  = require('domain')
 var chai    = require('chai')
 var helper  = require('../../../lib/agent_helper')
 
 var expect = chai.expect
 
-describe('Domains', function () {
+describe('Domains', function() {
   var agent = null
-  var hasEvent = false
   var d
 
   before(function() {
@@ -15,22 +15,22 @@ describe('Domains', function () {
     agent = helper.instrumentMockedAgent()
   })
 
-  after(function () {
+  after(function() {
     d.exit()
     helper.unloadAgent(agent)
   })
 
-  it('should retain transaction scope on error events', function(done){
+  it('should retain transaction scope on error events', function(done) {
     var checkedTransaction
-    d.on('error', function (err){ 
+    d.on('error', function(err) {
       expect(agent.getTransaction()).to.equal(checkedTransaction)
       done()
     })
 
-    helper.runInTransaction(agent, function (transaction) {
+    helper.runInTransaction(agent, function(transaction) {
       checkedTransaction = transaction
-      d.run(function (){ 
-        setTimeout(function (){ 
+      d.run(function() {
+        setTimeout(function() {
           throw new Error("whole new error!")
         }, 1000)
       })
