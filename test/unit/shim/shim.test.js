@@ -588,7 +588,7 @@ describe('Shim', function() {
       })
 
 
-      it('should bind emit to the recording segment', function() {
+      it('should bind emit to a child segment', function() {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', stream: true}
         })
@@ -599,7 +599,8 @@ describe('Shim', function() {
         })
 
         stream.on('foobar', function() {
-          expect(shim.getSegment()).to.equal(stream.segment)
+          var emitSegment = shim.getSegment()
+          expect(emitSegment.parent).to.equal(stream.segment)
         })
         stream.emit('foobar')
       })

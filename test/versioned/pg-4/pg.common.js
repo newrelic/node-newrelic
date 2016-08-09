@@ -358,7 +358,7 @@ module.exports = function runTests(agent, pg, name) {
         })
       })
 
-      t.test('query.on should not create segments for row events', function (t) {
+      t.test('query.on should create one segment for row events', function (t) {
         helper.runInTransaction(agent, function transactionInScope(tx) {
           var client = new pg.Client(CON_STRING)
 
@@ -377,7 +377,7 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/information_schema.tables/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2)
               client.end()
               t.end()
             })

@@ -279,8 +279,13 @@ test('Basic run through mysql functionality',
                 t.ok(querySegment.children.length === 2,
                      'the query segment should have two children')
                 querySegment.children.forEach(function (childSegment) {
-                  t.ok(childSegment.name === 'timers.setTimeout',
-                       'children should be timeouts')
+                  t.ok(childSegment.name === 'Callback: <anonymous>',
+                       'children should be callbacks')
+                  childSegment.children.forEach(function (grandChildSegment) {
+                    console.log(grandChildSegment.name)
+                    t.ok(grandChildSegment.name === 'timers.setTimeout',
+                        'grand children should be timers')
+                  })
                 })
                 t.end()
               })

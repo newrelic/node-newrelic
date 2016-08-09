@@ -1,13 +1,15 @@
 'use strict'
 
 var path   = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , helper = require('../../lib/agent_helper')
+var chai   = require('chai')
+var expect = chai.expect
+var helper = require('../../lib/agent_helper')
+var DatastoreShim = require('../../../lib/shim/datastore-shim.js')
 
 describe("agent instrumentation of PostgreSQL", function () {
   var agent
-    , initialize
+  var initialize
+  var shim
 
   before(function () {
     agent = helper.loadMockedAgent()
@@ -18,17 +20,11 @@ describe("agent instrumentation of PostgreSQL", function () {
     helper.unloadAgent(agent)
   })
 
-  describe("shouldn't cause bootstrapping to fail", function () {
-    it("when passed no module", function () {
-      expect(function () { initialize(agent); }).not.throws()
-    })
-
-    it("when passed an empty module", function () {
-      expect(function () { initialize(agent, {}); }).not.throws()
-    })
-  })
-
   describe("lazy loading of native PG client", function() {
+
+    before(function () {
+      shim = new DatastoreShim(agent, 'postgres')
+    })
 
     function getMockModule() {
       function PG(clientConstructor) {
@@ -52,7 +48,7 @@ describe("agent instrumentation of PostgreSQL", function () {
     it("instruments when native getter is called", function() {
       var mockPg = getMockModule()
 
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
 
       var pg = mockPg.native
       expect(pg.Client['__NR_original'].name).equal('NativeClient')
@@ -64,10 +60,10 @@ describe("agent instrumentation of PostgreSQL", function () {
     it("does not fail when getter is called multiple times", function() {
       var mockPg = getMockModule()
 
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
       var pg1 = mockPg.native
 
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
       var pg2 = mockPg.native
 
       expect(pg1).equal(pg2)
@@ -76,13 +72,13 @@ describe("agent instrumentation of PostgreSQL", function () {
     it("does not interfere with non-native instrumentation", function() {
       var mockPg = getMockModule()
 
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
       var nativeClient = mockPg.native
       expect(nativeClient.Client['__NR_original'].name).equal('NativeClient')
       var defaultClient = mockPg
       expect(defaultClient.Client.name).equal('DefaultClient')
 
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
       var nativeClient = mockPg.native
       expect(nativeClient.Client['__NR_original'].name).equal('NativeClient')
       var defaultClient = mockPg
@@ -93,13 +89,13 @@ describe("agent instrumentation of PostgreSQL", function () {
       var mockPg = getMockModule()
 
       // instrument once
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
       var pg1 = mockPg.native
       expect(pg1.Client['__NR_original'].name).equal('NativeClient')
 
       // simulate deleting from module cache
       mockPg = getMockModule()
-      initialize(agent, mockPg)
+      initialize(agent, mockPg, 'pg', shim)
       var pg2 = mockPg.native
       expect(pg2.Client['__NR_original'].name).equal('NativeClient')
 
