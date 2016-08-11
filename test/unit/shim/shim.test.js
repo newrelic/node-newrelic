@@ -621,21 +621,23 @@ describe('Shim', function() {
         expect(stream.segment.children).to.have.length(1)
         var eventSegment = stream.segment.children[0]
         expect(eventSegment).to.have.property('name')
-          .match(/^1 calls.*?foobar/)
+          .match(/Event callback: foobar/)
+        expect(eventSegment.parameters).to.have.property('count')
+          .equals(1)
 
         // Emit it again and see if the name updated.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
-        var eventSegment = stream.segment.children[0]
-        expect(eventSegment).to.have.property('name')
-          .match(/^2 calls.*?foobar/)
+        expect(stream.segment.children[0]).to.equal(eventSegment)
+        expect(eventSegment.parameters).to.have.property('count')
+          .equals(2)
 
         // Emit it once more and see if the name updated again.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
-        var eventSegment = stream.segment.children[0]
-        expect(eventSegment).to.have.property('name')
-          .match(/^3 calls.*?foobar/)
+        expect(stream.segment.children[0]).to.equal(eventSegment)
+        expect(eventSegment.parameters).to.have.property('count')
+          .equals(3)
       })
     })
 

@@ -568,17 +568,19 @@ describe('DatastoreShim', function() {
         // Check the segment from the first call.
         var cbSegment = args[2]()
         expect(cbSegment).to.have.property('name')
-          .match(/^1 calls.*?getActiveSegment/)
+          .match(/^Callback: getActiveSegment/)
+        expect(cbSegment.parameters).to.have.property('count')
+          .equal(1)
 
         // Call it a second time and see if the name changed.
         args[2]()
-        expect(cbSegment).to.have.property('name')
-          .match(/^2 calls.*?getActiveSegment/)
+        expect(cbSegment.parameters).to.have.property('count')
+          .equal(2)
 
         // And a third time, why not?
         args[2]()
-        expect(cbSegment).to.have.property('name')
-          .match(/^3 calls.*?getActiveSegment/)
+        expect(cbSegment.parameters).to.have.property('count')
+          .equal(3)
       })
     })
   })
