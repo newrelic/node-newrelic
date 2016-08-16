@@ -99,6 +99,9 @@
   "scripts": {
     "test": "make test"
   },
+  "bin": {
+    "newrelic-naming-rules": "./bin/test-naming-rules.js"
+  },
   "dependencies": {
     "concat-stream": "^1.5.0",
     "https-proxy-agent": "^0.3.5",
