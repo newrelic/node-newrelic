@@ -1,41 +1,71 @@
 'use strict'
 
-var path = require('path')
 var chai = require('chai')
-var fs = require('fs')
+var cp = require('child_process')
 var expect = chai.expect
-var logger = require('../../lib/logger')
+var Logger = require('../../lib/util/logger')
+var path = require('path')
 
-describe("Logger", function () {
-  describe("when setting values", function () {
-    it("shouldn't throw when passed-in log level is 0", function () {
+describe("Logger", function() {
+  var logger = null
+
+  beforeEach(function() {
+    logger = new Logger({
+      name: 'newrelic',
+      level: 'trace',
+      enabled: true
+    })
+  })
+
+  afterEach(function() {
+    logger = null
+  })
+
+  describe("when setting values", function() {
+    it("shouldn't throw when passed-in log level is 0", function() {
       expect(function() {
         logger.level(0)
-      }).not.throws()
+      }).to.not.throw()
     })
 
-    it("shouldn't throw when passed-in log level is ONE MILLION", function () {
+    it("shouldn't throw when passed-in log level is ONE MILLION", function() {
       expect(function() {
         logger.level(1000000)
-      }).not.throws()
+      }).to.not.throw()
     })
 
-    it("shouldn't throw when passed-in log level is 'verbose'", function () {
+    it("shouldn't throw when passed-in log level is 'verbose'", function() {
       expect(function() {
         logger.level('verbose')
-      })
+      }).to.not.throw()
+    })
+  })
+
+  describe("log file", function() {
+    it('should not cause crash if unwritable', function(done) {
+      runTestFile('unwritable-log/unwritable.js', done)
+    })
+
+    it('should not be created if logger is disabled', function(done) {
+      runTestFile('disabled-log/disabled.js', done)
     })
   })
 })
 
-describe('Log file', function() {
-  beforeEach(function() {
-    logger.filepath = 'test.log'
+function runTestFile(file, cb) {
+  var testHelperDir = path.resolve(__dirname, '../helpers/')
+  var proc = cp.fork(path.join(testHelperDir, file), {silent: true})
+  var message = null
+
+  proc.on('message', function(msg) {
+    message = msg
   })
 
-  it('should not be created if logger is disabled', function() {
-    logger.enabled = false
-    logger.error('test')
-    expect(fs.existsSync(logger.filepath)).equal(false)
+  proc.on('exit', function() {
+    if (message && message.error) {
+      cb(message.error)
+    } else {
+      cb()
+    }
   })
-})
+}
