@@ -323,7 +323,7 @@ Requests are mapped to transaction names using a deterministic process:
    only applied these rules if nothing else had named the transaction, which
    made using rules with router-based automatic naming impossible. You must be
    using the latest version of New Relic to combine naming and ignoring rules
-   with naming set by the router.
+   with naming set by the router instrumentation.
 5. Finally, New Relic may have its own rules that it applies to the transaction
    name, either because the request is for something New Relic rolls up by
    default (i.e. static assets like images or CSS files), or because New Relic
@@ -435,24 +435,143 @@ metrics and blowing out the apdex metrics for your application.
 
 #### rules.name
 
-A list of rules of the format `{pattern : "pattern", name : "name"}` for
-matching incoming request URLs to `pattern` and naming the matching New Relic
-transactions `name`. When automatically naming rules from the router
-configuration, the patterns are still applied to the URL path, and not the name
-returned by the router. The pattern can be set as either a string or a
-JavaScript regular expression literal. Both pattern and name are required.
-Additional attributes are ignored.
+A list of rules used to set the name of the transaction to `name` when the URL
+matches `pattern`.
 
 Can also be set via the environment variable `NEW_RELIC_NAMING_RULES`, with
 multiple rules passed in as a list of comma-delimited JSON object literals:
 `NEW_RELIC_NAMING_RULES='{"pattern":"^t","name":"u"},{"pattern":"^u","name":"t"}'`
 
+Each rule is defined using the following format:
+
+```
+{
+  // required
+  pattern : "pattern",
+  name : "name",
+
+  // optional
+  precedence: 1,
+  terminate_chain: true,
+  replace_all: false
+}
+```
+
+Additional attributes are ignored.
+
+Note: these rules take precedence over automatic naming from router instrumentations and
+are applied to the URL path, not the name returned by the router instrumentation.
+
+##### pattern (required)
+
+The pattern used to match the URL.  It can be set as either a string or a JavaScript
+regular expression literal.  For example, `"^/abc/123$"` is equivalent to `/^\/abc\/123$/`.
+
+The pattern can be written to match the complete URL, or just a part of it.
+
+##### name (required)
+
+The value that is used to replace the URL (or part of it) that matches the pattern.
+It is also possible to use regular expression group references.  See examples below.
+
+##### rules.precedence (optional)
+
+By default the rules are evaluated in reverse order (from last to first).  If you find
+this behavior counterintuitive, the execution order can be reversed by setting the feature
+flag `reverse_naming_rules` to false.  Furthermore, if you prefer to have complete
+control over the order, each rule can be given a `precedence` attribute.  The precedence
+is an integer number, and rules are evaluated in ascending order.  If precedence is not
+explicitly defined, it will be set to 500 by default.
+
+##### rules.terminate_chain (optional)
+
+When set to true, no further rules will be evaluated if this rule is a match.  The default
+is true.
+
+Setting this to false is useful when multiple rules should be used together.  For example,
+one rule could be replacing a common pattern in many different URLs, while subsequent
+rule(s) would be more specific.
+
+##### rules.replace_all (optional)
+
+When set to true, all matches of the pattern will be replaced.  Otherwise, only the first
+match will be replaced.  The default is false.  Using the `g` flag with regular expression
+literal will have the same effect.  For example:
+
+```
+  pattern: '[0-9]+',
+  replace_all: true
+```
+
+will have the same effect as
+
+```
+  pattern: /[0-9]+/g
+```
+
+##### Testing
+
+The agent comes with a command-line tool for testing naming rules.  For more information
+run the following command in terminal window in a directory where your app is installed.
+
+`node node_modules/.bin/newrelic-naming-rules`
+
+##### Examples
+
+Match full URL:
+
+```
+  pattern: "^/items/[0-9]+$",
+  name: "/items/:id"
+```
+
+Replace the first match in any URL:
+
+```
+  pattern: "[0-9]+",
+  name: ":id"
+```
+
+will result in:
+
+`/orders/123` => `/orders/:id`
+
+`/items/123` => `/items/:id`
+
+`/orders/123/items/123` => `/orders/:id/items/123`
+
+Replace all matches in any URL:
+
+```
+  pattern: "[0-9]+",
+  name: ":id",
+  replace_all: true
+```
+
+will result in:
+
+`/orders/123/items/123` => `/orders/:id/items/:id`
+
+Using regular expression match group references:
+
+```
+  pattern: '^/(items|orders)/[0-9]+$',
+  name: '/\\1/:id'
+```
+
+will result in:
+
+`/orders/123` => `/orders/:id`
+
+`/items/123` => `/items/:id`
+
+
 #### rules.ignore
 
 A list of patterns for matching incoming request URLs to be ignored. When using
 ignoring rules with instrumented routers, the matches are still made against
-the URL paths, not the name returned by the router. Patterns may be strings or
-regular expressions.
+the URL paths, not the name returned by the router instrumentation. Patterns may be
+strings or regular expressions.
 
 Can also be set via the environment variable `NEW_RELIC_IGNORING_RULES`, with
 multiple rules passed in as a list of comma-delimited patterns:
