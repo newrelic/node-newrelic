@@ -1,7 +1,9 @@
+'use strict'
+
 var flags = require('../../lib/feature_flags.js')
-var chai  = require('chai')
-var assert= require('assert')
-var Config= require('../../lib/config')
+var chai = require('chai')
+var assert = require('assert')
+var Config = require('../../lib/config')
 
 chai.should()
 
@@ -20,6 +22,7 @@ var used = [
   'promise_segments',
   'proxy',
   'released',
+  'reverse_naming_rules',
   'send_request_uri_attribute',
   'synthetics',
   'unreleased',

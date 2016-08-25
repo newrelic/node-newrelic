@@ -1,3 +1,5 @@
+'use strict'
+
 var test_data = require('../../lib/cross_agent_tests/labels.json')
 var parse = require('../../../lib/util/label-parser').fromString
 var chai = require('chai')

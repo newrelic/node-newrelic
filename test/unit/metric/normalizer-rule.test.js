@@ -1,12 +1,11 @@
 'use strict'
 
-var path = require('path')
-  , chai = require('chai')
-  , expect = chai.expect
-  , Rule = require('../../../lib/metrics/normalizer/rule')
-  
+var chai = require('chai')
+var expect = chai.expect
+var Rule = require('../../../lib/metrics/normalizer/rule')
 
-describe("NormalizerRule", function () {
+
+describe("NormalizerRule", function() {
   var rule
 
   describe("with a very simple specification", function () {
@@ -172,7 +171,7 @@ describe("NormalizerRule", function () {
     rule = new Rule(sample)
 
     expect(rule.pattern.global).equal(true)
-    expect(rule.apply('/test/xXxxXx0xXxzxxxxXx')).equal('/test/yy0yzxxxy')
+    expect(rule.apply('/test/xXxxXx0xXxzxxxxXx')).equal('/test/yy0yzyy')
   })
 
   describe("when given an incomplete specification", function () {
@@ -193,7 +192,7 @@ describe("NormalizerRule", function () {
     })
 
     it("should have a regexp that matches the empty string", function () {
-      expect(new Rule().pattern).eql(/^$/)
+      expect(new Rule().pattern).eql(/^$/i)
     })
 
     it("should use the entire match as the replacement value", function () {
@@ -210,6 +209,45 @@ describe("NormalizerRule", function () {
 
     it("should silently pass through the input if applied", function () {
       expect(new Rule().apply('sample/input')).equal('sample/input')
+    })
+  })
+
+  describe('when given a RegExp', function() {
+    it('should merge flags', function() {
+      var r = new Rule({
+        "each_segment"     : false,
+        "eval_order"       : 0,
+        "terminate_chain"  : false,
+        "match_expression" : /foo/m,
+        "replace_all"      : true,
+        "ignore"           : false,
+        "replacement"      : "y"
+      })
+
+      var re = r.pattern
+      expect(re.ignoreCase).to.be.true
+      expect(re.multiline).to.be.true
+      expect(re.global).to.be.true
+    })
+
+    it('should not die on duplicated flags', function() {
+      var r = null
+      expect(function() {
+        r = new Rule({
+          "each_segment"     : false,
+          "eval_order"       : 0,
+          "terminate_chain"  : false,
+          "match_expression" : /foo/ig,
+          "replace_all"      : true,
+          "ignore"           : false,
+          "replacement"      : "y"
+        })
+      }).to.not.throw()
+
+      var re = r.pattern
+      expect(re.ignoreCase).to.be.true
+      expect(re.multiline).to.be.false
+      expect(re.global).to.be.true
     })
   })
 })
