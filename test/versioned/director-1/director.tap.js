@@ -319,3 +319,121 @@ tap.test("express w/ director subrouter test", function (t) {
     })
   })
 })
+
+tap.test('director instrumentation', function (t) {
+
+  t.plan(10)
+
+  t.test('should allow null routers through constructor on http router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var routes = {
+      '/hello': null
+    }
+
+    var router = new director.http.Router(routes)
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow null routers through constructor on base router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var routes = {
+      '/hello': null
+    }
+
+    var router = new director.Router(routes)
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow null routers through constructor on cli router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var routes = {
+      '/hello': null
+    }
+
+    var router = new director.cli.Router(routes)
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow routers through .on on cli router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.cli.Router()
+    router.on(/^$/, function () {})
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow routers through .on on http router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.http.Router()
+    router.on('get', /^$/, function () {})
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow routers through .on on base router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.Router()
+    router.on(/^$/, function () {})
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow null routers through method mounters', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.http.Router()
+
+    router.get('/tes/', null)
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow null routers through .on on http router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.http.Router()
+
+    router.on('get', '/test/')
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow null routers through .on on cli router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.cli.Router()
+
+    router.on('get', 'test')
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+
+  t.test('should allow null routers through .on on base router', function (t) {
+    var agent = helper.instrumentMockedAgent()
+    var director = require('director')
+    var router = new director.Router()
+
+    router.on('get', 'test')
+
+    helper.unloadAgent(agent)
+    t.end()
+  })
+})
