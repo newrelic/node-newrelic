@@ -18,7 +18,7 @@ test('Basic run through mysql functionality',
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent()
-    var mysql   = require('mysql')
+    var mysql   = require('mysql2')
       , generic = require('generic-pool')
 
 

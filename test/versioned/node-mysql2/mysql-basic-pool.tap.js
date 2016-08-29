@@ -31,7 +31,7 @@ test('See if mysql is running', function(t){
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     agent = helper.instrumentMockedAgent()
-    mysql = require('mysql')
+    mysql = require('mysql2')
     pool  = mysql.createPool(config)
 
     pool.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
@@ -52,7 +52,7 @@ test('bad config', function (t) {
   var mysql
 
   agent = helper.instrumentMockedAgent()
-  mysql = require('mysql')
+  mysql = require('mysql2')
 
   badConfig = {
     connectionLimit : 10,
@@ -103,7 +103,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
     agent = helper.instrumentMockedAgent()
-    mysql = require('mysql')
+    mysql = require('mysql2')
     pool  = mysql.createPool(config)
 
     // make sure a connection exists in the pool before any tests are run
@@ -141,13 +141,6 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function (t) {
 
           agent.getTransaction().end()
         })
-      })
-    })
-
-    t.test('lack of callback does not explode', function(_t){
-      helper.runInTransaction(agent, function transactionInScope() {
-        pool.query('SET SESSION auto_increment_increment=1')
-        _t.end()
       })
     })
 
@@ -255,7 +248,7 @@ test('poolCluster', {timeout : 30 * 1000}, function(t){
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     agent = helper.instrumentMockedAgent()
 
-    mysql = require('mysql')
+    mysql = require('mysql2')
 
     t.test('primer', function(_t){
       var poolCluster = mysql.createPoolCluster()
