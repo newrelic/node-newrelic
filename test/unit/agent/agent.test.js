@@ -254,13 +254,13 @@ describe("the New Relic agent", function () {
         var rules = configured.userNormalizer.rules
         expect(rules.length).equal(2)
 
-        // Rules are reversed by default
-        expect(rules[0].pattern.source).equal('^\\/u')
+        // Rules are no longer reversed by default
+        expect(rules[1].pattern.source).equal('^\\/u')
 
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-            expect(rules[1].pattern.source).equal('^\\/t')
+            expect(rules[0].pattern.source).equal('^\\/t')
         } else {
-            expect(rules[1].pattern.source).equal('^/t')
+            expect(rules[0].pattern.source).equal('^/t')
         }
       })
     })
