@@ -1,4 +1,20 @@
 
+### v2.1.0 / beta-40 (2016-08-29)
+
+* Incorporated fixes from v1.30.0
+
+* Added `rowCallback` property to datastore segment descriptors.
+
+  With this parameter the shim will record the given function/parameter as a
+  per-row callback which may be called multiple times. These calls will be
+  counted up for traces.
+
+* Rewrote PostgreSQL instrumentation using new `DatastoreShim` class.
+
+* Reversed `reverse_naming_rules` default.
+
+  Naming rules now default to evaluating in forward order.
+
 ### v1.30.0 (2016-08-25):
 
 * A number of improvements and fixes to transaction naming rules.
