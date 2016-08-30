@@ -57,8 +57,18 @@ function createBackgroundTransaction(name, group, callback) {
 }
 
 // Normally the following call executes callback asynchronously
-function shutdown(options, callback) {
+function shutdown(options, cb) {
   logger.debug('Not calling shutdown because New Relic is disabled.')
+  
+  var callback = cb
+  if (!callback) {
+    if (typeof options === 'function') {
+      callback = options
+    } else {
+      callback = new Function()
+    }
+  }
+  
   process.nextTick(callback);
 }
 
