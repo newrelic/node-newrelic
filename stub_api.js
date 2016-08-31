@@ -69,7 +69,7 @@ function shutdown(options, cb) {
     }
   }
   
-  process.nextTick(callback);
+  process.nextTick(callback)
 }
 
 module.exports = Stub
