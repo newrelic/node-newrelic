@@ -51,8 +51,8 @@ tap.test("handles regex appended to path", function (t) {
   var state = new NameState('Nodejs', 'GET', '/', [])
   state.appendPath(new RegExp('regex1'))
   state.appendPath('path1')
-  state.appendPath(/regex2/)
+  state.appendPath(/regex2/i)
   state.appendPath('path2')
 
-  t.equal(state.getName(), 'Nodejs/GET//regex1//path1/regex2//path2')
+  t.equal(state.getName(), 'Nodejs/GET//regex1/path1/regex2/path2')
 })
