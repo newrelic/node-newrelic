@@ -1,16 +1,33 @@
 'use strict'
 
+var genericTestDir = '../../integration/instrumentation/promises/'
+
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify.js')
 var util = require('util')
+var testPromiseSegments = require(genericTestDir + 'segments')
+var testTransactionState = require(genericTestDir + 'transaction-state')
 
 if (!global.Promise) {
   test = function noop() {
+    /* eslint-disable no-console */
     console.error('Promise tests cant run without native Promises')
+    /* eslint-enable no-console */
   }
 }
 
+test('transaction state', function(t) {
+  var agent = helper.loadTestAgent(t)
+  testTransactionState(t, agent, Promise)
+})
+
+// XXX Promise segments in native instrumentation are currently less than ideal
+// XXX in structure. Transaction state is correctly maintained, and all segments
+// XXX are created, but the heirarchy is not correct.
+test('segments', {skip: true}, function(t) {
+  var agent = helper.loadTestAgent(t)
+  testPromiseSegments(t, agent, Promise)
+})
 
 test('then', function testThen(t) {
   t.plan(4)
@@ -625,7 +642,7 @@ test('Promise.resolve', function testResolve(t) {
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function resolve() {
-      Promise.resolve(15).then(function (val) {
+      Promise.resolve(15).then(function(val) {
         segment = agent.tracer.getSegment()
         return val
       }).then(done, fail)
