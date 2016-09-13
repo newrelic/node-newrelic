@@ -1,3 +1,23 @@
+### v1.30.2 (2016-09-13):
+
+* Added instrumentation of the param() function in Express.
+
+  The agent will now create metrics and transaction segments when the Express param()
+  function is called as a part of a route.  This also fixes an issue with transaction
+  naming when the HTTP response is ended within a param() method.
+
+* Fixed an issue with naming Express transactions that result in 404 errors.
+
+  Previously transactions were not always correctly normalized for URLs that caused
+  404 errors. The transactions will now always be reported with the same normalized name
+  (e.g. "get /").
+
+* Fixed instrumentation of Express v4.0 - v4.5.
+
+  Previously transactions were not correctly named on older versions of Express 4.
+
+* Minor upates to logging.
+
 ### v1.30.1 (2016-09-01):
 
 * The `shutdown` method is now on the stub API.
