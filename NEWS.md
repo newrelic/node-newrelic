@@ -1,3 +1,7 @@
+### v1.30.3 (2016-09-14):
+
+* Published with npm v2.
+
 ### v1.30.2 (2016-09-13):
 
 * Added instrumentation of the param() function in Express.
