@@ -8,7 +8,7 @@ var test = tap.test
 
 
 module.exports = function runTests(agent, pg, name) {
-  //constants for table creation and db connection
+  // constants for table creation and db connection
   var TABLE = 'testTable'
   var PK = 'pk_column'
   var COL = 'test_column'
@@ -22,10 +22,10 @@ module.exports = function runTests(agent, pg, name) {
    *
    * @param Callback function to set off running the tests
    */
-  function postgresSetup (runTest) {
+  function postgresSetup(runTest) {
     var setupClient = new pg.Client(CON_STRING)
 
-    setupClient.connect(function (error) {
+    setupClient.connect(function(error) {
       if (error) {
         throw error
       }
@@ -34,11 +34,11 @@ module.exports = function runTests(agent, pg, name) {
       var tableCreate = 'CREATE TABLE ' + TABLE + ' (' + PK + ' integer PRIMARY KEY, '
       tableCreate += COL + ' text);'
 
-      setupClient.query(tableDrop, function (error) {
+      setupClient.query(tableDrop, function(error) {
         if (error) {
           throw error
         }
-        setupClient.query(tableCreate, function (error) {
+        setupClient.query(tableCreate, function(error) {
           if (error) {
             throw error
           }
@@ -51,7 +51,10 @@ module.exports = function runTests(agent, pg, name) {
 
   function verify(t, segment) {
     var transaction = segment.transaction
-    t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
+    t.equal(
+      Object.keys(transaction.metrics.scoped).length, 0,
+      'should not have any scoped metrics'
+    )
 
     var unscoped = transaction.metrics.unscoped
 
@@ -67,23 +70,26 @@ module.exports = function runTests(agent, pg, name) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + TABLE + '/select'] = 1
 
-    if (name !== 'pure JavaScript') {
-      // disabled until metric explosions can be handled by server
-      // expected['Datastore/instance/Postgres/' + params.postgres_host + ':' + params.postgres_port] = 2
-    }
+    var hostId = params.postgres_host + ':{' + params.postgres_port + '}'
+    expected['Datastore/instance/Postgres/' + hostId] = 2
 
     var expectedNames = Object.keys(expected)
     var unscopedNames = Object.keys(unscoped)
 
-
-    expectedNames.forEach(function (name) {
+    expectedNames.forEach(function(name) {
       t.ok(unscoped[name], 'should have unscoped metric ' + name)
       if (unscoped[name]) {
-        t.equals(unscoped[name].callCount, expected[name], 'metric ' + name + ' should have correct callCount')
+        t.equals(
+          unscoped[name].callCount, expected[name],
+          'metric ' + name + ' should have correct callCount'
+        )
       }
     })
 
-    t.equals(unscopedNames.length, expectedNames.length, 'should have correct number of unscoped metrics')
+    t.equals(
+      unscopedNames.length, expectedNames.length,
+      'should have correct number of unscoped metrics'
+    )
 
     var trace = transaction.trace
     var getSegment = segment.parent
@@ -92,13 +98,8 @@ module.exports = function runTests(agent, pg, name) {
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    if (name !== 'pure JavaScript') {
-      t.equals(setSegment.host, params.postgres_host, 'should register the host')
-      t.equals(setSegment.port, params.postgres_port, 'should register the port')
-    } else {
-      t.skip('should register the host (unsupported for pure JS right now)')
-      t.skip('should register the port (unsupported for pure JS right now)')
-    }
+    t.equals(setSegment.host, params.postgres_host, 'should register the host')
+    t.equals(setSegment.portPathOrId, params.postgres_port, 'should register the port')
 
     t.ok(setSegment, 'trace segment for insert should exist')
     t.equals(
