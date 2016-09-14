@@ -98,8 +98,10 @@ module.exports = function runTests(agent, pg, name) {
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
+    var hostPort = params.postgres_host + ':' + params.postgres_port
     t.equals(setSegment.host, params.postgres_host, 'should register the host')
     t.equals(setSegment.portPathOrId, params.postgres_port, 'should register the port')
+    t.equals(setSegment.parameters.instance, hostPort, 'should add the instance parameter')
 
     t.ok(setSegment, 'trace segment for insert should exist')
     t.equals(
