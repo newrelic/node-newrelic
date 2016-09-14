@@ -5,6 +5,7 @@ var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
 var test = tap.test
+var urltils = require('../../../lib/util/urltils')
 
 
 module.exports = function runTests(agent, pg, name) {
@@ -14,6 +15,10 @@ module.exports = function runTests(agent, pg, name) {
   var COL = 'test_column'
   var CON_STRING = 'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@'
         + params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db
+  var METRIC_HOST_NAME = urltils.isLocalhost(params.postgres_host)
+    ? agent.config.getHostnameSafe()
+    : params.postgres_host
+
 
   /**
    * Deletion of testing table if already exists,
@@ -70,7 +75,7 @@ module.exports = function runTests(agent, pg, name) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + TABLE + '/select'] = 1
 
-    var hostId = params.postgres_host + ':{' + params.postgres_port + '}'
+    var hostId = METRIC_HOST_NAME + ':{' + params.postgres_port + '}'
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
     var expectedNames = Object.keys(expected)
@@ -98,10 +103,9 @@ module.exports = function runTests(agent, pg, name) {
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    var hostPort = params.postgres_host + ':' + params.postgres_port
-    t.equals(setSegment.host, params.postgres_host, 'should register the host')
+    t.equals(setSegment.host, METRIC_HOST_NAME, 'should register the host')
     t.equals(setSegment.portPathOrId, params.postgres_port, 'should register the port')
-    t.equals(setSegment.parameters.instance, hostPort, 'should add the instance parameter')
+    t.equals(setSegment.parameters.instance, hostId, 'should add the instance parameter')
 
     t.ok(setSegment, 'trace segment for insert should exist')
     t.equals(
