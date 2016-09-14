@@ -57,36 +57,41 @@ if (global.Promise) {
     })
   })
 
-  describe('agent instrumentation of Promise', function () {
+  describe('agent instrumentation of Promise', function() {
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.instrumentMockedAgent()
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should catch early throws with long chains', function (done) {
+    it('should catch early throws with long chains', function(done) {
       var segment
 
-      helper.runInTransaction(agent, function (transaction) {
-        new Promise(function (resolve, reject) {
+      helper.runInTransaction(agent, function(transaction) {
+        new Promise(function(resolve) {
           segment = agent.tracer.getSegment()
           setTimeout(resolve, 0)
         })
-        .then(function () {
+        .then(function() {
           throw new Error('some error')
         })
-        .then(function () {
+        .then(function() {
           throw new Error('We shouldn\'t be here!')
         })
-        .catch(function(err){
-          process.nextTick(function () {
-            expect(agent.tracer.getSegment()).to.equal(segment)
-            expect(err.message).to.equal('some error')
-            expect(agent.getTransaction()).to.exist
+        .catch(function(err) {
+          process.nextTick(function() {
+            expect(agent.tracer.getSegment())
+              .to.exist
+              .and.to.equal(segment)
+            expect(err)
+              .to.have.property('message', 'some error')
+            expect(agent.getTransaction())
+              .to.exist
+              .and.to.equal(transaction)
             done()
           })
         })
