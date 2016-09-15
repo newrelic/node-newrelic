@@ -1,8 +1,6 @@
 {
   "name": "@newrelic/beta-agent",
-  "version": "2.1.0-beta",
-  "name": "newrelic",
-  "version": "1.30.3",
+  "version": "2.1.1-beta",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
