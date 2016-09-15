@@ -1,3 +1,8 @@
+
+### v2.1.1 / beta-41 (2016-09-15):
+
+* Incorporated fixes from v1.30.1, v1.30.2, and v1.30.3.
+
 ### v1.30.3 (2016-09-14):
 
 * Published with npm v2.
