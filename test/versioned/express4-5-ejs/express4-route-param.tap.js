@@ -20,7 +20,7 @@ test('Express 4 route param', {skip: skip()}, function(t) {
 
   server.listen(PORT, function() {
     t.test('pass-through param', function(t) {
-      t.plan(3)
+      t.plan(4)
 
       agent.once('transactionFinished', function(tx) {
         t.equal(
@@ -31,7 +31,8 @@ test('Express 4 route param', {skip: skip()}, function(t) {
 
       testRequest('foo', function(err, body) {
         t.notOk(err, 'should not have errored')
-        t.equal(body, 'foo', 'should pass through correct parameter value')
+        t.equal(body.action, 'foo', 'should pass through correct parameter value')
+        t.equal(body.name, 'action', 'should pass through correct parameter name')
       })
     })
 
@@ -68,13 +69,14 @@ function createServer(express) {
   var cRouter = new express.Router()
 
   cRouter.get('', function(req, res) {
-    res.json(req.action)
+    res.json({action: req.action, name: req.name})
   })
 
   bRouter.use('/c', cRouter)
 
-  aRouter.param('action', function(req, res, next, action) {
+  aRouter.param('action', function(req, res, next, action, name) {
     req.action = action
+    req.name = name
     if (action === 'deny') {
       res.status(200).json('denied')
     } else {
