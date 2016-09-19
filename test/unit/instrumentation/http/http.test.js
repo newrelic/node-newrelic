@@ -645,7 +645,7 @@ describe("built-in http module instrumentation", function() {
             res.headers['x-newrelic-app-data'],
             encKey
           ))
-          expect(data[1]).equal('WebTransaction/Nodejs/abc')
+          expect(data[1]).equal('WebTransaction/Nodejs/GET/abc')
           res.resume()
           server.close(done)
         })
