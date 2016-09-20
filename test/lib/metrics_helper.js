@@ -1,3 +1,5 @@
+'use strict'
+
 var assert = require('chai').assert
 var format = require('util').format
 
@@ -5,8 +7,7 @@ exports.assertMetrics = assertMetrics
 exports.assertSegments = assertSegments
 exports.findSegment = findSegment
 
-function assertMetrics(metrics, expected, exclusive,
-    assertValues) {
+function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
   // hopefully help catch that and make it obvious.
@@ -28,7 +29,7 @@ function assertMetrics(metrics, expected, exclusive,
       throw new Error(format('%j is missing from the metrics bucket', expectedMetric[0]))
     }
     if (assertValues) {
-      assert.sameMembers(
+      assert.deepEqual(
         metric.toJSON(),
         expectedMetric[1],
         format(
