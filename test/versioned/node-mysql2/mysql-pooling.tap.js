@@ -163,15 +163,29 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
       transaction.end()
 
       var trace = transaction.trace
+      var selectSegment = null
       t.ok(trace, 'trace should exist')
       t.ok(trace.root, 'root element should exist.')
-      t.equals(trace.root.children.length, 2, 'There should be only one child.')
+      if (trace.root.children.length === 2) {         // MySQL2 <=1.0.0
+        selectSegment = trace.root.children[1]
+      } else if (trace.root.children.length === 3) {  // MySQL2 >=1.1.0
+        t.equals(
+          trace.root.children[1].name,
+          'timers.setTimeout',
+          'should have timeout segment'
+        )
+        selectSegment = trace.root.children[2]
+      } else {
+        t.fail('unknown number of children: ' + trace.root.children.length)
+        return t.end()
+      }
 
-      var selectSegment = trace.root.children[1]
       t.ok(selectSegment, 'trace segment for first SELECT should exist')
-      t.equals(selectSegment.name,
-               'Datastore/statement/MySQL/agent_integration.test/select',
-               'should register as SELECT')
+      t.equals(
+        selectSegment.name,
+        'Datastore/statement/MySQL/agent_integration.test/select',
+        'should register as SELECT'
+      )
 
       t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
       t.equals(selectSegment.children[0].name, 'Callback: anonymous')
