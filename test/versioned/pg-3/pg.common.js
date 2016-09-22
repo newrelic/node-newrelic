@@ -54,8 +54,9 @@ module.exports = function runTests(agent, pg, name) {
     })
    }
 
-  function verify(t, segment) {
+  function verify(t, segment, selectTable) {
     var transaction = segment.transaction
+    selectTable = selectTable || TABLE
     t.equal(
       Object.keys(transaction.metrics.scoped).length, 0,
       'should not have any scoped metrics'
@@ -73,10 +74,29 @@ module.exports = function runTests(agent, pg, name) {
     }
 
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
-    expected['Datastore/statement/Postgres/' + TABLE + '/select'] = 1
+    expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
     var hostId = METRIC_HOST_NAME + ':{' + params.postgres_port + '}'
     expected['Datastore/instance/Postgres/' + hostId] = 2
+
+    var slowQuerySamples = agent.queries.samples
+    for (var key in slowQuerySamples) {
+      var queryParams = slowQuerySamples[key].getParams()
+
+      t.equal(
+        queryParams.instance,
+        hostId,
+        'instance data should show up in slow query params'
+      )
+
+      t.equal(
+        queryParams.database_name,
+        params.postgres_db,
+        'database name should show up in slow query params'
+      )
+
+      t.ok(queryParams.backtrace, 'params should contain a backtrace')
+    }
 
     var expectedNames = Object.keys(expected)
     var unscopedNames = Object.keys(unscoped)
@@ -97,27 +117,33 @@ module.exports = function runTests(agent, pg, name) {
     )
 
     var trace = transaction.trace
-    var getSegment = segment.parent
-    var setSegment = getSegment.parent.parent
 
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    t.equals(setSegment.host, METRIC_HOST_NAME, 'should register the host')
-    t.equals(setSegment.portPathOrId, params.postgres_port, 'should register the port')
-    t.equals(setSegment.parameters.instance, hostId, 'should add the instance parameter')
-
-    t.ok(setSegment, 'trace segment for insert should exist')
-    t.equals(
-      setSegment.name, 'Datastore/statement/Postgres/' + TABLE + '/insert',
-      'should register the query call'
+    var setSegment = findSegment(
+      trace.root,
+      'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
 
+    var getSegment = findSegment(
+      trace.root,
+      'Datastore/statement/Postgres/' + selectTable + '/select'
+    )
+
+    t.ok(setSegment, 'trace segment for insert should exist')
     t.ok(getSegment, 'trace segment for select should exist')
+
+    t.equals(setSegment.parameters.instance, hostId, 'should add the instance parameter')
+    t.equals(
+      setSegment.parameters.database_name,
+      params.postgres_db,
+      'should add the database name parameter'
+    )
 
     if (!getSegment) return t.end()
 
-    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + TABLE + '/select',
+    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
              'should register the query call')
     t.equals(segment.children.length, 0,
              'get should leave us here at the end')
@@ -127,7 +153,7 @@ module.exports = function runTests(agent, pg, name) {
   }
 
   test('Postgres instrumentation: ' + name, function (t) {
-    t.plan(6)
+    t.plan(8)
     postgresSetup(runTest)
     function runTest () {
       t.test('simple query with prepared statement', function (t) {
@@ -301,6 +327,63 @@ module.exports = function runTests(agent, pg, name) {
                   done()
                   verify(t, agent.tracer.getSegment())
                 })
+              })
+            })
+          })
+        })
+      })
+
+      // https://github.com/newrelic/node-newrelic/pull/223
+      t.test("query using an config object with `text` getter instead of property",
+          function (t) {
+
+        var client = new pg.Client(CON_STRING)
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var transaction = agent.getTransaction()
+
+          var colVal = 'Sianara'
+          var pkVal = 444
+
+          function CustomConfigClass() {
+            this._text = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+            this._text += ') VALUES($1, $2);'
+          }
+
+          // "text" is defined as a getter on the prototype, so it will not be
+          // a property owned by the instance
+          Object.defineProperty(CustomConfigClass.prototype, 'text', {
+            get: function() {
+              return this._text
+            }
+          })
+
+          // create a config instance
+          var config = new CustomConfigClass()
+
+          client.connect(function (error) {
+            if (error) return t.fail(error)
+            var query = client.query(config, [pkVal, colVal], function (error, value) {
+              var segment = findSegment(transaction.trace.root,
+                'Datastore/statement/Postgres/testTable/insert')
+              t.ok(segment, 'expected segment exists')
+
+              client.end()
+              t.end()
+            })
+          })
+        })
+      })
+
+      t.test("slow queries should have the proper structure", function (t) {
+        var client = new pg.Client(CON_STRING)
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var transaction = agent.getTransaction()
+          client.connect(function (error) {
+            if (error) return t.fail(error)
+            client.query('SELECT * FROM pg_sleep(1);', function (error, value) {
+              transaction.end(function () {
+                client.end()
+                verify(t, agent.tracer.getSegment(), 'pg_sleep')
               })
             })
           })

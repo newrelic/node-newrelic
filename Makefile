@@ -162,7 +162,7 @@ services:
 	if docker ps -a | grep -q "nr_node_memcached"; then \
 	  docker start nr_node_memcached; \
 	else \
-	  docker run -d --name nr_node_memcached -p 11211:11211 borja/docker-memcached; \
+	  docker run -d --name nr_node_memcached -p 11211:11211 memcached; \
 	fi
 	if docker ps -a | grep -q "nr_node_mongodb"; then \
 	  docker start nr_node_mongodb; \
