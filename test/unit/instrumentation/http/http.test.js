@@ -131,6 +131,17 @@ describe("built-in http module instrumentation", function () {
         transaction = agent.getTransaction()
         should.exist(transaction)
 
+        if (/\/slow$/.test(request.url)) {
+          setTimeout(function() {
+            response.writeHead(200, {
+              'Content-Length': PAGE.length,
+              'Content-Type': 'text/html'
+            })
+            response.end(PAGE)
+          }, 500)
+          return
+        }
+
         makeRequest({
           port: 8321,
           host: 'localhost',
@@ -166,7 +177,6 @@ describe("built-in http module instrumentation", function () {
           // The transaction doesn't get created until after the instrumented
           // server handler fires.
           should.not.exist(agent.getTransaction())
-
           done()
         })
       })
@@ -188,7 +198,21 @@ describe("built-in http module instrumentation", function () {
         })
       })
 
-      req.on('error', cb)
+      req.on('error', function(err) {
+        // If we aborted the request and the error is a connection reset, then
+        // all is well with the world. Otherwise, ERROR!
+        if (params.abort && err.code === 'ECONNRESET') {
+          cb()
+        } else {
+          cb(err)
+        }
+      })
+
+      if (params.abort) {
+        setTimeout(function() {
+          req.abort()
+        }, params.abort)
+      }
       req.end()
     }
 
@@ -197,6 +221,7 @@ describe("built-in http module instrumentation", function () {
       var fetchedBody = null
 
       before(function(done) {
+        transaction = null
         makeRequest({
           port: 8123,
           host: 'localhost',
@@ -258,6 +283,36 @@ describe("built-in http module instrumentation", function () {
 
       it("should set transaction.port to the server's port", function() {
         expect(transaction.port).equal(8123)
+      })
+    })
+
+    describe('that aborts', function() {
+      var fetchedStatusCode = null
+      var fetchedBody = null
+
+      before(function(done) {
+        transaction = null
+        makeRequest({
+          port: 8123,
+          host: 'localhost',
+          path: '/slow',
+          method: 'GET',
+          abort: 15
+        }, function(err, statusCode, body) {
+          fetchedStatusCode = statusCode
+          fetchedBody = body
+          done(err)
+        })
+      })
+
+      after(function() {
+        fetchedStatusCode = null
+        fetchedBody = null
+      })
+
+      it('should still finish the transaction', function() {
+        expect(transaction).to.exist
+        expect(transaction.isActive()).to.be.false
       })
     })
   })
