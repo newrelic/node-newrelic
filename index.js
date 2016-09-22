@@ -7,7 +7,10 @@ var message
 var agent
 
 var agentVersion = require('./package.json').version
-logger.trace("Using New Relic for Node.js version %s.", agentVersion)
+logger.info(
+  "Using New Relic for Node.js. Agent version: %s; Node version: %s.",
+  agentVersion, process.version
+)
 
 if (require.cache.__NR_cache) {
   logger.warn(
