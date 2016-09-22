@@ -566,7 +566,7 @@ describe("built-in http module instrumentation", function () {
             encKey
           ))
           expect(data[0]).equal('456')
-          expect(data[1]).equal('/abc')
+          expect(data[1]).equal('WebTransaction//abc')
           expect(data[4]).equal(3)
           expect(data[5]).equal('789')
           expect(data[6]).equal(false)
@@ -628,7 +628,7 @@ describe("built-in http module instrumentation", function () {
             res.headers['x-newrelic-app-data'],
             encKey
           ))
-          expect(data[1]).equal('Nodejs/abc')
+          expect(data[1]).equal('WebTransaction/Nodejs/abc')
           res.resume()
           server.close(done)
         })
