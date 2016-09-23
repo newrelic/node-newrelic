@@ -1,9 +1,9 @@
 'use strict'
 
-var path = require('path')
 var nock = require('nock')
 var chai = require('chai')
 var expect = chai.expect
+var helper = require('../../lib/agent_helper')
 var should = chai.should()
 var API = require('../../../lib/collector/api.js')
 
@@ -12,13 +12,11 @@ var HOST = 'collector.newrelic.com'
 var PORT = 80
 var URL = 'http://' + HOST
 var RUN_ID = 1337
-function getDisplayHost() {
-  return HOST
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
 }
-function getHostnameSafe() {
-  return HOST
-}
-if (!global.setImmediate) global.setImmediate = function (fn) {global.setTimeout(fn, 0)}
 
 
 function generate(method, runID) {
@@ -35,42 +33,33 @@ var timeout = global.setTimeout
 function fast() { global.setTimeout = process.nextTick }
 function slow() { global.setTimeout = timeout }
 
-describe("CollectorAPI", function () {
-  var api
+describe("CollectorAPI", function() {
+  var api = null
+  var agent = null
 
-  before(function () {
+  beforeEach(function() {
     nock.disableNetConnect()
-
-    var agentProperties = {
-      reconfigure: function () {},
-      state: function () {},
-      config: {
-        host: HOST,
-        getDisplayHost: getDisplayHost,
-        getHostnameSafe: getHostnameSafe,
-        port: PORT,
-        license_key: 'license key here',
-        utilization: {
-          detect_aws: false,
-          detect_docker: false
-        },
-        applications: function () {
-          return ['TEST']
-        },
-        publicSettings: function () {
-          return {setting1: true, setting2: false}
-        },
-        browser_monitoring: {},
-        transaction_tracer: {},
-      }
-    }
-
-
-    api = new API(agentProperties)
+    agent = helper.loadMockedAgent(null, {
+      host: HOST,
+      port: PORT,
+      app_name: ['TEST'],
+      ssl: false,
+      license_key: 'license key here',
+      utilization: {
+        detect_aws: false,
+        detect_docker: false
+      },
+      browser_monitoring: {},
+      transaction_tracer: {}
+    })
+    agent.reconfigure = function() {}
+    agent.state = function() {}
+    api = new API(agent)
   })
 
-  after(function () {
+  afterEach(function() {
     nock.enableNetConnect()
+    helper.unloadAgent(agent)
   })
 
   describe("_login", function () {
@@ -86,7 +75,7 @@ describe("CollectorAPI", function () {
 
       var response = {return_value: valid}
 
-      before(function (done) {
+      beforeEach(function (done) {
         var redirection = nock(URL)
                             .post(generate('get_redirect_host'))
                             .reply(200, {return_value: HOST})
@@ -507,7 +496,7 @@ describe("CollectorAPI", function () {
 
         var response = {return_value: valid}
 
-        before(function (done) {
+        beforeEach(function (done) {
           var redirection = nock(URL)
                               .post(generate('get_redirect_host'))
                               .reply(200, {return_value: HOST + ':8089'})
@@ -1238,7 +1227,7 @@ describe("CollectorAPI", function () {
         var raw
 
 
-        before(function (done) {
+        beforeEach(function(done) {
           api._agent.config.run_id = RUN_ID
           var failure = nock(URL).post(generate('shutdown', RUN_ID)).reply(503)
 
@@ -1252,7 +1241,7 @@ describe("CollectorAPI", function () {
           })
         })
 
-        after(function () {
+        afterEach(function() {
           api._agent.config.run_id = undefined
         })
 
@@ -1276,42 +1265,20 @@ describe("CollectorAPI", function () {
     })
   })
 
-  describe("_runLifecycle", function () {
+  describe("_runLifecycle", function() {
     var method
 
-    beforeEach(function () {
-      var config = {
-        host: HOST,
-        getDisplayHost: getDisplayHost,
-        getHostnameSafe: getHostnameSafe,
-        port: PORT,
-        license_key: 'license key here',
-        run_id: 31337,
-        applications: function () {
-          return ['TEST']
-        },
-        utilization: {
-          detect_aws: false,
-          detect_docker: false
-        },
-        browser_monitoring: {},
-        transaction_tracer: {},
-        publicSettings: function () {
-          return {setting1: true, setting2: false}
-        },
-      }
-      var properties = {
-        config: config,
-        reconfigure: function (ssc) { config.run_id = ssc.agent_run_id },
-        state: function () {},
-        stop: function (callback) { api.shutdown(callback) }
+    beforeEach(function() {
+      agent.config.run_id = 31337
+      delete agent.reconfigure
+      agent.stop = function(cb) {
+        api.shutdown(cb)
       }
 
-      api = new API(properties)
       method = api._methods.metrics
     })
 
-    it("should bail out if disconnected", function (done) {
+    it("should bail out if disconnected", function(done) {
       api._agent.config.run_id = undefined
 
       function tested(error) {
@@ -1411,7 +1378,7 @@ describe("CollectorAPI", function () {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should reconnect and resubmit on ForceRestartException", function (done) {
+    it("should reconnect and resubmit on ForceRestartException", function(done) {
       var exception = {
         exception: {
           message: "Yo, break off a piece of that Irish Sprang!",
@@ -1436,6 +1403,9 @@ describe("CollectorAPI", function () {
                       .reply(200, {return_value: {}})
 
       function tested(error) {
+        if (error) {
+          console.error(error.stack)
+        }
         should.not.exist(error)
         expect(api._agent.config.run_id).equal(31338) // has new run ID
 
