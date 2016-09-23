@@ -17,6 +17,8 @@ var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
 
 
 test("test capture_params for express", function (t) {
+  t.autoend()
+
   t.test("no variables", function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express5: true})

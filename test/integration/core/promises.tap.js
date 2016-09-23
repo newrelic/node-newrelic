@@ -18,6 +18,7 @@ if (!global.Promise) {
 
 test('transaction state', function(t) {
   var agent = helper.loadTestAgent(t)
+  t.autoend()
   testTransactionState(t, agent, Promise)
 })
 
@@ -26,6 +27,7 @@ test('transaction state', function(t) {
 // XXX are created, but the heirarchy is not correct.
 test('segments', {skip: true}, function(t) {
   var agent = helper.loadTestAgent(t)
+  t.autoend()
   testPromiseSegments(t, agent, Promise)
 })
 

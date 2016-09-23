@@ -21,6 +21,14 @@ exports.config = {
      * issues with the agent, 'info' and higher will impose the least overhead on
      * production applications.
      */
-    level: 'info'
+    level: 'trace'
+  },
+  slow_sql: {
+    enabled: true,
+  },
+  transaction_tracer : {
+    record_sql: 'raw',
+    explain_threshold: 0,
+    enabled : true
   }
 }

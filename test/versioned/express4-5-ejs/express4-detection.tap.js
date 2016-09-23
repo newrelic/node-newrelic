@@ -9,7 +9,7 @@ test("Express 4 detection", {skip: skip()}, function (t) {
   var agent   = helper.instrumentMockedAgent()
   var express = require('express')
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
