@@ -1378,49 +1378,76 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should reconnect and resubmit on ForceRestartException", function(done) {
-      var exception = {
-        exception: {
-          message: "Yo, break off a piece of that Irish Sprang!",
-          error_type: 'NewRelic::Agent::ForceRestartException'
+    describe('on ForceRestartException', function() {
+      var restart = null
+      var shutdown = null
+      var redirect = null
+      var connect = null
+      var succeed = null
+
+      beforeEach(function() {
+        var exception = {
+          exception: {
+            message: 'Yo, break off a piece of that Irish Sprang!',
+            error_type: 'NewRelic::Agent::ForceRestartException'
+          }
         }
-      }
 
-      var restart = nock(URL)
-                       .post(generate('metric_data', 31337))
-                       .reply(200, exception)
-      var shutdown = nock(URL)
-                       .post(generate('shutdown', 31337))
-                       .reply(200, {return_value: null})
-      var redirect = nock(URL)
-                       .post(generate('get_redirect_host'))
-                       .reply(200, {return_value: "collector.newrelic.com"})
-      var connect = nock(URL)
-                      .post(generate('connect'))
-                      .reply(200, {return_value: {agent_run_id: 31338}})
-      var succeed = nock(URL)
-                      .post(generate('metric_data', 31338))
-                      .reply(200, {return_value: {}})
+        restart = nock(URL)
+          .post(generate('metric_data', 31337))
+          .reply(200, exception)
+        shutdown = nock(URL)
+          .post(generate('shutdown', 31337))
+          .reply(200, {return_value: null})
+        redirect = nock(URL)
+          .post(generate('get_redirect_host'))
+          .reply(200, {return_value: 'collector.newrelic.com'})
+        connect = nock(URL)
+          .post(generate('connect'))
+          .reply(200, {return_value: {agent_run_id: 31338}})
+        succeed = nock(URL)
+          .post(generate('metric_data', 31338))
+          .reply(200, {return_value: {}})
+      })
 
-      function tested(error) {
-        if (error) {
-          console.error(error.stack)
-        }
-        should.not.exist(error)
-        expect(api._agent.config.run_id).equal(31338) // has new run ID
-
+      function nockDone() {
         restart.done()
         shutdown.done()
         redirect.done()
         connect.done()
         succeed.done()
-        done()
       }
 
-      api._runLifecycle(method, null, tested)
+      it('should reconnect and resubmit', function(done) {
+        api._runLifecycle(method, null, function(error) {
+          if (error) {
+            console.error(error.stack)
+          }
+          expect(error).to.not.exist
+          expect(api._agent.config.run_id).equal(31338) // has new run ID
+          nockDone()
+          done()
+        })
+      })
+
+      it('should reconfigure the agent', function(done) {
+        var reconfigureCalled = false
+        var oldReconfigure = agent.reconfigure
+        agent.reconfigure = function() {
+          reconfigureCalled = true
+          return oldReconfigure.apply(this, arguments)
+        }
+
+        api._runLifecycle(method, null, function(err) {
+          expect(err).to.not.exist
+          expect(reconfigureCalled).to.be.true
+          nockDone()
+          done()
+        })
+      })
     })
 
-    it("should stop the agent on ForceDisconnectException", function (done) {
+    it("should stop the agent on ForceDisconnectException", function(done) {
       var exception = {
         exception: {
           message: "Wake up! Time to die!",
@@ -1429,11 +1456,11 @@ describe("CollectorAPI", function() {
       }
 
       var restart = nock(URL)
-                       .post(generate('metric_data', 31337))
-                       .reply(200, exception)
+        .post(generate('metric_data', 31337))
+        .reply(200, exception)
       var shutdown = nock(URL)
-                       .post(generate('shutdown', 31337))
-                       .reply(200, {return_value: null})
+        .post(generate('shutdown', 31337))
+        .reply(200, {return_value: null})
 
       function tested(error) {
         expect(error.message).equal("Wake up! Time to die!")
