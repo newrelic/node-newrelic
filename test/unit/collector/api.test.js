@@ -8,15 +8,17 @@ var should = chai.should()
 var API = require('../../../lib/collector/api.js')
 
 
-var HOST = 'collector.newrelic.com'
-var PORT = 80
-var URL = 'http://' + HOST
-var RUN_ID = 1337
+// XXX Remove this when deprecating Node v0.8.
 if (!global.setImmediate) {
   global.setImmediate = function(fn) {
     global.setTimeout(fn, 0)
   }
 }
+
+var HOST = 'collector.newrelic.com'
+var PORT = 80
+var URL = 'http://' + HOST
+var RUN_ID = 1337
 
 
 function generate(method, runID) {

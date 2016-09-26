@@ -14,6 +14,13 @@ var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/aws-info').clearCache
 
 
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
+
 /*
  *
  * CONSTANTS
@@ -1226,8 +1233,6 @@ describe("the New Relic agent", function () {
         nock(URL)
           .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
           .reply(200, {return_value : null})
-
-
 
       agent.harvest(function cb_harvest(error) {
         should.not.exist(error)

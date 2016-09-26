@@ -1,11 +1,13 @@
 'use strict'
 
+var semver = require('semver')
 var test = require('tap').test
 var timers = require('timers')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
 
-var HAS_SETIMMEDIATE = !!global.setImmediate
+// XXX Remove once Node v0.8 is deprecated.
+var HAS_SETIMMEDIATE = semver.satisfies(process.version, '>=0.9')
 
 test('setTimeout', function testSetTimeout(t) {
   var agent = setupAgent(t)

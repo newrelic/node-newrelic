@@ -7,6 +7,14 @@ var Reservoir = require('../../../lib/reservoir.js')
 var helper = require('../../lib/agent_helper.js')
 var CUSTOM_EVENTS = require('../../../lib/metrics/names.js').CUSTOM_EVENTS
 
+
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
+
 /*
  *
  * CONSTANTS
