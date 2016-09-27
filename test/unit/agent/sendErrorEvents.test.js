@@ -11,6 +11,13 @@ var Transaction = require('../../../lib/transaction')
 var TRANSACTION_ERROR = require('../../../lib/metrics/names.js').TRANSACTION_ERROR
 
 
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
+
 describe('the New Relic agent', function() {
   before(function () {
     nock.disableNetConnect()

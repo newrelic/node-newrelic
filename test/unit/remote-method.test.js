@@ -10,6 +10,13 @@ var RemoteMethod = require('../../lib/collector/remote-method.js')
 var semver = require('semver')
 
 
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
+
 function generate(method, runID) {
   var fragment = '/agent_listener/invoke_raw_method?' +
     'marshal_format=json&protocol_version=14&' +

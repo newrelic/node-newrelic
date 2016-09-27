@@ -5,6 +5,14 @@ var assert = require('chai').assert
 var fetchSystemInfo = require('../../../lib/system-info')
 var EventEmitter = require('events').EventEmitter
 
+
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
+
 var awsHost = "http://169.254.169.254"
 
 var awsResponses = {

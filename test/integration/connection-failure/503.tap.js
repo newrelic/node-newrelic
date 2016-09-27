@@ -1,13 +1,19 @@
 'use strict'
 
-var path         = require('path')
-  , test         = require('tap').test
-  , nock         = require('nock')
-  , configurator = require('../../../lib/config.js')
-  , Agent        = require('../../../lib/agent.js')
-  , Transaction  = require('../../../lib/transaction')
-  , mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
+var test         = require('tap').test
+var nock         = require('nock')
+var configurator = require('../../../lib/config.js')
+var Agent        = require('../../../lib/agent.js')
+var Transaction  = require('../../../lib/transaction')
+var mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
 
+
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
 nock.disableNetConnect()
 
 test("harvesting with a mocked collector that returns 503 after connect", function (t) {

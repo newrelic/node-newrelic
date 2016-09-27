@@ -16,12 +16,16 @@ describe ("MetricNormalizer", function() {
   })
 
   it("should throw when instantiated without config", function() {
-    expect(function() { normalizer = new Normalizer(); }).throws()
+    expect(function() {
+      normalizer = new Normalizer()
+    }).throws()
   })
 
-  it("should throw when instantiated without type", function () {
+  it("should throw when instantiated without type", function() {
     var config = {enforce_backstop: true}
-    expect(function () { normalizer = new Normalizer(config); }).throws()
+    expect(function() {
+      normalizer = new Normalizer(config)
+    }).throws()
   })
 
   it("should normalize even without any rules set", function() {
@@ -38,9 +42,8 @@ describe ("MetricNormalizer", function() {
     }).not.throws()
   })
 
-  describe("with rules captured from the staging collector on 2012-08-29",
-           function () {
-    beforeEach(function () {
+  describe("with rules captured from the staging collector on 2012-08-29", function() {
+    beforeEach(function() {
       normalizer.load([
         {each_segment: false, eval_order: 0, terminate_chain: true,
          match_expression: '^(test_match_nothing)$',
@@ -81,7 +84,7 @@ describe ("MetricNormalizer", function() {
       ])
     })
 
-    it("should eliminate duplicate rules as part of loading them", function () {
+    it("should eliminate duplicate rules as part of loading them", function() {
       var patternWithSlash
       if (semver.satisfies(process.versions.node, '>=1.0.0')) {
         patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
@@ -103,7 +106,9 @@ describe ("MetricNormalizer", function() {
          pattern: patternWithSlash}
       ]
 
-      expect(normalizer.rules.map(function cb_map(r) { return r.toJSON(); })).eql(reduced)
+      expect(normalizer.rules.map(function cb_map(r) {
+        return r.toJSON()
+      })).eql(reduced)
     })
 
     it("should normalize a JPEGgy URL", function() {
@@ -120,9 +125,35 @@ describe ("MetricNormalizer", function() {
       expect(normalizer.normalize('/style.css'))
         .to.have.property('value', 'NormalizedUri/*.css')
     })
+
+    it('should drop old rules when reloading', function() {
+      var newRule = {
+        each_segment: false,
+        eval_order: 0,
+        terminate_chain: true,
+        match_expression: '^(new rule)$',
+        replace_all: false,
+        ignore: false,
+        replacement: '\\1'
+      }
+      normalizer.load([newRule])
+
+      var expected = {
+        eachSegment: false,
+        precedence: 0,
+        isTerminal: true,
+        pattern: '^(new rule)$',
+        replaceAll: false,
+        ignore: false,
+        replacement: '$1'
+      }
+      expect(normalizer.rules.map(function cb_map(r) {
+        return r.toJSON()
+      })).eql([expected])
+    })
   })
 
-  it("should ignore a matching name", function () {
+  it("should ignore a matching name", function() {
     normalizer.load([
       {each_segment: false, eval_order: 0, terminate_chain: true,
        match_expression: '^/long_polling$',
