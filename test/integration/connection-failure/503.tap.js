@@ -1,11 +1,11 @@
 'use strict'
 
-var test         = require('tap').test
-var nock         = require('nock')
+var test = require('tap').test
+var nock = require('nock')
 var configurator = require('../../../lib/config.js')
-var Agent        = require('../../../lib/agent.js')
-var Transaction  = require('../../../lib/transaction')
-var mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
+var Agent = require('../../../lib/agent.js')
+var Transaction = require('../../../lib/transaction')
+var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
 
 
 // XXX Remove this when deprecating Node v0.8.
@@ -14,13 +14,14 @@ if (!global.setImmediate) {
     global.setTimeout(fn, 0)
   }
 }
+
 nock.disableNetConnect()
 
 test("harvesting with a mocked collector that returns 503 after connect", function (t) {
-  var RUN_ID      = 1337
-    , url         = 'https://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize())
-    , transaction = new Transaction(agent)
+  var RUN_ID = 1337
+  var url = 'https://collector.newrelic.com'
+  var agent = new Agent(configurator.initialize())
+  var transaction = new Transaction(agent)
 
 
   function path(method, runID) {
@@ -46,8 +47,8 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
                    .reply(200, {return_value : []})
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
-    , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
-    , sendTrace   = nock(url).post(path('transaction_sample_data', RUN_ID))
+  var sendErrors = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
+  var sendTrace = nock(url).post(path('transaction_sample_data', RUN_ID))
                       .reply(503, returned)
 
 
@@ -86,10 +87,12 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 test("merging metrics and errors after a 503", function (t) {
   t.plan(6)
 
-  var RUN_ID      = 1338
-    , url         = 'https://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize())
-    , transaction = new Transaction(agent)
+  var RUN_ID = 1338
+  var url = 'https://collector.newrelic.com'
+  var agentConfig = configurator.initialize()
+  agentConfig.utilization.detect_docker = false
+  var agent = new Agent(agentConfig)
+  var transaction = new Transaction(agent)
 
   transaction.name = 'trans1'
 

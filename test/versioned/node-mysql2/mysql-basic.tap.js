@@ -11,7 +11,16 @@ var DBNAME = 'agent_integration'
 
 test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t) {
   // set up the instrumentation before loading MySQL
-  var agent = helper.instrumentMockedAgent()
+  var agent = helper.instrumentMockedAgent(null, {
+    slow_sql: {
+      enabled: true,
+    },
+    transaction_tracer : {
+      record_sql: 'raw',
+      explain_threshold: 0,
+      enabled : true
+    }
+  })
   var mysql   = require('mysql2')
   var generic = require('generic-pool')
 
