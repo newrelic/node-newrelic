@@ -1,4 +1,82 @@
 
+### v1.30.4 (2016-09-27):
+
+* Improved instrumentation of native promises.
+
+  Native promises now use the same instrumentation as Bluebird, making
+  instrumentation easier to maintain and more consistent across libraries.
+
+* Fixed issue with reloading normalization rules from the server.
+
+  Upon reset, the agent will clear the existing naming rules, removing any
+  vestigial rules that may have changed or been disabled.
+
+* Fixed issue with key transactions Apdex metric.
+
+  Key transactions now effect the global Apdex metric according to their own
+  ApdexT instead of the default ApdexT value.
+
+* Fixed issue with closing transactions when the request is aborted.
+
+  Previously, aborted requests would result in the transaction remaining open
+  indefinitely. Now the transaction will be correctly finished and its resources
+  freed.
+
+* Fixed format of external calls metric.
+
+  External service URLs will now be formatted the same as they are in the
+  originating application.
+
+### v2.1.1 / beta-41 (2016-09-15):
+
+* Incorporated fixes from v1.30.1, v1.30.2, and v1.30.3.
+
+### v1.30.3 (2016-09-14):
+
+* Published with npm v2.
+
+### v1.30.2 (2016-09-13):
+
+* Added instrumentation of the param() function in Express.
+
+  The agent will now create metrics and transaction segments when the Express param()
+  function is called as a part of a route.  This also fixes an issue with transaction
+  naming when the HTTP response is ended within a param() method.
+
+* Fixed an issue with naming Express transactions that result in 404 errors.
+
+  Previously transactions were not always correctly normalized for URLs that caused
+  404 errors. The transactions will now always be reported with the same normalized name
+  (e.g. "get /").
+
+* Fixed instrumentation of Express v4.0 - v4.5.
+
+  Previously transactions were not correctly named on older versions of Express 4.
+
+* Minor upates to logging.
+
+### v1.30.1 (2016-09-01):
+
+* The `shutdown` method is now on the stub API.
+
+  Previously when the agent was disabled the stub API passed back on require
+  did not have the `shutdown` method.  Thanks goes to Vlad Fedosov (@StyleT) for
+  this contribution!
+
+* Global timers will now be wrapped correctly regardless of being wrapped by
+  something else.
+
+  The logic to check whether to wrap the `global` timers was looking to see if
+  the `global` timers were the same function reference as the ones in the
+  `timers` module.  This would break in cases where either the `global` or
+  `timers` functions had been wrapped.
+
+* Director instrumentation now correctly handles the case of null route handlers
+  being passed in.
+
+  Previously the agent's director instrumentation would crash in cases of null
+  route handlers in director.
+
 ### v2.1.0 / beta-40 (2016-08-29)
 
 * Incorporated fixes from v1.30.0

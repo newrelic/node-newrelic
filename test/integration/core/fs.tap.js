@@ -444,7 +444,7 @@ test('realpath', function(t) {
       t.equal(err, null, 'should not error')
       t.equal(target, real, 'should point to the same file')
 
-      if (semver.satisfies(process.versions.node, '>=6.0.0')) {
+      if (semver.satisfies(process.versions.node, '6.0.x - 6.3.x')) {
         verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath')
       } else {
         verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath',

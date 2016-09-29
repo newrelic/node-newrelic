@@ -5,7 +5,6 @@ var should = chai.should()
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
 var TraceSegment = require('../../lib/transaction/trace/segment')
-var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
 
 

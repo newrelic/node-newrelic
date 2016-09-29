@@ -112,7 +112,7 @@ test('cross application tracing full integration', function (t) {
       t.ok(unscoped[caMetric], 'middle generated a ClientApplication metric')
       var eaMetric = format('ExternalApp/localhost:%s/%s/all', END_PORT, CROSS_PROCESS_ID)
       t.ok(unscoped[eaMetric], 'middle generated a ExternalApp metric')
-      var etMetric = format('ExternalTransaction/localhost:%s/%s/Nodejs/middle/end', END_PORT,
+      var etMetric = format('ExternalTransaction/localhost:%s/%s/WebTransaction/Nodejs/middle/end', END_PORT,
                             CROSS_PROCESS_ID)
       t.ok(unscoped[etMetric], 'middle generated a ExternalTransaction metric')
       t.equal(Object.keys(unscoped).length, 14, 'middle should only have expected unscoped metrics')
@@ -127,7 +127,7 @@ test('cross application tracing full integration', function (t) {
         t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
         t.deepEqual(
           scopedKeys,
-          ['ExternalTransaction/localhost:10002/1337#7331/Nodejs/middle/end'],
+          ['ExternalTransaction/localhost:10002/1337#7331/WebTransaction/Nodejs/middle/end'],
           'should have expected scoped metric name'
         )
       }
@@ -159,7 +159,7 @@ test('cross application tracing full integration', function (t) {
       var unscoped = trans.metrics.unscoped
       var eaMetric = format('ExternalApp/localhost:%s/%s/all', MIDDLE_PORT, CROSS_PROCESS_ID)
       t.ok(unscoped[eaMetric], 'start generated a ExternalApp metric')
-      var etMetric = format('ExternalTransaction/localhost:%s/%s/Nodejs/start/middle', MIDDLE_PORT,
+      var etMetric = format('ExternalTransaction/localhost:%s/%s/WebTransaction/Nodejs/start/middle', MIDDLE_PORT,
                             CROSS_PROCESS_ID)
       t.ok(unscoped[etMetric], 'start generated a ExternalTransaction metric')
       t.equal(Object.keys(unscoped).length, 13, 'start should only have expected unscoped metrics')
@@ -174,7 +174,7 @@ test('cross application tracing full integration', function (t) {
         t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
         t.deepEqual(
           scopedKeys,
-          ['ExternalTransaction/localhost:10001/1337#7331/Nodejs/start/middle'],
+          ['ExternalTransaction/localhost:10001/1337#7331/WebTransaction/Nodejs/start/middle'],
           'should have expected scoped metric name'
         )
       }

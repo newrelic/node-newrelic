@@ -1,6 +1,5 @@
 'use strict'
 
-var test = require('tap').test
 var helper = require('../../../lib/agent_helper')
 var assertSegments = require('../../../lib/metrics_helper').assertSegments
 
@@ -8,8 +7,8 @@ var assertSegments = require('../../../lib/metrics_helper').assertSegments
 module.exports = runTests
 
 function runTests(t, agent, Promise) {
-  segmentsEnabledTests(t, agent, Promise, doSomeWork);
-  segmentsDisabledTests(t, agent, Promise, doSomeWork);
+  segmentsEnabledTests(t, agent, Promise, doSomeWork)
+  segmentsDisabledTests(t, agent, Promise, doSomeWork)
 
   // simulates a function that returns a promise and has a segment created for itself
   function doSomeWork(segmentName, shouldReject) {
@@ -18,7 +17,7 @@ function runTests(t, agent, Promise) {
     return tracer.bindFunction(actualWork, segment)()
     function actualWork() {
       segment.touch()
-      return new Promise(function startSomeWork(resolve, reject){
+      return new Promise(function startSomeWork(resolve, reject) {
         if (shouldReject) {
           process.nextTick(function() {
             reject('some reason')
@@ -42,13 +41,10 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
-        'doSomeWork',
-        [
-          'Promise startSomeWork',
-          [
-            'Promise#then <anonymous>',
-            [
+      checkSegments(t, tx.trace.root, [
+        'doSomeWork', [
+          'Promise startSomeWork', [
+            'Promise#then <anonymous>', [
               'someChildSegment'
             ]
           ]
@@ -76,7 +72,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'doWork1', [
           'Promise startSomeWork', [
             'Promise#then firstThen', [
@@ -94,7 +90,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doWork1')
         .then(function firstThen() {
-          return new Promise(function secondChain(res){ res(); })
+          return new Promise(function secondChain(res) { res() })
         })
         .then(function secondThen() {
           process.nextTick(transaction.end.bind(transaction))
@@ -108,7 +104,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'doWork1',
         [
           'Promise startSomeWork',
@@ -141,7 +137,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'doWork1',
         [
           'Promise startSomeWork',
@@ -171,7 +167,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'doWork1',
         [
           'Promise startSomeWork',
@@ -211,7 +207,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 2)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'Promise startSomeWork',
         [
           'Promise#then myThen'
@@ -256,7 +252,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'doSomeWork', [
           'someChildSegment'
         ]
@@ -283,7 +279,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'])
+      checkSegments(t, tx.trace.root, ['doWork1'])
 
       t.end()
     })
@@ -305,7 +301,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'])
+      checkSegments(t, tx.trace.root, ['doWork1'])
 
       t.end()
     })
@@ -327,7 +323,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, ['doWork1'])
+      checkSegments(t, tx.trace.root, ['doWork1'])
 
       t.end()
     })
@@ -349,7 +345,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, [
+      checkSegments(t, tx.trace.root, [
         'doWork1', [
           'doWork2',
         ]
@@ -376,7 +372,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      assertSegments(tx.trace.root, ['doSomeWork'], true)
+      checkSegments(t, tx.trace.root, ['doSomeWork'], true)
 
       t.end()
     })
@@ -402,4 +398,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
       doSomeWork()
     })
   })
+}
+
+function checkSegments(t, parent, expected, options) {
+  t.doesNotThrow(function() {
+    assertSegments(parent, expected, options)
+  }, 'should have expected segments')
 }

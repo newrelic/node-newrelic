@@ -30,6 +30,7 @@ Stub.prototype.createTracer = createTracer
 Stub.prototype.createWebTransaction = createWebTransaction
 Stub.prototype.createBackgroundTransaction = createBackgroundTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
+Stub.prototype.shutdown = shutdown
 
 // This code gets injected into HTML templates
 // and we don't want it to return undefined/null.
@@ -53,6 +54,22 @@ function createWebTransaction(url, callback) {
 function createBackgroundTransaction(name, group, callback) {
   logger.debug('Not calling createBackgroundTransaction because New Relic is disabled.')
   return (callback === undefined) ? group : callback
+}
+
+// Normally the following call executes callback asynchronously
+function shutdown(options, cb) {
+  logger.debug('Not calling shutdown because New Relic is disabled.')
+  
+  var callback = cb
+  if (!callback) {
+    if (typeof options === 'function') {
+      callback = options
+    } else {
+      callback = new Function()
+    }
+  }
+  
+  process.nextTick(callback)
 }
 
 module.exports = Stub

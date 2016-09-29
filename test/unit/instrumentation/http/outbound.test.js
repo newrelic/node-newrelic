@@ -10,6 +10,14 @@ var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumenta
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
 
+
+// XXX Remove this when deprecating Node v0.8.
+if (!global.setImmediate) {
+  global.setImmediate = function(fn) {
+    global.setTimeout(fn, 0)
+  }
+}
+
 describe('instrumentOutbound', function () {
   var agent
   var HOSTNAME = 'localhost'
