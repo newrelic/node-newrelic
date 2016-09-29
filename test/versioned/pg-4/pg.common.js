@@ -76,26 +76,24 @@ module.exports = function runTests(agent, pg, name) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var hostId = METRIC_HOST_NAME + ':{' + params.postgres_port + '}'
-    // this should be uncommented out when instance metrics are sent up
-    // expected['Datastore/instance/Postgres/' + hostId] = 2
+    var hostId = METRIC_HOST_NAME + ':' + params.postgres_port
+    expected['Datastore/instance/Postgres/' + hostId] = 2
 
     var slowQuerySamples = agent.queries.samples
     for (var key in slowQuerySamples) {
       var queryParams = slowQuerySamples[key].getParams()
 
-      // XXX: Uncomment once metric names have been decided on
-      // t.equal(
-      //   queryParams.instance,
-      //   hostId,
-      //   'instance data should show up in slow query params'
-      // )
+      t.equal(
+        queryParams.instance,
+        hostId,
+        'instance data should show up in slow query params'
+      )
 
-      // t.equal(
-      //   queryParams.database_name,
-      //   params.postgres_db,
-      //   'database name should show up in slow query params'
-      // )
+      t.equal(
+        queryParams.database_name,
+        params.postgres_db,
+        'database name should show up in slow query params'
+      )
 
       t.ok(queryParams.backtrace, 'params should contain a backtrace')
     }
@@ -136,13 +134,12 @@ module.exports = function runTests(agent, pg, name) {
     t.ok(setSegment, 'trace segment for insert should exist')
     t.ok(getSegment, 'trace segment for select should exist')
 
-    // XXX: Uncomment once metric names have been decided on
-    // t.equals(setSegment.parameters.instance, hostId, 'should add the instance parameter')
-    // t.equals(
-    //   setSegment.parameters.database_name,
-    //   params.postgres_db,
-    //   'should add the database name parameter'
-    // )
+    t.equals(setSegment.parameters.instance, hostId, 'should add the instance parameter')
+    t.equals(
+      setSegment.parameters.database_name,
+      params.postgres_db,
+      'should add the database name parameter'
+    )
 
     if (!getSegment) return t.end()
 
