@@ -122,7 +122,7 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
       return t.end()
     }
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow()
         helper.unloadAgent(agent)

@@ -22,7 +22,7 @@ test("Redis instrumentation should find Redis calls in the transaction trace",
     var client = redis.createClient(params.redis_port, params.redis_host)
 
 
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 

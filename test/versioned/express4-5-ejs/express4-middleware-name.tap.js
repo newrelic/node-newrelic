@@ -12,7 +12,7 @@ test('should name middleware correctly',
   var app = require('express')()
   var server
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })

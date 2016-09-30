@@ -1,14 +1,17 @@
 'use strict'
 
-var assert = require('chai').assert
+var test = require('tap').test
 
-process.env.NEW_RELIC_ENABLED = false
+test('Multiple require("newrelic")', function(t) {
+  process.env.NEW_RELIC_ENABLED = false
 
-var path = require.resolve('../../../index.js')
-var first = require(path)
+  var path = require.resolve('../../../index.js')
+  var first = require(path)
 
-delete require.cache[path]
+  delete require.cache[path]
 
-var second = require(path)
+  var second = require(path)
 
-assert.equal(first, second)
+  t.equal(first, second)
+  t.end()
+})

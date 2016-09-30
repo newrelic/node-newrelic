@@ -7,10 +7,10 @@ var params = require('../../lib/params')
 
 
 test('MySQL instrumentation should find the MySQL call in the transaction trace',
-     function (t) {
+     function(t) {
   t.plan(25)
 
-  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error) {
     if (error) {
       t.fail(error)
       return t.end()
@@ -27,7 +27,7 @@ test('MySQL instrumentation should find the MySQL call in the transaction trace'
     })
     t.ok(client, 'Client should be created OK.')
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       client.end(function cleanup(error) {
         if (error) t.fail(error)
 
@@ -37,7 +37,7 @@ test('MySQL instrumentation should find the MySQL call in the transaction trace'
 
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet.')
     helper.runInTransaction(agent, function transactionInScope() {
-      client.query('SELECT * FROM test WHERE id = ?', [1], function (error, rows) {
+      client.query('SELECT * FROM test WHERE id = ?', [1], function(error, rows) {
         if (error) {
           t.fail(error)
           return t.end()
@@ -51,14 +51,14 @@ test('MySQL instrumentation should find the MySQL call in the transaction trace'
                  'mysql driver should still work (found value)')
 
         client.query('INSERT INTO test (test_value) VALUE (\'raxjambles\')',
-                     function (error) {
+                     function(error) {
           if (error) {
             t.fail(error)
             return t.end()
           }
 
           t.ok(agent.getTransaction(), 'transaction should still be visible')
-          client.query('SELECT COUNT(*) AS num_rows FROM test', function (error, rows) {
+          client.query('SELECT COUNT(*) AS num_rows FROM test', function(error, rows) {
             if (error) {
               t.fail(error)
               return t.end()
@@ -135,6 +135,5 @@ test('MySQL instrumentation should find the MySQL call in the transaction trace'
                 'SELECT COUNT should leave us here at the end')
        t.end()
     }
-  }.bind(this))
-
+  })
 })

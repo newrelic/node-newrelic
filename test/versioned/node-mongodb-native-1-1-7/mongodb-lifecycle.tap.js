@@ -1,6 +1,5 @@
 'use strict'
 
-var path = require('path')
 var tap = require('tap')
 var test = tap.test
 var semver = require('semver')
@@ -15,14 +14,13 @@ var COLLECTION_CURSOR = COLLECTION + '_cursor'
 test("MongoDB instrumentation should put DB calls in the transaction trace",
      {timeout: 15000,
       skip: !semver.satisfies(process.version, "0.10")},
-     function (t) {
+     function(t) {
   t.plan(2)
 
-  var self = this
-  helper.bootstrapMongoDB([COLLECTION, COLLECTION_CURSOR], function cb_bootstrapMongoDB(error, app) {
+  helper.bootstrapMongoDB([COLLECTION, COLLECTION_CURSOR], function(error) {
     if (error) return t.fail(error)
 
-    t.test("with a callback", function (t) {
+    t.test("with a callback", function(t) {
       t.plan(21)
 
       var agent = helper.instrumentMockedAgent()
@@ -30,14 +28,14 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect: true})
       var db = new mongodb.Db('integration', server, {safe: true})
 
-      this.tearDown(function cb_tearDown() {
-        db.close(true, function (error) {
+      t.tearDown(function cb_tearDown() {
+        db.close(true, function(error) {
           if (error) t.fail(error)
         })
         helper.unloadAgent(agent)
       })
 
-      agent.once('transactionFinished', function () {
+      agent.once('transactionFinished', function() {
         t.equals(agent.metrics.getMetric('Datastore/all').callCount, 2,
                  "should find both operations")
         t.equals(
@@ -141,7 +139,7 @@ test("MongoDB instrumentation should put DB calls in the transaction trace",
       var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {auto_reconnect: true})
       var db = new mongodb.Db('integration', server, {safe: true})
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         db.close(true, function (error) {
           if (error) t.fail(error)
         })

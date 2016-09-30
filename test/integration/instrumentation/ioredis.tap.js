@@ -15,14 +15,8 @@ var DB_INDEX = 2
 test('ioredis instrumentation', {skip: semver.satisfies(process.version, "<0.10")},
   function(t) {
 
-  t.test('creates expected metrics',
-       {timeout : 5000}, function (t) {
-
-    var self = this
-    var onError = function(error){return t.fail(error)}
-
-    var name = require.resolve('ioredis')
-    name = require.resolve('bluebird')
+  t.test('creates expected metrics', {timeout : 5000}, function(t) {
+    var onError = function(error) { return t.fail(error) }
 
     setup(t, function runTest(agent, redisClient) {
       agent.on('transactionFinished', function(tx) {
@@ -82,6 +76,8 @@ test('ioredis instrumentation', {skip: semver.satisfies(process.version, "<0.10"
       })
     })
   })
+
+  t.autoend()
 })
 
 

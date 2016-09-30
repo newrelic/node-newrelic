@@ -1,27 +1,26 @@
 'use strict'
 
-var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper.js')
-  , API     = require('../../../api.js')
+var test    = require('tap').test
+var request = require('request')
+var helper  = require('../../lib/agent_helper.js')
+var API     = require('../../../api.js')
 
 
-test("ignoring an Express 3 route", function (t) {
+test("ignoring an Express 3 route", function(t) {
   t.plan(7)
 
   var agent = helper.instrumentMockedAgent()
-    , api   = new API(agent)
-    , app   = require('express').createServer()
+  var api   = new API(agent)
+  var app   = require('express').createServer()
 
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     app.close(function cb_close() {
       helper.unloadAgent(agent)
     })
   })
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Expressjs/GET//polling/:id',
             "transaction has expected name even on error")
     t.ok(transaction.ignore, "transaction is ignored")

@@ -1,3 +1,5 @@
+'use strict'
+
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
@@ -713,7 +715,6 @@ function collectionTest(name, run) {
           var segment = agent.tracer.getSegment()
           var current = transaction.trace.root
 
-          console.log(segments)
           for (var i = 0, l = segments.length; i < l; ++i) {
             t.equal(current.children.length, 1)
             current = current.children[0]

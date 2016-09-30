@@ -9,19 +9,19 @@ if (semver.satisfies(process.version, '<0.10')) {
 }
 
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
+var test    = require('tap').test
+var request = require('request')
+var helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
 
 
 
-test("Hapi vhost support", function (t) {
+test("Hapi vhost support", function(t) {
   t.plan(1)
 
-  t.test("should not explode when using vhosts", function (t) {
+  t.test("should not explode when using vhosts", function(t) {
     var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
-      , hapi   = require('hapi')
-      , server = new hapi.Server()
+    var hapi   = require('hapi')
+    var server = new hapi.Server()
 
     server.connection({
       port: 8089
@@ -31,7 +31,7 @@ test("Hapi vhost support", function (t) {
     // disabled by default
     agent.config.capture_params = true
 
-    agent.on('transactionFinished', function (transaction) {
+    agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       if (transaction.trace.parameters.httpResponseMessage) {
         t.deepEqual(transaction.trace.parameters, {
@@ -63,16 +63,14 @@ test("Hapi vhost support", function (t) {
       }
 
       helper.unloadAgent(agent)
-      server.stop(function () {
-        t.end()
-      })
+      server.stop()
     })
 
     server.route({
       method: 'GET',
       path: '/test/{id}/',
       vhost: 'localhost',
-      handler: function (request, reply) {
+      handler: function(request, reply) {
         t.ok(agent.getTransaction(), "transaction is available")
 
         reply({status : 'ok'})
@@ -83,20 +81,21 @@ test("Hapi vhost support", function (t) {
       method: 'GET',
       path: '/test/{id}/2',
       vhost: 'localhost',
-      handler: function (request, reply) {
+      handler: function(request, reply) {
         t.ok(agent.getTransaction(), "transaction is available")
 
         reply({status : 'ok'})
       }
     })
 
-    server.start(function () {
+    server.start(function() {
       request.get('http://localhost:8089/test/1337/2?name=hapi',
                   {json : true},
-                  function (error, res, body) {
+                  function(error, res, body) {
 
         t.equal(res.statusCode, 200, "nothing exploded")
         t.deepEqual(body, {status : 'ok'}, "got expected response")
+        t.end()
       })
     })
   })

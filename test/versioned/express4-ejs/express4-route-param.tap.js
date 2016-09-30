@@ -19,6 +19,7 @@ test('Express 4 route param', {skip: skip()}, function(t) {
   })
 
   server.listen(PORT, function() {
+    t.autoend()
     t.test('pass-through param', function(t) {
       t.plan(4)
 

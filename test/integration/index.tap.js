@@ -1,10 +1,10 @@
 'use strict'
 
 var test = require('tap').test
-  
+
 
 test("loading the application via index.js", function (t) {
-  t.plan(7)
+  t.plan(9)
 
   var agent
 
@@ -28,9 +28,9 @@ test("loading the application via index.js", function (t) {
     process = {}
 
     var keys = Object.keys(_process)
-    for(var i = 0; i < keys.length; i++){
+    for (var i = 0; i < keys.length; ++i) {
       var key = keys[i]
-      if(key === 'version'){
+      if (key === 'version') {
         process[key] = 'garbage'
       } else {
         process[key] = _process[key]
@@ -49,8 +49,11 @@ test("loading the application via index.js", function (t) {
     t.equal(agent._state, 'started', "agent didn't error connecting to staging")
     t.deepEquals(agent.config.applications(), ['My Application'], "app name is valid")
     t.equals(agent.config.agent_enabled, true, "the agent is still enabled")
-    agent.stop(function cb_stop() {
+    agent.stop(function cb_stop(err) {
+      t.notOk(err, 'should not error when stopping')
       t.equal(agent._state, 'stopped', "agent didn't error shutting down")
+
+      t.end()
     })
   }
 

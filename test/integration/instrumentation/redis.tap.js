@@ -11,18 +11,16 @@ var DB_INDEX = 2
 
 test("Redis instrumentation should find Redis calls in the transaction trace",
      {timeout : 5000},
-     function (t) {
+     function(t) {
   t.plan(18)
 
-  var self = this
-  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, app) {
+  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
     if (error) return t.fail(error)
     var agent = helper.instrumentMockedAgent()
     var redis = require('redis')
     var client = redis.createClient(params.redis_port, params.redis_host)
 
-
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 

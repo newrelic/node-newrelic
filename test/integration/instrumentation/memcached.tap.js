@@ -7,11 +7,10 @@ var params = require('../../lib/params')
 
 test("memcached instrumentation should find memcached calls in the transaction trace",
      {timeout : 5000},
-     function (t) {
+     function(t) {
   t.plan(33)
 
-  var self = this
-  helper.bootstrapMemcached(function cb_bootstrapMemcached(error, app) {
+  helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
     if (error) return t.fail(error)
 
     var agent = helper.instrumentMockedAgent()
@@ -22,7 +21,7 @@ test("memcached instrumentation should find memcached calls in the transaction t
     // need to capture parameters
     agent.config.capture_params = true
 
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       memcached.end()
       helper.unloadAgent(agent)
     })

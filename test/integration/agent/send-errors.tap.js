@@ -35,8 +35,10 @@ test('Agent#_sendErrors', function(t) {
     _testSendErrors(t, agent)
   })
 
+  t.autoend()
+
   function _testSendErrors(t, agent) {
-    t.plan(6)
+    t.plan(7)
 
     agent.start(function(err) {
       if (!t.notOk(err, 'should connect without error')) {
@@ -71,7 +73,6 @@ test('Agent#_sendErrors', function(t) {
 
           agent.stop(function(error) {
             t.notOk(error, "stopped without error")
-
             t.end()
           })
         })

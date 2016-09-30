@@ -6,12 +6,12 @@ var path   = require ('path')
   , test   = tap.test
   , wrench = require('wrench')
   , exists = fs.existsSync || path.existsSync
-  
+
 
 var DIRNAME = 'XXXNOCONFTEST'
 
 test("logger configuration from environment", function (t) {
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     if (path.basename(process.cwd()) === DIRNAME) process.chdir('..')
     if (exists(path.join(process.cwd(), DIRNAME))) wrench.rmdirSyncRecursive(DIRNAME)
   })
