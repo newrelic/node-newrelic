@@ -311,6 +311,45 @@ function runTests(flags) {
     })
   })
 
+  test('names transaction when request is aborted', function(t) {
+    t.plan(4)
+    setup(t)
+
+    app.get('/test', function(req, res, next) {
+      t.ok(agent.getTransaction(), 'transaction exists')
+      // generate error after client has aborted
+      setTimeout(function() {
+        t.ok(agent.getTransaction() == null, 'transaction has already ended')
+        next(new Error('some error'))
+      }, 20)
+    })
+
+    app.use(function(error, req, res, next) {
+      t.ok(agent.getTransaction() == null, 'no active transaction when responding')
+      res.end()
+    })
+
+    var server = app.listen(function() {
+      var port = server.address().port
+      var req = http.request({port: port, path: '/test'}, function() {})
+      req.end()
+      // add error handler, otherwise aborting will cause an exception
+      req.on('error', function() {})
+
+      setTimeout(function() {
+        req.abort()
+      }, 10)
+    })
+
+    agent.on('transactionFinished', function(tx) {
+      t.equal(tx.name, 'WebTransaction/Expressjs/GET//test')
+    })
+
+    t.tearDown(function cb_tearDown() {
+      server.close()
+    })
+  })
+
   function setup(t) {
     agent = helper.instrumentMockedAgent(flags)
     express = require('express')
