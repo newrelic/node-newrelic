@@ -1,3 +1,11 @@
+### v1.30.5 (2016-10-04):
+
+* Fixed issue with aborted requests causing the agent to crash in some cases.
+
+  Previously the agent would crash when the client request aborted before Express server
+  sent a response and encountered an error.
+
+* Upgraded integration tests to work with the latest version of node-tap.
 
 ### v1.30.4 (2016-09-27):
 
