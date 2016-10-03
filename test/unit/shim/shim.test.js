@@ -271,7 +271,8 @@ describe('Shim', function() {
         started: false,
         touched: false,
         start: function() { this.started = true },
-        touch: function() { this.touched = true }
+        touch: function() { this.touched = true },
+        probe: function() { this.probed = true }
       }
     })
 
@@ -843,19 +844,19 @@ describe('Shim', function() {
 
   describe('#getSegment', function() {
     it('should return the segment a function is bound to', function() {
-      var segment = {}
+      var segment = { probe: function () {} }
       var bound = shim.bindSegment(function() {}, segment)
       expect(shim.getSegment(bound)).to.equal(segment)
     })
 
     it('should return the current segment if the function is not bound', function() {
-      var segment = {}
+      var segment = { probe: function () {} }
       agent.tracer.segment = segment
       expect(shim.getSegment(function() {})).to.equal(segment)
     })
 
     it('should return the current segment if no object is provided', function() {
-      var segment = {}
+      var segment = { probe: function () {} }
       agent.tracer.segment = segment
       expect(shim.getSegment()).to.equal(segment)
     })
@@ -869,13 +870,13 @@ describe('Shim', function() {
     })
 
     it('should store the segment on the object', function() {
-      var segment = {}
+      var segment = { probe: function () {} }
       shim.storeSegment(wrappable, segment)
       expect(shim.getSegment(wrappable)).to.equal(segment)
     })
 
     it('should default to the current segment', function() {
-      var segment = {}
+      var segment = { probe: function () {} }
       agent.tracer.segment = segment
       shim.storeSegment(wrappable)
       expect(shim.getSegment(wrappable)).to.equal(segment)
@@ -1154,7 +1155,8 @@ describe('Shim', function() {
         started: false,
         touched: false,
         start: function() { this.started = true },
-        touch: function() { this.touched = true }
+        touch: function() { this.touched = true },
+        probe: function() { this.probed = true }
       }
     })
 
@@ -1174,7 +1176,7 @@ describe('Shim', function() {
     })
 
     it('should make the segment active for the duration of execution', function() {
-      var prevSegment = {name: 'prevSegment'}
+      var prevSegment = {name: 'prevSegment', probe: function() {}}
       agent.tracer.segment = prevSegment
       var activeSegment = shim.applySegment(wrappable.getActiveSegment, segment)
       expect(agent.tracer.segment).to.equal(prevSegment)
@@ -1215,7 +1217,7 @@ describe('Shim', function() {
       })
 
       it('should still return the active segment to the previous one', function() {
-        var prevSegment = {name: 'prevSegment'}
+        var prevSegment = {name: 'prevSegment', probe: function() {}}
         agent.tracer.segment = prevSegment
 
         expect(function() {
