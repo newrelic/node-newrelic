@@ -4,10 +4,18 @@ var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var semver = require('semver')
+var urltils = require('../../../lib/util/urltils')
+
+
 if (semver.satisfies(process.version, '0.8')) {
   console.log('The latest versions of the mongo driver are not compatible with v0.8')
   return
 }
+
+var DB_NAME = 'integration'
+var METRIC_HOST_NAME = null
+var METRIC_HOST_PORT = null
+
 
 collectionTest('aggregate', function aggregateTest(t, collection, verify) {
   collection.aggregate(
@@ -369,7 +377,7 @@ collectionTest('indexes', function indexesTest(t, collection, verify) {
       v: 1,
       key: {_id: 1},
       name: '_id_',
-      ns: 'integration.testCollection'
+      ns: DB_NAME + '.testCollection'
     }])
 
     verify(null, [
@@ -613,7 +621,7 @@ collectionTest('save', function saveTest(t, collection, verify) {
 collectionTest('stats', function statsTest(t, collection, verify) {
   collection.stats({i: 5}, {foo: 'bar'}, function done(err, data) {
     t.notOk(err)
-    t.equal(data.ns, 'integration.testCollection')
+    t.equal(data.ns, DB_NAME + '.testCollection')
     t.equal(data.count, 30)
     t.equal(data.ok, 1)
 
@@ -656,8 +664,8 @@ collectionTest('updateMany', function updateManyTest(t, collection, verify) {
 
 collectionTest('updateOne', function updateOneTest(t, collection, verify) {
   collection.updateOne({i: 5}, {$set: {a: 5}}, function done(err, data) {
-    t.notOk(err)
-    t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1})
+    t.notOk(err, 'should not error')
+    t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1}, 'should have correct results')
 
     verify(null, [
         'Datastore/statement/MongoDB/testCollection/updateOne',
@@ -672,35 +680,37 @@ function collectionTest(name, run) {
   mongoTest(name, ['testCollection', 'testCollection2'], function init(t, agent) {
     var mongodb = require('mongodb')
     var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+    var db = new mongodb.Db(DB_NAME, server, {w: 1})
+    METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
+      ? agent.config.getHostnameSafe()
+      : params.mongodb_host
+    METRIC_HOST_PORT = params.mongodb_port
 
-    var db = new mongodb.Db('integration', server, {w: 1})
-    db.open(onOpen)
 
-    function onOpen(err, db) {
+    db.open(function(err) {
       if (err) return finish(err)
       t.tearDown(function tearDown() {
         db.close()
       })
 
       db.collection('testCollection', gotCollection)
-    }
+    })
 
     function gotCollection(err, collection) {
       if (err) return finish(err)
-      populate(db, collection, populated)
-
-      function populated(err) {
+      populate(db, collection, function(err) {
         if (err) return finish(err)
+        t.comment('Running ' + name + ' without transaction')
         run(t, collection, withoutTransaction)
-      }
-
+      })
 
       function withoutTransaction(err) {
         if (err) return finish(err)
 
-        t.notOk(agent.getTransaction())
-        populate(db, collection, function populated(err) {
+        t.notOk(agent.getTransaction(), 'should not be in a transaction')
+        populate(db, collection, function(err) {
           if (err) return finish(err)
+          t.comment('Running ' + name + ' with a transaction')
           helper.runInTransaction(agent, withTransaction)
         })
       }
@@ -711,19 +721,22 @@ function collectionTest(name, run) {
 
         function verify(err, segments, metrics) {
           if (err) return finish(err)
-          t.equal(agent.getTransaction(), transaction)
+          t.equal(agent.getTransaction(), transaction, 'should maintain tx state')
           var segment = agent.tracer.getSegment()
           var current = transaction.trace.root
 
           for (var i = 0, l = segments.length; i < l; ++i) {
-            t.equal(current.children.length, 1)
+            t.equal(current.children.length, 1, 'should have one child')
             current = current.children[0]
-            t.equal(current.name, segments[i])
+            t.equal(current.name, segments[i], 'child should be named ' + segments[i])
+            if (/^Datastore\/.*?\/MongoDB/.test(current.name)) {
+              checkSegmentParams(t, current)
+            }
           }
 
-          t.equal(current.children.length, 0)
+          t.equal(current.children.length, 0, 'should have no more children')
+          t.equal(current, segment, 'should test to the current child')
 
-          t.equal(current, segment)
           transaction.end(function onEnd() {
             checkMetrics(t, agent, metrics || [], finish)
           })
@@ -744,12 +757,15 @@ function collectionTest(name, run) {
 }
 
 function checkMetrics(t, agent, metrics, finish) {
-  var unscopedNames = Object.keys(agent.metrics.unscoped)
+  var unscopedMetrics = agent.metrics.unscoped
+  var unscopedNames = Object.keys(unscopedMetrics)
   var scoped = agent.metrics.scoped['OtherTransaction/group/name']
   var total = 0
   var count
   var name
 
+  t.ok(scoped, 'should have scoped metrics')
+  t.equal(Object.keys(agent.metrics.scoped).length, 1, 'should have one scoped metric')
   for (var i = 0; i < metrics.length; ++i) {
     if (Array.isArray(metrics[i])) {
       count = metrics[i][1]
@@ -762,29 +778,53 @@ function checkMetrics(t, agent, metrics, finish) {
     total += count
 
     t.equal(
-      agent.metrics.unscoped['Datastore/operation/MongoDB/' + name].callCount,
-      count
+      unscopedMetrics['Datastore/operation/MongoDB/' + name].callCount,
+      count,
+      'unscoped operation metric should be called ' + count + 'times'
     )
     t.equal(
-      agent.metrics.unscoped['Datastore/statement/MongoDB/testCollection/' +
-      name].callCount,
-      count
+      unscopedMetrics['Datastore/statement/MongoDB/testCollection/' + name].callCount,
+      count,
+      'unscoped statement metric should be called ' + count + 'times'
     )
     t.equal(
       scoped['Datastore/statement/MongoDB/testCollection/' + name].callCount,
-      count
+      count,
+      'scoped statement metric should be called ' + count + 'times'
     )
   }
 
-  t.ok(scoped)
-  t.equal(Object.keys(agent.metrics.scoped).length, 1)
-  t.equal(unscopedNames.length, 4 + 2 * metrics.length)
-  t.equal(agent.metrics.unscoped['Datastore/all'].callCount, total)
-  t.equal(agent.metrics.unscoped['Datastore/allOther'].callCount, total)
-  t.equal(agent.metrics.unscoped['Datastore/MongoDB/all'].callCount, total)
-  t.equal(agent.metrics.unscoped['Datastore/MongoDB/allOther'].callCount, total)
+  var expectedUnscopedCount = 5 + (2 * metrics.length)
+  t.equal(
+    unscopedNames.length, expectedUnscopedCount,
+    'should have ' + expectedUnscopedCount + ' unscoped metrics'
+  )
+  var expectedUnscopedMetrics = [
+    'Datastore/all',
+    'Datastore/allOther',
+    'Datastore/MongoDB/all',
+    'Datastore/MongoDB/allOther',
+    'Datastore/instance/MongoDB/' + METRIC_HOST_NAME + '/' + METRIC_HOST_PORT
+  ]
+  expectedUnscopedMetrics.forEach(function(metric) {
+    if (t.ok(unscopedMetrics[metric], 'should have unscoped metric ' + metric)) {
+      t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
+    }
+  })
 
   finish()
+}
+
+function checkSegmentParams(t, segment) {
+  var dbName = DB_NAME
+  if (/\/rename$/.test(segment.name)) {
+    dbName = 'admin'
+  }
+
+  var parms = segment.parameters
+  t.equal(parms.database_name, dbName, 'should have correct db name')
+  t.equal(parms.host, METRIC_HOST_NAME, 'should have correct host name')
+  t.equal(parms.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
 }
 
 function populate(db, collection, done) {
@@ -812,7 +852,7 @@ function populate(db, collection, done) {
 }
 
 function mongoTest(name, collections, run) {
-  tap.test(function testWrap(t) {
+  tap.test(name, function(t) {
     helper.bootstrapMongoDB(collections, function bootstrapped(err) {
       if (err) {
         t.fail(err)

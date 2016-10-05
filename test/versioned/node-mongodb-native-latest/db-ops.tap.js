@@ -4,15 +4,31 @@ var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var semver = require('semver')
+var urltils = require('../../../lib/util/urltils')
+
 if (semver.satisfies(process.version, '0.8')) {
   console.log('The latest versions of the mongo driver are not compatible with v0.8')
   return
 }
 
+var DB_NAME = 'integration'
+var MONGO_HOST = null
+var MONGO_PORT = params.mongodb_port
+var BAD_MONGO_COMMANDS = [
+  'collection'
+]
+
 mongoTest('open', [], function openTest(t, agent) {
   var mongodb = require('mongodb')
   var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-  var db = new mongodb.Db('integration', server)
+  var db = new mongodb.Db(DB_NAME, server)
+
+  // TODO: Tighten this semver check once mongo resolves this bug:
+  // https://jira.mongodb.org/browse/NODE-826
+  var mongoPkg = require('mongodb/package')
+  if (semver.satisfies(mongoPkg.version, '2.2.x')) {
+    BAD_MONGO_COMMANDS.push('authenticate', 'logout')
+  }
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     db.open(function onOpen(err, _db) {
@@ -32,7 +48,8 @@ mongoTest('open', [], function openTest(t, agent) {
 })
 
 dbTest('addUser, authenticate,  removeUser', [], function addUserTest(t, db, verify) {
-  db.addUser('user-test', 'user-test-pass', function added(err, user) {
+  db.addUser('user-test', 'user-test-pass', {roles: ['readWrite']}, added)
+  function added(err, user) {
     t.notOk(err, 'addUser should not have error')
     db.authenticate('user-test', 'user-test-pass', function authed(err2) {
       t.notOk(err2, 'authenticate should not have error')
@@ -49,7 +66,7 @@ dbTest('addUser, authenticate,  removeUser', [], function addUserTest(t, db, ver
         ])
       })
     })
-  })
+  }
 })
 
 dbTest('collection', ['testCollection'], function collectionTest(t, db, verify) {
@@ -109,9 +126,11 @@ dbTest('createIndex', ['testCollection'], function createIndexTest(t, db, verify
 })
 
 dbTest('dropCollection', ['testCollection'], function dropTest(t, db, verify) {
-  db.createCollection('testCollection', function gotCollection(err, collection) {
+  db.createCollection('testCollection', function gotCollection(err) {
+    t.notOk(err, 'should not have error getting collection')
+
     db.dropCollection('testCollection', function droppedCollection(err, result) {
-      t.notOk(err, 'should not have error')
+      t.notOk(err, 'should not have error dropping colleciton')
       t.ok(result === true, 'result should be boolean true')
       verify([
         'Datastore/operation/MongoDB/createCollection',
@@ -184,12 +203,12 @@ dbTest('logout', [], function logoutTest(t, db, verify) {
 })
 
 
-dbTest('renameCollection', ['testCollection', 'testCollection2'], function dropTest(t, db, verify) {
-  db.createCollection('testCollection', function gotCollection(err, collection) {
-    t.notOk(err, 'should not have error')
-    db.renameCollection('testCollection', 'testCollection2', function renamedCollection(err2) {
-      t.notOk(err2, 'should not have error')
-      db.dropCollection('testCollection2', function droppedCollection(err3) {
+dbTest('renameCollection', ['testColl', 'testColl2'], function(t, db, verify) {
+  db.createCollection('testColl', function gotCollection(err) {
+    t.notOk(err, 'should not have error getting collection')
+    db.renameCollection('testColl', 'testColl2', function renamedCollection(err2) {
+      t.notOk(err2, 'should not have error renaming collection')
+      db.dropCollection('testColl2', function droppedCollection(err3) {
         t.notOk(err3)
         verify([
           'Datastore/operation/MongoDB/createCollection',
@@ -219,7 +238,11 @@ function dbTest(name, collections, run) {
   mongoTest(name, collections, function init(t, agent) {
     var mongodb = require('mongodb')
     var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-    var db = new mongodb.Db('integration', server)
+    var db = new mongodb.Db(DB_NAME, server)
+
+    MONGO_HOST = urltils.isLocalhost(params.mongodb_host)
+      ? agent.config.getHostnameSafe()
+      : params.mongodb_host
 
     db.open(function onOpen(err) {
       if (err) {
@@ -240,22 +263,9 @@ function dbTest(name, collections, run) {
     }
 
     function withTransaction(transaction) {
-      run(t, db, verify)
-
-      function verify(names) {
-        t.equal(agent.getTransaction(), transaction, 'transaction is correct')
-        var segment = agent.tracer.getSegment()
-        var current = transaction.trace.root
-
-        for (var i = 0, l = names.length; i < l; ++i) {
-          t.equal(current.children.length, 1, 'should have one segment')
-          current = current.children[0]
-          t.equal(current.name, names[i], 'segment has correct name')
-        }
-
-        t.equal(current, segment, 'current segment is the correct one')
-        t.end()
-      }
+      run(t, db, function(names) {
+        verifyMongoSegments(t, agent, transaction, names)
+      })
     }
   })
 }
@@ -271,4 +281,53 @@ function mongoTest(name, collections, run) {
       run(t, helper.loadTestAgent(t))
     })
   })
+}
+
+function verifyMongoSegments(t, agent, transaction, names) {
+  t.equal(agent.getTransaction(), transaction, 'transaction is correct')
+  var segment = agent.tracer.getSegment()
+  var current = transaction.trace.root
+
+  for (var i = 0, l = names.length; i < l; ++i) {
+    t.equal(current.children.length, 1, 'should have one child segment')
+    current = current.children[0]
+    t.equal(current.name, names[i], 'segment should be named ' + names[i])
+
+    // If this is a Mongo operation/statement segment then it should have the
+    // datastore instance attributes.
+    if (/^Datastore\/.*?\/MongoDB/.test(current.name)) {
+      if (isBadSegment(current)) {
+        t.comment('Skipping attributes check for ' + current.name)
+        continue
+      }
+
+      // TODO: Combine this with a semver check once mongo resolves this bug:
+      // https://jira.mongodb.org/browse/NODE-827
+      var dbName = DB_NAME
+      if (/\/renameCollection$/.test(current.name)) {
+        dbName = 'admin'
+      }
+
+      var parms = current.parameters
+      t.equal(parms.database_name, dbName, 'should have correct db name')
+      t.equal(parms.host, MONGO_HOST, 'should have correct host name')
+      t.equal(parms.port_path_or_id, MONGO_PORT, 'should have correct port')
+    }
+  }
+
+  t.equal(current, segment, 'current segment is the correct one')
+  t.end()
+}
+
+function isBadSegment(segment) {
+  var nameParts = segment.name.split('/')
+  var command = nameParts[nameParts.length - 1]
+  var parms = segment.parameters
+
+  return (
+    BAD_MONGO_COMMANDS.indexOf(command) !== -1 && // Is in the list of bad commands
+    !parms.hasOwnProperty('database_name') &&     // and does not have any of the
+    !parms.hasOwnProperty('host') &&              // instance attributes.
+    !parms.hasOwnProperty('port_path_or_id')
+  )
 }
