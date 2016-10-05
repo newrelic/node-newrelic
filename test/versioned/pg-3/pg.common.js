@@ -76,7 +76,7 @@ module.exports = function runTests(agent, pg, name) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var hostId = METRIC_HOST_NAME + ':' + params.postgres_port
+    var hostId = METRIC_HOST_NAME + '/' + params.postgres_port
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
     var slowQuerySamples = agent.queries.samples
@@ -84,8 +84,14 @@ module.exports = function runTests(agent, pg, name) {
       var queryParams = slowQuerySamples[key].getParams()
 
       t.equal(
-        queryParams.instance,
-        hostId,
+        queryParams.host,
+        METRIC_HOST_NAME,
+        'instance data should show up in slow query params'
+      )
+
+      t.equal(
+        queryParams.port_path_or_id,
+        params.postgres_port,
         'instance data should show up in slow query params'
       )
 
@@ -134,7 +140,16 @@ module.exports = function runTests(agent, pg, name) {
     t.ok(setSegment, 'trace segment for insert should exist')
     t.ok(getSegment, 'trace segment for select should exist')
 
-    t.equals(setSegment.parameters.instance, hostId, 'should add the instance parameter')
+    t.equal(
+      setSegment.parameters.host,
+      METRIC_HOST_NAME,
+      'instance data should show up in slow query params'
+    )
+    t.equal(
+      setSegment.parameters.port_path_or_id,
+      params.postgres_port,
+      'instance data should show up in slow query params'
+    )
     t.equals(
       setSegment.parameters.database_name,
       params.postgres_db,

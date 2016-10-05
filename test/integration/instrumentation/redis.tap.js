@@ -24,7 +24,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
       ? agent.config.getHostnameSafe()
       : params.redis_host
-    HOST_ID = METRIC_HOST_NAME + ':' + params.redis_port
+    HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
     t.tearDown(function cb_tearDown() {
       client.end({flush: false})
@@ -79,8 +79,12 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
             'should have the set key as a parameter'
           )
           t.equals(
-            setSegment.parameters.instance, HOST_ID,
-            'should have instance id as parameter'
+            setSegment.parameters.host, METRIC_HOST_NAME,
+            'should have host as parameter'
+          )
+          t.equals(
+            setSegment.parameters.port_path_or_id, params.redis_port,
+            'should have port as parameter'
           )
           t.equals(
             setSegment.parameters.database_name, 0,
