@@ -11,41 +11,43 @@ var urltils = require('../../../lib/util/urltils')
 var DB_INDEX = 2
 
 test('Redis instrumentation', {timeout : 5000}, function(t) {
+  t.autoend()
+
   var METRIC_HOST_NAME = null
   var HOST_ID = null
 
-  // Prepare redis.
-  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
-    if (error) return t.fail(error)
-    var agent = helper.instrumentMockedAgent()
-    var redis = require('redis')
-    var client = redis.createClient(params.redis_port, params.redis_host)
+  var agent
+  var client
 
-    METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
-      ? agent.config.getHostnameSafe()
-      : params.redis_host
-    HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+  t.beforeEach(function(done) {
+    helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
+      if (error) return t.fail(error)
+      agent = helper.instrumentMockedAgent()
+      var redis = require('redis')
+      client = redis.createClient(params.redis_port, params.redis_host)
 
-    t.tearDown(function cb_tearDown() {
-      client.end({flush: false})
-      helper.unloadAgent(agent)
-    })
+      METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
+        ? agent.config.getHostnameSafe()
+        : params.redis_host
+      HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-    // need to capture parameters
-    agent.config.capture_params = true
+      // need to capture parameters
+      agent.config.capture_params = true
 
-    // Start testing!
-    t.autoend()
-    t.notOk(agent.getTransaction(), "no transaction should be in play")
-    t.test('should find Redis calls in the transaction trace', function(t) {
-      setGetTest(t, agent, client)
-    })
-    t.test('should follow selected database', function(t) {
-      selectTest(t, agent, client)
+      // Start testing!
+      t.notOk(agent.getTransaction(), "no transaction should be in play")
+      done()
     })
   })
 
-  function setGetTest(t, agent, client) {
+  t.afterEach(function(done) {
+    client.end({flush: false})
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  t.test('should find Redis calls in the transaction trace', function(t) {
+    t.plan(17)
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
       t.ok(transaction, "transaction should be visible")
@@ -79,18 +81,6 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
             'should have the set key as a parameter'
           )
           t.equals(
-            setSegment.parameters.host, METRIC_HOST_NAME,
-            'should have host as parameter'
-          )
-          t.equals(
-            setSegment.parameters.port_path_or_id, params.redis_port,
-            'should have port as parameter'
-          )
-          t.equals(
-            setSegment.parameters.database_name, 0,
-            'should have database id as parameter'
-          )
-          t.equals(
             setSegment.children.length, 1,
             'set should have an only child'
           )
@@ -104,6 +94,20 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           t.ok(getSegment.children.length >= 1,
                    "get should have a callback segment")
           t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
+        })
+      })
+    })
+  })
+
+  t.test('should create correct metrics', function(t) {
+    t.plan(14)
+    helper.runInTransaction(agent, function transactionInScope() {
+      var transaction = agent.getTransaction()
+      client.set('testkey', 'arglbargle', function(error, ok) {
+        if (error) return t.fail(error)
+
+        client.get('testkey', function(error, value) {
+          if (error) return t.fail(error)
 
           transaction.end(function() {
             var unscoped = transaction.metrics.unscoped
@@ -117,15 +121,72 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
             }
             expected['Datastore/instance/Redis/' + HOST_ID] = 2
             checkMetrics(t, unscoped, expected)
-
-            t.end()
           })
         })
       })
     })
-  }
+  })
 
-  function selectTest(t, agent, client) {
+  t.test('should add datastore instance parameters to trace segments', function(t) {
+    t.plan(3)
+    helper.runInTransaction(agent, function transactionInScope() {
+      var transaction = agent.getTransaction()
+      client.set('testkey', 'arglbargle', function(error, ok) {
+        if (error) return t.fail(error)
+
+        var trace = transaction.trace
+        var setSegment = trace.root.children[0]
+        t.equals(
+          setSegment.parameters.host, METRIC_HOST_NAME,
+          'should have host as parameter'
+        )
+        t.equals(
+          setSegment.parameters.port_path_or_id, params.redis_port,
+          'should have port as parameter'
+        )
+        t.equals(
+          setSegment.parameters.database_name, 0,
+          'should have database id as parameter'
+        )
+      })
+    })
+  })
+
+  t.test('should not add datastore instance parameters and metrics when disabled',
+      function(t) {
+    t.plan(4)
+
+    // disable
+    agent.config.datastore_tracer.instance_reporting.enabled = false
+    agent.config.datastore_tracer.database_name_reporting.enabled = false
+
+    helper.runInTransaction(agent, function transactionInScope() {
+      var transaction = agent.getTransaction()
+      client.set('testkey', 'arglbargle', function(error, ok) {
+        if (error) return t.fail(error)
+
+        var setSegment = transaction.trace.root.children[0]
+        t.equals(
+          setSegment.parameters.host, undefined, 'should not have host parameter'
+        )
+        t.equals(
+          setSegment.parameters.port_path_or_id, undefined, 'should not have port parameter'
+        )
+        t.equals(
+          setSegment.parameters.database_name, undefined, 'should not have db name parameter'
+        )
+
+        transaction.end(function() {
+          var unscoped = transaction.metrics.unscoped
+          t.equals(unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
+            'should not have instance metric')
+        })
+      })
+    })
+  })
+
+  t.test('should follow selected database', function(t) {
+    t.plan(12)
     var transaction = null
     var SELECTED_DB = 2
     helper.runInTransaction(agent, function(tx) {
@@ -176,10 +237,8 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         setSegment2.parameters.database_name, SELECTED_DB,
         'should have the selected database id as parameter for the second set'
       )
-
-      t.end()
     }
-  }
+  })
 })
 
 function checkMetrics(t, metrics, expected) {
