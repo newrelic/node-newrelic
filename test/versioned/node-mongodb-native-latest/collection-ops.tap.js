@@ -12,6 +12,7 @@ if (semver.satisfies(process.version, '0.8')) {
   return
 }
 
+var TRANSACTION_NAME = 'mongo test'
 var DB_NAME = 'integration'
 var METRIC_HOST_NAME = null
 var METRIC_HOST_PORT = null
@@ -499,9 +500,11 @@ collectionTest('mapReduce', function mapReduceTest(t, collection, verify) {
     )
   }
 
+  /* eslint-disable */
   function map(obj) {
     emit(this.mod10, this.i)
   }
+  /* eslint-enable */
 
   function reduce(key, vals) {
     return vals.reduce(function sum(prev, val) {
@@ -524,7 +527,7 @@ collectionTest('options', function optionsTest(t, collection, verify) {
   })
 })
 
-collectionTest('parallelCollectionScan', function parallelCollectionScanTest(t, collection, verify) {
+collectionTest('parallelCollectionScan', function(t, collection, verify) {
   collection.parallelCollectionScan({numCursors: 1}, function done(err, cursors) {
     t.notOk(err)
 
@@ -677,51 +680,70 @@ collectionTest('updateOne', function updateOneTest(t, collection, verify) {
 })
 
 function collectionTest(name, run) {
-  mongoTest(name, ['testCollection', 'testCollection2'], function init(t, agent) {
-    var mongodb = require('mongodb')
-    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-    var db = new mongodb.Db(DB_NAME, server, {w: 1})
-    METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
-      ? agent.config.getHostnameSafe()
-      : params.mongodb_host
-    METRIC_HOST_PORT = params.mongodb_port
+  var collections = ['testCollection', 'testCollection2']
 
+  tap.test(name, function(t) {
+    var agent = null
+    var db = null
+    var collection = null
+    t.autoend()
 
-    db.open(function(err) {
-      if (err) return finish(err)
-      t.tearDown(function tearDown() {
-        db.close()
+    t.beforeEach(function(done) {
+      agent = helper.instrumentMockedAgent()
+      helper.bootstrapMongoDB(collections, function(err) {
+        if (err) {
+          return done(err)
+        }
+
+        var mongodb = require('mongodb')
+        var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+        db = new mongodb.Db(DB_NAME, server)
+        METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
+          ? agent.config.getHostnameSafe()
+          : params.mongodb_host
+        METRIC_HOST_PORT = params.mongodb_port
+
+        db.open(function(err) {
+          if (err) {
+            return done(err)
+          }
+          collection = db.collection('testCollection')
+          populate(db, collection, done)
+        })
       })
-
-      db.collection('testCollection', gotCollection)
     })
 
-    function gotCollection(err, collection) {
-      if (err) return finish(err)
-      populate(db, collection, function(err) {
-        if (err) return finish(err)
-        t.comment('Running ' + name + ' without transaction')
-        run(t, collection, withoutTransaction)
+    t.afterEach(function(done) {
+      db.close(function(err) {
+        helper.unloadAgent(agent)
+        agent = null
+        done(err)
       })
+    })
 
-      function withoutTransaction(err) {
-        if (err) return finish(err)
+    t.test('should not error outside of a transaction', function(t) {
+      t.notOk(agent.getTransaction(), 'should not be in a transaction')
+      run(t, collection, function(err) {
+        t.notOk(err, 'running test should not error')
+        t.notOk(agent.getTransaction(), 'should not somehow gain a transaction')
+        t.end()
+      })
+    })
 
-        t.notOk(agent.getTransaction(), 'should not be in a transaction')
-        populate(db, collection, function(err) {
-          if (err) return finish(err)
-          t.comment('Running ' + name + ' with a transaction')
-          helper.runInTransaction(agent, withTransaction)
-        })
-      }
-
-      function withTransaction(transaction) {
-        transaction.setBackgroundName('name', 'group')
-        run(t, collection, verify)
-
-        function verify(err, segments, metrics) {
-          if (err) return finish(err)
-          t.equal(agent.getTransaction(), transaction, 'should maintain tx state')
+    t.test('should generate the correct metrics and segments', function(t) {
+      helper.runInTransaction(agent, function(transaction) {
+        transaction.name = TRANSACTION_NAME
+        run(t, collection, function(err, segments, metrics) {
+          if (
+            !t.notOk(err, 'running test should not error') ||
+            !t.ok(agent.getTransaction(), 'should maintain tx state')
+          ) {
+            return t.end()
+          }
+          t.equal(
+            agent.getTransaction().id, transaction.id,
+            'should not change transactions'
+          )
           var segment = agent.tracer.getSegment()
           var current = transaction.trace.root
 
@@ -735,36 +757,29 @@ function collectionTest(name, run) {
           }
 
           t.equal(current.children.length, 0, 'should have no more children')
-          t.equal(current, segment, 'should test to the current child')
+          t.equal(current, segment, 'should test to the current segment')
 
-          transaction.end(function onEnd() {
-            checkMetrics(t, agent, metrics || [], finish)
+          transaction.end(function onTxEnd() {
+            checkMetrics(t, agent, metrics || [])
+            t.end()
           })
-        }
-      }
-    }
-
-    function finish(err) {
-      if (err) {
-        t.fail(err)
-      }
-
-      setTimeout(function end() {
-        t.end()
-      }, 10)
-    }
+        })
+      })
+    })
   })
 }
 
-function checkMetrics(t, agent, metrics, finish) {
+function checkMetrics(t, agent, metrics) {
   var unscopedMetrics = agent.metrics.unscoped
   var unscopedNames = Object.keys(unscopedMetrics)
-  var scoped = agent.metrics.scoped['OtherTransaction/group/name']
+  var scoped = agent.metrics.scoped[TRANSACTION_NAME]
   var total = 0
   var count
   var name
 
-  t.ok(scoped, 'should have scoped metrics')
+  if (!t.ok(scoped, 'should have scoped metrics')) {
+    return
+  }
   t.equal(Object.keys(agent.metrics.scoped).length, 1, 'should have one scoped metric')
   for (var i = 0; i < metrics.length; ++i) {
     if (Array.isArray(metrics[i])) {
@@ -811,8 +826,6 @@ function checkMetrics(t, agent, metrics, finish) {
       t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
     }
   })
-
-  finish()
 }
 
 function checkSegmentParams(t, segment) {
@@ -847,19 +860,6 @@ function populate(db, collection, done) {
     collection.remove({}, function removed(err) {
       if (err) return done(err)
       collection.insert(items, done)
-    })
-  })
-}
-
-function mongoTest(name, collections, run) {
-  tap.test(name, function(t) {
-    helper.bootstrapMongoDB(collections, function bootstrapped(err) {
-      if (err) {
-        t.fail(err)
-        return t.end()
-      }
-
-      run(t, helper.loadTestAgent(t))
     })
   })
 }
