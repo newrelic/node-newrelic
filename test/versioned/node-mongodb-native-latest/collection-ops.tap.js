@@ -12,6 +12,7 @@ if (semver.satisfies(process.version, '0.8')) {
   return
 }
 
+var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 var TRANSACTION_NAME = 'mongo test'
 var DB_NAME = 'integration'
 var METRIC_HOST_NAME = null
@@ -751,7 +752,7 @@ function collectionTest(name, run) {
             t.equal(current.children.length, 1, 'should have one child')
             current = current.children[0]
             t.equal(current.name, segments[i], 'child should be named ' + segments[i])
-            if (/^Datastore\/.*?\/MongoDB/.test(current.name)) {
+            if (MONGO_SEGMENT_RE.test(current.name)) {
               checkSegmentParams(t, current)
             }
           }
@@ -763,6 +764,70 @@ function collectionTest(name, run) {
             checkMetrics(t, agent, metrics || [])
             t.end()
           })
+        })
+      })
+    })
+
+    t.test('should respect `datastore_tracer.instance_reporting.enabled`', function(t) {
+      agent.config.datastore_tracer.instance_reporting.enabled = false
+      helper.runInTransaction(agent, function(tx) {
+        run(t, collection, function(err) {
+          if (!t.notOk(err, 'running test should not error')) {
+            return t.end()
+          }
+
+          var current = tx.trace.root
+          while (current) {
+            if (MONGO_SEGMENT_RE.test(current.name)) {
+              t.comment('Checking segment ' + current.name)
+              t.notOk(
+                current.parameters.hasOwnProperty('host'),
+                'should not have host parameter'
+              )
+              t.notOk(
+                current.parameters.hasOwnProperty('port_path_or_id'),
+                'should not have port parameter'
+              )
+              t.ok(
+                current.parameters.hasOwnProperty('database_name'),
+                'should have database name parameter'
+              )
+            }
+            current = current.children[0]
+          }
+          t.end()
+        })
+      })
+    })
+
+    t.test('should respect `datastore_tracer.database_name_reporting.enabled`', function(t) {
+      agent.config.datastore_tracer.database_name_reporting.enabled = false
+      helper.runInTransaction(agent, function(tx) {
+        run(t, collection, function(err) {
+          if (!t.notOk(err, 'running test should not error')) {
+            return t.end()
+          }
+
+          var current = tx.trace.root
+          while (current) {
+            if (MONGO_SEGMENT_RE.test(current.name)) {
+              t.comment('Checking segment ' + current.name)
+              t.ok(
+                current.parameters.hasOwnProperty('host'),
+                'should have host parameter'
+              )
+              t.ok(
+                current.parameters.hasOwnProperty('port_path_or_id'),
+                'should have port parameter'
+              )
+              t.notOk(
+                current.parameters.hasOwnProperty('database_name'),
+                'should not have database name parameter'
+              )
+            }
+            current = current.children[0]
+          }
+          t.end()
         })
       })
     })
