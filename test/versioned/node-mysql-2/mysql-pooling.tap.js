@@ -14,7 +14,7 @@ var DBTABLE = 'test'
 test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
      {timeout : 30 * 1000},
      function (t) {
-  t.plan(11)
+  t.plan(10)
 
   helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
     // set up the instrumentation before loading MySQL
@@ -69,8 +69,11 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
 
     var withRetry = {
       getClient : function (callback, counter) {
-        if (!counter) counter = 1
-        counter++
+        if (counter == null) {
+          counter = 0
+        } else {
+          counter++
+        }
 
         pool.acquire(function cb_acquire(err, client) {
           if (err) {
@@ -136,7 +139,10 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
      */
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
-      dal.lookup({id : 1}, function (error, row) {
+      var context = {
+        id: 1
+      }
+      dal.lookup(context, function tester(error, row) {
         if (error) {
           t.fail(error)
           return t.end()
@@ -176,11 +182,14 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
       t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
       t.equals(selectSegment.children[0].name, 'Callback: anonymous')
 
-      t.equals(
-        selectSegment.children[0].children.length,
-        0,
-        'callback should not have children'
-      )
+      selectSegment.children[0].children
+        .map(function(segment) {return segment.name})
+        .forEach(function(segmentName) {
+          if (segmentName !== 'timers.setTimeout'
+              && segmentName !== 'Truncated/timers.setTimeout') {
+            t.fail('callback segment should have only timeout children')
+          }
+        })
       t.end()
     }
   }.bind(this))
