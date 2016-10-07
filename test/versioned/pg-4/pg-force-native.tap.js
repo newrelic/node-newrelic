@@ -5,22 +5,11 @@ var semver = require('semver')
 if (semver.satisfies(process.versions.node, '0.8.x')) return
 
 var runTests = require('./pg.common.js')
-var helper = require('../../lib/agent_helper')
 
-var agent = helper.instrumentMockedAgent(null, {
-  transaction_tracer: {
-    record_sql: 'raw'
-  },
-  slow_sql: {
-    enabled: true
-  }
+runTests('forced native', function getClient() {
+  // setting env var for forcing native
+  process.env.NODE_PG_FORCE_NATIVE = true
+  var pg = require('pg')
+  delete process.env.NODE_PG_FORCE_NATIVE
+  return pg
 })
-
-// setting env var for forcing native
-process.env.NODE_PG_FORCE_NATIVE = true
-
-var pg = require('pg')
-
-delete process.env.NODE_PG_FORCE_NATIVE
-
-runTests(agent, pg, 'forced native')
