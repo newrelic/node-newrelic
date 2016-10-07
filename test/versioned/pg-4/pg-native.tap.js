@@ -5,9 +5,7 @@ var semver = require('semver')
 if (semver.satisfies(process.versions.node, '0.8.x')) return
 
 var runTests = require('./pg.common.js')
-var helper = require('../../lib/agent_helper')
 
-var agent = helper.instrumentMockedAgent()
-var pg = require('pg').native
-
-runTests(agent, pg, 'native')
+runTests('native', function getClient() {
+  return require('pg').native
+})
