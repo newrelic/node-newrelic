@@ -91,7 +91,7 @@ module.exports = function runTests(agent, pg, name) {
 
       t.equal(
         queryParams.port_path_or_id,
-        params.postgres_port,
+        String(params.postgres_port),
         'instance data should show up in slow query params'
       )
 
@@ -142,7 +142,7 @@ module.exports = function runTests(agent, pg, name) {
 
     t.equals(setSegment.parameters.host, METRIC_HOST_NAME,
       'should add the host parameter')
-    t.equals(setSegment.parameters.port_path_or_id, params.postgres_port,
+    t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
       'should add the port parameter')
     t.equals(
       setSegment.parameters.database_name,
