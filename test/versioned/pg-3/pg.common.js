@@ -91,7 +91,7 @@ module.exports = function runTests(agent, pg, name) {
 
       t.equal(
         queryParams.port_path_or_id,
-        params.postgres_port,
+        String(params.postgres_port),
         'instance data should show up in slow query params'
       )
 
@@ -147,7 +147,7 @@ module.exports = function runTests(agent, pg, name) {
     )
     t.equal(
       setSegment.parameters.port_path_or_id,
-      params.postgres_port,
+      String(params.postgres_port),
       'instance data should show up in slow query params'
     )
     t.equals(

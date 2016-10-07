@@ -141,7 +141,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           'should have host as parameter'
         )
         t.equals(
-          setSegment.parameters.port_path_or_id, params.redis_port,
+          setSegment.parameters.port_path_or_id, String(params.redis_port),
           'should have port as parameter'
         )
         t.equals(
