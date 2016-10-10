@@ -1,3 +1,9 @@
+### v1.31.0 (2016-10-11):
+
+* The agent now collects database instance information for PostgreSQL and Redis
+  operations.  This information (database server and database name) is displayed in
+  transaction traces and slow query traces.
+
 ### v1.30.5 (2016-10-04):
 
 * Fixed issue with aborted requests causing the agent to crash in some cases.
