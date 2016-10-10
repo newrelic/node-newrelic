@@ -702,7 +702,7 @@ function collectionTest(name, run) {
         METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
           ? agent.config.getHostnameSafe()
           : params.mongodb_host
-        METRIC_HOST_PORT = params.mongodb_port
+        METRIC_HOST_PORT = String(params.mongodb_port)
 
         db.open(function(err) {
           if (err) {

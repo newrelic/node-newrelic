@@ -13,7 +13,7 @@ if (semver.satisfies(process.version, '0.8')) {
 
 var DB_NAME = 'integration'
 var MONGO_HOST = null
-var MONGO_PORT = params.mongodb_port
+var MONGO_PORT = String(params.mongodb_port)
 var BAD_MONGO_COMMANDS = [
   'collection'
 ]

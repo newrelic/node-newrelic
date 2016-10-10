@@ -19,7 +19,7 @@ var SLUG_FACTOR = 30000
 var DB_NAME = 'integration'
 var COLLECTION = 'test_1_3_19_plus'
 var MONGO_HOST = null
-var MONGO_PORT = params.mongodb_port
+var MONGO_PORT = String(params.mongodb_port)
 var METRICS_VERIFIER_COUNT = 5
 var TRACE_VERIFIER_COUNT = 10
 
