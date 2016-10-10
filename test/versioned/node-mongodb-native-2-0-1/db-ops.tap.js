@@ -1,5 +1,6 @@
 'use strict'
 
+var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
@@ -33,14 +34,17 @@ mongoTest('open', [], function openTest(t, agent) {
   helper.runInTransaction(agent, function inTransaction(transaction) {
     db.open(function onOpen(err, _db) {
       var segment = agent.tracer.getSegment()
-      t.notOk(err, 'should not have error')
-      t.equal(db, _db)
-      t.equal(agent.getTransaction(), transaction)
-      t.equal(segment.name, 'Callback: onOpen')
-      t.equal(transaction.trace.root.children.length, 1)
+      t.error(err)
+      t.equal(db, _db, 'should pass through the arguments correctly')
+      t.equal(agent.getTransaction(), transaction, 'should not lose tx state')
+      t.equal(segment.name, 'Callback: onOpen', 'should create segments')
+      t.equal(transaction.trace.root.children.length, 1, 'should only create one')
       var parent = transaction.trace.root.children[0]
-      t.equal(parent.name, 'Datastore/operation/MongoDB/open')
-      t.notEqual(parent.children.indexOf(segment), -1)
+      t.equal(
+        parent.name, 'Datastore/operation/MongoDB/open',
+        'should name segment correctly'
+      )
+      t.notEqual(parent.children.indexOf(segment), -1, 'should have callback as child')
       db.close()
       t.end()
     })
@@ -236,37 +240,87 @@ dbTest('stats', [], function statsTest(t, db, verify) {
 
 function dbTest(name, collections, run) {
   mongoTest(name, collections, function init(t, agent) {
+    var LOCALHOST = agent.config.getHostnameSafe()
+    var domainPath = getDomainSocketPath()
     var mongodb = require('mongodb')
-    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-    var db = new mongodb.Db(DB_NAME, server)
+    var server = null
+    var db = null
 
-    MONGO_HOST = urltils.isLocalhost(params.mongodb_host)
-      ? agent.config.getHostnameSafe()
-      : params.mongodb_host
+    t.autoend()
 
-    db.open(function onOpen(err) {
-      if (err) {
-        t.fail(err)
-        return t.end()
-      }
+    t.test('remote connection', function(t) {
+      t.autoend()
+      t.beforeEach(function(done) {
+        MONGO_HOST = urltils.isLocalhost(params.mongodb_host)
+          ? LOCALHOST
+          : params.mongodb_host
+        MONGO_PORT = String(params.mongodb_port)
 
-      t.tearDown(function tearDown() {
-        db.close()
+        server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+        db = new mongodb.Db(DB_NAME, server)
+        db.open(function onOpen(err) {
+          if (err) {
+            t.fail(err)
+            return t.end()
+          }
+
+          done()
+        })
       })
 
-      run(t, db, withoutTransaction)
+      t.afterEach(function(done) {
+        db.close(done)
+        db = null
+      })
+
+      t.test('without transaction', function(t) {
+        run(t, db, function() {
+          t.notOk(agent.getTransaction(), 'should not have transaction')
+          t.end()
+        })
+      })
+
+      t.test('with transaction', function(t) {
+        t.notOk(agent.getTransaction(), 'should not have transaction')
+        helper.runInTransaction(agent, function(transaction) {
+          run(t, db, function(names) {
+            verifyMongoSegments(t, agent, transaction, names)
+            transaction.end(function() {
+              t.end()
+            })
+          })
+        })
+      })
     })
 
-    function withoutTransaction() {
-      t.notOk(agent.getTransaction(), 'should not have transaction')
-      helper.runInTransaction(agent, withTransaction)
-    }
+    t.test('domain socket', {skip: !domainPath}, function(t) {
+      t.autoend()
+      t.beforeEach(function(done) {
+        MONGO_HOST = LOCALHOST
+        MONGO_PORT = domainPath
 
-    function withTransaction(transaction) {
-      run(t, db, function(names) {
-        verifyMongoSegments(t, agent, transaction, names)
+        server = new mongodb.Server(domainPath)
+        db = new mongodb.Db(DB_NAME, server)
+        db.open(done)
       })
-    }
+
+      t.afterEach(function(done) {
+        db.close(done)
+        db = null
+      })
+
+      t.test('with transaction', function(t) {
+        t.notOk(agent.getTransaction(), 'should not have transaction')
+        helper.runInTransaction(agent, function(transaction) {
+          run(t, db, function(names) {
+            verifyMongoSegments(t, agent, transaction, names)
+            transaction.end(function() {
+              t.end()
+            })
+          })
+        })
+      })
+    })
   })
 }
 
@@ -284,7 +338,9 @@ function mongoTest(name, collections, run) {
 }
 
 function verifyMongoSegments(t, agent, transaction, names) {
-  t.equal(agent.getTransaction(), transaction, 'transaction is correct')
+  t.ok(agent.getTransaction(), 'should not lose transaction state')
+  t.equal(agent.getTransaction().id, transaction.id, 'transaction is correct')
+
   var segment = agent.tracer.getSegment()
   var current = transaction.trace.root
 
@@ -315,8 +371,9 @@ function verifyMongoSegments(t, agent, transaction, names) {
     }
   }
 
-  t.equal(current, segment, 'current segment is the correct one')
-  t.end()
+  // Do not use `t.equal` for this comparison. When it is false tap would dump
+  // way too much information to be useful.
+  t.ok(current === segment, 'current segment is ' + segment.name)
 }
 
 function isBadSegment(segment) {
@@ -330,4 +387,15 @@ function isBadSegment(segment) {
     !parms.hasOwnProperty('host') &&              // instance attributes.
     !parms.hasOwnProperty('port_path_or_id')
   )
+}
+
+function getDomainSocketPath() {
+  var files = fs.readdirSync('/tmp')
+  for (var i = 0; i < files.length; ++i) {
+    var file = '/tmp/' + files[i]
+    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
+      return file
+    }
+  }
+  return null
 }

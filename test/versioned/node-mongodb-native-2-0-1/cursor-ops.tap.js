@@ -1,5 +1,6 @@
 'use strict'
 
+var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
@@ -31,8 +32,13 @@ collectionTest('count', function countTest(t, collection, verify) {
 
 collectionTest('explain', function explainTest(t, collection, verify) {
   collection.find({}).explain(function onExplain(err, data) {
-    t.notOk(err)
-    t.equal(data.cursor, 'BasicCursor')
+    t.error(err)
+    // Depending on the version of the mongo server the explain plan is different.
+    if (data.hasOwnProperty('cursor')) {
+      t.equal(data.cursor, 'BasicCursor', 'should have correct response')
+    } else {
+      t.ok(data.hasOwnProperty('queryPlanner'), 'should have correct reponse')
+    }
     verify(null, [
       'Datastore/statement/MongoDB/testCollection/explain'
     ], [
@@ -86,145 +92,197 @@ function collectionTest(name, run) {
     var collection = null
     t.autoend()
 
-    t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent()
-      helper.bootstrapMongoDB(collections, function(err) {
-        if (err) {
-          return done(err)
-        }
-
-        var mongodb = require('mongodb')
-        var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-        db = new mongodb.Db(DB_NAME, server)
-        METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
-          ? agent.config.getHostnameSafe()
-          : params.mongodb_host
-        METRIC_HOST_PORT = String(params.mongodb_port)
-
-        db.open(function(err) {
+    t.test('remote connection', function(t) {
+      t.autoend()
+      t.beforeEach(function(done) {
+        agent = helper.instrumentMockedAgent()
+        helper.bootstrapMongoDB(collections, function(err) {
           if (err) {
             return done(err)
           }
-          collection = db.collection('testCollection')
-          populate(db, collection, done)
+
+          var mongodb = require('mongodb')
+          var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+          db = new mongodb.Db(DB_NAME, server)
+          METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
+            ? agent.config.getHostnameSafe()
+            : params.mongodb_host
+          METRIC_HOST_PORT = String(params.mongodb_port)
+
+          db.open(function(err) {
+            if (err) {
+              return done(err)
+            }
+            collection = db.collection('testCollection')
+            populate(db, collection, done)
+          })
         })
       })
-    })
 
-    t.afterEach(function(done) {
-      db.close(function(err) {
-        helper.unloadAgent(agent)
-        agent = null
-        done(err)
+      t.afterEach(function(done) {
+        db.close(function(err) {
+          helper.unloadAgent(agent)
+          agent = null
+          done(err)
+        })
       })
-    })
 
-    t.test('should not error outside of a transaction', function(t) {
-      t.notOk(agent.getTransaction(), 'should not be in a transaction')
-      run(t, collection, function(err) {
-        t.notOk(err, 'running test should not error')
-        t.notOk(agent.getTransaction(), 'should not somehow gain a transaction')
-        t.end()
+      t.test('should not error outside of a transaction', function(t) {
+        t.notOk(agent.getTransaction(), 'should not be in a transaction')
+        run(t, collection, function(err) {
+          t.notOk(err, 'running test should not error')
+          t.notOk(agent.getTransaction(), 'should not somehow gain a transaction')
+          t.end()
+        })
       })
-    })
 
-    t.test('should generate the correct metrics and segments', function(t) {
-      helper.runInTransaction(agent, function(transaction) {
-        transaction.name = TRANSACTION_NAME
-        run(t, collection, function(err, segments, metrics) {
-          if (
-            !t.notOk(err, 'running test should not error') ||
-            !t.ok(agent.getTransaction(), 'should maintain tx state')
-          ) {
-            return t.end()
-          }
-          t.equal(
-            agent.getTransaction().id, transaction.id,
-            'should not change transactions'
-          )
-          var segment = agent.tracer.getSegment()
-          var current = transaction.trace.root
-
-          for (var i = 0, l = segments.length; i < l; ++i) {
-            t.equal(current.children.length, 1, 'should have one child')
-            current = current.children[0]
-            t.equal(current.name, segments[i], 'child should be named ' + segments[i])
-            if (MONGO_SEGMENT_RE.test(current.name)) {
-              checkSegmentParams(t, current)
+      t.test('should generate the correct metrics and segments', function(t) {
+        helper.runInTransaction(agent, function(transaction) {
+          transaction.name = TRANSACTION_NAME
+          run(t, collection, function(err, segments, metrics) {
+            if (
+              !t.notOk(err, 'running test should not error') ||
+              !t.ok(agent.getTransaction(), 'should maintain tx state')
+            ) {
+              return t.end()
             }
-          }
+            t.equal(
+              agent.getTransaction().id, transaction.id,
+              'should not change transactions'
+            )
+            var segment = agent.tracer.getSegment()
+            var current = transaction.trace.root
 
-          t.equal(current.children.length, 1, 'should have one last child')
-          t.equal(current.children[0], segment, 'should test to the current child')
+            for (var i = 0, l = segments.length; i < l; ++i) {
+              t.equal(current.children.length, 1, 'should have one child')
+              current = current.children[0]
+              t.equal(current.name, segments[i], 'child should be named ' + segments[i])
+              if (MONGO_SEGMENT_RE.test(current.name)) {
+                checkSegmentParams(t, current)
+              }
+            }
 
-          transaction.end(function onTxEnd() {
-            checkMetrics(t, agent, metrics || [])
+            t.equal(current.children.length, 1, 'should have one last child')
+            t.equal(current.children[0], segment, 'should test to the current child')
+
+            transaction.end(function onTxEnd() {
+              checkMetrics(t, agent, metrics || [])
+              t.end()
+            })
+          })
+        })
+      })
+
+      t.test('should respect `datastore_tracer.instance_reporting`', function(t) {
+        agent.config.datastore_tracer.instance_reporting.enabled = false
+        helper.runInTransaction(agent, function(tx) {
+          run(t, collection, function(err) {
+            if (!t.notOk(err, 'running test should not error')) {
+              return t.end()
+            }
+
+            var current = tx.trace.root
+            while (current) {
+              if (MONGO_SEGMENT_RE.test(current.name)) {
+                t.comment('Checking segment ' + current.name)
+                t.notOk(
+                  current.parameters.hasOwnProperty('host'),
+                  'should not have host parameter'
+                )
+                t.notOk(
+                  current.parameters.hasOwnProperty('port_path_or_id'),
+                  'should not have port parameter'
+                )
+                t.ok(
+                  current.parameters.hasOwnProperty('database_name'),
+                  'should have database name parameter'
+                )
+              }
+              current = current.children[0]
+            }
+            t.end()
+          })
+        })
+      })
+
+      t.test('should respect `datastore_tracer.database_name_reporting`', function(t) {
+        agent.config.datastore_tracer.database_name_reporting.enabled = false
+        helper.runInTransaction(agent, function(tx) {
+          run(t, collection, function(err) {
+            if (!t.notOk(err, 'running test should not error')) {
+              return t.end()
+            }
+
+            var current = tx.trace.root
+            while (current) {
+              if (MONGO_SEGMENT_RE.test(current.name)) {
+                t.comment('Checking segment ' + current.name)
+                t.ok(
+                  current.parameters.hasOwnProperty('host'),
+                  'should have host parameter'
+                )
+                t.ok(
+                  current.parameters.hasOwnProperty('port_path_or_id'),
+                  'should have port parameter'
+                )
+                t.notOk(
+                  current.parameters.hasOwnProperty('database_name'),
+                  'should not have database name parameter'
+                )
+              }
+              current = current.children[0]
+            }
             t.end()
           })
         })
       })
     })
 
-    t.test('should respect `datastore_tracer.instance_reporting.enabled`', function(t) {
-      agent.config.datastore_tracer.instance_reporting.enabled = false
-      helper.runInTransaction(agent, function(tx) {
-        run(t, collection, function(err) {
-          if (!t.notOk(err, 'running test should not error')) {
-            return t.end()
+    var domainPath = getDomainSocketPath()
+    t.test('domain socket', {skip: !domainPath}, function(t) {
+      t.autoend()
+      t.beforeEach(function(done) {
+        agent = helper.instrumentMockedAgent()
+        METRIC_HOST_NAME = agent.config.getHostnameSafe()
+        METRIC_HOST_PORT = domainPath
+        helper.bootstrapMongoDB(collections, function(err) {
+          if (err) {
+            return done(err)
           }
 
-          var current = tx.trace.root
-          while (current) {
-            if (MONGO_SEGMENT_RE.test(current.name)) {
-              t.comment('Checking segment ' + current.name)
-              t.notOk(
-                current.parameters.hasOwnProperty('host'),
-                'should not have host parameter'
-              )
-              t.notOk(
-                current.parameters.hasOwnProperty('port_path_or_id'),
-                'should not have port parameter'
-              )
-              t.ok(
-                current.parameters.hasOwnProperty('database_name'),
-                'should have database name parameter'
-              )
+          var mongodb = require('mongodb')
+          var server = new mongodb.Server(domainPath)
+          db = new mongodb.Db(DB_NAME, server)
+          db.open(function(err) {
+            if (err) {
+              return done(err)
             }
-            current = current.children[0]
-          }
-          t.end()
+
+            collection = db.collection('testCollection')
+            populate(db, collection, done)
+          })
         })
       })
-    })
 
-    t.test('should respect `datastore_tracer.database_name_reporting.enabled`', function(t) {
-      agent.config.datastore_tracer.database_name_reporting.enabled = false
-      helper.runInTransaction(agent, function(tx) {
-        run(t, collection, function(err) {
-          if (!t.notOk(err, 'running test should not error')) {
-            return t.end()
-          }
+      t.afterEach(function(done) {
+        db.close(function(err) {
+          helper.unloadAgent(agent)
+          agent = null
+          done(err)
+        })
+      })
 
-          var current = tx.trace.root
-          while (current) {
-            if (MONGO_SEGMENT_RE.test(current.name)) {
-              t.comment('Checking segment ' + current.name)
-              t.ok(
-                current.parameters.hasOwnProperty('host'),
-                'should have host parameter'
-              )
-              t.ok(
-                current.parameters.hasOwnProperty('port_path_or_id'),
-                'should have port parameter'
-              )
-              t.notOk(
-                current.parameters.hasOwnProperty('database_name'),
-                'should not have database name parameter'
-              )
-            }
-            current = current.children[0]
-          }
-          t.end()
+      t.test('should have domain socket in metrics', function(t) {
+        t.notOk(agent.getTransaction(), 'should not have transaction')
+        helper.runInTransaction(agent, function(transaction) {
+          transaction.name = TRANSACTION_NAME
+          run(t, collection, function(err, segments, metrics) {
+            t.error(err)
+            transaction.end(function() {
+              checkMetrics(t, agent, metrics || [])
+              t.end()
+            })
+          })
         })
       })
     })
@@ -319,4 +377,15 @@ function populate(db, collection, done) {
       collection.insert(items, done)
     })
   })
+}
+
+function getDomainSocketPath() {
+  var files = fs.readdirSync('/tmp')
+  for (var i = 0; i < files.length; ++i) {
+    var file = '/tmp/' + files[i]
+    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
+      return file
+    }
+  }
+  return null
 }
