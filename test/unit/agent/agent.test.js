@@ -127,7 +127,7 @@ describe("the New Relic agent", function () {
     })
 
     it("requires a valid value when changing state", function () {
-      expect(function () { agent.state('bogus'); }).throws('Invalid state bogus')
+      expect(function () { agent.setState('bogus'); }).throws('Invalid state bogus')
     })
 
     it("has some debugging configuration by default", function () {
