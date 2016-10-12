@@ -1,4 +1,4 @@
-### v1.31.0 (2016-10-11):
+### v1.31.0 (2016-10-12):
 
 * The agent now collects database instance information for PostgreSQL and Redis
   operations.  This information (database server and database name) is displayed in
