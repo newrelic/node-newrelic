@@ -1,5 +1,6 @@
 'use strict'
 
+var fs = require('fs')
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
@@ -23,7 +24,15 @@ var MONGO_PORT = String(params.mongodb_port)
 var METRICS_VERIFIER_COUNT = 5
 var TRACE_VERIFIER_COUNT = 10
 
-function addMetricsVerifier(t, agent, operation, calls) {
+/* eslint-disable max-params */
+function addMetricsVerifier(t, agent, operation, calls, host, port) {
+  /* eslint-enable max-params */
+  host = host || MONGO_HOST || 'localhost'
+  port = port || MONGO_PORT
+  if (urltils.isLocalhost(host)) {
+    host = agent.config.getHostnameSafe()
+  }
+
   agent.once('transactionFinished', function() {
     try {
       t.equals(
@@ -50,7 +59,7 @@ function addMetricsVerifier(t, agent, operation, calls) {
       )
       t.equals(
         agent.metrics.getMetric(
-          'Datastore/instance/MongoDB/' + MONGO_HOST + '/' + MONGO_PORT
+          'Datastore/instance/MongoDB/' + host + '/' + port
         ).callCount,
         calls || 1,
         'should find all calls to the local instance'
@@ -62,7 +71,22 @@ function addMetricsVerifier(t, agent, operation, calls) {
   })
 }
 
-function verifyTrace(t, segment, operation, done) {
+/* eslint-disable max-params */
+function verifyTrace(t, segment, operation, host, port, done) {
+  /* eslint-enable max-params */
+  if (host instanceof Function) {
+    // verifyTrace(t, segment, operation, done)
+    done = host
+    host = null
+    port = null
+  }
+
+  host = host || MONGO_HOST
+  port = port || MONGO_PORT
+  if (urltils.isLocalhost(host)) {
+    host = segment.transaction.agent.config.getHostnameSafe()
+  }
+
   try {
     var transaction = segment.transaction
     var trace = transaction.trace
@@ -79,12 +103,12 @@ function verifyTrace(t, segment, operation, done) {
     )
     t.equal(
       op_segment.parameters.host,
-      MONGO_HOST,
+      host,
       'should have correct host parameter'
     )
     t.equal(
       op_segment.parameters.port_path_or_id,
-      MONGO_PORT,
+      port,
       'should have correct port_path_or_id parameter'
     )
     t.equal(
@@ -119,7 +143,7 @@ function verifyNoStats(t, agent, operation) {
    )
     t.notOk(
       metrics.getMetric(
-        'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port
+        'Datastore/instance/MongoDB/' + MONGO_HOST + '/' + MONGO_PORT
       ),
       'should find no calls to the local instance'
     )
@@ -134,7 +158,7 @@ function runWithDB(t, callback) {
   var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
     auto_reconnect: true
   })
-  var db = new mongodb.Db(DB_NAME, server, {safe: true})
+  var db = new mongodb.Db(DB_NAME, server, {w: 1, safe: true})
 
 
   t.tearDown(function cb_tearDown() {
@@ -185,10 +209,12 @@ function runWithTransaction(t, callback) {
 test('agent instrumentation of node-mongodb-native',
   {skip: semver.satisfies(process.version, '0.8')},
   function(t) {
-  t.plan(16)
 
   helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(error) {
-    if (error) return t.fail(error)
+    if (!t.error(error)) {
+      return t.end()
+    }
+    t.autoend()
 
     t.test('insert', function(t) {
       t.autoend()
@@ -1253,5 +1279,68 @@ test('agent instrumentation of node-mongodb-native',
         })
       })
     })
+
+    t.test('instance metrics with domain sockets', function(t) {
+      var host = 'localhost'
+      var path = getDomainSocketPath()
+
+      // The domain socket tests should only be run if there is a domain socket
+      // to connect to, which only happens if there is a Mongo instance running on
+      // the same box as these tests. This should always be the case on Travis,
+      // but just to be sure they're running there check for the environment flag.
+      var shouldTestDomain = path || process.env.TRAVIS
+      if (!shouldTestDomain) {
+        t.comment('!!! Skipping domain socket test, none found.')
+        return t.end()
+      }
+
+      var agent = helper.instrumentMockedAgent()
+      var mongodb = require('mongodb')
+      var server = new mongodb.Server(path)
+      var db = new mongodb.Db(DB_NAME, server, {w: 1})
+
+      t.tearDown(function() {
+        db.close()
+        helper.unloadAgent(agent)
+      })
+
+      t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
+      db.open(function(err) {
+        if (!t.error(err)) {
+          return t.end()
+        }
+        var collection = db.collection(COLLECTION)
+        helper.runInTransaction(agent, function(tx) {
+          addMetricsVerifier(t, agent, 'update', null, host, path)
+
+          collection.update({
+            hamchunx: {$exists: true}
+          }, {
+            $set: {__updatedWith: 'yup'},
+          }, {
+            safe: true, multi: true
+          }, function(err) {
+            if (!t.error(err)) {
+              return t.end()
+            }
+
+            tx.end(function() {
+              verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
+            })
+          })
+        })
+      })
+    })
   })
 })
+
+function getDomainSocketPath() {
+  var files = fs.readdirSync('/tmp')
+  for (var i = 0; i < files.length; ++i) {
+    var file = '/tmp/' + files[i]
+    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
+      return file
+    }
+  }
+  return null
+}

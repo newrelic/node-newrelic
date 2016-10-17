@@ -238,8 +238,13 @@ function collectionTest(name, run) {
       })
     })
 
+    // The domain socket tests should only be run if there is a domain socket
+    // to connect to, which only happens if there is a Mongo instance running on
+    // the same box as these tests. This should always be the case on Travis,
+    // but just to be sure they're running there check for the environment flag.
     var domainPath = getDomainSocketPath()
-    t.test('domain socket', {skip: !domainPath}, function(t) {
+    var shouldTestDomain = domainPath || process.env.TRAVIS
+    t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
       t.autoend()
       t.beforeEach(function(done) {
         agent = helper.instrumentMockedAgent()
