@@ -26,17 +26,19 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
       var redis = require('redis')
       client = redis.createClient(params.redis_port, params.redis_host)
 
-      METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
-        ? agent.config.getHostnameSafe()
-        : params.redis_host
-      HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+      client.select(DB_INDEX, function(err) {
+        METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
+          ? agent.config.getHostnameSafe()
+          : params.redis_host
+        HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-      // need to capture parameters
-      agent.config.capture_params = true
+        // need to capture parameters
+        agent.config.capture_params = true
 
-      // Start testing!
-      t.notOk(agent.getTransaction(), "no transaction should be in play")
-      done()
+        // Start testing!
+        t.notOk(agent.getTransaction(), "no transaction should be in play")
+        done(err)
+      })
     })
   })
 
@@ -145,7 +147,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           'should have port as parameter'
         )
         t.equals(
-          setSegment.parameters.database_name, 0,
+          setSegment.parameters.database_name, DB_INDEX,
           'should have database id as parameter'
         )
       })
@@ -188,7 +190,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
   t.test('should follow selected database', function(t) {
     t.plan(12)
     var transaction = null
-    var SELECTED_DB = 2
+    var SELECTED_DB = 3
     helper.runInTransaction(agent, function(tx) {
       transaction = tx
       client.set('select:test:key', 'foo', function(err) {
@@ -218,7 +220,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the first set'
       )
       t.equals(
-        setSegment1.parameters.database_name, 0,
+        setSegment1.parameters.database_name, DB_INDEX,
         'should have the starting database id as parameter for the first set'
       )
       t.equals(
@@ -226,7 +228,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the select'
       )
       t.equals(
-        selectSegment.parameters.database_name, 0,
+        selectSegment.parameters.database_name, DB_INDEX,
         'should have the starting database id as parameter for the select'
       )
       t.equals(
