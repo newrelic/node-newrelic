@@ -4,11 +4,12 @@ var tap = require('tap')
 var test = tap.test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var urltils = require('../../../lib/util/urltils')
 
 test("memcached instrumentation should find memcached calls in the transaction trace",
      {timeout : 5000},
      function(t) {
-  t.plan(33)
+  t.plan(41)
 
   helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
     if (error) return t.fail(error)
@@ -53,6 +54,17 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "there should be only one child of the root")
 
           var setSegment = trace.root.children[0]
+          var segParams = setSegment.parameters
+          t.equals(
+            segParams.host,
+            getMetricHostName(agent, 'memcached'),
+            'should collect host instance parameters'
+          )
+          t.equals(
+            segParams.port_path_or_id,
+            String(params.memcached_port),
+            'should collect port instance parameters'
+          )
           t.ok(setSegment, "trace segment for set should exist")
           t.equals(setSegment.name, "Datastore/operation/Memcache/set",
                    "should register the set")
@@ -61,6 +73,17 @@ test("memcached instrumentation should find memcached calls in the transaction t
           t.ok(setSegment.children.length >= 1, "set should have a callback segment")
 
           var getSegment = setSegment.children[1].children[0]
+          segParams = getSegment.parameters
+          t.equals(
+            segParams.host,
+            getMetricHostName(agent, 'memcached'),
+            'should collect host instance parameters'
+          )
+          t.equals(
+            segParams.port_path_or_id,
+            String(params.memcached_port),
+            'should collect port instance parameters'
+          )
           t.ok(getSegment, "trace segment for get should exist")
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get")
@@ -97,6 +120,17 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "there should be only one child of the root")
 
           var setSegment = trace.root.children[0]
+          var segParams = setSegment.parameters
+          t.equals(
+            segParams.host,
+            getMetricHostName(agent, 'memcached'),
+            'should collect host instance parameters'
+          )
+          t.equals(
+            segParams.port_path_or_id,
+            String(params.memcached_port),
+            'should collect port instance parameters'
+          )
           t.equals(setSegment.name, "Datastore/operation/Memcache/set",
                    "should register the set")
           t.equals(setSegment.parameters.key, "\"otherkey\"",
@@ -105,6 +139,17 @@ test("memcached instrumentation should find memcached calls in the transaction t
                    "set should have a callback segment")
 
           var getSegment = setSegment.children[1].children[0]
+          segParams = getSegment.parameters
+          t.equals(
+            segParams.host,
+            getMetricHostName(agent, 'memcached'),
+            'should collect host instance parameters'
+          )
+          t.equals(
+            segParams.port_path_or_id,
+            String(params.memcached_port),
+            'should collect port instance parameters'
+          )
           t.equals(getSegment.name, "Datastore/operation/Memcache/get",
                    "should register the get")
           t.equals(getSegment.parameters.key, "[\"testkey\",\"otherkey\"]",
@@ -131,3 +176,10 @@ test("memcached instrumentation should find memcached calls in the transaction t
     })
   })
 })
+
+// XXX this should go in a util
+function getMetricHostName(agent, db) {
+  return urltils.isLocalhost(params[db + '_host'])
+    ? agent.config.getHostnameSafe()
+    : params.postgres_host
+}
