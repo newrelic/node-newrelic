@@ -1,9 +1,11 @@
 'use strict'
 
+var fs = require('fs')
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var semver = require('semver')
+var urltils = require('../../../lib/util/urltils')
 
 
 /*
@@ -15,10 +17,22 @@ var semver = require('semver')
 // centrally control how long we're willing to wait for mongo
 var SLUG_FACTOR = 30000
 
+var DB_NAME = 'integration'
 var COLLECTION = 'test_1_3_19_plus'
+var MONGO_HOST = null
+var MONGO_PORT = String(params.mongodb_port)
+var METRICS_VERIFIER_COUNT = 5
+var TRACE_VERIFIER_COUNT = 10
 
-// +5 asserts
-function addMetricsVerifier(t, agent, operation, calls) {
+/* eslint-disable max-params */
+function addMetricsVerifier(t, agent, operation, calls, host, port) {
+  /* eslint-enable max-params */
+  host = host || MONGO_HOST || 'localhost'
+  port = port || MONGO_PORT
+  if (urltils.isLocalhost(host)) {
+    host = agent.config.getHostnameSafe()
+  }
+
   agent.once('transactionFinished', function() {
     try {
       t.equals(
@@ -43,18 +57,13 @@ function addMetricsVerifier(t, agent, operation, calls) {
         calls || 1,
         'named collection ' + operation + ' should be recorded'
       )
-
-      // disabled until metric explosions can be handled by server
-      t.ok(true, 'keep count the same so not all test plans need to be updated')
-      /*
       t.equals(
         agent.metrics.getMetric(
-          'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port
+          'Datastore/instance/MongoDB/' + host + '/' + port
         ).callCount,
         calls || 1,
         'should find all calls to the local instance'
       )
-      */
     } catch (error) {
       t.fail(error.stack)
       t.end()
@@ -62,8 +71,22 @@ function addMetricsVerifier(t, agent, operation, calls) {
   })
 }
 
-// +7 asserts
-function verifyTrace(t, segment, operation, done) {
+/* eslint-disable max-params */
+function verifyTrace(t, segment, operation, host, port, done) {
+  /* eslint-enable max-params */
+  if (host instanceof Function) {
+    // verifyTrace(t, segment, operation, done)
+    done = host
+    host = null
+    port = null
+  }
+
+  host = host || MONGO_HOST
+  port = port || MONGO_PORT
+  if (urltils.isLocalhost(host)) {
+    host = segment.transaction.agent.config.getHostnameSafe()
+  }
+
   try {
     var transaction = segment.transaction
     var trace = transaction.trace
@@ -73,12 +96,27 @@ function verifyTrace(t, segment, operation, done) {
     var op_segment = segment.parent
 
     t.ok(op_segment, 'trace segment for ' + operation + ' should exist')
-    t.equals(
+    t.equal(
       op_segment.name,
       'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
       'should register the ' + operation
     )
-    t.ok(op_segment.children.length >= 0, 'should have at least one child')
+    t.equal(
+      op_segment.parameters.host,
+      host,
+      'should have correct host parameter'
+    )
+    t.equal(
+      op_segment.parameters.port_path_or_id,
+      port,
+      'should have correct port_path_or_id parameter'
+    )
+    t.equal(
+      op_segment.parameters.database_name,
+      DB_NAME,
+      'should have correct database_name parameter'
+    )
+    t.ok(op_segment.children.length > 0, 'should have at least one child')
     t.ok(op_segment._isEnded(), 'should have ended')
   } catch (error) {
     t.fail(error)
@@ -105,7 +143,7 @@ function verifyNoStats(t, agent, operation) {
    )
     t.notOk(
       metrics.getMetric(
-        'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port
+        'Datastore/instance/MongoDB/' + MONGO_HOST + '/' + MONGO_PORT
       ),
       'should find no calls to the local instance'
     )
@@ -120,7 +158,7 @@ function runWithDB(t, callback) {
   var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
     auto_reconnect: true
   })
-  var db = new mongodb.Db('integration', server, {safe: true})
+  var db = new mongodb.Db(DB_NAME, server, {w: 1, safe: true})
 
 
   t.tearDown(function cb_tearDown() {
@@ -149,7 +187,12 @@ function runWithDB(t, callback) {
 function runWithoutTransaction(t, callback) {
   // need an agent before connecting to MongoDB so the module loader gets patched
   var agent = helper.instrumentMockedAgent()
-  t.tearDown(function() { helper.unloadAgent(agent) })
+  MONGO_HOST = urltils.isLocalhost(params.mongodb_host)
+    ? agent.config.getHostnameSafe()
+    : params.mongodb_host
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
   runWithDB(t, function(collection) {
     callback(agent, collection)
   })
@@ -166,16 +209,18 @@ function runWithTransaction(t, callback) {
 test('agent instrumentation of node-mongodb-native',
   {skip: semver.satisfies(process.version, '0.8')},
   function(t) {
-  t.plan(16)
 
   helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(error) {
-    if (error) return t.fail(error)
+    if (!t.error(error)) {
+      return t.end()
+    }
+    t.autoend()
 
     t.test('insert', function(t) {
       t.autoend()
 
       t.test('inside transaction', function(t) {
-        t.plan(14)
+        t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'insert')
 
@@ -224,7 +269,7 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
 
         t.test('with selector, with callback, then toArray', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(16)
+          t.plan(4 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'toArray')
@@ -254,7 +299,7 @@ test('agent instrumentation of node-mongodb-native',
         })
 
         t.test('without selector, then toArray', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'toArray')
@@ -276,7 +321,7 @@ test('agent instrumentation of node-mongodb-native',
         })
 
         t.test('with selector, then each', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(15)
+          t.plan(3 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'each')
@@ -302,7 +347,7 @@ test('agent instrumentation of node-mongodb-native',
         })
 
         t.test('with selector, then nextObject to exhaustion', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(17)
+          t.plan(5 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'nextObject', 3)
@@ -329,7 +374,7 @@ test('agent instrumentation of node-mongodb-native',
         })
 
         t.test('with selector, then nextObject, then close', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'nextObject')
@@ -405,7 +450,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('findOne requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'findOne')
@@ -459,7 +504,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('findAndModify requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(15)
+          t.plan(3 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'findAndModify')
@@ -523,7 +568,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('findAndRemove requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(15)
+          t.plan(3 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithDB(t, function(collection) {
             var it0rm = {id: 876, bornToDie: 'young'}
@@ -600,7 +645,7 @@ test('agent instrumentation of node-mongodb-native',
       t.autoend()
 
       t.test('inside transaction', function(t) {
-        t.plan(14)
+        t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'update')
@@ -681,7 +726,7 @@ test('agent instrumentation of node-mongodb-native',
       t.autoend()
 
       t.test('inside transaction', function(t) {
-        t.plan(16)
+        t.plan(4 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'save')
@@ -757,7 +802,7 @@ test('agent instrumentation of node-mongodb-native',
       t.autoend()
 
       t.test('inside transaction', function(t) {
-        t.plan(14)
+        t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'count')
@@ -810,7 +855,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('distinct requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'distinct')
@@ -864,7 +909,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('createIndex requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'createIndex')
@@ -918,7 +963,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('ensureIndex requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'ensureIndex')
@@ -972,7 +1017,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('reIndex requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'reIndex')
@@ -1026,7 +1071,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('dropIndex requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropIndex')
@@ -1077,7 +1122,7 @@ test('agent instrumentation of node-mongodb-native',
         t.comment('dropAllIndexes requires a callback')
 
         t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
-          t.plan(14)
+          t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropAllIndexes')
@@ -1128,7 +1173,7 @@ test('agent instrumentation of node-mongodb-native',
       t.autoend()
 
       t.test('inside transaction', function(t) {
-        t.plan(14)
+        t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'remove')
@@ -1197,7 +1242,7 @@ test('agent instrumentation of node-mongodb-native',
       t.autoend()
 
       t.test('inside transaction', function(t) {
-        t.plan(9)
+        t.plan(2 + TRACE_VERIFIER_COUNT)
 
         runWithTransaction(t, function(agent, collection, transaction) {
           collection.aggregate([{$match: {id: 1}}], function(error, data) {
@@ -1234,5 +1279,68 @@ test('agent instrumentation of node-mongodb-native',
         })
       })
     })
+
+    t.test('instance metrics with domain sockets', function(t) {
+      var host = 'localhost'
+      var path = getDomainSocketPath()
+
+      // The domain socket tests should only be run if there is a domain socket
+      // to connect to, which only happens if there is a Mongo instance running on
+      // the same box as these tests. This should always be the case on Travis,
+      // but just to be sure they're running there check for the environment flag.
+      var shouldTestDomain = path || process.env.TRAVIS
+      if (!shouldTestDomain) {
+        t.comment('!!! Skipping domain socket test, none found.')
+        return t.end()
+      }
+
+      var agent = helper.instrumentMockedAgent()
+      var mongodb = require('mongodb')
+      var server = new mongodb.Server(path)
+      var db = new mongodb.Db(DB_NAME, server, {w: 1})
+
+      t.tearDown(function() {
+        db.close()
+        helper.unloadAgent(agent)
+      })
+
+      t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
+      db.open(function(err) {
+        if (!t.error(err)) {
+          return t.end()
+        }
+        var collection = db.collection(COLLECTION)
+        helper.runInTransaction(agent, function(tx) {
+          addMetricsVerifier(t, agent, 'update', null, host, path)
+
+          collection.update({
+            hamchunx: {$exists: true}
+          }, {
+            $set: {__updatedWith: 'yup'},
+          }, {
+            safe: true, multi: true
+          }, function(err) {
+            if (!t.error(err)) {
+              return t.end()
+            }
+
+            tx.end(function() {
+              verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
+            })
+          })
+        })
+      })
+    })
   })
 })
+
+function getDomainSocketPath() {
+  var files = fs.readdirSync('/tmp')
+  for (var i = 0; i < files.length; ++i) {
+    var file = '/tmp/' + files[i]
+    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
+      return file
+    }
+  }
+  return null
+}
