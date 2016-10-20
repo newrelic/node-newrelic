@@ -1,3 +1,16 @@
+### v1.32.0 (2016-10-20):
+
+* The agent now collects database instance information for MySQL and MongoDB
+  operations. This information (database server and database name) is displayed in
+  transaction traces and slow query traces.
+
+* Datastore instance configuration can now be done through environment
+  variables.  These can be set through `NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED`
+  and `NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED`
+
+* The agent will no longer crash the process when an express param handler is
+  executed when a transaction is not active.
+
 ### v1.31.0 (2016-10-12):
 
 * The agent now collects database instance information for PostgreSQL and Redis
