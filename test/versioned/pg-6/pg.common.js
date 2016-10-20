@@ -5,11 +5,17 @@ var tap = require('tap')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
+var semver = require('semver')
 var test = tap.test
 var urltils = require('../../../lib/util/urltils')
 
 
 module.exports = function runTests(name, clientFactory) {
+  if (semver.satisfies(process.version, '<0.12.0')) {
+    // PG v6 requires Promises.
+    return
+  }
+
   // constants for table creation and db connection
   var TABLE = 'testTable'
   var PK = 'pk_column'

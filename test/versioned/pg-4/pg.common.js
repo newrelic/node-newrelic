@@ -1,5 +1,6 @@
 'use strict'
 
+var a = require('async')
 var tap = require('tap')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
@@ -33,21 +34,24 @@ module.exports = function runTests(name, clientFactory) {
         throw error
       }
       var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE
+      var tableCreate =
+        'CREATE TABLE ' + TABLE + ' (' +
+          PK + ' integer PRIMARY KEY, ' +
+          COL + ' text' +
+        ');'
 
-      var tableCreate = 'CREATE TABLE ' + TABLE + ' (' + PK + ' integer PRIMARY KEY, '
-      tableCreate += COL + ' text);'
-
-      setupClient.query(tableDrop, function(error) {
-        if (error) {
-          throw error
+      a.eachSeries([
+        'set client_min_messages=\'warning\';', // supress PG notices
+        tableDrop,
+        tableCreate
+      ], function(query, cb) {
+        setupClient.query(query, cb)
+      }, function(err) {
+        if (err) {
+          throw err
         }
-        setupClient.query(tableCreate, function(error) {
-          if (error) {
-            throw error
-          }
-          setupClient.end()
-          runTest()
-        })
+        setupClient.end()
+        runTest()
       })
     })
    }
@@ -200,15 +204,20 @@ module.exports = function runTests(name, clientFactory) {
     var pg
 
     t.beforeEach(function(done) {
-      // the pg module has `native` lazy getter that is removed after first call,
-      // so in order to re-instrument, we need to remove the pg module from the cache
-      var name = require.resolve('pg')
-      delete require.cache[name]
+      try {
+        // the pg module has `native` lazy getter that is removed after first
+        // call, so in order to re-instrument, we need to remove the pg module
+        // from the cache
+        var name = require.resolve('pg')
+        delete require.cache[name]
 
-      agent = helper.instrumentMockedAgent()
-      pg = clientFactory()
+        agent = helper.instrumentMockedAgent()
+        pg = clientFactory()
 
-      postgresSetup(done)
+        postgresSetup(done)
+      } catch(e) {
+        done(e)
+      }
     })
 
     t.afterEach(function(done) {
@@ -221,9 +230,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('simple query with prepared statement', function (t) {
-      t.plan(37)
       var client = new pg.Client(CON_STRING)
-
       t.tearDown(function() {
         client.end()
       })
@@ -239,15 +246,13 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
 
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
+        client.connect(function(error) {
+          if (t.ifError(error)) {
             return t.end()
           }
 
-          client.query(insQuery, [pkVal, colVal], function (error, ok) {
-            if (error) {
-              t.fail(error)
+          client.query(insQuery, [pkVal, colVal], function(error, ok) {
+            if (t.ifError(error)) {
               return t.end()
             }
 
@@ -257,9 +262,8 @@ module.exports = function runTests(name, clientFactory) {
             var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            client.query(selQuery, function (error, value) {
-              if (error) {
-                t.fail(error)
+            client.query(selQuery, function(error, value) {
+              if (t.ifError(error)) {
                 return t.end()
               }
 
@@ -268,6 +272,7 @@ module.exports = function runTests(name, clientFactory) {
 
               transaction.end(function() {
                 verify(t, agent.tracer.getSegment())
+                t.end()
               })
             })
           })

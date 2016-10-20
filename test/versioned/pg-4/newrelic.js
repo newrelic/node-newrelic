@@ -1,3 +1,5 @@
+'use strict'
+
 exports.config = {
   app_name: ['pg@4 test'],
   license_key: 'license key here',
@@ -12,6 +14,6 @@ exports.config = {
     enabled: true
   },
   logging: {
-    enabled: false,
+    level: 'trace'
   }
 }
