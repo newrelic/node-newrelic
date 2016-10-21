@@ -9,7 +9,7 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "mongodb": "1.4.0-rc3"
+    "mongodb": "^1.4.0"
   },
   "devDependencies": {},
   "private": true

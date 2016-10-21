@@ -225,7 +225,7 @@ test('agent instrumentation of node-mongodb-native',
           addMetricsVerifier(t, agent, 'insert')
 
           var hunx = {id: 1, hamchunx: 'verbloks'}
-          collection.insert(hunx, function(error, result) {
+          collection.insert(hunx, {w: 1}, function(error, result) {
             if (error) {
               t.fail(error)
               return t.end()
@@ -245,8 +245,7 @@ test('agent instrumentation of node-mongodb-native',
 
         runWithoutTransaction(t, function(agent, collection) {
           var hunx = {id: 3, hamchunx: 'caramel'}
-
-          collection.insert(hunx, function(error, result) {
+          collection.insert(hunx, {w: 1}, function(error, result) {
             if (error) {
               t.fail(error)
               return t.end()
@@ -732,7 +731,7 @@ test('agent instrumentation of node-mongodb-native',
           addMetricsVerifier(t, agent, 'save')
 
           var saved = {id: 999, oneoff: 'broccoli', __saved: true}
-          collection.save(saved, function(error, result) {
+          collection.save(saved, {w: 1}, function(error, result) {
             if (error) {
               t.fail(error)
               return t.end()
@@ -758,7 +757,7 @@ test('agent instrumentation of node-mongodb-native',
 
           runWithoutTransaction(t, function(agent, collection) {
             var saved = {id: 888, oneoff: 'daikon', __saved: true}
-            collection.save(saved, function(error, result) {
+            collection.save(saved, {w: 1}, function(error, result) {
               if (error) {
                 t.fail(error)
                 return t.end()
