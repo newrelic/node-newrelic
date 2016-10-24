@@ -293,16 +293,9 @@ Root Certificate License Agreement v3.0 (January 2014)
 The New Relic Node.js agent also uses code from the following open source
 projects under the following licenses:
 
-json-stringify-safe         http://opensource.org/licenses/ISC
+concat-stream               http://opensource.org/licenses/MIT
 https-proxy-agent           http://opensource.org/licenses/MIT
-extend                      http://opensource.org/licenses/MIT
-agent-base                  http://opensource.org/licenses/MIT
-debug                       http://opensource.org/licenses/MIT
-shimmer                     http://opensource.org/licenses/BSD-2-Clause
-yakaa                       http://opensource.org/licenses/MIT
+json-stringify-safe         http://opensource.org/licenses/ISC
 readable-stream             http://opensource.org/licenses/MIT
-core-util-is                http://opensource.org/licenses/MIT
-inherits                    http://opensource.org/licenses/ISC
-isarray                     http://opensource.org/licenses/MIT
-string_decoder              http://opensource.org/licenses/MIT
 semver                      http://opensource.org/licenses/ISC
+yakaa                       http://opensource.org/licenses/MIT
