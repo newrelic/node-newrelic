@@ -153,7 +153,7 @@ describe("the agent configuration", function () {
         expect(tc.logging.level).equal('XXNOEXIST')
       })
     })
-    
+
     it("should have log level aliases", function () {
       var logAliases = {
         'verbose': 'trace',
@@ -492,8 +492,8 @@ describe("the agent configuration", function () {
       expect(configuration.rules.name.length).equal(0)
     })
 
-    it("should have no ignoring rules", function () {
-      expect(configuration.rules.ignore.length).equal(0)
+    it("should have one default ignoring rules", function () {
+      expect(configuration.rules.ignore.length).equal(1)
     })
 
     it("should enforce URL backstop", function () {
