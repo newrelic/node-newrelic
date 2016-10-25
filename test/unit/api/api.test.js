@@ -367,9 +367,9 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new naming rule", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.userNormalizer.rules.length).equal(0)
+      expect(agent.userNormalizer.rules.length).equal(1) // default ignore rule
       api.addNamingRule('^/simple.*', 'API')
-      expect(agent.userNormalizer.rules.length).equal(1)
+      expect(agent.userNormalizer.rules.length).equal(2)
     })
 
     describe("in the base case", function () {
@@ -393,7 +393,7 @@ describe("the New Relic agent API", function () {
 
       it("should add it to the agent's normalizer", function () {
         expect(agent.urlNormalizer.rules.length).equal(3)
-        expect(agent.userNormalizer.rules.length).equal(1)
+        expect(agent.userNormalizer.rules.length).equal(1 + 1) // +1 default rule
       })
 
       it("should leave the passed-in pattern alone", function () {
@@ -468,9 +468,9 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new pattern to ignore", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.userNormalizer.rules.length).equal(0)
+      expect(agent.userNormalizer.rules.length).equal(1) // default ignore rule
       api.addIgnoringRule('^/simple.*')
-      expect(agent.userNormalizer.rules.length).equal(1)
+      expect(agent.userNormalizer.rules.length).equal(2)
     })
 
     describe("in the base case", function () {
@@ -494,7 +494,7 @@ describe("the New Relic agent API", function () {
 
       it("should add it to the agent's normalizer", function () {
         expect(agent.urlNormalizer.rules.length).equal(3)
-        expect(agent.userNormalizer.rules.length).equal(1)
+        expect(agent.userNormalizer.rules.length).equal(1 + 1) // +1 default rule
       })
 
       it("should leave the passed-in pattern alone", function () {

@@ -242,14 +242,14 @@ describe ("MetricNormalizer", function() {
         })
 
         it('should respect precedence', function() {
-          expect(normalizer.rules[0]).to.have.property('replacement', 'third')
+          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
         })
 
         it('should have the rules in reverse order', function() {
-          expect(normalizer.rules[0]).to.have.property('replacement', 'third')
-          expect(normalizer.rules[1]).to.have.property('replacement', 'fourth')
-          expect(normalizer.rules[2]).to.have.property('replacement', 'second')
-          expect(normalizer.rules[3]).to.have.property('replacement', 'first')
+          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
+          expect(normalizer.rules[2]).to.have.property('replacement', 'fourth')
+          expect(normalizer.rules[3]).to.have.property('replacement', 'second')
+          expect(normalizer.rules[4]).to.have.property('replacement', 'first')
         })
       })
 
@@ -260,14 +260,14 @@ describe ("MetricNormalizer", function() {
         })
 
         it('should respect precedence', function() {
-          expect(normalizer.rules[0]).to.have.property('replacement', 'third')
+          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
         })
 
         it('should have the rules in forward order', function() {
-          expect(normalizer.rules[0]).to.have.property('replacement', 'third')
-          expect(normalizer.rules[1]).to.have.property('replacement', 'first')
-          expect(normalizer.rules[2]).to.have.property('replacement', 'second')
-          expect(normalizer.rules[3]).to.have.property('replacement', 'fourth')
+          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
+          expect(normalizer.rules[2]).to.have.property('replacement', 'first')
+          expect(normalizer.rules[3]).to.have.property('replacement', 'second')
+          expect(normalizer.rules[4]).to.have.property('replacement', 'fourth')
         })
       })
     })
