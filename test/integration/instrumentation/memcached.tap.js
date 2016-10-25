@@ -4,8 +4,8 @@ var tap = require('tap')
 var test = tap.test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
-var urltils = require('../../../lib/util/urltils')
 var findSegment = require('../../lib/metrics_helper').findSegment
+var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 var util = require('util')
 
 
@@ -17,7 +17,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   var agent
   var Memcached
   var memcached
-  var HOST_ID = getMetricHostName(agent, 'memcached') + '/' + params.memcached_port
+  var HOST_ID
 
   t.test('generates correct metrics and trace segments', function(t) {
     t.autoend()
@@ -28,8 +28,12 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           return done(error)
         }
         agent = helper.instrumentMockedAgent()
+
         Memcached = require('memcached')
         memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+
+        HOST_ID = getMetricHostName(agent, 'memcached') + '/' + params.memcached_port
+
         done()
       })
     })
@@ -274,7 +278,8 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
 
     t.test('append()', function(t) {
-      t.plan(3 + 11)
+      t.plan(3 + METRICS_ASSERTIONS)
+
       memcached.set('foo', 'bar', 10, function(err) {
         t.error(err)
         helper.runInTransaction(agent, function(transaction) {
@@ -302,7 +307,8 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
 
     t.test('prepend()', function(t) {
-      t.plan(3 + 11)
+      t.plan(3 + METRICS_ASSERTIONS)
+
       memcached.set('foo', 'bar', 10, function(err) {
         t.error(err)
         helper.runInTransaction(agent, function(transaction) {
@@ -330,7 +336,8 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
 
     t.test('del()', function(t) {
-      t.plan(3 + 11)
+      t.plan(3 + METRICS_ASSERTIONS)
+
       memcached.set('foo', 'bar', 10, function(err) {
         t.error(err)
         helper.runInTransaction(agent, function(transaction) {
@@ -688,12 +695,6 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   })
 })
 
-// TODO: this should go in a util
-function getMetricHostName(agent, db) {
-  return urltils.isLocalhost(params[db + '_host'])
-    ? agent.config.getHostnameSafe()
-    : params.postgres_host
-}
 
 function verifySegments(t, rootSegment, expected) {
   var previous
