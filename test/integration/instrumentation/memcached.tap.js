@@ -273,36 +273,89 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    // TODO: fix append, prepend, and del
-    // t.test('append()', function(t) {
-    //   t.plan(2)
-    //   helper.runInTransaction(agent, function transactionInScope(transaction) {
-    //     memcached.append('foo', 'bar', 10, function(err) {
-    //       t.notOk(err, 'should not throw an error')
-    //       t.ok(agent.getTransaction(), 'transaction should still be visible')
-    //     })
-    //   })
-    // })
+    t.test('append()', function(t) {
+      t.plan(3 + 11)
+      memcached.set('foo', 'bar', 10, function(err) {
+        t.error(err)
+        helper.runInTransaction(agent, function(transaction) {
+          memcached.append('foo', 'bar', function(err) {
+            t.error(err)
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            transaction.end(function() {
+              verifySegments(t, transaction.trace.root, [
+                'Datastore/operation/Memcache/append', [
+                  'Truncated/Callback: anonymous'
+                ]
+              ])
 
-    // t.test('prepend()', function(t) {
-    //   t.plan(2)
-    //   helper.runInTransaction(agent, function transactionInScope(transaction) {
-    //     memcached.prepend('foo', 'bar', 10, function(err) {
-    //       t.notOk(err, 'should not throw an error')
-    //       t.ok(agent.getTransaction(), 'transaction should still be visible')
-    //     })
-    //   })
-    // })
+              verifyMetrics(t, transaction.metrics, {
+                'Datastore/all': 1,
+                'Datastore/allOther': 1,
+                'Datastore/Memcache/all': 1,
+                'Datastore/Memcache/allOther': 1,
+                'Datastore/operation/Memcache/append': 1
+              })
+            })
+          })
+        })
+      })
+    })
 
-    // t.test('del()', function(t) {
-    //   t.plan(2)
-    //   helper.runInTransaction(agent, function transactionInScope(transaction) {
-    //     memcached.del('foo', 10, function(err) {
-    //       t.notOk(err, 'should not throw an error')
-    //       t.ok(agent.getTransaction(), 'transaction should still be visible')
-    //     })
-    //   })
-    // })
+    t.test('prepend()', function(t) {
+      t.plan(3 + 11)
+      memcached.set('foo', 'bar', 10, function(err) {
+        t.error(err)
+        helper.runInTransaction(agent, function(transaction) {
+          memcached.prepend('foo', 'bar', function(err) {
+            t.error(err)
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            transaction.end(function() {
+              verifySegments(t, transaction.trace.root, [
+                'Datastore/operation/Memcache/prepend', [
+                  'Truncated/Callback: anonymous'
+                ]
+              ])
+
+              verifyMetrics(t, transaction.metrics, {
+                'Datastore/all': 1,
+                'Datastore/allOther': 1,
+                'Datastore/Memcache/all': 1,
+                'Datastore/Memcache/allOther': 1,
+                'Datastore/operation/Memcache/prepend': 1
+              })
+            })
+          })
+        })
+      })
+    })
+
+    t.test('del()', function(t) {
+      t.plan(3 + 11)
+      memcached.set('foo', 'bar', 10, function(err) {
+        t.error(err)
+        helper.runInTransaction(agent, function(transaction) {
+          memcached.del('foo', function(err) {
+            t.error(err)
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            transaction.end(function() {
+              verifySegments(t, transaction.trace.root, [
+                'Datastore/operation/Memcache/delete', [
+                  'Truncated/Callback: anonymous'
+                ]
+              ])
+
+              verifyMetrics(t, transaction.metrics, {
+                'Datastore/all': 1,
+                'Datastore/allOther': 1,
+                'Datastore/Memcache/all': 1,
+                'Datastore/Memcache/allOther': 1,
+                'Datastore/operation/Memcache/delete': 1
+              })
+            })
+          })
+        })
+      })
+    })
 
     t.test('incr()', function(t) {
       t.plan(2 + METRICS_ASSERTIONS)
