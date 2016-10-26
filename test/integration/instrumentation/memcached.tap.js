@@ -683,14 +683,110 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
   t.test('captures datastore instance parameters with multiple hosts', function(t) {
     t.autoend()
-    // TODO: test with setting multiple host names
+    var origCommand = null
+    var realServer = params.memcached_host + ':' + params.memcached_port
 
-    t.test('should use unknown when multiGet call retrieves from multiple hosts',
-      function(t) {
+    t.beforeEach(function(done) {
+      helper.bootstrapMemcached(function(error) {
+        if (error) {
+          return done(error)
+        }
 
-      // TODO:
+        // Load memcached and replace the command func with our own that will
+        // use a real server address.
+        Memcached = require('memcached')
+        origCommand = Memcached.prototype.command
+        /* eslint-disable no-unused-vars */
+        Memcached.prototype.command = function stubbedCommand(queryCompiler, server) {
+          /* eslint-enable no-unused-vars */
+          origCommand.call(this, queryCompiler, realServer)
+        }
 
-      t.end()
+        // Then load the agent and reload memcached to ensure it gets instrumented.
+        agent = helper.instrumentMockedAgent()
+        Memcached = require('memcached')
+        memcached = new Memcached(['server1:1111', 'server2:2222'])
+
+        // Finally, change the hashring to something controllable.
+        memcached.HashRing.get = function(key) {
+          return key === 'foo' ? 'server1:1111' : 'server2:2222'
+        }
+
+        done()
+      })
+    })
+
+    t.afterEach(function(done) {
+      helper.unloadAgent(agent)
+      memcached.end()
+      if (origCommand) {
+        Memcached.prototype.command = origCommand
+      }
+      done()
+    })
+
+    function checkParams(segment, host, port) {
+      t.equals(
+        segment.parameters.host, host,
+        'should have correct host (' + host + ')'
+      )
+      t.equals(
+        segment.parameters.port_path_or_id, port,
+        'should have correct port (' + port + ')'
+      )
+    }
+
+    t.test('separate gets', function(t) {
+      helper.runInTransaction(agent, function(transaction) {
+        memcached.get('foo', function(err) {
+          if (!t.error(err)) {
+            return t.end()
+          }
+          var firstSegment = agent.tracer.getSegment().parent
+
+          memcached.get('bar', function(err) {
+            if (!t.error(err)) {
+              return t.end()
+            }
+            end(firstSegment, agent.tracer.getSegment().parent)
+          })
+        })
+
+        function end(firstGet, secondGet) {
+          transaction.end(function() {
+            t.comment('get foo')
+            checkParams(firstGet, 'server1', '1111')
+
+            t.comment('get bar')
+            checkParams(secondGet, 'server2', '2222')
+
+            t.end()
+          })
+        }
+      })
+    })
+
+    t.test('multi-get', function(t) {
+      helper.runInTransaction(agent, function(transaction) {
+        memcached.getMulti(['foo', 'bar'], function(err) {
+          if (!t.error(err)) {
+            return t.end()
+          }
+
+          var firstGet = transaction.trace.root.children[0]
+          var secondGet = transaction.trace.root.children[1]
+          if (firstGet.parameters.host === 'server1') {
+            t.comment('first get is server 1')
+            checkParams(firstGet, 'server1', '1111')
+            checkParams(secondGet, 'server2', '2222')
+          } else {
+            t.comment('first get is not server 1')
+            checkParams(secondGet, 'server1', '1111')
+            checkParams(firstGet, 'server2', '2222')
+          }
+          t.end()
+        })
+      })
     })
   })
 })
