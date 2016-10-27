@@ -2,7 +2,6 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var assertSegments = require('../../lib/metrics_helper').assertSegments
 var testPromiseSegments = require('./promises/segments.js')
 var testTransactionState = require('./promises/transaction-state.js')
 
