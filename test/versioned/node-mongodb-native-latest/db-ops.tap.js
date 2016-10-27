@@ -362,7 +362,9 @@ function verifyMongoSegments(t, agent, transaction, names) {
         continue
       }
 
-      // TODO: Combine this with a semver check once mongo resolves this bug:
+      // Commands known as "admin commands" always happen against the "admin"
+      // database regardless of the DB the connection is actually connected to.
+      // This is apparently by design.
       // https://jira.mongodb.org/browse/NODE-827
       var dbName = DB_NAME
       if (/\/renameCollection$/.test(current.name)) {
