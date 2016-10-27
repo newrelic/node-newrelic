@@ -147,7 +147,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           'should have port as parameter'
         )
         t.equals(
-          setSegment.parameters.database_name, DB_INDEX,
+          setSegment.parameters.database_name, String(DB_INDEX),
           'should have database id as parameter'
         )
       })
@@ -220,7 +220,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the first set'
       )
       t.equals(
-        setSegment1.parameters.database_name, DB_INDEX,
+        setSegment1.parameters.database_name, String(DB_INDEX),
         'should have the starting database id as parameter for the first set'
       )
       t.equals(
@@ -228,7 +228,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the select'
       )
       t.equals(
-        selectSegment.parameters.database_name, DB_INDEX,
+        selectSegment.parameters.database_name, String(DB_INDEX),
         'should have the starting database id as parameter for the select'
       )
       t.equals(
@@ -236,7 +236,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the second set'
       )
       t.equals(
-        setSegment2.parameters.database_name, SELECTED_DB,
+        setSegment2.parameters.database_name, String(SELECTED_DB),
         'should have the selected database id as parameter for the second set'
       )
     }
