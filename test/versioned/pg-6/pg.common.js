@@ -5,17 +5,24 @@ var tap = require('tap')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
+var semver = require('semver')
 var test = tap.test
 var urltils = require('../../../lib/util/urltils')
 
 
 module.exports = function runTests(name, clientFactory) {
+  if (semver.satisfies(process.version, '<0.12.0')) {
+    // PG v6 requires Promises.
+    return
+  }
+
   // constants for table creation and db connection
   var TABLE = 'testTable'
   var PK = 'pk_column'
   var COL = 'test_column'
-  var CON_STRING = 'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@'
-        + params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db
+  var CON_STRING =
+    'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@' +
+    params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db
 
 
   /**
@@ -34,6 +41,7 @@ module.exports = function runTests(name, clientFactory) {
         throw error
       }
       var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE
+
       var tableCreate =
         'CREATE TABLE ' + TABLE + ' (' +
           PK + ' integer PRIMARY KEY, ' +
@@ -197,27 +205,22 @@ module.exports = function runTests(name, clientFactory) {
       : params.postgres_host
   }
 
-  test('Postgres instrumentation: ' + name, function (t) {
+  test('Postgres instrumentation: ' + name, function(t) {
     t.autoend()
 
     var agent
     var pg
 
     t.beforeEach(function(done) {
-      try {
-        // the pg module has `native` lazy getter that is removed after first
-        // call, so in order to re-instrument, we need to remove the pg module
-        // from the cache
-        var name = require.resolve('pg')
-        delete require.cache[name]
+      // the pg module has `native` lazy getter that is removed after first call,
+      // so in order to re-instrument, we need to remove the pg module from the cache
+      var name = require.resolve('pg')
+      delete require.cache[name]
 
-        agent = helper.instrumentMockedAgent()
-        pg = clientFactory()
+      agent = helper.instrumentMockedAgent()
+      pg = clientFactory()
 
-        postgresSetup(done)
-      } catch(e) {
-        done(e)
-      }
+      postgresSetup(done)
     })
 
     t.afterEach(function(done) {
@@ -229,8 +232,9 @@ module.exports = function runTests(name, clientFactory) {
       done()
     })
 
-    t.test('simple query with prepared statement', function (t) {
+    t.test('simple query with prepared statement', function(t) {
       var client = new pg.Client(CON_STRING)
+
       t.tearDown(function() {
         client.end()
       })
@@ -280,7 +284,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test("simple query using query.on() events", function (t) {
+    t.test("simple query using query.on() events", function(t) {
       t.plan(35)
       var client = new pg.Client(CON_STRING)
 
@@ -299,7 +303,7 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
@@ -337,7 +341,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test("simple query using query.addListener() events", function (t) {
+    t.test("simple query using query.addListener() events", function(t) {
       t.plan(35)
       var client = new pg.Client(CON_STRING)
 
@@ -356,7 +360,7 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
@@ -393,7 +397,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('client pooling query', function (t) {
+    t.test('client pooling query', function(t) {
       t.plan(37)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -412,7 +416,7 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          clientPool.query(insQuery, function (error, ok) {
+          clientPool.query(insQuery, function(error, ok) {
             if (error) {
               t.fail(error)
               return t.end()
@@ -424,7 +428,7 @@ module.exports = function runTests(name, clientFactory) {
             var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            clientPool.query(selQuery, function (error, value) {
+            clientPool.query(selQuery, function(error, value) {
               if (error) {
                 t.fail(error)
                 return t.end()
@@ -445,7 +449,7 @@ module.exports = function runTests(name, clientFactory) {
 
     // https://github.com/newrelic/node-newrelic/pull/223
     t.test("query using an config object with `text` getter instead of property",
-        function (t) {
+        function(t) {
       t.plan(1)
       var client = new pg.Client(CON_STRING)
 
@@ -453,7 +457,7 @@ module.exports = function runTests(name, clientFactory) {
         client.end()
       })
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
 
         var colVal = 'Sianara'
@@ -475,27 +479,29 @@ module.exports = function runTests(name, clientFactory) {
         // create a config instance
         var config = new CustomConfigClass()
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
           }
 
-          var query = client.query(config, [pkVal, colVal], function (error, value) {
+          client.query(config, [pkVal, colVal], function(error) {
             if (error) {
               t.fail(error)
               return t.end()
             }
 
-            var segment = findSegment(transaction.trace.root,
-              'Datastore/statement/Postgres/' + TABLE + '/insert')
+            var segment = findSegment(
+              transaction.trace.root,
+              'Datastore/statement/Postgres/' + TABLE + '/insert'
+            )
             t.ok(segment, 'expected segment exists')
           })
         })
       })
     })
 
-    t.test("should add datastore instance parameters to slow query traces", function (t) {
+    t.test("should add datastore instance parameters to slow query traces", function(t) {
       t.plan(5)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
@@ -507,21 +513,21 @@ module.exports = function runTests(name, clientFactory) {
         client.end()
       })
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
           }
 
-          client.query('SELECT * FROM pg_sleep(1);', function (error, value) {
+          client.query('SELECT * FROM pg_sleep(1);', function(error) {
             if (error) {
               t.fail(error)
               return t.end()
             }
 
-            transaction.end(function () {
+            transaction.end(function() {
               verifySlowQueries(t, agent)
             })
           })
@@ -530,7 +536,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("should not add datastore instance parameters to slow query traces when" +
-        " disabled", function (t) {
+        " disabled", function(t) {
       t.plan(3)
 
       // enable slow queries
@@ -547,21 +553,21 @@ module.exports = function runTests(name, clientFactory) {
         client.end()
       })
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
           }
 
-          client.query('SELECT * FROM pg_sleep(1);', function (error, value) {
+          client.query('SELECT * FROM pg_sleep(1);', function(error) {
             if (error) {
               t.fail(error)
               return t.end()
             }
 
-            transaction.end(function () {
+            transaction.end(function() {
               var slowQuerySamples = agent.queries.samples
               var key = Object.keys(agent.queries.samples)[0]
               var queryParams = slowQuerySamples[key].getParams()
@@ -589,7 +595,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('query.on should still be chainable', function (t) {
+    t.test('query.on should still be chainable', function(t) {
       t.plan(1)
       var client = new pg.Client(CON_STRING)
 
@@ -597,7 +603,7 @@ module.exports = function runTests(name, clientFactory) {
         client.end()
       })
 
-      client.connect(function (error) {
+      client.connect(function(error) {
         if (error) {
           t.fail(error)
           return t.end()
@@ -614,7 +620,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('query.on should not create segments for row events', function (t) {
+    t.test('query.on should not create segments for row events', function(t) {
       t.plan(1)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -624,7 +630,7 @@ module.exports = function runTests(name, clientFactory) {
           client.end()
         })
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
@@ -637,7 +643,7 @@ module.exports = function runTests(name, clientFactory) {
             t.end()
           })
 
-          query.on('row', function onRow(row) {})
+          query.on('row', function() {})
 
           query.on('end', function ended() {
             var segment = findSegment(tx.trace.root,

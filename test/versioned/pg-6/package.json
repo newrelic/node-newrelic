@@ -1,0 +1,8 @@
+{
+  "name": "pg-6-test",
+  "dependencies": {
+    "pg": "^6.0.0",
+    "pg-native": "*"
+  },
+  "private": true
+}

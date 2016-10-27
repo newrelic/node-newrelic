@@ -1,7 +1,7 @@
 'use strict'
 
 exports.config = {
-  app_name: ['pg@4 test'],
+  app_name: ['pg@6 test'],
   license_key: 'license key here',
   utilization: {
     detect_aws: false,
@@ -14,6 +14,6 @@ exports.config = {
     enabled: true
   },
   logging: {
-    level: 'trace'
+    level: 'trace',
   }
 }
