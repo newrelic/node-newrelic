@@ -194,7 +194,7 @@ var helper = module.exports = {
     var server  = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
       auto_reconnect : true
     })
-    var db = mongodb.Db('integration', server, {
+    var db = new mongodb.Db('integration', server, {
       w: 1,
       safe : true,
       numberOfRetries: 10,

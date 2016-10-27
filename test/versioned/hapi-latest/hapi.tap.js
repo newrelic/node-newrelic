@@ -9,9 +9,10 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var instrument = require('../../../lib/instrumentation/hapi')
 
-test("instrumentation of Hapi", function (t) {
+test("instrumentation of Hapi", function(t) {
+  t.autoend()
 
-  t.test("preserves Server.connection() return", function (t) {
+  t.test("preserves Server.connection() return", function(t) {
     var agent = helper.loadMockedAgent()
 
     // check if Hapi is returning from function call
@@ -30,14 +31,3 @@ test("instrumentation of Hapi", function (t) {
     t.end()
   })
 })
-
-function clearCache(moduleName) {
-  var path = require('path')
-  var name = require.resolve(moduleName)
-  var base = path.dirname(name)
-  for (var key in require.cache) {
-    if (key.indexOf(base) === 0) {
-      delete require.cache[key]
-    }
-  }
-}

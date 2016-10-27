@@ -1,9 +1,9 @@
 'use strict'
 
 var path   = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , Stats  = require('../../lib/stats')
+var chai   = require('chai')
+var expect = chai.expect
+var Stats  = require('../../lib/stats')
   
 
 /*jshint maxparams:8 */

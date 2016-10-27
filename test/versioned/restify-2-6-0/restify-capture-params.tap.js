@@ -18,7 +18,7 @@ test("Restify capture params introspection", function (t) {
 
     agent.config.capture_params = true
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -78,7 +78,7 @@ test("Restify capture params introspection", function (t) {
 
     agent.config.capture_params = true
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -140,7 +140,7 @@ test("Restify capture params introspection", function (t) {
 
     agent.config.capture_params = true
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -202,7 +202,7 @@ test("Restify capture params introspection", function (t) {
 
     agent.config.capture_params = true
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })

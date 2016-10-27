@@ -32,7 +32,7 @@ test("using only the express router", function (t) {
   var agent = helper.instrumentMockedAgent({express5: true})
   var router = require('express').Router()
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
@@ -55,7 +55,7 @@ test("the express router should go through a whole request lifecycle", function 
 
   t.plan(2)
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
@@ -88,7 +88,7 @@ test("agent instrumentation of Express 5", function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -145,7 +145,7 @@ test("agent instrumentation of Express 5", function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -187,7 +187,7 @@ test("agent instrumentation of Express 5", function (t) {
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -227,7 +227,7 @@ test("agent instrumentation of Express 5", function (t) {
 
     app.use(router)
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -279,7 +279,7 @@ test("agent instrumentation of Express 5", function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -327,7 +327,7 @@ test("agent instrumentation of Express 5", function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })

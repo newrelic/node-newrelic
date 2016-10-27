@@ -17,13 +17,15 @@ var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
 
 
 test("test capture_params for express", function (t) {
+  t.autoend()
+
   t.test("no variables", function (t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -83,7 +85,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -145,7 +147,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -207,7 +209,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -270,7 +272,7 @@ test("test capture_params for express", function (t) {
     var app = require('express')()
     var server = require('http').createServer(app)
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })

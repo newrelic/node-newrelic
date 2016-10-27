@@ -445,23 +445,26 @@ test('realpath', function(t) {
       t.equal(target, real, 'should point to the same file')
 
       if (semver.satisfies(process.versions.node, '6.0.x - 6.3.x')) {
-        verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath')
+        verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath', afterVerify)
       } else {
         verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath',
-          [NAMES.FS.PREFIX + 'lstat'])
+          [NAMES.FS.PREFIX + 'lstat'], afterVerify)
       }
 
-      trans.end(function checkMetrics() {
-        var expectedMetrics = ['lstat', 'realpath']
-        // Node 6 changed implementation of fs.realpath()
-        if (semver.satisfies(process.versions.node, '>=6.0.0')) {
-          expectedMetrics = ['realpath']
-        }
-        t.ok(
-          checkMetric(expectedMetrics, agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      function afterVerify() {
+        trans.end(function checkMetrics() {
+          var expectedMetrics = ['lstat', 'realpath']
+          // Node 6 changed implementation of fs.realpath()
+          if (semver.satisfies(process.versions.node, '>=6.0.0')) {
+            expectedMetrics = ['realpath']
+          }
+          t.ok(
+            checkMetric(expectedMetrics, agent, trans.name),
+            'metric should exist after transaction end'
+          )
+          t.end()
+        })
+      }
     })
   })
 })
