@@ -1,18 +1,21 @@
 'use strict'
 
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper.js')
-  , API     = require('../../../api.js')
+var test    = require('tap').test
+var request = require('request')
+var helper  = require('../../lib/agent_helper.js')
+var API     = require('../../../api.js')
 
 
-test("Restify router introspection", function (t) {
+test(
+  "Restify router introspection",
+  {skip: function () {return semver.satisfies(process.version, '>=7.0.0')}},
+  function (t) {
   t.plan(3)
 
   var agent  = helper.instrumentMockedAgent()
-    , server = require('restify').createServer()
-    , api    = new API(agent)
+  var server = require('restify').createServer()
+  var api    = new API(agent)
 
 
   agent.config.application_id = '12345'

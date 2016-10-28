@@ -29,7 +29,7 @@
     "redis": "^1",
     "ioredis": "*",
     "request": "*",
-    "restify": "~2.6.3",
+    "restify": "*",
     "sequelize": "*",
     "should": "*",
     "sinon": "*",
