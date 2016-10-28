@@ -7,7 +7,7 @@ var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
 var semver = require('semver')
 var test = tap.test
-var urltils = require('../../../lib/util/urltils')
+var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
 
 module.exports = function runTests(name, clientFactory) {
@@ -93,7 +93,7 @@ module.exports = function runTests(name, clientFactory) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var metricHostName = getMetricHostName(agent)
+    var metricHostName = getMetricHostName(agent, 'postgres')
     var hostId = metricHostName + '/' + params.postgres_port
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
@@ -157,7 +157,7 @@ module.exports = function runTests(name, clientFactory) {
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
 
-    var metricHostName = getMetricHostName(agent)
+    var metricHostName = getMetricHostName(agent, 'postgres')
     t.equals(setSegment.parameters.host, metricHostName,
       'should add the host parameter')
     t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
@@ -170,7 +170,7 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySlowQueries(t, agent) {
-    var metricHostName = getMetricHostName(agent)
+    var metricHostName = getMetricHostName(agent, 'postgres')
 
     var slowQuerySamples = agent.queries.samples
     t.equals(Object.keys(agent.queries.samples).length, 1, 'should have one slow query')
@@ -197,12 +197,6 @@ module.exports = function runTests(name, clientFactory) {
 
       t.ok(queryParams.backtrace, 'params should contain a backtrace')
     }
-  }
-
-  function getMetricHostName(agent) {
-    return urltils.isLocalhost(params.postgres_host)
-      ? agent.config.getHostnameSafe()
-      : params.postgres_host
   }
 
   test('Postgres instrumentation: ' + name, function(t) {
@@ -251,12 +245,12 @@ module.exports = function runTests(name, clientFactory) {
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function(error) {
-          if (t.ifError(error)) {
+          if (!t.error(error)) {
             return t.end()
           }
 
           client.query(insQuery, [pkVal, colVal], function(error, ok) {
-            if (t.ifError(error)) {
+            if (!t.error(error)) {
               return t.end()
             }
 
@@ -267,7 +261,7 @@ module.exports = function runTests(name, clientFactory) {
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
-              if (t.ifError(error)) {
+              if (!t.error(error)) {
                 return t.end()
               }
 
@@ -439,6 +433,62 @@ module.exports = function runTests(name, clientFactory) {
 
               transaction.end(function() {
                 done()
+                verify(t, agent.tracer.getSegment())
+              })
+            })
+          })
+        })
+      })
+    })
+
+    t.test('using Pool constructor', function(t) {
+      t.plan(39)
+
+      t.notOk(agent.getTransaction(), 'no transaction should be in play')
+      helper.runInTransaction(agent, function transactionInScope(tx) {
+        var transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        var colVal = 'World!'
+        var pkVal = 222
+        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+        insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
+
+        var config = {
+          host: params.postgres_host,
+          port: params.postgres_port,
+          user: params.postgres_user,
+          password: params.postgres_pass,
+          database: params.postgres_db
+        }
+
+        var pool = new pg.Pool(config)
+
+        pool.connect(function(error, client, done) {
+          if (!t.error(error)) t.end()
+
+          client.query(insQuery, function(error, ok) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
+
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            t.ok(ok, 'everything should be peachy after setting')
+
+            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+            selQuery += PK + '=' + pkVal + ';'
+
+            client.query(selQuery, function(error, value) {
+              if (!t.error(error)) t.end()
+
+              t.ok(agent.getTransaction(), 'transaction should still still be visible')
+              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+
+              transaction.end(function() {
+                done()
+                pool.end()
                 verify(t, agent.tracer.getSegment())
               })
             })
