@@ -6,7 +6,7 @@ var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
 var test = tap.test
-var urltils = require('../../../lib/util/urltils')
+var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
 
 module.exports = function runTests(name, clientFactory) {
@@ -85,7 +85,7 @@ module.exports = function runTests(name, clientFactory) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var metricHostName = getMetricHostName(agent)
+    var metricHostName = getMetricHostName(agent, 'postgres')
     var hostId = metricHostName + '/' + params.postgres_port
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
@@ -149,7 +149,7 @@ module.exports = function runTests(name, clientFactory) {
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
 
-    var metricHostName = getMetricHostName(agent)
+    var metricHostName = getMetricHostName(agent, 'postgres')
     t.equals(setSegment.parameters.host, metricHostName,
       'should add the host parameter')
     t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
@@ -162,7 +162,7 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySlowQueries(t, agent) {
-    var metricHostName = getMetricHostName(agent)
+    var metricHostName = getMetricHostName(agent, 'postgres')
 
     var slowQuerySamples = agent.queries.samples
     t.equals(Object.keys(agent.queries.samples).length, 1, 'should have one slow query')
@@ -189,12 +189,6 @@ module.exports = function runTests(name, clientFactory) {
 
       t.ok(queryParams.backtrace, 'params should contain a backtrace')
     }
-  }
-
-  function getMetricHostName(agent) {
-    return urltils.isLocalhost(params.postgres_host)
-      ? agent.config.getHostnameSafe()
-      : params.postgres_host
   }
 
   test('Postgres instrumentation: ' + name, function (t) {
@@ -247,12 +241,12 @@ module.exports = function runTests(name, clientFactory) {
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function(error) {
-          if (t.ifError(error)) {
+          if (!t.error(error)) {
             return t.end()
           }
 
           client.query(insQuery, [pkVal, colVal], function(error, ok) {
-            if (t.ifError(error)) {
+            if (!t.error(error)) {
               return t.end()
             }
 
@@ -263,7 +257,7 @@ module.exports = function runTests(name, clientFactory) {
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
-              if (t.ifError(error)) {
+              if (!t.error(error)) {
                 return t.end()
               }
 
