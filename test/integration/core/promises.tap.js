@@ -32,7 +32,7 @@ test('segments', {skip: true}, function(t) {
 })
 
 test('then', function testThen(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -66,7 +66,7 @@ test('then', function testThen(t) {
 })
 
 test('multi then', function testThen(t) {
-  t.plan(7)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -107,7 +107,7 @@ test('multi then', function testThen(t) {
 })
 
 test('multi then async', function testThen(t) {
-  t.plan(7)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -154,8 +154,11 @@ test('multi then async', function testThen(t) {
 })
 
 
-test('chain', function testChain(t) {
-  t.plan(4)
+test(
+  'chain',
+  {skip: function () {return !!Promise.prototype.chain}},
+  function testChain(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -188,8 +191,11 @@ test('chain', function testChain(t) {
   })
 })
 
-test('multi chain', function testThen(t) {
-  t.plan(7)
+test(
+  'multi chain',
+  {skip: function () {return !!Promise.prototype.chain}},
+  function testThen(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -229,8 +235,11 @@ test('multi chain', function testThen(t) {
   })
 })
 
-test('multi chain async', function testThen(t) {
-  t.plan(7)
+test(
+  'multi chain async',
+  {skip: function () {return !!Promise.prototype.chain}},
+  function testThen(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -277,7 +286,7 @@ test('multi chain async', function testThen(t) {
 })
 
 test('then reject', function testThenReject(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -311,7 +320,7 @@ test('then reject', function testThenReject(t) {
 })
 
 test('multi then reject', function testThen(t) {
-  t.plan(7)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -352,7 +361,7 @@ test('multi then reject', function testThen(t) {
 })
 
 test('multi then async reject', function testThen(t) {
-  t.plan(7)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -398,8 +407,11 @@ test('multi then async reject', function testThen(t) {
   })
 })
 
-test('chain reject', function testChainReject(t) {
-  t.plan(4)
+test(
+  'chain reject',
+  {skip: function () {return !!Promise.prototype.chain}},
+  function testChainReject(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -432,8 +444,11 @@ test('chain reject', function testChainReject(t) {
   })
 })
 
-test('multi chain reject', function testThen(t) {
-  t.plan(7)
+test(
+  'multi chain reject',
+  {skip: function () {return !!Promise.prototype.chain}},
+  function testThen(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -473,8 +488,11 @@ test('multi chain reject', function testThen(t) {
   })
 })
 
-test('multi chain async reject', function testThen(t) {
-  t.plan(7)
+test(
+  'multi chain async reject',
+  {skip: function () {return !!Promise.prototype.chain}},
+  function testThen(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -521,7 +539,7 @@ test('multi chain async reject', function testThen(t) {
 })
 
 test('catch', function testCatch(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -550,7 +568,7 @@ test('catch', function testCatch(t) {
 })
 
 test('multi catch', function testThen(t) {
-  t.plan(7)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -591,7 +609,7 @@ test('multi catch', function testThen(t) {
 })
 
 test('multi catch async', function testThen(t) {
-  t.plan(7)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -638,7 +656,7 @@ test('multi catch async', function testThen(t) {
 })
 
 test('Promise.resolve', function testResolve(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -668,8 +686,11 @@ test('Promise.resolve', function testResolve(t) {
   })
 })
 
-test('Promise.accept', function testAccept(t) {
-  t.plan(4)
+test(
+  'Promise.accept',
+  {skip: function () {return !!Promise.accept}},
+  function testAccept(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -701,7 +722,7 @@ test('Promise.accept', function testAccept(t) {
 
 
 test('Promise.reject', function testReject(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -733,7 +754,7 @@ test('Promise.reject', function testReject(t) {
 
 
 test('Promise.all', function testAll(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -766,7 +787,7 @@ test('Promise.all', function testAll(t) {
 })
 
 test('Promise.all reject', function testAllReject(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
@@ -799,15 +820,15 @@ test('Promise.all reject', function testAllReject(t) {
 })
 
 test('Promise.race', function testRace(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function resolve() {
       var a = Promise.resolve(15)
-      var b = Promise.defer()
-      Promise.race([a, b.promise]).then(function (val){
+      var b = new Promise(function (resolve) {setTimeout(resolve, 100)})
+      Promise.race([a, b]).then(function (val){
         segment = agent.tracer.getSegment()
         return val
       }).then(done, fail)
@@ -831,16 +852,18 @@ test('Promise.race', function testRace(t) {
   })
 })
 
-test('Promise.race reject', function testRaceReject(t) {
-  t.plan(4)
+test(
+  'Promise.race reject',
+  function testRaceReject(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
     setTimeout(function reject() {
-      var a = Promise.defer()
+      var a = new Promise(function (resolve) {setTimeout(resolve, 100)})
       var b = Promise.reject(10)
-      Promise.race([a.promise, b]).then(null, function(err){
+      Promise.race([a, b]).then(null, function(err){
         segment = agent.tracer.getSegment()
         throw err
       }).then(fail, done)
@@ -864,8 +887,11 @@ test('Promise.race reject', function testRaceReject(t) {
   })
 })
 
-test('Promise.defer', function testDefer(t) {
-  t.plan(3)
+test(
+  'Promise.defer',
+  {skip: function () {return !!Promise.defer}},
+  function testDefer(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
@@ -894,8 +920,11 @@ test('Promise.defer', function testDefer(t) {
   })
 })
 
-test('Promise.defer reject', function testDeferReject(t) {
-  t.plan(3)
+test(
+  'Promise.defer reject',
+  {skip: function () {return !!Promise.defer}},
+  function testDeferReject(t) {
+  t.autoend()
   var agent = helper.loadTestAgent(t)
 
   helper.runInTransaction(agent, function inTransaction(transaction) {
@@ -925,7 +954,7 @@ test('Promise.defer reject', function testDeferReject(t) {
 })
 
 test('instanceof Promise should not break', function testDeferReject(t) {
-  t.plan(4)
+  t.autoend()
   var OriginalPromise = Promise
   t.equal(OriginalPromise.__NR_original, void 0, 'should not be wrapped')
   var agent = helper.loadTestAgent(t)
@@ -947,7 +976,7 @@ test('should throw when called without executor', function testNoExecutor(t) {
   var unwrappedError, wrappedError
   var wrapped, unwrapped
   helper.loadTestAgent(t)
-  t.plan(5)
+  t.autoend()
 
 
   try {
@@ -984,7 +1013,7 @@ test('should work if something else wraps promises first', function testWrapSeco
   }
 
   helper.loadTestAgent(t)
-  t.plan(3)
+  t.autoend()
 
   var p = new Promise(function noop() {})
 
@@ -1008,7 +1037,7 @@ test('should work if something else wraps promises after', function testWrapFirs
     return promise
   }
 
-  t.plan(3)
+  t.autoend()
 
   var p = new Promise(function noop() {})
 
@@ -1020,7 +1049,7 @@ test('should work if something else wraps promises after', function testWrapFirs
 })
 
 test('throw in executor', function testCatch(t) {
-  t.plan(4)
+  t.autoend()
   var agent = helper.loadTestAgent(t)
   var segment
 
