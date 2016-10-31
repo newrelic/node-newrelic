@@ -15,6 +15,7 @@ env:
   - SUITE=integration
   - SUITE=lint
   - SUITE=prerelease
+  - SUITE=security
 addons:
   postgresql: "9.3"
 services:
@@ -33,6 +34,11 @@ before_install:
 install: if [ "$SUITE" != "smoke" ]; then npm install; fi
 script: make $SUITE
 matrix:
+  exclude:
+    - node_js: "0.8"
+      env: SUITE=security
+    - node_js: "0.10"
+      env: SUITE=security
   allow_failures:
     - node_js: "iojs-v1"
     - node_js: "iojs-v2"
