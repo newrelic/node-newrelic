@@ -284,41 +284,6 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
       })
     })
 
-    t.test('ensure database name changes with a use statement', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope(txn) {
-        pool.query('create database if not exists test_db;', function (err) {
-          _t.notOk(err, 'no errors on create')
-          pool.query('use test_db;', function(err) {
-            pool.query('SELECT 1 + 1 AS solution', function(err) {
-              var seg = txn.trace.root.children[0].children[3].children[0].children[0]
-              _t.notOk(err, 'no errors')
-              _t.ok(seg, 'there is a segment')
-              _t.equal(
-                seg.parameters.host,
-                urltils.isLocalhost(config.host)
-                  ? agent.config.getHostnameSafe()
-                  : config.host,
-                'set host'
-              )
-              _t.equal(
-                seg.parameters.database_name,
-                'test_db',
-                'set database name'
-              )
-              _t.equal(
-                seg.parameters.port_path_or_id,
-                "3306",
-                'set port'
-              )
-              pool.query('drop test_db;', function () {
-                txn.end(_t.end)
-              })
-            })
-          })
-        })
-      })
-    })
-
     t.test(
       'ensure host and port are set on segment when using a domain socket',
       function(_t) {
