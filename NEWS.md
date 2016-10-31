@@ -1,3 +1,17 @@
+### v1.33.0 (2016-10-31):
+
+* The agent now collects database instance information for Memcached operations.
+  This information (database server and database name) is displayed in transaction
+  traces and slow query traces.
+
+* socket.io long-polling requests are now ignored by default.
+
+  Collecting metrics for these requests is typically not desirable since they are
+  frequent and do not represent business transactions.  Previously we recommended adding
+  an ignore rule manually.  Now it is included by default.
+
+* Improved test coverage for Postgres and MongoDB instrumentations.
+
 ### v1.32.0 (2016-10-20):
 
 * The agent now collects database instance information for MySQL and MongoDB
