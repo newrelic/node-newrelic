@@ -156,7 +156,7 @@ test('multi then async', function testThen(t) {
 
 test(
   'chain',
-  {skip: function () {return !!Promise.prototype.chain}},
+  {skip: !(global.Promise && Promise.prototype.chain)},
   function testChain(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -193,7 +193,7 @@ test(
 
 test(
   'multi chain',
-  {skip: function () {return !!Promise.prototype.chain}},
+  {skip: !(global.Promise && Promise.prototype.chain)},
   function testThen(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -237,7 +237,7 @@ test(
 
 test(
   'multi chain async',
-  {skip: function () {return !!Promise.prototype.chain}},
+  {skip: !(global.Promise && Promise.prototype.chain)},
   function testThen(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -409,7 +409,7 @@ test('multi then async reject', function testThen(t) {
 
 test(
   'chain reject',
-  {skip: function () {return !!Promise.prototype.chain}},
+  {skip: !(global.Promise && Promise.prototype.chain)},
   function testChainReject(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -446,7 +446,7 @@ test(
 
 test(
   'multi chain reject',
-  {skip: function () {return !!Promise.prototype.chain}},
+  {skip: !(global.Promise && Promise.prototype.chain)},
   function testThen(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -490,7 +490,7 @@ test(
 
 test(
   'multi chain async reject',
-  {skip: function () {return !!Promise.prototype.chain}},
+  {skip: !(global.Promise && Promise.prototype.chain)},
   function testThen(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -688,7 +688,7 @@ test('Promise.resolve', function testResolve(t) {
 
 test(
   'Promise.accept',
-  {skip: function () {return !!Promise.accept}},
+  {skip: !(global.Promise && Promise.accept)},
   function testAccept(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -889,7 +889,7 @@ test(
 
 test(
   'Promise.defer',
-  {skip: function () {return !!Promise.defer}},
+  {skip: !(global.Promise && Promise.defer)},
   function testDefer(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
@@ -922,7 +922,7 @@ test(
 
 test(
   'Promise.defer reject',
-  {skip: function () {return !!Promise.defer}},
+  {skip: !(global.Promise && Promise.defer)},
   function testDeferReject(t) {
   t.autoend()
   var agent = helper.loadTestAgent(t)
