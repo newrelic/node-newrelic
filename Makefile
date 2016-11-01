@@ -158,6 +158,9 @@ $(CERTIFICATE): $(CACERT)
 		-out $(CERTIFICATE)
 	@rm -f server.csr
 
+security:
+	./node_modules/.bin/nsp check
+
 services:
 	if docker ps -a | grep -q "nr_node_memcached"; then \
 	  docker start nr_node_memcached; \
