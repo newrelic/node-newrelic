@@ -1285,7 +1285,7 @@ describe('Shim', function() {
         helper.runInTransaction(agent, function() {
           extras = {
             host: 'my awesome host',
-            port: 1234,
+            port_path_or_id: 1234,
             foo: 'bar',
             fiz: 'bang'
           }
@@ -1299,11 +1299,8 @@ describe('Shim', function() {
 
         expect(segment.parameters).to.have.property('foo', 'bar')
         expect(segment.parameters).to.have.property('fiz', 'bang')
-      })
-
-      it('should copy the `host` and `port` directly onto the segment', function() {
-        expect(segment).to.have.property('host', 'my awesome host')
-        expect(segment).to.have.property('port', 1234)
+        expect(segment.parameters).to.have.property('host', 'my awesome host')
+        expect(segment.parameters).to.have.property('port_path_or_id', 1234)
       })
     })
   })
