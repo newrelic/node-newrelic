@@ -194,8 +194,8 @@ module.exports = function runTests(name, clientFactory) {
   test('Postgres instrumentation: ' + name, function (t) {
     t.autoend()
 
-    var agent
-    var pg
+    var agent = null
+    var pg = null
 
     t.beforeEach(function(done) {
       try {
@@ -205,11 +205,18 @@ module.exports = function runTests(name, clientFactory) {
         var name = require.resolve('pg')
         delete require.cache[name]
 
-        agent = helper.instrumentMockedAgent()
-        pg = clientFactory()
+        if (!agent) {
+          agent = helper.instrumentMockedAgent()
+        }
+        if (!pg) {
+          pg = clientFactory()
+        }
 
         postgresSetup(done)
-      } catch(e) {
+      } catch (e) {
+        if (agent) {
+          helper.unloadAgent(agent)
+        }
         done(e)
       }
     })
@@ -220,6 +227,8 @@ module.exports = function runTests(name, clientFactory) {
       // close all clients in pool
       pg.end()
 
+      agent = null
+      pg = null
       done()
     })
 
@@ -584,16 +593,15 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('query.on should still be chainable', function (t) {
-      t.plan(1)
+      t.plan(2)
       var client = new pg.Client(CON_STRING)
 
       t.tearDown(function() {
         client.end()
       })
 
-      client.connect(function (error) {
-        if (error) {
-          t.fail(error)
+      client.connect(function(error) {
+        if (!t.error(error)) {
           return t.end()
         }
 
@@ -601,50 +609,31 @@ module.exports = function runTests(name, clientFactory) {
 
         query.on('error', function(err) {
           t.error(err, 'error while querying')
-          t.end()
         }).on('end', function ended() {
           t.pass('successfully completed')
         })
       })
     })
 
-    t.test('query.on should not create segments for row events', function (t) {
-      t.plan(1)
-
+    t.test('query.on should create one segment for row events', function(t) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var client = new pg.Client(CON_STRING)
-
         t.tearDown(function() {
           client.end()
         })
 
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
+        client.connect(function(err) {
+          if (!t.error(err)) {
             return t.end()
           }
 
           var query = client.query('SELECT table_name FROM information_schema.tables')
-
-          query.on('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
-          })
-        })
-      })
-
-      t.test('query.on should create one segment for row events', function (t) {
-        helper.runInTransaction(agent, function transactionInScope(tx) {
-          var client = new pg.Client(CON_STRING)
-
-          query.on('row', function onRow(row) {})
-
+          query.on('row', function onRow() {})
           query.on('end', function ended() {
             var segment = findSegment(tx.trace.root,
               'Datastore/statement/Postgres/information_schema.tables/select')
 
-            t.equal(segment.children.length, 2)
-            client.end()
+            t.equal(segment.children.length, 2, 'should not have extra children')
             t.end()
           })
         })

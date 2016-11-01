@@ -670,36 +670,26 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('query.on should not create segments for row events', function(t) {
-      t.plan(1)
-
+    t.test('query.on should create one segment for row events', function(t) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var client = new pg.Client(CON_STRING)
-
         t.tearDown(function() {
           client.end()
         })
 
-        client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+        client.connect(function(err) {
+          if (!t.error(err)) {
             return t.end()
           }
 
           var query = client.query('SELECT table_name FROM information_schema.tables')
-
-          query.on('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
-          })
-
-          query.on('row', function() {})
-
+          query.on('row', function onRow() {})
           query.on('end', function ended() {
             var segment = findSegment(tx.trace.root,
               'Datastore/statement/Postgres/information_schema.tables/select')
 
-            t.equal(segment.children.length, 1)
+            t.equal(segment.children.length, 2, 'should not have extra children')
+            t.end()
           })
         })
       })
