@@ -431,6 +431,19 @@ describe('Shim', function() {
         toWrap.foo()
       })
 
+      it('should invoke the spec with `new` if itself is invoked with `new`', function() {
+        function Foo() {
+          expect(this).to.be.an.instanceOf(Foo)
+        }
+        var WrappedFoo = shim.wrapReturn(Foo, function() {
+          expect(this).to.be.an.instanceOf(Foo)
+        })
+
+        var foo = new WrappedFoo()
+        expect(foo).to.be.an.instanceOf(Foo)
+        expect(foo).to.not.be.an.instanceOf(WrappedFoo)
+      })
+
       it('should pass items in the `args` parameter to the spec', function() {
         /* eslint-disable max-params */
         shim.wrapReturn(toWrap, 'foo', function(_, fn, name, ret, a, b, c) {
@@ -442,6 +455,107 @@ describe('Shim', function() {
         /* eslint-enable max-params */
 
         toWrap.foo()
+      })
+    })
+  })
+
+  describe('#wrapClass', function() {
+    it('should not wrap non-function objects', function() {
+      shim.wrapClass(wrappable, 'name', function() {})
+      expect(shim.isWrapped(wrappable, 'name')).to.be.false
+    })
+
+    describe('with no properties', function() {
+      it('should wrap the first parameter if no properties are given', function() {
+        var wrapped = shim.wrapClass(wrappable.bar, function() {})
+
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+
+      it('should wrap the first parameter if `null` is given for properties', function() {
+        var wrapped = shim.wrapClass(wrappable.bar, null, function() {})
+
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+    })
+
+    describe('with properties', function() {
+      it('should replace wrapped properties on the original object', function() {
+        var original = wrappable.bar
+        shim.wrapClass(wrappable, 'bar', function() {})
+
+        expect(wrappable.bar).to.not.equal(original)
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.true
+        expect(shim.unwrap(wrappable.bar)).to.equal(original)
+      })
+    })
+
+    describe('wrapper', function() {
+      var executed = null
+      var toWrap = null
+      var original = null
+
+      beforeEach(function() {
+        executed = false
+        toWrap = {
+          Foo: function() {
+            this.executed = executed = true
+            this.context = this
+            this.args = shim.toArray(arguments)
+          }
+        }
+        original = toWrap.Foo
+      })
+
+      it('should execute the wrapped function', function() {
+        shim.wrapClass(toWrap, 'Foo', function() {})
+        var res = new toWrap.Foo('a', 'b', 'c')
+        expect(executed).to.be.true
+        expect(res.context).to.equal(res)
+        expect(res.args).to.eql(['a', 'b', 'c'])
+      })
+
+      it('should call the hooks in the correct order', function() {
+        var preExecuted = false
+        var postExecuted = false
+        shim.wrapClass(toWrap, 'Foo', {
+          pre: function() {
+            preExecuted = true
+            expect(this).to.not.have.property('executed')
+            expect(this).to.be.an.instanceOf(toWrap.Foo)
+            expect(this).to.be.an.instanceOf(original)
+          },
+          post: function() {
+            postExecuted = true
+            expect(this).to.have.property('executed', true)
+            expect(this).to.be.an.instanceOf(toWrap.Foo)
+            expect(this).to.be.an.instanceOf(original)
+          }
+        })
+
+        var foo = new toWrap.Foo()
+        expect(preExecuted).to.be.true
+        expect(foo.executed).to.be.true
+        expect(postExecuted).to.be.true
+      })
+
+      it('should pass items in the `args` parameter to the spec', function() {
+        /* eslint-disable max-params */
+        shim.wrapClass(toWrap, 'Foo', function(_, fn, name, args, a, b, c) {
+          expect(arguments.length).to.equal(7)
+          expect(a).to.equal('a')
+          expect(b).to.equal('b')
+          expect(c).to.equal('c')
+        }, ['a', 'b', 'c'])
+        /* eslint-enable max-params */
+
+        /* eslint-disable no-unused-vars */
+        var foo = new toWrap.Foo()
+        /* eslint-enable no-unused-vars */
       })
     })
   })

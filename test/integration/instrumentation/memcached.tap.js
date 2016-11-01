@@ -32,7 +32,8 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
         Memcached = require('memcached')
         memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
 
-        HOST_ID = getMetricHostName(agent, 'memcached') + '/' + params.memcached_port
+        var hostName = getMetricHostName(agent, params.memcached_host)
+        HOST_ID = hostName + '/' + params.memcached_port
 
         done()
       })
@@ -553,7 +554,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(
               segment.parameters.host,
-              getMetricHostName(agent, 'memcached'),
+              getMetricHostName(agent, params.memcached_host),
               'should collect host instance parameters'
             )
             t.equals(
@@ -581,7 +582,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(
               segment.parameters.host,
-              getMetricHostName(agent, 'memcached'),
+              getMetricHostName(agent, params.memcached_host),
               'should collect host instance parameters'
             )
             t.equals(

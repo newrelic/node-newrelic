@@ -3,7 +3,6 @@
 var assert = require('chai').assert
 var format = require('util').format
 var urltils = require('../../lib/util/urltils')
-var params = require('../lib/params')
 
 exports.assertMetrics = assertMetrics
 exports.assertSegments = assertSegments
@@ -166,8 +165,6 @@ function findSegment(root, name) {
   }
 }
 
-function getMetricHostName(agent, db) {
-  return urltils.isLocalhost(params[db + '_host'])
-    ? agent.config.getHostnameSafe()
-    : params.postgres_host
+function getMetricHostName(agent, host) {
+  return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }
