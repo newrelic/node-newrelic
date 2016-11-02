@@ -7,8 +7,8 @@ var join = require('path').join
 var http = require('http')
 var https = require('https')
 var url = require('url')
-var RemoteMethod = require('../../lib/collector/remote-method.js')
 var collector = require('../lib/fake-collector.js')
+var RemoteMethod = require('../../lib/collector/remote-method.js')
 
 test("DataSender (callback style) talking to fake collector", function (t) {
   var config = {
