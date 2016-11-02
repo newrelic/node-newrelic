@@ -1,5 +1,6 @@
 'use strict'
 
+require('./patch-old-stream.js')
 var path    = require('path')
   , util    = require('util')
   , fs      = require('fs')
@@ -9,6 +10,7 @@ var path    = require('path')
   , codec   = require('../../lib/util/codec.js')
   , logger  = require('../../lib/logger.js')
                 .child({component : 'fake_collector'})
+
 
 
 var DEFAULT_HOST = 'collector.lvh.me'
