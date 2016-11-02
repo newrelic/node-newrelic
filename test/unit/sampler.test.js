@@ -6,17 +6,31 @@ var path         = require('path')
   , configurator = require('../../lib/config.js')
   , sampler      = require('../../lib/sampler')
   , Agent        = require('../../lib/agent')
+  , semver       = require('semver')
   
 
 describe("environmental sampler", function () {
   var agent
+  var numCpus = require('os').cpus().length
+  var oldCpuUsage = process.cpuUsage
+  var oldUptime = process.uptime
 
   beforeEach(function () {
     agent = new Agent(configurator.initialize())
+    process.cpuUsage = function (isDiff) {
+      // process.cpuUsage return values in cpu microseconds (1^-6)
+      return { user: 1e6 * numCpus, system: 1e6 * numCpus }
+    }
+    process.uptime = function () {
+      // process.uptime returns values in seconds
+      return 1
+    }
   })
 
   afterEach(function (){
     sampler.stop()
+    process.cpuUsage = oldCpuUsage
+    process.uptime = oldUptime  
   })
 
   it("should depend on Agent to provide the current metrics summary", function () {
@@ -33,6 +47,56 @@ describe("environmental sampler", function () {
     expect(sampler.state).equal('running')
   })
 
+  it("should gather CPU user utilization metric", function () {
+    if (semver.satisfies(process.version, '>= 6.1.0')) {
+      sampler.sampleCpu(agent)()
+
+      var stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
+      expect(stats.callCount).equal(1)
+      expect(stats.total).equal(1)
+    }
+  })
+
+  it("should gather CPU system utilization metric", function () {
+    if (semver.satisfies(process.version, '>= 6.1.0')) {
+      sampler.sampleCpu(agent)()
+
+      var stats = agent.metrics.getOrCreateMetric('CPU/System/Utilization')
+      expect(stats.callCount).equal(1)
+      expect(stats.total).equal(1)
+    }
+  })
+
+  it("should gather CPU user time metric", function () {
+    if (semver.satisfies(process.version, '>= 6.1.0')) {
+      sampler.sampleCpu(agent)()
+
+      var stats = agent.metrics.getOrCreateMetric('CPU/User Time')
+      expect(stats.callCount).equal(1)
+      expect(stats.total).equal(8)
+    }
+  })
+
+  it("should gather CPU sytem time metric", function () {
+    if (semver.satisfies(process.version, '>= 6.1.0')) {
+      sampler.sampleCpu(agent)()
+
+      var stats = agent.metrics.getOrCreateMetric('CPU/System Time')
+      expect(stats.callCount).equal(1)
+      expect(stats.total).equal(8)
+    }
+  })
+
+  it("should catch if process.cpuUsage throws an error", function () {  
+    process.cpuUsage = function () {
+      throw new Error('ohhhhhh boyyyyyy')
+    }
+    sampler.sampleCpu(agent)()
+
+    var stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
+    expect(stats.callCount).equal(0)
+  })
+
   it("should have a rough idea of how much memory Node is using", function () {
     sampler.sampleMemory(agent)()
 
@@ -40,6 +104,7 @@ describe("environmental sampler", function () {
     expect(stats.callCount).equal(1)
     expect(stats.max).above(1); // maybe someday this test will fail
   })
+  
   it("should catch if process.memoryUsage throws an error", function () {
     var oldProcessMem = process.memoryUsage
     process.memoryUsage = function () {
