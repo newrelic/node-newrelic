@@ -7,7 +7,7 @@ var semver = require('semver')
 
 
 test("agent instrumentation of MongoDB when GridFS is used",
-  {skip: semver.satisfies(process.version, '0.8')},
+  {skip: semver.satisfies(process.version, '0.8 || >= 7.0.0')},
   function(t) {
   helper.bootstrapMongoDB([], function cb_bootstrapMongoDB(err) {
     if (err) {

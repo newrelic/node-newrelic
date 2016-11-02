@@ -295,7 +295,10 @@ test("built-in http instrumentation making outbound requests", function (t) {
   })
 })
 
-test("built-in http instrumentation making outbound requests obsoletely", function (t) {
+test(
+  "built-in http instrumentation making outbound requests obsoletely",
+  {skip: !http.createClient},
+  function (t) {
   var agent = helper.instrumentMockedAgent()
 
   var server = http.createServer(function cb_createServer(req, res) {
