@@ -62,7 +62,7 @@ are recoded using the [`DatastoreShim`]{@link DatastoreShim} method
 
 **Queries**
 
-Queries are any action that manipulate or fetch data using a specialzed query
+Queries are any action that manipulate or fetch data using a specialized query
 language. For a SQL database, this is any action that sends SQL code to the
 server for execution. These are recorded using the method
 [`recordQuery`]{@link DatastoreShim#recordQuery}. In some cases, the datastore
@@ -276,7 +276,7 @@ style.
 ### Handling Errors
 
 While debugging your instrumentation it can be useful to get a handle on any
-errors happening within it. Normally, the agent swallows errors and disabled the
+errors happening within it. Normally, the agent swallows errors and disables the
 instrumentation. In order to get the error for your debugging purposes you can
 provide a third argument to `instrumentDatastore` that receives the error.
 
