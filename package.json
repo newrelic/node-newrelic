@@ -110,6 +110,9 @@
     "semver": "^5.3.0",
     "yakaa": "^1.0.1"
   },
+  "optionalDependencies": {
+    "@newrelic/native-metrics": "^0.1.0"
+  },
   "bundledDependencies": [
     "concat-stream",
     "https-proxy-agent",
