@@ -1,26 +1,30 @@
 'use strict'
 
+process.env.NEW_RELIC_HOME = __dirname
+
 var test   = require('tap').test
 var logger = require('../../../lib/logger')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var urltils = require('../../../lib/util/urltils')
 
 
-var DBUSER = 'test_user'
+var DBUSER = 'root'
 var DBNAME = 'agent_integration'
 
 
-test('Basic run through mysql functionality',
-     {timeout : 30 * 1000},
-     function (t) {
-  // t.plan(9);
-
-  helper.bootstrapMySQL(function cb_bootstrapMySQL(error, app) {
+test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t) {
+  helper.bootstrapMySQL(function cb_bootstrapMySQL(error) {
     // set up the instrumentation before loading MySQL
     var agent = helper.instrumentMockedAgent()
     var mysql   = require('mysql')
     var generic = require('generic-pool')
 
+    if (error) {
+      t.fail(error)
+      return t.end()
+    }
+    t.autoend()
 
     /*
      *
@@ -34,9 +38,9 @@ test('Basic run through mysql functionality',
       max: 6,
       idleTimeoutMillis : 250,
 
-      log : function (message) { poolLogger.info(message); },
+      log : function(message) { poolLogger.info(message); },
 
-      create : function (callback) {
+      create : function(callback) {
         var client = mysql.createConnection({
           user: DBUSER,
           database : DBNAME,
@@ -44,7 +48,7 @@ test('Basic run through mysql functionality',
           port: params.mysql_port
         })
 
-        client.on('error', function (err) {
+        client.on('error', function(err) {
           poolLogger.error('MySQL connection errored out, destroying connection')
           poolLogger.error(err)
           pool.destroy(client)
@@ -99,14 +103,6 @@ test('Basic run through mysql functionality',
       })
     })
 
-    if (error) {
-      t.fail(error)
-      console.log(error.stack)
-      return t.end()
-    }
-
-    t.plan(7)
-
     t.test('basic transaction', function testTransaction(t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
       helper.runInTransaction(agent, function transactionInScope() {
@@ -116,7 +112,7 @@ test('Basic run through mysql functionality',
           if (err) return t.fail(err)
 
           t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
-          client.query('SELECT 1', function (err) {
+          client.query('SELECT 1', function(err) {
             if (err) return t.fail(err)
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
@@ -125,8 +121,7 @@ test('Basic run through mysql functionality',
             agent.getTransaction().end(function checkQueries() {
               var queryKeys = Object.keys(agent.queries.samples)
               t.ok(queryKeys.length > 0, 'there should be a query sample')
-
-              queryKeys.forEach(function testSample (key) {
+              queryKeys.forEach(function testSample(key) {
                 var query = agent.queries.samples[key]
                 t.ok(query.total > 0, 'the samples should have positive duration')
               })
@@ -282,7 +277,6 @@ test('Basic run through mysql functionality',
                   t.ok(childSegment.name === 'Callback: <anonymous>',
                        'children should be callbacks')
                   childSegment.children.forEach(function (grandChildSegment) {
-                    console.log(grandChildSegment.name)
                     t.ok(grandChildSegment.name === 'timers.setTimeout',
                         'grand children should be timers')
                   })
@@ -350,7 +344,47 @@ test('Basic run through mysql functionality',
         })
       })
     })
-  }.bind(this))
+
+    t.test('ensure database name changes with a use statement', function(t) {
+      helper.runInTransaction(agent, function transactionInScope(txn) {
+        withRetry.getClient(function(err, client) {
+          client.query('create database if not exists test_db;', function(err) {
+            t.error(err)
+            client.query('use test_db;', function(err) {
+              t.error(err)
+              client.query('SELECT 1 + 1 AS solution', function(err) {
+                var seg = agent.tracer.getSegment().parent
+                t.error(err)
+                if (t.ok(seg, 'should have a segment')) {
+                  t.equal(
+                    seg.parameters.host,
+                    urltils.isLocalhost(params.mysql_host)
+                      ? agent.config.getHostnameSafe()
+                      : params.mysql_host,
+                    'should set host parameter'
+                  )
+                  t.equal(
+                    seg.parameters.database_name,
+                    'test_db',
+                    'should use new database name'
+                  )
+                  t.equal(
+                    seg.parameters.port_path_or_id,
+                    "3306",
+                    'should set port parameter'
+                  )
+                }
+                client.query('drop test_db;', function() {
+                  withRetry.release(client)
+                  txn.end(t.end)
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
 })
 
 function findSegment(root, segmentName) {

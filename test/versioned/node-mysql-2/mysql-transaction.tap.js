@@ -30,7 +30,7 @@ test('MySQL transactions',
       return t.end()
     }
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
       client.end()
     })

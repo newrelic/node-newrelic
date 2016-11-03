@@ -87,7 +87,7 @@ test('bind + throw', function testThrows(t) {
   function compare(run, expected) {
     try {
       run()
-    } catch(err) {
+    } catch (err) {
       t.equal(err, error)
       t.equal(tracer.getSegment(), expected)
     }
@@ -106,18 +106,37 @@ test('bind + capture error', function testThrows(t) {
   var tracer = agent.tracer
   var error = new Error('oh no!!')
   var name = 'some custom transaction name'
+  var listeners = []
   t.plan(7)
 
+  t.tearDown(function() {
+    listeners.forEach(function(fn) {
+      process.on('uncaughtException', fn)
+    })
+    listeners = []
+  })
+
   helper.runInTransaction(agent, function inTrans(transaction) {
+    // Remove tap's uncaughtException handler for this test because we are
+    // testing an unhandled exception case.
+    listeners = process.listeners('uncaughtException')
+    process.removeAllListeners('uncaughtException')
+
     var other = tracer.createSegment('other')
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
+      listeners.forEach(function(fn) {
+        process.on('uncaughtException', fn)
+      })
+      listeners = []
+
       var logged = agent.errors.errors[0]
       t.equal(tracer.getSegment(), null)
       t.equal(err, error)
       t.equal(Object.keys(error).length, 0, 'error should not have any extra properties')
       t.notOk(err.__NR_transaction, 'should not hold onto transaction')
-      // global error is not tied to a transaction, so its name should not be the transaction name
+      // global error is not tied to a transaction, so its name should not be
+      // the transaction name
       t.notEqual(name, logged[1])
       t.equal(error.message, logged[2])
       t.end()

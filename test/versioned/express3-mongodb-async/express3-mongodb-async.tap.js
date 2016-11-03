@@ -1,6 +1,5 @@
 'use strict'
 
-var path = require('path')
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
@@ -16,7 +15,7 @@ test("Express 3 using async in routes with MongoDB",
     {timeout : Infinity,
      skip: semver.satisfies(process.version, "0.8")},
     function (t) {
-  t.plan(24)
+  t.plan(26)
 
   var agent = helper.instrumentMockedAgent()
   var createServer = require('http').createServer
@@ -181,7 +180,6 @@ test("Express 3 using async in routes with MongoDB",
    ** ACTUAL TEST
    **
    **/
-  var self = this
   helper.bootstrapMongoDB([DB_COLLECTION], function cb_bootstrapMongoDB(error, service) {
     if (error) {
       t.fail(error)
@@ -194,7 +192,7 @@ test("Express 3 using async in routes with MongoDB",
       app(req, res)
     }).listen(8765)
 
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
         helper.unloadAgent(agent)
       })

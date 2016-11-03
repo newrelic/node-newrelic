@@ -1,7 +1,7 @@
 'use strict'
 
-var path   = require('path')
 var chai   = require('chai')
+var EventEmitter = require('events').EventEmitter
 var expect = chai.expect
 var should = chai.should()
 var helper = require('../../lib/agent_helper')
@@ -33,21 +33,21 @@ describe('agent instrumentation of MongoDB', function () {
     })
   })
 
-  describe('when capturing terms is disabled', function () {
+  describe('when capturing terms is disabled', function() {
     var agent
     var segment
     var terms
 
 
-    before(function (done) {
-      function StubCollection () {
-        this.s = {topology: {host: 'localhost', port:12345}}
+    before(function(done) {
+      function StubCollection() {
+        this.db = {serverConfig: {host: 'foobar_host', port: 12345}}
       }
 
-      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
+      StubCollection.prototype.findAndModify = function(terms, options, callback) {
         this.terms = terms
         this.options = options
-        process.nextTick(function cb_nextTick() { callback(null, 1); })
+        process.nextTick(function() { callback(null, 1) })
       }
 
       var mockodb    = {Collection : StubCollection}
@@ -60,10 +60,11 @@ describe('agent instrumentation of MongoDB', function () {
 
       initialize(agent, mockodb, 'mockodb', shim)
 
-      helper.runInTransaction(agent, function (trans) {
-        collection.findAndModify({val : 'hi'}, {w : 333}, function () {
+      helper.runInTransaction(agent, function(trans) {
+        collection.findAndModify({val : 'hi'}, {w : 333}, function() {
           process.nextTick(function cb_nextTick() {
-            // need to generate the trace so exclusive times are added to segment parameters
+            // Need to generate the trace so exclusive times are added to
+            // segment parameters.
             trans.trace.generateJSON(function cb_generateJSON() {
               terms = collection.terms
               segment = trans.trace.root.children[0]
@@ -74,39 +75,39 @@ describe('agent instrumentation of MongoDB', function () {
       })
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('shouldn\'t modify query terms', function () {
+    it('shouldn\'t modify query terms', function() {
       should.not.exist(terms.nr_exclusive_duration_millis)
     })
 
-    it('shouldn\'t copy query terms onto segment parameters', function () {
+    it('shouldn\'t copy query terms onto segment parameters', function() {
       should.not.exist(segment.parameters.val)
     })
 
-    it('should capture host and port', function () {
-      expect(segment.host).equals('localhost')
-      expect(segment.port).equals(12345)
+    it('should capture host and port', function() {
+      expect(segment.parameters.host).to.equal('foobar_host')
+      expect(segment.parameters.port_path_or_id).to.equal('12345')
     })
   })
 
-  describe('when capturing terms is enabled', function () {
+  describe('when capturing terms is enabled', function() {
     var agent
     var segment
     var terms
 
 
-    before(function (done) {
-      function StubCollection () {
-        this.s = {topology: {host: 'localhost', port:12345}}
+    before(function(done) {
+      function StubCollection() {
+        this.db = {serverConfig: {host: 'foobar_host', port: 12345}}
       }
 
-      StubCollection.prototype.findAndModify = function findAndModify(terms, options, callback) {
+      StubCollection.prototype.findAndModify = function(terms, options, callback) {
         this.terms = terms
         this.options = options
-        process.nextTick(function cb_nextTick() { callback(null, 1); })
+        process.nextTick(function cb_nextTick() { callback(null, 1) })
       }
 
       var mockodb    = {Collection : StubCollection}
@@ -121,10 +122,11 @@ describe('agent instrumentation of MongoDB', function () {
 
       initialize(agent, mockodb, 'mockodb', shim)
 
-      helper.runInTransaction(agent, function (trans) {
-        collection.findAndModify({val : 'hi', other : 'bye'}, {w : 333}, function () {
+      helper.runInTransaction(agent, function(trans) {
+        collection.findAndModify({val : 'hi', other : 'bye'}, {w : 333}, function() {
           process.nextTick(function cb_nextTick() {
-            // need to generate the trace so exclusive times are added to segment parameters
+            // Need to generate the trace so exclusive times are added to
+            // segment parameters.
             trans.trace.generateJSON(function cb_generateJSON() {
               terms = collection.terms
               segment = trans.trace.root.children[0]
@@ -136,21 +138,21 @@ describe('agent instrumentation of MongoDB', function () {
       })
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('shouldn\'t modify query terms', function () {
+    it('shouldn\'t modify query terms', function() {
       should.not.exist(terms.nr_exclusive_duration_millis)
     })
 
-    it('should respect ignored parameter list', function () {
+    it('should respect ignored parameter list', function() {
       should.not.exist(segment.parameters.other)
     })
 
-    it('should capture host and port', function () {
-      expect(segment.host).equals('localhost')
-      expect(segment.port).equals(12345)
+    it('should capture host and port', function() {
+      expect(segment.parameters.host).to.equal('foobar_host')
+      expect(segment.parameters.port_path_or_id).to.equal('12345')
     })
   })
 
@@ -382,6 +384,7 @@ describe('agent instrumentation of MongoDB', function () {
 
       function mongoInstrument (options, instrumentFunc) {
         instrumentFunc(null, instrumentations)
+        return new EventEmitter()
       }
       function StubGrid () {}
       function StubCollection () { this.collectionName = 'test' }

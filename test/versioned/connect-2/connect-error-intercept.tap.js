@@ -1,28 +1,27 @@
 'use strict'
 
-var path   = require ('path')
-  , tap    = require('tap')
-  , test   = tap.test
-  , helper = require('../../lib/agent_helper')
+var tap    = require('tap')
+var test   = tap.test
+var helper = require('../../lib/agent_helper')
 
 
 // connect is a loudmouth without this
 process.env.NODE_ENV = 'test'
 
-test("intercepting errors with connect 2", function (t) {
+test("intercepting errors with connect 2", function(t) {
   t.plan(3)
 
-  t.test("should wrap handlers with proxies", function (t) {
+  t.test("should wrap handlers with proxies", function(t) {
     var agent   = helper.instrumentMockedAgent()
-      , connect = require('connect')
-      , app     = connect()
+    var connect = require('connect')
+    var app     = connect()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
-    function nop () {}
+    function nop() {}
 
     app.use(nop)
 
@@ -47,11 +46,11 @@ test("intercepting errors with connect 2", function (t) {
 
   t.test("should have only one error interceptor in the middleware stack", function (t) {
     var agent   = helper.instrumentMockedAgent()
-      , connect = require('connect')
-      , app     = connect()
+    var connect = require('connect')
+    var app     = connect()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
@@ -81,7 +80,7 @@ test("intercepting errors with connect 2", function (t) {
       , app     = connect()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 

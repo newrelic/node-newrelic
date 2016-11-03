@@ -133,13 +133,27 @@ describe("the agent configuration", function () {
       })
     })
 
+    it("should pick up instance reporting", function () {
+      idempotentEnv('NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED', false, function (tc) {
+        should.exist(tc.datastore_tracer.instance_reporting.enabled)
+        expect(tc.datastore_tracer.instance_reporting.enabled).equal(false)
+      })
+    })
+
+    it("should pick up instance database name reporting", function () {
+      idempotentEnv('NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED', false, function (tc) {
+        should.exist(tc.datastore_tracer.database_name_reporting.enabled)
+        expect(tc.datastore_tracer.database_name_reporting.enabled).equal(false)
+      })
+    })
+
     it("should pick up the log level", function () {
       idempotentEnv('NEW_RELIC_LOG_LEVEL', 'XXNOEXIST', function (tc) {
         should.exist(tc.logging.level)
         expect(tc.logging.level).equal('XXNOEXIST')
       })
     })
-    
+
     it("should have log level aliases", function () {
       var logAliases = {
         'verbose': 'trace',
@@ -478,8 +492,8 @@ describe("the agent configuration", function () {
       expect(configuration.rules.name.length).equal(0)
     })
 
-    it("should have no ignoring rules", function () {
-      expect(configuration.rules.ignore.length).equal(0)
+    it("should have one default ignoring rules", function () {
+      expect(configuration.rules.ignore.length).equal(1)
     })
 
     it("should enforce URL backstop", function () {

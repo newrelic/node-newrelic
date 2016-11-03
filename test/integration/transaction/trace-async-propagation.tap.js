@@ -16,7 +16,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -40,7 +40,7 @@ test("asynchronous state propagation", function (t) {
       , handle
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -63,7 +63,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -86,7 +86,7 @@ test("asynchronous state propagation", function (t) {
       , ee    = new EventEmitter()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -113,7 +113,7 @@ test("asynchronous state propagation", function (t) {
     var agent = helper.instrumentMockedAgent()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -146,7 +146,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -188,7 +188,7 @@ test("asynchronous state propagation", function (t) {
       , agent = helper.instrumentMockedAgent()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -224,7 +224,7 @@ test("asynchronous state propagation", function (t) {
       , ee    = new EventEmitter()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -251,7 +251,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -288,7 +288,7 @@ test("asynchronous state propagation", function (t) {
       , innerHandle
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -324,7 +324,7 @@ test("asynchronous state propagation", function (t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -366,7 +366,7 @@ test("asynchronous state propagation", function (t) {
       , inner = new EventEmitter()
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)

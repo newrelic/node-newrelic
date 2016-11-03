@@ -2,7 +2,7 @@ exports.config = {
   app_name           : ['My Application'],
   license_key        : 'license key here',
   logging            : {
-    level : 'trace',
+    level : 'info',
     filepath : '../../../newrelic_agent.log'
   },
   utilization: {

@@ -1,3 +1,44 @@
+### v1.33.0 (2016-10-31):
+
+* The agent now collects database instance information for Memcached operations.
+  This information (database server and database name) is displayed in transaction
+  traces and slow query traces.
+
+* socket.io long-polling requests are now ignored by default.
+
+  Collecting metrics for these requests is typically not desirable since they are
+  frequent and do not represent business transactions.  Previously we recommended adding
+  an ignore rule manually.  Now it is included by default.
+
+* Improved test coverage for Postgres and MongoDB instrumentations.
+
+### v1.32.0 (2016-10-20):
+
+* The agent now collects database instance information for MySQL and MongoDB
+  operations. This information (database server and database name) is displayed in
+  transaction traces and slow query traces.
+
+* Datastore instance configuration can now be done through environment
+  variables.  These can be set through `NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED`
+  and `NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED`
+
+* The agent will no longer crash the process when an express param handler is
+  executed when a transaction is not active.
+
+### v1.31.0 (2016-10-12):
+
+* The agent now collects database instance information for PostgreSQL and Redis
+  operations.  This information (database server and database name) is displayed in
+  transaction traces and slow query traces.
+
+### v1.30.5 (2016-10-04):
+
+* Fixed issue with aborted requests causing the agent to crash in some cases.
+
+  Previously the agent would crash when the client request aborted before Express server
+  sent a response and encountered an error.
+
+* Upgraded integration tests to work with the latest version of node-tap.
 
 ### v1.30.4 (2016-09-27):
 

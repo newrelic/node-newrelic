@@ -9,22 +9,22 @@ if (semver.satisfies(process.version, '<0.10')) {
 }
 
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
-  , API     = require(path.join(__dirname, '..', '..', '..', 'api.js'))
+var test    = require('tap').test
+var request = require('request')
+var helper  = require(path.join(__dirname, '..', '..', 'lib', 'agent_helper.js'))
+var API     = require(path.join(__dirname, '..', '..', '..', 'api.js'))
 
 
 test("ignoring a Hapi route", function (t) {
   t.plan(7)
 
   var agent  = helper.instrumentMockedAgent()
-    , api    = new API(agent)
-    , hapi   = require('hapi')
-    , server = hapi.createServer('localhost', 8089)
+  var api    = new API(agent)
+  var hapi   = require('hapi')
+  var server = hapi.createServer('localhost', 8089)
 
 
-  this.tearDown(function () {
+  t.tearDown(function () {
     server.stop(function () {
       helper.unloadAgent(agent)
     })

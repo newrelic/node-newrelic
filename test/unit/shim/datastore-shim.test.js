@@ -2,10 +2,12 @@
 
 var chai = require('chai')
 var expect = chai.expect
+var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 var helper = require('../../lib/agent_helper')
 var Shim = require('../../../lib/shim/shim')
 var DatastoreShim = require('../../../lib/shim/datastore-shim')
 var ParsedStatement = require('../../../lib/db/parsed-statement')
+
 
 describe('DatastoreShim', function() {
   var agent = null
@@ -304,6 +306,104 @@ describe('DatastoreShim', function() {
         var wrapped = shim.recordOperation(toWrap, {callback: shim.LAST})
         wrapped(cb)
       })
+
+      describe('with `extras`', function() {
+        var localhost = null
+        beforeEach(function() {
+          localhost = getMetricHostName(agent, 'localhost')
+          shim.recordOperation(wrappable, 'getActiveSegment', function(s, fn, n, args) {
+            return {extras: args[0]}
+          })
+        })
+
+        function run(extras, cb) {
+          helper.runInTransaction(agent, function() {
+            var segment = wrappable.getActiveSegment(extras)
+            cb(segment)
+          })
+        }
+
+        it('should normalize the values of datastore instance attributes', function() {
+          run({
+            host: 'localhost',
+            port_path_or_id: 1234,
+            database_name: 'foobar'
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.have.property('host', localhost)
+            expect(segment.parameters).to.have.property('port_path_or_id', '1234')
+            expect(segment.parameters).to.have.property('database_name', 'foobar')
+          })
+
+          run({
+            host: 'some_other_host',
+            port_path_or_id: null,
+            database_name: null
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.have.property('host', 'some_other_host')
+            expect(segment.parameters).to.have.property('port_path_or_id', 'unknown')
+            expect(segment.parameters).to.have.property('database_name', 'unknown')
+          })
+        })
+
+        it('should remove `database_name` if disabled', function() {
+          agent.config.datastore_tracer.database_name_reporting.enabled = false
+          run({
+            host: 'localhost',
+            port_path_or_id: 1234,
+            database_name: 'foobar'
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.have.property('host', localhost)
+            expect(segment.parameters).to.have.property('port_path_or_id', '1234')
+            expect(segment.parameters).to.not.have.property('database_name')
+          })
+        })
+
+        it('should remove `host` and `port_path_or_id` if disabled', function() {
+          agent.config.datastore_tracer.instance_reporting.enabled = false
+          run({
+            host: 'localhost',
+            port_path_or_id: 1234,
+            database_name: 'foobar'
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.not.have.property('host')
+            expect(segment.parameters).to.not.have.property('port_path_or_id')
+            expect(segment.parameters).to.have.property('database_name', 'foobar')
+          })
+        })
+      })
+    })
+
+    describe('recorder', function() {
+      beforeEach(function(done) {
+        shim.recordOperation(wrappable, 'getActiveSegment', function() {
+          return {
+            name: 'op',
+            extras: {
+              host: 'some_host',
+              port_path_or_id: 1234,
+              database_name: 'foobar'
+            }
+          }
+        })
+        helper.runInTransaction(agent, function(tx) {
+          wrappable.getActiveSegment()
+          tx.end(function() { done() })
+        })
+      })
+
+      it('should create datastore metrics', function() {
+        var metrics = agent.metrics.unscoped
+        expect(metrics).to.have.property('Datastore/all')
+        expect(metrics).to.have.property('Datastore/allOther')
+        expect(metrics).to.have.property('Datastore/Cassandra/all')
+        expect(metrics).to.have.property('Datastore/Cassandra/allOther')
+        expect(metrics).to.have.property('Datastore/operation/Cassandra/op')
+        expect(metrics).to.have.property('Datastore/instance/Cassandra/some_host/1234')
+      })
     })
   })
 
@@ -581,6 +681,46 @@ describe('DatastoreShim', function() {
         args[2]()
         expect(cbSegment.parameters).to.have.property('count')
           .equal(3)
+      })
+    })
+  })
+
+  describe('#captureInstanceAttributes', function() {
+    it('should not crash outside of a transaction', function() {
+      expect(function() {
+        shim.captureInstanceAttributes('foo', 123, 'bar')
+      }).to.not.throw()
+    })
+
+    it('should not add parameters to segments it did not create', function() {
+      var bound = agent.tracer.wrapFunction('foo', null, function(host, port, db) {
+        shim.captureInstanceAttributes(host, port, db)
+        return shim.getSegment()
+      }, function(segment, args) {
+        return args
+      })
+
+      helper.runInTransaction(agent, function() {
+        var segment = bound('foobar', 123, 'bar')
+        expect(segment).to.have.property('parameters')
+        expect(segment.parameters).to.not.have.property('host')
+        expect(segment.parameters).to.not.have.property('port_path_or_id')
+        expect(segment.parameters).to.not.have.property('database_name')
+      })
+    })
+
+    it('should add normalized attributes to its own segments', function() {
+      var wrapped = shim.recordOperation(function(host, port, db) {
+        shim.captureInstanceAttributes(host, port, db)
+        return shim.getSegment()
+      })
+
+      helper.runInTransaction(agent, function() {
+        var segment = wrapped('foobar', 123, 'bar')
+        expect(segment).to.have.property('parameters')
+        expect(segment.parameters).to.have.property('host', 'foobar')
+        expect(segment.parameters).to.have.property('port_path_or_id', '123')
+        expect(segment.parameters).to.have.property('database_name', 'bar')
       })
     })
   })

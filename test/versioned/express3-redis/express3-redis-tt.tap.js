@@ -26,7 +26,7 @@ function restrict(req, res, next) {
 /* hits Redis
  */
 function getRoomInfo(req, res, client, next) {
-  client.hgetall('rooms:' + req.params.id + ':info', function (err, room) {
+  client.hgetall('rooms:' + req.params.id + ':info', function(err, room) {
     if (!err && room && Object.keys(room).length) return next(room)
 
     res.redirect('back')
@@ -36,14 +36,14 @@ function getRoomInfo(req, res, client, next) {
 /* hits Redis for a set
  */
 function getUsersInRoom(req, client, next) {
-  client.smembers('rooms:' + req.params.id + ':online', function (err, online) {
+  client.smembers('rooms:' + req.params.id + ':online', function(err, online) {
     var users = []
 
     online.forEach(function cb_forEach(userKey) {
-      client.get('users:' + userKey + ':status', function (err, status) {
+      client.get('users:' + userKey + ':status', function(err, status) {
         var msnData  = userKey.split(':')
-          , username = msnData.length > 1 ? msnData[1] : msnData[0]
-          , provider = msnData.length > 1 ? msnData[0] : 'twitter'
+        var username = msnData.length > 1 ? msnData[1] : msnData[0]
+        var provider = msnData.length > 1 ? msnData[0] : 'twitter'
 
 
         users.push({
@@ -63,7 +63,7 @@ function getUsersInRoom(req, client, next) {
 function getPublicRoomsInfo(client, next) {
   client.smembers('test:public:rooms', function (err, publicRooms) {
     var rooms = []
-      , len   = publicRooms.length
+    var len   = publicRooms.length
 
 
     if (!len) next([])
@@ -222,7 +222,6 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  var self = this
   helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, service) {
     if (error) {
       t.fail(error)
@@ -233,7 +232,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
       , server = createServer(bootstrapExpress(client)).listen(31337)
 
 
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
         client.end()
         helper.unloadAgent(agent)

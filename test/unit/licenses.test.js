@@ -5,6 +5,7 @@ var checker = require('npm-license')
 var licenses = require('./licenses')
 
 describe('Agent licenses', function() {
+  this.timeout(5000);
   it('should all be accounted for in test/unit/licenses.json', function(done) {
     checker.init({start: __dirname + '/../..', include: ['dependencies', 'optionalDependencies']},
                  function cb_checker(modules) {

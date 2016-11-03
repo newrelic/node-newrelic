@@ -20,14 +20,13 @@ test("DataSender (callback style) talking to fake collector", function (t) {
   }
   var method = new RemoteMethod('get_redirect_host', config)
 
-  var suite = this
   collector({port : 8765}, function (error, server) {
     if (error) {
       t.fail(error)
       return t.end()
     }
 
-    suite.tearDown(function cb_tearDown() {
+    t.tearDown(function() {
       server.close()
     })
 
@@ -50,52 +49,48 @@ test("DataSender (callback style) talking to fake collector", function (t) {
 test("remote method to get redirect host", function (t) {
 
   t.test("https with custom certificate", function(t) {
-    var test = t
+    t.plan(3)
     var method = createRemoteMethod(true, true)
 
     // create mock collector
-    startMockCollector(true, function(err, server) {
+    startMockCollector(t, true, function(err, server) {
       method.invoke([], function(error, returnValue, json) {
-        validateResponse(test, error, returnValue)
-        server.close()
+        validateResponse(t, error, returnValue)
         t.end()
       })
     })
   })
 
   t.test("http without custom certificate", function(t) {
-    var test = t
+    t.plan(3)
     var method = createRemoteMethod(false, false)
 
     // create mock collector
-    startMockCollector(false, function(err, server) {
+    startMockCollector(t, false, function(err, server) {
       method.invoke([], function(error, returnValue, json) {
-        validateResponse(test, error, returnValue)
-        server.close()
+        validateResponse(t, error, returnValue)
         t.end()
       })
     })
   })
 
   t.test("http with custom certificate", function(t) {
-    var test = t
+    t.plan(3)
     var method = createRemoteMethod(false, true)
 
     // create mock collector
-    startMockCollector(false, function(err, server) {
+    startMockCollector(t, false, function(err, server) {
       method.invoke([], function(error, returnValue, json) {
-        validateResponse(test, error, returnValue)
-        server.close()
+        validateResponse(t, error, returnValue)
         t.end()
       })
     })
   })
+  t.autoend()
 
   function validateResponse(t, error, returnValue) {
-    if (error) {
-      t.fail(error)
-    }
-    t.equal(returnValue, 'some-collector-url', 'got back expected response')
+    t.notOk(error, 'should not have an error')
+    t.equal(returnValue, 'some-collector-url', 'should get expected response')
   }
 
   function createRemoteMethod(ssl, useCertificate) {
@@ -117,7 +112,7 @@ test("remote method to get redirect host", function (t) {
     return method
   }
 
-  function startMockCollector(ssl, startedCallback) {
+  function startMockCollector(t, ssl, startedCallback) {
     var opts = {
       port: 8765
     }
@@ -135,9 +130,13 @@ test("remote method to get redirect host", function (t) {
       startedCallback(err, this)
     })
 
+    t.tearDown(function() {
+      server.close()
+    })
+
     function responder(req, res) {
       var parsed = url.parse(req.url, true)
-      t.equal(parsed.query['method'], 'get_redirect_host', 'got redirect host request')
+      t.equal(parsed.query['method'], 'get_redirect_host', 'should get redirect host request')
       res.write(JSON.stringify({
         "return_value": "some-collector-url"
       }))

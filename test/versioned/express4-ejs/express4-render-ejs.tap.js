@@ -3,7 +3,6 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path = require('path')
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
@@ -37,19 +36,19 @@ runTests({
 function runTests(flags) {
   // Regression test for issue 154
   // https://github.com/newrelic/node-newrelic/pull/154
-  test("using only the express router", {skip: skip()}, function (t) {
+  test("using only the express router", {skip: skip()}, function(t) {
     var agent = helper.instrumentMockedAgent(flags)
     var router = require('express').Router()
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
-    router.get('/test', function () {
+    router.get('/test', function() {
       //
     })
 
-    router.get('/test2', function () {
+    router.get('/test2', function() {
       //
     })
 
@@ -64,7 +63,7 @@ function runTests(flags) {
 
     t.plan(2)
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
@@ -87,26 +86,38 @@ function runTests(flags) {
   test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
     t.plan(6)
 
-    t.test("for a normal request", {timeout : 1000}, function (t) {
-      var agent = helper.instrumentMockedAgent(flags)
-      var app = require('express')()
-      var server = require('http').createServer(app)
+    var agent = null
+    var app = null
+    var server = null
 
+    t.beforeEach(function(done) {
+      agent = helper.instrumentMockedAgent(flags)
+      app = require('express')()
+      server = require('http').createServer(app)
+      done()
+    })
 
-      this.tearDown(function cb_tearDown() {
-        server.close()
-        helper.unloadAgent(agent)
-      })
+    t.afterEach(function(done) {
+      server.close()
+      helper.unloadAgent(agent)
 
+      agent = null
+      app = null
+      server = null
+
+      done()
+    })
+
+    t.test("for a normal request", {timeout : 1000}, function(t) {
       // set apdexT so apdex stats will be recorded
       agent.config.apdex_t = 1
 
-      app.get(TEST_PATH, function (req, res) {
+      app.get(TEST_PATH, function(req, res) {
         res.send({yep : true})
       })
 
-      server.listen(TEST_PORT, TEST_HOST, function () {
-        request.get(TEST_URL, function (error, response, body) {
+      server.listen(TEST_PORT, TEST_HOST, function() {
+        request.get(TEST_URL, function(error, response, body) {
           if (error) t.fail(error)
 
           t.ok(/application\/json/.test(response.headers['content-type']),
@@ -142,34 +153,22 @@ function runTests(flags) {
       })
     })
 
-    t.test("using EJS templates",
-         {timeout : 1000},
-         function (t) {
-      var agent  = helper.instrumentMockedAgent(flags)
-      var app    = require('express')()
-      var server = require('http').createServer(app)
-
-
-      this.tearDown(function cb_tearDown() {
-        server.close()
-        helper.unloadAgent(agent)
-      })
-
+    t.test("using EJS templates", {timeout : 1000}, function(t) {
       app.set('views', __dirname + '/views')
       app.set('view engine', 'ejs')
 
-      app.get(TEST_PATH, function (req, res) {
+      app.get(TEST_PATH, function(req, res) {
         res.render('index', { title: 'yo dawg' })
       })
 
       server.listen(TEST_PORT, TEST_HOST)
 
-      agent.once('transactionFinished', function () {
+      agent.once('transactionFinished', function() {
         var stats = agent.metrics.getMetric('View/index/Rendering')
         t.equal(stats.callCount, 1, "should note the view rendering")
       })
 
-      request(TEST_URL, function (error, response, body) {
+      request(TEST_URL, function(error, response, body) {
         if (error) t.fail(error)
 
         t.equal(response.statusCode, 200, "response code should be 200")
@@ -179,28 +178,17 @@ function runTests(flags) {
       })
     })
 
-    t.test("should generate rum headers",
-         {timeout : 1000},
-         function (t) {
-      var agent  = helper.instrumentMockedAgent(flags)
-      var app    = require('express')()
-      var server = require('http').createServer(app)
+    t.test("should generate rum headers", {timeout : 1000}, function(t) {
       var api    = new API(agent)
-
 
       agent.config.application_id = '12345'
       agent.config.browser_monitoring.browser_key = '12345'
       agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-      this.tearDown(function cb_tearDown() {
-        server.close()
-        helper.unloadAgent(agent)
-      })
-
       app.set('views', __dirname + '/views')
       app.set('view engine', 'ejs')
 
-      app.get(TEST_PATH, function (req, res) {
+      app.get(TEST_PATH, function(req, res) {
         var rum = api.getBrowserTimingHeader()
         t.equal(rum.substr(0,7), '<script')
         res.render('index', { title: 'yo dawg', rum: rum })
@@ -208,12 +196,12 @@ function runTests(flags) {
 
       server.listen(TEST_PORT, TEST_HOST)
 
-      agent.once('transactionFinished', function () {
+      agent.once('transactionFinished', function() {
         var stats = agent.metrics.getMetric('View/index/Rendering')
         t.equal(stats.callCount, 1, "should note the view rendering")
       })
 
-      request(TEST_URL, function (error, response, body) {
+      request(TEST_URL, function(error, response, body) {
         if (error) t.fail(error)
         t.equal(response.statusCode, 200, "response code should be 200")
         t.equal(body, BODY, "template should still render fine")
@@ -222,24 +210,13 @@ function runTests(flags) {
       })
     })
 
-    t.test("should trap errors correctly", function (t) {
-      var agent = helper.instrumentMockedAgent(flags)
-
-      var app    = require('express')()
-      var server = require('http').createServer(app)
-
-
-      this.tearDown(function cb_tearDown() {
-        server.close()
-        helper.unloadAgent(agent)
-      })
-
-      app.get(TEST_PATH, function () {
+    t.test("should trap errors correctly", function(t) {
+      app.get(TEST_PATH, function() {
         var hmm
         hmm.ohno.failure.is.terrible()
       })
 
-      server.listen(TEST_PORT, TEST_HOST, function () {
+      server.listen(TEST_PORT, TEST_HOST, function() {
         for (var i = 0; i < app._router.stack.length; i++) {
           var layer = app._router.stack[i]
           // route middleware doesn't have a name, sentinel is our error handler,
@@ -250,7 +227,7 @@ function runTests(flags) {
           }
         }
 
-        request.get(TEST_URL, function (error, response, body) {
+        request.get(TEST_URL, function(error, response, body) {
           if (error) t.fail(error)
 
           t.ok(response, "got a response from Express")
@@ -272,26 +249,16 @@ function runTests(flags) {
     })
 
     t.test("should measure request duration properly (NA-46)",
-         {timeout : 2 * 1000},
-         function (t) {
-      var agent  = helper.instrumentMockedAgent(flags)
-      var app    = require('express')()
-      var server = require('http').createServer(app)
-
-
-      this.tearDown(function cb_tearDown() {
-        server.close()
-        helper.unloadAgent(agent)
-      })
-
-      app.get(TEST_PATH, function (request, response) {
+           {timeout : 2 * 1000},
+           function(t) {
+      app.get(TEST_PATH, function(request, response) {
         t.ok(agent.getTransaction(),
              "the transaction should be visible inside the Express handler")
-             setTimeout(function () { response.send(BODY); }, DELAY)
+             setTimeout(function() { response.send(BODY); }, DELAY)
       })
 
       server.listen(TEST_PORT, TEST_HOST, function ready() {
-        request.get(TEST_URL, function (error, response, body) {
+        request.get(TEST_URL, function(error, response, body) {
           if (error) t.fail(error)
 
           t.ok(agent.environment.toJSON().some(function cb_some(pair) {
@@ -321,18 +288,8 @@ function runTests(flags) {
 
     t.test("should capture URL correctly when configured with a prefix",
            {timeout : 2 * 1000},
-           function (t) {
-      var agent  = helper.instrumentMockedAgent(flags)
-      var app    = require('express')()
-      var server = require('http').createServer(app)
-
-
-      this.tearDown(function cb_tearDown() {
-        server.close()
-        helper.unloadAgent(agent)
-      })
-
-      app.use(TEST_PATH, function (request, response) {
+           function(t) {
+      app.use(TEST_PATH, function(request, response) {
         t.ok(agent.getTransaction(),
              "the transaction should be visible inside the Express handler")
         t.equal('/ham', request.url)
@@ -340,7 +297,7 @@ function runTests(flags) {
       })
 
       server.listen(TEST_PORT, TEST_HOST, function ready() {
-        request.get(TEST_URL + '/ham', function (error, response, body) {
+        request.get(TEST_URL + '/ham', function(error, response, body) {
           if (error) t.fail(error)
 
           t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
@@ -355,7 +312,8 @@ function runTests(flags) {
     })
   })
 
-  test("trapping errors", {skip: skip()}, function (t) {
+  test("trapping errors", {skip: skip()}, function(t) {
+    t.autoend()
 
     t.test('collects the actual error object that is thrown', function(t) {
       var agent = helper.instrumentMockedAgent(flags)
@@ -363,7 +321,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -393,7 +351,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -427,7 +385,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -463,7 +421,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -492,7 +450,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -532,7 +490,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -570,7 +528,7 @@ function runTests(flags) {
       var app    = require('express')()
       var server = require('http').createServer(app)
 
-      this.tearDown(function cb_tearDown() {
+      t.tearDown(function cb_tearDown() {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -608,7 +566,7 @@ function runTests(flags) {
     var agent = helper.instrumentMockedAgent(flags)
     var app = require('express')()
     var server = require('http').createServer(app)
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
