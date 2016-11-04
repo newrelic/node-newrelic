@@ -110,14 +110,6 @@
     "semver": "^5.3.0",
     "yakaa": "^1.0.1"
   },
-  "bundledDependencies": [
-    "concat-stream",
-    "https-proxy-agent",
-    "json-stringify-safe",
-    "readable-stream",
-    "semver",
-    "yakaa"
-  ],
   "devDependencies": {
     "eslint": "^2.9.0",
     "jsdoc": "^3.4.0",
