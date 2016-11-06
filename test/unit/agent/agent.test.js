@@ -321,6 +321,13 @@ describe("the New Relic agent", function () {
 
         expect(function () { transaction.end(); }).not.throws()
       })
+
+      it("should ignore when setName is not called", function() {
+        var transaction = new Transaction(agent)
+        transaction.forceIgnore = true
+        agent._transactionFinished(transaction)
+        expect(transaction.ignore).equal(true)
+      })
     })
 
     describe("when starting", function () {
