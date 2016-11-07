@@ -500,7 +500,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(
               segment.parameters.key, undefined,
-              'should have the get key as a parameter'
+              'should not have the get key as a parameter'
             )
           })
         })
