@@ -56,6 +56,11 @@ describe("the New Relic agent API", function () {
     expect(api.addCustomParameter).a('function')
   })
 
+  it("exports a function for adding multiple custom parameters at once", function () {
+    should.exist(api.addCustomParameters)
+    expect(api.addCustomParameters).a('function')
+  })
+
   describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment

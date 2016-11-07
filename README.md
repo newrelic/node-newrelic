@@ -600,6 +600,18 @@ Set a custom parameter value to be attached to a transaction trace and/or error
 in the New Relic UI. This must be called within the context of a transaction,
 so it has a place to set the custom parameters.
 
+#### newrelic.addCustomParameters(params)
+
+Set multiple custom parameter values to be attached to a transaction trace and/or
+error in the New Relic UI. This must be called within the context of a transaction,
+so it has a place to set the custom parameters.
+
+Example of setting multiple custom parameters at once:
+
+```javascript
+newrelic.addCustomParameters({test: 'value', test2: 'value2'});
+```
+
 #### newrelic.setIgnoreTransaction(ignored)
 
 Tell the module explicitly whether or not a given request should be ignored.
