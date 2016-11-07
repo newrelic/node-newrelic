@@ -1,6 +1,5 @@
 'use strict'
 
-var path = require('path')
 var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
@@ -8,7 +7,7 @@ var sinon = require('sinon')
 var helper = require('../../lib/agent_helper')
 
 
-function FakeConnection () {
+function FakeConnection() {
   this.writable = true
 }
 
@@ -34,32 +33,32 @@ FakeConnection.prototype.setKeepAlive = function setKeepAlive(keepAlive){
 
 FakeConnection.prototype.write = function write() {}
 
-describe('agent instrumentation of Redis', function () {
-  describe('shouldn\'t cause bootstrapping to fail', function () {
+describe('agent instrumentation of Redis', function() {
+  describe('shouldn\'t cause bootstrapping to fail', function() {
     var agent
     var initialize
 
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent()
       initialize = require('../../../lib/instrumentation/redis')
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('when passed no module', function () {
-      expect(function () { initialize(agent); }).not.throws()
+    it('when passed no module', function() {
+      expect(function() { initialize(agent); }).not.throws()
     })
 
-    it('when passed a module with no RedisClient present.', function () {
-      expect(function () { initialize(agent, {}); }).not.throws()
+    it('when passed a module with no RedisClient present.', function() {
+      expect(function() { initialize(agent, {}); }).not.throws()
     })
   })
 
   // Redis has a lot of commands, and this is not all of them.
-  describe('should instrument', function () {
+  describe('when run', function () {
     var agent
     var client
     var connection
@@ -83,7 +82,7 @@ describe('agent instrumentation of Redis', function () {
       helper.unloadAgent(agent)
     })
 
-    it('PING', function (done) {
+    it('should instrument PING', function (done) {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once()
 
       agent.once('transactionFinished', function (transaction) {
@@ -111,7 +110,7 @@ describe('agent instrumentation of Redis', function () {
       })
     })
 
-    it('PING without callback', function (done) {
+    it('should instrument PING without callback', function (done) {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once()
 
       agent.once('transactionFinished', function (transaction) {
@@ -134,7 +133,7 @@ describe('agent instrumentation of Redis', function () {
       })
     })
 
-    it('PING with callback in array', function (done) {
+    it('should instrument PING with callback in array', function (done) {
       mockConnection
         .expects('write')
         .withExactArgs('*3\r\n$4\r\nping\r\n$1\r\n1\r\n$1\r\n2\r\n')
@@ -165,7 +164,7 @@ describe('agent instrumentation of Redis', function () {
       })
     })
 
-    it('PING with no callback in array', function (done) {
+    it('should instrument PING with no callback in array', function (done) {
       mockConnection
         .expects('write')
         .withExactArgs('*3\r\n$4\r\nping\r\n$1\r\n1\r\n$1\r\n2\r\n')

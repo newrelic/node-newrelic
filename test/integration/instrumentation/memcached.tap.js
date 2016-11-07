@@ -424,7 +424,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.version(function (err, ok) {
+        memcached.version(function(err, ok) {
           t.notOk(err, 'should not throw an error')
           t.ok(ok, 'got a version')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -483,6 +483,25 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(segment.parameters.key, "\"foo\"",
                      "should have the get key as a parameter")
+          })
+        })
+      })
+    })
+
+    t.test('get() when disabled', function(t) {
+      t.plan(2)
+      agent.config.capture_params = false
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.get('foo', function(err) {
+          t.error(err)
+
+          transaction.end(function() {
+            var segment = transaction.trace.root.children[0]
+            t.equals(
+              segment.parameters.key, undefined,
+              'should not have the get key as a parameter'
+            )
           })
         })
       })
@@ -815,7 +834,6 @@ function verifySegments(t, rootSegment, expected) {
 function verifyMetrics(t, metrics, expected) {
   var unscoped = metrics.unscoped
   var expectedNames = Object.keys(expected)
-  var unscopedNames = Object.keys(unscoped)
 
   expectedNames.forEach(function(name) {
     t.ok(unscoped[name], 'should have unscoped metric ' + name)
