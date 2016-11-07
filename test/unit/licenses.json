@@ -8,7 +8,7 @@
   "inherits": "ISC",
   "isarray": "MIT",
   "json-stringify-safe": "ISC",
-  "ms": "MIT*",
+  "ms": "MIT",
   "process-nextick-args": "MIT",
   "readable-stream": "MIT",
   "semver": "ISC",
