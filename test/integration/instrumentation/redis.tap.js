@@ -105,10 +105,10 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     t.plan(14)
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
-      client.set('testkey', 'arglbargle', function(error, ok) {
+      client.set('testkey', 'arglbargle', function(error) {
         if (error) return t.fail(error)
 
-        client.get('testkey', function(error, value) {
+        client.get('testkey', function(error) {
           if (error) return t.fail(error)
 
           transaction.end(function() {
@@ -129,11 +129,46 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
+  t.test('should add `key` parameter to trace segment', function(t) {
+    agent.config.capture_params = true
+
+    helper.runInTransaction(agent, function() {
+      client.set('saveme', 'foobar', function(error) {
+        // Regardless of error, key should still be captured.
+        t.error(error)
+
+        var segment = agent.tracer.getSegment().parent
+        t.equals(segment.parameters.key, '"saveme"', 'should have key as parameter')
+        t.end()
+      })
+    })
+  })
+
+  t.test('should not add `key` parameter to trace segment', function(t) {
+    agent.config.capture_params = false
+
+    helper.runInTransaction(agent, function() {
+      client.set('saveme', 'foobar', function(error) {
+        // Regardless of error, key should still be captured.
+        t.error(error)
+
+        var segment = agent.tracer.getSegment().parent
+        t.equals(segment.parameters.key, undefined, 'should not have key as parameter')
+        t.end()
+      })
+    })
+  })
+
   t.test('should add datastore instance parameters to trace segments', function(t) {
     t.plan(3)
+
+    // Enable.
+    agent.config.datastore_tracer.instance_reporting.enabled = true
+    agent.config.datastore_tracer.database_name_reporting.enabled = true
+
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
-      client.set('testkey', 'arglbargle', function(error, ok) {
+      client.set('testkey', 'arglbargle', function(error) {
         if (error) return t.fail(error)
 
         var trace = transaction.trace
@@ -156,7 +191,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
   t.test('should not add datastore instance parameters and metrics when disabled',
       function(t) {
-    t.plan(4)
+    t.plan(5)
 
     // disable
     agent.config.datastore_tracer.instance_reporting.enabled = false
@@ -164,23 +199,29 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
-      client.set('testkey', 'arglbargle', function(error, ok) {
-        if (error) return t.fail(error)
+      client.set('testkey', 'arglbargle', function(error) {
+        if (!t.error(error)) {
+          return t.end()
+        }
 
         var setSegment = transaction.trace.root.children[0]
         t.equals(
-          setSegment.parameters.host, undefined, 'should not have host parameter'
+          setSegment.parameters.host, undefined,
+          'should not have host parameter'
         )
         t.equals(
-          setSegment.parameters.port_path_or_id, undefined, 'should not have port parameter'
+          setSegment.parameters.port_path_or_id, undefined,
+          'should not have port parameter'
         )
         t.equals(
-          setSegment.parameters.database_name, undefined, 'should not have db name parameter'
+          setSegment.parameters.database_name, undefined,
+          'should not have db name parameter'
         )
 
         transaction.end(function() {
           var unscoped = transaction.metrics.unscoped
-          t.equals(unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
+          t.equals(
+            unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
             'should not have instance metric')
         })
       })
