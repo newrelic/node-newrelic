@@ -14,8 +14,8 @@ describe("the stubbed New Relic agent API", function () {
     api = new API()
   })
 
-  it("should export 16 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(16)
+  it("should export 17 API calls", function () {
+    expect(Object.keys(api.constructor.prototype).length).equal(17)
   })
 
   it("exports a transaction naming function", function () {
@@ -83,6 +83,15 @@ describe("the stubbed New Relic agent API", function () {
 
   it("shouldn't throw when a custom parameter is added", function () {
     expect(function () { api.addCustomParameter('test', 'value'); }).not.throws()
+  })
+
+  it("exports a function for adding multiple custom parameters at once", function () {
+    should.exist(api.addCustomParameters)
+    expect(api.addCustomParameters).a('function')
+  })
+
+  it("shouldn't throw when multiple custom parameters are added", function () {
+    expect(function () { api.addCustomParameters({test: 'value', test2: 'value2'}); }).not.throws()
   })
 
   it("shouldn't throw when a custom segment is added", function () {
