@@ -55,7 +55,7 @@ describe("CollectorAPI", function() {
       transaction_tracer: {}
     })
     agent.reconfigure = function() {}
-    agent.state = function() {}
+    agent.setState = function() {}
     api = new API(agent)
   })
 
