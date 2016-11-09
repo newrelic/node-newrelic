@@ -1,3 +1,8 @@
+### v2.2.0 / beta-42 (2016-11-09):
+
+* Incorporated new features and fixes from v1.30.4, v1.30.5, v1.31.0, v1.32.0,
+  and v1.33.0.
+
 ### v1.33.0 (2016-10-31):
 
 * The agent now collects database instance information for Memcached operations.
