@@ -1395,26 +1395,71 @@ describe('Shim', function() {
       var extras = null
 
       beforeEach(function() {
-        agent.config.capture_params = true
-        helper.runInTransaction(agent, function() {
-          extras = {
-            host: 'my awesome host',
-            port_path_or_id: 1234,
-            foo: 'bar',
-            fiz: 'bang'
-          }
+        extras = {
+          host: 'my awesome host',
+          port_path_or_id: 1234,
+          database_name: 'my_db',
+          foo: 'bar',
+          fiz: 'bang',
+          ignore_me: 'baz'
+        }
 
-          segment = shim.createSegment({name: 'child', extras: extras})
+        agent.config.ignored_params = [
+          'ignore_me',
+          'host',
+          'port_path_or_id',
+          'database_name'
+        ]
+      })
+
+      describe('and capture_params is true', function() {
+        beforeEach(function() {
+          agent.config.capture_params = true
+          helper.runInTransaction(agent, function() {
+            segment = shim.createSegment({name: 'child', extras: extras})
+          })
+        })
+
+        it('should copy parameters provided into `segment.parameters`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.have.property('foo', 'bar')
+          expect(segment.parameters).to.have.property('fiz', 'bang')
+        })
+
+        it('should respect `ignored_params`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.not.have.property('ignore_me')
+        })
+
+        it('should allow datastore instance attrs regardless of `ignored_params`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.have.property('host', 'my awesome host')
+          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
+          expect(segment.parameters).to.have.property('database_name', 'my_db')
         })
       })
 
-      it('should copy parameters provided into `segment.parameters`', function() {
-        expect(segment).to.have.property('parameters')
+      describe('and capture_params is false', function() {
+        beforeEach(function() {
+          agent.config.capture_params = false
+          helper.runInTransaction(agent, function() {
+            segment = shim.createSegment({name: 'child', extras: extras})
+          })
+        })
 
-        expect(segment.parameters).to.have.property('foo', 'bar')
-        expect(segment.parameters).to.have.property('fiz', 'bang')
-        expect(segment.parameters).to.have.property('host', 'my awesome host')
-        expect(segment.parameters).to.have.property('port_path_or_id', 1234)
+        it('should not copy parameters provided into `segment.parameters`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.not.have.property('foo')
+          expect(segment.parameters).to.not.have.property('fiz')
+          expect(segment.parameters).to.not.have.property('ignore_me')
+        })
+
+        it('should still allow datastore instance attrs', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.have.property('host', 'my awesome host')
+          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
+          expect(segment.parameters).to.have.property('database_name', 'my_db')
+        })
       })
     })
   })
