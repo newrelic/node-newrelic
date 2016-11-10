@@ -1,6 +1,6 @@
 ### v1.34.0 (2016-11-10):
 
-* The agent now collects CPU metrics.
+* The agent now collects CPU metrics when running under Node 6.1.0 and higher.
 
   Node 6.1.0 introduced an API to get CPU time usage of the running Node process.
   We are now collecting this data as new metrics.
@@ -21,6 +21,8 @@
   the Node process is short-lived, such as in AWS Lambda.
 
 * Updated tests to run on Node 7.
+
+  Node 7 is officially supported as of the previous release, v1.33.0.
 
 * The setIgnoreTransaction() API now works for background transactions.
 
