@@ -33,7 +33,7 @@ describe('the New Relic agent', function () {
   })
 
   describe('_sendEvents', function () {
-    var agent, events
+    var agent, events, error
 
     beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -41,13 +41,17 @@ describe('the New Relic agent', function () {
       agent.collector = {
         analyticsEvents: function (_events, callback) {
           events = _events
-          process.nextTick(callback)
+          process.nextTick(function() {
+            callback(error)
+          })
         }
       }
     })
 
     afterEach(function () {
       helper.unloadAgent(agent)
+      events = undefined
+      error = undefined
     })
 
     it('should report the reservoir size and number of events seen', function (done) {
@@ -84,6 +88,59 @@ describe('the New Relic agent', function () {
         done()
       })
     })
+
+    it('should not try to send if there are no events', function (done) {
+      agent.collector = {
+        analyticsEvents: function (_events, callback) {
+          throw new Error('What is this, how did you get here?')
+          process.nextTick(callback)
+        }
+      }
+      var r = new Reservoir()
+      agent.events = r
+      agent._sendEvents(function cb__sendEvents() {
+        done()
+      })
+    })
+
+    it('should resample events if push failed with a 500', function (done) {
+      error = {
+        statusCode: 500
+      }
+      var r = new Reservoir()
+      var e = {id: 1}
+      r.add(e)
+      agent.events = r
+
+      agent._sendEvents(function cb__sendEvents(err) {
+        expect(err).equal(error)
+        var myEvents = agent.events.toArray()
+        expect(myEvents).length(1)
+        expect(myEvents[0]).equals(e)
+
+        done()
+      })
+    })
+
+    it('should not resample events if push failed with a 413', function (done) {
+      error = {
+        statusCode: 413
+      }
+      var r = new Reservoir()
+      var e1 = {id: 1}
+      var e2 = {id: 2}
+      r.add(e1)
+      r.add(e2)
+      agent.events = r
+
+      agent._sendEvents(function cb__sendEvents(err) {
+        expect(err).equal(error)
+        var myEvents = agent.events.toArray()
+        expect(myEvents).length(0)
+        done()
+      })
+    })
+
   })
 
   describe('_processCustomEvents', function () {
