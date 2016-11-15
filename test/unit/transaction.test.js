@@ -243,18 +243,32 @@ describe("Transaction", function () {
       })
 
       it("produces a non-error name when status code is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        agent.config.error_collector.ignore_status_codes = [404, 500]
+        trans.setName('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
       it("produces a non-error partial name when status code is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        agent.config.error_collector.ignore_status_codes = [404, 500]
+        trans.setName('/test/string?do=thing&another=thing', 500)
         expect(trans._partialName).equal('NormalizedUri/*')
       })
 
       it("passes through status code when status is 404", function () {
         trans.setName('/test/string?do=thing&another=thing', 404)
         expect(trans.statusCode).equal(404)
+      })
+
+      it("produces a 'not found' partial name when status is 404", function () {
+        trans.verb = 'GET'
+        trans.setName('/test/string?do=thing&another=thing', 404)
+        expect(trans._partialName).equal('/GET not found')
+      })
+
+      it("produces a 'not found' name when status is 404", function () {
+        trans.verb = 'GET'
+        trans.setName('/test/string?do=thing&another=thing', 404)
+        expect(trans.name).equal('WebTransaction//GET not found')
       })
 
       it("produces a regular name when status is 501", function () {
@@ -304,7 +318,8 @@ describe("Transaction", function () {
       })
 
       it("keeps the custom name when error status is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        agent.config.error_collector.ignore_status_codes = [404, 500]
+        trans.setName('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/Custom/test')
       })
 

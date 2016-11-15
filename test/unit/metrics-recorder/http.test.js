@@ -187,11 +187,12 @@ describe("recordWeb", function () {
     })
 
     it("should handle ignored codes for the whole transaction", function () {
+      agent.config.error_collector.ignore_status_codes = [404, 500]
       record({
         transaction : trans,
         apdexT      : 0.2,
         url         : '/test',
-        code        : 404,
+        code        : 500,
         duration    : 1,
         exclusive   : 1
       })

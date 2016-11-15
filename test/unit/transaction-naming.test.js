@@ -6,16 +6,28 @@ var API = require('../../api')
 
 describe("Transaction naming:", function () {
   var agent
+  
   beforeEach(function () {
     agent = helper.loadMockedAgent()
   })
+  
   afterEach(function () {
     helper.unloadAgent(agent)
   })
+
   it('Transaction should be named /* without any other naming source', function (done) {
     helper.runInTransaction(agent, function (transaction) {
       transaction.setName('http://test.test.com/', 200)
       expect(transaction.name).equal('WebTransaction/NormalizedUri/*')
+      done()
+    })
+  })
+
+  it('Transaction should not be normalized when 404', function (done) {
+    helper.runInTransaction(agent, function (transaction) {
+      transaction.verb = 'GET'
+      transaction.setName('http://test.test.com/', 404)
+      expect(transaction.name).equal('WebTransaction//GET not found')
       done()
     })
   })
@@ -62,6 +74,17 @@ describe("Transaction naming:", function () {
     })
   })
 
+  it('API should trump 404', function (done) {
+    var api = new API(agent)
+    helper.runInTransaction(agent, function (transaction) {
+      api.setTransactionName('override')
+      simulateInstrumentation(transaction)
+      transaction.setName('http://test.test.com/', 404)
+      expect(transaction.name).equal('WebTransaction/Custom/override')
+      done()
+    })
+  })
+
   it('Custom naming rules should trump default naming', function (done) {
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function (transaction) {
@@ -87,6 +110,16 @@ describe("Transaction naming:", function () {
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       transaction.setName('http://test.test.com/', 200)
+      expect(transaction.name).equal('WebTransaction/NormalizedUri/test-transaction')
+      done()
+    })
+  })
+
+  it('Custom naming rules should trump 404', function (done) {
+    agent.userNormalizer.addSimple(/\//, '/test-transaction')
+    var api = new API(agent)
+    helper.runInTransaction(agent, function (transaction) {
+      transaction.setName('http://test.test.com/', 404)
       expect(transaction.name).equal('WebTransaction/NormalizedUri/test-transaction')
       done()
     })
