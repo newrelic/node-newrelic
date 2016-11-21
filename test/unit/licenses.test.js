@@ -1,28 +1,46 @@
 'use strict'
 
-var assert = require('chai').assert
-var checker = require('npm-license')
+var a = require('async')
+var expect = require('chai').expect
+var fs = require('fs')
 var licenses = require('./licenses')
+var path = require('path')
+var pkg = require('../../package')
+
+
+var MODULE_DIR = path.resolve(__dirname, '../../node_modules')
+
 
 describe('Agent licenses', function() {
-  this.timeout(5000);
+  this.timeout(5000)
   it('should all be accounted for in test/unit/licenses.json', function(done) {
-    checker.init({start: __dirname + '/../..', include: ['dependencies', 'optionalDependencies']},
-                 function cb_checker(modules) {
-      var found = {}
+    var deps = Object.keys(pkg.dependencies)
+    deps.push.apply(deps, Object.keys(pkg.optionalDependencies))
+    a.map(deps, function(dep, cb) {
+      a.waterfall([
+        function(cb) {
+          fs.readFile(path.join(MODULE_DIR, dep, 'package.json'), {encoding: 'utf8'}, cb)
+        },
+        function(depPackage, cb) {
+          try {
+            var parsedPackage = JSON.parse(depPackage)
+            var license = parsedPackage.license || parsedPackage.licenses
+            process.nextTick(function() {
+              cb(null, [dep, license])
+            })
+          } catch (e) {
+            cb(e)
+          }
+        }
+      ], cb)
+    }, function(err, depLicensesArray) {
+      expect(err).to.not.exist()
+      var depLicenses = depLicensesArray.reduce(function(obj, dep) {
+        obj[dep[0]] = dep[1]
+        return obj
+      }, {})
 
-      // Transform to a flat key-value dictionary with only the license type info
-      for (var modver in modules) {
-        // Strip off version from strings like "modulename@1.4.5"
-        var name = modver.split('@')[0]
-
-        // Filter out the newrelic module entry itself
-        if (name === 'newrelic') continue
-
-        found[name] = modules[modver].licenses
-      }
-
-      assert.deepEqual(found, licenses, 'all licenses accounted for')
+      expect(depLicenses).to.deep.equal(licenses)
       done()
     })
   })

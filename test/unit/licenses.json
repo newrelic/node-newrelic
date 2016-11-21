@@ -1,19 +1,10 @@
 {
-  "agent-base": "MIT",
+  "@newrelic/native-metrics": "LicenseRef-LICENSE",
+
   "concat-stream": "MIT",
-  "core-util-is": "MIT",
-  "debug": "MIT",
-  "extend": "MIT",
   "https-proxy-agent": "MIT",
-  "inherits": "ISC",
-  "isarray": "MIT",
   "json-stringify-safe": "ISC",
-  "ms": "MIT",
-  "process-nextick-args": "MIT",
   "readable-stream": "MIT",
   "semver": "ISC",
-  "string_decoder": "MIT",
-  "typedarray": "MIT",
-  "util-deprecate": "MIT",
   "yakaa": "MIT"
 }
