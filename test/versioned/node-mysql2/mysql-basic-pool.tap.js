@@ -4,6 +4,7 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var urltils = require('../../../lib/util/urltils')
+var fs = require('fs')
 
 var DBUSER = 'root'
 var DBNAME = 'agent_integration'
@@ -142,7 +143,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[2]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.notOk(
@@ -168,7 +169,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         agent.config.datastore_tracer.database_name_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[2]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.equal(
@@ -197,7 +198,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
     t.test('ensure host and port are set on segment', function(_t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = agent.tracer.getTransaction().trace.root.children[0]
+          var seg = agent.tracer.getTransaction().trace.root.children[0].children[2]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.equal(
@@ -233,7 +234,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
           // In the case where you don't have a server running on
           // localhost the data will still be correctly associated
           // with the query.
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[2]
           _t.ok(seg, 'there is a segment')
           _t.equal(
             seg.parameters.host,
@@ -259,7 +260,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
       var pool = mysql.createPool(config)
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[2]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.equal(
@@ -290,7 +291,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
           _t.notOk(err, 'no errors on create')
           pool.query('use test_db;', function(err) {
             pool.query('SELECT 1 + 1 AS solution', function(err) {
-              var seg = txn.trace.root.children[0].children[3].children[0].children[0]
+              var seg = txn.trace.root.children[0].children[3].children[0].children[1].children[0].children[0]
               _t.notOk(err, 'no errors')
               _t.ok(seg, 'there is a segment')
               _t.equal(
@@ -319,10 +320,17 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
       })
     })
 
+    // The domain socket tests should only be run if there is a domain socket
+    // to connect to, which only happens if there is a MySQL instance running on
+    // the same box as these tests. This should always be the case on Travis,
+    // but just to be sure they're running there check for the environment flag.
+    var domainPath = getDomainSocketPath()
+    var shouldTestDomain = domainPath || process.env.TRAVIS
     t.test(
       'ensure host and port are set on segment when using a domain socket',
+      {skip: !shouldTestDomain},
       function(_t) {
-        var socketPath = '/some/path/to/a/socket'
+        var socketPath = domainPath
         var config = getConfig({
           socketPath: socketPath
         })
@@ -330,7 +338,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
         var pool = mysql.createPool(config)
         helper.runInTransaction(agent, function transactionInScope(txn) {
           pool.query('SELECT 1 + 1 AS solution', function(err) {
-            var seg = txn.trace.root.children[0]
+            var seg = txn.trace.root.children[0].children[2]
             // In the case where you don't have a server running on
             // localhost the data will still be correctly associated
             // with the query.
@@ -374,7 +382,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exit')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          _t.equal(segment.name, 'MySQL pool.query', 'is named')
           agent.getTransaction().end()
 
           _t.end()
@@ -393,7 +401,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exit')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          _t.equal(segment.name, 'MySQL pool.query', 'is named')
           agent.getTransaction().end()
 
           _t.end()
@@ -724,3 +732,13 @@ test('poolCluster', {timeout : 30 * 1000}, function(t) {
     })
   })
 })
+function getDomainSocketPath() {
+  var files = fs.readdirSync('/tmp')
+  for (var i = 0; i < files.length; ++i) {
+    var file = '/tmp/' + files[i]
+    if (/^\/tmp\/mysql.*?\.sock$/.test(file)) {
+      return file
+    }
+  }
+  return null
+}
