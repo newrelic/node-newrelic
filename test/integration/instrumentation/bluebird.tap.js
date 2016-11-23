@@ -264,31 +264,41 @@ test('Promise#spread', function(t) {
   })
 })
 
-test('Promise#asCallback', function(t) {
-  testPromiseInstanceMethod(t, 6, function asCallbackTest(p, name) {
-    return p.asCallback(function(err, result) {
-      t.notOk(err, name + 'should not have an error')
-      t.same(result, [1, 2, 3, name], name + 'should have the correct result value')
-    }).then(function() {
-      throw new Error('Promise#asCallback test error')
-    }).then(function() {
-      t.fail(name + 'should have skipped then after rejection')
-    }).asCallback(function(err, result) {
-      t.ok(err, name + 'should have error in asCallback')
-      t.notOk(result, name + 'should not have a result')
-      if (err) {
-        t.equal(
-          err.message,
-          'Promise#asCallback test error',
-          name + 'should be the correct error'
-        )
-      }
-    }).catch(function(err){
-      t.ok(err, name + 'should have error in catch too')
-      // Swallowing error that doesn't get caught in the asCallback.
+function testAsCallbackBehavior(methodName) {
+  test('Promise#' + methodName, function(t) {
+    testPromiseInstanceMethod(t, 8, function asCallbackTest(p, name, agent) {
+      var startTransaction = agent.getTransaction();
+      return p[methodName](function(err, result) {
+        var inCallbackTransaction = agent.getTransaction();
+        t.same(startTransaction, inCallbackTransaction, name + 'should have the same transaction inside the success callback');
+        t.notOk(err, name + 'should not have an error')
+        t.same(result, [1, 2, 3, name], name + 'should have the correct result value')
+      }).then(function() {
+        throw new Error('Promise#' + methodName + ' test error')
+      }).then(function() {
+        t.fail(name + 'should have skipped then after rejection')
+      })[methodName](function(err, result) {
+        var inCallbackTransaction = agent.getTransaction();
+        t.same(startTransaction, inCallbackTransaction, name + 'should have the same transaction inside the error callback');
+        t.ok(err, name + 'should have error in ' + methodName)
+        t.notOk(result, name + 'should not have a result')
+        if (err) {
+          t.equal(
+            err.message,
+            'Promise#' + methodName + ' test error',
+            name + 'should be the correct error'
+          )
+        }
+      }).catch(function(err){
+        t.ok(err, name + 'should have error in catch too')
+        // Swallowing error that doesn't get caught in the asCallback/nodeify.
+      })
     })
   })
-})
+}
+
+testAsCallbackBehavior('asCallback')
+testAsCallbackBehavior('nodeify')
 
 test('Promise#bind', function(t) {
   testPromiseInstanceMethod(t, 2, function bindTest(p, name) {
@@ -745,7 +755,7 @@ function testPromiseInstanceMethod(t, plan, testFunc) {
     var p = new Promise(function(resolve, reject) {
       resolve([1, 2, 3, name])
     })
-    return testFunc(p, name)
+    return testFunc(p, name, agent)
   })
 }
 
