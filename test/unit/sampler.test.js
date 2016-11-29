@@ -1,94 +1,94 @@
 'use strict'
 
-var path         = require('path')
-  , chai         = require('chai')
-  , expect       = chai.expect
-  , configurator = require('../../lib/config.js')
-  , sampler      = require('../../lib/sampler')
-  , Agent        = require('../../lib/agent')
-  , semver       = require('semver')
-  
+var chai         = require('chai')
+var expect       = chai.expect
+var configurator = require('../../lib/config.js')
+var sampler      = require('../../lib/sampler')
+var Agent        = require('../../lib/agent')
+var semver       = require('semver')
 
-describe("environmental sampler", function () {
+
+var HAS_NATIVE_METRICS = false
+try {
+  require('@newrelic/native-metrics')
+  HAS_NATIVE_METRICS = true
+} catch (e) {}
+
+
+describe("environmental sampler", function() {
   var agent
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
   var oldUptime = process.uptime
+  var it_v610 = semver.satisfies(process.version, '>= 6.1.0') ? it : xit
+  var it_native = HAS_NATIVE_METRICS ? it : xit
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = new Agent(configurator.initialize())
-    process.cpuUsage = function (isDiff) {
+    process.cpuUsage = function() {
       // process.cpuUsage return values in cpu microseconds (1^-6)
       return { user: 1e6 * numCpus, system: 1e6 * numCpus }
     }
-    process.uptime = function () {
+    process.uptime = function() {
       // process.uptime returns values in seconds
       return 1
     }
   })
 
-  afterEach(function (){
+  afterEach(function() {
     sampler.stop()
     process.cpuUsage = oldCpuUsage
-    process.uptime = oldUptime  
+    process.uptime = oldUptime
   })
 
-  it("should depend on Agent to provide the current metrics summary", function () {
-    expect(function () { sampler.start(agent); }).not.throws()
-    expect(function () { sampler.stop(agent); }).not.throws()
+  it("should depend on Agent to provide the current metrics summary", function() {
+    expect(function() { sampler.start(agent) }).to.not.throw()
+    expect(function() { sampler.stop(agent) }).to.not.throw()
   })
 
-  it("should default to a state of stopped", function () {
+  it("should default to a state of stopped", function() {
     expect(sampler.state).equal('stopped')
   })
 
-  it("should say it's running after start", function () {
+  it("should say it's running after start", function() {
     sampler.start(agent)
     expect(sampler.state).equal('running')
   })
 
-  it("should gather CPU user utilization metric", function () {
-    if (semver.satisfies(process.version, '>= 6.1.0')) {
-      sampler.sampleCpu(agent)()
+  it_v610("should gather CPU user utilization metric", function() {
+    sampler.sampleCpu(agent)()
 
-      var stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
-      expect(stats.callCount).equal(1)
-      expect(stats.total).equal(1)
-    }
+    var stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
+    expect(stats.callCount).equal(1)
+    expect(stats.total).equal(1)
   })
 
-  it("should gather CPU system utilization metric", function () {
-    if (semver.satisfies(process.version, '>= 6.1.0')) {
-      sampler.sampleCpu(agent)()
+  it_v610("should gather CPU system utilization metric", function() {
+    sampler.sampleCpu(agent)()
 
-      var stats = agent.metrics.getOrCreateMetric('CPU/System/Utilization')
-      expect(stats.callCount).equal(1)
-      expect(stats.total).equal(1)
-    }
+    var stats = agent.metrics.getOrCreateMetric('CPU/System/Utilization')
+    expect(stats.callCount).equal(1)
+    expect(stats.total).equal(1)
   })
 
-  it("should gather CPU user time metric", function () {
-    if (semver.satisfies(process.version, '>= 6.1.0')) {
-      sampler.sampleCpu(agent)()
+  it_v610("should gather CPU user time metric", function() {
+    sampler.sampleCpu(agent)()
 
-      var stats = agent.metrics.getOrCreateMetric('CPU/User Time')
-      expect(stats.callCount).equal(1)
-      expect(stats.total).equal(numCpus)
-    }
+    var stats = agent.metrics.getOrCreateMetric('CPU/User Time')
+    expect(stats.callCount).equal(1)
+    expect(stats.total).equal(numCpus)
   })
 
-  it("should gather CPU sytem time metric", function () {
-    if (semver.satisfies(process.version, '>= 6.1.0')) {
-      sampler.sampleCpu(agent)()
+  it_v610("should gather CPU sytem time metric", function() {
+    sampler.sampleCpu(agent)()
 
-      var stats = agent.metrics.getOrCreateMetric('CPU/System Time')
-      expect(stats.callCount).equal(1)
-      expect(stats.total).equal(numCpus)
-    }
+    var stats = agent.metrics.getOrCreateMetric('CPU/System Time')
+    expect(stats.callCount).equal(1)
+    expect(stats.total).equal(numCpus)
   })
 
-  it("should catch if process.cpuUsage throws an error", function () {  
-    process.cpuUsage = function () {
+  it("should catch if process.cpuUsage throws an error", function() {
+    process.cpuUsage = function() {
       throw new Error('ohhhhhh boyyyyyy')
     }
     sampler.sampleCpu(agent)()
@@ -97,17 +97,17 @@ describe("environmental sampler", function () {
     expect(stats.callCount).equal(0)
   })
 
-  it("should have a rough idea of how much memory Node is using", function () {
+  it("should have a rough idea of how much memory Node is using", function() {
     sampler.sampleMemory(agent)()
 
     var stats = agent.metrics.getOrCreateMetric('Memory/Physical')
     expect(stats.callCount).equal(1)
-    expect(stats.max).above(1); // maybe someday this test will fail
+    expect(stats.max).above(1) // maybe someday this test will fail
   })
-  
-  it("should catch if process.memoryUsage throws an error", function () {
+
+  it("should catch if process.memoryUsage throws an error", function() {
     var oldProcessMem = process.memoryUsage
-    process.memoryUsage = function () {
+    process.memoryUsage = function() {
       throw new Error('your computer is on fire')
     }
     sampler.sampleMemory(agent)()
@@ -117,7 +117,7 @@ describe("environmental sampler", function () {
     process.memoryUsage = oldProcessMem
   })
 
-  it("should have some rough idea of how deep the event queue is", function (done) {
+  it("should have some rough idea of how deep the event queue is", function(done) {
     sampler.checkEvents(agent)()
 
     /* sampler.checkEvents works by creating a timer and using
@@ -130,7 +130,7 @@ describe("environmental sampler", function () {
      * timer has nanosecond precision (and probably significantly
      * greater-than-millisecond accuracy).
      */
-    setTimeout(function () {
+    setTimeout(function() {
       var stats = agent.metrics.getOrCreateMetric('Events/wait')
       expect(stats.callCount).equal(1)
       /* process.hrtime will notice the passage of time, but this
