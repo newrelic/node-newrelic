@@ -4,7 +4,7 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var urltils = require('../../../lib/util/urltils')
-
+var exec = require('child_process').exec
 
 var DBUSER = 'root'
 var DBNAME = 'agent_integration'
@@ -96,7 +96,7 @@ test('bad config', function(t) {
 // TODO: test notice errors
 // TODO: test sql capture
 test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
-  t.plan(14)
+  t.plan(13)
 
   helper.bootstrapMySQL(function cb_bootstrapMySQL() {
     // set up the instrumentation before loading MySQL
@@ -123,7 +123,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
     t.test('ensure host and port are set on segment', function(_t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[1]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.equal(
@@ -152,7 +152,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[0]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.notOk(
@@ -178,7 +178,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         agent.config.datastore_tracer.database_name_reporting.enabled = false
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[0]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.equal(
@@ -213,7 +213,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           // In the case where you don't have a server running on
           // localhost the data will still be correctly associated
           // with the query.
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[1]
           _t.ok(seg, 'there is a segment')
           _t.equal(
             seg.parameters.host,
@@ -238,7 +238,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       var pool = mysql.createPool(config)
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0]
+          var seg = txn.trace.root.children[0].children[1]
           _t.notOk(err, 'no errors')
           _t.ok(seg, 'there is a segment')
           _t.equal(
@@ -263,76 +263,48 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       })
     })
 
-    t.test(
-      'ensure host and port are set on segment when using a domain socket',
-      function(_t) {
-        var socketPath = '/some/path/to/a/socket'
-        var config = getConfig({
-          socketPath: socketPath
-        })
-        var pool = mysql.createPool(config)
-        helper.runInTransaction(agent, function transactionInScope(txn) {
-          pool.query('SELECT 1 + 1 AS solution', function(err) {
-            var seg = txn.trace.root.children[0]
-            // In the case where you don't have a server running on
-            // localhost the data will still be correctly associated
-            // with the query.
-            _t.ok(seg, 'there is a segment')
-            _t.equal(
-              seg.parameters.host,
-              agent.config.getHostnameSafe(),
-              'set host'
-            )
-            _t.equal(
-              seg.parameters.port_path_or_id,
-              socketPath,
-              'set path'
-            )
-            _t.equal(
-              seg.parameters.database_name,
-              DBNAME,
-              'set database name'
-            )
-            txn.end(pool.end.bind(pool, _t.end))
+    // The domain socket tests should only be run if there is a domain socket
+    // to connect to, which only happens if there is a MySQL instance running on
+    // the same box as these tests. This should always be the case on Travis,
+    // but just to be sure they're running there check for the environment flag.
+    getDomainSocketPath(function (domainPath) {
+      var shouldTestDomain = domainPath || process.env.TRAVIS
+      t.test(
+        'ensure host and port are set on segment when using a domain socket',
+        {skip: !shouldTestDomain},
+        function(_t) {
+          var socketPath = domainPath
+          var config = getConfig({
+            socketPath: socketPath
           })
-        })
-      }
-    )
-
-    t.test('ensure database name changes with a use statement', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope(txn) {
-        var pool = mysql.createPool(config)
-        pool.query('create database if not exists test_db;', function (err) {
-          _t.notOk(err, 'no errors on create')
-          pool.query('use test_db;', function(err) {
+          var pool = mysql.createPool(config)
+          helper.runInTransaction(agent, function transactionInScope(txn) {
             pool.query('SELECT 1 + 1 AS solution', function(err) {
-              var seg = txn.trace.root.children[0].children[2].children[0].children[1]
-              _t.notOk(err, 'no errors')
+              var seg = txn.trace.root.children[0].children[1]
+              // In the case where you don't have a server running on
+              // localhost the data will still be correctly associated
+              // with the query.
               _t.ok(seg, 'there is a segment')
               _t.equal(
                 seg.parameters.host,
-                urltils.isLocalhost(config.host)
-                  ? agent.config.getHostnameSafe()
-                  : config.host,
+                agent.config.getHostnameSafe(),
                 'set host'
               )
               _t.equal(
-                seg.parameters.database_name,
-                'test_db',
-                'set database name'
+                seg.parameters.port_path_or_id,
+                socketPath,
+                'set path'
               )
               _t.equal(
-                seg.parameters.port_path_or_id,
-                "3306",
-                'set port'
+                seg.parameters.database_name,
+                DBNAME,
+                'set database name'
               )
-              pool.query('drop test_db;', function () {
-                txn.end(pool.end.bind(pool, _t.end))
-              })
+              txn.end(pool.end.bind(pool, _t.end))
             })
           })
-        })
-      })
+        }
+      )
     })
 
     t.test('query with error', function(_t) {
@@ -363,7 +335,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exit')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          _t.equal(segment.name, 'MySQL pool.query', 'is named')
           txn.end(_t.end)
         })
       })
@@ -380,7 +352,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exit')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          _t.equal(segment.name, 'MySQL pool.query', 'is named')
           txn.end(_t.end)
         })
       })
@@ -724,3 +696,12 @@ test('poolCluster', {timeout : 30 * 1000}, function(t) {
     })
   })
 })
+
+function getDomainSocketPath(callback) {
+  exec('mysql_config --socket', function (err, stdout, stderr) {
+    if (err || stderr.toString()) {
+      return callback(null)
+    }
+    callback(stdout.toString().trim())
+  })
+}
