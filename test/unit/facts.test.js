@@ -297,7 +297,8 @@ describe('display_host', function () {
       done()
     })
   })
-  it("should be ipv4 when ipv_preference === '4' and os.hostname() not available",
+  it(
+    "should be ipv4 when ipv_preference === '4' and os.hostname() not available",
     function(done) {
       agent.config.process_host.ipv_preference = '4'
       var ipv4Pattern = /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/
@@ -306,12 +307,14 @@ describe('display_host', function () {
         expect(factsed.display_host).match(ipv4Pattern)
         done()
       })
-    })
-  it("should be ipv6 when ipv_preference === '6' and os.hostname() not available",
+    }
+  )
+  it(
+    "should be ipv6 when ipv_preference === '6' and os.hostname() not available",
     function(done) {
-      if (!agent.config.getIPAddresses()['ipv6']) {
+      if (!agent.config.getIPAddresses().ipv6) {
         console.log('this machine does not have an ipv6 address, skipping')
-        done()
+        return done()
       }
       agent.config.process_host.ipv_preference = '6'
       var ipv6Pattern = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/
@@ -320,8 +323,10 @@ describe('display_host', function () {
         expect(factsed.display_host).match(ipv6Pattern)
         done()
       })
-    })
-  it("should be ipv4 when invalid ipv_preference and os.hostname() not available",
+    }
+  )
+  it(
+    "should be ipv4 when invalid ipv_preference and os.hostname() not available",
     function badIpPref(done) {
       agent.config.process_host.ipv_preference = '9'
       var ipv4Pattern = /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/
@@ -330,10 +335,15 @@ describe('display_host', function () {
         expect(factsed.display_host).match(ipv4Pattern)
         done()
       })
-  })
+    }
+  )
   describe("When os.networkInterfaces()", function netInterface() {
     it("returns no ipv4, hostname should be ipv6 if possible",
       function noip4(done) {
+        if (!agent.config.getIPAddresses().ipv6) {
+          console.log('this machine does not have an ipv6 address, skipping')
+          return done()
+        }
         var mockedNI = {lo: [], en0: [{
             address: 'fe80::a00:27ff:fe4e:66a1',
             netmask: 'ffff:ffff:ffff:ffff::',
