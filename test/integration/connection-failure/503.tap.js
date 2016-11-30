@@ -6,6 +6,7 @@ var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
 var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
+var sampler = require('../../../lib/sampler')
 
 
 // XXX Remove this when deprecating Node v0.8.
@@ -123,8 +124,11 @@ test("merging metrics and errors after a 503", function (t) {
   nock(url).post(path('shutdown', RUN_ID)).reply(200)
 
   agent.start(function cb_start() {
-    // need sample data to give the harvest cycle something to send
+    // Need sample data to give the harvest cycle something to send, but do not
+    // want the native module to provide its indeterminte values.
     agent.errors.add(transaction, new Error('test error'))
+    sampler.nativeMetrics.unbind()
+
     transaction.end(function() {
       agent.traces.trace = transaction.trace
 
