@@ -18,6 +18,7 @@ var used = [
   'express_segments',
   'insights',
   'mysql_pool',
+  'native_metrics',
   'postgres',
   'promise_segments',
   'proxy',
