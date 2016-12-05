@@ -110,7 +110,15 @@ test('reverse', function(t) {
   helper.runInTransaction(agent, function() {
     dns.reverse('127.0.0.1', function(err, names) {
       t.notOk(err, 'should not error')
-      t.deepEqual(names, [])
+      if (process.env.TRAVIS && names.length > 0) {
+        t.deepEqual(names, [
+          "nettuno",
+          "travis",
+          "vagrant"
+        ])
+      } else {
+        t.deepEqual(names, [])
+      }
       verifySegments(t, agent, 'dns.reverse')
     })
   })

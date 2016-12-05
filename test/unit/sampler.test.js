@@ -73,7 +73,7 @@ describe("environmental sampler", function () {
 
       var stats = agent.metrics.getOrCreateMetric('CPU/User Time')
       expect(stats.callCount).equal(1)
-      expect(stats.total).equal(8)
+      expect(stats.total).equal(numCpus)
     }
   })
 
@@ -83,7 +83,7 @@ describe("environmental sampler", function () {
 
       var stats = agent.metrics.getOrCreateMetric('CPU/System Time')
       expect(stats.callCount).equal(1)
-      expect(stats.total).equal(8)
+      expect(stats.total).equal(numCpus)
     }
   })
 
