@@ -107,6 +107,12 @@ describe("environmental sampler", function() {
     expect(type).to.have.property('total', 50)
   })
 
+  it_native('should not gather GC metrics if the feature flag is off', function() {
+    agent.config.feature_flag.native_metrics = false
+    sampler.start(agent)
+    expect(sampler.nativeMetrics).to.be.null
+  })
+
   if (!HAS_NATIVE_METRICS) {
     it('should create a supportability metric for missing native module', function() {
       sampler.start(agent)
