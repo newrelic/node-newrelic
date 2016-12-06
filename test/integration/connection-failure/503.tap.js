@@ -7,6 +7,7 @@ var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
 var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
 var sampler = require('../../../lib/sampler')
+var semver = require('semver')
 
 
 // XXX Remove this when deprecating Node v0.8.
@@ -92,6 +93,13 @@ test("merging metrics and errors after a 503", function (t) {
   var url = 'https://collector.newrelic.com'
   var agentConfig = configurator.initialize()
   agentConfig.utilization.detect_docker = false
+
+  // native metrics are not supported on Node 0.8, and would result in
+  // an additional supportability metric
+  if (semver.satisfies(process.version, '<=0.8')) {
+    agentConfig.feature_flag.native_metrics = false
+  }
+
   var agent = new Agent(agentConfig)
   var transaction = new Transaction(agent)
 
@@ -127,7 +135,7 @@ test("merging metrics and errors after a 503", function (t) {
     // Need sample data to give the harvest cycle something to send, but do not
     // want the native module to provide its indeterminte values.
     agent.errors.add(transaction, new Error('test error'))
-    sampler.nativeMetrics.unbind()
+    sampler.nativeMetrics && sampler.nativeMetrics.unbind()
 
     transaction.end(function() {
       agent.traces.trace = transaction.trace
