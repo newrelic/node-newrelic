@@ -6,6 +6,7 @@ var fs = require('fs')
 var licenses = require('./licenses')
 var path = require('path')
 var pkg = require('../../package')
+var semver = require('semver')
 
 
 var MODULE_DIR = path.resolve(__dirname, '../../node_modules')
@@ -14,6 +15,10 @@ var MODULE_DIR = path.resolve(__dirname, '../../node_modules')
 describe('Agent licenses', function() {
   this.timeout(5000)
   it('should all be accounted for in test/unit/licenses.json', function(done) {
+    if (semver.satisfies(process.version, '<=0.8')) {
+      this.skip()
+    }
+
     var deps = Object.keys(pkg.dependencies)
     deps.push.apply(deps, Object.keys(pkg.optionalDependencies))
     a.map(deps, function(dep, cb) {

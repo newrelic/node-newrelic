@@ -127,7 +127,7 @@ test("merging metrics and errors after a 503", function (t) {
     // Need sample data to give the harvest cycle something to send, but do not
     // want the native module to provide its indeterminte values.
     agent.errors.add(transaction, new Error('test error'))
-    sampler.nativeMetrics.unbind()
+    sampler.nativeMetrics && sampler.nativeMetrics.unbind()
 
     transaction.end(function() {
       agent.traces.trace = transaction.trace
