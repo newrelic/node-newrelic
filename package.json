@@ -97,6 +97,7 @@
     "lib": "lib"
   },
   "scripts": {
+    "preinstall": "node ./bin/check-native-metrics.js",
     "test": "make test"
   },
   "bin": {
@@ -109,9 +110,6 @@
     "readable-stream": "^1.1.13",
     "semver": "^5.3.0",
     "yakaa": "^1.0.1"
-  },
-  "optionalDependencies": {
-    "@newrelic/native-metrics": "^0.1.0"
   },
   "bundledDependencies": [
     "concat-stream",

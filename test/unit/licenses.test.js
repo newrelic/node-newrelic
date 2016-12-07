@@ -19,8 +19,8 @@ describe('Agent licenses', function() {
       this.skip()
     }
 
-    var deps = Object.keys(pkg.dependencies)
-    deps.push.apply(deps, Object.keys(pkg.optionalDependencies))
+    var deps = Object.keys(pkg.dependencies || {})
+    deps.push.apply(deps, Object.keys(pkg.optionalDependencies || {}))
     a.map(deps, function(dep, cb) {
       a.waterfall([
         function(cb) {
