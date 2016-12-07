@@ -96,8 +96,9 @@ prerelease: node_modules ca-gen $(CERTIFICATE) docker
 	@node test/bin/install_sub_deps prerelease
 	time $(TAP) $(PRERELEASE)
 
-smoke: clean node_modules
-	npm install --production
+smoke: clean
+	npm install --production --loglevel warn
+	npm install tap
 	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 

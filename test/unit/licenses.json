@@ -1,6 +1,4 @@
 {
-  "@newrelic/native-metrics": "LicenseRef-LICENSE",
-
   "concat-stream": "MIT",
   "https-proxy-agent": "MIT",
   "json-stringify-safe": "ISC",
