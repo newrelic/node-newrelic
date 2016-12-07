@@ -6,6 +6,8 @@ var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
 var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
+var sampler = require('../../../lib/sampler')
+var semver = require('semver')
 
 
 // XXX Remove this when deprecating Node v0.8.
@@ -91,6 +93,11 @@ test("merging metrics and errors after a 503", function (t) {
   var url = 'https://collector.newrelic.com'
   var agentConfig = configurator.initialize()
   agentConfig.utilization.detect_docker = false
+
+  // Disable native metrics for these tests so they don't generate unpredictable
+  // metrics.
+  agentConfig.feature_flag.native_metrics = false
+
   var agent = new Agent(agentConfig)
   var transaction = new Transaction(agent)
 
@@ -123,8 +130,8 @@ test("merging metrics and errors after a 503", function (t) {
   nock(url).post(path('shutdown', RUN_ID)).reply(200)
 
   agent.start(function cb_start() {
-    // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
+
     transaction.end(function() {
       agent.traces.trace = transaction.trace
 

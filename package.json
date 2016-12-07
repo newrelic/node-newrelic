@@ -97,6 +97,7 @@
     "lib": "lib"
   },
   "scripts": {
+    "preinstall": "node ./bin/check-native-metrics.js",
     "test": "make test"
   },
   "bin": {
@@ -119,9 +120,10 @@
     "yakaa"
   ],
   "devDependencies": {
+    "async": "^2.1.4",
+    "eslint": "^2.9.0",
     "mocha": "*",
-    "tap": "^8.0.0",
-    "eslint": "^2.9.0"
+    "tap": "^8.0.0"
   },
   "repository": {
     "type": "git",

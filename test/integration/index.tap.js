@@ -3,13 +3,10 @@
 var test = require('tap').test
 
 
-test("loading the application via index.js", function (t) {
+test('loading the application via index.js', {timeout: 5000}, function(t) {
   t.plan(9)
 
   var agent
-
-  // just in case connection fails
-  global.setTimeout = process.nextTick
 
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
   process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
@@ -21,7 +18,6 @@ test("loading the application via index.js", function (t) {
   }, "just loading the agent doesn't throw")
 
   t.doesNotThrow(function cb_doesNotThrow() {
-
     // in order to sub out the readonly version we have to make a full
     // copy of process, then restore the original when we are done
     var _process = process
@@ -42,7 +38,6 @@ test("loading the application via index.js", function (t) {
     t.ok(agent)
 
     process = _process
-
   }, "malformed process.version doesn't blow up the process")
 
   function shutdown() {
