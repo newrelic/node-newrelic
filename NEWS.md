@@ -16,7 +16,7 @@
 
 * The agent will no longer lose transaction state across Bluebird's `promise.nodify`.
 
-  Thanks to Matt Lavin (@mlavin) for this contribution!
+  Thanks to Matt Lavin (@mdlavin) for this contribution!
 
 ### v1.34.0 (2016-11-10):
 
