@@ -41,6 +41,7 @@ clean:
 node_modules: package.json
 	@rm -rf node_modules
 	npm --loglevel warn install
+	node ./bin/check-native-metrics.js
 
 build: clean node_modules
 	@echo "Currently using node $(NODE_VERSION)."
