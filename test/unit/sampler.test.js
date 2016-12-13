@@ -23,6 +23,7 @@ describe("environmental sampler", function() {
   var oldUptime = process.uptime
   var it_v610 = semver.satisfies(process.version, '>= 6.1.0') ? it : xit
   var it_native = HAS_NATIVE_METRICS ? it : xit
+  var it_v610_or_native = semver.satisfies(process.version, '>= 6.1.0') || HAS_NATIVE_METRICS ? it : xit
 
   beforeEach(function() {
     agent = new Agent(configurator.initialize())
@@ -56,7 +57,7 @@ describe("environmental sampler", function() {
     expect(sampler.state).equal('running')
   })
 
-  it_v610("should gather CPU user utilization metric", function() {
+  it_v610_or_native("should gather CPU user utilization metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
@@ -64,7 +65,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(1)
   })
 
-  it_v610("should gather CPU system utilization metric", function() {
+  it_v610_or_native("should gather CPU system utilization metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
@@ -72,7 +73,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(1)
   })
 
-  it_v610("should gather CPU user time metric", function() {
+  it_v610_or_native("should gather CPU user time metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
@@ -80,7 +81,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it_v610("should gather CPU sytem time metric", function() {
+  it_v610_or_native("should gather CPU sytem time metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
