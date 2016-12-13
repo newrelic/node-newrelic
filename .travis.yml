@@ -32,7 +32,7 @@ cache:
 before_install:
   - ./bin/travis-setup.sh
   - make update_npm_global
-install: if [ "$SUITE" != "smoke" ]; then npm install; fi
+install: if [ "$SUITE" != "smoke" ]; then make node_modules; fi
 script: make $SUITE
 matrix:
   exclude:

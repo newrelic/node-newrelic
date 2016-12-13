@@ -97,7 +97,6 @@
     "lib": "lib"
   },
   "scripts": {
-    "preinstall": "node ./bin/check-native-metrics.js",
     "test": "make test"
   },
   "bin": {
