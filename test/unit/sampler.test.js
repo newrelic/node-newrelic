@@ -133,12 +133,15 @@ describe("environmental sampler", function() {
     expect(stats.callCount).equal(0)
   })
 
-  it("should have a rough idea of how much memory Node is using", function() {
+  it("should collect all specified memory statistics", function () {
     sampler.sampleMemory(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric('Memory/Physical')
-    expect(stats.callCount).equal(1)
-    expect(stats.max).above(1) // maybe someday this test will fail
+    Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
+      var metricName = NAMES.MEMORY[memoryStat]
+      var stats = agent.metrics.getOrCreateMetric(metricName)
+      expect(stats.callCount).equal(1)
+      expect(stats.max).above(1); // maybe someday this test will fail
+    })
   })
 
   it("should catch if process.memoryUsage throws an error", function() {
