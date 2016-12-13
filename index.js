@@ -64,6 +64,12 @@ function initialize() {
       agent = new Agent(config)
       var appNames = agent.config.applications()
 
+      if (config.logging.diagnostics) {
+        logger.warn(
+          'Diagnostics logging is enabled, this may cause significant overhead.'
+        )
+      }
+
       if (appNames.length < 1) {
         message = "New Relic requires that you name this application!\n" +
                   "Set app_name in your newrelic.js file or set environment variable\n" +
