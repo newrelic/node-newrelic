@@ -142,18 +142,13 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
   )
   metric.incrementCallCount()
 
-  // If high security mode is on or custom params are specified as off,
-  // custom params are disabled
-  if (this.agent.config.capture_params === false) {
-    logger.trace("addCustomParameter was called while disabled with name %s", name)
-
-    if (this.agent.config.high_security === true) {
-      logger.warnOnce("Custom params",
-          "Custom parameters are disabled by high security mode.")
-      return false
-    }
-    logger.warnOnce("Custom params",
-        "addCustomParameter was called while config.capture_params was false")
+  // If high security mode is on, custom params are disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      "Custom params",
+      "Custom parameters are disabled by high security mode."
+    )
+    return false
   }
 
   var ignored = this.agent.config.ignored_params || []
@@ -865,7 +860,7 @@ API.prototype.shutdown = function shutdown(options, cb) {
     if (typeof options === 'function') {
       callback = options
     } else {
-      callback = new Function()
+      callback = function noop() {}
     }
   }
 
