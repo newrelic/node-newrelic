@@ -1,3 +1,16 @@
+### v1.36.0 (2016-12-21):
+* Added CPU metric gathering to Node.js versions <6.1
+
+  As of this release the agent will attempt to gather CPU usage metrics via the
+  optional `@newrelic/native-metrics` module.
+
+* Added additional memory usage classification metrics.
+
+  The agent will now report memory metrics that break down memory by its current
+  use.
+
+  For more information on these features, see [our documentation.](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/node-vm-measurements)
+
 ### v1.35.1 (2016-12-13):
 * Removed automatic installation of `@newrelic/native-metrics`.
 
