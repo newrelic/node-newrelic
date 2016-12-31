@@ -151,7 +151,7 @@ describe("on transaction finished", function () {
       expect(event[0].type).to.equal(false)
     })
   })
-  
+
   it("should contain user and agent attributes", function () {
     var trans = new Transaction(agent)
 
@@ -172,6 +172,27 @@ describe("on transaction finished", function () {
     trans.end(function() {
       var event = agent.events.toArray()[0]
       expect(event[1].a).equals('b')
+    })
+  })
+
+  it('includes internal synthetics attributes', function(done) {
+    var trans = new Transaction(agent)
+
+    trans.syntheticsData = {
+      version: 1,
+      accountId: 123,
+      resourceId: 'resId',
+      jobId: 'jobId',
+      monitorId: 'monId'
+    }
+
+    trans.end(function() {
+      var event = agent.events.toArray()[0]
+      var attributes = event[0]
+      expect(attributes['nr.syntheticsResourceId']).equal('resId')
+      expect(attributes['nr.syntheticsJobId']).equal('jobId')
+      expect(attributes['nr.syntheticsMonitorId']).equal('monId')
+      done()
     })
   })
 

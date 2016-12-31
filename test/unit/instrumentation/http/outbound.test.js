@@ -5,6 +5,7 @@ var events = require('events')
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../../lib/agent_helper')
+var semver = require('semver')
 var NAMES = require('../../../../lib/metrics/names.js')
 var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
 var hashes = require('../../../../lib/util/hashes')
@@ -35,6 +36,11 @@ describe('instrumentOutbound', function () {
   describe('when working with http.createClient', function () {
     before(function () {
       // capture the deprecation warning here
+      if (!http.createClient) {
+        this.skip(
+          'http.createClient does not in exist in node version ' + process.version
+        )
+      }
       http.createClient()
     })
 

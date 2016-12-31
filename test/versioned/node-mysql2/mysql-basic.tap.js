@@ -3,6 +3,7 @@
 var test   = require('tap').test
 var logger = require('../../../lib/logger')
 var helper = require('../../lib/agent_helper')
+var urltils = require('../../../lib/util/urltils')
 var params = require('../../lib/params')
 
 
@@ -137,6 +138,54 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
                 t.ok(query.total > 0, 'the samples should have positive duration')
               })
               t.end()
+            })
+          })
+        })
+      })
+    })
+
+    t.test('ensure database name changes with a use statement', function(t) {
+      t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
+      helper.runInTransaction(agent, function transactionInScope(txn) {
+        t.ok(agent.getTransaction(), 'we should be in a transaction')
+        withRetry.getClient(function cb_getClient(err, client) {
+          if (err) return t.fail(err)
+          client.query('create database if not exists test_db;', function (err) {
+            client.query('use test_db;', function(err) {
+              client.query('SELECT 1 + 1 AS solution', function(err) {
+                var seg = txn.trace.root.children[0].children[0].children[0].children[0].children[0]
+                t.notOk(err, 'no errors')
+                t.ok(seg, 'there is a segment')
+                t.equal(
+                  seg.parameters.host,
+                  urltils.isLocalhost(params.mysql_host)
+                    ? agent.config.getHostnameSafe()
+                    : params.mysql_host,
+                  'set host'
+                )
+                t.equal(
+                  seg.parameters.database_name,
+                  'test_db',
+                  'set database name'
+                )
+                t.equal(
+                  seg.parameters.port_path_or_id,
+                  "3306",
+                  'set port'
+                )
+                client.query('drop test_db;', function () {
+                  withRetry.release(client)
+                  agent.getTransaction().end(function checkQueries() {
+                    var queryKeys = Object.keys(agent.queries.samples)
+                    t.ok(queryKeys.length > 0, 'there should be a query sample')
+                    queryKeys.forEach(function testSample(key) {
+                      var query = agent.queries.samples[key]
+                      t.ok(query.total > 0, 'the samples should have positive duration')
+                    })
+                    t.end()
+                  })
+                })
+              })
             })
           })
         })

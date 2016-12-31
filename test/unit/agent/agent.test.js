@@ -127,7 +127,7 @@ describe("the New Relic agent", function () {
     })
 
     it("requires a valid value when changing state", function () {
-      expect(function () { agent.state('bogus'); }).throws('Invalid state bogus')
+      expect(function () { agent.setState('bogus'); }).throws('Invalid state bogus')
     })
 
     it("has some debugging configuration by default", function () {
@@ -320,6 +320,13 @@ describe("the New Relic agent", function () {
         expect(transaction.ignore).equal(false)
 
         expect(function () { transaction.end(); }).not.throws()
+      })
+
+      it("should ignore when setName is not called", function() {
+        var transaction = new Transaction(agent)
+        transaction.forceIgnore = true
+        agent._transactionFinished(transaction)
+        expect(transaction.ignore).equal(true)
       })
     })
 

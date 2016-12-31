@@ -111,6 +111,7 @@
     "yakaa": "^1.0.1"
   },
   "devDependencies": {
+    "async": "^2.1.4",
     "eslint": "^2.9.0",
     "jsdoc": "^3.4.0",
     "mocha": "*",

@@ -4,9 +4,13 @@ var path    = require('path')
 var test    = require('tap').test
 var request = require('request')
 var helper  = require('../../lib/agent_helper.js')
+var semver = require('semver')
 
 
-test("Restify capture params introspection", function (t) {
+test(
+  "Restify capture params introspection",
+  {skip: function () {return semver.satisfies(process.version, '>=7.0.0')}},
+  function (t) {
   t.plan(4)
 
   t.test('simple case with no params', function (t) {

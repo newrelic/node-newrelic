@@ -149,18 +149,13 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
   )
   metric.incrementCallCount()
 
-  // If high security mode is on or custom params are specified as off,
-  // custom params are disabled
-  if (this.agent.config.capture_params === false) {
-    logger.trace("addCustomParameter was called while disabled with name %s", name)
-
-    if (this.agent.config.high_security === true) {
-      logger.warnOnce("Custom params",
-          "Custom parameters are disabled by high security mode.")
-      return false
-    }
-    logger.warnOnce("Custom params",
-        "addCustomParameter was called while config.capture_params was false")
+  // If high security mode is on, custom params are disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      "Custom params",
+      "Custom parameters are disabled by high security mode."
+    )
+    return false
   }
 
   var ignored = this.agent.config.ignored_params || []
@@ -196,6 +191,35 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
   }
 
   trace.custom[name] = value
+}
+
+/**
+ * Adds all custom parameters in an object to the current transaction.
+ *
+ * See documentation for newrelic.addCustomParameter for more information on
+ * setting custom parameters.
+ *
+ * An example of setting a custom parameter object:
+ *
+ *    newrelic.addCustomParameters({test: 'value', test2: 'value2'});
+ *
+ * @param {object} [params]
+ * @param {string} [params.KEY] The name you want displayed in the RPM UI.
+ * @param {string} [params.KEY.VALUE] The value you want displayed. Must be serializable.
+ */
+API.prototype.addCustomParameters = function addCustomParameters(params) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomParameters'
+  )
+  metric.incrementCallCount()
+
+  for (var key in params) {
+    if (!params.hasOwnProperty(key)) {
+      continue
+    }
+
+    this.addCustomParameter(key, params[key])
+  }
 }
 
 /**
@@ -908,6 +932,8 @@ function instrumentDatastore(moduleName, onRequire, onError) {
  * @param {boolean} [options.collectPendingData=false]  If true, the agent will send any
  *                                                      pending data to the collector
  *                                                      before shutting down.
+ * @param {number}  [options.timeout]                   time in ms to wait before
+ *                                                      shutting down
  * @param {function} [callback]                         callback function that runs when
  *                                                      agent stopped
  */
@@ -922,24 +948,56 @@ API.prototype.shutdown = function shutdown(options, cb) {
     if (typeof options === 'function') {
       callback = options
     } else {
-      callback = new Function() // eslint-disable-line no-new-func
+      callback = function noop() {}
     }
   }
 
   var agent = this.agent
-  if (options && options.collectPendingData) {
-    agent.harvest(function cb_harvest(error) {
-      if (error) {
-        logger.error(error, 'An error occurred while running last harvest' +
-          ' before shutdown.')
+
+  function cb_harvest(error) {
+    if (error) {
+      logger.error(
+        error,
+        'An error occurred while running last harvest before shutdown.'
+      )
+    }
+    agent.stop(callback)
+  }
+
+  if (options && options.collectPendingData && agent._state !== 'started') {
+    if (typeof options.timeout === 'number') {
+      var shutdownTimeout = setTimeout(function shutdownTimeout() {
+        agent.stop(callback)
+      }, options.timeout)
+      // timer.unref only in 0.9+
+      if (shutdownTimeout.unref) {
+        shutdownTimeout.unref()
       }
-      agent.stop(callback)
+    } else if (options.timeout) {
+      logger.warn(
+        'options.timeout should be of type "number". Got %s',
+        typeof options.timeout
+      )
+    }
+
+    agent.on('started', function shutdownHarvest() {
+      agent.harvest(cb_harvest)
     })
+    agent.on('errored', function logShutdownError(error) {
+      agent.stop(callback)
+      if (error) {
+        logger.error(
+          error,
+          'The agent encountered an error after calling shutdown.'
+        )
+      }
+    })
+  } else if (options && options.collectPendingData) {
+    agent.harvest(cb_harvest)
   } else {
     agent.stop(callback)
   }
 }
-
 
 function _checkKeyLength(object, maxLength) {
   var keys = Object.keys(object)

@@ -207,7 +207,7 @@ function runWithTransaction(t, callback) {
 }
 
 test('agent instrumentation of node-mongodb-native',
-  {skip: semver.satisfies(process.version, '0.8')},
+  {skip: semver.satisfies(process.version, '0.8 || >=7.0.0')},
   function(t) {
 
   helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(error) {

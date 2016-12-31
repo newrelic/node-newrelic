@@ -1,3 +1,85 @@
+### v1.36.0 (2016-12-21):
+* Added CPU metric gathering to Node.js versions <6.1
+
+  As of this release the agent will attempt to gather CPU usage metrics via the
+  optional `@newrelic/native-metrics` module.
+
+* Added additional memory usage classification metrics.
+
+  The agent will now report memory metrics that break down memory by its current
+  use.
+
+  For more information on these features, see [our documentation.](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/node-vm-measurements)
+
+### v1.35.1 (2016-12-13):
+* Removed automatic installation of `@newrelic/native-metrics`.
+
+  Due to the way npm v3+ flatten dependencies, a bug in the version of npm
+  packaged with Node v5, and npm v1's ungraceful handling of scoped packages
+  we have opted to not automatically install this module.
+
+  If you would like to see native metrics for your application, you can add the
+  `@newrelic/native-metrics` module to your `package.json` and the Node Agent
+  will automatically pick it up.
+
+* Corrected attribution of the Bluebird patch in the last release's notes.
+
+  Thanks to Matt Lavin (@mdlavin) for this correction!
+
+### v1.35.0 (2016-12-12):
+* The agent will now report garbage collection statistics on supported
+  platforms.
+
+  On node versions 0.10, 0.12, 4, 6, and 7 the agent will now record the time
+  spent in, the number of, and type of garbage collection cycles. You can read
+  more about it on [our docs
+  site!](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/node-vm-measurements)
+
+* The agent no longer double counts MySQL query times when using a connection
+  pool.
+
+  Previously, when using a pool of connections a query done through the pool
+  would be recorded as the time it took on the pool, as well as the connection,
+  effectively counting the time twice.  This is no longer the case.
+
+* The agent will no longer lose transaction state across Bluebird's `promise.nodify`.
+
+  Thanks to Matt Lavin (@mdlavin) for this contribution!
+
+### v1.34.0 (2016-11-10):
+
+* The agent now collects CPU metrics when running under Node 6.1.0 and higher.
+
+  Node 6.1.0 introduced an API to get CPU time usage of the running Node process.
+  We are now collecting this data as new metrics.
+
+* The agent now has a separate configuration for audit logging.
+
+  Previously the data that the agent sends to the collector was logged only in trace
+  logging mode, making the logs unnecessarily large and noisy.  The agent can now include
+  this data independent of the logging level using separate configuration settings.
+
+* A new API method addCustomParameters() has been added to allow adding multiple custom
+  parameters at once.  Thanks to Austin Peterson (@AKPWebDesign) for this contribution!
+
+* The shutdown() API now waits for connection to collect pending data.
+
+  When a flag to collect pending data is provided to the shutdown() method, the agent now
+  ensures a connection to the collector has been established.  This is useful when
+  the Node process is short-lived, such as in AWS Lambda.
+
+* Updated tests to run on Node 7.
+
+  Node 7 is officially supported as of the previous release, v1.33.0.
+
+* The setIgnoreTransaction() API now works for background transactions.
+
+* Fixed issue with Synthetics result not displaying a link to the corresponding
+  transaction trace.
+
+* Added running the nsp (Node Security Platform) tool to the test suite to help with
+  detecting security-related vulnerabilities.
+
 ### v2.2.0 / beta-42 (2016-11-09):
 
 * Incorporated new features and fixes from v1.30.4, v1.30.5, v1.31.0, v1.32.0,

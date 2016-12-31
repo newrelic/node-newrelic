@@ -44,6 +44,7 @@ clean:
 node_modules: package.json
 	@rm -rf node_modules
 	npm --loglevel warn install
+	node ./bin/check-native-metrics.js
 
 build: clean node_modules
 	@echo "Currently using node $(NODE_VERSION)."
@@ -99,8 +100,9 @@ prerelease: node_modules ca-gen $(CERTIFICATE) docker
 	@node test/bin/install_sub_deps prerelease
 	time $(TAP) $(PRERELEASE)
 
-smoke: clean node_modules
-	npm install --production
+smoke: clean
+	npm install --production --loglevel warn
+	npm install tap
 	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 
@@ -178,6 +180,9 @@ $(CERTIFICATE): $(CACERT)
 		-in server.csr \
 		-out $(CERTIFICATE)
 	@rm -f server.csr
+
+security:
+	./node_modules/.bin/nsp check
 
 services:
 	if docker ps -a | grep -q "nr_node_memcached"; then \

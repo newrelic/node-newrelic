@@ -72,7 +72,10 @@ test('external requests should have child segments', function testError(t) {
     var dnsLookup = connect.children[0]
     t.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
     t.equal(dnsLookup.children.length, 1, 'dns.lookup should have 1 child')
-    t.equal(dnsLookup.children[0].name, 'Callback: anonymous', 'should have callback')
+    t.match(
+      dnsLookup.children[0].name, /Callback: (?:emitLookup|anonymous)/,
+      'should have callback'
+    )
 
     server.close(function() {
       t.end()

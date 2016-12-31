@@ -26,5 +26,10 @@ else
   echo " --- not installing integration requirements --- "
 fi
 
+if [ "$SUITE" = "security" ]; then
+  echo " --- installing nsp  --- "
+  npm install nsp
+fi
+
 # Always install time.
 sudo apt-get install -qq time
