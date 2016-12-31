@@ -104,7 +104,7 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
       })
     })
 
-    t.plan(8)
+    t.plan(9)
 
     t.test('basic transaction', function testTransaction(t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play yet')

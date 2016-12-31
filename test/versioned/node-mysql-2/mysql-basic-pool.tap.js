@@ -125,8 +125,8 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       helper.runInTransaction(agent, function transactionInScope(txn) {
         pool.query('SELECT 1 + 1 AS solution', function(err) {
           var seg = txn.trace.root.children[0].children[1]
-          _t.notOk(err, 'no errors')
-          _t.ok(seg, 'there is a segment')
+          _t.error(err, 'should not error')
+          _t.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
           _t.equal(
             seg.parameters.host,
             urltils.isLocalhost(config.host)
@@ -336,7 +336,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exist')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'MySQL pool.query', 'is named')
+          _t.equal(segment.name, 'MySQL Pool#query', 'is named')
           txn.end(_t.end)
         })
       })
@@ -353,7 +353,7 @@ test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
             _t.ok(segment, 'segment should exist')
             _t.ok(segment.timer.start > 0, 'starts at a postitive time')
             _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'MySQL pool.query', 'is named')
+            _t.equal(segment.name, 'MySQL Pool#query', 'is named')
           }
 
           txn.end(_t.end)
