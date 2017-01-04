@@ -1,3 +1,14 @@
+
+### v2.3.0 / beta-43 (2017-01-04):
+* Incorporated new features and fixes from 1.34.0, 1.35.1, and 1.36.0
+
+* The `@newrelic/native-metrics` module is now an optional dependency of the
+  agent.
+
+  Now npm will attempt to install the module when the agent is installed. If it
+  fails for whatever reason, the agent itself will still be installed correctly
+  and the rest of the npm install will finish normally.
+
 ### v1.36.0 (2016-12-21):
 * Added CPU metric gathering to Node.js versions <6.1
 
