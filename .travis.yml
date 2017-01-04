@@ -36,8 +36,6 @@ install: if [ "$SUITE" != "smoke" ]; then make node_modules; fi
 script: make $SUITE
 matrix:
   exclude:
-    - node_js: "0.8"
-      env: SUITE=security
     - node_js: "0.10"
       env: SUITE=security
   allow_failures:

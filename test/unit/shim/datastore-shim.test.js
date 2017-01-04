@@ -66,7 +66,13 @@ describe('DatastoreShim', function() {
 
   describe('well-known datastores', function() {
     it('should be enumerated on the class and prototype', function() {
-      var datastores = ['CASSANDRA', 'MYSQL', 'REDIS']
+      var datastores = [
+        'CASSANDRA',
+        'MONGODB',
+        'MYSQL',
+        'REDIS',
+        'POSTGRES'
+      ]
       datastores.forEach(function(ds) {
         expect(DatastoreShim).to.have.property(ds)
         expect(shim).to.have.property(ds)
@@ -251,16 +257,50 @@ describe('DatastoreShim', function() {
     })
 
     describe('wrapper', function() {
-      it('should create a datastore operation metric', function() {
-        shim.recordOperation(wrappable, 'getActiveSegment')
+      describe('when `record` is false', function() {
+        it('should create a datastore operation segment but no metric', function() {
+          shim.recordOperation(wrappable, 'getActiveSegment', {record: false})
 
-        helper.runInTransaction(agent, function(tx) {
-          var startingSegment = agent.tracer.getSegment()
-          var segment = wrappable.getActiveSegment()
-          expect(segment).to.not.equal(startingSegment)
-          expect(segment.transaction).to.equal(tx)
-          expect(segment.name).to.equal('Datastore/operation/Cassandra/getActiveSegment')
-          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is true', function() {
+        it('should create a datastore operation metric', function() {
+          shim.recordOperation(wrappable, 'getActiveSegment')
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('Datastore/operation/Cassandra/getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is defaulted', function() {
+        it('should create a datastore operation metric', function() {
+          shim.recordOperation(wrappable, 'getActiveSegment')
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('Datastore/operation/Cassandra/getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
         })
       })
 
@@ -269,9 +309,11 @@ describe('DatastoreShim', function() {
         var toWrap = function() { executed = true }
         var wrapped = shim.recordOperation(toWrap, {})
 
-        expect(executed).to.be.false
-        wrapped()
-        expect(executed).to.be.true
+        helper.runInTransaction(agent, function() {
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
       })
 
       it('should invoke the spec in the context of the wrapped function', function() {
@@ -287,8 +329,10 @@ describe('DatastoreShim', function() {
           return {}
         })
 
-        wrappable.bar('a', 'b', 'c')
-        expect(executed).to.be.true
+        helper.runInTransaction(agent, function() {
+          wrappable.bar('a', 'b', 'c')
+          expect(executed).to.be.true
+        })
       })
 
       it('should bind the callback if there is one', function() {
@@ -304,7 +348,10 @@ describe('DatastoreShim', function() {
         }
 
         var wrapped = shim.recordOperation(toWrap, {callback: shim.LAST})
-        wrapped(cb)
+
+        helper.runInTransaction(agent, function() {
+          wrapped(cb)
+        })
       })
 
       describe('with `extras`', function() {
@@ -452,16 +499,51 @@ describe('DatastoreShim', function() {
         query = 'SELECT property FROM my_table'
       })
 
-      it('should create a datastore query metric', function() {
-        shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+      describe('when `record` is false', function() {
+        it('should create a datastore query segment but no metric', function() {
+          shim.recordQuery(wrappable, 'getActiveSegment', {
+            query: shim.FIRST,
+            record: false
+          })
 
-        helper.runInTransaction(agent, function(tx) {
-          var startingSegment = agent.tracer.getSegment()
-          var segment = wrappable.getActiveSegment(query)
-          expect(segment).to.not.equal(startingSegment)
-          expect(segment.transaction).to.equal(tx)
-          expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
-          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment(query)
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is true', function() {
+        it('should create a datastore query metric', function() {
+          shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment(query)
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is defaulted', function() {
+        it('should create a datastore query metric', function() {
+          shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment(query)
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
         })
       })
 
@@ -470,9 +552,11 @@ describe('DatastoreShim', function() {
         var toWrap = function() { executed = true }
         var wrapped = shim.recordQuery(toWrap, {})
 
-        expect(executed).to.be.false
-        wrapped()
-        expect(executed).to.be.true
+        helper.runInTransaction(agent, function() {
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
       })
 
       it('should bind the callback if there is one', function() {
@@ -491,7 +575,10 @@ describe('DatastoreShim', function() {
           query: shim.FIRST,
           callback: shim.LAST
         })
-        wrapped(query, cb)
+
+        helper.runInTransaction(agent, function() {
+          wrapped(query, cb)
+        })
       })
 
       it('should bind the row callback if there is one', function() {
@@ -510,7 +597,10 @@ describe('DatastoreShim', function() {
           query: shim.FIRST,
           rowCallback: shim.LAST
         })
-        wrapped(query, cb)
+
+        helper.runInTransaction(agent, function() {
+          wrapped(query, cb)
+        })
       })
     })
   })
