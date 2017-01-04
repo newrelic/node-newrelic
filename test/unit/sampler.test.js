@@ -1,19 +1,13 @@
 'use strict'
 
-var chai         = require('chai')
-var expect       = chai.expect
-var configurator = require('../../lib/config.js')
-var sampler      = require('../../lib/sampler')
-var Agent        = require('../../lib/agent')
-var semver       = require('semver')
+var chai          = require('chai')
+var expect        = chai.expect
+var configurator  = require('../../lib/config.js')
+var sampler       = require('../../lib/sampler')
+var Agent         = require('../../lib/agent')
 
 
 var NAMES = require('../../lib/metrics/names')
-var HAS_NATIVE_METRICS = false
-try {
-  require('@newrelic/native-metrics')
-  HAS_NATIVE_METRICS = true
-} catch (e) {}
 
 
 describe("environmental sampler", function() {
@@ -21,9 +15,6 @@ describe("environmental sampler", function() {
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
   var oldUptime = process.uptime
-  var it_v610 = semver.satisfies(process.version, '>= 6.1.0') ? it : xit
-  var it_native = HAS_NATIVE_METRICS ? it : xit
-  var it_v610_or_native = semver.satisfies(process.version, '>= 6.1.0') || HAS_NATIVE_METRICS ? it : xit
 
   beforeEach(function() {
     agent = new Agent(configurator.initialize())
@@ -43,6 +34,12 @@ describe("environmental sampler", function() {
     process.uptime = oldUptime
   })
 
+  it("should have the native-metrics package available", function() {
+    expect(function() {
+      require('@newrelic/native-metrics')
+    }).to.not.throw()
+  })
+
   it("should depend on Agent to provide the current metrics summary", function() {
     expect(function() { sampler.start(agent) }).to.not.throw()
     expect(function() { sampler.stop(agent) }).to.not.throw()
@@ -57,7 +54,7 @@ describe("environmental sampler", function() {
     expect(sampler.state).equal('running')
   })
 
-  it_v610_or_native("should gather CPU user utilization metric", function() {
+  it("should gather CPU user utilization metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
@@ -65,7 +62,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(1)
   })
 
-  it_v610_or_native("should gather CPU system utilization metric", function() {
+  it("should gather CPU system utilization metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
@@ -73,7 +70,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(1)
   })
 
-  it_v610_or_native("should gather CPU user time metric", function() {
+  it("should gather CPU user time metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
@@ -81,7 +78,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it_v610_or_native("should gather CPU sytem time metric", function() {
+  it("should gather CPU sytem time metric", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
@@ -89,7 +86,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it_native('should gather GC metrics', function() {
+  it('should gather GC metrics', function() {
     sampler.start(agent)
     sampler.nativeMetrics.emit('gc', {
       type: 'TestGC',
@@ -108,21 +105,11 @@ describe("environmental sampler", function() {
     expect(type).to.have.property('total', 50)
   })
 
-  it_native('should not gather GC metrics if the feature flag is off', function() {
+  it('should not gather GC metrics if the feature flag is off', function() {
     agent.config.feature_flag.native_metrics = false
     sampler.start(agent)
     expect(sampler.nativeMetrics).to.be.null
   })
-
-  if (!HAS_NATIVE_METRICS) {
-    it('should create a supportability metric for missing native module', function() {
-      sampler.start(agent)
-      var sup = agent.metrics.getOrCreateMetric(
-        NAMES.SUPPORTABILITY.DEPENDENCIES + '/NoNativeMetricsModule'
-      )
-      expect(sup).to.have.property('callCount', 1)
-    })
-  }
 
   it("should catch if process.cpuUsage throws an error", function() {
     process.cpuUsage = function() {
@@ -134,14 +121,14 @@ describe("environmental sampler", function() {
     expect(stats.callCount).equal(0)
   })
 
-  it("should collect all specified memory statistics", function () {
+  it("should collect all specified memory statistics", function() {
     sampler.sampleMemory(agent)()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
       var metricName = NAMES.MEMORY[memoryStat]
       var stats = agent.metrics.getOrCreateMetric(metricName)
       expect(stats.callCount).equal(1)
-      expect(stats.max).above(1); // maybe someday this test will fail
+      expect(stats.max).above(1) // maybe someday this test will fail
     })
   })
 
