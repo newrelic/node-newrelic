@@ -219,6 +219,7 @@ describe("built-in http module instrumentation", function () {
     describe('that is successful', function() {
       var fetchedStatusCode = null
       var fetchedBody = null
+      var refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
 
       before(function(done) {
         transaction = null
@@ -226,7 +227,10 @@ describe("built-in http module instrumentation", function () {
           port: 8123,
           host: 'localhost',
           path: '/path',
-          method: 'GET'
+          method: 'GET',
+          headers: {
+            referer: refererUrl
+          }
         }, function(err, statusCode, body) {
           fetchedStatusCode = statusCode
           fetchedBody = body
@@ -244,6 +248,10 @@ describe("built-in http module instrumentation", function () {
 
         should.exist(fetchedBody)
         expect(fetchedBody).equal(PAGE)
+      })
+
+      it("should capture a scrubbed version of the referer header", function () {
+        expect(transaction.trace.parameters['request.headers.referer']).to.equal('https://www.google.com/search/cats')
       })
 
       it("should record unscoped path stats after a normal request", function() {
