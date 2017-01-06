@@ -17,7 +17,7 @@ if (arrayContainsAny(process.argv, '-h', '-?', '--help')) {
 } else if (process.argv.length === 4) {
   opts = {
     rules: path.resolve(cwd, process.argv[2]),
-    urls: process.resolve(cwd, process.argv[3])
+    urls: path.resolve(cwd, process.argv[3])
   }
 } else {
   printHelp()
