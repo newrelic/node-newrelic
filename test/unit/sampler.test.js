@@ -43,6 +43,53 @@ describe("environmental sampler", function() {
     process.uptime = oldUptime
   })
 
+  it_native("should still gather native metrics when bound and unbound", function(done) {
+    sampler.start(agent)
+    sampler.stop()
+    sampler.start(agent)
+
+    sampler.nativeMetrics.emit('gc', {
+      type: 'TestGC',
+      typeId: 1337,
+      duration: 50 * 1e9 // 50 seconds in nanoseconds
+    })
+    var pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
+    var type = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + 'TestGC')
+
+    // These are "at least" because a real GC might happen during the test.
+    expect(pause).property('callCount').to.be.at.least(1)
+    expect(pause).property('total').to.be.at.least(50)
+
+    // These tests can be exact because we're using a fake GC type.
+    expect(type).to.have.property('callCount', 1)
+    expect(type).to.have.property('total', 50)
+
+    setTimeout(function runLoop() {
+      sampler.sampleLoop(agent, sampler.nativeMetrics)()
+
+      var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
+      expect(stats.callCount).equal(1)
+      expect(stats.max).to.be.above(0)
+      expect(stats.min).to.equal(stats.max)
+      expect(stats.total).to.equal(stats.max)
+      done()
+    }, 1)
+  })
+
+  it_native("should gather loop metrics", function(done) {
+    sampler.start(agent)
+    setTimeout(function runLoop() {
+      sampler.sampleLoop(agent, sampler.nativeMetrics)()
+
+      var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
+      expect(stats.callCount).equal(1)
+      expect(stats.max).to.be.above(0)
+      expect(stats.min).to.equal(stats.max)
+      expect(stats.total).to.equal(stats.max)
+      done()
+    }, 1)
+  })
+
   it("should depend on Agent to provide the current metrics summary", function() {
     expect(function() { sampler.start(agent) }).to.not.throw()
     expect(function() { sampler.stop(agent) }).to.not.throw()
@@ -77,14 +124,6 @@ describe("environmental sampler", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
-    expect(stats.callCount).equal(1)
-    expect(stats.total).equal(numCpus)
-  })
-
-  it_v610_or_native("should gather CPU sytem time metric", function() {
-    sampler.sampleCpu(agent)()
-
-    var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
     expect(stats.callCount).equal(1)
     expect(stats.total).equal(numCpus)
   })
