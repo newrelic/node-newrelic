@@ -1,4 +1,4 @@
-require('../../index.js') // same as require('newrelic')
+require('../../index.js')() // same as require('newrelic')
 var express = require('express')
 
 var app = express()
