@@ -1,21 +1,19 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , should      = chai.should()
-  , expect      = chai.expect
-  , helper      = require('../lib/agent_helper.js')
-  , API         = require('../../api.js')
-  , Metrics     = require('../../lib/metrics')
-  , Trace       = require('../../lib/transaction/trace')
-  , Transaction = require('../../lib/transaction')
-  , hashes      = require('../../lib/util/hashes')
-  , NAMES       = require('../../lib/metrics/names.js')
+var chai        = require('chai')
+var should      = chai.should()
+var expect      = chai.expect
+var helper      = require('../lib/agent_helper.js')
+var API         = require('../../api.js')
+var Metrics     = require('../../lib/metrics')
+var Trace       = require('../../lib/transaction/trace')
+var Transaction = require('../../lib/transaction')
+var hashes      = require('../../lib/util/hashes')
 
 
 describe("Transaction", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {
@@ -146,8 +144,8 @@ describe("Transaction", function () {
     it("should allow multiple overlapping metric measurements for same name",
        function () {
       var TRACE_NAME = 'Custom/Test06'
-        , SLEEP_DURATION = 43
-        , tt = new Transaction(agent)
+      var SLEEP_DURATION = 43
+      var tt = new Transaction(agent)
 
 
       tt.measure(TRACE_NAME, null, SLEEP_DURATION)
@@ -259,16 +257,16 @@ describe("Transaction", function () {
         expect(trans.statusCode).equal(404)
       })
 
-      it("produces a 'not found' partial name when status is 404", function () {
-        trans.verb = 'GET'
+      it("produces a 'not found' partial name when status is 404", function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
         trans.setName('/test/string?do=thing&another=thing', 404)
-        expect(trans._partialName).equal('/GET not found')
+        expect(trans._partialName).equal('Expressjs/GET/(not found)')
       })
 
-      it("produces a 'not found' name when status is 404", function () {
-        trans.verb = 'GET'
+      it("produces a 'not found' name when status is 404", function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
         trans.setName('/test/string?do=thing&another=thing', 404)
-        expect(trans.name).equal('WebTransaction//GET not found')
+        expect(trans.name).equal('WebTransaction/Expressjs/GET/(not found)')
       })
 
       it("produces a regular name when status is 501", function () {
@@ -358,7 +356,7 @@ describe("Transaction", function () {
 
   describe("when setting apdex for key transactions", function () {
     var trans
-      , metric
+    var metric
 
 
     before(function () {
