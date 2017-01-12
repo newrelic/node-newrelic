@@ -1,3 +1,18 @@
+### v1.36.1 (2017-01-12):
+
+* Stop collecting URL parameters from the HTTP referer header
+
+  The Node agent collects the request headers during an error trace to help determine
+  the root cause of problems. The referer header is the URI that identifies the address
+  of the webpage that linked to the resource being requested. It is possible that
+  the referer URI may contain sensitive information in the request query parameters.
+  New Relic has found that the query parameters are not properly stripped during
+  the error trace. This update fixes this by stripping the query parameters from
+  the referer in the request header before sending this data to New Relic.
+
+  This release fixes [New Relic Security Bulletin NR17-01](https://docs.newrelic.com/docs/accounts-partnerships/accounts/security-bulletins/security-bulletin-nr17-01).
+
+* Improved logging of modules that did not get instrumented.
 
 ### v2.3.0 / beta-43 (2017-01-04):
 * Incorporated new features and fixes from 1.34.0, 1.35.1, and 1.36.0
