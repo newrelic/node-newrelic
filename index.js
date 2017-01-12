@@ -46,13 +46,13 @@ function initialize() {
     logger.debug("Process title is %s.", process.title)
     logger.debug("Application was invoked as %s.", process.argv.join(' '))
 
-    var config = require('./lib/config.js').getOrCreateConfig()
+    var config = require('./lib/config.js').getOrCreateInstance()
 
     // Get the initialized logger as we likely have a bootstrap logger which
     // just pipes to stdout.
     logger = require('./lib/logger.js')
 
-    if (!config.agent_enabled) {
+    if (!config || !config.agent_enabled) {
       logger.info("Module not enabled in configuration; not starting.")
     } else {
       /* Only load the rest of the module if configuration is available and the
