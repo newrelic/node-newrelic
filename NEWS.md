@@ -1,3 +1,6 @@
+### v2.3.1 / beta-44 (2017-01-12):
+* Incorporated fixes from 1.36.1
+
 ### v1.36.1 (2017-01-12):
 
 * Stop collecting URL parameters from the HTTP referer header
