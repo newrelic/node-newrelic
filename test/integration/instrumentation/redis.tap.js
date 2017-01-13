@@ -101,14 +101,46 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
+  t.test('when called without a callback', function(t) {
+    t.plan(4)
+
+    helper.runInTransaction(agent, function(tx) {
+      client.set('testKey', 'testvalue')
+      setTimeout(function() {
+        // This will generate an error because `testKey` is not a hash.
+        client.hset('testKey', 'hashKey', 'foobar')
+        setTimeout(tx.end.bind(tx), 100)
+      }, 100) // Redis calls should never take 100 ms
+    })
+
+    client.on('error', function(err) {
+      if (t.ok(err, 'should emit errors on the client')) {
+        t.equal(
+          err.message,
+          'WRONGTYPE Operation against a key holding the wrong kind of value',
+          'errors should have the expected error message'
+        )
+      }
+    })
+
+    agent.on('transactionFinished', function(tx) {
+      var redSeg = tx.trace.root.children[0]
+      t.equal(
+        redSeg.name, 'Datastore/operation/Redis/set',
+        'should have untruncated redis segment'
+      )
+      t.equal(redSeg.children.length, 0, 'should have no children for redis segment')
+    })
+  })
+
   t.test('should create correct metrics', function(t) {
     t.plan(14)
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
-      client.set('testkey', 'arglbargle', function(error, ok) {
+      client.set('testkey', 'arglbargle', function(error) {
         if (error) return t.fail(error)
 
-        client.get('testkey', function(error, value) {
+        client.get('testkey', function(error) {
           if (error) return t.fail(error)
 
           transaction.end(function() {
@@ -133,7 +165,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     t.plan(3)
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
-      client.set('testkey', 'arglbargle', function(error, ok) {
+      client.set('testkey', 'arglbargle', function(error) {
         if (error) return t.fail(error)
 
         var trace = transaction.trace
@@ -164,18 +196,21 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
-      client.set('testkey', 'arglbargle', function(error, ok) {
+      client.set('testkey', 'arglbargle', function(error) {
         if (error) return t.fail(error)
 
         var setSegment = transaction.trace.root.children[0]
         t.equals(
-          setSegment.parameters.host, undefined, 'should not have host parameter'
+          setSegment.parameters.host, undefined,
+          'should not have host parameter'
         )
         t.equals(
-          setSegment.parameters.port_path_or_id, undefined, 'should not have port parameter'
+          setSegment.parameters.port_path_or_id, undefined,
+          'should not have port parameter'
         )
         t.equals(
-          setSegment.parameters.database_name, undefined, 'should not have db name parameter'
+          setSegment.parameters.database_name, undefined,
+          'should not have db name parameter'
         )
 
         transaction.end(function() {
