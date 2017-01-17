@@ -82,7 +82,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/get',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
@@ -110,7 +110,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/gets',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
@@ -166,7 +166,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/set',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
@@ -197,7 +197,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/replace',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
               ])
 
@@ -226,7 +226,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/add',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
@@ -260,7 +260,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
                 verifySegments(t, transaction.trace.root, [
                   'Datastore/operation/Memcache/cas',
                   [
-                    'Truncated/Callback: anonymous'
+                    'Truncated/Callback: <anonymous>'
                   ]
                 ])
 
@@ -290,7 +290,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             transaction.end(function() {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/append', [
-                  'Truncated/Callback: anonymous'
+                  'Truncated/Callback: <anonymous>'
                 ]
               ])
 
@@ -319,7 +319,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             transaction.end(function() {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/prepend', [
-                  'Truncated/Callback: anonymous'
+                  'Truncated/Callback: <anonymous>'
                 ]
               ])
 
@@ -348,7 +348,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             transaction.end(function() {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/delete', [
-                  'Truncated/Callback: anonymous'
+                  'Truncated/Callback: <anonymous>'
                 ]
               ])
 
@@ -377,7 +377,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/incr',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
