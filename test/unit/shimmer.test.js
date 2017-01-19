@@ -15,14 +15,13 @@ describe('shimmer', function() {
     var onRequireArgs = null
     var onErrorArgs = null
     var counter = 0
-    var moduleName = null
+    var moduleName = '../helpers/module'
     var instrumentationOpts = null
 
     before(function() {
       agent = helper.instrumentMockedAgent()
-      moduleName = require.resolve('../helpers/module')
       instrumentationOpts = {
-        moduleName: 'module.js',
+        moduleName: moduleName,
         onRequire: function() {
           ++counter
           onRequireArgs = arguments
@@ -38,7 +37,7 @@ describe('shimmer', function() {
       onErrorArgs = null
 
       delete instrumentationOpts.instrumented
-      delete require.cache[moduleName]
+      delete require.cache[require.resolve(moduleName)]
     })
 
     after(function() {
@@ -50,7 +49,7 @@ describe('shimmer', function() {
       expect(onRequireArgs.length).to.equal(3)
       expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
       expect(onRequireArgs[1]).to.equal(mod)
-      expect(onRequireArgs[2]).to.equal('module.js')
+      expect(onRequireArgs[2]).to.equal(moduleName)
     })
 
     it('should construct a DatastoreShim if the type is "datastore"', function() {

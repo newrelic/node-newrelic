@@ -30,17 +30,25 @@ var BODY      = "<!DOCTYPE html>\n" +
 
 test("agent instrumentation of Express 2", function(t) {
   t.plan(6)
+  var agent
+  var app
+  t.beforeEach(function (done) {
+    agent = helper.instrumentMockedAgent()
+    //purify the require cache
+    Object.keys(require.cache)
+      .filter(function getConnectAndExpress(key) { return /connect|express/.test(key) })
+      .map(function deleteConnectAndExpress(key) { delete require.cache[key] })
+    app = require('express').createServer()
+    done()
+  })
+
+  t.afterEach(function (done) {
+    helper.unloadAgent(agent)
+    app.close()
+    done()
+  })
 
   t.test("for a normal request", {timeout : 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var app   = require('express').createServer()
-
-
-    t.tearDown(function cb_tearDown() {
-      app.close()
-      helper.unloadAgent(agent)
-    })
-
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
@@ -89,15 +97,6 @@ test("agent instrumentation of Express 2", function(t) {
   t.test("using EJS templates",
        {timeout : 1000},
        function (t) {
-    var agent = helper.instrumentMockedAgent()
-      , app   = require('express').createServer()
-
-
-    t.tearDown(function cb_tearDown() {
-      app.close()
-      helper.unloadAgent(agent)
-    })
-
     app.set('views', __dirname + '/views')
     app.set('view engine', 'ejs')
     app.set('view options', {layout : false})
@@ -126,19 +125,12 @@ test("agent instrumentation of Express 2", function(t) {
   t.test("should generate rum headers",
        {timeout : 1000},
        function (t) {
-    var agent = helper.instrumentMockedAgent()
-      , app   = require('express').createServer()
-      , api   = new API(agent)
+    var  api   = new API(agent)
 
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
-
-    t.tearDown(function cb_tearDown() {
-      app.close()
-      helper.unloadAgent(agent)
-    })
 
     app.set('views', __dirname + '/views')
     app.set('view engine', 'ejs')
@@ -170,28 +162,6 @@ test("agent instrumentation of Express 2", function(t) {
   t.test("should trap errors correctly",
          {timeout : 1000},
          function (t) {
-    var agent = helper.instrumentMockedAgent()
-
-    // see shimmer.reinstrument for info on why this is here
-    var pathName = path.join(__dirname, 'node_modules/express/node_modules/connect')
-    // as of npm v3, dependencies are flattened into the root
-    // node_modules
-    if (fs.existsSync(pathName)) {
-      shimmer.reinstrument(
-        agent,
-        path.join(__dirname, 'node_modules/express/node_modules/connect')
-      )
-    } else {
-      shimmer.reinstrument(agent, path.join(__dirname, 'node_modules/connect'))
-    }
-
-    var app = require('express').createServer()
-
-    t.tearDown(function cb_tearDown() {
-      app.close()
-      helper.unloadAgent(agent)
-    })
-
     app.get(TEST_PATH, function () {
       var hmm
       hmm.ohno.failure.is.terrible()
@@ -227,15 +197,6 @@ test("agent instrumentation of Express 2", function(t) {
   t.test("should measure request duration properly (NA-46)",
          {timeout : 2 * 1000},
          function (t) {
-    var agent = helper.instrumentMockedAgent()
-      , app   = require('express').createServer()
-
-
-    t.tearDown(function cb_tearDown() {
-      app.close()
-      helper.unloadAgent(agent)
-    })
-
     app.get(TEST_PATH, function (request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler")
@@ -274,15 +235,6 @@ test("agent instrumentation of Express 2", function(t) {
   t.test("should capture URL correctly when configured with a prefix",
          {timeout : 2 * 1000},
          function (t) {
-    var agent = helper.instrumentMockedAgent()
-      , app   = require('express').createServer()
-
-
-    t.tearDown(function cb_tearDown() {
-      app.close()
-      helper.unloadAgent(agent)
-    })
-
     app.use(TEST_PATH, function (request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler")
