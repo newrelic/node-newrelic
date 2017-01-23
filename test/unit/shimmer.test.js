@@ -10,65 +10,71 @@ var shims = require('../../lib/shim')
 var EventEmitter = require('events').EventEmitter
 
 describe('shimmer', function() {
-  describe('custom instrumentation', function() {
-    var agent = null
-    var onRequireArgs = null
-    var onErrorArgs = null
-    var counter = 0
-    var moduleName = '../helpers/module'
-    var instrumentationOpts = null
+  describe('custom instrumentation of relative modules', makeModuleTests('../helpers/module'))
+  describe('custom instrumentation of modules', makeModuleTests('chai'))
+  describe('custom instrumentation of deep modules', makeModuleTests('chai/lib/chai'))
 
-    before(function() {
-      agent = helper.instrumentMockedAgent()
-      instrumentationOpts = {
-        moduleName: moduleName,
-        onRequire: function() {
-          ++counter
-          onRequireArgs = arguments
-        },
-        onError: function() { onErrorArgs = arguments }
-      }
-      shimmer.registerInstrumentation(instrumentationOpts)
-    })
+  function makeModuleTests(moduleName) {
+    return function moduleTests() {
+      var agent = null
+      var onRequireArgs = null
+      var onErrorArgs = null
+      var counter = 0
+      var instrumentationOpts = null
+      var instrumentedModule = null
 
-    afterEach(function() {
-      counter = 0
-      onRequireArgs = null
-      onErrorArgs = null
+      beforeEach(function() {
+        agent = helper.instrumentMockedAgent()
+        instrumentationOpts = {
+          moduleName: moduleName,
+          onRequire: function(shim, module) {
+            instrumentedModule = module
+            ++counter
+            onRequireArgs = arguments
+          },
+          onError: function() { onErrorArgs = arguments }
+        }
+        shimmer.registerInstrumentation(instrumentationOpts)
+      })
 
-      delete instrumentationOpts.instrumented
-      delete require.cache[require.resolve(moduleName)]
-    })
+      afterEach(function() {
+        counter = 0
+        onRequireArgs = null
+        onErrorArgs = null
+        helper.unloadAgent(agent)
+      })
 
-    after(function() {
-      helper.unloadAgent(agent)
-    })
+      it('should be sent a shim and the loaded module', function() {
+        var mod = require(moduleName)
+        expect(onRequireArgs.length).to.equal(3)
+        expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
+        expect(onRequireArgs[1]).to.equal(mod)
+        expect(onRequireArgs[2]).to.equal(moduleName)
+      })
 
-    it('should be sent a shim and the loaded module', function() {
-      var mod = require(moduleName)
-      expect(onRequireArgs.length).to.equal(3)
-      expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
-      expect(onRequireArgs[1]).to.equal(mod)
-      expect(onRequireArgs[2]).to.equal(moduleName)
-    })
+      it('should construct a DatastoreShim if the type is "datastore"', function() {
+        instrumentationOpts.type = 'datastore'
+        var mod = require(moduleName)
+        expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
+      })
 
-    it('should construct a DatastoreShim if the type is "datastore"', function() {
-      instrumentationOpts.type = 'datastore'
-      var mod = require(moduleName)
-      expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
-    })
+      it('should receive the correct module (' + moduleName + ')', function() {
+        var mod = require(moduleName)
+        expect(mod).to.equal(instrumentedModule)
+      })
 
-    it('should only run the instrumentation once', function() {
-      expect(counter).to.equal(0)
-      require(moduleName)
-      expect(counter).to.equal(1)
-      require(moduleName)
-      require(moduleName)
-      require(moduleName)
-      require(moduleName)
-      expect(counter).to.equal(1)
-    })
-  })
+      it('should only run the instrumentation once', function() {
+        expect(counter).to.equal(0)
+        require(moduleName)
+        expect(counter).to.equal(1)
+        require(moduleName)
+        require(moduleName)
+        require(moduleName)
+        require(moduleName)
+        expect(counter).to.equal(1)
+      })
+    }
+  }
 
   describe('the instrumentation injector', function () {
     var nodule = {
