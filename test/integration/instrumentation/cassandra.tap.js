@@ -121,7 +121,7 @@ test("Cassandra instrumentation",
 
             var setSegment = trace.root.children[0]
             t.ok(setSegment, "trace segment for insert should exist")
-            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeBatch",
+            t.equals(setSegment.name, "Datastore/statement/Cassandra/test.testFamily/insert/batch",
                    "should register the executeBatch")
             t.ok(setSegment.children.length >= 2,
                    "set should have atleast a dns lookup and callback child")
