@@ -1,8 +1,22 @@
+
+### v2.4.0 / beta-45 (2017-01-25):
+* Rewrote the `cassandra-cql` and `memcached` instrumentations using the
+  `DatastoreShim`.
+
+* Improved instrumentation matching.
+
+  Previously, the agent would determine which instrumentation would run for a
+  given module being loaded using the basename of the file path. This lead to
+  false positives (e.g. `myapp/lib/express.js` would trigger the express
+  instrumentation) which we previously just ignored. Matches are now determined
+  using the string passed to `require`. This means you can now match local
+  relative paths (`./lib/something`) as well as package-relative paths
+  (`amqplib/callback_api`).
+
 ### v2.3.1 / beta-44 (2017-01-12):
 * Incorporated fixes from 1.36.1
 
 ### v1.36.1 (2017-01-12):
-
 * Stop collecting URL parameters from the HTTP referer header
 
   The Node agent collects the request headers during an error trace to help determine
@@ -210,7 +224,7 @@
 
   Previously transactions were not correctly named on older versions of Express 4.
 
-* Minor upates to logging.
+* Minor updates to logging.
 
 ### v1.30.1 (2016-09-01):
 
