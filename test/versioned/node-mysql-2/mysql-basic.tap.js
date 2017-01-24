@@ -279,7 +279,7 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
               var traceRootDuration = traceRoot.timer.getDurationInMillis()
               var segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
               var queryNodeDuration = segment.timer.getDurationInMillis()
-              t.ok(Math.abs(duration - queryNodeDuration) < 1,
+              t.ok(Math.abs(duration - queryNodeDuration) < 2,
                   'query duration should be roughly be the time between query and end')
               t.ok(traceRootDuration - queryNodeDuration > 900,
                   'query duration should be small compared to transaction duration')
