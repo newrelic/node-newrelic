@@ -1,5 +1,17 @@
-### v1.36.1 (2017-01-12):
+### v1.36.2 (2017-01-26):
+* Fixed issue with timing Redis operations when called without a callback.
 
+  Previously these operations would continue to be timed until the transaction ended, and
+  as a result reported incorrect times.
+
+* Transactions that result in a 404 HTTP error are now named "(not found)".
+
+  Previously these transactions were reported with no name (e.g. get /).
+
+* When the newrelic.js configuration file is not present, the agent now logs a message
+  to the console and no longer prevents the app from starting up.
+
+### v1.36.1 (2017-01-12):
 * Stop collecting URL parameters from the HTTP referer header
 
   The Node agent collects the request headers during an error trace to help determine
