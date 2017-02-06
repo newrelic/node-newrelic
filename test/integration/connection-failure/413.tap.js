@@ -38,6 +38,9 @@ test("harvesting with a mocked collector that returns 413 after connect", functi
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
+  // turn off native metrics to avoid unwanted gc metrics
+  agent.config.feature_flag.native_metrics = false
+
   var redirect = nock(url).post(path('get_redirect_host'))
                    .reply(200, {return_value : "collector.newrelic.com"})
   var handshake = nock(url).post(path('connect'))
@@ -108,6 +111,9 @@ test("discarding metrics and errors after a 413", function (t) {
 
   // manually harvesting
   agent.config.no_immediate_harvest = true
+
+  // turn off native metrics to avoid unwanted gc metrics
+  agent.config.feature_flag.native_metrics = false
 
   nock(url).post(path('get_redirect_host'))
            .reply(200, {return_value : "collector.newrelic.com"})

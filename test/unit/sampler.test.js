@@ -64,28 +64,30 @@ describe("environmental sampler", function() {
     expect(type).to.have.property('callCount', 1)
     expect(type).to.have.property('total', 50)
 
+    sampler.nativeMetrics.getLoopMetrics()
     setTimeout(function runLoop() {
       sampler.sampleLoop(agent, sampler.nativeMetrics)()
 
       var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
-      expect(stats.callCount).equal(1)
+      expect(stats.callCount).to.be.above(1)
       expect(stats.max).to.be.above(0)
-      expect(stats.min).to.equal(stats.max)
-      expect(stats.total).to.equal(stats.max)
+      expect(stats.min).to.be.at.most(stats.max)
+      expect(stats.total).to.be.at.least(stats.max)
       done()
     }, 1)
   })
 
   it_native("should gather loop metrics", function(done) {
     sampler.start(agent)
+    sampler.nativeMetrics.getLoopMetrics()
     setTimeout(function runLoop() {
       sampler.sampleLoop(agent, sampler.nativeMetrics)()
 
       var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
-      expect(stats.callCount).equal(1)
+      expect(stats.callCount).to.be.above(1)
       expect(stats.max).to.be.above(0)
-      expect(stats.min).to.equal(stats.max)
-      expect(stats.total).to.equal(stats.max)
+      expect(stats.min).to.be.at.most(stats.max)
+      expect(stats.total).to.be.at.least(stats.max)
       done()
     }, 1)
   })
@@ -124,6 +126,14 @@ describe("environmental sampler", function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
+    expect(stats.callCount).equal(1)
+    expect(stats.total).equal(numCpus)
+  })
+
+  it_v610_or_native("should gather CPU sytem time metric", function() {
+    sampler.sampleCpu(agent)()
+
+    var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
     expect(stats.callCount).equal(1)
     expect(stats.total).equal(numCpus)
   })
