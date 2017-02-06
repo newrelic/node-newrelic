@@ -346,27 +346,41 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
 
   var config = this.agent.config
 
-  /* Gracefully fail.
+  /**
+   * Gracefully fail.
    *
    * Output an HTML comment and log a warning the comment is meant to be
    * innocuous to the end user.
+   *
+   * @param {number} num          - Error code from `RUM_ISSUES`.
+   * @param {bool} [quite=false]  - Be quiet about this failure.
+   *
+   * @see RUM_ISSUES
    */
-  function _gracefail(num) {
-    logger.warn(RUM_ISSUES[num])
+  function _gracefail(num, quiet) {
+    if (quiet) {
+      logger.debug(RUM_ISSUES[num])
+    } else {
+      logger.warn(RUM_ISSUES[num])
+    }
     return '<!-- NREUM: (' + num + ') -->'
   }
 
   var browser_monitoring = config.browser_monitoring
 
-  // config.browser_monitoring should always exist, but we don't want the agent to bail
-  // here if something goes wrong
+  // config.browser_monitoring should always exist, but we don't want the agent
+  // to bail here if something goes wrong
   if (!browser_monitoring) return _gracefail(2)
 
   /* Can control header generation with configuration this setting is only
    * available in the newrelic.js config file, it is not ever set by the
    * server.
    */
-  if (!browser_monitoring.enable) return _gracefail(0)
+  if (!browser_monitoring.enable) {
+    // It has been disabled by the user; no need to warn them about their own
+    // settings so fail quietly and gracefully.
+    return _gracefail(0, true)
+  }
 
   var trans = this.agent.getTransaction()
 
