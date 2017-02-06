@@ -32,7 +32,7 @@ function generate(method, runID) {
 }
 
 var timeout = global.setTimeout
-function fast() { global.setTimeout = process.nextTick }
+function fast() { global.setTimeout = function (cb) {return timeout(cb, 0)} }
 function slow() { global.setTimeout = timeout }
 
 describe("CollectorAPI", function() {
