@@ -1,12 +1,12 @@
 'use strict'
 
-var path = require('path')
 var url = require('url')
 var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
-var Config = require('../../lib/config.js')
-var RemoteMethod = require('../../lib/collector/remote-method.js')
+var Config = require('../../../lib/config')
+var RemoteMethod = require('../../../lib/collector/remote-method')
+var safeJSON = require('../../../lib/util/safe-json')
 var semver = require('semver')
 
 
@@ -27,18 +27,69 @@ function generate(method, runID) {
   return fragment
 }
 
-describe("RemoteMethod", function () {
-  it("should require a name for the method to call", function () {
-    var method
-    expect(function () { method = new RemoteMethod(); }).throws()
+describe("RemoteMethod", function() {
+  it("should require a name for the method to call", function() {
+    expect(function() {
+      new RemoteMethod() // eslint-disable-line no-new
+    }).throws()
   })
 
-  it("should expose a call method as its public API", function () {
+  it("should expose a call method as its public API", function() {
     expect(new RemoteMethod('test').invoke).a('function')
   })
 
-  it("should expose its name", function () {
+  it("should expose its name", function() {
     expect(new RemoteMethod('test').name).equal('test')
+  })
+
+  describe('serialize', function() {
+    var method = null
+
+    beforeEach(function() {
+      method = new RemoteMethod('test')
+    })
+
+    it('should JSON-encode the given payload', function(done) {
+      method.serialize({foo: 'bar'}, function(err, encoded) {
+        expect(err).to.not.exist()
+        expect(encoded).to.equal('{"foo":"bar"}')
+        done()
+      })
+    })
+
+    it('should not error with circular payloads', function(done) {
+      var obj = {foo: 'bar'}
+      obj.obj = obj
+      method.serialize(obj, function(err, encoded) {
+        expect(err).to.not.exist()
+        expect(encoded).to.equal('{"foo":"bar","obj":"[Circular ~]"}')
+        done()
+      })
+    })
+
+    describe('with a bad payload', function() {
+      var original = safeJSON.stringifySync
+
+      before(function() {
+        safeJSON.stringifySync = JSON.stringify
+      })
+
+      after(function() {
+        safeJSON.stringifySync = original
+      })
+
+      it('should catch serialization errors', function(done) {
+        method.serialize({toJSON: function() {
+          throw new Error('fake serialization error')
+        }}, function(err, encoded) {
+          expect(err)
+            .to.exist()
+            .and.have.property('message', 'fake serialization error')
+          expect(encoded).to.not.exist()
+          done()
+        })
+      })
+    })
   })
 
   describe("_safeRequest", function () {
@@ -101,23 +152,6 @@ describe("RemoteMethod", function () {
   })
 
   describe("when calling a method on the collector", function() {
-    it("should pass error to the callback when serialization fails", function(done) {
-      var config = new Config({
-        port: 80,
-        host: 'collector.newrelic.com'
-      })
-
-      var method = new RemoteMethod('test', config)
-
-      var problematic = {}
-      problematic.parent = problematic
-
-      method.invoke(problematic, function(error) {
-        expect(error.message).equal('Converting circular structure to JSON')
-        done()
-      })
-    })
-
     it("shouldn't throw when dealing with compressed data", function(done) {
       var method = new RemoteMethod('test', {host: 'localhost'})
       method._shouldCompress = function() { return true; }
@@ -572,8 +606,8 @@ describe("RemoteMethod", function () {
     var pkg
 
 
-    before(function () {
-      pkg = require('../../package.json')
+    before(function() {
+      pkg = require('../../../package.json')
       version = pkg.version
       pkg.version = TEST_VERSION
       var config = new Config({})
