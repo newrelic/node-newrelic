@@ -53,7 +53,24 @@ function runTests(t, agent, Promise) {
     doPerformTests(name, resolve, reject, false)
   }
 
-  function doPerformTests(name, resolve, reject, enableSegments) {
+  function doPerformTests(name, resolve, reject) {
+    t.test(name + ': does not expose internal properties', function(t) {
+      t.plan(1 * COUNT + 1)
+
+      runMultiple(COUNT, function(i, cb) {
+        helper.runInTransaction(agent, function() {
+          var p = resolve(Promise).then(cb, cb)
+          var nrKeys = Object.keys(p).filter(function(key) {
+            return /^__NR_/.test(key)
+          })
+          t.deepEqual(nrKeys, [], 'should not expose any internal keys')
+        })
+      }, function(err) {
+        t.error(err, 'should not error')
+        t.end()
+      })
+    })
+
     t.test(name + ': preserves transaction in resolve callback', function(t) {
       t.plan(4 * COUNT + 1)
 
@@ -71,7 +88,7 @@ function runTests(t, agent, Promise) {
             .then(cb, cb)
         })
       }, function(err) {
-        t.notOk(err)
+        t.error(err, 'should not error')
         t.end()
       })
     })
@@ -93,7 +110,7 @@ function runTests(t, agent, Promise) {
             .then(cb, cb)
         })
       }, function(err) {
-        t.notOk(err)
+        t.error(err, 'should not error')
         t.end()
       })
     })
