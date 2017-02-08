@@ -95,6 +95,15 @@ describe("Transaction naming:", function() {
     })
   })
 
+  it('Custom naming rules should be cleaned up', function(done) {
+    agent.userNormalizer.addSimple(/\//, 'test-transaction')
+    helper.runInTransaction(agent, function(transaction) {
+      transaction.setName('http://test.test.com/', 200)
+      expect(transaction.name).equal('WebTransaction/NormalizedUri/test-transaction')
+      done()
+    })
+  })
+
   it('Custom naming rules should trump instrumentation naming', function(done) {
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
     helper.runInTransaction(agent, function(transaction) {
