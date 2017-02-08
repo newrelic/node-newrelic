@@ -168,7 +168,7 @@ module.exports = function runTests(agent, pg, name) {
   }
 
   test('Postgres instrumentation: ' + name, function (t) {
-    t.plan(8)
+    t.plan(11)
     postgresSetup(runTest)
     function runTest () {
       t.test('simple query with prepared statement', function (t) {
@@ -423,8 +423,14 @@ module.exports = function runTests(agent, pg, name) {
       })
 
       t.test('query.on should not create segments for row events', function (t) {
+        t.plan(1)
+
         helper.runInTransaction(agent, function transactionInScope(tx) {
           var client = new pg.Client(CON_STRING)
+
+          t.tearDown(function() {
+            client.end()
+          })
 
           client.connect(function (error) {
             if (error) return t.fail(error)
@@ -442,8 +448,125 @@ module.exports = function runTests(agent, pg, name) {
                 'Datastore/statement/Postgres/information_schema.tables/select')
 
               t.equal(segment.children.length, 1)
-              client.end()
+            })
+          })
+        })
+      })
+
+      t.test('query.addListener should not create segments for row events', function (t) {
+        t.plan(1)
+
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_STRING)
+
+          t.tearDown(function() {
+            client.end()
+          })
+
+          client.connect(function (error) {
+            if (error) return t.fail(error)
+            var query = client.query('SELECT table_name FROM information_schema.tables')
+
+            query.addListener('error', function(err) {
+              t.error(err, 'error while querying')
               t.end()
+            })
+
+            query.addListener('row', function onRow(row) {})
+
+            query.addListener('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/information_schema.tables/select')
+
+              t.equal(segment.children.length, 1)
+            })
+          })
+        })
+      })
+
+      t.test('query.on should not create segments for each row with readable stream', function (t) {
+        t.plan(2)
+
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_STRING)
+
+          t.tearDown(function() {
+            client.end()
+          })
+
+          client.connect(function (error) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
+
+            var query = client.query('SELECT * FROM generate_series(0, 9)')
+
+            query.on('error', function(err) {
+              t.error(err, 'error while querying')
+              t.end()
+            })
+
+            // simulate readable stream by emitting 'readable' event for each row
+            query.on('row', function onRow(row) {
+              query.emit('readable', row)
+            })
+
+            var called = 0
+            query.on('readable', function onReadable(row) {
+              called++
+            })
+
+            query.on('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/generate_series/select')
+
+              t.equal(segment.children.length, 1)
+              t.equal(called, 10, 'event was called for each row')
+            })
+          })
+        })
+      })
+
+      t.test('query.addListener should not create segments for each row with readable stream', function (t) {
+        t.plan(2)
+
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_STRING)
+
+          t.tearDown(function() {
+            client.end()
+          })
+
+          client.connect(function (error) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
+
+            var query = client.query('SELECT * FROM generate_series(0, 9)')
+
+            query.addListener('error', function(err) {
+              t.error(err, 'error while querying')
+              t.end()
+            })
+
+            // simulate readable stream by emitting 'readable' event for each row
+            query.addListener('row', function onRow(row) {
+              query.emit('readable', row)
+            })
+
+            var called = 0
+            query.addListener('readable', function onReadable(row) {
+              called++
+            })
+
+            query.addListener('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/generate_series/select')
+
+              t.equal(segment.children.length, 1)
+              t.equal(called, 10, 'event was called for each row')
             })
           })
         })
