@@ -4,7 +4,10 @@ var chai = require('chai')
 var EventEmitter = require('events').EventEmitter
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
+var Promise = global.Promise || require('bluebird')
+var semver = require('semver')
 var Shim = require('../../../lib/shim/shim')
+
 
 describe('Shim', function() {
   var agent = null
@@ -753,6 +756,103 @@ describe('Shim', function() {
         expect(stream.segment.children[0]).to.equal(eventSegment)
         expect(eventSegment.parameters).to.have.property('count')
           .equals(3)
+      })
+    })
+
+    describe('with a promise', function() {
+      var itUnhandled = semver.satisfies(process.version, '>=1.4.1') ? it : xit
+
+      var promise = null
+      var toWrap = null
+
+      beforeEach(function() {
+        var defer = {}
+        promise = new Promise(function(resolve, reject) {
+          defer.resolve = resolve
+          defer.reject = reject
+        })
+        promise.resolve = defer.resolve
+        promise.reject = defer.reject
+
+        toWrap = function() {
+          promise.segment = agent.tracer.getSegment()
+          return promise
+        }
+      })
+
+      afterEach(function() {
+        promise = null
+        toWrap = null
+      })
+
+      it('should touch the segment when promise resolves', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function(val) {
+            expect(result).to.equal(val)
+            expect(promise.segment.timer.duration).to.be.above(oldDur)
+            done()
+          }).catch(done)
+        })
+
+        var oldDur = promise.segment.timer.duration
+        var result = {}
+        setTimeout(function() {
+          promise.resolve(result)
+        }, 5)
+      })
+
+      it('should touch the segment when promise rejects', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function() {
+            done(new Error('Should not have resolved!'))
+          }, function(err) {
+            expect(err).to.equal(result)
+            expect(promise.segment.timer.duration).to.be.above(oldDur)
+            done()
+          }).catch(done)
+        })
+
+        var oldDur = promise.segment.timer.duration
+        var result = {}
+        setTimeout(function() {
+          promise.reject(result)
+        }, 5)
+      })
+
+      itUnhandled('should not affect unhandledRejection event', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          process.on('unhandledRejection', function(err, p) {
+            expect(err).to.equal(result)
+            expect(p).to.equal(ret)
+            done()
+          })
+        })
+
+        var result = {}
+        setTimeout(function() {
+          promise.reject(result)
+        }, 5)
       })
     })
 
