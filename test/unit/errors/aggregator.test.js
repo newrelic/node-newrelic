@@ -339,6 +339,7 @@ describe('ErrorAggregator', function () {
       agent.errors.add(null, new Error('some error'))
       var events = agent.errors.getEvents()
       expect(events).length(1)
+      console.log(events)
       helper.unloadAgent(agent)
     })
   })
@@ -570,7 +571,7 @@ describe('ErrorAggregator', function () {
     })
 
     it('should have the default scope', function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/*')
+      expect(errorJSON[1]).equal('Unknown')
     })
 
     it('should have an HTTP status code error message', function () {
@@ -724,7 +725,7 @@ describe('ErrorAggregator', function () {
     })
 
     it('should have the default scope', function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/*')
+      expect(errorJSON[1]).equal('Unknown')
     })
 
     it('should fish the message out of the exception', function () {
@@ -773,7 +774,7 @@ describe('ErrorAggregator', function () {
     })
 
     it('should have the default scope', function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/*')
+      expect(errorJSON[1]).equal('Unknown')
     })
 
     it('should fish the message out of the exception', function () {
@@ -891,7 +892,7 @@ describe('ErrorAggregator', function () {
     })
 
     it('should have the default scope', function () {
-      expect(errorJSON[1]).equal('WebTransaction/Uri/*')
+      expect(errorJSON[1]).equal('Unknown')
     })
 
     it('should turn the string into the message', function () {
@@ -1088,7 +1089,7 @@ describe('ErrorAggregator', function () {
     })
 
     it('should never merge more than 20 errors', function () {
-      var sample = [0, 'WebTransaction/Uri/*', 'something bad happened', 'Error', {}]
+      var sample = [0, 'Unknown', 'something bad happened', 'Error', {}]
       var errors = []
       for (var i = 0; i < 30; i++) errors.push(sample)
 
@@ -1164,7 +1165,7 @@ describe('ErrorAggregator', function () {
       })
 
       it('should have the default name', function () {
-        expect(json[1]).equal('WebTransaction/Uri/*')
+        expect(json[1]).equal('Unknown')
       })
 
       it('should have the error\'s message', function () {

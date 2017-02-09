@@ -576,7 +576,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
 
@@ -599,7 +599,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
         expect(caught[4].userAttributes.hi).equal('yo')
@@ -623,7 +623,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('not an Error')
         expect(caught[3]).equal('Object')
 
@@ -644,7 +644,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('')
         expect(caught[3]).equal('Error')
 
@@ -681,7 +681,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('busted, bro')
         expect(caught[3]).equal('Error')
 
