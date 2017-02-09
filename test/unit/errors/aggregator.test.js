@@ -339,7 +339,6 @@ describe('ErrorAggregator', function () {
       agent.errors.add(null, new Error('some error'))
       var events = agent.errors.getEvents()
       expect(events).length(1)
-      console.log(events)
       helper.unloadAgent(agent)
     })
   })
@@ -1656,15 +1655,15 @@ describe('error events', function() {
         expect(attributes['error.class']).to.be.a('string')
         expect(attributes['error.message']).to.be.a('string')
         expect(attributes.timestamp).closeTo(nowSeconds, 1)
-        expect(attributes.transactionName).equal('None')
+        expect(attributes.transactionName).equal('Unknown')
       })
 
-      it('should set transactionName to None', function() {
+      it('should set transactionName to Unknown', function() {
         var error = new Error('some error')
         aggregator.add(null, error)
 
         var attributes = getFirstEventIntrinsicAttributes(aggregator)
-        expect(attributes.transactionName).equal('None')
+        expect(attributes.transactionName).equal('Unknown')
       })
 
       it('should contain supplied custom parameters', function() {
@@ -1710,15 +1709,15 @@ describe('error events', function() {
         expect(attributes['error.class']).to.be.a('string')
         expect(attributes['error.message']).to.be.a('string')
         expect(attributes.timestamp).closeTo(nowSeconds, 1)
-        expect(attributes.transactionName).equal('None')
+        expect(attributes.transactionName).equal('Unknown')
       })
 
-      it('should set transactionName to None', function() {
+      it('should set transactionName to Unknown', function() {
         var error = new Error('some error')
         api.noticeError(error)
 
         var attributes = getFirstEventIntrinsicAttributes(aggregator)
-        expect(attributes.transactionName).equal('None')
+        expect(attributes.transactionName).equal('Unknown')
       })
 
       it('should contain supplied custom parameters', function() {
