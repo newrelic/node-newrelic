@@ -240,28 +240,35 @@ describe('ErrorAggregator', function () {
     config.collect_errors = true
   })
 
-  it('should gather the same error in two transactions', function () {
+  it('should gather the same error in two transactions', function (done) {
     var error = new Error('this happened once')
-    expect(tracer.errorCount).equal(0)
-    expect(tracer.errors.length).equal(0)
-
-    tracer.add(null, error)
-
-    expect(tracer.errorCount).equal(1)
-    expect(tracer.errors.length).equal(1)
-
-    tracer.clearErrors()
+    var agent = helper.loadMockedAgent()
+    var tracer = agent.errors
+    var first = new Transaction(agent)
+    var second = new Transaction(agent)
 
     expect(tracer.errorCount).equal(0)
     expect(tracer.errors.length).equal(0)
 
-    tracer.add(null, error)
+    tracer.add(first, error)
+    expect(first.exceptions.length).equal(1)
 
-    expect(tracer.errorCount).equal(1)
-    expect(tracer.errors.length).equal(1)
+    tracer.add(second, error)
+    expect(second.exceptions.length).equal(1)
+
+    first.end(function onEnd() {
+      expect(tracer.errorCount).equal(1)
+
+      second.end(function secondEnd() {
+        expect(tracer.errorCount).equal(2)
+
+        helper.unloadAgent(agent)
+        done()
+      })
+    })
   })
 
-  it('should not gather the same error twice', function () {
+  it('should not gather the same error twice in the same transaction', function () {
     var error = new Error('this happened once')
     expect(tracer.errorCount).equal(0)
     expect(tracer.errors.length).equal(0)
@@ -1938,7 +1945,7 @@ describe('error events', function() {
       var transaction = createTransaction(agent, 500)
       transaction.trace.parameters['host.displayName'] = 'myHost'
       var error = new Error('some error')
-      aggregator.add(null, error, { a: 'a' })
+      aggregator.add(transaction, error, { a: 'a' })
 
       transaction.end(function() {
         var agentAttributes = getFirstEventAgentAttributes(aggregator)
