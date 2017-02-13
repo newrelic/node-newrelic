@@ -240,13 +240,18 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
 }
 
 /**
- * Send errors to New Relic that you've already handled yourself. Should
- * be an Error or one of its subtypes, but the API will handle strings
- * and objects that have an attached .message or .stack property.
+ * Send errors to New Relic that you've already handled yourself. Should be an
+ * `Error` or one of its subtypes, but the API will handle strings and objects
+ * that have an attached `.message` or `.stack` property.
  *
- * @param {Error}  error            The error to be traced.
- * @param {object} customParameters Any custom parameters to be displayed in
- *                                  the New Relic UI.
+ * NOTE: Errors that are recorded using this method do _not_ obey the
+ * `ignore_status_codes` configuration.
+ *
+ * @param {Error} error
+ *  The error to be traced.
+ *
+ * @param {object} [customParameters]
+ *  Optional. Any custom parameters to be displayed in the New Relic UI.
  */
 API.prototype.noticeError = function noticeError(error, customParameters) {
   var metric = this.agent.metrics.getOrCreateMetric(
