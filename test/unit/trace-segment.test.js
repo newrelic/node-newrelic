@@ -8,14 +8,15 @@ var TraceSegment = require('../../lib/transaction/trace/segment')
 var Transaction = require('../../lib/transaction')
 
 
-describe('TraceSegment', function () {
-  it('should be bound to a Trace', function () {
-    var segment
+describe('TraceSegment', function() {
+  it('should be bound to a Trace', function() {
+    var segment = null
     var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     expect(function noTrace() {
       segment = new TraceSegment(null, 'UnitTest')
-    }).throws()
+    }).to.throw()
+    expect(segment).to.be.null()
 
     var success = new TraceSegment(trans, 'UnitTest')
     expect(success.transaction).equal(trans)
@@ -23,14 +24,13 @@ describe('TraceSegment', function () {
     helper.unloadAgent(agent)
   })
 
-  it('should call an optional callback function', function (done) {
+  it('should call an optional callback function', function(done) {
     var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     expect(function noCallback() {
-      new TraceSegment(trans, 'UnitTest')
+      new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
     }).not.throws()
 
-    var trace = trans.trace
     var working = new TraceSegment(trans, 'UnitTest', callback)
 
     function callback() {
@@ -431,6 +431,51 @@ describe('TraceSegment', function () {
        []
       ])
       helper.unloadAgent(agent)
+    })
+  })
+
+  describe('when serialized', function() {
+    var agent = null
+    var trans = null
+    var segment = null
+
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+      trans = new Transaction(agent)
+      segment = new TraceSegment(trans, 'UnitTest')
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+      agent = null
+      trans = null
+      segment = null
+    })
+
+    it('should create a plain JS array', function() {
+      segment.end()
+      var js = segment.toJSON()
+
+      expect(js).to.be.an.instanceOf(Array)
+      expect(js[0]).to.be.a('number')
+      expect(js[1]).to.be.a('number')
+      expect(js[2]).to.be.a('string').and.equal('UnitTest')
+      expect(js[3]).to.be.an('object')
+      expect(js[4]).to.be.an.instanceOf(Array).and.have.lengthOf(0)
+    })
+
+    it('should not cause a stack overflow', function() {
+      this.timeout(30000)
+      var parent = segment
+      for (var i = 0; i < 9000; ++i) {
+        var child = new TraceSegment(trans, 'Child ' + i)
+        parent.children.push(child)
+        parent = child
+      }
+
+      expect(function() {
+        segment.toJSON()
+      }).to.not.throw()
     })
   })
 })
