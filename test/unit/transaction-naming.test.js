@@ -95,6 +95,16 @@ describe("Transaction naming:", function() {
     })
   })
 
+  it('Server sent naming rules should be applied when user specified rules are set', function(done) {
+    agent.urlNormalizer.addSimple(/\d+/, '*')
+    agent.userNormalizer.addSimple(/123/, 'abc')
+    helper.runInTransaction(agent, function(transaction) {
+      transaction.setName('http://test.test.com/123/456', 200)
+      expect(transaction.name).equal('WebTransaction/NormalizedUri/abc/*')
+      done()
+    })
+  })
+
   it('Custom naming rules should be cleaned up', function(done) {
     agent.userNormalizer.addSimple(/\//, 'test-transaction')
     helper.runInTransaction(agent, function(transaction) {
