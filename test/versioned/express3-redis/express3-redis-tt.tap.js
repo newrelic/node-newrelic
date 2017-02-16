@@ -255,16 +255,16 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         children = web.children || []
         t.equal(web.name, 'WebTransaction/Expressjs/GET//:id',
                 "first segment is web transaction")
-        t.equal(web.children.length, 2, "web node has two children")
+        t.equal(web.children.length, 8, "web node has two children")
 
-        var get = children[0] || {}
+        var get = children[4].children[0] || {}
         key = (get.parameters || {}).key
         t.equal(get.name, 'Datastore/operation/Redis/get', "first child segment is get")
         t.equal(key, '"sess:' + SESSION_ID + '"',
                 "operation is session load")
         t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
-        var hgetall = children[1] || {}
+        var hgetall = children[7].children[1].children[0] || {}
         key = (hgetall.parameters || {}).key
 
         children = hgetall.children[0].children || []
@@ -331,16 +331,17 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         get = children[0].children[0] || {}
         key = (get.parameters || {}).key
         children = get.children[0].children || []
+
         t.equal(get.name, 'Datastore/operation/Redis/get', "first hgetall child is get")
         t.equal(key, '"users:twitter:othiym23:status"',
                 "fetched status of othiym23")
-        t.ok(children.length >= 2, "get has two children")
+        t.ok(children.length >= 1, "get has a callback")
 
         var view = children[0] || {}
         t.equal(view.name, 'View/room/Rendering', "get child is render of room view")
-        t.equal((view.children || {}).length, 0, "has no children")
+        t.equal((view.children).length, 1, "has a child")
 
-        var setex = children[1] || {}
+        var setex = view.children[0] || {}
         key = (setex.parameters || {}).key
         t.equal(setex.name, 'Datastore/operation/Redis/setex', "view child is setex")
         t.equal(key, '"sess:' + SESSION_ID + '"',
