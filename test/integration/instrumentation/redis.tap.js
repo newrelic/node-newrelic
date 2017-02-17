@@ -101,6 +101,38 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
+  t.test('when called without a callback', function(t) {
+    t.plan(4)
+
+    helper.runInTransaction(agent, function(tx) {
+      client.set('testKey', 'testvalue')
+      setTimeout(function() {
+        // This will generate an error because `testKey` is not a hash.
+        client.hset('testKey', 'hashKey', 'foobar')
+        setTimeout(tx.end.bind(tx), 100)
+      }, 100) // Redis calls should never take 100 ms
+    })
+
+    client.on('error', function(err) {
+      if (t.ok(err, 'should emit errors on the client')) {
+        t.equal(
+          err.message,
+          'WRONGTYPE Operation against a key holding the wrong kind of value',
+          'errors should have the expected error message'
+        )
+      }
+    })
+
+    agent.on('transactionFinished', function(tx) {
+      var redSeg = tx.trace.root.children[0]
+      t.equal(
+        redSeg.name, 'Datastore/operation/Redis/set',
+        'should have untruncated redis segment'
+      )
+      t.equal(redSeg.children.length, 0, 'should have no children for redis segment')
+    })
+  })
+
   t.test('should create correct metrics', function(t) {
     t.plan(14)
     helper.runInTransaction(agent, function transactionInScope() {

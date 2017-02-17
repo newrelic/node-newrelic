@@ -22,7 +22,7 @@ describe('errors', function () {
     var payload = [agent.config.run_id, agent.errors.errors]
     RemoteMethod.prototype.serialize(payload, function serializeErrors(err, errors) {
       expect(err).equals(null)
-      expect(errors).deep.equals('[1,[[0,"WebTransaction/Uri/*","test","Error",{"request_uri":"","userAttributes":{},"agentAttributes":{},"intrinsics":{},"stack_trace":["test stack"]}]]]')
+      expect(errors).deep.equals('[1,[[0,"Unknown","test","Error",{"request_uri":"","userAttributes":{},"agentAttributes":{},"intrinsics":{},"stack_trace":["test stack"]}]]]')
       done()
     })
   })

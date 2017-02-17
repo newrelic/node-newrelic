@@ -41,7 +41,7 @@ function runTests(flags) {
     agent.on('transactionFinished', function(transaction) {
       t.equal(
         transaction.name,
-        'WebTransaction/Expressjs/GET//',
+        'WebTransaction/Expressjs/GET/(not found)',
         'transaction has expected name'
       )
       t.end()

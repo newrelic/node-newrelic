@@ -3,7 +3,6 @@
 var test = require('tap').test
 var dns = require('dns')
 var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify.js')
 
 test('lookup', function(t) {
   var agent = setupAgent(t)
@@ -131,4 +130,28 @@ function setupAgent(t) {
   })
 
   return agent
+}
+
+function verifySegments(t, agent, name, extras) {
+  extras = extras || []
+  var root = agent.getTransaction().trace.root
+
+  // Wait a tick to check the segments so the DNS one has a chance to be touched.
+  process.nextTick(function() {
+    t.equal(root.children.length, 1, 'should have a single child')
+
+    var child = root.children[0]
+    t.equal(child.name, name, 'child segment should have correct name')
+    t.ok(child.timer.touched, 'child should started and ended')
+    t.equal(
+      child.children.length, extras.length,
+      'child should have only expected children'
+    )
+
+    for (var i = 0; i < extras.length; ++i) {
+      t.equal(child.children[i].name, extras[i], 'grandchild should be as expected')
+    }
+
+    t.end()
+  })
 }

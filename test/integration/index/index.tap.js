@@ -1,6 +1,7 @@
 'use strict'
 
 var test = require('tap').test
+var EventEmitter = require('events').EventEmitter
 
 
 test('loading the application via index.js', {timeout: 5000}, function(t) {
@@ -8,11 +9,12 @@ test('loading the application via index.js', {timeout: 5000}, function(t) {
 
   var agent
 
+  process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
   process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
 
   t.doesNotThrow(function cb_doesNotThrow() {
-    var api = require('../../index.js')
+    var api = require('../../../index.js')
     agent = api.agent
     t.equal(agent._state, 'starting', "agent is booting")
   }, "just loading the agent doesn't throw")
@@ -21,7 +23,7 @@ test('loading the application via index.js', {timeout: 5000}, function(t) {
     // in order to sub out the readonly version we have to make a full
     // copy of process, then restore the original when we are done
     var _process = process
-    process = {}
+    global.process = new EventEmitter()
 
     var keys = Object.keys(_process)
     for (var i = 0; i < keys.length; ++i) {
@@ -33,11 +35,11 @@ test('loading the application via index.js', {timeout: 5000}, function(t) {
       }
     }
 
-    var api = require('../../index.js')
+    var api = require('../../../index.js')
     agent = api.agent
     t.ok(agent)
 
-    process = _process
+    global.process = _process
   }, "malformed process.version doesn't blow up the process")
 
   function shutdown() {

@@ -306,34 +306,39 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
           t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
           var query = client.query('SELECT 1', [])
 
-          query.on('result', function () {
-            setTimeout(function () {
+          query.on('result', function resultCallback() {
+            setTimeout(function resultTimeout() {
             }, 10)
           })
 
-          query.on('error', function (err) {
+          query.on('error', function errorCallback(err) {
             if (err) return t.fail(err, 'streaming should not fail')
           })
 
-          query.on('end', function () {
+          query.on('end', function endCallback() {
             setTimeout(function actualEnd() {
               agent.getTransaction().end(function checkQueries(transaction) {
                 withRetry.release(client)
                 var traceRoot = transaction.trace.root
                 var querySegment = traceRoot.children[0]
-                t.ok(querySegment.children.length === 2,
-                     'the query segment should have two children')
-                querySegment.children.forEach(function (childSegment) {
-                  t.ok(childSegment.name === 'Callback: <anonymous>',
-                       'children should be callbacks')
-                  childSegment.children.forEach(function (grandChildSegment) {
-                    t.ok(grandChildSegment.name === 'timers.setTimeout',
-                        'grand children should be timers')
-                  })
-                })
+                t.equal(
+                  querySegment.children.length, 2,
+                  'the query segment should have two children'
+                )
+
+                var childSegment = querySegment.children[1]
+                t.equal(
+                  childSegment.name, 'Callback: endCallback',
+                  'children should be callbacks'
+                )
+                var grandChildSegment = childSegment.children[0]
+                t.equal(
+                  grandChildSegment.name, 'timers.setTimeout',
+                  'grand children should be timers'
+                )
                 t.end()
               })
-            }, 1000)
+            }, 100)
           })
         })
       })
