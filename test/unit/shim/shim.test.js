@@ -701,14 +701,14 @@ describe('Shim', function() {
         })
 
         expect(function() {
-          stream.emit('error', 'foobar')
+          stream.emit('error', new Error('foobar'))
         }).to.throw('foobar')
       })
 
 
       it('should bind emit to a child segment', function() {
         var wrapped = shim.record(toWrap, function() {
-          return {name: 'test segment', stream: true}
+          return {name: 'test segment', stream: 'foobar'}
         })
 
         helper.runInTransaction(agent, function() {

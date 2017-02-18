@@ -174,7 +174,7 @@ module.exports = function runTests(name, clientFactory) {
 
     var slowQuerySamples = agent.queries.samples
     t.equals(Object.keys(agent.queries.samples).length, 1, 'should have one slow query')
-    for (var key in slowQuerySamples) {
+    for (var key in slowQuerySamples) { // eslint-disable-line guard-for-in
       var queryParams = slowQuerySamples[key].getParams()
 
       t.equal(
@@ -552,7 +552,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("should add datastore instance parameters to slow query traces", function(t) {
-      t.plan(5)
+      t.plan(7)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
@@ -566,19 +566,18 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
             return t.end()
           }
 
-          client.query('SELECT * FROM pg_sleep(1);', function(error) {
-            if (error) {
-              t.fail(error)
+          client.query('SELECT * FROM pg_sleep(1);', function slowQueryCB(error) {
+            if (!t.error(error)) {
               return t.end()
             }
 
             transaction.end(function() {
               verifySlowQueries(t, agent)
+              t.end()
             })
           })
         })
