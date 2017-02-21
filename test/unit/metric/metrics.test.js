@@ -1,19 +1,18 @@
 'use strict'
 
-var path             = require('path')
-  , chai             = require('chai')
-  , expect           = chai.expect
-  , should           = chai.should()
-  , helper           = require('../../lib/agent_helper.js')
-  , Metrics          = require('../../../lib/metrics')
-  , MetricMapper     = require('../../../lib/metrics/mapper')
-  , MetricNormalizer = require('../../../lib/metrics/normalizer')
-  
+var chai             = require('chai')
+var expect           = chai.expect
+var should           = chai.should()
+var helper           = require('../../lib/agent_helper.js')
+var Metrics          = require('../../../lib/metrics')
+var MetricMapper     = require('../../../lib/metrics/mapper')
+var MetricNormalizer = require('../../../lib/metrics/normalizer')
+
 
 describe("Metrics", function () {
   var metrics
-    , agent
-    
+  var agent
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -80,22 +79,22 @@ describe("Metrics", function () {
     })
   })
 
-  describe("when creating with parameters", function () {
+  describe("when creating with parameters", function() {
     var TEST_APDEX = 0.4
     var TEST_MAPPER = new MetricMapper([[{name : 'Renamed/333'}, 1337]])
     var TEST_NORMALIZER = new MetricNormalizer({enforce_backstop : true}, 'metric name')
 
-    beforeEach(function () {
+    beforeEach(function() {
       TEST_NORMALIZER.addSimple(/^Test\/RenameMe(.*)$/, 'Renamed/$1')
       metrics = new Metrics(TEST_APDEX, TEST_MAPPER, TEST_NORMALIZER)
     })
 
-    it("should pass apdex through to ApdexStats", function () {
+    it("should pass apdex through to ApdexStats", function() {
       var apdex = metrics.getOrCreateApdexMetric('Test/RenameMe333')
       expect(apdex.apdexT).equal(TEST_APDEX)
     })
 
-    it("should pass metric mappings through for serialization", function () {
+    it("should pass metric mappings through for serialization", function() {
       metrics.measureMilliseconds('Test/RenameMe333', null, 400, 300)
       var summary = JSON.stringify(metrics.toJSON())
       expect(summary).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]')
@@ -195,9 +194,9 @@ describe("Metrics", function () {
 
       describe("with ordinary statistics", function () {
         var NAME = 'Agent/Test384'
-          , metric
-          , mapper
-          
+        var metric
+        var mapper
+
 
         beforeEach(function () {
           metric = metrics.getOrCreateMetric(NAME)
@@ -224,9 +223,9 @@ describe("Metrics", function () {
 
       describe("with apdex statistics", function () {
         var NAME = 'Agent/Test385'
-          , metric
-          , mapper
-          
+        var metric
+        var mapper
+
 
         beforeEach(function () {
           metrics = new Metrics(0.8, new MetricMapper(), agent.metricNameNormalizer)

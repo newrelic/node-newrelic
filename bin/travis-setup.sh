@@ -6,20 +6,31 @@ function get_gcc_version {
   echo $gcc_version | grep -o '[[:digit:]]' | head -1
 }
 
+TOOLCHAIN_ADDED="false"
+function add_toolchain {
+  if [ "$TOOLCHAIN_ADDED" == "false" ]; then
+    sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    sudo apt-get update -qq
+  fi
+  TOOLCHAIN_ADDED="true"
+}
+
+# Only upgrade GCC if we need to.
+if [ "$(get_gcc_version)" != "5" ]; then
+  echo " --- upgrading GCC --- "
+  add_toolchain
+  ./bin/travis-install-gcc5.sh > /dev/null
+else
+  echo " --- not upgrading GCC --- "
+fi
+
 if [ "$SUITE" = "integration" ]; then
   echo " --- installing integration requirements --- "
 
   # MongoDB is always installed in integrations.
   echo " --- installing mongodb --- "
+  add_toolchain
   ./bin/travis-install-mongo.sh > /dev/null
-
-  # Only upgrade GCC if we need to.
-  if [ "$(get_gcc_version)" != "5" ]; then
-    echo " --- upgrading GCC --- "
-    ./bin/travis-install-gcc5.sh > /dev/null
-  else
-    echo " --- not upgrading GCC --- "
-  fi
 
   echo " --- done installing integration requirements --- "
 else

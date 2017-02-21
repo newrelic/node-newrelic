@@ -1,3 +1,71 @@
+### v1.37.1 (2017-02-16):
+* Agent now wraps `emit` on http request/response objects instead of relying
+  on listeners.
+
+* Fixed a bug in normalization rules when replacements do not maintain initial `/`.
+
+* Removed unused `yakaa` dependency.
+
+* Better de-duplication of errors when the same error instance is used multiple
+  times.
+
+* Server-side naming rules are now applied even when user defined ones have
+  matched.
+
+* Improved documentation for `newrelic.noticeError()` and `ignore_status_codes`
+  configuration.
+
+  The documentation now makes it clear that errors recorded using `noticeError()`
+  do not obey the `ignore_status_codes` configuration value.
+
+* Errors reported outside of a transaction now include their stack trace on the
+  error analytics page.
+
+* A potential stack overflow in trace serialization has been removed.
+
+* Fixed an issue with our Express and domain instrumentation related to a loss
+  of transaction state that could result in incorrect transaction names, traces,
+  and events.
+
+* Nested background transactions now report the correct number of metrics.
+
+### v1.37.0 (2017-02-08):
+* The agent now reports event loop metrics on supported platforms.
+
+  On node versions 0.12, 4, 6, and 7 the agent will now record the number of event loop
+  ticks per minute, and CPU time spent in each tick. You can read more about it on
+  [our docs site!](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/node-vm-measurements)
+
+* The agent no longer creates a segment for each row returned from a PG query when the
+  pg-query-stream module is used.
+
+* Removed io.js from our test suite, since it has not been supported for some time.
+
+* Internal properties used in our promise instrumentation are now non-enumerable to
+  prevent unexpected keys showing up for clients.
+
+* Agent now uses safe stringification when encoding payloads in order to prevent an issue
+  with circular references.
+
+* Fixed issue with the agent holding the process open when retrying to connect to the
+  collector.
+
+* Quieted a log message warning users about their own settings.
+
+* Fixed typo in a log message.  Thanks to Dave Bobak (@davebobak) for the contribution.
+
+### v1.36.2 (2017-01-26):
+* Fixed issue with timing Redis operations when called without a callback.
+
+  Previously these operations would continue to be timed until the transaction ended, and
+  as a result reported incorrect times.
+
+* Transactions that result in a 404 HTTP error are now named "(not found)".
+
+  Previously these transactions were reported with no name (e.g. get /).
+
+* When the newrelic.js configuration file is not present, the agent now logs a message
+  to the console and no longer prevents the app from starting up.
 
 ### v2.4.0 / beta-45 (2017-01-25):
 * Rewrote the `cassandra-cql` and `memcached` instrumentations using the

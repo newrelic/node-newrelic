@@ -5,6 +5,7 @@ var expect        = chai.expect
 var configurator  = require('../../lib/config.js')
 var sampler       = require('../../lib/sampler')
 var Agent         = require('../../lib/agent')
+var semver        = require('semver')
 
 
 var NAMES = require('../../lib/metrics/names')
@@ -15,6 +16,7 @@ describe("environmental sampler", function() {
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
   var oldUptime = process.uptime
+  var it_native = semver.satisfies(process.version, '<0.12') ? xit : it
 
   beforeEach(function() {
     agent = new Agent(configurator.initialize())
@@ -34,10 +36,61 @@ describe("environmental sampler", function() {
     process.uptime = oldUptime
   })
 
-  it("should have the native-metrics package available", function() {
+  it_native("should have the native-metrics package available", function() {
     expect(function() {
       require('@newrelic/native-metrics')
     }).to.not.throw()
+  })
+
+  it_native("should still gather native metrics when bound and unbound", function(done) {
+    sampler.start(agent)
+    sampler.stop()
+    sampler.start(agent)
+
+    sampler.nativeMetrics.emit('gc', {
+      type: 'TestGC',
+      typeId: 1337,
+      duration: 50 * 1e9 // 50 seconds in nanoseconds
+    })
+    var pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
+    var type = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + 'TestGC')
+
+    // These are "at least" because a real GC might happen during the test.
+    expect(pause).property('callCount').to.be.at.least(1)
+    expect(pause).property('total').to.be.at.least(50)
+
+    // These tests can be exact because we're using a fake GC type.
+    expect(type).to.have.property('callCount', 1)
+    expect(type).to.have.property('total', 50)
+
+    sampler.nativeMetrics.getLoopMetrics()
+    setTimeout(function() {}, 1)
+    setTimeout(function runLoop() {
+      sampler.sampleLoop(agent, sampler.nativeMetrics)()
+
+      var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
+      expect(stats.callCount).to.be.above(1)
+      expect(stats.max).to.be.above(0)
+      expect(stats.min).to.be.at.most(stats.max)
+      expect(stats.total).to.be.at.least(stats.max)
+      done()
+    }, 5)
+  })
+
+  it_native("should gather loop metrics", function(done) {
+    sampler.start(agent)
+    sampler.nativeMetrics.getLoopMetrics()
+    setTimeout(function() {}, 1)
+    setTimeout(function runLoop() {
+      sampler.sampleLoop(agent, sampler.nativeMetrics)()
+
+      var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
+      expect(stats.callCount).to.be.above(1)
+      expect(stats.max).to.be.above(0)
+      expect(stats.min).to.be.at.most(stats.max)
+      expect(stats.total).to.be.at.least(stats.max)
+      done()
+    }, 5)
   })
 
   it("should depend on Agent to provide the current metrics summary", function() {
@@ -86,7 +139,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it('should gather GC metrics', function() {
+  it_native('should gather GC metrics', function() {
     sampler.start(agent)
     sampler.nativeMetrics.emit('gc', {
       type: 'TestGC',
@@ -105,7 +158,7 @@ describe("environmental sampler", function() {
     expect(type).to.have.property('total', 50)
   })
 
-  it('should not gather GC metrics if the feature flag is off', function() {
+  it_native('should not gather GC metrics if the feature flag is off', function() {
     agent.config.feature_flag.native_metrics = false
     sampler.start(agent)
     expect(sampler.nativeMetrics).to.be.null

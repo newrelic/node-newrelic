@@ -11,10 +11,16 @@ var semver = require('semver')
 
 var MODULE_DIR = path.resolve(__dirname, '../../node_modules')
 
+// This package doesn't support Node <0.12 so it wont be found.
+if (semver.satisfies(process.version, '<0.12')) {
+  delete licenses['@newrelic/native-metrics']
+  delete pkg.optionalDependencies['@newrelic/native-metrics']
+}
+
 
 describe('Agent licenses', function() {
   this.timeout(5000)
-  it('should all be accounted for in test/unit/licenses.json', function(done) {
+  it('should all be accounted for in LICENSES object', function(done) {
     if (semver.satisfies(process.version, '<=0.8')) {
       this.skip()
     }
@@ -30,7 +36,7 @@ describe('Agent licenses', function() {
           try {
             var parsedPackage = JSON.parse(depPackage)
             var license = parsedPackage.license || parsedPackage.licenses
-            process.nextTick(function() {
+            setImmediate(function() {
               cb(null, [dep, license])
             })
           } catch (e) {

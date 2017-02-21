@@ -3,6 +3,7 @@
 var expect = require('chai').expect
 var helper = require('../../lib/agent_helper.js')
 var API = require('../../../api.js')
+var assertMetrics = require('../../lib/metrics_helper').assertMetrics
 
 
 describe('The custom instrumentation API', function () {
@@ -268,31 +269,50 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
+    it('should create only one rollup metric when nested', function(done) {
+      var handler1 = api.createWebTransaction('/custom1', function() {
+        handler2()
+        api.endTransaction()
+      })
+
+      var handler2 = api.createWebTransaction('/custom2', function(outerTx) {
+        api.endTransaction()
+      })
+
+      handler1()
+
+      agent.on('transactionFinished', function(tx) {
+        expect(tx.metrics.getMetric('WebTransaction').callCount).equal(1)
+        expect(tx.metrics.getMetric('WebTransactionTotalTime').callCount).equal(1)
+        done()
+      })
+    })
+
     it('should create proper metrics', function (done) {
       var txHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-
-        var expectedMetrics = [
-          {"name": "WebTransaction"},
-          {"name": "HttpDispatcher"},
-          {"name": "WebTransaction/Custom//custom/transaction"},
-          {"name": "Apdex/null"},
-          {"name": "Apdex"},
-          {"name": "WebTransaction/Custom//custom/transaction", "scope": "WebTransaction/Custom//custom/transaction"}
-        ]
-
-        tx.end()
-        tx.metrics.toJSON().forEach(function (element, index) {
-          expect(element[0]).to.be.deep.equal(expectedMetrics[index])
-        })
-        done()
+        api.endTransaction()
       })
       expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
+
+      var expectedMetrics = [
+        [{"name": "WebTransaction"}],
+        [{"name": "WebTransactionTotalTime"}],
+        [{"name": "HttpDispatcher"}],
+        [{"name": "WebTransaction/Custom//custom/transaction"}],
+        [{"name": "Apdex/Custom//custom/transaction"}],
+        [{"name": "Apdex"}],
+        [{"name": "WebTransaction/Custom//custom/transaction"}]
+      ]
+      agent.on('transactionFinished', function(tx) {
+        assertMetrics(tx.metrics, expectedMetrics, true, false)
+        done()
+      })
     })
 
-    it('it should create a new transaction when nested within a background transaction', function (done) {
+    it('should create a new transaction when nested within a background transaction', function (done) {
       var bgHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
@@ -317,7 +337,7 @@ describe('The custom instrumentation API', function () {
       bgHandler()
     })
 
-    it('should return the any value that the hanlder returns', function () {
+    it('should return the any value that the handler returns', function () {
       var txHandler = api.createWebTransaction('/custom/transaction', function () {
         return 'a thing'
       })
@@ -428,51 +448,68 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
+    it('should create only one rollup metric when nested', function(done) {
+      var handler1 = api.createBackgroundTransaction('custom1', function() {
+        handler2()
+        api.endTransaction()
+      })
+
+      var handler2 = api.createBackgroundTransaction('custom2', function(outerTx) {
+        api.endTransaction()
+      })
+
+      handler1()
+
+      agent.on('transactionFinished', function(tx) {
+        expect(tx.metrics.getMetric('OtherTransaction/all').callCount).equal(1)
+        expect(tx.metrics.getMetric('OtherTransactionTotalTime').callCount).equal(1)
+        done()
+      })
+    })
+
     it('should create proper metrics with default group name', function (done) {
       var txHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-
-        var expectedMetrics = [
-          {"name": "OtherTransaction/Nodejs/background:job"},
-          {"name": "OtherTransaction/all"},
-          {"name": "OtherTransaction/Nodejs/all"},
-          {"name": "OtherTransaction/Nodejs/background:job", "scope": "OtherTransaction/Nodejs/background:job"}
-        ]
-
-        tx.end()
-        tx.metrics.toJSON().forEach(function (element, index) {
-          expect(element[0]).to.be.deep.equal(expectedMetrics[index])
-        })
-        done()
+        api.endTransaction()
       })
       expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
+
+      var expectedMetrics = [
+        [{"name": "OtherTransaction/Nodejs/background:job"}],
+        [{"name": "OtherTransactionTotalTime/Nodejs/background:job"}],
+        [{"name": "OtherTransaction/all"}],
+        [{"name": "OtherTransactionTotalTime"}]
+      ]
+      agent.on('transactionFinished', function(tx) {
+        assertMetrics(tx.metrics, expectedMetrics, true, false)
+        done()
+      })
     })
 
     it('should create proper metrics with group name', function (done) {
       var txHandler = api.createBackgroundTransaction('background:job', 'thinger', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-
-        var expectedMetrics = [
-          {"name": "OtherTransaction/thinger/background:job"},
-          {"name": "OtherTransaction/all"},
-          {"name": "OtherTransaction/thinger/all"},
-          {"name": "OtherTransaction/thinger/background:job", "scope": "OtherTransaction/thinger/background:job"}
-        ]
-
-        tx.end()
-        tx.metrics.toJSON().forEach(function (element, index) {
-          expect(element[0]).to.be.deep.equal(expectedMetrics[index])
-        })
-        done()
+        api.endTransaction()
       })
       expect(agent.tracer.getTransaction()).to.not.exist()
       txHandler()
+
+      var expectedMetrics = [
+        [{"name": "OtherTransaction/thinger/background:job"}],
+        [{"name": "OtherTransactionTotalTime/thinger/background:job"}],
+        [{"name": "OtherTransaction/all"}],
+        [{"name": "OtherTransactionTotalTime"}]
+      ]
+      agent.on('transactionFinished', function(tx) {
+        assertMetrics(tx.metrics, expectedMetrics, true, false)
+        done()
+      })
     })
 
-    it('it should create a new transaction when nested within a background transaction', function (done) {
+    it('should create a new transaction when nested within a web transaction', function (done) {
       var webHandler = api.createWebTransaction('/custom/transaction', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
