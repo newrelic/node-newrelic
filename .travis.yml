@@ -30,10 +30,6 @@ services:
   - redis
   - cassandra
   - postgresql
-cache:
-  apt: true
-  directories:
-  - $HOME/.npm
 before_install:
   - ./bin/travis-setup.sh
   - make update_npm_global
