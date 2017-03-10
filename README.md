@@ -795,3 +795,4 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 New Relic for Node is free-to-use, proprietary software. Please see the full
 license (found in [LICENSE](LICENSE) in this distribution) for details on its license and
 the licenses of its dependencies.
+
