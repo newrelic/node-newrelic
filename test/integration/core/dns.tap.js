@@ -134,10 +134,10 @@ function setupAgent(t) {
 
 function verifySegments(t, agent, name, extras) {
   extras = extras || []
+  var tx = agent.getTransaction()
   var root = agent.getTransaction().trace.root
 
-  // Wait a tick to check the segments so the DNS one has a chance to be touched.
-  process.nextTick(function() {
+  agent.once('transactionFinished', function() {
     t.equal(root.children.length, 1, 'should have a single child')
 
     var child = root.children[0]
@@ -148,10 +148,14 @@ function verifySegments(t, agent, name, extras) {
       'child should have only expected children'
     )
 
-    for (var i = 0; i < extras.length; ++i) {
+    for (var i = 0; i < child.children.length; ++i) {
       t.equal(child.children[i].name, extras[i], 'grandchild should be as expected')
     }
 
     t.end()
+  })
+
+  process.nextTick(function() {
+    tx.end()
   })
 }

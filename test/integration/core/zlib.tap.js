@@ -5,11 +5,25 @@ var semver = require('semver')
 var zlib = require('zlib')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
-var CONTENT = 'some content'
-var DEFLATED_CONTENT = 'eJwrzs9NVUjOzytJzSsBAB7IBNA='
-var DEFLATED_RAW = 'K87PTVVIzs8rSc0rAQA='
-var GZIP_CONTENT = 'H4sIAAAAAAAAAyvOz01VSM7PK0nNKwEAPzEfQwwAAAA='
 var concat = require('concat-stream')
+
+// Prepare our data values. Note that since the agent isn't loaded yet these
+// compressions are immune to agent fiddling.
+// TODO: Once Node v0.10 is deprecated, remove the check for gzipSync below.
+var CONTENT = 'some content'
+var DEFLATED_CONTENT = null
+var DEFLATED_RAW = null
+var GZIP_CONTENT = null
+if (zlib.gzipSync) {
+  DEFLATED_CONTENT = zlib.deflateSync(CONTENT).toString('base64')
+  DEFLATED_RAW = zlib.deflateRawSync(CONTENT).toString('base64')
+  GZIP_CONTENT = zlib.gzipSync(CONTENT).toString('base64')
+} else {
+  DEFLATED_CONTENT = 'eJwrzs9NVUjOzytJzSsBAB7IBNA='
+  DEFLATED_RAW = 'K87PTVVIzs8rSc0rAQA='
+  GZIP_CONTENT = 'H4sIAAAAAAAAAyvOz01VSM7PK0nNKwEAPzEfQwwAAAA='
+}
+
 
 test('deflate', function(t) {
   var agent = setupAgent(t)

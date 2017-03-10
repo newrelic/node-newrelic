@@ -65,7 +65,7 @@ describe("environmental sampler", function() {
     expect(type).to.have.property('total', 50)
 
     sampler.nativeMetrics.getLoopMetrics()
-    setTimeout(function runLoop() {
+    spinLoop(function runLoop() {
       sampler.sampleLoop(agent, sampler.nativeMetrics)()
 
       var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
@@ -74,13 +74,13 @@ describe("environmental sampler", function() {
       expect(stats.min).to.be.at.most(stats.max)
       expect(stats.total).to.be.at.least(stats.max)
       done()
-    }, 1)
+    })
   })
 
   it_native("should gather loop metrics", function(done) {
     sampler.start(agent)
     sampler.nativeMetrics.getLoopMetrics()
-    setTimeout(function runLoop() {
+    spinLoop(function runLoop() {
       sampler.sampleLoop(agent, sampler.nativeMetrics)()
 
       var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
@@ -89,7 +89,7 @@ describe("environmental sampler", function() {
       expect(stats.min).to.be.at.most(stats.max)
       expect(stats.total).to.be.at.least(stats.max)
       done()
-    }, 1)
+    })
   })
 
   it("should depend on Agent to provide the current metrics summary", function() {
@@ -234,3 +234,20 @@ describe("environmental sampler", function() {
     }, 0)
   })
 })
+
+function spinLoop(cb) {
+  var DELAY = 5
+  var COUNT = 5
+  var spins = 0
+
+  timeout()
+  function timeout() {
+    setTimeout(function() {
+      if (++spins < COUNT) {
+        timeout()
+      } else {
+        cb()
+      }
+    }, DELAY)
+  }
+}
