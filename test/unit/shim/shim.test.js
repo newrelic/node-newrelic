@@ -19,7 +19,7 @@ describe('Shim', function() {
     shim = new Shim(agent, 'test-module')
     wrappable = {
       name: 'this is a name',
-      bar: function barsName() { return 'bar' },
+      bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
       fiz: function fizsName() { return 'fiz' },
       anony: function() {},
       getActiveSegment: function() {
@@ -216,24 +216,26 @@ describe('Shim', function() {
 
     describe('with properties', function() {
       var barTestWrapper = null
+      var originalBar = null
       var ret = null
 
       beforeEach(function() {
         barTestWrapper = function() {}
+        originalBar = wrappable.bar
         ret = shim.wrap(wrappable, 'bar', function() {
           return barTestWrapper
         })
       })
 
       it('should accept a single property', function() {
-        var original = wrappable.fiz
+        var originalFiz = wrappable.fiz
         shim.wrap(wrappable, 'fiz', function(_, toWrap, name) {
           expect(toWrap).to.equal(wrappable.fiz)
           expect(name).to.equal('fiz', 'should use property as name')
         })
 
         expect(ret).to.equal(wrappable)
-        expect(wrappable.fiz).to.equal(original, 'should not replace unwrapped')
+        expect(wrappable.fiz).to.equal(originalFiz, 'should not replace unwrapped')
       })
 
       it('should accept an array of properties', function() {
@@ -253,7 +255,7 @@ describe('Shim', function() {
       })
 
       it('should replace wrapped properties on the original object', function() {
-        expect(wrappable.bar).to.equal(barTestWrapper)
+        expect(wrappable.bar).to.not.equal(originalBar)
       })
 
       it('should mark wrapped properties as such', function() {
@@ -262,6 +264,22 @@ describe('Shim', function() {
 
       it('should not mark unwrapped properties as wrapped', function() {
         expect(shim.isWrapped(wrappable, 'fiz')).to.be.false
+      })
+    })
+
+    describe('with a function', function() {
+      var wrapper = null
+      beforeEach(function() {
+        wrapper = function wrapperFunc() {}
+        shim.wrap(wrappable, 'bar', wrapper)
+      })
+
+      it('should maintain the name', function() {
+        expect(wrappable.bar).to.have.property('name', 'barsName')
+      })
+
+      it('should maintain the arity', function() {
+        expect(wrappable.bar).to.have.length(2)
       })
     })
   })
@@ -444,7 +462,7 @@ describe('Shim', function() {
 
         var foo = new WrappedFoo()
         expect(foo).to.be.an.instanceOf(Foo)
-        expect(foo).to.not.be.an.instanceOf(WrappedFoo)
+        expect(foo).to.be.an.instanceOf(WrappedFoo)
       })
 
       it('should pass items in the `args` parameter to the spec', function() {
