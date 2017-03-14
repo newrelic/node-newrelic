@@ -13,7 +13,7 @@ var NEWRELIC_ID_HEADER = 'x-newrelic-id'
 var NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
 var NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
 
-describe("built-in http module instrumentation", function () {
+describe("built-in http module instrumentation", function() {
   var http
 
   var PAYLOAD = JSON.stringify({msg : 'ok'})
@@ -23,40 +23,40 @@ describe("built-in http module instrumentation", function () {
     '<body><p>I heard you like HTML.</p></body>' +
     '</html>'
 
-  describe("shouldn't cause bootstrapping to fail", function () {
+  describe("shouldn't cause bootstrapping to fail", function() {
     var initialize
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent()
       initialize = require('../../../../lib/instrumentation/core/http')
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it("when passed no module", function () {
-      expect(function () { initialize(agent); }).not.throws()
+    it("when passed no module", function() {
+      expect(function() { initialize(agent) }).not.throws()
     })
 
-    it("when passed an empty module", function () {
-      expect(function () { initialize(agent, {}); }).not.throws()
+    it("when passed an empty module", function() {
+      expect(function() { initialize(agent, {}) }).not.throws()
     })
   })
 
-  describe("after loading", function () {
+  describe("after loading", function() {
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.instrumentMockedAgent()
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it("shouldn't have changed createServer's declared parameter names", function (){
+    it("shouldn't have changed createServer's declared parameter names", function() {
       var http = require('http')
       var fn = http.createServer
       /* Taken from
@@ -67,13 +67,13 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe("with outbound request mocked", function () {
+  describe("with outbound request mocked", function() {
     var agent
     var http
     var options
 
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
       var initialize = require('../../../../lib/instrumentation/core/http')
       http = {
@@ -91,31 +91,34 @@ describe("built-in http module instrumentation", function () {
       initialize(agent, http)
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it("shouldn't crash when called with undefined host", function () {
-      helper.runInTransaction(agent, function () {
-        expect(function () { http.request({port : 80}); }).not.throws()
+    it("shouldn't crash when called with undefined host", function() {
+      helper.runInTransaction(agent, function() {
+        expect(function() { http.request({port : 80}); }).not.throws()
       })
     })
 
-    it("shouldn't crash when called with undefined port", function () {
-      helper.runInTransaction(agent, function () {
-        expect(function () { http.request({host : 'localhost'}); }).not.throws()
+    it("shouldn't crash when called with undefined port", function() {
+      helper.runInTransaction(agent, function() {
+        expect(function() { http.request({host : 'localhost'}); }).not.throws()
       })
     })
   })
 
-  describe("when running a request", function () {
-    var transaction
-    var agent
+  describe("when running a request", function() {
+    var transaction = null
+    var transaction2 = null
+    var hookCalled = null
+    var agent = null
 
 
     before(function(done) {
       http = require('http')
       agent = helper.instrumentMockedAgent()
+      hookCalled = false
 
       var external = http.createServer(function cb_createServer(request, response) {
         should.exist(agent.getTransaction())
@@ -171,6 +174,14 @@ describe("built-in http module instrumentation", function () {
           response.end(PAGE)
         })
       })
+
+      server.on('request', function() {
+        transaction2 = agent.getTransaction()
+      })
+
+      server.__NR_onRequestStarted = function() {
+        hookCalled = true
+      }
 
       external.listen(8321, 'localhost', function() {
         server.listen(8123, 'localhost', function() {
@@ -250,7 +261,7 @@ describe("built-in http module instrumentation", function () {
         expect(fetchedBody).equal(PAGE)
       })
 
-      it("should capture a scrubbed version of the referer header", function () {
+      it("should capture a scrubbed version of the referer header", function() {
         expect(transaction.trace.parameters['request.headers.referer']).to.equal('https://www.google.com/search/cats')
       })
 
@@ -292,12 +303,17 @@ describe("built-in http module instrumentation", function () {
       it("should set transaction.port to the server's port", function() {
         expect(transaction.port).equal(8123)
       })
+
+      it('should only create one transaction for the request', function() {
+        expect(transaction2).to.have.property('id', transaction.id)
+      })
+
+      it('should call the shim hook', function() {
+        expect(hookCalled).to.be.true()
+      })
     })
 
     describe('that aborts', function() {
-      var fetchedStatusCode = null
-      var fetchedBody = null
-
       before(function(done) {
         transaction = null
         makeRequest({
@@ -306,16 +322,9 @@ describe("built-in http module instrumentation", function () {
           path: '/slow',
           method: 'GET',
           abort: 15
-        }, function(err, statusCode, body) {
-          fetchedStatusCode = statusCode
-          fetchedBody = body
+        }, function(err) {
           done(err)
         })
-      })
-
-      after(function() {
-        fetchedStatusCode = null
-        fetchedBody = null
       })
 
       it('should still finish the transaction', function() {
@@ -325,29 +334,29 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe("with error monitor", function () {
+  describe("with error monitor", function() {
     var mochaHandlers
     var agent
 
-    before(function () {
+    before(function() {
       // disable mocha's error handler
       mochaHandlers = helper.onlyDomains()
     })
 
-    after(function () {
+    after(function() {
       process._events['uncaughtException'] = mochaHandlers
     })
 
-    beforeEach(function () {
+    beforeEach(function() {
       http = require('http')
       agent = helper.instrumentMockedAgent()
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it("should have stored mocha's exception handler", function () {
+    it("should have stored mocha's exception handler", function() {
       should.exist(mochaHandlers)
       expect(mochaHandlers.length).above(0)
     })
@@ -356,10 +365,10 @@ describe("built-in http module instrumentation", function () {
     // block
     if (!semver.satisfies(process.versions.node, '>=0.9.0')) return
 
-    describe("for http.createServer", function () {
-      it("should trace errors in top-level handlers", function (done) {
+    describe("for http.createServer", function() {
+      it("should trace errors in top-level handlers", function(done) {
         var server
-        process.once('uncaughtException', function () {
+        process.once('uncaughtException', function() {
           var errors = agent.errors.errors
           expect(errors.length).equal(1)
 
@@ -371,22 +380,22 @@ describe("built-in http module instrumentation", function () {
           throw new Error("whoops!")
         })
 
-        server.listen(8182, function () {
-          http.get({host : 'localhost', port : 8182}, function () {
+        server.listen(8182, function() {
+          http.get({host : 'localhost', port : 8182}, function() {
             done("actually got response")
           })
         })
       })
     })
 
-    describe("for http.request", function () {
+    describe("for http.request", function() {
       // this scenario is specifically broken on Node 5.7.1, see
       // https://github.com/nodejs/node/issues/5555
       if (!semver.satisfies(process.versions.node, '==5.7.1')) return
 
-      it("should trace errors in listeners", function (done) {
+      it("should trace errors in listeners", function(done) {
         var server
-        process.once('uncaughtException', function () {
+        process.once('uncaughtException', function() {
           var errors = agent.errors.errors
           expect(errors.length).equal(1)
 
@@ -399,8 +408,8 @@ describe("built-in http module instrumentation", function () {
           response.end()
         })
 
-        server.listen(8183, function () {
-          http.get({host : 'localhost', port : 8183}, function () {
+        server.listen(8183, function() {
+          http.get({host : 'localhost', port : 8183}, function() {
             throw new Error("whoah")
           })
         })
@@ -408,19 +417,19 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe('inbound http requests when cat is enabled', function () {
+  describe('inbound http requests when cat is enabled', function() {
     var encKey = 'gringletoes'
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.instrumentMockedAgent({cat: true}, {encoding_key: encKey})
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should add cat headers from request to transaction', function (done) {
+    it('should add cat headers from request to transaction', function(done) {
       var server = http.createServer(function(req, res) {
         var transaction = agent.getTransaction()
         expect(transaction.incomingCatId).equal('123')
@@ -451,7 +460,7 @@ describe("built-in http module instrumentation", function () {
       })
     })
 
-    it('should ignore invalid pathHash', function (done) {
+    it('should ignore invalid pathHash', function(done) {
       var server = http.createServer(function(req, res) {
         should.not.exist(agent.getTransaction().referringPathHash)
         res.end()
@@ -476,7 +485,7 @@ describe("built-in http module instrumentation", function () {
       })
     })
 
-    it('should not explode on invalid JSON', function (done) {
+    it('should not explode on invalid JSON', function(done) {
       var server = http.createServer(function(req, res) {
         res.end()
         req.socket.end()
@@ -495,19 +504,19 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe('inbound http requests when cat is disabled', function () {
+  describe('inbound http requests when cat is disabled', function() {
     var encKey = 'gringletoes'
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.instrumentMockedAgent({cat: false}, {encoding_key: encKey})
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should ignore cat headers', function (done) {
+    it('should ignore cat headers', function(done) {
       var server = http.createServer(function(req, res) {
         var transaction = agent.getTransaction()
         should.not.exist(transaction.incomingCatId)
@@ -541,18 +550,18 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe('response headers for inbound requests when cat is enabled', function () {
+  describe('response headers for inbound requests when cat is enabled', function() {
     var encKey = 'gringletoes'
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.instrumentMockedAgent(
         {cat: true},
         {encoding_key: encKey, trusted_account_ids: [123], cross_process_id: '456'}
       )
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
@@ -644,12 +653,12 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe('response headers for outbound requests when cat is enabled', function () {
+  describe('response headers for outbound requests when cat is enabled', function() {
     var encKey = 'gringletoes'
     var server
     var agent
 
-    before(function (done) {
+    before(function(done) {
       agent = helper.instrumentMockedAgent(
         {cat: true},
         {encoding_key: encKey, obfuscatedId: 'o123'}
@@ -662,7 +671,7 @@ describe("built-in http module instrumentation", function () {
       server.listen(4123, done)
     })
 
-    after(function (done) {
+    after(function(done) {
       helper.unloadAgent(agent)
       server.close(done)
     })
@@ -789,7 +798,7 @@ describe("built-in http module instrumentation", function () {
     })
   })
 
-  describe('request headers for outbound request', function () {
+  describe('request headers for outbound request', function() {
     var agent
     it('should preserve headers regardless of format', function(done) {
       var encKey = 'gringletoes'
