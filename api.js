@@ -1,5 +1,6 @@
 'use strict'
 
+var arity = require('./lib/util/arity')
 var util = require('util')
 var logger = require('./lib/logger').child({component: 'api'})
 var NAMES = require('./lib/metrics/names')
@@ -533,7 +534,7 @@ API.prototype.createTracer = function createTracer(name, callback) {
 
   var segment = tracer.createSegment(name, customRecorder)
   segment.start()
-  return tracer.bindFunction(callback, segment, true)
+  return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
 }
 
 /**
@@ -589,7 +590,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
 
   var tracer = this.agent.tracer
 
-  return tracer.transactionNestProxy('web', function createWebSegment() {
+  var proxy = tracer.transactionNestProxy('web', function createWebSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -606,6 +607,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
 
     return tracer.bindFunction(handle, tx.webSegment).apply(this, arguments)
   })
+  return arity.fixArity(handle, proxy)
 }
 
 /**
@@ -673,7 +675,7 @@ function createBackgroundTransaction(name, group, handle) {
 
   var tracer = this.agent.tracer
 
-  return tracer.transactionNestProxy('bg', function createBackgroundSegment() {
+  var proxy = tracer.transactionNestProxy('bg', function createBGSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -691,6 +693,7 @@ function createBackgroundTransaction(name, group, handle) {
 
     return tracer.bindFunction(handle, tx.bgSegment).apply(this, arguments)
   })
+  return arity.fixArity(handle, proxy)
 }
 
 API.prototype.endTransaction = function endTransaction() {
