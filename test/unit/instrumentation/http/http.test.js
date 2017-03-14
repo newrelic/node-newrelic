@@ -109,14 +109,16 @@ describe("built-in http module instrumentation", function() {
   })
 
   describe("when running a request", function() {
-    var transaction
-    var transaction2
-    var agent
+    var transaction = null
+    var transaction2 = null
+    var hookCalled = null
+    var agent = null
 
 
     before(function(done) {
       http = require('http')
       agent = helper.instrumentMockedAgent()
+      hookCalled = false
 
       var external = http.createServer(function cb_createServer(request, response) {
         should.exist(agent.getTransaction())
@@ -176,6 +178,10 @@ describe("built-in http module instrumentation", function() {
       server.on('request', function() {
         transaction2 = agent.getTransaction()
       })
+
+      server.__NR_onRequestStarted = function() {
+        hookCalled = true
+      }
 
       external.listen(8321, 'localhost', function() {
         server.listen(8123, 'localhost', function() {
@@ -300,6 +306,10 @@ describe("built-in http module instrumentation", function() {
 
       it('should only create one transaction for the request', function() {
         expect(transaction2).to.have.property('id', transaction.id)
+      })
+
+      it('should call the shim hook', function() {
+        expect(hookCalled).to.be.true()
       })
     })
 
