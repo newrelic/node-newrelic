@@ -214,8 +214,8 @@ describe("Transaction", function () {
         trans.nameState.setVerb('verb')
         trans.nameState.appendPath('route')
         trans.url = '/route'
-        expect(trans.getName()).equal('WebTransaction/Framework/verb/route')
-        expect(trans.nameState.getName()).equal('Framework/verb/route')
+        expect(trans.getName()).equal('WebTransaction/Framework/VERB/route')
+        expect(trans.nameState.getName()).equal('Framework/VERB/route')
       })
 
       it("should return the name if it has already been set", function () {

@@ -1,6 +1,5 @@
 'use strict'
 
-
 var tap = require('tap')
 var http = require('http')
 var request = require('request')
