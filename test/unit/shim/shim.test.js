@@ -680,10 +680,10 @@ describe('Shim', function() {
           expect(ret).to.equal(stream)
         })
 
-        var oldDur = stream.segment.timer.duration
+        var oldDur = stream.segment.timer.getDurationInMillis()
         setTimeout(function() {
           stream.emit('end')
-          expect(stream.segment.timer.duration).to.be.above(oldDur)
+          expect(stream.segment.timer.getDurationInMillis()).to.be.above(oldDur)
           done()
         }, 5)
       })
@@ -698,12 +698,11 @@ describe('Shim', function() {
           expect(ret).to.equal(stream)
         })
 
-        var oldDur = stream.segment.timer.duration
         stream.on('error', function() {}) // to prevent the error being thrown
-        var oldDur = stream.segment.timer.duration
+        var oldDur = stream.segment.timer.getDurationInMillis()
         setTimeout(function() {
           stream.emit('error', 'foobar')
-          expect(stream.segment.timer.duration).to.be.above(oldDur)
+          expect(stream.segment.timer.getDurationInMillis()).to.be.above(oldDur)
           done()
         }, 5)
       })
@@ -814,12 +813,12 @@ describe('Shim', function() {
 
           ret.then(function(val) {
             expect(result).to.equal(val)
-            expect(promise.segment.timer.duration).to.be.above(oldDur)
+            expect(promise.segment.timer.getDurationInMillis()).to.be.above(oldDur)
             done()
           }).catch(done)
         })
 
-        var oldDur = promise.segment.timer.duration
+        var oldDur = promise.segment.timer.getDurationInMillis()
         var result = {}
         setTimeout(function() {
           promise.resolve(result)
@@ -839,12 +838,12 @@ describe('Shim', function() {
             done(new Error('Should not have resolved!'))
           }, function(err) {
             expect(err).to.equal(result)
-            expect(promise.segment.timer.duration).to.be.above(oldDur)
+            expect(promise.segment.timer.getDurationInMillis()).to.be.above(oldDur)
             done()
           }).catch(done)
         })
 
-        var oldDur = promise.segment.timer.duration
+        var oldDur = promise.segment.timer.getDurationInMillis()
         var result = {}
         setTimeout(function() {
           promise.reject(result)
@@ -1897,11 +1896,6 @@ describe('Shim', function() {
 })
 
 function testNonWritable(obj, key, value) {
-  // Skip this check on Node 0.8.x.
-  if (/^v0\.8\./.test(process.version)) {
-    return
-  }
-
   expect(function() {
     obj[key] = 'testNonWritable test value'
   }).to.throw(

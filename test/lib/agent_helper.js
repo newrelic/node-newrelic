@@ -108,10 +108,8 @@ var helper = module.exports = {
     shimmer.unwrapAll()
     shimmer.debug = false
 
-    // On v0.8 each mocked agent will add an uncaughtException handler, and on
-    // all versions each agent will add an unhandledRejection handler. These
-    // handlers need to be removed on unload.
-    removeListenerByName(process, 'uncaughtException', '__NR_uncaughtExceptionHandler')
+    // On all versions each agent will add an unhandledRejection handler. This
+    // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
     if (agent === _agent) _agent = null

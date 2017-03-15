@@ -1,30 +1,26 @@
 'use strict'
 
-require('./patch-old-stream.js')
 var path    = require('path')
-  , util    = require('util')
-  , fs      = require('fs')
-  , jsv     = require('JSV').JSV
-  , env     = jsv.createEnvironment()
-  , restify = require('restify')
-  , codec   = require('../../lib/util/codec.js')
-  , logger  = require('../../lib/logger.js')
-                .child({component : 'fake_collector'})
-
-
+var util    = require('util')
+var fs      = require('fs')
+var jsv     = require('JSV').JSV
+var env     = jsv.createEnvironment()
+var restify = require('restify')
+var codec   = require('../../lib/util/codec.js')
+var logger  = require('../../lib/logger.js').child({component : 'fake_collector'})
 
 var DEFAULT_HOST = 'collector.lvh.me'
-  , ACTUAL_HOST  = 'collector-1.lvh.me'
-  , PORT         = 8089
-  , PATHS        = {
-      connect   : path.join(__dirname, 'schemas/connect.json'),
-      container : path.join(__dirname, 'schemas/transaction_sample_data.json'),
-      trace     : path.join(__dirname, 'schemas/transaction_trace.json'),
-      error     : path.join(__dirname, 'schemas/error_data.json'),
-      metric    : path.join(__dirname, 'schemas/metric_data.json'),
-      sql       : path.join(__dirname, 'schemas/sql_trace_data.json'),
-      sqlParams : path.join(__dirname, 'schemas/sql_params.json')
-    }
+var ACTUAL_HOST  = 'collector-1.lvh.me'
+var PORT         = 8089
+var PATHS        = {
+  connect   : path.join(__dirname, 'schemas/connect.json'),
+  container : path.join(__dirname, 'schemas/transaction_sample_data.json'),
+  trace     : path.join(__dirname, 'schemas/transaction_trace.json'),
+  error     : path.join(__dirname, 'schemas/error_data.json'),
+  metric    : path.join(__dirname, 'schemas/metric_data.json'),
+  sql       : path.join(__dirname, 'schemas/sql_trace_data.json'),
+  sqlParams : path.join(__dirname, 'schemas/sql_params.json')
+}
 
 
 var schemas = {}

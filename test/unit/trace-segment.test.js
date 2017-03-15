@@ -115,9 +115,10 @@ describe('TraceSegment', function() {
     segment.setDurationInMillis(10, 0)
 
     setTimeout(function() {
-      expect(trace.root.timer.duration).equal(null)
+      expect(trace.root.timer.hrDuration).equal(null)
       segment.end()
-      expect(trace.root.timer.duration).equal(segment.timer.duration)
+      expect(trace.root.timer.getDurationInMillis())
+        .to.be.above(segment.timer.getDurationInMillis() - 1) // alow for slop
       helper.unloadAgent(agent)
       done()
     }, 10)

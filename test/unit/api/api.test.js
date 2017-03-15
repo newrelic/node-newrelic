@@ -864,7 +864,7 @@ describe("the New Relic agent API", function () {
       mock.expects('harvest').once()
       api.shutdown({collectPendingData: true, timeout: 1000})
       agent.setState('started')
-      mock.verify()  
+      mock.verify()
     })
 
     it('calls stop when timeout is reached and does not harvest', function() {
@@ -874,7 +874,7 @@ describe("the New Relic agent API", function () {
       mock.expects('stop').once()
       api.shutdown({collectPendingData: true, timeout: 1000}, function() {
         mock.verify()
-      }) 
+      })
     })
 
     it('calls harvest when timeout is not a number', function() {
@@ -883,17 +883,17 @@ describe("the New Relic agent API", function () {
       mock.expects('harvest').once()
       api.shutdown({collectPendingData: true, timeout: "xyz"}, function() {
         mock.verify()
-      })  
+      })
     })
 
     it('does not error when timeout is not a number', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      
+
       var shutdown = function() {
         api.shutdown({collectPendingData: true, timeout: "abc"})
       }
-      
+
       expect(shutdown).to.not.throw(Error)
       mock.verify()
     })

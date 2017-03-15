@@ -15,7 +15,7 @@ temp.track()
 
 var tempDir = temp.mkdirSync('fs-tests')
 
-// set umask before and after fs tests (for checking chmod, etc on 0.8)
+// Set umask before and after fs tests (for normalizing create mode on OS X and linux)
 var mask = process.umask('0000')
 var tasks = 0
 var done = 0
@@ -33,12 +33,13 @@ function test(title, options, callback) {
   if (!options.skip) {
     tasks++
   }
-  tapTest(title, options, function (t) {
-    t.tearDown(function () {
+  tapTest(title, options, function(t) {
+    t.tearDown(function() {
       if (++done === tasks) {
         process.umask(mask)
       }
     })
+
     callback.apply(this, arguments)
   })
 }
@@ -87,19 +88,12 @@ test('truncate', function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
   var expectedSegments
-  var needFD = false
   helper.runInNamedTransaction(agent, function(trans) {
     // if fs.ftruncate isn't around, it means that fs.truncate uses a file descriptor
     // rather than a path, and won't trigger an 'open' segment due to implementation
     // differences. This is mostly just a version check for v0.8.
-    if (fs.ftruncate !== undefined) {
-      expectedSegments = ['open', 'truncate']
-    } else {
-      var fd = fs.openSync(name, 'r+')
-      expectedSegments = ['truncate']
-      needFD = true
-    }
-    fs.truncate(needFD ? fd : name, 4, function(err) {
+    expectedSegments = ['open', 'truncate']
+    fs.truncate(name, 4, function(err) {
       t.notOk(err, 'should not error')
       helper.unloadAgent(agent)
       t.equal(
@@ -108,7 +102,7 @@ test('truncate', function(t) {
         'content should be truncated'
       )
       verifySegments(t, agent, NAMES.FS.PREFIX + 'truncate',
-        needFD ? [] : [NAMES.FS.PREFIX + 'open']
+        [NAMES.FS.PREFIX + 'open']
       )
 
       trans.end(function checkMetrics() {
@@ -222,12 +216,12 @@ test('chmod', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  t.equal((fs.statSync(name).mode & 511).toString(8), '666')
+  t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '666')
   helper.runInNamedTransaction(agent, function(trans) {
     fs.chmod(name, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
-      t.equal((fs.statSync(name).mode & 511).toString(8), '777')
+      t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '777')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'chmod')
 
       trans.end(function checkMetrics() {
@@ -247,12 +241,12 @@ test('lchmod', {skip: fs.lchmod === undefined}, function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  t.equal((fs.statSync(name).mode & 511).toString(8), '666')
+  t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '666')
   helper.runInNamedTransaction(agent, function(trans) {
     fs.lchmod(name, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
-      t.equal((fs.statSync(name).mode & 511).toString(8), '777')
+      t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '777')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'lchmod', [NAMES.FS.PREFIX + 'open'])
 
       trans.end(function checkMetrics() {
@@ -271,12 +265,12 @@ test('fchmod', function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  t.equal((fs.statSync(name).mode & 511).toString(8), '666')
+  t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '666')
   helper.runInNamedTransaction(agent, function(trans) {
     fs.fchmod(fd, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
-      t.equal((fs.statSync(name).mode & 511).toString(8), '777')
+      t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '777')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fchmod')
 
       trans.end(function checkMetrics() {
@@ -297,7 +291,7 @@ test('stat', function(t) {
   helper.runInNamedTransaction(agent, function(trans) {
     fs.stat(name, function(err, stat) {
       t.equal(err, null, 'should not error')
-      t.equal((stat.mode & 511).toString(8), '666')
+      t.equal((stat.mode & 0x1FF).toString(8), '666')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'stat')
 
       trans.end(function checkMetrics() {
@@ -318,7 +312,7 @@ test('lstat', function(t) {
   helper.runInNamedTransaction(agent, function(trans) {
     fs.lstat(name, function(err, stat) {
       t.equal(err, null, 'should not error')
-      t.equal((stat.mode & 511).toString(8), '666')
+      t.equal((stat.mode & 0x1FF).toString(8), '666')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'lstat')
 
       trans.end(function checkMetrics() {
@@ -340,7 +334,7 @@ test('fstat', function(t) {
   helper.runInNamedTransaction(agent, function(trans) {
     fs.fstat(fd, function(err, stat) {
       t.equal(err, null, 'should not error')
-      t.equal((stat.mode & 511).toString(8), '666')
+      t.equal((stat.mode & 0x1FF).toString(8), '666')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fstat')
 
       trans.end(function checkMetrics() {
@@ -741,7 +735,7 @@ test('appendFile', function(t) {
   }
 
   helper.runInNamedTransaction(agent, function(trans) {
-    fs.appendFile(name, '123', function(err, data) {
+    fs.appendFile(name, '123', function(err) {
       t.notOk(err, 'should not error')
       t.equal(fs.readFileSync(name).toString('utf-8'), content + '123')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'appendFile',

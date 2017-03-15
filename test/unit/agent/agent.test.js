@@ -14,13 +14,6 @@ var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/aws-info').clearCache
 
 
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
-
 /*
  *
  * CONSTANTS

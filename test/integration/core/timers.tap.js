@@ -1,13 +1,9 @@
 'use strict'
 
-var semver = require('semver')
 var test = require('tap').test
 var timers = require('timers')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
-
-// XXX Remove once Node v0.8 is deprecated.
-var HAS_SETIMMEDIATE = semver.satisfies(process.version, '>=0.9')
 
 test('setTimeout', function testSetTimeout(t) {
   var agent = setupAgent(t)
@@ -19,11 +15,6 @@ test('setTimeout', function testSetTimeout(t) {
 })
 
 test('setImmediate', function testSetImmediate(t) {
-  if (!HAS_SETIMMEDIATE) {
-    t.ok('setImmediate not defined')
-    return t.end()
-  }
-
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     timers.setImmediate(function anonymous() {
@@ -54,11 +45,6 @@ test('global setTimeout', function testSetTimeout(t) {
 })
 
 test('global setImmediate', function testSetImmediate(t) {
-  if (!HAS_SETIMMEDIATE) {
-    t.ok('setImmediate not defined')
-    return t.end()
-  }
-
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     setImmediate(function anonymous() {
@@ -135,11 +121,6 @@ test('clearTimeout', function testNextTick(t) {
 })
 
 test('clearImmediate', function testNextTick(t) {
-  if (!HAS_SETIMMEDIATE) {
-    t.ok('setImmediate not defined')
-    return t.end()
-  }
-
   var agent = setupAgent(t)
   var timer = setImmediate(fail)
 

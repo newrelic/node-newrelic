@@ -8,14 +8,6 @@ var Transaction  = require('../../../lib/transaction')
 var mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
 
 
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  var timers = require('timers')
-  timers.setImmediate = global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
-
 nock.disableNetConnect()
 
 test("harvesting with a mocked collector that returns 413 after connect", function (t) {

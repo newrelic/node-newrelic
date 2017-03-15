@@ -10,13 +10,6 @@ var sampler = require('../../../lib/sampler')
 var semver = require('semver')
 
 
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
-
 nock.disableNetConnect()
 
 test("harvesting with a mocked collector that returns 503 after connect", function (t) {

@@ -6,10 +6,6 @@ var params = require('../../lib/params')
 var test = tap.test
 var helper = require('../../lib/agent_helper')
 
-// Cassandra driver doesn't have support for v0.8. It uses the stream API introduced
-// in v0.10. https://github.com/jorgebay/node-cassandra-cql/issues/11
-var semver = require('semver')
-if (semver.satisfies(process.versions.node, '<0.10.x')) return
 
 var agent = helper.instrumentMockedAgent()
 var cassandra = require('node-cassandra-cql')
