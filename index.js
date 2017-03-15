@@ -42,14 +42,15 @@ function initialize() {
   logger.warn(BETA_MESSAGE)
 
   try {
-    logger.debug("Process was running %s seconds before agent was loaded.",
-                 process.uptime())
-    // Technically we run on 0.6, until we verify there are 0 users on 0.6, we
-    // should leave this code doing a check against 0.6, but then advise that
-    // people upgrade to one of our officially supported version (0.8 and higher)
-    if (semver.satisfies(process.version, '<0.6.0')) {
+    logger.debug(
+      'Process was running %s seconds before agent was loaded.',
+      process.uptime()
+    )
+
+    // TODO: Update this check when Node v0.10 is deprecated.
+    if (semver.satisfies(process.version, '<0.10.0')) {
       message = "New Relic for Node.js requires a version of Node equal to or\n" +
-                "greater than 0.8.0. Not starting!"
+                "greater than 0.10.0. Not starting!"
 
       logger.error(message)
       throw new Error(message)
