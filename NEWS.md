@@ -1,3 +1,20 @@
+### v1.38.0 (2017-03-16):
+* We're excited to announce the addition of a new Node VMs page to the UI that provides a
+  curated view of the cpu, memory, garbage collection, and event loop metrics that we have
+  added over the past several releases of the node agent and native-metrics module.
+
+  For more information, see [our documentation.](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/node-vms-statistics-page)
+
+* Added instrumentation of When.js promise library.
+
+ Previously, the transaction state could get lost when multiple promises resolved close
+  to each other.
+
+* Fixed name of environment variable in error message when configuration file cannot be found.
+  Thanks to @Maubic for the contribution!
+
+* Updated tests to work with the latest version of Node 7.
+
 ### v1.37.1 (2017-02-16):
 * Agent now wraps `emit` on http request/response objects instead of relying
   on listeners.
