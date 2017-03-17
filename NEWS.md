@@ -1,3 +1,11 @@
+### v1.38.1 (2017-03-17):
+* Fixed issue with when.js instrumentation not preserving all properties on wrapped
+  Promise constructor.
+
+  Previously, the when.js instrumentation would cause an unhandled exception when private
+  methods on the Promise constructor were called (e.g. when adapting functions that do
+  not use promises).
+
 ### v1.38.0 (2017-03-16):
 * We're excited to announce the addition of a new Node VMs page to the UI that provides a
   curated view of the cpu, memory, garbage collection, and event loop metrics that we have
