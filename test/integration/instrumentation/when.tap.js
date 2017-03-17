@@ -8,6 +8,23 @@ var testTransactionState = require('./promises/transaction-state.js')
 var runMultiple = testTransactionState.runMultiple
 
 
+test('Promise constructor retains all properties', function(t) {
+  var Promise = require('when').Promise
+  var originalKeys = Object.keys(Promise)
+
+  var agent = setupAgent(t)
+  var Promise = require('when').Promise
+  var wrappedKeys = Object.keys(Promise)
+
+  originalKeys.forEach(function(key) {
+    if (wrappedKeys.indexOf(key) === -1) {
+      t.fail('Property ' + key + ' is not present on wrapped Promise')
+    }
+  })
+
+  t.end()
+})
+
 test('transaction state', function(t) {
   var agent = setupAgent(t)
   var when = require('when')
@@ -731,6 +748,47 @@ test('filter', function(t) {
       })
     })
   })
+})
+
+test('fn.apply', function(t) {
+  var agent = setupAgent(t)
+  t.tearDown(function tearDown() {
+    helper.unloadAgent(agent)
+  })
+
+  var when = require('when')
+  var fn = require('when/function')
+
+  function noop() {}
+
+  var args = [1, 2, 3]
+  fn.apply(noop, args)
+    .then(function() {
+      t.end()
+    })
+})
+
+test('node.apply', function(t) {
+  var agent = setupAgent(t)
+  t.tearDown(function tearDown() {
+    helper.unloadAgent(agent)
+  })
+
+  var when = require('when')
+  var nodefn = require('when/node')
+
+  function nodeStyleFunction(arg1, cb) {
+    process.nextTick(cb)
+  }
+
+  var args = [1]
+  nodefn.apply(nodeStyleFunction, args)
+    .then(function() {
+      t.end()
+    })
+    .catch(function(err) {
+      t.fail(err)
+    })
 })
 
 function setupAgent(t, enableSegments) {
