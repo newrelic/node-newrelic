@@ -140,6 +140,46 @@ test('when.defer', function(t) {
   })
 })
 
+test('when debug API', function(t) {
+  t.plan(2)
+  var agent = setupAgent(t)
+  var when = require('when')
+  t.tearDown(function tearDown() {
+    helper.unloadAgent(agent)
+  })
+
+  t.test('should not break onFatalRejection', function(t) {
+    when.Promise.onFatalRejection = function testFatal(e) {
+      t.equal(e.value, error)
+      t.end()
+    }
+
+    var error = {val: 'test'}
+    var p = when.reject(error)
+
+    p.done()
+  })
+
+  t.test('should not break onPotentiallyUnhandledRejectionHandled', function(t) {
+    t.plan(2)
+    when.Promise.onPotentiallyUnhandledRejectionHandled = function testOPURH(e) {
+      t.equal(e.value, error)
+      t.end()
+    }
+
+    when.Promise.onPotentiallyUnhandledRejection = function testOPUR(e) {
+      t.equal(e.value, error)
+    }
+
+    var error = {val: 'test'}
+    var p = when.reject(error)
+
+    setTimeout(function () {
+      p.catch(function(){})
+    }, 10)
+  })
+})
+
 test('when.iterate', function(t) {
   var COUNT = 10
   testPromiseLibraryMethod(t, (COUNT * 6) + 2, function(when, name) {
