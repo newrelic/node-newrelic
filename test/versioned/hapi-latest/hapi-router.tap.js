@@ -33,7 +33,7 @@ function verifier(t) {
 }
 
 test("Hapi router introspection", function(t) {
-  t.plan(2)
+  t.autoend()
 
   var agent = null
   var hapi = null

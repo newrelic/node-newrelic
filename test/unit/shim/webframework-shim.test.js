@@ -196,7 +196,8 @@ describe('WebFrameworkShim', function() {
   describe('#setDispatcher', function() {
     it('should set the Framework and Dispatcher environment settings', function() {
       var env = agent.environment
-      expect(env.get('Framework')).to.deep.equal([])
+      env.clearFramework()
+      env.clearDispatcher()
 
       // Depending on whether other tests of have run, we may have a dispatcher
       // value or not.

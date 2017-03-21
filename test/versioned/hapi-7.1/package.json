@@ -9,7 +9,7 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "hapi": "^7.1"
+    "hapi": "~7.1"
   },
   "private": true
 }

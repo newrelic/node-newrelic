@@ -922,10 +922,6 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  * @param {function} [options.onError]
  *  If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
- *
- * @param {string} [options.datastoreName]
- *  If provided, this will be used for naming the metrics. Otherwise the
- *  instrumentation will need set the datastore name manually.
  */
 API.prototype.instrumentDatastore =
 function instrumentDatastore(moduleName, onRequire, onError) {
