@@ -397,6 +397,21 @@ test('Promise#catch', function(t) {
   })
 })
 
+test('Promise#otherwise', function(t) {
+  testPromiseInstanceMethod(t, 2, function otherwiseTest(p, name) {
+    return p.otherwise(function() {
+      t.fail(name + 'should not go into otherwise from a resolved promise')
+    }).then(function() {
+      throw new Error('Promise#otherwise test error')
+    }).otherwise(function(err) {
+      t.ok(err, name + 'should pass error into rejection handler')
+      if (err) {
+        t.equal(err.message, 'Promise#otherwise test error', name + 'should be correct error')
+      }
+    })
+  })
+})
+
 test('Promise#finally', function(t) {
   testPromiseInstanceMethod(t, 6, function finallyTest(p, name) {
     return p.finally(function() {
@@ -413,6 +428,29 @@ test('Promise#finally', function(t) {
         t.equal(
           err.message,
           'Promise#finally test error',
+          name + 'should be correct error'
+        )
+      }
+    })
+  })
+})
+
+test('Promise#ensure', function(t) {
+  testPromiseInstanceMethod(t, 6, function ensureTest(p, name) {
+    return p.ensure(function() {
+      t.equal(arguments.length, 0, name + 'should not receive any parameters')
+    }).then(function(res) {
+      t.same(res, [1, 2, 3, name], name + 'should pass values beyond ensure handler')
+      throw new Error('Promise#ensure test error')
+    }).ensure(function() {
+      t.equal(arguments.length, 0, name + 'should not receive any parameters')
+      t.pass(name + 'should go into ensure handler from rejected promise')
+    }).catch(function(err) {
+      t.ok(err, name + 'should pass error beyond ensure handler')
+      if (err) {
+        t.equal(
+          err.message,
+          'Promise#ensure test error',
           name + 'should be correct error'
         )
       }
