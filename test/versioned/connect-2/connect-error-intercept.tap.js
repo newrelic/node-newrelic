@@ -12,9 +12,9 @@ test("intercepting errors with connect 2", function(t) {
   t.plan(3)
 
   t.test("should wrap handlers with proxies", function(t) {
-    var agent   = helper.instrumentMockedAgent()
+    var agent = helper.instrumentMockedAgent()
     var connect = require('connect')
-    var app     = connect()
+    var app = connect()
 
 
     t.tearDown(function cb_tearDown() {
@@ -27,19 +27,13 @@ test("intercepting errors with connect 2", function(t) {
 
     t.ok(app.stack, "there's a stack of handlers defined")
     // 2 because of the error handler
-    t.equal(app.stack.length, 2, "have test middleware + error interceptor")
+    t.equal(app.stack.length, 1, "have test middleware + error interceptor")
 
     var wrapNop = app.stack[0]
     t.equal(wrapNop.route, '', "nop handler defaults to all routes")
     t.ok(wrapNop.handle, "have nop handle passed above")
     t.equal(wrapNop.handle.name, 'nop', "nop's name is unchanged")
     t.equal(wrapNop.handle.__NR_original, nop, "nop is wrapped")
-
-    // implementation detail: the sentinel
-    var interceptor = app.stack[1]
-    t.equal(interceptor.route, '', "interceptor catches all routes")
-    t.ok(interceptor.handle, "interceptor has a handler")
-    t.equal(interceptor.handle.name, 'sentinel', "error-wrapping sentinel found")
 
     t.end()
   })
@@ -55,69 +49,86 @@ test("intercepting errors with connect 2", function(t) {
     })
 
     app.use(connect.bodyParser())
-    t.equal(app.stack.length, 2, "2 handlers after 1st add")
-    t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel', "sentinel found")
+    t.equal(app.stack.length, 1, "1 handlers after 1st add")
 
     app.use(connect.cookieParser())
-    t.equal(app.stack.length, 3, "3 handlers after 2nd add")
-    t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel', "sentinel found")
+    t.equal(app.stack.length, 2, "2 handlers after 2nd add")
 
     app.use(connect.csrf())
-    t.equal(app.stack.length, 4, "4 handlers after 3rd add")
-    t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel', "sentinel found")
+    t.equal(app.stack.length, 3, "3 handlers after 3rd add")
 
     app.use(connect.logger())
-    t.equal(app.stack.length, 5, "5 handlers after 4th add")
-    t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel', "sentinel found")
+    t.equal(app.stack.length, 4, "4 handlers after 4th add")
 
     t.end()
   })
 
   t.test("should trace any errors that occur while executing a middleware stack",
          function (t) {
-    var agent   = helper.instrumentMockedAgent()
-      , connect = require('connect')
-      , app     = connect()
+    var agent = helper.instrumentMockedAgent()
+    var server
+    agent.once('transactionFinished', function(tx) {
+      var errors = agent.errors.errors; // FIXME: redundancy is dumb
+      t.equal(errors.length, 1, "the error got traced")
 
+      var error = errors[0]
+      t.equal(error.length, 5, "format for traced error is correct")
+      t.equal(error[3], 'TypeError', "got the correct class for the error")
+
+      server.close()
+      t.end()
+    })
 
     t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
-    function wiggleware(req, res, next) {
-      var harbl = null
-      harbl.bargl(); // OHHH NOOOOO
+    helper.runInTransaction(agent, function() {
+      var connect = require('connect')
+      var app = connect()
 
-      return next(); // will never get here
-    }
+      function wiggleware(req, res, next) {
+        var harbl = null
+        harbl.bargl(); // OHHH NOOOOO
 
-    var stubReq = {
-      url: '/test',
-      method: 'GET',
-      unpipe: new Function(),
-      resume: new Function()
-    }
-
-    var stubRes = {
-      headers : {},
-      setHeader : function (name, value) {
-        stubRes.headers[name] = value
-      },
-      end : function () {
-        stubRes._end = agent.tracer.slice(arguments)
+        return next(); // will never get here
       }
-    }
 
-    app.use(wiggleware)
-    app.handle(stubReq, stubRes)
+      var stubReq = {
+        url: '/:test',
+        method: 'GET',
+        unpipe: new Function(),
+        resume: new Function()
+      }
 
-    var errors = agent.errors.errors; // FIXME: redundancy is dumb
-    t.equal(errors.length, 1, "the error got traced")
+      var stubRes = {
+        headers : {},
+        setHeader : function (name, value) {
+          stubRes.headers[name] = value
+        },
+        end : function () {
+          stubRes._end = agent.tracer.slice(arguments)
+        }
+      }
 
-    var error = errors[0]
-    t.equal(error.length, 5, "format for traced error is correct")
-    t.equal(error[3], 'TypeError', "got the correct class for the error")
+      app.use(wiggleware)
 
-    t.end()
+      var http = require('http')
+      server = http.createServer(function(req, res) {
+        app.handle(req, res)
+      }).listen(0, function () {
+        var req = http.request({
+          port: server.address().port,
+          host: 'localhost',
+          path: '/asdf',
+          method: 'GET'
+        }, function onResponse(res) {
+          res.on('data', function(data) {
+            //throw away the data
+          })
+        })
+        req.end()
+      })
+    })
   })
 })

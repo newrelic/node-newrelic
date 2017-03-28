@@ -8,7 +8,7 @@ var helper = require('../../lib/agent_helper')
 // connect is a loudmouth without this
 process.env.NODE_ENV = 'test'
 
-test("intercepting errors with connect 1", function(t) {
+test("intercepting errors with connect 2", function(t) {
   t.plan(3)
 
   t.test("should wrap handlers with proxies", function(t) {
@@ -48,16 +48,16 @@ test("intercepting errors with connect 1", function(t) {
       helper.unloadAgent(agent)
     })
 
-    app.use(connect.bodyParser())
+    app.use(function first() {})
     t.equal(app.stack.length, 1, "1 handlers after 1st add")
 
-    app.use(connect.cookieParser())
+    app.use(function second() {})
     t.equal(app.stack.length, 2, "2 handlers after 2nd add")
 
-    app.use(connect.csrf())
+    app.use(function third() {})
     t.equal(app.stack.length, 3, "3 handlers after 3rd add")
 
-    app.use(connect.logger())
+    app.use(function fourth() {})
     t.equal(app.stack.length, 4, "4 handlers after 4th add")
 
     t.end()
