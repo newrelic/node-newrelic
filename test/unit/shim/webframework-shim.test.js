@@ -25,7 +25,7 @@ describe('WebFrameworkShim', function() {
       middleware: function(_req, res, next) {
         return {req: _req, res: res, next: next, segment: agent.tracer.getSegment()}
       },
-      getActiveSegment: function() {
+      getActiveSegment: function getActiveSegment() {
         return agent.tracer.getSegment()
       }
     }
@@ -144,7 +144,7 @@ describe('WebFrameworkShim', function() {
 
       shim.wrapMiddlewareMounter(wrappable, 'bar', {
         route: shim.FIRST,
-        middleware: function(shim, middleware) {
+        wrapper: function(shim, middleware) {
           return middleware
         }
       })
@@ -259,7 +259,7 @@ describe('WebFrameworkShim', function() {
         var args = [function a() {}, function b() {}, function c() {}]
 
         shim.wrapMiddlewareMounter(wrappable, 'bar', {
-          middleware: function(shim, fn, name) {
+          wrapper: function(shim, fn, name) {
             expect(fn).to.equal(args[callCount])
             expect(name).to.equal(args[callCount].name)
             ++callCount
@@ -294,7 +294,7 @@ describe('WebFrameworkShim', function() {
           var realRoute = '/my/great/route'
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             route: shim.FIRST,
-            middleware: function(shim, fn, name, route) {
+            wrapper: function(shim, fn, name, route) {
               expect(route).to.equal(realRoute)
             }
           })
@@ -306,7 +306,7 @@ describe('WebFrameworkShim', function() {
           var callCount = 0
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             route: shim.FIRST,
-            middleware: function(shim, fn, name, route) {
+            wrapper: function(shim, fn, name, route) {
               expect(route).to.equal(null)
               ++callCount
             }
@@ -320,7 +320,7 @@ describe('WebFrameworkShim', function() {
           var callCount = 0
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             route: null,
-            middleware: function(shim, fn, name, route) {
+            wrapper: function(shim, fn, name, route) {
               expect(route).to.equal(null)
               ++callCount
             }
@@ -336,7 +336,7 @@ describe('WebFrameworkShim', function() {
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             route: shim.FIRST,
             endpoint: shim.LAST,
-            middleware: function(shim, fn, name, route, isEndpoint) {
+            wrapper: function(shim, fn, name, route, isEndpoint) {
               expect(isEndpoint).to.be.true()
             }
           })
@@ -347,7 +347,7 @@ describe('WebFrameworkShim', function() {
         it('should pass false if no endpoint spec is given', function() {
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             endpoint: null,
-            middleware: function(shim, fn, name, route, isEndpoint) {
+            wrapper: function(shim, fn, name, route, isEndpoint) {
               expect(isEndpoint).to.be.false()
             }
           })
@@ -360,7 +360,7 @@ describe('WebFrameworkShim', function() {
 
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             endpoint: shim.LAST,
-            middleware: function(shim, fn, name, route, isEndpoint) {
+            wrapper: function(shim, fn, name, route, isEndpoint) {
               if (callCount === 0) {
                 expect(isEndpoint).to.be.false()
               } else {
@@ -381,7 +381,7 @@ describe('WebFrameworkShim', function() {
           var args = [[funcs[0], funcs[1]], funcs[2]]
 
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
-            middleware: function(shim, fn, name) {
+            wrapper: function(shim, fn, name) {
               expect(fn).to.equal(funcs[callCount])
               expect(name).to.equal(funcs[callCount].name)
               ++callCount
@@ -399,7 +399,7 @@ describe('WebFrameworkShim', function() {
           var args = [[[[[funcs[0], [[funcs[1]]]]], funcs[2]]]]
 
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
-            middleware: function(shim, fn, name) {
+            wrapper: function(shim, fn, name) {
               expect(fn).to.equal(funcs[callCount])
               expect(name).to.equal(funcs[callCount].name)
               ++callCount
@@ -472,11 +472,11 @@ describe('WebFrameworkShim', function() {
       })
 
       it('should name the segment according to the middleware type', function() {
-        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/<anonymous>//')
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//')
         testType(shim.APPLICATION, 'Restify/Mounted App: /')
         testType(shim.ROUTER, 'Restify/Router: /')
-        testType(shim.ENDPOINT, 'Restify/Route Path: <anonymous>/')
-        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/<anonymous>//')
+        testType(shim.ENDPOINT, 'Restify/Route Path: getActiveSegment/')
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//')
         testType(shim.PARAMWARE, 'Restify/Param Handler: /')
 
         function testType(type, expectedName) {
