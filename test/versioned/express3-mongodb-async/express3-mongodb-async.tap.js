@@ -211,9 +211,9 @@ test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, funct
                 "first segment is web transaction")
 
         children = web.children || []
-        t.equal(children.length, 1, "should have a MongoDB connection child")
+        t.equal(children.length, 5, "should have a MongoDB connection child")
 
-        var connect = children[0]
+        var connect = children[4].children[0].children[0] // Skip middleware segments
         children = connect.children[1].children
         t.equal(
           connect.name,

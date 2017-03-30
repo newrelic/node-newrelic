@@ -581,6 +581,25 @@ describe('Shim', function() {
     })
   })
 
+  describe('#wrapExport', function() {
+    it('should execute the given wrap function', function() {
+      var executed = false
+      shim.wrapExport({}, function() {
+        executed = true
+      })
+      expect(executed).to.be.true()
+    })
+
+    it('should store the wrapped version for later retrival', function() {
+      var original = {}
+      var wrapped = shim.wrapExport(original, function() {
+        return {}
+      })
+
+      expect(shim.getExport()).to.equal(wrapped).and.not.equal(original)
+    })
+  })
+
   describe('#record', function() {
     it('should not wrap non-function objects', function() {
       var wrapped = shim.record(wrappable, function() {})
@@ -1620,7 +1639,7 @@ describe('Shim', function() {
           expect(segment.parameters).to.not.have.property('ignore_me')
         })
 
-        it('should allow datastore instance attrs regardless of `ignored_params`', function() {
+        it('should allow datastore instance attrs despite `ignored_params`', function() {
           expect(segment).to.have.property('parameters')
           expect(segment.parameters).to.have.property('host', 'my awesome host')
           expect(segment.parameters).to.have.property('port_path_or_id', 1234)
@@ -1891,6 +1910,78 @@ describe('Shim', function() {
 
       expect(obj).to.have.property('foo', 'bar')
       expect(obj).to.have.property('fiz', 'bang')
+    })
+  })
+
+  describe('#setDefaults', function() {
+    it('should copy over defaults when provided object is null', function() {
+      var obj = null
+      var defaults = {foo: 1, bar: 2}
+      var defaulted = shim.setDefaults(obj, defaults)
+
+      expect(obj).to.not.equal(defaulted).and.not.equal(defaults)
+      expect(defaulted).to.deep.equal(defaults)
+    })
+
+    it('should copy each key over', function() {
+      var obj = {}
+      var defaults = {foo: 1, bar: 2}
+      var defaulted = shim.setDefaults(obj, defaults)
+
+      expect(obj).to.equal(defaulted).and.not.equal(defaults)
+      expect(defaulted).to.deep.equal(defaults)
+    })
+
+    it('should not replace existing keys', function() {
+      var obj = {foo: null}
+      var defaults = {foo: 1, bar: 2}
+      var defaulted = shim.setDefaults(obj, defaults)
+
+      expect(obj).to.equal(defaulted).and.not.equal(defaults)
+      expect(defaulted).to.deep.equal({foo: null, bar: 2})
+    })
+  })
+
+  describe('#proxy', function() {
+    var original = null
+    var proxied = null
+
+    beforeEach(function() {
+      original = {foo: 1, bar: 2, biz: 3, baz: 4}
+      proxied = {}
+    })
+
+    afterEach(function() {
+      original = null
+      proxied = null
+    })
+
+    it('should proxy individual properties', function() {
+      shim.proxy(original, 'foo', proxied)
+      expect(original).to.have.property('foo', 1)
+      expect(proxied).to.have.property('foo', 1)
+      expect(proxied).to.not.have.property('bar')
+      expect(proxied).to.not.have.property('biz')
+
+      proxied.foo = 'other'
+      expect(original).to.have.property('foo', 'other')
+    })
+
+    it('should proxy arrays of properties', function() {
+      shim.proxy(original, ['foo', 'bar'], proxied)
+      expect(original).to.have.property('foo', 1)
+      expect(original).to.have.property('bar', 2)
+      expect(proxied).to.have.property('foo', 1)
+      expect(proxied).to.have.property('bar', 2)
+      expect(proxied).to.not.have.property('biz')
+
+      proxied.foo = 'other'
+      expect(original).to.have.property('foo', 'other')
+      expect(original).to.have.property('bar', 2)
+
+      proxied.bar = 'another'
+      expect(original).to.have.property('foo', 'other')
+      expect(original).to.have.property('bar', 'another')
     })
   })
 })

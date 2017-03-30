@@ -19,7 +19,7 @@ test('should name middleware correctly',
     helper.unloadAgent(agent)
   })
 
-  app.use('/', testMiddleware.bind(null))
+  app.use('/', testMiddleware)
 
   server = app.listen(0, function() {
     t.equal(app._router.stack.length, 3,

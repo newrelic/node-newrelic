@@ -60,13 +60,9 @@ tap.test("basic director test", function (t) {
     t.equal(web.partialName, 'Nodejs/GET//hello',
             "should have partial name for apdex")
 
-    if (semver.satisfies(process.versions.node, '<0.12.x')) {
-      var handler0 = web.children[0]
-      t.equal(handler0.name, "Truncated/Function/fn0", "route 0 segment has correct name")
-    }
-    else {
-      var handler0 = web.children[0]
-      t.equal(handler0.name, "Function/fn0", "route 0 segment has correct name")
+    var handler0 = web.children[0]
+    t.equal(handler0.name, "Function/fn0", "route 0 segment has correct name")
+    if (semver.satisfies(process.versions.node, '>=0.12')) {
       var handler1 = web.children[1]
       t.equal(handler1.name, "Function/fn1", "route 1 segment has correct name")
     }

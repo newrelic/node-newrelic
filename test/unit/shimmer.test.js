@@ -10,15 +10,16 @@ var shims = require('../../lib/shim')
 var EventEmitter = require('events').EventEmitter
 
 describe('shimmer', function() {
-  describe('custom instrumentation of relative modules', makeModuleTests('../helpers/module'))
-  describe('custom instrumentation of modules', makeModuleTests('chai'))
-  describe('custom instrumentation of deep modules', makeModuleTests('chai/lib/chai'))
+  describe('custom instrumentation', function() {
+    describe('of relative modules', makeModuleTests('../helpers/module'))
+    describe('of modules', makeModuleTests('chai'))
+    describe('of deep modules', makeModuleTests('chai/lib/chai'))
+  })
 
   function makeModuleTests(moduleName) {
     return function moduleTests() {
       var agent = null
       var onRequireArgs = null
-      var onErrorArgs = null
       var counter = 0
       var instrumentationOpts = null
       var instrumentedModule = null
@@ -32,7 +33,7 @@ describe('shimmer', function() {
             ++counter
             onRequireArgs = arguments
           },
-          onError: function() { onErrorArgs = arguments }
+          onError: function() {}
         }
         shimmer.registerInstrumentation(instrumentationOpts)
       })
@@ -40,7 +41,6 @@ describe('shimmer', function() {
       afterEach(function() {
         counter = 0
         onRequireArgs = null
-        onErrorArgs = null
         helper.unloadAgent(agent)
       })
 
@@ -54,7 +54,7 @@ describe('shimmer', function() {
 
       it('should construct a DatastoreShim if the type is "datastore"', function() {
         instrumentationOpts.type = 'datastore'
-        var mod = require(moduleName)
+        require(moduleName)
         expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
       })
 
@@ -76,17 +76,49 @@ describe('shimmer', function() {
     }
   }
 
+  describe('wrapping exports', function() {
+    var agent = null
+    var original = null
+    var wrapper = null
+
+    beforeEach(function() {
+      agent = helper.instrumentMockedAgent()
+      shimmer.registerInstrumentation({
+        moduleName: '../helpers/module',
+        onRequire: function(shim, nodule) {
+          original = nodule
+          wrapper = {}
+
+          shim.wrapExport(original, function() {
+            return wrapper
+          })
+        }
+      })
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+      original = null
+      wrapper = null
+    })
+
+    it('should replace the return value from require', function() {
+      var obj = require('../helpers/module')
+      expect(obj).to.equal(wrapper).and.not.equal(original)
+    })
+  })
+
   describe('the instrumentation injector', function () {
     var nodule = {
       c: 2,
       ham: 'ham',
-      doubler: function (x, cb) {
+      doubler: function(x, cb) {
         cb(this.c + x * 2)
       },
-      tripler: function (y, cb) {
+      tripler: function(y, cb) {
         cb(this.c + y * 3)
       },
-      hammer: function (h, cb) {
+      hammer: function(h, cb) {
         cb(this.ham + h)
       }
     }
