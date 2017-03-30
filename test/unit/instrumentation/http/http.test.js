@@ -361,10 +361,6 @@ describe("built-in http module instrumentation", function() {
       expect(mochaHandlers.length).above(0)
     })
 
-    // Uncaught errors only handled in 0.9 and above, skip the rest of this
-    // block
-    if (!semver.satisfies(process.versions.node, '>=0.9.0')) return
-
     describe("for http.createServer", function() {
       it("should trace errors in top-level handlers", function(done) {
         var server

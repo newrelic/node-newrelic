@@ -1,9 +1,5 @@
 'use strict'
 
-// hapi 10.x and higher works on Node 4 and higher
-var semver = require('semver')
-if (semver.satisfies(process.versions.node, '<0.10')) return
-
 var hapi = require('hapi')
 
 // run capture params tests

@@ -1,13 +1,12 @@
 'use strict'
 
-var path = require('path')
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper.js')
 var API = require('../../../api.js')
-var skip = require('./skip')
 
-test("ignoring an Express 4 route", {skip: skip()}, function (t) {
+
+test("ignoring an Express 4 route", function(t) {
   t.plan(7)
 
   var agent = helper.instrumentMockedAgent()

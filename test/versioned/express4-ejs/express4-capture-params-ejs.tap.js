@@ -6,18 +6,15 @@ process.env.NODE_ENV = 'test'
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
-var skip = require('./skip')
 
 
 // CONSTANTS
 var TEST_PORT = 9876
 var TEST_HOST = 'localhost'
 var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
-var TEST_OPTIONS = {
-  skip: skip()
-}
 
-test("test capture_params for express", TEST_OPTIONS, function(t) {
+
+test("test capture_params for express", function(t) {
   t.autoend()
 
   t.test("no variables", function(t) {

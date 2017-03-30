@@ -21,7 +21,7 @@ test("support ssl to the proxy", function (t) {
     cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
   }
 
-  var server = setup(https.createServer(opts))
+  var server = proxySetup(https.createServer(opts))
 
   server.listen(port, function () {
     port = server.address().port
@@ -64,7 +64,7 @@ test("support ssl to the proxy", function (t) {
 })
 
 test("setting proxy_port should use the proxy agent", function (t) {
-  var server = setup(http.createServer())
+  var server = proxySetup(http.createServer())
   var port = 0
 
   server.listen(port, function () {
@@ -108,7 +108,7 @@ test("setting proxy_port should use the proxy agent", function (t) {
 })
 
 test("proxy agent with SSL tunnel to collector", function (t) {
-  var server = setup(http.createServer())
+  var server = proxySetup(http.createServer())
   var port = 0
 
   server.listen(port, function () {
@@ -153,7 +153,7 @@ test("proxy agent with SSL tunnel to collector", function (t) {
 })
 
 test("proxy agent with plain text to collector", function (t) {
-  var server = setup(http.createServer())
+  var server = proxySetup(http.createServer())
   var port = 0
 
   server.listen(port, function () {
@@ -275,41 +275,3 @@ test("no proxy set should not use proxy agent", function (t) {
     })
   })
 })
-
-/*
-  The proxy module has a bug in 0.8 where it doesn't always close the
-  socket which results in hanging tests. This wraps the server up and
-  destroys the sockets to fix it. The tests are still valid as they
-  are testing that the proxy-agent module that we are using works
-  correctly and is used when appropriate, this is just a work around
-  for a small bug in the proxy server module.
-*/
-function setup (input) {
-  var server = proxySetup(input)
-
-  // Early return on 0.10 and higher as the proxy module works fine
-  // there.
-  if (semver.satisfies(process.version, '>=0.10')) {
-    return server
-  }
-  var conns = []
-
-  server.on('connection', function onConnection(conn) {
-    conns.push(conn)
-    conn.on('close', function () {
-      var index = conns.indexOf(conn)
-      if (index !== -1) {
-        conns.splice(index, 1)
-      }
-    })
-  })
-
-  var serverClose = server.close
-  server.close = function forceClose () {
-    serverClose.apply(this, arguments)
-    conns.forEach(function destroyerOfSockets (conn) {
-      conn.destroy()
-    })
-  }
-  return server
-}

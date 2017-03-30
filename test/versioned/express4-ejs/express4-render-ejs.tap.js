@@ -7,7 +7,6 @@ var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
 var API = require('../../../api.js')
-var skip = require('./skip')
 
 var TEST_PATH = '/test'
 var TEST_PORT = 9876
@@ -36,7 +35,7 @@ runTests({
 function runTests(flags) {
   // Regression test for issue 154
   // https://github.com/newrelic/node-newrelic/pull/154
-  test("using only the express router", {skip: skip()}, function(t) {
+  test("using only the express router", function(t) {
     var agent = helper.instrumentMockedAgent(flags)
     var router = require('express').Router()
 
@@ -56,7 +55,7 @@ function runTests(flags) {
     t.end()
   })
 
-  test("the express router should go through a whole request lifecycle", {skip: skip()}, function (t) {
+  test("the express router should go through a whole request lifecycle", function(t) {
     var agent = helper.instrumentMockedAgent(flags)
     var router = require('express').Router()
     var server
@@ -83,7 +82,7 @@ function runTests(flags) {
     })
   })
 
-  test("agent instrumentation of Express 4", {skip: skip()}, function (t) {
+  test("agent instrumentation of Express 4", function(t) {
     t.plan(6)
 
     var agent = null
@@ -254,7 +253,7 @@ function runTests(flags) {
       app.get(TEST_PATH, function(request, response) {
         t.ok(agent.getTransaction(),
              "the transaction should be visible inside the Express handler")
-             setTimeout(function() { response.send(BODY); }, DELAY)
+             setTimeout(function() { response.send(BODY) }, DELAY)
       })
 
       server.listen(TEST_PORT, TEST_HOST, function ready() {
@@ -312,7 +311,7 @@ function runTests(flags) {
     })
   })
 
-  test("trapping errors", {skip: skip()}, function(t) {
+  test("trapping errors", function(t) {
     t.autoend()
 
     t.test('collects the actual error object that is thrown', function(t) {

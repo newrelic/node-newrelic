@@ -16,7 +16,6 @@ var METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
 
 test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
-  {skip: semver.satisfies(process.version, '0.8')},
   function(t) {
   t.plan(8)
 
@@ -62,9 +61,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
   })
 })
 
-test("Restify should still be instrumented when run with SSL",
-  {skip: semver.satisfies(process.version, '0.8')},
-  function (t) {
+test("Restify should still be instrumented when run with SSL", function (t) {
   t.plan(8)
 
   helper.withSSL(function cb_withSSL(error, key, certificate, ca) {

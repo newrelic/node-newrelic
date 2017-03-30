@@ -725,21 +725,15 @@ test('appendFile', function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
   var expectedSegments = []
-  var expectOpen = false
 
-  if (semver.satisfies(process.version, '<0.10')) {
-    expectedSegments = ['appendFile', 'open']
-    expectOpen = true
-  } else {
-    expectedSegments = ['appendFile', 'writeFile']
-  }
+  expectedSegments = ['appendFile', 'writeFile']
 
   helper.runInNamedTransaction(agent, function(trans) {
     fs.appendFile(name, '123', function(err) {
       t.notOk(err, 'should not error')
       t.equal(fs.readFileSync(name).toString('utf-8'), content + '123')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'appendFile',
-       expectOpen ? [NAMES.FS.PREFIX + 'open'] : [NAMES.FS.PREFIX + 'writeFile'])
+        [NAMES.FS.PREFIX + 'writeFile'])
 
       trans.end(function checkMetrics() {
         t.ok(
@@ -869,10 +863,7 @@ test('watch (dir)', function(t) {
     helper.runInTransaction(agent, function(trans) {
       var watcher = fs.watch(tempDir, function(ev, file) {
         t.equal(ev, 'rename')
-        if (process.platform !== 'darwin' ||
-          !semver.satisfies(process.version, '<0.10')) {
-          t.equal(file, 'watch-dir')
-        }
+        t.equal(file, 'watch-dir')
         t.equal(
           agent.getTransaction(),
           trans,
@@ -901,10 +892,7 @@ test('watch emitter', function(t) {
 
       watcher.on('change', function(ev, file) {
         t.equal(ev, 'rename')
-        if (process.platform !== 'darwin' ||
-          !semver.satisfies(process.version, '<0.10')) {
-          t.equal(file, 'watch')
-        }
+        t.equal(file, 'watch')
         t.equal(
           agent.getTransaction(),
           trans,

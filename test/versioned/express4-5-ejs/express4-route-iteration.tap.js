@@ -2,9 +2,9 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper.js')
-var skip = require('./skip')
 
-test("new relic should not break route iteration", {skip: skip()}, function (t) {
+
+test("new relic should not break route iteration", function(t) {
   t.plan(1)
   var agent = helper.instrumentMockedAgent()
   var express = require('express')

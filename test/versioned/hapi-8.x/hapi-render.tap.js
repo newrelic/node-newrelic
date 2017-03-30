@@ -1,13 +1,5 @@
 'use strict'
 
-// hapi 1.20.0 depends on node 0.10.x
-var semver = require('semver')
-if (semver.satisfies(process.version, '<0.10')) {
-  console.log('TAP version 13\n# disabled because of incompatibility')
-  console.log('ok 1 nothing to do\n\n1..1\n\n# ok')
-  process.exit(0)
-}
-
 var path = require('path')
 var util = require('util')
 var test = require('tap').test

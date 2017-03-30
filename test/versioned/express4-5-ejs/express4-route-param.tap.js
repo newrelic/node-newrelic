@@ -3,11 +3,11 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var request = require('request').defaults({json: true})
-var skip = require('./skip')
 
 var PORT = 8089
 
-test('Express 4 route param', {skip: skip()}, function(t) {
+
+test('Express 4 route param', function(t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
   var server = createServer(express)

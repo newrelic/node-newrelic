@@ -5,16 +5,13 @@ var test = tap.test
 var helper = require('../../lib/agent_helper')
 var assertMetrics = require('../../lib/metrics_helper').assertMetrics
 var params = require('../../lib/params')
-var semver = require('semver')
 
 
 // CONSTANTS
 var DB_INDEX = 2
 
 
-test('ioredis instrumentation', {skip: semver.satisfies(process.version, "<0.10")},
-  function(t) {
-
+test('ioredis instrumentation', function(t) {
   t.test('creates expected metrics', {timeout : 5000}, function(t) {
     var onError = function(error) { return t.fail(error) }
 
