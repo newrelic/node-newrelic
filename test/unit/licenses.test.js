@@ -21,10 +21,6 @@ if (semver.satisfies(process.version, '<0.12')) {
 describe('Agent licenses', function() {
   this.timeout(5000)
   it('should all be accounted for in LICENSES object', function(done) {
-    if (semver.satisfies(process.version, '<=0.8')) {
-      this.skip()
-    }
-
     var deps = Object.keys(pkg.dependencies || {})
     deps.push.apply(deps, Object.keys(pkg.optionalDependencies || {}))
     a.map(deps, function(dep, cb) {

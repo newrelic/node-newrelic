@@ -1112,9 +1112,6 @@ describe('ErrorAggregator', function () {
     var active
     var json
 
-    // Everything after this only works on 0.9 or later
-    if (!semver.satisfies(process.versions.node, '>=0.9.0')) return
-
     before(function (done) {
       agent = helper.instrumentMockedAgent()
 

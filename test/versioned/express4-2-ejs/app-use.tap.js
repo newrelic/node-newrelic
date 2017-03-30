@@ -4,9 +4,8 @@ var test = require('tap').test
 var helper  = require('../../lib/agent_helper')
 var request = require('request')
 var http = require('http')
-var skip = require('./skip')
 
-test('app should be at top of stack when mounted', {skip: skip()}, function (t) {
+test('app should be at top of stack when mounted', function(t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
 
@@ -30,7 +29,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
   main.use(child)
 })
 
-test('app should be at top of stack when mounted', {skip: skip()}, function (t) {
+test('app should be at top of stack when mounted', function(t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
   var main = express()
@@ -116,7 +115,7 @@ test('app should be at top of stack when mounted', {skip: skip()}, function (t) 
   }
 })
 
-test('should not pass wrong args when transaction is not present', {skip: skip()}, function (t) {
+test('should not pass wrong args when transaction is not present', function(t) {
   t.plan(5)
 
   var agent = helper.instrumentMockedAgent()

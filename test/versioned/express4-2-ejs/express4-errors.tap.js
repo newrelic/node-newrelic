@@ -1,10 +1,7 @@
 'use strict'
 
-var path = require('path')
 var helper = require('../../lib/agent_helper.js')
 var http = require('http')
-var skip = require('./skip')
-var skip = require('./skip')
 
 var test = require('tap').test
 
@@ -21,8 +18,7 @@ runTests({
 })
 
 function runTests(flags) {
-  test('reports error when thrown from a route',
-      { skip: skip() }, function(t) {
+  test('reports error when thrown from a route', function(t) {
     setup(t)
 
     app.get('/test', function(req, res) {
@@ -36,8 +32,7 @@ function runTests(flags) {
     })
   })
 
-  test('reports error when thrown from a middleware',
-      { skip: skip() }, function(t) {
+  test('reports error when thrown from a middleware', function(t) {
     setup(t)
 
     app.use(function(req, res, next) {
@@ -51,8 +46,7 @@ function runTests(flags) {
     })
   })
 
-  test('reports error when called in next from a middleware',
-      { skip: skip() }, function(t) {
+  test('reports error when called in next from a middleware', function(t) {
     setup(t)
 
     app.use(function(req, res, next) {
@@ -104,8 +98,7 @@ function runTests(flags) {
    })
   })
 
-  test('should report the error when error handler calls next with the error',
-      { skip: skip() }, function(t) {
+  test('should report the error when error handler calls next with the error', function(t) {
    setup(t)
 
    app.get('/test', function(req, res) {

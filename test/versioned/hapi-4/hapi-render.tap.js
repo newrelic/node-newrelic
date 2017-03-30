@@ -1,25 +1,17 @@
 'use strict'
 
-// hapi 1.20.0 depends on node 0.10.x
-var semver = require('semver')
-if (semver.satisfies(process.version, '<0.10')) {
-  console.log('TAP version 13\n# disabled because of incompatibility')
-  console.log('ok 1 nothing to do\n\n1..1\n\n# ok')
-  process.exit(0)
-}
-
 var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper')
-  , API     = require('../../../api.js')
+var test    = require('tap').test
+var request = require('request')
+var helper  = require('../../lib/agent_helper')
+var API     = require('../../../api.js')
 
 
 var TEST_PATH = '/test'
-  , TEST_PORT = 9876
-  , TEST_HOST = 'localhost'
-  , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-  , BODY      = "<!DOCTYPE html>\n" +
+var TEST_PORT = 9876
+var TEST_HOST = 'localhost'
+var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+var BODY      = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "  <title>yo dawg</title>\n" +
@@ -35,8 +27,8 @@ test("agent instrumentation of Hapi", function (t) {
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
-      , hapi   = require('hapi')
-      , server = hapi.createServer(TEST_HOST, TEST_PORT)
+    var hapi   = require('hapi')
+    var server = hapi.createServer(TEST_HOST, TEST_PORT)
 
 
     // set apdexT so apdex stats will be recorded

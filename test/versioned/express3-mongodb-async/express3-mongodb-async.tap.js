@@ -3,7 +3,6 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
-var semver = require('semver')
 
 
 // CONSTANTS
@@ -11,10 +10,7 @@ var DB_COLLECTION = 'test_express'
 var DB_URL = 'mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration'
 
 
-test("Express 3 using async in routes with MongoDB",
-    {timeout : Infinity,
-     skip: semver.satisfies(process.version, "0.8")},
-    function (t) {
+test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, function(t) {
   t.plan(26)
 
   var agent = helper.instrumentMockedAgent()
@@ -113,7 +109,6 @@ test("Express 3 using async in routes with MongoDB",
     var methodOverride = express.methodOverride()
     var router = app.router
     var errorHandler = express.errorHandler()
-
 
 
     app.configure(function cb_configure() {

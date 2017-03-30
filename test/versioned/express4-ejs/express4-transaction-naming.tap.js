@@ -2,9 +2,8 @@
 
 var helper = require('../../lib/agent_helper.js')
 var http = require('http')
-var skip = require('./skip')
-
 var test = require('tap').test
+
 
 var express
 var agent
@@ -79,8 +78,7 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with middleware function",
-      function(t) {
+  test("transaction name with middleware function", function(t) {
     setup(t)
 
     app.use('/path1', function(req, res, next) {
@@ -137,7 +135,7 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test('responding from middleware', {skip: skip()}, function(t) {
+  test('responding from middleware', function(t) {
     setup(t)
 
     app.use('/test', function(req, res, next) {
@@ -148,7 +146,7 @@ function runTests(flags) {
     runTest(t, '/test')
   })
 
-  test('responding from middleware with parameter', {skip: skip()}, function(t) {
+  test('responding from middleware with parameter', function(t) {
     setup(t)
 
     app.use('/test', function(req, res, next) {

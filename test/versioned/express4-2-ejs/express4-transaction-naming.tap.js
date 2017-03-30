@@ -2,8 +2,6 @@
 
 var helper = require('../../lib/agent_helper.js')
 var http = require('http')
-var skip = require('./skip')
-
 var test = require('tap').test
 
 var express
@@ -57,7 +55,7 @@ function runTests(flags) {
   test("transaction name with route that has multiple handlers", function(t) {
     setup(t)
 
-    app.get('/path1', function(req, res, next){
+    app.get('/path1', function(req, res, next) {
       next()
     }, function(req, res) {
       res.end()
@@ -71,7 +69,7 @@ function runTests(flags) {
     setup(t)
 
     var router = new express.Router()
-    router.get('/path1', function(req, res, next){
+    router.get('/path1', function(req, res, next) {
       res.end()
     })
 
@@ -88,20 +86,19 @@ function runTests(flags) {
       next()
     })
 
-    app.get('/path1', function(req, res, next){
+    app.get('/path1', function(req, res, next) {
       res.end()
     })
 
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with subapp middleware",
-      function (t) {
+  test("transaction name with subapp middleware", function(t) {
     setup(t)
 
     var subapp = express()
 
-    subapp.get('/path1', function middleware(req, res, next){
+    subapp.get('/path1', function middleware(req, res, next) {
       res.end()
     })
 
@@ -110,13 +107,12 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with subrouter",
-      function (t) {
+  test("transaction name with subrouter", function(t) {
     setup(t)
 
     var router = new express.Router()
 
-    router.get('/path1', function(req, res, next){
+    router.get('/path1', function(req, res, next) {
       res.end()
     })
 
@@ -129,18 +125,18 @@ function runTests(flags) {
       function (t) {
     setup(t)
 
-    app.get('/path1', function(req, res, next){
+    app.get('/path1', function(req, res, next) {
       next()
     })
 
-    app.get('/path1', function(req, res){
+    app.get('/path1', function(req, res) {
       res.end()
     })
 
     runTest(t, '/path1', '/path1')
   })
 
-  test('responding from middleware', {skip: skip()}, function(t) {
+  test('responding from middleware', function(t) {
     setup(t)
 
     app.use('/test', function(req, res, next) {
@@ -151,7 +147,7 @@ function runTests(flags) {
     runTest(t, '/test')
   })
 
-  test('responding from middleware with parameter', {skip: skip()}, function(t) {
+  test('responding from middleware with parameter', function(t) {
     setup(t)
 
     app.use('/test', function(req, res, next) {
@@ -290,7 +286,7 @@ function runTests(flags) {
     router1.use('/:router2', router2)
 
     router2.get('/path1', function(req, res) {
-      setTimeout(function () {
+      setTimeout(function() {
         res.end()
       }, 0)
     })

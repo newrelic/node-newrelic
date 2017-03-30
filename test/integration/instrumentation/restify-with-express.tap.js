@@ -8,7 +8,6 @@ var semver = require('semver')
 
 
 test("agent instrumentation of restify shouldn't affect express query parsing middleware",
-  {skip: semver.satisfies(process.version, '0.8')},
   function(t) {
   t.plan(2)
 

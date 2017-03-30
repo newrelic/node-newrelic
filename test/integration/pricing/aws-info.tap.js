@@ -13,13 +13,6 @@ var _httpGet = http.get
 var host
 
 
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
-
 test('pricing aws info', function(t) {
   var expectedMetrics = {}
 

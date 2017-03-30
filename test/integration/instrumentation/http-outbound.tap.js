@@ -28,7 +28,7 @@ tap.test('external requests', function(t) {
           'should be named'
         )
         t.ok(segment.timer.start, 'should have started')
-        t.ok(segment.timer.duration, 'should have ended')
+        t.ok(segment.timer.hasEnd(), 'should have ended')
 
         notVeryReliable.close(function closed() {
           t.end()
@@ -78,7 +78,7 @@ tap.test('external requests', function(t) {
         'should be named as an external'
       )
       t.ok(external.timer.start, 'should have started')
-      t.ok(external.timer.duration, 'should have ended')
+      t.ok(external.timer.hasEnd(), 'should have ended')
       t.ok(external.children.length, 'should have children')
 
       var connect = external.children[0]
@@ -115,7 +115,7 @@ tap.test('external requests', function(t) {
         'should be named'
       )
       t.ok(segment.timer.start, 'should have started')
-      t.ok(segment.timer.duration, 'should have ended')
+      t.ok(segment.timer.hasEnd(), 'should have ended')
       t.equal(segment.children.length, 1, 'should have 1 child')
 
       var notDuped = segment.children[0]
