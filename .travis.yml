@@ -27,10 +27,6 @@ services:
   - redis
   - cassandra
   - postgresql
-cache:
-  apt: true
-  directories:
-  - $HOME/.npm
 before_install:
   - if [ "$(npm --version)" = "3.10.3" ]; then npm install -g npm@3.4.1; fi
   - ./bin/travis-setup.sh

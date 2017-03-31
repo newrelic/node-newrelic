@@ -22,6 +22,10 @@ var CAPATH = path.join(__dirname, 'ca-certificate.crt')
 var _agent
 
 var helper = module.exports = {
+  getAgent: function getAgent() {
+    return _agent
+  },
+
   /**
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
