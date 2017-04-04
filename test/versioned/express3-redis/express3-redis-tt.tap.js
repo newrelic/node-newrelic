@@ -119,9 +119,9 @@ function enterRoom(req, res, room, users, rooms, status) {
  */
 function bootstrapExpress(client) {
   var express    = require('express')
-    , passport   = require('passport')
-    , RedisStore = require('connect-redis')(express)
-    , app        = express()
+  var passport   = require('passport')
+  var RedisStore = require('connect-redis')(express)
+  var app        = express()
 
 
   passport.deserializeUser(function cb_deserializeUser(id, done) {
@@ -198,7 +198,7 @@ function populate(client, next) {
  */
 function makeCookie() {
   var cookie = require('cookie')
-    , signer = require('cookie-signature')
+  var signer = require('cookie-signature')
 
 
   return cookie.serialize('test', 's:' + signer.sign(SESSION_ID, SESSION_SECRET))
@@ -214,9 +214,9 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
   t.plan(37)
 
   var agent        = helper.instrumentMockedAgent()
-    , redis        = require('redis')
-    , createServer = require('http').createServer
-    , request      = require('request')
+  var redis        = require('redis')
+  var createServer = require('http').createServer
+  var request      = require('request')
 
 
   // need to capture parameters
@@ -229,7 +229,7 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
     }
 
     var client = redis.createClient(params.redis_port, params.redis_host)
-      , server = createServer(bootstrapExpress(client)).listen(31337)
+    var server = createServer(bootstrapExpress(client)).listen(31337)
 
 
     t.tearDown(function cb_tearDown() {

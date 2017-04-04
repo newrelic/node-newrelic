@@ -163,10 +163,8 @@ test("agent instrumentation of Express 3", function(t) {
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
-      t.equal(app.stack.length, 4,
-              "4 middleware functions: query parser, Express, router, error trapper")
-      t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel',
-              "error handler is last function in middleware chain")
+      t.equal(app.stack.length, 3,
+              "3 middleware functions: query parser, Express, router")
 
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error)
