@@ -948,6 +948,45 @@ function instrumentDatastore(moduleName, onRequire, onError) {
 }
 
 /**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrumentWebframework(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentWebframework(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrumentWebframework =
+function instrumentWebframework(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.WEB_FRAMEWORK
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
  * Shuts down the agent.
  *
  * @param {object}  [options]                           object with shut down options
