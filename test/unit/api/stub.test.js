@@ -1,21 +1,20 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , API    = require('../../../stub_api.js')
+var chai   = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var API    = require('../../../stub_api.js')
 
 
-describe("the stubbed New Relic agent API", function () {
+describe("the stubbed New Relic agent API", function() {
   var api
 
-  beforeEach(function () {
+  beforeEach(function() {
     api = new API()
   })
 
-  it("should export 19 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(19)
+  it("should export 20 API calls", function() {
+    expect(Object.keys(api.constructor.prototype).length).equal(20)
   })
 
   it("exports a transaction naming function", function () {
