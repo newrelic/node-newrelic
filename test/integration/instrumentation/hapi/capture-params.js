@@ -3,32 +3,19 @@
 var test    = require('tap').test
 var request = require('request')
 var helper  = require('../../../lib/agent_helper.js')
-var instrument = require('../../../../lib/instrumentation/hapi.js')
-
 
 module.exports = runTests
 
-function runTests(hapi, createServer) {
-  if (!createServer) {
-    createServer = function(host, port) {
-      var server = new hapi.Server()
-      server.connection({
-        host: host,
-        port: port
-      })
-      return server
-    }
-  }
-
+function runTests(createServer) {
   test("Hapi capture params support", function(t) {
-    t.plan(4)
+    t.autoend()
 
     var agent = null
     var server = null
 
     t.beforeEach(function(done) {
       agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
-      instrument(agent, hapi)
+
       server = createServer('localhost', 8089)
 
       // disabled by default

@@ -209,7 +209,7 @@ test("agent instrumentation of Hapi", function (t) {
 
         var first = errors[0]
         t.ok(first, "have the first error")
-        t.equal(first[2], "HttpError 500", "got the expected error")
+        t.contains(first[2], 'ohno', 'got the expected error')
 
         server.stop(function () {
           helper.unloadAgent(agent)

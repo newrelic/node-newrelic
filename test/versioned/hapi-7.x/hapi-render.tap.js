@@ -23,7 +23,7 @@ var TEST_PATH = '/test'
 
 
 test("agent instrumentation of Hapi", function (t) {
-  t.plan(4)
+  t.autoend()
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
@@ -205,7 +205,7 @@ test("agent instrumentation of Hapi", function (t) {
 
         var first = errors[0]
         t.ok(first, "have the first error")
-        t.equal(first[2], "HttpError 500", "got the expected error")
+        t.contains(first[2], 'ohno', 'got the expected error')
 
         server.stop(function () {
           helper.unloadAgent(agent)
