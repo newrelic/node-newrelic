@@ -1,10 +1,8 @@
 'use strict'
 
 var tap     = require('tap')
-var test    = tap.test
 var request = require('request')
 var helper  = require('../../lib/agent_helper')
-var semver = require('semver')
 
 
 /*
@@ -15,8 +13,7 @@ var semver = require('semver')
 var METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
 
-test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
-  function(t) {
+tap.test('should not crash when Restify handles a connection', function(t) {
   t.plan(8)
 
   var agent   = helper.instrumentMockedAgent()
@@ -34,10 +31,10 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
     res.send('hello ' + req.params.name)
   })
 
-  server.listen(8765, function () {
+  server.listen(8765, function() {
     t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-    request.get('http://localhost:8765/hello/friend', function (error, response, body) {
+    request.get('http://localhost:8765/hello/friend', function(error, response, body) {
       if (error) return t.fail(error)
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 
@@ -61,7 +58,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
   })
 })
 
-test("Restify should still be instrumented when run with SSL", function (t) {
+tap.test('Restify should still be instrumented when run with SSL', function(t) {
   t.plan(8)
 
   helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
@@ -71,8 +68,8 @@ test("Restify should still be instrumented when run with SSL", function (t) {
     }
 
     var agent   = helper.instrumentMockedAgent()
-      , restify = require('restify')
-      , server  = restify.createServer({key : key, certificate : certificate})
+    var restify = require('restify')
+    var server  = restify.createServer({key : key, certificate : certificate})
 
 
     t.tearDown(function cb_tearDown() {
@@ -85,11 +82,11 @@ test("Restify should still be instrumented when run with SSL", function (t) {
       res.send('hello ' + req.params.name)
     })
 
-    server.listen(8443, function () {
+    server.listen(8443, function() {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
       request.get({url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca},
-                  function (error, response, body) {
+                  function(error, response, body) {
         if (error) {
           t.fail(error)
           return t.end()
