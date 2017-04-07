@@ -5,7 +5,7 @@ node_js:
   - "4"
   - "5"
   - "6"
-  - "7.7.1"
+  - "7"
 env:
   - SUITE=smoke
   - SUITE=unit
@@ -27,10 +27,6 @@ services:
   - redis
   - cassandra
   - postgresql
-cache:
-  apt: true
-  directories:
-  - $HOME/.npm
 before_install:
   - if [ "$(npm --version)" = "3.10.3" ]; then npm install -g npm@3.4.1; fi
   - ./bin/travis-setup.sh

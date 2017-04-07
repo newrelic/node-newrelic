@@ -72,8 +72,11 @@ test('connect', function connectTest(t) {
     socket.on('data', function onData(data) {
       t.equal(data.toString(), 'some data')
       socket.end('end data')
-      server.close()
     })
+  })
+
+  t.tearDown(function() {
+    server.close()
   })
 
   server.listen(4123, function listening() {

@@ -8,8 +8,16 @@ module.exports = runTests
 runTests.runMultiple = runMultiple
 
 
-function runTests(t, agent, Promise) {
+function runTests(t, agent, Promise, library) {
+
   /* eslint-disable no-shadow, brace-style */
+  if (library) {
+    performTests('Fullfillment Factories',
+      function(Promise, val) { return library.resolve(val) },
+      function(Promise, err) { return library.reject(err) }
+    )
+  }
+
   performTests('Fullfillment Factories',
     function(Promise, val) { return Promise.resolve(val) },
     function(Promise, err) { return Promise.reject(err) }
