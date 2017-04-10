@@ -13,6 +13,7 @@ describe('WebFrameworkShim', function() {
   var wrappable = null
   var req = null
   var txInfo = null
+  var Promise = null
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
@@ -37,6 +38,7 @@ describe('WebFrameworkShim', function() {
       error: null
     }
     req = {__NR_transactionInfo: txInfo}
+    Promise = require('bluebird')
   })
 
   afterEach(function() {
@@ -45,6 +47,7 @@ describe('WebFrameworkShim', function() {
     shim = null
     req = null
     txInfo = null
+    Promise = null
   })
 
   it('should inherit from Shim', function() {
@@ -593,6 +596,77 @@ describe('WebFrameworkShim', function() {
             wrapped(req, function() {
               expect(tx.nameState.getPath()).to.equal('/')
               done()
+            })
+          })
+        })
+      })
+
+      describe('when middleware returns a promise', function() {
+        var unwrappedTimeout = null
+        var middleware = null
+        var wrapped = null
+        var segment = null
+
+        beforeEach(function() {
+          unwrappedTimeout = shim.unwrap(setTimeout)
+          middleware = function(_req, err) {
+            segment = shim.getSegment()
+            return new Promise(function(resolve, reject) {
+              unwrappedTimeout(function() {
+                try {
+                  expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
+                  if (err) {
+                    throw err
+                  } else {
+                    resolve()
+                  }
+                } catch (e) {
+                  reject(err)
+                }
+              }, 20)
+            })
+          }
+
+          wrapped = shim.recordMiddleware(middleware, {
+            route: '/foo/bar',
+            promise: true
+          })
+        })
+
+        it('should notice errors from rejected promises', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            return wrapped(req, new Error('foobar')).catch(function(err) {
+              expect(err)
+                .to.be.an.instanceOf(Error)
+                .and.have.property('message', 'foobar')
+
+              expect(txInfo).to.have.property('error', err)
+              expect(txInfo).to.have.property('errorHandled', false)
+
+              expect(segment.timer.getDurationInMillis()).to.be.above(18)
+            })
+          })
+        })
+
+        it('should not pop the name if there was an error', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, new Error('foobar')).catch(function() {
+              expect(tx.nameState.getPath()).to.equal('/foo/bar')
+              expect(segment.timer.getDurationInMillis()).to.be.above(18)
+            })
+          })
+        })
+
+        it('should pop the namestate if there was no error', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req).then(function() {
+              expect(tx.nameState.getPath()).to.equal('/')
+              expect(segment.timer.getDurationInMillis()).to.be.above(18)
             })
           })
         })
