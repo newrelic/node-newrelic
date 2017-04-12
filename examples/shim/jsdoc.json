@@ -1,5 +1,11 @@
 {
+  "Instrumentation-Basics": {
+    "title": "Instrumentation Basics"
+  },
   "Datastore-Simple": {
     "title": "Intro to Datastore Instrumentation"
+  },
+  "Webframework-Simple": {
+    "title": "Intro to Web Framework Instrumentation"
   }
 }

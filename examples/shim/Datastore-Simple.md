@@ -1,3 +1,6 @@
+### Pre-requisite
+
+{@tutorial Instrumentation-Basics}
 
 ### Introduction
 
@@ -26,24 +29,6 @@ function findBatchQueryArg(shim, batch, fnName, args) {
   return sql.query || sql
 }
 ```
-
-
-### Purpose of Instrumentation
-
-Instrumentation for Node.js holds two purposes. The first is to give users
-detailed information about what happens on their server. The more things
-instrumented, the more detailed this graph can be.
-
-<div style="text-align:center">
-  ![application overview](./overview.png)
-</div>
-
-The second purpose is to maintain the transaction context. In order to properly
-associate chunks of work with the correct transactions we must link the context
-through asynchronous boundaries. This is a broad topic with a lot of hairy
-edges, more than could be covered in an introductory tutorial, but it is
-important to know about when developing instrumentation.
-
 
 ### What to Record
 
