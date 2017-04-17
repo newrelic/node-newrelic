@@ -266,10 +266,10 @@ test("agent instrumentation of Express 4", function (t) {
 
   t.test("should measure request duration properly (NA-46)",
        {timeout : 2 * 1000},
-       function (t) {
+       function(t) {
     var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
-      , server = require('http').createServer(app)
+    var app    = require('express')()
+    var server = require('http').createServer(app)
 
 
     t.tearDown(function cb_tearDown() {
@@ -277,23 +277,18 @@ test("agent instrumentation of Express 4", function (t) {
       helper.unloadAgent(agent)
     })
 
-    app.get(TEST_PATH, function (request, response) {
+    app.get(TEST_PATH, function(request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler")
-           setTimeout(function () { response.send(BODY); }, DELAY)
+           setTimeout(function() { response.send(BODY) }, DELAY)
     })
 
     server.listen(TEST_PORT, TEST_HOST, function ready() {
-      request.get(TEST_URL, function (error, response, body) {
+      request.get(TEST_URL, function(error, response, body) {
         if (error) t.fail(error)
 
         t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Dispatcher' && pair[1] === 'express'
-        }),
-        "should indicate that the Express dispatcher is in play")
-
-        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Framework' && pair[1] === 'express'
+          return pair[0] === 'Framework' && pair[1] === 'Expressjs'
         }),
         "should indicate that Express itself is in play")
 

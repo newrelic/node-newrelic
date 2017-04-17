@@ -248,12 +248,12 @@ function runTests(flags) {
     })
 
     t.test("should measure request duration properly (NA-46)",
-           {timeout : 2 * 1000},
+           {timeout : 2000},
            function(t) {
-      app.get(TEST_PATH, function(request, response) {
+      app.get(TEST_PATH, function(req, res) {
         t.ok(agent.getTransaction(),
              "the transaction should be visible inside the Express handler")
-             setTimeout(function() { response.send(BODY) }, DELAY)
+             setTimeout(function() { res.send(BODY) }, DELAY)
       })
 
       server.listen(TEST_PORT, TEST_HOST, function ready() {
@@ -261,12 +261,7 @@ function runTests(flags) {
           if (error) t.fail(error)
 
           t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-            return pair[0] === 'Dispatcher' && pair[1] === 'express'
-          }),
-          "should indicate that the Express dispatcher is in play")
-
-          t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-            return pair[0] === 'Framework' && pair[1] === 'express'
+            return pair[0] === 'Framework' && pair[1] === 'Expressjs'
           }),
           "should indicate that Express itself is in play")
 

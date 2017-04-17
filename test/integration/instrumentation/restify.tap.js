@@ -15,7 +15,7 @@ var METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
 
 tap.test('should not crash when Restify handles a connection', function(t) {
-  t.plan(8)
+  t.plan(7)
 
   var agent   = helper.instrumentMockedAgent()
   var restify = require('restify')
@@ -47,13 +47,7 @@ tap.test('should not crash when Restify handles a connection', function(t) {
 
       var found = false
       agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true
-      })
-      t.ok(found, "should indicate that the Restify dispatcher is in play")
-
-      found = false
-      agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Framework' && pair[1] === 'restify') found = true
+        if (pair[0] === 'Framework' && pair[1] === 'Restify') found = true
       })
       t.ok(found, "should indicate that restify itself is in play")
     })
@@ -61,7 +55,7 @@ tap.test('should not crash when Restify handles a connection', function(t) {
 })
 
 tap.test('Restify should still be instrumented when run with SSL', function(t) {
-  t.plan(8)
+  t.plan(7)
 
   helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
     if (error) {
@@ -106,13 +100,7 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
 
         var found = false
         agent.environment.toJSON().forEach(function cb_forEach(pair) {
-          if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true
-        })
-        t.ok(found, "should indicate that the Restify dispatcher is in play")
-
-        found = false
-        agent.environment.toJSON().forEach(function cb_forEach(pair) {
-          if (pair[0] === 'Framework' && pair[1] === 'restify') found = true
+          if (pair[0] === 'Framework' && pair[1] === 'Restify') found = true
         })
         t.ok(found, "should indicate that restify itself is in play")
       })

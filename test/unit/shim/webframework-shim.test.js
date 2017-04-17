@@ -194,28 +194,12 @@ describe('WebFrameworkShim', function() {
         .to.have.property('extra')
         .that.has.property('framework', 'Restify')
     })
-  })
 
-  describe('#setDispatcher', function() {
-    it('should set the Framework and Dispatcher environment settings', function() {
+    it('should set the Framework environment setting', function() {
       var env = agent.environment
       env.clearFramework()
-      env.clearDispatcher()
-
-      // Depending on whether other tests of have run, we may have a dispatcher
-      // value or not.
-      var dispatcher = env.get('Dispatcher')
-      if (dispatcher.length > 0) {
-        expect(dispatcher).to.deep.equal(['http'])
-      } else {
-        expect(dispatcher).to.deep.equal([])
-      }
-
-      shim.setDispatcher()
-
-      dispatcher.push('test-restify')
-      expect(env.get('Framework')).to.deep.equal(['test-restify'])
-      expect(env.get('Dispatcher')).to.deep.equal(dispatcher)
+      shim.setFramework(shim.RESTIFY)
+      expect(env.get('Framework')).to.deep.equal(['Restify'])
     })
   })
 
