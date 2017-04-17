@@ -1,9 +1,8 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , helper = require('../../lib/agent_helper')
+var chai   = require('chai')
+var expect = chai.expect
+var helper = require('../../lib/agent_helper')
 
 var shims = require('../../../lib/shim')
 
@@ -11,7 +10,7 @@ var shims = require('../../../lib/shim')
 describe("an instrumented Hapi application", function () {
   describe("shouldn't cause bootstrapping to fail", function () {
     var agent
-      , initialize
+    var initialize
 
 
     before(function () {
@@ -37,14 +36,13 @@ describe("an instrumented Hapi application", function () {
     })
   })
 
-  describe("when stubbed", function () {
+  describe("when stubbed", function() {
     var agent
-      , stub
+    var stub
 
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.instrumentMockedAgent()
-      agent.environment.clearDispatcher()
       agent.environment.clearFramework()
 
       function Server() {}
@@ -58,26 +56,17 @@ describe("an instrumented Hapi application", function () {
       require('../../../lib/instrumentation/hapi')(agent, stub, 'hapi', shim)
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it("should set dispatcher to Hapi when a new app is created", function () {
-      var server = new stub.Server()
-      server.start()
-
-      var dispatchers = agent.environment.get('Dispatcher')
-      expect(dispatchers.length).equal(1)
-      expect(dispatchers[0]).equal('hapi')
-    })
-
-    it("should set framework to Hapi when a new app is created", function () {
+    it("should set framework to Hapi when a new app is created", function() {
       var server = new stub.Server()
       server.start()
 
       var frameworks = agent.environment.get('Framework')
       expect(frameworks.length).equal(1)
-      expect(frameworks[0]).equal('hapi')
+      expect(frameworks[0]).equal('Hapi')
     })
   })
 })
