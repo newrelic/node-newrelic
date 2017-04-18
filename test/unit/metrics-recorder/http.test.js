@@ -241,11 +241,11 @@ describe("recordWeb", function () {
       assertMetrics(trans.metrics, result, true, true)
     })
 
-    it("should reflect key transaction apdexT", function () {
+    it("should reflect key transaction apdexT", function() {
       agent.config.web_transactions_apdex = {
-        'WebTransaction/TestJS//key/:id' : 0.667,
+        'WebTransaction/WebFrameworkUri/TestJS//key/:id' : 0.667,
         // just to make sure
-        'WebTransaction/TestJS//another/:name' : 0.444
+        'WebTransaction/WebFrameworkUri/TestJS//another/:name' : 0.444
       }
       trans.nameState.setName('TestJS', null, '/', '/key/:id')
 
@@ -259,13 +259,21 @@ describe("recordWeb", function () {
       })
 
       var result = [
-        [{name  : 'WebTransaction'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
-        [{name  : 'HttpDispatcher'},                 [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
-        [{name  : 'WebTransaction/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
-        [{name  : 'WebTransactionTotalTime/TestJS//key/:id'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
-        [{name  : 'WebTransactionTotalTime'},        [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
-        [{name  : 'Apdex/TestJS//key/:id'},          [0,   1,   0, 0.667, 0.667,    0]],
-        [{name  : 'Apdex'},                          [0,   1,   0,   0.2,   0.2,    0]]
+        [{name: 'WebTransaction'},          [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [{name: 'HttpDispatcher'},          [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [
+          {name: 'WebTransaction/WebFrameworkUri/TestJS//key/:id'},
+          [1, 1.2, 1.2,   1.2,   1.2, 1.44]
+        ], [
+          {name: 'WebTransactionTotalTime/WebFrameworkUri/TestJS//key/:id'},
+          [1, 1.2, 1.2,   1.2,   1.2, 1.44]
+        ],
+        [{name: 'WebTransactionTotalTime'}, [1, 1.2, 1.2,   1.2,   1.2, 1.44]],
+        [
+          {name: 'Apdex/WebFrameworkUri/TestJS//key/:id'},
+          [0,   1,   0, 0.667, 0.667,    0]
+        ],
+        [{name: 'Apdex'},                   [0,   1,   0,   0.2,   0.2,    0]]
       ]
       assertMetrics(trans.metrics, result, true, true)
     })

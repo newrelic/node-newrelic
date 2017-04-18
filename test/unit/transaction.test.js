@@ -209,13 +209,14 @@ describe("Transaction", function () {
         expect(trans.nameState.getName()).equal(null)
       })
 
-      it("should return the right name if partialName and url are set", function () {
+      it("should return the right name if partialName and url are set", function() {
         trans.nameState.setPrefix('Framework')
         trans.nameState.setVerb('verb')
         trans.nameState.appendPath('route')
         trans.url = '/route'
-        expect(trans.getName()).equal('WebTransaction/Framework/VERB/route')
-        expect(trans.nameState.getName()).equal('Framework/VERB/route')
+        expect(trans.getName())
+          .to.equal('WebTransaction/WebFrameworkUri/Framework/VERB/route')
+        expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
       })
 
       it("should return the name if it has already been set", function () {
