@@ -75,7 +75,7 @@ test('cross application tracing full integration', function (t) {
     })
     var txCount = 0
 
-    agent.on('transactionFinished', function (trans) {
+    agent.on('transactionFinished', function(trans) {
       transInspector[txCount](trans, txCount)
       txCount += 1
     })
