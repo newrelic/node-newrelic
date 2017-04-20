@@ -13,14 +13,20 @@ describe("the stubbed New Relic agent API", function() {
     api = new API()
   })
 
-  it("should export 20 API calls", function() {
-    expect(Object.keys(api.constructor.prototype).length).equal(20)
+  it("should export 21 API calls", function() {
+    expect(Object.keys(api.constructor.prototype).length).equal(21)
   })
 
   it("exports a transaction naming function", function () {
     should.exist(api.setTransactionName)
     expect(api.setTransactionName).a('function')
   })
+
+  it("exports a dispatcher naming function", function () {
+    should.exist(api.setDispatcher)
+    expect(api.setDispatcher).a('function')
+  })
+
 
   it("shouldn't throw when transaction is named", function () {
     expect(function () { api.setTransactionName('TEST/*'); }).not.throws()
