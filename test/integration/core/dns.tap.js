@@ -115,11 +115,18 @@ test('reverse', function(t) {
     dns.reverse('127.0.0.1', function(err, names) {
       t.notOk(err, 'should not error')
       if (process.env.TRAVIS && names.length > 0) {
-        t.deepEqual(names, [
-          "nettuno",
-          "travis",
-          "vagrant"
-        ])
+        if (process.env.DOCKERIZED) {
+          t.deepEqual(names, [
+            "127.0.0.1",
+            "localhost"
+          ])
+        } else {
+          t.deepEqual(names, [
+            "nettuno",
+            "travis",
+            "vagrant"
+          ])
+        }
       } else {
         t.deepEqual(names, [])
       }
