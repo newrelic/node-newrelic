@@ -31,10 +31,33 @@ describe("the environment scraper", function () {
 
   it("should allow clearing of the dispatcher", function () {
     environment.setDispatcher('custom')
-    environment.setDispatcher('another')
 
     var dispatchers = environment.get('Dispatcher')
-    expect(dispatchers).include.members(['custom', 'another'])
+    expect(dispatchers).include.members(['custom'])
+
+    expect(function () { environment.clearDispatcher() }).not.throws()
+  })
+
+  it("should allow setting dispatcher version", function () {
+    environment.setDispatcher('custom', '2')
+
+    var dispatchers = environment.get('Dispatcher')
+    expect(dispatchers).include.members(['custom'])
+
+    var dispatchers = environment.get('Dispatcher Version')
+    expect(dispatchers).include.members(['2'])
+
+    expect(function () { environment.clearDispatcher() }).not.throws()
+  })
+
+  it("should collect only a single dispatcher", function () {
+    environment.setDispatcher('first')
+    var dispatchers = environment.get('Dispatcher')
+    expect(dispatchers).include.members(['first'])
+
+    environment.setDispatcher('custom')
+    dispatchers = environment.get('Dispatcher')
+    expect(dispatchers).include.members(['custom'])
 
     expect(function () { environment.clearDispatcher() }).not.throws()
   })
@@ -51,10 +74,10 @@ describe("the environment scraper", function () {
 
   it("should persist dispatcher between toJSON()s", function () {
     environment.setDispatcher('test')
-    expect(environment.get('Dispatcher')).include.members(['test'])
+    expect(environment.get('Dispatcher')).to.include.members(['test'])
 
     environment.refresh()
-    expect(environment.get('Dispatcher')).include.members(['test'])
+    expect(environment.get('Dispatcher')).to.include.members(['test'])
 
   })
 

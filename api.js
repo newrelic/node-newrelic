@@ -91,6 +91,41 @@ API.prototype.setTransactionName = function setTransactionName(name) {
 }
 
 /**
+ * Specify the `Dispatcher` and `Dispatcher Version` environment values.
+ * A dispatcher is typically the service responsible for brokering
+ * the request with the process responsible for responding to the
+ * request.  For example Node's `http` module would be the dispatcher
+ * for incoming HTTP requests.
+ *
+ * @param {string} name The string you would like to report to New Relic
+ *                      as the dispatcher.
+ *
+ * @param {string} [version] The dispatcher version you would like to
+ *                           report to New Relic
+ */
+API.prototype.setDispatcher = function setDispatcher(name, version) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setDispatcher'
+  )
+  metric.incrementCallCount()
+
+  if (!name || typeof name !== 'string') {
+    logger.error("setDispatcher must be called with a name, and name must be a string.")
+    return
+  }
+
+  // No objects allowed.
+  if (version && typeof version !== 'object') {
+    version = String(version)
+  } else {
+    logger.info('setDispatcher was called with an object as the version parameter')
+    version = null
+  }
+
+  this.agent.environment.setDispatcher(name, version, true)
+}
+
+/**
  * Give the current transaction a name based on your own idea of what
  * constitutes a controller in your Node application. Also allows you to
  * optionally specify the action being invoked on the controller. If the action
