@@ -17,7 +17,7 @@ describe('WebFrameworkShim', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    shim = new WebFrameworkShim(agent, 'test-restify', WebFrameworkShim.RESTIFY)
+    shim = new WebFrameworkShim(agent, 'test-restify', null, WebFrameworkShim.RESTIFY)
     wrappable = {
       name: 'this is a name',
       bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
@@ -100,7 +100,7 @@ describe('WebFrameworkShim', function() {
         'MIDDLEWARE',
         'APPLICATION',
         'ROUTER',
-        'ENDPOINT',
+        'ROUTE',
         'ERRORWARE',
         'PARAMWARE'
       ]
@@ -420,17 +420,36 @@ describe('WebFrameworkShim', function() {
         testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
         testType(shim.APPLICATION, 'Restify/Mounted App: /foo/bar')
         testType(shim.ROUTER, 'Restify/Router: /foo/bar')
-        testType(shim.ENDPOINT, 'Restify/Route Path: /foo/bar')
+        testType(shim.ROUTE, 'Restify/Route Path: /foo/bar')
         testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
-        testType(
-          shim.PARAMWARE,
-          'Nodejs/Middleware/Restify/Param Handler: getActiveSegment//foo/bar'
-        )
+        testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
 
         function testType(type, expectedName) {
           var wrapped = shim.recordMiddleware(
             wrappable.getActiveSegment,
             {type: type, route: '/foo/bar'}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist().and.have.property('name', expectedName)
+          })
+        }
+      })
+
+      it('should not append a route if one is not given', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+        testType(shim.APPLICATION, 'Restify/Mounted App: /')
+        testType(shim.ROUTER, 'Restify/Router: /')
+        testType(shim.ROUTE, 'Restify/Route Path: /')
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+        testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ''}
           )
           helper.runInTransaction(agent, function(tx) {
             txInfo.transaction = tx
@@ -735,7 +754,7 @@ describe('WebFrameworkShim', function() {
       it('should name the segment as a paramware', function() {
         testType(
           shim.PARAMWARE,
-          'Nodejs/Middleware/Restify/Param Handler: foo/[param handler :foo]'
+          'Nodejs/Middleware/Restify/getActiveSegment//[param handler :foo]'
         )
 
         function testType(type, expectedName) {
