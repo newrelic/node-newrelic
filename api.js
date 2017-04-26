@@ -149,6 +149,11 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
       "Custom parameters are disabled by high security mode."
     )
     return false
+  } else if (!this.agent.config.api.custom_parameters_enabled) {
+    logger.debug(
+      "Config.api.custom_parameters_enabled set to false, not collecting value"
+    )
+    return false
   }
 
   var ignored = this.agent.config.ignored_params || []
@@ -259,6 +264,19 @@ API.prototype.noticeError = function noticeError(error, customParameters) {
   )
   metric.incrementCallCount()
 
+  // If high security mode is on, noticeError is disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      "Notice Error",
+      "Notice error API are disabled by high security mode."
+    )
+    return false
+  } else if (!this.agent.config.api.notice_error_enabled) {
+    logger.debug(
+      "Config.api.notice_error_enabled set to false, not collecting error"
+    )
+    return false
+  }
 
   if (typeof error === 'string') error = new Error(error)
   var transaction = this.agent.tracer.getTransaction()
@@ -800,6 +818,20 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
     NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
   )
   metric.incrementCallCount()
+
+  // If high security mode is on, custom events are disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      "Custom Event",
+      "Custom events are disabled by high security mode."
+    )
+    return false
+  } else if (!this.agent.config.api.custom_events_enabled) {
+    logger.debug(
+      "Config.api.custom_events_enabled set to false, not collecting value"
+    )
+    return false
+  }
 
   if (!this.agent.config.custom_insights_events.enabled) {
     return
