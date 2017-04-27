@@ -155,19 +155,8 @@ describe('high security mode', function () {
         var config = new Config({'high_security': true})
         config.transaction_tracer.record_sql = 'raw'
         config.on('transaction_tracer.record_sql', function(value) {
-          value.should.equal('off')
-          config.transaction_tracer.record_sql.should.equal('off')
-          done()
-        })
-        config._applyHighSecurity()
-      })
-
-      it('should detect that record_sql is obfuscated', function (done) {
-        var config = new Config({'high_security': true})
-        config.transaction_tracer.record_sql = 'obfuscated'
-        config.on('transaction_tracer.record_sql', function(value) {
-          value.should.equal('off')
-          config.transaction_tracer.record_sql.should.equal('off')
+          value.should.equal('obfuscated')
+          config.transaction_tracer.record_sql.should.equal('obfuscated')
           done()
         })
         config._applyHighSecurity()
