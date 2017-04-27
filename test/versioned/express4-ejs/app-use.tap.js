@@ -77,7 +77,7 @@ test('app should be at top of stack when mounted', function(t) {
       t.notOk(err)
       t.equal(
         finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:app/nestedApp/',
+        'Expressjs/GET//:app/nestedApp',
         'should set partialName correctly for deeply nested apps'
       )
     })
@@ -95,7 +95,7 @@ test('app should be at top of stack when mounted', function(t) {
       t.notOk(err)
       t.equal(
         finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:router/nestedRouter/',
+        'Expressjs/GET//:router/nestedRouter',
         'should set partialName correctly for deeply nested routers'
       )
     })

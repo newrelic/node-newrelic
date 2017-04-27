@@ -32,13 +32,15 @@ test('first two segments are built-in Express middlewares', function(t) {
   runTest(t, function(segments, transaction) {
     // TODO: check for different HTTP methods
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /test', [
+        NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test'
     ])
 
     t.end()
@@ -56,7 +58,7 @@ test('middleware with child segment gets named correctly', function(t) {
 
   runTest(t, function(segments, transaction) {
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test'
     ])
 
     t.end()
@@ -72,13 +74,15 @@ test('segments for route handler', function(t) {
 
   runTest(t, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /test', [
+        NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test'
     ])
 
     t.end()
@@ -94,13 +98,15 @@ test('route function names are in segment names', function(t) {
 
   runTest(t, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: myHandler/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /test', [
+        NAMES.EXPRESS.MIDDLEWARE + 'myHandler'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: myHandler/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'
     ])
 
     t.end()
@@ -137,15 +143,17 @@ test('each handler in route has its own segment', function(t) {
 
   runTest(t, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      NAMES.EXPRESS.MIDDLEWARE + 'handler1//test',
-      'Expressjs/Route Path: handler2/test',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /test', [
+        NAMES.EXPRESS.MIDDLEWARE + 'handler1',
+        NAMES.EXPRESS.MIDDLEWARE + 'handler2'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
       NAMES.EXPRESS.MIDDLEWARE + 'handler1//test',
-      'Expressjs/Route Path: handler2/test',
+      NAMES.EXPRESS.MIDDLEWARE + 'handler2//test'
     ])
 
     t.end()
@@ -164,17 +172,17 @@ test('segments for routers', function(t) {
 
   runTest(t, '/router1/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: /router1',
-      [
-        'Expressjs/Route Path: <anonymous>/test',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Router: /router1', [
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router1',
-      'Expressjs/Route Path: <anonymous>/router1/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router1/test'
     ], '/router1/test')
 
     t.end()
@@ -199,18 +207,18 @@ test('two root routers', function(t) {
 
   runTest(t, '/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
       'Expressjs/Router: /',
-      'Expressjs/Router: /',
-      [
-        'Expressjs/Route Path: <anonymous>/test'
+      'Expressjs/Router: /', [
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /',
-      'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test'
     ], '/test')
 
     t.end()
@@ -229,17 +237,19 @@ test('router mounted as a route handler', function(t) {
 
   runTest(t, '/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: *',
-      [
-        'Expressjs/Route Path: testHandler/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /*', [
+        'Expressjs/Router: /', [
+          'Expressjs/Route Path: /test', [
+            NAMES.EXPRESS.MIDDLEWARE + 'testHandler'
+          ]
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /*',
-      'Expressjs/Route Path: testHandler/*/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'testHandler//*/test'
     ], '/*/test')
 
     t.end()
@@ -258,17 +268,17 @@ test('segments for routers', function(t) {
 
   runTest(t, '/router1/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: /router1',
-      [
-        'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Router: /router1', [
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router1',
-      'Expressjs/Route Path: <anonymous>/router1/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router1/test'
     ], '/router1/test')
 
     t.end()
@@ -287,21 +297,22 @@ test('segments for sub-app', function(t) {
 
   runTest(t, '/subapp1/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
       'Expressjs/Mounted App: /subapp1',
       [
-        NAMES.EXPRESS.MIDDLEWARE + 'query//',
-        NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-        'Expressjs/Route Path: <anonymous>/test'
+        NAMES.EXPRESS.MIDDLEWARE + 'query',
+        NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Mounted App: /subapp1',
       NAMES.EXPRESS.MIDDLEWARE + 'query//subapp1',
       NAMES.EXPRESS.MIDDLEWARE + 'expressInit//subapp1',
-      'Expressjs/Route Path: <anonymous>/subapp1/test'
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//subapp1/test'
     ], '/subapp1/test')
 
     t.end()
@@ -325,21 +336,23 @@ test('segments for sub-app', function(t) {
 
   runTest(t, '/subapp1/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
       'Expressjs/Mounted App: /subapp1',
       [
-        NAMES.EXPRESS.MIDDLEWARE + 'query//',
-        NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-        NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test',
-        'Expressjs/Route Path: <anonymous>/test',
-        'Expressjs/Route Path: <anonymous>/test'
+        NAMES.EXPRESS.MIDDLEWARE + 'query',
+        NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>',
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ],
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Mounted App: /subapp1',
-      'Expressjs/Route Path: <anonymous>/subapp1/test',
       NAMES.EXPRESS.MIDDLEWARE + 'query//subapp1',
       NAMES.EXPRESS.MIDDLEWARE + 'expressInit//subapp1',
       NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//subapp1/test'
@@ -361,21 +374,22 @@ test('segments for wildcard', function(t) {
 
   runTest(t, '/subapp1/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
       'Expressjs/Mounted App: /subapp1',
       [
-        NAMES.EXPRESS.MIDDLEWARE + 'query//',
-        NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-        'Expressjs/Route Path: <anonymous>/:app'
+        NAMES.EXPRESS.MIDDLEWARE + 'query',
+        NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+        'Expressjs/Route Path: /:app', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Mounted App: /subapp1',
-      'Expressjs/Route Path: <anonymous>/subapp1/:app',
       NAMES.EXPRESS.MIDDLEWARE + 'query//subapp1',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//subapp1'
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//subapp1',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//subapp1/:app'
     ], '/subapp1/:app')
 
     t.end()
@@ -395,25 +409,25 @@ test('router with subapp', function(t) {
 
   runTest(t, '/router1/subapp1/test', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
       'Expressjs/Router: /router1',
       [
         'Expressjs/Mounted App: /subapp1',
         [
-          NAMES.EXPRESS.MIDDLEWARE + 'query//',
-          NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-          'Expressjs/Route Path: <anonymous>/test'
+          NAMES.EXPRESS.MIDDLEWARE + 'query',
+          NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+          'Expressjs/Route Path: /test', [
+            NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+          ]
         ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router1',
-      'Expressjs/Mounted App: /router1/subapp1',
-      'Expressjs/Route Path: <anonymous>/router1/subapp1/test',
       NAMES.EXPRESS.MIDDLEWARE + 'query//router1/subapp1',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//router1/subapp1'
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//router1/subapp1',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router1/subapp1/test'
     ], '/router1/subapp1/test')
 
     t.end()
@@ -429,9 +443,9 @@ test('mounted middleware', function(t) {
 
   runTest(t, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test',
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//test'
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
@@ -455,14 +469,16 @@ test('error middleware', function(t) {
 
   runTest(t, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: <anonymous>/test',
-      NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /test', [
+        NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+      ],
+      NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler'
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: <anonymous>/test',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//test',
       NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//test'
     ], '/test')
 
@@ -491,20 +507,19 @@ test('error handler in router', function(t) {
     endpoint: endpoint,
     errors: 0
   }, function(segments, transaction) {
-
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: /router',
-      [
-        'Expressjs/Route Path: <anonymous>/test',
-        NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Router: /router', [
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ],
+        NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler'
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router',
-      'Expressjs/Route Path: <anonymous>/router/test',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router/test',
       NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//router/test'
     ], endpoint)
 
@@ -536,22 +551,20 @@ test('error handler in second router', function(t) {
     errors: 0
   }, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: /router1',
-      [
-        'Expressjs/Router: /router2',
-        [
-          'Expressjs/Route Path: <anonymous>/test',
-          NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Router: /router1', [
+        'Expressjs/Router: /router2', [
+          'Expressjs/Route Path: /test', [
+            NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+          ],
+          NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler'
         ]
       ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router1',
-      'Expressjs/Router: /router1/router2',
-      'Expressjs/Route Path: <anonymous>/router1/router2/test',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router1/router2/test',
       NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//router1/router2/test'
     ], endpoint)
 
@@ -580,18 +593,18 @@ test('error handler outside of router', function(t) {
     errors: 0
   }, function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: /router',
-      [
-        'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Router: /router', [
+        'Expressjs/Route Path: /test', [
+          NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+        ]
       ],
-      NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//'
+      NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler'
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router',
-      'Expressjs/Route Path: <anonymous>/router/test',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router/test',
       NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//router/test'
     ], endpoint)
 
@@ -622,24 +635,21 @@ test('error handler outside of two routers', function(t) {
     endpoint: endpoint,
     errors: 0
   }, function(segments, transaction) {
-
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Router: /router1',
-      [
-        'Expressjs/Router: /router2',
-        [
-          'Expressjs/Route Path: <anonymous>/test'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Router: /router1', [
+        'Expressjs/Router: /router2', [
+          'Expressjs/Route Path: /test', [
+            NAMES.EXPRESS.MIDDLEWARE + '<anonymous>'
+          ]
         ]
       ],
-      NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//'
+      NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler'
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Router: /router1',
-      'Expressjs/Router: /router1/router2',
-      'Expressjs/Route Path: <anonymous>/router1/router2/test',
+      NAMES.EXPRESS.MIDDLEWARE + '<anonymous>//router1/router2/test',
       NAMES.EXPRESS.MIDDLEWARE + 'myErrorHandler//router1/router2/test'
     ], endpoint)
 
@@ -656,13 +666,15 @@ test('when using a route variable', function(t) {
 
   runTest(t, '/a/b', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: myHandler/:foo/:bar'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /:foo/:bar', [
+        NAMES.EXPRESS.MIDDLEWARE + 'myHandler'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: myHandler/:foo/:bar'
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//:foo/:bar'
     ], '/:foo/:bar')
 
     t.end()
@@ -678,13 +690,15 @@ test('when using a string pattern in path', function(t) {
 
   runTest(t, '/abcd', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: myHandler/ab?cd'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: /ab?cd', [
+        NAMES.EXPRESS.MIDDLEWARE + 'myHandler'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: myHandler/ab?cd'
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//ab?cd'
     ], '/ab?cd')
 
     t.end()
@@ -700,13 +714,15 @@ test('when using a regular expression in path', function(t) {
 
   runTest(t, '/a', function(segments, transaction) {
     checkSegments(t, transaction.trace.root.children[0], [
-      NAMES.EXPRESS.MIDDLEWARE + 'query//',
-      NAMES.EXPRESS.MIDDLEWARE + 'expressInit//',
-      'Expressjs/Route Path: myHandler/a/'
+      NAMES.EXPRESS.MIDDLEWARE + 'query',
+      NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
+      'Expressjs/Route Path: //a/', [
+        NAMES.EXPRESS.MIDDLEWARE + 'myHandler'
+      ]
     ], assertSegmentsOptions)
 
     checkMetrics(t, transaction.metrics, [
-      'Expressjs/Route Path: myHandler/a/'
+      NAMES.EXPRESS.MIDDLEWARE + 'myHandler//a/'
     ], '/a/')
 
     t.end()
@@ -725,7 +741,6 @@ function setup(t) {
 }
 
 function runTest(t, options, callback) {
-  var statusCode
   var errors
   var endpoint
 

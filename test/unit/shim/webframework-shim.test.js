@@ -17,7 +17,7 @@ describe('WebFrameworkShim', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    shim = new WebFrameworkShim(agent, 'test-restify', WebFrameworkShim.RESTIFY)
+    shim = new WebFrameworkShim(agent, 'test-restify', null, WebFrameworkShim.RESTIFY)
     wrappable = {
       name: 'this is a name',
       bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
@@ -100,7 +100,7 @@ describe('WebFrameworkShim', function() {
         'MIDDLEWARE',
         'APPLICATION',
         'ROUTER',
-        'ENDPOINT',
+        'ROUTE',
         'ERRORWARE',
         'PARAMWARE'
       ]
@@ -319,49 +319,6 @@ describe('WebFrameworkShim', function() {
         })
       })
 
-      describe('endpoint detection', function() {
-        it('should pass true if the middleware is the indicated endpoint', function() {
-          shim.wrapMiddlewareMounter(wrappable, 'bar', {
-            route: shim.FIRST,
-            endpoint: shim.LAST,
-            wrapper: function(shim, fn, name, route, isEndpoint) {
-              expect(isEndpoint).to.be.true()
-            }
-          })
-
-          wrappable.bar('/my/great/route', function() {})
-        })
-
-        it('should pass false if no endpoint spec is given', function() {
-          shim.wrapMiddlewareMounter(wrappable, 'bar', {
-            endpoint: null,
-            wrapper: function(shim, fn, name, route, isEndpoint) {
-              expect(isEndpoint).to.be.false()
-            }
-          })
-
-          wrappable.bar(function() {})
-        })
-
-        it('should pass false if the middleware is not the endpoint', function() {
-          var callCount = 0
-
-          shim.wrapMiddlewareMounter(wrappable, 'bar', {
-            endpoint: shim.LAST,
-            wrapper: function(shim, fn, name, route, isEndpoint) {
-              if (callCount === 0) {
-                expect(isEndpoint).to.be.false()
-              } else {
-                expect(isEndpoint).to.be.true()
-              }
-              ++callCount
-            }
-          })
-
-          wrappable.bar(function() {}, function() {})
-        })
-      })
-
       describe('when a parameter is an array', function() {
         it('should iterate through the contents of the array', function() {
           var callCount = 0
@@ -460,15 +417,40 @@ describe('WebFrameworkShim', function() {
       })
 
       it('should name the segment according to the middleware type', function() {
-        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//')
-        testType(shim.APPLICATION, 'Restify/Mounted App: /')
-        testType(shim.ROUTER, 'Restify/Router: /')
-        testType(shim.ENDPOINT, 'Restify/Route Path: getActiveSegment/')
-        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//')
-        testType(shim.PARAMWARE, 'Restify/Param Handler: /')
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
+        testType(shim.APPLICATION, 'Restify/Mounted App: /foo/bar')
+        testType(shim.ROUTER, 'Restify/Router: /foo/bar')
+        testType(shim.ROUTE, 'Restify/Route Path: /foo/bar')
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
+        testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
 
         function testType(type, expectedName) {
-          var wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {type: type})
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: '/foo/bar'}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist().and.have.property('name', expectedName)
+          })
+        }
+      })
+
+      it('should not append a route if one is not given', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+        testType(shim.APPLICATION, 'Restify/Mounted App: /')
+        testType(shim.ROUTER, 'Restify/Router: /')
+        testType(shim.ROUTE, 'Restify/Route Path: /')
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+        testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ''}
+          )
           helper.runInTransaction(agent, function(tx) {
             txInfo.transaction = tx
             var segment = wrapped(req)
@@ -770,10 +752,16 @@ describe('WebFrameworkShim', function() {
       })
 
       it('should name the segment as a paramware', function() {
-        testType(shim.PARAMWARE, 'Restify/Param Handler: [param handler]')
+        testType(
+          shim.PARAMWARE,
+          'Nodejs/Middleware/Restify/getActiveSegment//[param handler :foo]'
+        )
 
         function testType(type, expectedName) {
-          var wrapped = shim.recordParamware(wrappable.getActiveSegment, {type: type})
+          var wrapped = shim.recordParamware(
+            wrappable.getActiveSegment,
+            {type: type, name: 'foo'}
+          )
           helper.runInTransaction(agent, function(tx) {
             txInfo.transaction = tx
             var segment = wrapped(req)

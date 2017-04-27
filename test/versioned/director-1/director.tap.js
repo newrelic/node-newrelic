@@ -46,7 +46,7 @@ tap.test("basic director test", function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//hello',
             "transaction has expected name")
     t.equal(transaction.url, '/hello/eric', "URL is left alone")
@@ -61,10 +61,10 @@ tap.test("basic director test", function (t) {
             "should have partial name for apdex")
 
     var handler0 = web.children[0]
-    t.equal(handler0.name, "Nodejs/Middleware/Director/fn0/hello", "route 0 segment has correct name")
+    t.equal(handler0.name, "Nodejs/Middleware/Director/fn0//hello", "route 0 segment has correct name")
     if (semver.satisfies(process.versions.node, '>=0.12')) {
       var handler1 = web.children[1]
-      t.equal(handler1.name, "Nodejs/Middleware/Director/fn1/hello/(\\w+)/", "route 1 segment has correct name")
+      t.equal(handler1.name, "Nodejs/Middleware/Director/fn1//hello/(\\w+)/", "route 1 segment has correct name")
     }
   })
 
@@ -217,7 +217,7 @@ tap.test("director async routes test", function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//:foo/:bar/:bazz',
             "transaction has expected name")
 
@@ -232,15 +232,15 @@ tap.test("director async routes test", function (t) {
             "route 1 segment has correct name")
   })
 
-  router.get('/:foo/:bar/:bazz', function fn0 (foo, bar, bazz, next) {
+  router.get('/:foo/:bar/:bazz', function fn0(foo, bar, bazz, next) {
     setTimeout(function(self) { next() }, 100, this)
   })
-  router.get('/:foo/:bar/:bazz', function fn1 (foo, bar, bazz, next) {
+  router.get('/:foo/:bar/:bazz', function fn1(foo, bar, bazz, next) {
      setTimeout(function(self) { self.res.end('dog') }, 100, this)
   })
 
-  var server = http.createServer(function (req, res) {
-    router.dispatch(req, res, function (err) {
+  var server = http.createServer(function(req, res) {
+    router.dispatch(req, res, function(err) {
       if (err) {
         res.writeHead(404)
         res.end()

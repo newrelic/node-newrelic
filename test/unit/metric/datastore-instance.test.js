@@ -27,12 +27,12 @@ describe('Datastore instance metrics collected via the datastore shim', function
         return test.system_hostname
       }
 
-      var shim = new DatastoreShim(agent, 'testModule', test.product)
+      var shim = new DatastoreShim(agent, 'testModule', null, test.product)
 
       var testInstrumented = {
         query: function() {}
       }
-      shim.recordOperation(testInstrumented, 'query', function(shim, original, name, args) {
+      shim.recordOperation(testInstrumented, 'query', function() {
         var dbHost = test.db_hostname
         if (!dbHost && (test.unix_socket || test.database_path)) {
           dbHost = 'localhost'

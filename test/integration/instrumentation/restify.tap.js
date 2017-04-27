@@ -150,14 +150,14 @@ tap.test('Restify should generate middleware metrics', function(t) {
         // Unscoped middleware metrics.
         [{"name": "Nodejs/Middleware/Restify/middleware//"}],
         [{"name": "Nodejs/Middleware/Restify/middleware2//"}],
-        [{"name": "Restify/Route Path: handler/foo/:bar"}],
+        [{"name": "Nodejs/Middleware/Restify/handler//foo/:bar"}],
 
         // Scoped middleware metrics.
         [{"name": "Nodejs/Middleware/Restify/middleware//",
           "scope": "WebTransaction/Restify/GET//foo/:bar"}],
         [{"name": "Nodejs/Middleware/Restify/middleware2//",
           "scope": "WebTransaction/Restify/GET//foo/:bar"}],
-        [{"name": "Restify/Route Path: handler/foo/:bar",
+        [{"name": "Nodejs/Middleware/Restify/handler//foo/:bar",
           "scope": "WebTransaction/Restify/GET//foo/:bar"}]
       ])
     })
