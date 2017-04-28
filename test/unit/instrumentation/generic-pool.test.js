@@ -1,18 +1,20 @@
 'use strict'
 
 var path   = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , helper = require('../../lib/agent_helper')
+var chai   = require('chai')
+var expect = chai.expect
+var helper = require('../../lib/agent_helper')
+var Shim = require('../../../lib/shim/shim.js')
   
 
 describe("agent instrumentation of generic-pool", function () {
   var agent
-    , initialize
-    
+  var initialize
+  var shim
 
   before(function () {
     agent = helper.loadMockedAgent()
+    shim = new Shim(agent, 'generic-pool')
     initialize = require('../../../lib/instrumentation/generic-pool')
   })
 
@@ -22,11 +24,11 @@ describe("agent instrumentation of generic-pool", function () {
 
   describe("shouldn't cause bootstrapping to fail", function () {
     it("when passed no module", function () {
-      expect(function () { initialize(agent); }).not.throws()
+      expect(function () { initialize(agent, null, 'generic-pool', shim); }).not.throws()
     })
 
     it("when passed an empty module", function () {
-      expect(function () { initialize(agent, {}); }).not.throws()
+      expect(function () { initialize(agent, {}, 'generic-pool', shim); }).not.throws()
     })
   })
 
@@ -44,7 +46,7 @@ describe("agent instrumentation of generic-pool", function () {
       
 
     before(function () {
-      initialize(agent, mockPool)
+      initialize(agent, mockPool, 'generic-pool', shim)
     })
 
     it("must preserve 'callback.length === 0' to keep generic-pool happy",

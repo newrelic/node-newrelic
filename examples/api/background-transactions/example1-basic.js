@@ -23,4 +23,4 @@ function doSomeWork(callback) {
   setTimeout(function() {
     callback()
   }, 500)
-}}
+}
