@@ -144,6 +144,15 @@ describe('agent attribute format', function () {
 
     expect(params).deep.equals({})
   })
+
+  it('redacts the error message in high security mode', function () {
+    agent.config.high_security = true
+    error.add(trans, new Error('this should not be here'), {a: 'AA'})
+    agent.errors.onTransactionFinished(trans, agent.metrics)
+
+    expect(error.errors[0][2]).to.equal('')
+    expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
+  })
 })
 
 describe('display name', function () {
@@ -1575,6 +1584,15 @@ describe('error events', function() {
     agent._sendErrorEvents(function cb_sendErrorEvents() {
       done()
     })
+  })
+
+  it('should omit the error message when in high security mode', function() {
+    agent.config.high_security = true
+    agent.errors.add(null, new Error('some error'))
+    var events = agent.errors.getEvents()
+    expect(events[0][0]['error.message']).to.equal('')
+    agent.config.high_security = false
+
   })
 
   it('not spill over reservoir size', function() {

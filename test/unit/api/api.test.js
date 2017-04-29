@@ -61,6 +61,76 @@ describe("the New Relic agent API", function () {
     expect(api.addCustomParameters).a('function')
   })
 
+  describe("when adding custom parameters", function () {
+    it("should properly add custom parameters", function () {
+      helper.runInTransaction(agent, function (transaction) {
+        api.addCustomParameter('test', 1)
+        expect(transaction.trace.custom['test']).to.equal(1)
+        transaction.end()
+      })
+    })
+
+    it("should properly add mutliple custom parameters", function () {
+      helper.runInTransaction(agent, function (transaction) {
+        api.addCustomParameters({
+          'test': 1,
+          'second': 2
+        })
+        expect(transaction.trace.custom['test']).to.equal(1)
+        expect(transaction.trace.custom['second']).to.equal(2)
+        transaction.end()
+      })
+    })
+
+    it("should not add custom parameters when disabled", function () {
+      helper.runInTransaction(agent, function (transaction) {
+        agent.config.api.custom_parameters_enabled = false
+        api.addCustomParameter('test', 1)
+        expect(transaction.trace.custom['test']).to.equal(undefined)
+        agent.config.api.custom_parameters_enabled = true
+        transaction.end()
+      })
+    })
+
+    it("should not add mutliple custom parameters when disabled", function () {
+      helper.runInTransaction(agent, function (transaction) {
+        agent.config.api.custom_parameters_enabled = false
+        api.addCustomParameters({
+          'test': 1,
+          'second': 2
+        })
+        expect(transaction.trace.custom['test']).to.equal(undefined)
+        expect(transaction.trace.custom['second']).to.equal(undefined)
+        agent.config.api.custom_parameters_enabled = true
+        transaction.end()
+      })
+    })
+
+    it("should not add custom parameters when in high security mode", function () {
+      helper.runInTransaction(agent, function (transaction) {
+        agent.config.high_security = true
+        api.addCustomParameter('test', 1)
+        expect(transaction.trace.custom['test']).to.equal(undefined)
+        agent.config.high_security = false
+        transaction.end()
+      })
+    })
+
+    it("should not add mutliple custom parameters when in high security mode", function () {
+      helper.runInTransaction(agent, function (transaction) {
+        agent.config.high_security = true
+        api.addCustomParameters({
+          'test': 1,
+          'second': 2
+        })
+        expect(transaction.trace.custom['test']).to.equal(undefined)
+        expect(transaction.trace.custom['second']).to.equal(undefined)
+        agent.config.high_security = false
+        transaction.end()
+      })
+    })
+  })
+
   describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment
@@ -559,6 +629,22 @@ describe("the New Relic agent API", function () {
       expect(agent.errors.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
       expect(agent.errors.errors.length).equal(1)
+    })
+
+    it("should not add errors in high security mode", function () {
+      agent.config.high_security = true
+      expect(agent.errors.errors.length).equal(0)
+      api.noticeError(new TypeError('this test is bogus, man'))
+      expect(agent.errors.errors.length).equal(0)
+      agent.config.high_security = false
+    })
+
+    it("should not add errors when noticeErrors is disabled", function () {
+      agent.config.api.notice_error_enabled = false
+      expect(agent.errors.errors.length).equal(0)
+      api.noticeError(new TypeError('this test is bogus, man'))
+      expect(agent.errors.errors.length).equal(0)
+      agent.config.api.notice_error_enabled = true
     })
 
     it("should track custom parameters on error without a transaction", function () {
