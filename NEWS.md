@@ -1,3 +1,27 @@
+
+### v1.39.0 (2017-05-01):
+* Updated the default value for `transaction_tracer.record_sql` to `obfuscated`.
+
+  This value was previously `off` by default. This change brings the New Relic
+  Node Agent defaults in line with other New Relic Agents.
+
+* Our when instrumentation better detects when a module is actually `when`.
+
+  Thanks to Pasi Eronen (@pasieronen) for the contribution!
+
+* Quiet a warning in our native promise instrumentation on Node 0.10.
+
+* Error messages are redacted in High Security Mode now.
+
+* New configurations were added for disabling some New Relic API methods. These
+  default to enabled and are all disabled in High Security Mode.
+
+  * `api.custom_parameters_enabled` controls `newrelic.addCustomParameters()`
+  * `api.custom_events_enabled` controls `newrelic.recordCustomEvent()`
+  * `api.notice_error_enabled` controls `newrelic.noticeError()`
+
+* Fixed a bug in the generic pool instrumentation affecting version 3.
+
 ### v1.38.2 (2017-03-29):
 * When.js hooks similar to `Promise.onPotentiallyUnhandledRejection` now function
   as intended.
