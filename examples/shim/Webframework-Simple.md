@@ -104,8 +104,13 @@ the time it is received until the app server sends a response back. In order to 
 meaningful metrics for similar transactions (e.g. ones that hit the same URL endpoint),
 the instrumentation needs to determine and assign a name for each transaction.
 
-The API provides a basic function for this - {@link WebFrameworkShim#setTransactionName}.
-This would be sufficient for a very basic use case when the name can be determined in a
+The Node agent names transactions using the HTTP verb and the request URI. The
+verb is automatically determined from the HTTP request. However, the URI must
+typically be normalized in order to group related transactions in a meaningful way.
+For more details, see [Metric grouping issues](https://docs.newrelic.com/docs/agents/manage-apm-agents/troubleshooting/metric-grouping-issues).
+
+The API provides a basic function for setting the URI to use for naming - {@link WebFrameworkShim#setTransactionUri}.
+This would be sufficient for a very basic use case when the URI can be determined in a
 single point in the instrumentation code.
 
 However, many common web frameworks route each request through many functions, which may
