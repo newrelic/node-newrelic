@@ -53,7 +53,6 @@ test("agent instrumentation of Hapi", function (t) {
       method: 'GET',
       path: TEST_PATH,
       handler: function (request, reply) {
-        // console.trace()
         transaction = agent.getTransaction()
         reply({yep : true})
       }
