@@ -12,6 +12,20 @@ describe('MessageShim', function() {
   var agent = null
   var shim = null
   var wrappable = null
+  var interval = null
+  var tasks = []
+
+  before(function() {
+    interval = setInterval(function() {
+      if (tasks.length) {
+        tasks.pop()()
+      }
+    }, 10)
+  })
+
+  after(function() {
+    clearInterval(interval)
+  })
 
   beforeEach(function() {
     agent = helper.instrumentMockedAgent(null, {capture_params: true})
@@ -134,7 +148,7 @@ describe('MessageShim', function() {
     describe('wrapper', function() {
       it('should create a produce segment and metric', function() {
         shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
-          return {name: 'foobar'}
+          return {destinationName: 'foobar'}
         })
 
         helper.runInTransaction(agent, function(tx) {
@@ -170,7 +184,7 @@ describe('MessageShim', function() {
           expect(this).to.equal(wrappable)
           expect(args).to.deep.equal(['a', 'b', 'c'])
 
-          return {name: 'foobar'}
+          return {destinationName: 'foobar'}
         })
 
         helper.runInTransaction(agent, function() {
@@ -227,7 +241,7 @@ describe('MessageShim', function() {
         it('should insert CAT request headers', function() {
           var headers = {}
           shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
-            return {headers: headers}
+            return {messageProperties: headers}
           })
 
           helper.runInTransaction(agent, function() {
@@ -244,7 +258,7 @@ describe('MessageShim', function() {
 
       beforeEach(function(done) {
         shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
-          return {name: 'my-queue'}
+          return {destinationName: 'my-queue'}
         })
 
         helper.runInTransaction(agent, function(tx) {
@@ -330,7 +344,7 @@ describe('MessageShim', function() {
       describe('when invoked in a transaction', function() {
         it('should not create a new transaction', function() {
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-            return {name: 'foobar'}
+            return {destinationName: 'foobar'}
           })
 
           helper.runInTransaction(agent, function(tx) {
@@ -343,7 +357,7 @@ describe('MessageShim', function() {
 
         it('should create a consume segment and metric', function() {
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-            return {name: 'foobar'}
+            return {destinationName: 'foobar'}
           })
 
           helper.runInTransaction(agent, function(tx) {
@@ -379,7 +393,7 @@ describe('MessageShim', function() {
             expect(this).to.equal(wrappable)
             expect(args).to.deep.equal(['a', 'b', 'c'])
 
-            return {name: 'foobar'}
+            return {destinationName: 'foobar'}
           })
 
           helper.runInTransaction(agent, function() {
@@ -390,7 +404,7 @@ describe('MessageShim', function() {
 
         it('should not check CAT headers', function() {
           shim.recordMessageConsumer(wrappable, 'bar', function() {
-            return {name: 'foobar', headers: catHeaders}
+            return {destinationName: 'foobar', messageProperties: catHeaders}
           })
 
           helper.runInTransaction(agent, function(tx) {
@@ -410,7 +424,7 @@ describe('MessageShim', function() {
       describe('when invoked outside a transaction', function() {
         it('should start a new message transaction', function() {
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-            return {name: 'foobar'}
+            return {destinationName: 'foobar'}
           })
 
           var segment = wrappable.getActiveSegment()
@@ -438,7 +452,7 @@ describe('MessageShim', function() {
             expect(this).to.equal(wrappable)
             expect(args).to.deep.equal(['a', 'b', 'c'])
 
-            return {name: 'foobar'}
+            return {destinationName: 'foobar'}
           })
 
           wrappable.bar('a', 'b', 'c')
@@ -447,7 +461,7 @@ describe('MessageShim', function() {
 
         it('should extract CAT request headers', function() {
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-            return {name: 'my.queue', headers: catHeaders}
+            return {destinationName: 'my.queue', messageProperties: catHeaders}
           })
 
           var segment = wrappable.getActiveSegment()
@@ -461,7 +475,7 @@ describe('MessageShim', function() {
         describe('the created transaction', function() {
           it('should be named for a message consumption', function(done) {
             shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-              return {name: 'my.queue'}
+              return {destinationName: 'my.queue'}
             })
 
             var segment = wrappable.getActiveSegment()
@@ -474,9 +488,41 @@ describe('MessageShim', function() {
             })
           })
 
+          describe('attribute message.routingKey', function() {
+            it('should equal the message\'s routing key', function(done) {
+              shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
+                return {destinationName: 'my.queue', routingKey: 'routing.key'}
+              })
+
+              var segment = wrappable.getActiveSegment()
+              var tx = segment.transaction
+              setImmediate(function() {
+                var root = tx.trace.root
+                expect(root.parameters).property('message')
+                  .to.have.property('routingKey', 'routing.key')
+                done()
+              })
+            })
+
+            it('should respect high security mode', function(done) {
+              agent.config.high_security = true
+              shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
+                return {destinationName: 'my.queue', routingKey: 'routing.key'}
+              })
+
+              var segment = wrappable.getActiveSegment()
+              var tx = segment.transaction
+              setImmediate(function() {
+                var root = tx.trace.root
+                expect(root.parameters).to.not.have.property('message')
+                done()
+              })
+            })
+          })
+
           it('should have a message.routingKey attribute', function(done) {
             shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-              return {name: 'my.queue', extras: {routingKey: 'routing.key'}}
+              return {destinationName: 'my.queue', routingKey: 'routing.key'}
             })
 
             var segment = wrappable.getActiveSegment()
@@ -496,7 +542,7 @@ describe('MessageShim', function() {
                 tx = shim.getSegment().transaction
                 return Promise.delay(10)
               }, function() {
-                return {name: 'func'}
+                return {destinationName: 'func'}
               })
 
               wrapped().then(function() {
@@ -515,7 +561,7 @@ describe('MessageShim', function() {
                 tx = shim.getSegment().transaction
                 return Promise.delay(10).thenThrow(new Error('foobar'))
               }, function() {
-                return {name: 'func'}
+                return {destinationName: 'func'}
               })
 
               wrapped().catch(function() {
@@ -535,7 +581,7 @@ describe('MessageShim', function() {
               var wrapped = shim.recordMessageConsumer(function() {
                 tx = shim.getSegment().transaction
               }, function() {
-                return {name: 'func'}
+                return {destinationName: 'func'}
               })
 
               wrapped()
@@ -556,7 +602,7 @@ describe('MessageShim', function() {
                 tx = shim.getSegment().transaction
                 tx.handledExternally = true
               }, function() {
-                return {name: 'func'}
+                return {destinationName: 'func'}
               })
 
               wrapped()
@@ -578,7 +624,7 @@ describe('MessageShim', function() {
     describe('recorder', function() {
       it('should create message broker metrics', function(done) {
         shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-          return {name: 'foobar'}
+          return {destinationName: 'foobar'}
         })
 
         helper.runInTransaction(agent, function(tx) {
@@ -596,6 +642,138 @@ describe('MessageShim', function() {
             .to.have.property('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
           done()
         })
+      })
+    })
+  })
+
+  describe('#recordPurgeQueue', function() {
+    it('should not wrap non-function objects', function() {
+      var wrapped = shim.recordPurgeQueue(wrappable, {})
+      expect(wrapped).to.equal(wrappable)
+      expect(shim.isWrapped(wrapped)).to.be.false
+    })
+
+    describe('with no properties', function() {
+      it('should wrap the first parameter if no properties are given', function() {
+        var wrapped = shim.recordPurgeQueue(wrappable.bar, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+
+      it('should wrap the first parameter if `null` is given for properties', function() {
+        var wrapped = shim.recordPurgeQueue(wrappable.bar, null, {})
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+    })
+
+    describe('with properties', function() {
+      it('should replace wrapped properties on the original object', function() {
+        var original = wrappable.bar
+        shim.recordPurgeQueue(wrappable, 'bar', {})
+        expect(wrappable.bar).to.not.equal(original)
+        expect(shim.isWrapped(wrappable.bar)).to.be.true
+        expect(shim.unwrap(wrappable.bar)).to.equal(original)
+      })
+
+      it('should not mark unwrapped properties as wrapped', function() {
+        shim.recordPurgeQueue(wrappable, 'name', {})
+        expect(shim.isWrapped(wrappable.name)).to.be.false
+      })
+    })
+
+    describe('wrapper', function() {
+      it('should create a produce segment and metric', function() {
+        shim.recordPurgeQueue(wrappable, 'getActiveSegment', {queue: shim.FIRST})
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          var segment = wrappable.getActiveSegment('foobar')
+          expect(segment).to.not.equal(startingSegment)
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Queue/Purge/Named/foobar')
+          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should execute the wrapped function', function() {
+        var executed = false
+        var toWrap = function() { executed = true }
+        var wrapped = shim.recordPurgeQueue(toWrap, {})
+
+        helper.runInTransaction(agent, function() {
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
+      })
+
+      it('should bind the callback if there is one', function() {
+        var cb = function() {}
+        var toWrap = function(wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        var wrapped = shim.recordPurgeQueue(toWrap, {callback: shim.LAST})
+
+        helper.runInTransaction(agent, function() {
+          wrapped(cb)
+        })
+      })
+
+      it('should link the promise if one is returned', function() {
+        var DELAY = 25
+        var segment = null
+        var val = {}
+        var toWrap = function() {
+          segment = shim.getSegment()
+          return new Promise(function(res) {
+            setTimeout(res, DELAY, val)
+          })
+        }
+
+        var wrapped = shim.recordPurgeQueue(toWrap, {promise: true})
+
+        return helper.runInTransaction(agent, function() {
+          return wrapped().then(function(v) {
+            expect(v).to.equal(val)
+            expect(segment.getDurationInMillis()).to.be.above(DELAY - 1)
+          })
+        })
+      })
+    })
+
+    describe('recorder', function() {
+      var transaction = null
+
+      beforeEach(function(done) {
+        shim.recordPurgeQueue(wrappable, 'getActiveSegment', {queue: shim.FIRST})
+
+        helper.runInTransaction(agent, function(tx) {
+          transaction = tx
+          wrappable.getActiveSegment('my-queue')
+          tx.end(function() { done() })
+        })
+      })
+
+      it('should create message broker metrics', function() {
+        var unscoped = agent.metrics.unscoped
+        var scoped = transaction.metrics.unscoped
+        expect(unscoped).to.have.property(
+          'MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'
+        )
+        expect(scoped).to.have.property(
+          'MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'
+        )
       })
     })
   })
@@ -695,6 +873,26 @@ describe('MessageShim', function() {
             var segment = wrapped(wrappable.getActiveSegment)
             expect(subscriberCalled).to.be.true()
             expect(segment).to.have.property('name', 'Channel#subscribe')
+          })
+        })
+
+        it('should maintain transaction state in the consumer', function(done) {
+          var asyncSubs = shim.recordSubscribeMessageConsumer(function(consumer) {
+            tasks.push(consumer)
+          }, {
+            consumer: shim.FIRST,
+            wrapper: function(shim, fn) {
+              return shim.recordMessageConsumer(fn, function() {
+                return {destinationName: 'foo'}
+              })
+            }
+          })
+
+          helper.runInTransaction(agent, function() {
+            asyncSubs(function() {
+              expect(shim.getSegment()).to.exist()
+              done()
+            })
           })
         })
 
