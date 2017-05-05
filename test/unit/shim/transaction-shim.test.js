@@ -462,7 +462,7 @@ describe('TransactionShim', function() {
         helper.runInTransaction(agent, shim.WEB, function(tx) {
           var headers = createCATHeaders(true)
           var segment = shim.getSegment()
-          delete headers.NewRelicId
+          delete headers.NewRelicID
           delete headers.NewRelicTransaction
 
           expect(segment.catId).to.not.exist()
@@ -520,7 +520,7 @@ describe('TransactionShim', function() {
       ]), agent.config.encoding_key)
 
       return altNames ? {
-        NewRelicId: idHeader,
+        NewRelicID: idHeader,
         NewRelicTransaction: txHeader,
         NewRelicAppData: appHeader
       } : {
@@ -569,7 +569,7 @@ describe('TransactionShim', function() {
         var headers = {}
         shim.insertCATRequestHeaders(headers)
 
-        expect(headers).to.not.have.property('NewRelicId')
+        expect(headers).to.not.have.property('NewRelicID')
         expect(headers).to.not.have.property('NewRelicTransaction')
         expect(headers).to.have.property('X-NewRelic-Id', 'RVpaRwNdQBJQ')
         expect(headers)
@@ -585,7 +585,7 @@ describe('TransactionShim', function() {
 
         expect(headers).to.not.have.property('X-NewRelic-Id')
         expect(headers).to.not.have.property('X-NewRelic-Transaction')
-        expect(headers).to.have.property('NewRelicId', 'RVpaRwNdQBJQ')
+        expect(headers).to.have.property('NewRelicID', 'RVpaRwNdQBJQ')
         expect(headers)
           .to.have.property('NewRelicTransaction')
           .and.match(/^[a-zA-Z0-9/-]{60,80}={0,2}$/)
