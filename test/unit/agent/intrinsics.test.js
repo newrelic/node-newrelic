@@ -1,5 +1,4 @@
 'use strict'
-/*jshint expr:true*/
 
 var helper = require('../../lib/agent_helper.js')
 var chai = require('chai')
@@ -19,8 +18,9 @@ function mockTransaction(agent, test, duration) {
   trans.timer.duration = duration
   trans.timer.start = 2
   trans.id = test.transactionGuid
-  trans.webSegment = {
-    getDurationInMillis: function () {
+  trans.type = 'web'
+  trans.baseSegment = {
+    getDurationInMillis: function() {
       return trans.timer.duration
     }
   }
@@ -34,7 +34,7 @@ function mockTransaction(agent, test, duration) {
   }
 
   if (test.outboundRequests) {
-    test.outboundRequests.forEach(function (req) {
+    test.outboundRequests.forEach(function(req) {
       trans.pushPathHash(req.expectedOutboundPayload[3])
     })
   }
@@ -83,7 +83,7 @@ describe('when CAT is disabled', function () {
     var trans = new Transaction(agent)
     trans.measure(NAMES.EXTERNAL.ALL, null, 100)
     var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
-    assert.equal(attrs.externalDuration, 0.1)    
+    assert.equal(attrs.externalDuration, 0.1)
   })
 
   it('includes databaseDuration', function() {

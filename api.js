@@ -700,10 +700,10 @@ function createWebTransaction(url, handle) {
     tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
     tx.url = url
     tx.applyUserNamingRules(tx.url)
-    tx.webSegment = tracer.createSegment(url, recordWeb)
-    tx.webSegment.start()
+    tx.baseSegment = tracer.createSegment(url, recordWeb)
+    tx.baseSegment.start()
 
-    return tracer.bindFunction(handle, tx.webSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
   })
   return arity.fixArity(handle, proxy)
 }
@@ -792,11 +792,11 @@ function createBackgroundTransaction(name, group, handle) {
     )
 
     tx.setBackgroundName(name, group)
-    tx.bgSegment = tracer.createSegment(name, recordBackground)
-    tx.bgSegment.partialName = group
-    tx.bgSegment.start()
+    tx.baseSegment = tracer.createSegment(name, recordBackground)
+    tx.baseSegment.partialName = group
+    tx.baseSegment.start()
 
-    return tracer.bindFunction(handle, tx.bgSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
   })
   return arity.fixArity(handle, proxy)
 }
@@ -816,12 +816,12 @@ API.prototype.endTransaction = function endTransaction() {
   var tx = tracer.getTransaction()
 
   if (tx) {
-    if (tx.webSegment) {
-      tx.setName(tx.url, 0)
-      tx.webSegment.markAsWeb(tx.url)
-      tx.webSegment.end()
-    } else if (tx.bgSegment) {
-      tx.bgSegment.end()
+    if (tx.baseSegment) {
+      if (tx.type === 'web') {
+        tx.setName(tx.url, 0)
+        tx.baseSegment.markAsWeb(tx.url)
+      }
+      tx.baseSegment.end()
     }
     logger.debug('ending transaction with id: %s and name: %s', tx.id, tx.name)
     tx.end()

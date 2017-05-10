@@ -257,13 +257,14 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should set name of webSegment correctly', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should set name of baseSegment correctly', function(done) {
+      var txHandler = api.createWebTransaction('/custom/transaction', function() {
         var tx = agent.tracer.getTransaction()
 
-        expect(tx.webSegment.name).to.equal('/custom/transaction')
+        expect(tx.type).to.equal('web')
+        expect(tx.baseSegment.name).to.equal('/custom/transaction')
         api.endTransaction()
-        expect(tx.webSegment.name).to.equal('WebTransaction/Custom//custom/transaction')
+        expect(tx.baseSegment.name).to.equal('WebTransaction/Custom//custom/transaction')
         done()
       })
       txHandler()
@@ -312,21 +313,21 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create a new transaction when nested within a background transaction', function (done) {
-      var bgHandler = api.createBackgroundTransaction('background:job', function () {
+    it('should create a new transaction when nested within a background transaction', function(done) {
+      var bgHandler = api.createBackgroundTransaction('background:job', function() {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-        expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job')
-        expect(tx.webSegment).to.not.exist()
-        expect(tx.bgSegment).to.exist()
-        var webHandler = api.createWebTransaction('/custom/transaction', function () {
-          var tx = agent.tracer.getTransaction()
-          expect(tx).to.exist()
-          expect(tx.url).to.be.equal('/custom/transaction')
-          expect(tx.webSegment).to.exist()
-          expect(tx.bgSegment).to.not.exist()
-          // clean up tx so it doesn't cause other problems
-          tx.end()
+        expect(tx.name).to.equal('OtherTransaction/Nodejs/background:job')
+        expect(tx.type).to.equal('bg')
+        expect(tx.baseSegment).to.exist()
+        var webHandler = api.createWebTransaction('/custom/transaction', function() {
+          var webTx = agent.tracer.getTransaction()
+          expect(webTx).to.exist().and.not.equal(tx)
+          expect(webTx.url).to.be.equal('/custom/transaction')
+          expect(webTx.type).to.equal('web')
+          expect(webTx.baseSegment).to.exist()
+          // clean up webTx so it doesn't cause other problems
+          webTx.end()
           done()
         })
         webHandler()
@@ -396,41 +397,65 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should respect the in play transaction and not create a new one', function (done) {
-      var txHandler = api.createBackgroundTransaction('background:job', function (outerTx) {
-        var tx = agent.tracer.getTransaction()
-        expect(tx).to.be.equal(outerTx)
+    describe('when a web transaction is active', function() {
+      it('should create a new transaction', function(done) {
+        var fn = api.createBackgroundTransaction('background:job', function(outerTx) {
+          var tx = agent.tracer.getTransaction()
+          expect(tx).to.have.property('id').not.equal(outerTx.id)
 
-        var trace = tx.trace
-        expect(trace.root.children).to.have.length(1)
+          var trace = tx.trace
+          expect(trace.root.children).to.have.length(1)
 
-        done()
-      })
+          done()
+        })
 
-      helper.runInTransaction(agent, function (transaction) {
-        txHandler(transaction)
-        transaction.end()
+        helper.runInTransaction(agent, function(transaction) {
+          transaction.type = 'web'
+          fn(transaction)
+          transaction.end()
+        })
       })
     })
 
-    it('should nest its segment within an in play segment', function (done) {
-        var txHandler = api.createBackgroundTransaction('background:job', function (outerTx) {
-        var tx = agent.tracer.getTransaction()
-        expect(tx).to.be.equal(outerTx)
+    describe('when a background transaction is active', function() {
+      it('should not create a new transaction', function(done) {
+        var fn = api.createBackgroundTransaction('background:job', function(outerTx) {
+          var tx = agent.tracer.getTransaction()
+          expect(tx).to.have.property('id', outerTx.id)
 
-        var trace = tx.trace
-        expect(trace.root.children).to.have.length(1)
-        var child = trace.root.children[0]
-        expect(child.name).to.equal('outer')
-        expect(child.children).to.have.length(1)
+          var trace = tx.trace
+          expect(trace.root.children).to.have.length(1)
 
-        done()
+          done()
+        })
+
+        helper.runInTransaction(agent, function(transaction) {
+          transaction.type = 'bg'
+          fn(transaction)
+          transaction.end()
+        })
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment('outer', null, null, false, function() {
-          txHandler(transaction)
-          transaction.end()
+      it('should nest its segment within an in play segment', function(done) {
+        var fn = api.createBackgroundTransaction('background:job', function(outerTx) {
+          var tx = agent.tracer.getTransaction()
+          expect(tx).to.have.property('id', outerTx.id)
+
+          var trace = tx.trace
+          expect(trace.root.children).to.have.length(1)
+          var child = trace.root.children[0]
+          expect(child.name).to.equal('outer')
+          expect(child.children).to.have.length(1)
+
+          done()
+        })
+
+        helper.runInTransaction(agent, function(transaction) {
+          transaction.type = 'bg'
+          agent.tracer.addSegment('outer', null, null, false, function() {
+            fn(transaction)
+            transaction.end()
+          })
         })
       })
     })
@@ -509,21 +534,21 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create a new transaction when nested within a web transaction', function (done) {
-      var webHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should create a new transaction when nested within a web transaction', function(done) {
+      var webHandler = api.createWebTransaction('/custom/transaction', function() {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-        expect(tx.url).to.be.equal('/custom/transaction')
-        expect(tx.webSegment).to.exist()
-        expect(tx.bgSegment).to.not.exist()
-        var bgHandler = api.createBackgroundTransaction('background:job', function () {
-          var tx = agent.tracer.getTransaction()
-          expect(tx).to.exist()
-          expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job')
-          expect(tx.webSegment).to.not.exist()
-          expect(tx.bgSegment).to.exist()
-          // clean up tx so it doesn't cause other problems
-          tx.end()
+        expect(tx.url).to.equal('/custom/transaction')
+        expect(tx.type).to.equal('web')
+        expect(tx.baseSegment).to.exist()
+        var bgHandler = api.createBackgroundTransaction('background:job', function() {
+          var bgTx = agent.tracer.getTransaction()
+          expect(bgTx).to.exist().and.not.equal(tx)
+          expect(bgTx.name).to.equal('OtherTransaction/Nodejs/background:job')
+          expect(bgTx.type).to.equal('bg')
+          expect(bgTx.baseSegment).to.exist()
+          // clean up bgTx so it doesn't cause other problems
+          bgTx.end()
           done()
         })
         bgHandler()

@@ -757,9 +757,9 @@ function runTest(t, options, callback) {
   }
 
   agent.on('transactionFinished', function(tx) {
-    var webSegment = tx.trace.root.children[0]
+    var baseSegment = tx.trace.root.children[0]
     t.equal(agent.errors.getTotalErrorCount(), errors, 'should be expected errors')
-    callback(webSegment.children, tx)
+    callback(baseSegment.children, tx)
   })
 
   var server = app.listen(function() {

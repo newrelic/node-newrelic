@@ -71,8 +71,8 @@ test('extensions are recorded as middleware', function(t) {
 
 function runTest(t, callback) {
   agent.on('transactionFinished', function(tx) {
-    var webSegment = tx.trace.root.children[0]
-    callback(webSegment.children, tx)
+    var baseSegment = tx.trace.root.children[0]
+    callback(baseSegment.children, tx)
   })
 
   server.start(function() {
@@ -134,4 +134,3 @@ function checkMetrics(t, metrics, expected, path) {
 
   assertMetrics(metrics, expectedAll, true, false)
 }
-
