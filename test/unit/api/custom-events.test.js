@@ -37,6 +37,18 @@ describe('The custom events API', function () {
     expect(myEvent).to.exist()
   })
 
+  it('does not collect events when high security mode is on', function () {
+    agent.config.high_security = true
+    api.recordCustomEvent('EventName', {key: 'value'})
+    expect(agent.customEvents.toArray().length).to.equal(0)
+  })
+
+  it('does not collect events when the endpoint is disabled in the config', function () {
+    agent.config.api.custom_events_enabled = false
+    api.recordCustomEvent('EventName', {key: 'value'})
+    expect(agent.customEvents.toArray().length).to.equal(0)
+  })
+
   it('creates the proper intrinsic values when recorded', function () {
     var when = Date.now()
     api.recordCustomEvent('EventName', {key: 'value'})
