@@ -1,18 +1,17 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , assert = require('assert')
-  , helper = require('../lib/agent_helper.js')
-  , API    = require('../../api.js')
-  
+var chai   = require('chai')
+var assert = require('assert')
+var helper = require('../lib/agent_helper.js')
+var API    = require('../../api.js')
+
 
 chai.should()
 
-describe("the RUM API", function () {
+describe("the RUM API", function() {
   var agent
-    , api
-    
+  var api
+
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -49,7 +48,7 @@ describe("the RUM API", function () {
   it('should issue a warning without an application_id', function () {
     agent.config.application_id = undefined
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader()
         .should.equal('<!-- NREUM: (4) -->')
     })
@@ -57,7 +56,7 @@ describe("the RUM API", function () {
 
   it('should return the rum headers when in a named transaction', function () {
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader()
         .indexOf('<script').should.equal(0)
     })
@@ -66,7 +65,7 @@ describe("the RUM API", function () {
   it('should return pretty print when debugging', function () {
     agent.config.browser_monitoring.debug = true
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       var l = api.getBrowserTimingHeader().split('\n').length
 
       // there should be about 5 new lines here, this is a really *rough*
@@ -77,7 +76,7 @@ describe("the RUM API", function () {
 
   it('should be compact when not debugging', function () {
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       var l = api.getBrowserTimingHeader().split('\n').length
       assert.equal(l, 1)
     })
@@ -86,7 +85,7 @@ describe("the RUM API", function () {
   it('should return empty headers when missing browser_key', function () {
     agent.config.browser_monitoring.browser_key = undefined
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (5) -->')
     })
   })
@@ -94,7 +93,7 @@ describe("the RUM API", function () {
   it('should return empty headers when missing js_agent_loader', function () {
     agent.config.browser_monitoring.js_agent_loader = ""
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (6) -->')
     })
   })
@@ -102,7 +101,7 @@ describe("the RUM API", function () {
   it('should be empty headers when loader is none', function () {
     agent.config.browser_monitoring.loader = "none"
     helper.runInTransaction(agent, function (t) {
-      t.setName('hello')
+      t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (7) -->')
     })
   })

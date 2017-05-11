@@ -300,7 +300,7 @@ describe("the New Relic agent", function () {
       it("shouldn't error when forcing an ignore", function () {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = true
-        transaction.setName('/ham_snadwich/attend', 200)
+        transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
         expect(transaction.ignore).equal(true)
 
         expect(function () { transaction.end(); }).not.throws()
@@ -309,13 +309,13 @@ describe("the New Relic agent", function () {
       it("shouldn't error when forcing a non-ignore", function () {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = false
-        transaction.setName('/ham_snadwich/ignore', 200)
+        transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
         expect(transaction.ignore).equal(false)
 
         expect(function () { transaction.end(); }).not.throws()
       })
 
-      it("should ignore when setName is not called", function() {
+      it("should ignore when finalizeNameFromUri is not called", function() {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = true
         agent._transactionFinished(transaction)
@@ -1199,7 +1199,7 @@ describe("the New Relic agent", function () {
 
     it("sends query trace when there's a trace to send", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.trace.setDurationInMillis(4001)
       transaction.end()
 
@@ -1247,7 +1247,7 @@ describe("the New Relic agent", function () {
 
     it("merges queries when send fails", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.trace.setDurationInMillis(4001)
       transaction.end()
 
@@ -1307,7 +1307,7 @@ describe("the New Relic agent", function () {
 
     it("doesn't send transaction traces when slow traces disabled", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
@@ -1350,7 +1350,7 @@ describe("the New Relic agent", function () {
 
     it("doesn't send transaction traces when collect_traces disabled", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
@@ -1393,7 +1393,7 @@ describe("the New Relic agent", function () {
 
     it("sends transaction trace when there's a trace to send", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
@@ -1430,7 +1430,7 @@ describe("the New Relic agent", function () {
 
     it("passes through errror when sending trace fails", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
       transaction.end()
@@ -1475,7 +1475,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.end()
 
       agent._sendMetrics(function cb__sendMetrics(error) {
@@ -1488,7 +1488,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.end()
 
       agent._sendErrors(function cb__sendErrors(error) {
@@ -1501,7 +1501,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.end()
 
       agent._sendTrace(function cb__sendTrace(error) {

@@ -1,11 +1,10 @@
 'use strict'
 
-var path            = require('path')
-  , chai            = require('chai')
-  , expect          = chai.expect
-  , helper          = require('../../lib/agent_helper')
-  , ParsedStatement = require('../../../lib/db/parsed-statement')
-  , Transaction     = require('../../../lib/transaction')
+var chai            = require('chai')
+var expect          = chai.expect
+var helper          = require('../../lib/agent_helper')
+var ParsedStatement = require('../../../lib/db/parsed-statement')
+var Transaction     = require('../../../lib/transaction')
 
 
 function makeSegment(options) {
@@ -32,16 +31,16 @@ function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
   var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordMySQL(segment, options.transaction.name)
 }
 
 describe("record ParsedStatement with MySQL", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {
@@ -137,11 +136,11 @@ describe("record ParsedStatement with MySQL", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.trace.root
-      , parent = root.add('Datastore/statement/MySQL/users/select',
+    var parent = root.add('Datastore/statement/MySQL/users/select',
                           makeRecorder('users', 'select'))
-      , child1 = parent.add('Datastore/statement/MySQL/users/insert',
+    var child1 = parent.add('Datastore/statement/MySQL/users/insert',
                             makeRecorder('users', 'insert'))
-      , child2 = child1.add('Datastore/statement/MySQL/cache/update',
+    var child2 = child1.add('Datastore/statement/MySQL/cache/update',
                             makeRecorder('cache', 'update'))
 
 

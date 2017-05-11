@@ -33,7 +33,7 @@ function record(options) {
   var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordMongoDB(segment, options.transaction.name)
 }
 

@@ -25,7 +25,7 @@ function record(options) {
   var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordMemcache(segment, options.transaction.name)
 }
 

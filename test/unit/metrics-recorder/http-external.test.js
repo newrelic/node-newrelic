@@ -1,11 +1,10 @@
 'use strict'
 
-var path             = require('path')
-  , chai             = require('chai')
-  , expect           = chai.expect
-  , helper           = require('../../lib/agent_helper')
-  , generateRecorder = require('../../../lib/metrics/recorders/http_external')
-  , Transaction      = require('../../../lib/transaction')
+var chai             = require('chai')
+var expect           = chai.expect
+var helper           = require('../../lib/agent_helper')
+var generateRecorder = require('../../../lib/metrics/recorders/http_external')
+var Transaction      = require('../../../lib/transaction')
 
 
 function recordExternal(segment, scope) {
@@ -24,16 +23,16 @@ function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
   var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordExternal(segment, options.transaction.name)
 }
 
 describe("recordExternal", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {
@@ -100,9 +99,9 @@ describe("recordExternal", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.trace.root
-      , parent = root.add('/parent',   recordExternal)
-      , child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
-      , child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
+    var parent = root.add('/parent',   recordExternal)
+    var child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
+    var child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
 
 
     root.setDurationInMillis(  32,  0)

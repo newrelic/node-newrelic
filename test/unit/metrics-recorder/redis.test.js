@@ -1,11 +1,10 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , helper      = require('../../lib/agent_helper.js')
-  , recordRedis = require('../../../lib/metrics/recorders/redis.js')
-  , Transaction = require('../../../lib/transaction')
+var chai        = require('chai')
+var expect      = chai.expect
+var helper      = require('../../lib/agent_helper.js')
+var recordRedis = require('../../../lib/metrics/recorders/redis.js')
+var Transaction = require('../../../lib/transaction')
 
 
 function makeSegment(options) {
@@ -22,16 +21,16 @@ function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
   var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordRedis(segment, options.transaction.name)
 }
 
 describe("recordRedis", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {
@@ -112,9 +111,9 @@ describe("recordRedis", function () {
 
   it("should report exclusive time correctly", function () {
     var root   = trans.trace.root
-      , parent = root.add('Datastore/operation/Redis/ladd',     recordRedis)
-      , child1 = parent.add('Datastore/operation/Redis/blpopr', recordRedis)
-      , child2 = child1.add('Datastore/operation/Redis/lpop',   recordRedis)
+    var parent = root.add('Datastore/operation/Redis/ladd',     recordRedis)
+    var child1 = parent.add('Datastore/operation/Redis/blpopr', recordRedis)
+    var child2 = child1.add('Datastore/operation/Redis/lpop',   recordRedis)
 
 
     root.setDurationInMillis(  32,  0)

@@ -709,24 +709,35 @@ function createWebTransaction(url, handle) {
 }
 
 /**
- * Creates a function that represents a background transaction. It does not start the
- * transaction automatically - the returned function needs to be invoked to start it.
- * Inside the handler function, the transaction must be ended by calling endTransaction().
+ * Creates a function that represents a background transaction. It does not
+ * start the transaction automatically - the returned function needs to be
+ * invoked to start it. Inside the handler function, the transaction must be
+ * ended by calling `endTransaction()`.
  *
  * @example
- * var newrelic = require('newrelic')
- * var transaction = newrelic.createBackgroundTransaction('myTransaction', function() {
- *   // do some work
- *   newrelic.endTransaction()
- * })
+ *  var newrelic = require('newrelic')
+ *  var startTx = newrelic.createBackgroundTransaction('myTransaction', function(a, b) {
+ *    // Do some work
+ *    newrelic.endTransaction()
+ *  })
+ *  startTx('a', 'b') // Start the transaction.
  *
- * @param {string}    name      The name of the transaction.  It is used to name and group
-                                related transactions in APM, so it should be a generic
-                                name and not iclude any variable parameters.
- * @param {string}    [group]   Optional, used for grouping background transactions in
- *                              APM.  For more information see:
- *                              https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
- * @param {Function}  handle    Function that represents the background work.
+ * @param {string} name
+ *  The name of the transaction. It is used to name and group related
+ *  transactions in APM, so it should be a generic name and not iclude any
+ *  variable parameters.
+ *
+ * @param {string} [group]
+ *  Optional, used for grouping background transactions in APM. For more
+ *  information see:
+ *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
+ *
+ * @param {Function} handle
+ *  Function that represents the background work.
+ *
+ * @return {Function} The `handle` function wrapped with starting a new
+ *  transaction. This function can be called repeatedly to start multiple
+ *  transactions.
  */
 API.prototype.createBackgroundTransaction = util.deprecate(
   createBackgroundTransaction,
@@ -779,6 +790,7 @@ function createBackgroundTransaction(name, group, handle) {
   )
 
   var tracer = this.agent.tracer
+  var txName = group + '/' + name
 
   var proxy = tracer.transactionNestProxy('bg', function createBGSegment() {
     var tx = tracer.getTransaction()
@@ -791,7 +803,7 @@ function createBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.setBackgroundName(name, group)
+    tx.finalizeName(txName)
     tx.baseSegment = tracer.createSegment(name, recordBackground)
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
@@ -818,8 +830,7 @@ API.prototype.endTransaction = function endTransaction() {
   if (tx) {
     if (tx.baseSegment) {
       if (tx.type === 'web') {
-        tx.setName(tx.url, 0)
-        tx.baseSegment.markAsWeb(tx.url)
+        tx.finalizeNameFromUri(tx.url, 0)
       }
       tx.baseSegment.end()
     }

@@ -486,7 +486,7 @@ function makeTrace(agent, callback) {
   trace.setDurationInMillis(DURATION, 0)
 
   var web = trace.root.add(URL)
-  transaction.setName(URL, 200)
+  transaction.finalizeNameFromUri(URL, 200)
   web.markAsWeb(URL)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)

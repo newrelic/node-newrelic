@@ -19,17 +19,17 @@ function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
   var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   segment.markAsWeb(options.url)
   recordWeb(segment, options.transaction.name)
 }
 
 describe("recordWeb", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {

@@ -171,7 +171,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
@@ -243,7 +243,7 @@ describe('TraceSegment', function() {
 
       webChild = segment.add(url)
       webChild.parameters = params
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
@@ -302,7 +302,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
@@ -348,7 +348,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
