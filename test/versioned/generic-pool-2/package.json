@@ -1,0 +1,7 @@
+{
+  "name": "generic-pool-2-test",
+  "dependencies": {
+    "generic-pool": "^2"
+  },
+  "private": true
+}

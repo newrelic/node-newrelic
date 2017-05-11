@@ -4,8 +4,13 @@ var test = require('tap').test
 var net = require('net')
 var helper = require('../../lib/agent_helper')
 
+function id(tx) {
+  return tx && tx.id
+}
+
 test('createServer', function createServerTest(t) {
   var agent = setupAgent(t)
+
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     var server = net.createServer(handler)
 
@@ -17,7 +22,7 @@ test('createServer', function createServerTest(t) {
     })
 
     function handler(socket) {
-      t.equal(transaction, agent.getTransaction())
+      t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
       t.equal(
         agent.tracer.getSegment().name,
@@ -26,7 +31,7 @@ test('createServer', function createServerTest(t) {
       )
 
       socket.on('data', function onData(data) {
-        t.equal(transaction, agent.getTransaction())
+        t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
         t.equal(data.toString(), 'test123')
         socket.end()
         setTimeout(server.close.bind(server, onClose), 0)
@@ -87,31 +92,41 @@ test('connect', function connectTest(t) {
     var count = 0
     var socket = net.createConnection({port: 4123})
     socket.on('data', function onData(data) {
-      t.equal(agent.getTransaction(), transaction)
+      t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       t.equal(data.toString(), 'end data')
       ++count
     })
     socket.on('end', function onEnd() {
-      t.equal(agent.getTransaction(), transaction)
+      t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       t.equal(count, 1)
       setTimeout(verify, 0)
     })
 
     socket.on('connect', function onConnet() {
-      t.equal(agent.getTransaction(), transaction)
+      t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.write('some data')
     })
 
     function verify() {
+      if (!t.passing()) {
+        return t.end()
+      }
+
       var root = agent.getTransaction().trace.root
       t.equal(root.children.length, 1, 'should have a single child')
       var connectSegment = root.children[0]
       t.equal(
         connectSegment.name,
-        'net.Socket.connect',
+        'net.createConnection',
         'connect segment should have correct name'
       )
       t.ok(connectSegment.timer.touched, 'connect should started and ended')
+
+      // Depending on the version of Node there may be another connection segment
+      // floating in the trace.
+      if (connectSegment.children[0].name === 'net.Socket.connect') {
+        connectSegment = connectSegment.children[0]
+      }
 
       var timeoutSegment
       // 0.12 has dns lookup, 0.10 and under does not
@@ -170,7 +185,7 @@ test('createServer and connect', function createServerTest(t) {
     })
 
     function handler(socket) {
-      t.equal(transaction, agent.getTransaction())
+      t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
       t.equal(
         agent.tracer.getSegment().name,
@@ -179,7 +194,7 @@ test('createServer and connect', function createServerTest(t) {
       )
 
       socket.on('data', function onData(data) {
-        t.equal(transaction, agent.getTransaction())
+        t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
         t.equal(data.toString(), 'test123')
         socket.end()
         server.close(onClose)
@@ -192,10 +207,16 @@ test('createServer and connect', function createServerTest(t) {
       var clientSegment = root.children[0]
       t.equal(
         clientSegment.name,
-        'net.Socket.connect',
+        'net.connect',
         'server segment should have correct name'
       )
       t.ok(clientSegment.timer.touched, 'server should started and ended')
+
+      // Depending on the version of Node there may be another connection segment
+      // floating in the trace.
+      if (clientSegment.children[0].name === 'net.Socket.connect') {
+        clientSegment = clientSegment.children[0]
+      }
 
       // 0.12 gets a DNS segment, 0.10 or less doesn't, yay conditional tests.
       if (clientSegment.children.length > 0) {

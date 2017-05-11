@@ -1,4 +1,38 @@
 
+### v1.39.1 (2017-05-11):
+* Fixed a transaction state loss introduced in Node 7.10.0 when using
+  `net.createConnection`.
+
+  Added a new segment for `net.connect`, `net.createConnection`, and
+  `http.Agent#createConnection`. Sockets created within a transaction also have
+  their `emit` bound to the segment.
+
+* Fixed a typo about the name of the default configuration file. Thanks Jacob
+  LeGrone (@jlegrone)!
+
+### v1.39.0 (2017-05-01):
+* Updated the default value for `transaction_tracer.record_sql` to `obfuscated`.
+
+  This value was previously `off` by default. This change brings the New Relic
+  Node Agent defaults in line with other New Relic Agents.
+
+* Our when instrumentation better detects when a module is actually `when`.
+
+  Thanks to Pasi Eronen (@pasieronen) for the contribution!
+
+* Quiet a warning in our native promise instrumentation on Node 0.10.
+
+* Error messages are redacted in High Security Mode now.
+
+* New configurations were added for disabling some New Relic API methods. These
+  default to enabled and are all disabled in High Security Mode.
+
+  * `api.custom_parameters_enabled` controls `newrelic.addCustomParameters()`
+  * `api.custom_events_enabled` controls `newrelic.recordCustomEvent()`
+  * `api.notice_error_enabled` controls `newrelic.noticeError()`
+
+* Fixed a bug in the generic pool instrumentation affecting version 3.
+
 ### v2.6.0 / beta-47 (2017-05-03):
 * Incorporated fixes and features from 1.38.0, 1.38.1, and 1.38.2.
 
