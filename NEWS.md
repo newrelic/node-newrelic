@@ -1,4 +1,16 @@
 
+### v1.39.1 (2017-05-11):
+* Fixed a transaction state loss introduced in Node 7.10.0 when using
+  `net.createConnection`.
+
+  Added a new segment for `net.connect`, `net.createConnection`, and
+  `http.Agent#createConnection`. Sockets created within a transaction also have
+  their `emit` bound to the segment.
+
+* Fixed a typo about the name of the default configuration file. Thanks Jacob
+  LeGrone (@jlegrone)!
+
+
 ### v1.39.0 (2017-05-01):
 * Updated the default value for `transaction_tracer.record_sql` to `obfuscated`.
 
