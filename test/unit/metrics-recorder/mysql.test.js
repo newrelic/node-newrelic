@@ -74,10 +74,10 @@ describe("record ParsedStatement with MySQL", function () {
         {name: 'Datastore/operation/MySQL/select'},
         [1, 0, 0, 0, 0, 0]
       ], [
-        {name: 'Datastore/allOther'},
+        {name: 'Datastore/allWeb'},
         [1, 0, 0, 0, 0, 0]
       ], [
-        {name: 'Datastore/MySQL/allOther'},
+        {name: 'Datastore/MySQL/allWeb'},
         [1, 0, 0, 0, 0, 0]
       ], [
         {name: 'Datastore/MySQL/all'},

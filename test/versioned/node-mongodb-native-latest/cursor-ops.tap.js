@@ -341,9 +341,9 @@ function checkMetrics(t, agent, metrics) {
   )
   var expectedUnscopedMetrics = [
     'Datastore/all',
-    'Datastore/allOther',
+    'Datastore/allWeb',
     'Datastore/MongoDB/all',
-    'Datastore/MongoDB/allOther',
+    'Datastore/MongoDB/allWeb',
     'Datastore/instance/MongoDB/' + METRIC_HOST_NAME + '/' + METRIC_HOST_PORT
   ]
   expectedUnscopedMetrics.forEach(function(metric) {

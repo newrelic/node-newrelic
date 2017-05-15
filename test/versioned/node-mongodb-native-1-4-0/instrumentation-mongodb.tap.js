@@ -41,7 +41,7 @@ function addMetricsVerifier(t, agent, operation, calls, host, port) {
         'should find all operations'
       )
       t.equals(
-        agent.metrics.getMetric('Datastore/allOther').callCount,
+        agent.metrics.getMetric('Datastore/allWeb').callCount,
         calls || 1,
         'should find all operations'
       )
@@ -132,7 +132,7 @@ function verifyNoStats(t, agent, operation) {
   try {
     var metrics = agent.metrics
     t.notOk(metrics.getMetric('Datastore/all'), 'should find no operations')
-    t.notOk(metrics.getMetric('Datastore/allOther'), 'should find no other operations')
+    t.notOk(metrics.getMetric('Datastore/allWeb'), 'should find no other operations')
     t.notOk(
       metrics.getMetric('Datastore/operation/MongoDB/' + operation),
       'generic ' + operation + ' should not be recorded'

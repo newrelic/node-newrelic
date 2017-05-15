@@ -60,9 +60,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/touch': 1
             })
           })
@@ -88,9 +88,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/get': 1
             })
           })
@@ -116,9 +116,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/gets': 1
             })
           })
@@ -144,9 +144,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/get': 1
             })
           })
@@ -172,9 +172,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/set': 1
             })
           })
@@ -203,9 +203,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/replace': 1
               })
             })
@@ -232,9 +232,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/add': 1
             })
           })
@@ -266,9 +266,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
                 verifyMetrics(t, transaction.metrics, {
                   'Datastore/all': 1,
-                  'Datastore/allOther': 1,
+                  'Datastore/allWeb': 1,
                   'Datastore/Memcache/all': 1,
-                  'Datastore/Memcache/allOther': 1,
+                  'Datastore/Memcache/allWeb': 1,
                   'Datastore/operation/Memcache/cas': 1
                 })
               })
@@ -296,9 +296,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/append': 1
               })
             })
@@ -325,9 +325,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/prepend': 1
               })
             })
@@ -354,9 +354,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/delete': 1
               })
             })
@@ -383,9 +383,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/incr': 1
             })
           })
@@ -408,9 +408,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/decr': 1
             })
           })
@@ -436,9 +436,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/version': 1
             })
           })

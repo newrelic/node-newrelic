@@ -147,9 +147,9 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
             var unscoped = transaction.metrics.unscoped
             var expected = {
               'Datastore/all': 2,
-              'Datastore/allOther': 2,
+              'Datastore/allWeb': 2,
               'Datastore/Redis/all': 2,
-              'Datastore/Redis/allOther': 2,
+              'Datastore/Redis/allWeb': 2,
               'Datastore/operation/Redis/set': 1,
               'Datastore/operation/Redis/get': 1,
             }

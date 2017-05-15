@@ -83,9 +83,9 @@ module.exports = function runTests(name, clientFactory) {
 
     var expected = {
       'Datastore/all': 2,
-      'Datastore/allOther': 2,
+      'Datastore/allWeb': 2,
       'Datastore/Postgres/all': 2,
-      'Datastore/Postgres/allOther': 2,
+      'Datastore/Postgres/allWeb': 2,
       'Datastore/operation/Postgres/insert': 1,
       'Datastore/operation/Postgres/select': 1,
     }

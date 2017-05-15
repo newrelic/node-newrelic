@@ -1,6 +1,5 @@
 'use strict'
 
-var path = require('path')
 var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
@@ -11,19 +10,19 @@ var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
 
 
-describe("the New Relic agent API", function () {
+describe("the New Relic agent API", function() {
   var URL = '/test/path/31337'
   var NAME = 'WebTransaction/Uri/test/path/31337'
   var agent
   var api
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     api = new API(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
@@ -745,22 +744,22 @@ describe("the New Relic agent API", function () {
       expect(params.userAttributes.present).equal('yep')
     })
 
-    it("should add the error associated to a transaction", function (done) {
-      expect(agent.errors.errors.length).equal(0)
+    it("should add the error associated to a transaction", function(done) {
+      expect(agent.errors.errors.length).to.equal(0)
 
-      agent.on('transactionFinished', function (transaction) {
-        expect(agent.errors.errors.length).equal(1)
+      agent.on('transactionFinished', function(transaction) {
+        expect(agent.errors.errors.length).to.equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('Unknown')
-        expect(caught[2]).equal('test error')
-        expect(caught[3]).equal('TypeError')
+        expect(caught[1]).to.equal('Unknown')
+        expect(caught[2]).to.equal('test error')
+        expect(caught[3]).to.equal('TypeError')
 
         expect(transaction.ignore).equal(false)
 
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
+      helper.runInTransaction(agent, function(transaction) {
         api.noticeError(new TypeError('test error'))
         transaction.end()
       })

@@ -120,14 +120,15 @@ describe("Transaction", function() {
     })
   })
 
-  it("should know when it's not a web transaction", function () {
+  it("should know when it's not a web transaction", function() {
     var trans = new Transaction(agent)
+    trans.type = Transaction.TYPES.BG
     expect(trans.isWeb()).equal(false)
   })
 
-  it("should know when it's a web transaction", function () {
+  it("should know when it's a web transaction", function() {
     var trans = new Transaction(agent)
-    trans.url = '/test/1'
+    trans.type = Transaction.TYPES.WEB
     expect(trans.isWeb()).equal(true)
   })
 
@@ -197,16 +198,16 @@ describe("Transaction", function() {
       expect(trans.name).equal('WebTransaction/NormalizedUri/config')
     })
 
-    describe("getName", function () {
-      it("should return null if the transaction doesn't have a name, partialName, or url", function () {
+    describe("getName", function() {
+      it("should return null if it doesn't have a name, partialName, or url", function() {
         expect(trans.getName()).equal(null)
       })
 
-      it("partial name should remain unset if it wasn't set before", function () {
+      it("partial name should remain unset if it wasn't set before", function() {
         trans.url = '/some/pathname'
-        expect(trans.nameState.getName()).equal(null)
-        expect(trans.getName()).equal('WebTransaction/NormalizedUri/*')
-        expect(trans.nameState.getName()).equal(null)
+        expect(trans.nameState.getName()).to.equal(null)
+        expect(trans.getName()).to.equal('NormalizedUri/*')
+        expect(trans.nameState.getName()).to.equal(null)
       })
 
       it("should return the right name if partialName and url are set", function() {
@@ -215,13 +216,41 @@ describe("Transaction", function() {
         trans.nameState.appendPath('route')
         trans.url = '/route'
         expect(trans.getName())
+          .to.equal('WebFrameworkUri/Framework/VERB/route')
+        expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
+      })
+
+      it("should return the name if it has already been set", function() {
+        trans.setPartialName('foo/bar')
+        expect(trans.getName()).equal('foo/bar')
+      })
+    })
+
+    describe("getFullName", function() {
+      it("should return null if it doesn't have a name, partialName, or url", function() {
+        expect(trans.getFullName()).equal(null)
+      })
+
+      it("partial name should remain unset if it wasn't set before", function() {
+        trans.url = '/some/pathname'
+        expect(trans.nameState.getName()).to.equal(null)
+        expect(trans.getFullName()).to.equal('WebTransaction/NormalizedUri/*')
+        expect(trans.nameState.getName()).to.equal(null)
+      })
+
+      it("should return the right name if partialName and url are set", function() {
+        trans.nameState.setPrefix('Framework')
+        trans.nameState.setVerb('verb')
+        trans.nameState.appendPath('route')
+        trans.url = '/route'
+        expect(trans.getFullName())
           .to.equal('WebTransaction/WebFrameworkUri/Framework/VERB/route')
         expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
       })
 
-      it("should return the name if it has already been set", function () {
+      it("should return the name if it has already been set", function() {
         trans.name = 'OtherTransaction/foo/bar'
-        expect(trans.getName()).equal('OtherTransaction/foo/bar')
+        expect(trans.getFullName()).equal('OtherTransaction/foo/bar')
       })
     })
 
@@ -541,6 +570,7 @@ describe("Transaction", function() {
         'transaction trace duration', function(done) {
 
       // add a segment that will end after the transaction ends
+      transaction.type = Transaction.TYPES.BG
       var bgTransactionSegment = transaction.trace.add('backgroundWork')
       bgTransactionSegment.start()
 
@@ -549,7 +579,8 @@ describe("Transaction", function() {
 
         // response time should equal the full duration of the trace
         expect(transaction.getResponseTimeInMillis()).equal(
-          transaction.trace.getDurationInMillis())
+          transaction.trace.getDurationInMillis()
+        )
 
         done()
       })

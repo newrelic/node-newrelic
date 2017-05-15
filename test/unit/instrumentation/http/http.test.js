@@ -563,7 +563,7 @@ describe("built-in http module instrumentation", function() {
 
     it('should set header correctly when all data is present', function(done) {
       var server = http.createServer(function(req, res) {
-        agent.getTransaction().name = '/abc'
+        agent.getTransaction().setPartialName('/abc')
         agent.getTransaction().id = '789'
         res.writeHead(200, {'Content-Length': 3})
         res.end('hi!')
@@ -751,12 +751,13 @@ describe("built-in http module instrumentation", function() {
       helper.runInTransaction(agent, function() {
         addSegment() // Add web segment so everything works properly
         var transaction = agent.getTransaction()
+        transaction.url = '/xyz'
         transaction.nameState.appendPath('/xyz')
         transaction.name = null
         transaction.referringPathHash = 'h/def'
         var pathHash = hashes.calculatePathHash(
           agent.config.applications()[0],
-          transaction.nameState.getName(),
+          transaction.getFullName(),
           transaction.referringPathHash
         )
 

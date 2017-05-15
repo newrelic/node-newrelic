@@ -489,7 +489,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   // bail gracefully outside a transaction
   if (!trans) return _gracefail(1)
 
-  var name = trans.getName()
+  var name = trans.getFullName()
 
   /* If we're in an unnamed transaction, add a friendly warning this is to
    * avoid people going crazy, trying to figure out why browser monitoring is

@@ -11,7 +11,7 @@ var hashes = require('../../../lib/util/hashes.js')
 
 var DATA_PREFIX = 'NREUM.info = '
 
-test('custom naming rules should be applied early for RUM', function (t) {
+test('custom naming rules should be applied early for RUM', function(t) {
   t.plan(3)
 
   var conf  = {
@@ -35,14 +35,14 @@ test('custom naming rules should be applied early for RUM', function (t) {
 
   var external = http.createServer(function cb_createServer(request, response) {
     t.equal(
-      agent.getTransaction()._partialName,
+      agent.getTransaction().getName(),
       'NormalizedUri/WORKING',
       'name rules should be applied'
     )
     response.end(api.getBrowserTimingHeader())
   })
 
-  external.listen(0, function(){
+  external.listen(0, function() {
     var port = external.address().port
 
     http.request({port: port, path: '/test'}, done).end()

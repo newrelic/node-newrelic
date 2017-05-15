@@ -64,8 +64,8 @@ describe("recordRedis", function () {
 
       var result = [
         [{name: 'Datastore/operation/Redis/set'}, [1, 0, 0, 0, 0, 0]],
-        [{name: 'Datastore/allOther'}, [1, 0, 0, 0, 0, 0]],
-        [{name: 'Datastore/Redis/allOther'}, [1, 0, 0, 0, 0, 0]],
+        [{name: 'Datastore/allWeb'}, [1, 0, 0, 0, 0, 0]],
+        [{name: 'Datastore/Redis/allWeb'}, [1, 0, 0, 0, 0, 0]],
         [{name: 'Datastore/all'}, [1, 0, 0, 0, 0, 0]],
         [{name: 'Datastore/Redis/all'}, [1, 0, 0, 0, 0, 0]]
       ]

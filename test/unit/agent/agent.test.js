@@ -42,19 +42,18 @@ function refreshAWSEndpoints() {
 }
 
 
-describe("the New Relic agent", function () {
-  before(function () {
+describe("the New Relic agent", function() {
+  before(function() {
     nock.disableNetConnect()
     refreshAWSEndpoints()
   })
 
-  after(function () {
+  after(function() {
     nock.enableNetConnect()
   })
 
-  it("requires the configuration be passed to the constructor", function () {
-    /*jshint nonew: false */
-    expect(function () { new Agent(); }).throws()
+  it("requires the configuration be passed to the constructor", function() {
+    expect(function() { new Agent() }).to.throw() // eslint-disable-line no-new
   })
 
   it("doesn't throw when passed a valid configuration", function () {
@@ -970,20 +969,20 @@ describe("the New Relic agent", function () {
       }
     })
 
-    it("reports background transactions error count", function (done) {
+    it("reports background transactions error count", function(done) {
       var transaction = new Transaction(agent)
-      expect(transaction.isWeb()).to.be.false
+      transaction.type = Transaction.TYPES.BG
+      expect(transaction.isWeb()).to.be.false()
 
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
 
-      agent.collector.metricData = function (payload) {
+      agent.collector.metricData = function(payload) {
         var metrics = payload[3]
         var metric  = metrics.getMetric('Errors/allOther')
 
-        should.exist(metric)
-        expect(metric.callCount).equal(3)
+        expect(metric).to.exist().and.have.property('callCount', 3)
 
         done()
       }

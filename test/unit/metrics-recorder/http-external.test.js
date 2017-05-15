@@ -30,24 +30,25 @@ function record(options) {
   recordExternal(segment, options.transaction.name)
 }
 
-describe("recordExternal", function () {
+describe("recordExternal", function() {
   var agent
   var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
+    trans.type = Transaction.TYPES.BG
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  describe("when scope is undefined", function () {
+  describe("when scope is undefined", function() {
     var segment
 
-    beforeEach(function () {
+    beforeEach(function() {
       segment = makeSegment({
         transaction : trans,
         duration : 0,
@@ -55,11 +56,11 @@ describe("recordExternal", function () {
       })
     })
 
-    it("shouldn't crash on recording", function () {
-      expect(function () { recordExternal(segment, undefined); }).not.throws()
+    it("shouldn't crash on recording", function() {
+      expect(function() { recordExternal(segment, undefined) }).to.not.throw()
     })
 
-    it("should record no scoped metrics", function () {
+    it("should record no scoped metrics", function() {
       recordExternal(segment, undefined)
 
       var result = [
@@ -73,8 +74,9 @@ describe("recordExternal", function () {
     })
   })
 
-  describe("with scope", function () {
-    it("should record scoped metrics", function () {
+  describe("with scope", function() {
+    it("should record scoped metrics", function() {
+      trans.type = Transaction.TYPES.WEB
       record({
         transaction : trans,
         url : '/test',
@@ -97,7 +99,7 @@ describe("recordExternal", function () {
     })
   })
 
-  it("should report exclusive time correctly", function () {
+  it("should report exclusive time correctly", function() {
     var root   = trans.trace.root
     var parent = root.add('/parent',   recordExternal)
     var child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
@@ -120,7 +122,7 @@ describe("recordExternal", function () {
       [{name : "External/oauth.facebook.com/all"},  [1,0.002,0.002,0.002,0.002,0.000004]]
     ]
 
-    trans.end(function(){
+    trans.end(function() {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
   })
