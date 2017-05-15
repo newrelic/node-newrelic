@@ -29,6 +29,7 @@ for (var i = 0; i < length; i++) {
 Stub.prototype.createTracer = createTracer
 Stub.prototype.createWebTransaction = createWebTransaction
 Stub.prototype.createBackgroundTransaction = createBackgroundTransaction
+Stub.prototype.getTransaction = getTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
 Stub.prototype.shutdown = shutdown
 
@@ -37,6 +38,17 @@ Stub.prototype.shutdown = shutdown
 function getBrowserTimingHeader() {
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.')
   return ''
+}
+
+function getTransaction() {
+  return {
+    end: function stubbedEnd() {
+      logger.debug('Not calling transaction.end because New Relic is disabled')
+    },
+    ignore: function stubbedIgnore() {
+      logger.debug('Not calling transaction.ignore because New Relic is disabled')
+    }
+  }
 }
 
 // Normally the following 3 calls return a wrapped callback, instead we

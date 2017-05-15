@@ -102,6 +102,50 @@ describe("the New Relic agent API", function () {
     expect(api.instrument).to.be.a('function')
   })
 
+  it("exports a function for getting a transaction handle", function () {
+    should.exist(api.getTransaction)
+    expect(api.getTransaction).to.be.a('function')
+  })
+
+  describe("when getting a transaction handle", function () {
+    it("should mark the transaction as externally handled", function (done) {
+      helper.runInTransaction(agent, function (txn) {
+        var handle = api.getTransaction()
+        expect(txn.handledExternally).to.equal(true)
+        expect(handle.end).to.be.a('function')
+        handle.end()
+        done()
+      })
+    })
+
+    it("should return a method to ignore the transaction", function (done) {
+      helper.runInTransaction(agent, function (txn) {
+        var handle = api.getTransaction()
+        expect(handle.ignore).to.be.a('function')
+        handle.ignore()
+        expect(txn.forceIgnore).to.equal(true)
+        expect(handle.end).to.be.a('function')
+        handle.end()
+        done()
+      })
+    })
+
+    it("should return a handle with a method to end the transaction", function (done) {
+      var transaction
+      agent.on('transactionFinished', function(t) {
+        expect(t.id).to.equal(transaction.id)
+        done()
+      })
+      helper.runInTransaction(agent, function (txn) {
+        transaction = txn
+        var handle = api.getTransaction()
+        expect(handle.end).to.be.a('function')
+        handle.end()
+      })
+    })
+  })
+
+
   it("exports a function for adding multiple custom parameters at once", function () {
     should.exist(api.addCustomParameters)
     expect(api.addCustomParameters).a('function')
