@@ -607,7 +607,16 @@ API.prototype.createTracer = function createTracer(name, callback) {
                                 name and not iclude any variable parameters.
  * @param {Function}  handle    Function that represents the transaction work.
  */
-API.prototype.createWebTransaction = function createWebTransaction(url, handle) {
+API.prototype.createWebTransaction = util.deprecate(
+  createWebTransaction,
+  [
+    'API#createWebTransaction is being deprecated!',
+    'Please use API#startWebTransaction and API#getTransaction',
+    'for transaction creation and management.'
+  ].join(' ')
+)
+
+function createWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
   )
@@ -683,7 +692,14 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
  *                              https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
  * @param {Function}  handle    Function that represents the background work.
  */
-API.prototype.createBackgroundTransaction = createBackgroundTransaction
+API.prototype.createBackgroundTransaction = util.deprecate(
+  createBackgroundTransaction,
+  [
+    'API#createBackgroundTransaction is being deprecated!',
+    'Please use API#startBackgroundTransaction and API#getTransaction',
+    'for transaction creation and management.'
+  ].join(' ')
+)
 
 function createBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
