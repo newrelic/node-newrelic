@@ -10,6 +10,7 @@ var customRecorder = require('./lib/metrics/recorders/custom')
 var hashes = require('./lib/util/hashes')
 var stringify = require('json-stringify-safe')
 var shimmer = require('./lib/shimmer.js')
+var TransactionHandle = require('./lib/transaction/handle.js')
 
 var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
@@ -88,6 +89,41 @@ API.prototype.setTransactionName = function setTransactionName(name) {
   }
 
   transaction.forceName = NAMES.CUSTOM + '/' + name
+}
+
+/**
+ * This method returns an object with the following methods:
+ * - end: end the transaction that was active when `API#getTransaction`
+ *   was called.
+ *
+ * - ignore: set the transaction that was active when
+ *   `API#getTransaction` was called to be ignored.
+ *
+ * @returns {object} transaction The transaction object with the `end`
+ *                               and `ignore` methods on it.
+ */
+API.prototype.getTransaction = function getTransaction() {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getTransaction'
+  )
+  metric.incrementCallCount()
+
+  var transaction = this.agent.tracer.getTransaction()
+  if (!transaction) {
+    logger.debug("No transaction found when calling API#getTransaction")
+    return {
+      end: function endNoTransaction() {
+        logger.debug("No transaction found when calling Transaction.end")
+      },
+      ignore: function ignoreNoTransaction() {
+        logger.debug("No transaction found when calling Transaction.ignore")
+      }
+    }
+  }
+
+  transaction.handledExternally = true
+
+  return new TransactionHandle(transaction)
 }
 
 /**
@@ -284,7 +320,7 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
     return logger.warn("No transaction found to ignore.")
   }
 
-  transaction.forceIgnore = ignored
+  transaction.setForceIgnore(ignored)
 }
 
 /**

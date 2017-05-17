@@ -14,7 +14,7 @@ describe("the stubbed New Relic agent API", function() {
   })
 
   it("should export 21 API calls", function() {
-    expect(Object.keys(api.constructor.prototype).length).equal(21)
+    expect(Object.keys(api.constructor.prototype).length).equal(22)
   })
 
   it("exports a transaction naming function", function () {
@@ -48,6 +48,11 @@ describe("the stubbed New Relic agent API", function() {
   it("exports a transaction ignoring function", function () {
     should.exist(api.setIgnoreTransaction)
     expect(api.setIgnoreTransaction).a('function')
+  })
+
+  it("exports a function to get the current transaction handle", function () {
+    should.exist(api.getTransaction)
+    expect(api.getTransaction).a('function')
   })
 
   it("exports a function for adding naming rules", function () {
