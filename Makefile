@@ -236,7 +236,7 @@ update_npm_global:
 	fi
 
 	if node -v | grep -q "^v0"; then \
-	  npm install -g npm@latest; \
+	  npm install -g npm@3; \
 	fi
 
 	echo "\nUpgrading npm is expected to have many warnings due to tolerance changes over the years.\n"
