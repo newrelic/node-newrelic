@@ -19,10 +19,12 @@ function createTransaction(agent, code, isWeb) {
 
   var transaction = new Transaction(agent)
   if (isWeb) {
+    transaction.type = Transaction.TYPES.WEB
     transaction.name = 'WebTransaction/TestJS/path'
     transaction.url = '/TestJS/path'
     transaction.statusCode = code
   } else {
+    transaction.type = Transaction.TYPES.BG
     transaction.name = 'OtherTransaction'
   }
   return transaction

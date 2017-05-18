@@ -33,7 +33,7 @@ function record(options) {
   var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordMongoDB(segment, options.transaction.name)
 }
 
@@ -72,9 +72,9 @@ describe("record ParsedStatement with MongoDB", function () {
       var result = [
         [{name: "Datastore/operation/MongoDB/find"},
          [1, 0, 0, 0, 0, 0]],
-        [{name: "Datastore/allOther"},
+        [{name: "Datastore/allWeb"},
          [1, 0, 0, 0, 0, 0]],
-        [{name: "Datastore/MongoDB/allOther"},
+        [{name: "Datastore/MongoDB/allWeb"},
          [1, 0, 0, 0, 0, 0]],
         [{name: "Datastore/MongoDB/all"},
          [1, 0, 0, 0, 0, 0]],

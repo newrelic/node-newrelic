@@ -6,13 +6,11 @@ var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
 var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
-var sampler = require('../../../lib/sampler')
-var semver = require('semver')
 
 
 nock.disableNetConnect()
 
-test("harvesting with a mocked collector that returns 503 after connect", function (t) {
+test("harvesting with a mocked collector that returns 503 after connect", function(t) {
   var RUN_ID = 1337
   var url = 'https://collector.newrelic.com'
   var agent = new Agent(configurator.initialize())
@@ -79,7 +77,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
   })
 })
 
-test("merging metrics and errors after a 503", function (t) {
+test("merging metrics and errors after a 503", function(t) {
   t.plan(6)
 
   var RUN_ID = 1338
@@ -167,7 +165,7 @@ test("merging metrics and errors after a 503", function (t) {
               min            : 0,
               max            : 0,
               sumOfSquares   : 0,
-              callCount      : 0
+              callCount      : 1
             }
           ],[
             {name : "Errors/allOther"},
@@ -177,7 +175,7 @@ test("merging metrics and errors after a 503", function (t) {
               min            : 0,
               max            : 0,
               sumOfSquares   : 0,
-              callCount      : 1
+              callCount      : 0
             }
           ],[
             // Bluebird is a dependency of tap, and since tap is loaded before

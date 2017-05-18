@@ -161,12 +161,10 @@ var helper = module.exports = {
       type = undefined
     }
 
-
     return helper.runInTransaction(agent, type, function wrappedCallback(transaction) {
       transaction.name = 'TestTransaction'
       return callback(transaction)
     })
-
   },
 
   /**

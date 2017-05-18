@@ -79,7 +79,7 @@ test('Agent#_sendErrors', function(t) {
       })
 
       helper.runInTransaction(agent, function(tx) {
-        tx.setName('/nonexistent', 501)
+        tx.finalizeNameFromUri('/nonexistent', 501)
         tx.addAgentAttribute('foo', 'bar')
         tx.addAgentAttribute('request_uri', '/nonexistent')
         agent.errors.add(tx, new Error('test error'))

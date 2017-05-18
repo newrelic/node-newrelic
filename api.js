@@ -489,7 +489,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   // bail gracefully outside a transaction
   if (!trans) return _gracefail(1)
 
-  var name = trans.getName()
+  var name = trans.getFullName()
 
   /* If we're in an unnamed transaction, add a friendly warning this is to
    * avoid people going crazy, trying to figure out why browser monitoring is
@@ -700,33 +700,44 @@ function createWebTransaction(url, handle) {
     tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
     tx.url = url
     tx.applyUserNamingRules(tx.url)
-    tx.webSegment = tracer.createSegment(url, recordWeb)
-    tx.webSegment.start()
+    tx.baseSegment = tracer.createSegment(url, recordWeb)
+    tx.baseSegment.start()
 
-    return tracer.bindFunction(handle, tx.webSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
   })
   return arity.fixArity(handle, proxy)
 }
 
 /**
- * Creates a function that represents a background transaction. It does not start the
- * transaction automatically - the returned function needs to be invoked to start it.
- * Inside the handler function, the transaction must be ended by calling endTransaction().
+ * Creates a function that represents a background transaction. It does not
+ * start the transaction automatically - the returned function needs to be
+ * invoked to start it. Inside the handler function, the transaction must be
+ * ended by calling `endTransaction()`.
  *
  * @example
- * var newrelic = require('newrelic')
- * var transaction = newrelic.createBackgroundTransaction('myTransaction', function() {
- *   // do some work
- *   newrelic.endTransaction()
- * })
+ *  var newrelic = require('newrelic')
+ *  var startTx = newrelic.createBackgroundTransaction('myTransaction', function(a, b) {
+ *    // Do some work
+ *    newrelic.endTransaction()
+ *  })
+ *  startTx('a', 'b') // Start the transaction.
  *
- * @param {string}    name      The name of the transaction.  It is used to name and group
-                                related transactions in APM, so it should be a generic
-                                name and not iclude any variable parameters.
- * @param {string}    [group]   Optional, used for grouping background transactions in
- *                              APM.  For more information see:
- *                              https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
- * @param {Function}  handle    Function that represents the background work.
+ * @param {string} name
+ *  The name of the transaction. It is used to name and group related
+ *  transactions in APM, so it should be a generic name and not iclude any
+ *  variable parameters.
+ *
+ * @param {string} [group]
+ *  Optional, used for grouping background transactions in APM. For more
+ *  information see:
+ *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
+ *
+ * @param {Function} handle
+ *  Function that represents the background work.
+ *
+ * @return {Function} The `handle` function wrapped with starting a new
+ *  transaction. This function can be called repeatedly to start multiple
+ *  transactions.
  */
 API.prototype.createBackgroundTransaction = util.deprecate(
   createBackgroundTransaction,
@@ -779,6 +790,7 @@ function createBackgroundTransaction(name, group, handle) {
   )
 
   var tracer = this.agent.tracer
+  var txName = group + '/' + name
 
   var proxy = tracer.transactionNestProxy('bg', function createBGSegment() {
     var tx = tracer.getTransaction()
@@ -791,12 +803,12 @@ function createBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.setBackgroundName(name, group)
-    tx.bgSegment = tracer.createSegment(name, recordBackground)
-    tx.bgSegment.partialName = group
-    tx.bgSegment.start()
+    tx.finalizeName(txName)
+    tx.baseSegment = tracer.createSegment(name, recordBackground)
+    tx.baseSegment.partialName = group
+    tx.baseSegment.start()
 
-    return tracer.bindFunction(handle, tx.bgSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
   })
   return arity.fixArity(handle, proxy)
 }
@@ -816,12 +828,11 @@ API.prototype.endTransaction = function endTransaction() {
   var tx = tracer.getTransaction()
 
   if (tx) {
-    if (tx.webSegment) {
-      tx.setName(tx.url, 0)
-      tx.webSegment.markAsWeb(tx.url)
-      tx.webSegment.end()
-    } else if (tx.bgSegment) {
-      tx.bgSegment.end()
+    if (tx.baseSegment) {
+      if (tx.type === 'web') {
+        tx.finalizeNameFromUri(tx.url, 0)
+      }
+      tx.baseSegment.end()
     }
     logger.debug('ending transaction with id: %s and name: %s', tx.id, tx.name)
     tx.end()

@@ -19,16 +19,16 @@ function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
   var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordGeneric(segment, options.transaction.name)
 }
 
 describe('recordGeneric', function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {

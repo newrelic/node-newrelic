@@ -13,7 +13,7 @@ var END_PORT = 10002
 var CROSS_PROCESS_ID = '1337#7331'
 
 
-test('cross application tracing full integration', function (t) {
+test('cross application tracing full integration', function(t) {
   t.plan(57)
   var feature_flag = {
     cat: true
@@ -40,34 +40,41 @@ test('cross application tracing full integration', function (t) {
 
   // Naming is how the requests will flow through the system, to test that all
   // metrics are generated as expected as well as the dirac events.
-  var start = generateServer(http, api, START_PORT, started, function (req, res) {
-    http.get(generateUrl(MIDDLE_PORT, 'start/middle'), function (externRes) {
+  var start = generateServer(http, api, START_PORT, started, function(req, res) {
+    var tx = agent.tracer.getTransaction()
+    tx.nameState.appendPath('foobar')
+    http.get(generateUrl(MIDDLE_PORT, 'start/middle'), function(externRes) {
       externRes.resume()
       externRes.on('end', function() {
+        tx.nameState.popPath('foobar')
         res.end()
       })
     })
   })
 
-  var middle = generateServer(http, api, MIDDLE_PORT, started, function (req, res) {
+  var middle = generateServer(http, api, MIDDLE_PORT, started, function(req, res) {
     t.ok(req.headers['x-newrelic-id'], 'middle received x-newrelic-id from start')
     t.ok(req.headers['x-newrelic-transaction'], 'middle received x-newrelic-transaction from start')
-    http.get(generateUrl(END_PORT, 'middle/end'), function (externRes) {
+
+    var tx = agent.tracer.getTransaction()
+    tx.nameState.appendPath('foobar')
+    http.get(generateUrl(END_PORT, 'middle/end'), function(externRes) {
       externRes.resume()
       externRes.on('end', function() {
+        tx.nameState.popPath('foobar')
         res.end()
       })
     })
   })
 
-  var end = generateServer(http, api, END_PORT, started, function (req, res) {
+  var end = generateServer(http, api, END_PORT, started, function(req, res) {
     t.ok(req.headers['x-newrelic-id'], 'end received x-newrelic-id from middle')
     t.ok(req.headers['x-newrelic-transaction'], 'end received x-newrelic-transaction from middle')
     res.end()
   })
 
   function runTest() {
-    http.get(generateUrl(START_PORT, 'start'), function (res) {
+    http.get(generateUrl(START_PORT, 'start'), function(res) {
       res.resume()
       start.close()
       middle.close()
@@ -209,8 +216,9 @@ test('cross application tracing full integration', function (t) {
 })
 
 function generateServer(http, api, port, started, responseHandler) {
-  var server = http.createServer(function (req, res) {
-    api.agent.getTransaction().nameState.appendPath(req.url)
+  var server = http.createServer(function(req, res) {
+    var tx = api.agent.getTransaction()
+    tx.nameState.appendPath(req.url)
     req.resume()
     responseHandler(req, res)
   })

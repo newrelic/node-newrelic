@@ -32,7 +32,7 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
     var transaction
     var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction()
-      transaction.setName('/nonexistent', 200)
+      transaction.finalizeNameFromUri('/nonexistent', 200)
     })
     proxy()
     // ensure it's slow enough to get traced

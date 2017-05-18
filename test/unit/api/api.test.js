@@ -1,6 +1,5 @@
 'use strict'
 
-var path = require('path')
 var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
@@ -11,19 +10,19 @@ var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
 
 
-describe("the New Relic agent API", function () {
+describe("the New Relic agent API", function() {
   var URL = '/test/path/31337'
   var NAME = 'WebTransaction/Uri/test/path/31337'
   var agent
   var api
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     api = new API(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
@@ -230,7 +229,7 @@ describe("the New Relic agent API", function () {
         agent.on('transactionFinished', function (t) {
           // grab transaction
           transaction = t
-          transaction.setName(URL, 200)
+          transaction.finalizeNameFromUri(URL, 200)
           segment.markAsWeb(URL)
           done()
         })
@@ -268,7 +267,7 @@ describe("the New Relic agent API", function () {
       var segment
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.name).equal('WebTransaction/Custom/List')
 
@@ -294,7 +293,7 @@ describe("the New Relic agent API", function () {
   describe("when (not) ignoring a transaction", function () {
     it("should mark the transaction ignored", function (done) {
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.ignore).equal(true)
 
@@ -318,7 +317,7 @@ describe("the New Relic agent API", function () {
       api.addIgnoringRule('^/test/.*')
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.ignore).equal(false)
 
@@ -347,7 +346,7 @@ describe("the New Relic agent API", function () {
         agent.on('transactionFinished', function (t) {
           // grab transaction
           transaction = t
-          t.setName(URL, 200)
+          t.finalizeNameFromUri(URL, 200)
           segment.markAsWeb(URL)
           done()
         })
@@ -385,7 +384,7 @@ describe("the New Relic agent API", function () {
       var segment
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.name).equal('WebTransaction/Controller/Test/DELETE')
 
@@ -411,7 +410,7 @@ describe("the New Relic agent API", function () {
       var segment
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.name).equal('WebTransaction/Controller/Test/index')
 
@@ -434,7 +433,7 @@ describe("the New Relic agent API", function () {
       var segment
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.name).equal('WebTransaction/Controller/Test/list')
 
@@ -591,7 +590,7 @@ describe("the New Relic agent API", function () {
       api.addNamingRule('^/test/.*', 'Test')
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.name).equal('WebTransaction/NormalizedUri/Test')
 
@@ -613,7 +612,7 @@ describe("the New Relic agent API", function () {
       api.addNamingRule(/^\/test\/(.*)\/(.*)/, 'Test/$2')
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName('/test/31337/related', 200)
+        transaction.finalizeNameFromUri('/test/31337/related', 200)
 
         expect(transaction.name).equal('WebTransaction/NormalizedUri/Test/related')
 
@@ -696,7 +695,7 @@ describe("the New Relic agent API", function () {
       api.addIgnoringRule('^/test/.*')
 
       agent.on('transactionFinished', function (transaction) {
-        transaction.setName(URL, 200)
+        transaction.finalizeNameFromUri(URL, 200)
 
         expect(transaction.ignore).equal(true)
 
@@ -745,22 +744,22 @@ describe("the New Relic agent API", function () {
       expect(params.userAttributes.present).equal('yep')
     })
 
-    it("should add the error associated to a transaction", function (done) {
-      expect(agent.errors.errors.length).equal(0)
+    it("should add the error associated to a transaction", function(done) {
+      expect(agent.errors.errors.length).to.equal(0)
 
-      agent.on('transactionFinished', function (transaction) {
-        expect(agent.errors.errors.length).equal(1)
+      agent.on('transactionFinished', function(transaction) {
+        expect(agent.errors.errors.length).to.equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('Unknown')
-        expect(caught[2]).equal('test error')
-        expect(caught[3]).equal('TypeError')
+        expect(caught[1]).to.equal('Unknown')
+        expect(caught[2]).to.equal('test error')
+        expect(caught[3]).to.equal('TypeError')
 
         expect(transaction.ignore).equal(false)
 
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
+      helper.runInTransaction(agent, function(transaction) {
         api.noticeError(new TypeError('test error'))
         transaction.end()
       })

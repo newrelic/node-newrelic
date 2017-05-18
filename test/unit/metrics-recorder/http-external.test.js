@@ -1,11 +1,10 @@
 'use strict'
 
-var path             = require('path')
-  , chai             = require('chai')
-  , expect           = chai.expect
-  , helper           = require('../../lib/agent_helper')
-  , generateRecorder = require('../../../lib/metrics/recorders/http_external')
-  , Transaction      = require('../../../lib/transaction')
+var chai             = require('chai')
+var expect           = chai.expect
+var helper           = require('../../lib/agent_helper')
+var generateRecorder = require('../../../lib/metrics/recorders/http_external')
+var Transaction      = require('../../../lib/transaction')
 
 
 function recordExternal(segment, scope) {
@@ -24,31 +23,32 @@ function record(options) {
   if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
 
   var segment     = makeSegment(options)
-    , transaction = options.transaction
+  var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordExternal(segment, options.transaction.name)
 }
 
-describe("recordExternal", function () {
+describe("recordExternal", function() {
   var agent
-    , trans
+  var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
+    trans.type = Transaction.TYPES.BG
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  describe("when scope is undefined", function () {
+  describe("when scope is undefined", function() {
     var segment
 
-    beforeEach(function () {
+    beforeEach(function() {
       segment = makeSegment({
         transaction : trans,
         duration : 0,
@@ -56,11 +56,11 @@ describe("recordExternal", function () {
       })
     })
 
-    it("shouldn't crash on recording", function () {
-      expect(function () { recordExternal(segment, undefined); }).not.throws()
+    it("shouldn't crash on recording", function() {
+      expect(function() { recordExternal(segment, undefined) }).to.not.throw()
     })
 
-    it("should record no scoped metrics", function () {
+    it("should record no scoped metrics", function() {
       recordExternal(segment, undefined)
 
       var result = [
@@ -74,8 +74,9 @@ describe("recordExternal", function () {
     })
   })
 
-  describe("with scope", function () {
-    it("should record scoped metrics", function () {
+  describe("with scope", function() {
+    it("should record scoped metrics", function() {
+      trans.type = Transaction.TYPES.WEB
       record({
         transaction : trans,
         url : '/test',
@@ -98,11 +99,11 @@ describe("recordExternal", function () {
     })
   })
 
-  it("should report exclusive time correctly", function () {
+  it("should report exclusive time correctly", function() {
     var root   = trans.trace.root
-      , parent = root.add('/parent',   recordExternal)
-      , child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
-      , child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
+    var parent = root.add('/parent',   recordExternal)
+    var child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
+    var child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
 
 
     root.setDurationInMillis(  32,  0)
@@ -121,7 +122,7 @@ describe("recordExternal", function () {
       [{name : "External/oauth.facebook.com/all"},  [1,0.002,0.002,0.002,0.002,0.000004]]
     ]
 
-    trans.end(function(){
+    trans.end(function() {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
   })

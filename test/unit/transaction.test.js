@@ -11,7 +11,7 @@ var Transaction = require('../../lib/transaction')
 var hashes      = require('../../lib/util/hashes')
 
 
-describe("Transaction", function () {
+describe("Transaction", function() {
   var agent
   var trans
 
@@ -120,14 +120,15 @@ describe("Transaction", function () {
     })
   })
 
-  it("should know when it's not a web transaction", function () {
+  it("should know when it's not a web transaction", function() {
     var trans = new Transaction(agent)
+    trans.type = Transaction.TYPES.BG
     expect(trans.isWeb()).equal(false)
   })
 
-  it("should know when it's a web transaction", function () {
+  it("should know when it's a web transaction", function() {
     var trans = new Transaction(agent)
-    trans.url = '/test/1'
+    trans.type = Transaction.TYPES.WEB
     expect(trans.isWeb()).equal(true)
   })
 
@@ -167,46 +168,46 @@ describe("Transaction", function () {
     })
   })
 
-  describe("when being named", function () {
+  describe("when being named", function() {
     var trans
 
-    beforeEach(function () {
+    beforeEach(function() {
       trans = new Transaction(agent)
     })
 
-    it("should throw when called with no parameters", function () {
-      expect(function () { trans.setName(); }).throws()
+    it("should throw when called with no parameters", function() {
+      expect(function() { trans.finalizeNameFromUri() }).throws()
     })
 
     it("should ignore a request path when told to by a rule", function () {
       var api = new API(agent)
       api.addIgnoringRule('^/test/')
-      trans.setName('/test/string?do=thing&another=thing', 200)
+      trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
       return expect(trans.ignore).true
     })
 
     it("should ignore a transaction when told to by a rule", function () {
       agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
-      trans.setName('/test/string?do=thing&another=thing', 200)
+      trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
       expect(trans.ignore).equal(true)
     })
 
     it("should pass through a name when told to by a rule", function () {
       agent.userNormalizer.addSimple('^/config', '/config')
-      trans.setName('/config', 200)
+      trans.finalizeNameFromUri('/config', 200)
       expect(trans.name).equal('WebTransaction/NormalizedUri/config')
     })
 
-    describe("getName", function () {
-      it("should return null if the transaction doesn't have a name, partialName, or url", function () {
+    describe("getName", function() {
+      it("should return null if it doesn't have a name, partialName, or url", function() {
         expect(trans.getName()).equal(null)
       })
 
-      it("partial name should remain unset if it wasn't set before", function () {
+      it("partial name should remain unset if it wasn't set before", function() {
         trans.url = '/some/pathname'
-        expect(trans.nameState.getName()).equal(null)
-        expect(trans.getName()).equal('WebTransaction/NormalizedUri/*')
-        expect(trans.nameState.getName()).equal(null)
+        expect(trans.nameState.getName()).to.equal(null)
+        expect(trans.getName()).to.equal('NormalizedUri/*')
+        expect(trans.nameState.getName()).to.equal(null)
       })
 
       it("should return the right name if partialName and url are set", function() {
@@ -215,73 +216,101 @@ describe("Transaction", function () {
         trans.nameState.appendPath('route')
         trans.url = '/route'
         expect(trans.getName())
+          .to.equal('WebFrameworkUri/Framework/VERB/route')
+        expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
+      })
+
+      it("should return the name if it has already been set", function() {
+        trans.setPartialName('foo/bar')
+        expect(trans.getName()).equal('foo/bar')
+      })
+    })
+
+    describe("getFullName", function() {
+      it("should return null if it doesn't have a name, partialName, or url", function() {
+        expect(trans.getFullName()).equal(null)
+      })
+
+      it("partial name should remain unset if it wasn't set before", function() {
+        trans.url = '/some/pathname'
+        expect(trans.nameState.getName()).to.equal(null)
+        expect(trans.getFullName()).to.equal('WebTransaction/NormalizedUri/*')
+        expect(trans.nameState.getName()).to.equal(null)
+      })
+
+      it("should return the right name if partialName and url are set", function() {
+        trans.nameState.setPrefix('Framework')
+        trans.nameState.setVerb('verb')
+        trans.nameState.appendPath('route')
+        trans.url = '/route'
+        expect(trans.getFullName())
           .to.equal('WebTransaction/WebFrameworkUri/Framework/VERB/route')
         expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
       })
 
-      it("should return the name if it has already been set", function () {
+      it("should return the name if it has already been set", function() {
         trans.name = 'OtherTransaction/foo/bar'
-        expect(trans.getName()).equal('OtherTransaction/foo/bar')
+        expect(trans.getFullName()).equal('OtherTransaction/foo/bar')
       })
     })
 
     describe("with no partial name set", function () {
       it("produces a normalized (backstopped) name when status is 200", function () {
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
       it("produces a normalized partial name when status is 200", function () {
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans._partialName).equal('NormalizedUri/*')
       })
 
       it("passes through status code when status is 200", function () {
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.statusCode).equal(200)
       })
 
       it("produces a non-error name when status code is ignored", function () {
         agent.config.error_collector.ignore_status_codes = [404, 500]
-        trans.setName('/test/string?do=thing&another=thing', 500)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
       it("produces a non-error partial name when status code is ignored", function () {
         agent.config.error_collector.ignore_status_codes = [404, 500]
-        trans.setName('/test/string?do=thing&another=thing', 500)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
         expect(trans._partialName).equal('NormalizedUri/*')
       })
 
       it("passes through status code when status is 404", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
         expect(trans.statusCode).equal(404)
       })
 
       it("produces a 'not found' partial name when status is 404", function() {
         trans.nameState.setName('Expressjs', 'GET', '/')
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
         expect(trans._partialName).equal('Expressjs/GET/(not found)')
       })
 
       it("produces a 'not found' name when status is 404", function() {
         trans.nameState.setName('Expressjs', 'GET', '/')
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
         expect(trans.name).equal('WebTransaction/Expressjs/GET/(not found)')
       })
 
       it("produces a regular name when status is 501", function () {
-        trans.setName('/test/string?do=thing&another=thing', 501)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
       it("produces a regular partial name when status is 501", function () {
-        trans.setName('/test/string?do=thing&another=thing', 501)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans._partialName).equal('NormalizedUri/*')
       })
 
       it("passes through status code when status is 501", function () {
-        trans.setName('/test/string?do=thing&another=thing', 501)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans.statusCode).equal(501)
       })
     })
@@ -293,12 +322,12 @@ describe("Transaction", function () {
       })
 
       it("produces a custom name when status is 200", function () {
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.name).equal('WebTransaction/Custom/test')
       })
 
       it("produces a partial name when status is 200", function () {
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.nameState.getName()).equal('Custom/test')
       })
 
@@ -307,49 +336,49 @@ describe("Transaction", function () {
           '^(WebTransaction/Custom)/test$',
           '$1/*'
         )
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.name).equal('WebTransaction/Custom/*')
       })
 
       it("passes through status code when status is 200", function () {
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.statusCode).equal(200)
       })
 
       it("keeps the custom name when error status is ignored", function () {
         agent.config.error_collector.ignore_status_codes = [404, 500]
-        trans.setName('/test/string?do=thing&another=thing', 500)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/Custom/test')
       })
 
       it("keeps the custom partial name when error status is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
         expect(trans.nameState.getName()).equal('Custom/test')
       })
 
       it("passes through status code when status is 404", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 404)
         expect(trans.statusCode).equal(404)
       })
 
       it("produces the custom name even when status is 501", function () {
-        trans.setName('/test/string?do=thing&another=thing', 501)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans.name).equal('WebTransaction/Custom/test')
       })
 
       it("produces the custome partial name even when status is 501", function () {
-        trans.setName('/test/string?do=thing&another=thing', 501)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans.nameState.getName()).equal('Custom/test')
       })
 
       it("passes through status code when status is 501", function () {
-        trans.setName('/test/string?do=thing&another=thing', 501)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans.statusCode).equal(501)
       })
 
       it("should ignore a transaction when told to by a rule", function () {
         agent.transactionNameNormalizer.addSimple('^WebTransaction/Custom/test$')
-        trans.setName('/test/string?do=thing&another=thing', 200)
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         return expect(trans.ignore).true
       })
     })
@@ -397,7 +426,7 @@ describe("Transaction", function () {
 
   it("shouldn't scope web transactions to their URL", function () {
     var trans = new Transaction(agent)
-    trans.setName('/test/1337?action=edit', 200)
+    trans.finalizeNameFromUri('/test/1337?action=edit', 200)
     expect(trans.name).not.equal('/test/1337?action=edit')
     expect(trans.name).not.equal('WebTransaction/Uri/test/1337')
   })
@@ -541,6 +570,7 @@ describe("Transaction", function () {
         'transaction trace duration', function(done) {
 
       // add a segment that will end after the transaction ends
+      transaction.type = Transaction.TYPES.BG
       var bgTransactionSegment = transaction.trace.add('backgroundWork')
       bgTransactionSegment.start()
 
@@ -549,7 +579,8 @@ describe("Transaction", function () {
 
         // response time should equal the full duration of the trace
         expect(transaction.getResponseTimeInMillis()).equal(
-          transaction.trace.getDurationInMillis())
+          transaction.trace.getDurationInMillis()
+        )
 
         done()
       })
