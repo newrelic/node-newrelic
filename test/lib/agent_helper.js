@@ -144,8 +144,9 @@ var helper = module.exports = {
     if (!(agent && callback)) {
       throw new TypeError("Must include both agent and function!")
     }
+    type = type || 'web'
 
-    return agent.tracer.transactionProxy(function cb_transactionProxy() {
+    return agent.tracer.transactionNestProxy(type, function cb_transactionProxy() {
       var transaction = agent.getTransaction()
       return callback(transaction)
     })() // <-- invoke immediately
