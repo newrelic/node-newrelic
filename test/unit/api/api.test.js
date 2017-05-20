@@ -220,6 +220,146 @@ describe("the New Relic agent API", function() {
     })
   })
 
+  describe("when starting a web transaction using startWebTransaction", function () {
+    var thenCalled = false
+    var FakePromise = {
+      then: function(f) {
+        thenCalled = true
+        f()
+        return this
+      }
+    }
+    var transaction
+
+    beforeEach(function() {
+      thenCalled = false
+      transaction = null
+    })
+    
+    it("should end the transaction after the handle returns by default", function () {
+      api.startWebTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('web')
+        expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
+        expect(transaction.isActive()).to.be.true
+      })
+      expect(transaction.isActive()).to.be.false
+    })
+
+    it("should end the transaction after a promise returned by the transaction function resolves", function () {
+      api.startWebTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('web')
+        expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
+        expect(transaction.isActive()).to.be.true
+        expect(thenCalled).to.be.false
+        return FakePromise
+      })
+      expect(thenCalled).to.be.true
+      expect(transaction.isActive()).to.be.false
+    })
+
+    it("should not end the transaction if the transaction is being handled externally", function () {
+      api.startWebTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('web')
+        expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
+        expect(transaction.isActive()).to.be.true
+        transaction.handledExternally = true
+      })
+      expect(transaction.isActive()).to.be.true
+      transaction.end()
+    })
+
+    it("should call the handler if no url is supplied", function (done) {
+      api.startWebTransaction(null, function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.be.null
+        done()
+      })
+    })
+
+    it("should not throw when no handler is supplied", function () {
+      expect(api.startWebTransaction('test')).to.not.throw
+    })
+  })
+
+  describe("when starting a background transaction using startBackgroundTransaction", function () {
+    var thenCalled = false
+    var FakePromise = {
+      then: function(f) {
+        thenCalled = true
+        f()
+        return this
+      }
+    }
+    var transaction
+
+    beforeEach(function() {
+      thenCalled = false
+      transaction = null
+    })
+    
+    it("should end the transaction after the handle returns by default", function () {
+      api.startBackgroundTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
+        expect(transaction.isActive()).to.be.true
+      })
+      expect(transaction.isActive()).to.be.false
+    })
+
+    it("should start a background transaction with the given name as the name and group", function () {
+      api.startBackgroundTransaction('test', 'group', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal('OtherTransaction/group/test')
+        expect(transaction.isActive()).to.be.true
+      })
+      expect(transaction.isActive()).to.be.false
+    })
+
+    it("should end the transaction after a promise returned by the transaction function resolves", function () {
+      api.startBackgroundTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
+        expect(transaction.isActive()).to.be.true
+        expect(thenCalled).to.be.false
+        return FakePromise
+      })
+      expect(thenCalled).to.be.true
+      expect(transaction.isActive()).to.be.false
+    })
+
+    it("should not end the transaction if the transaction is being handled externally", function () {
+      api.startBackgroundTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
+        expect(transaction.isActive()).to.be.true
+        transaction.handledExternally = true
+      })
+      expect(transaction.isActive()).to.be.true
+      transaction.end()
+    })
+
+    it("should call the handler if no name is supplied", function (done) {
+      api.startBackgroundTransaction(null, function() {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.be.null
+        done()
+      })
+    })
+
+    it("should not throw when no handler is supplied", function () {
+      expect(api.startBackgroundTransaction('test')).to.not.throw
+      expect(api.startBackgroundTransaction('test', 'asdf')).to.not.throw
+      expect(api.startBackgroundTransaction('test', 'asdf', 'not a function')).to.not.throw
+    })
+  })
+
   describe("when explicitly naming transactions", function () {
     describe("in the simplest case", function () {
       var segment
