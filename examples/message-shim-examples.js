@@ -150,7 +150,7 @@ function wrapCallbackChannel(shim) {
     consumer: shim.SECOND,
     callback: shim.FOURTH,
     promise: false,
-    wrapper: function wrapConsumer(shim, fn, name, consumer, queue) {
+    wrapper: function wrapConsumer(shim, consumer, name, queue) {
       return shim.recordMessageConsumer(consumer, makeRecordConsumer(queue))
     }
   })
