@@ -4,11 +4,18 @@ var test = require('tap').test
 var crypto = require('crypto')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
+var semver = require('semver')
 
 test('pbkdf2', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    crypto.pbkdf2('hunter2', 'saltine', 5, 32, function(err, key) {
+    var fn
+    if (semver.satisfies(process.version, "<= 0.10")) {
+      fn = crypto.pbkdf2.bind(null, 'hunter2', 'saltine', 5, 32)
+    } else {
+      fn = crypto.pbkdf2.bind(null, 'hunter2', 'saltine', 5, 32, 'sha1')
+    }
+    fn(function(err, key) {
       t.notOk(err, 'should not error')
       t.equal(key.length, 32)
       verifySegments(t, agent, 'crypto.pbkdf2')
