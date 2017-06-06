@@ -69,7 +69,7 @@ test('sync pseudoRandomBytes', function(t) {
 
 test('randomFill', function(t) {
   if (!crypto.randomFill) {
-    t.skip()
+    return t.end()
   }
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
@@ -84,7 +84,7 @@ test('randomFill', function(t) {
 
 test('sync randomFill', function(t) {
   if (!crypto.randomFill) {
-    t.skip()
+    return t.end()
   }
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function(transaction) {
