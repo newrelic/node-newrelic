@@ -67,6 +67,36 @@ test('sync pseudoRandomBytes', function(t) {
   })
 })
 
+test('randomFill', function(t) {
+  if (!crypto.randomFill) {
+    return t.end()
+  }
+  var agent = setupAgent(t)
+  helper.runInTransaction(agent, function() {
+    var buf = Buffer.alloc(10)
+    crypto.randomFill(buf, function(err, buf) {
+      t.notOk(err, 'should not error')
+      t.ok(buf.length, 10)
+      verifySegments(t, agent, 'crypto.randomFill')
+    })
+  })
+})
+
+test('sync randomFill', function(t) {
+  if (!crypto.randomFill) {
+    return t.end()
+  }
+  var agent = setupAgent(t)
+  helper.runInTransaction(agent, function(transaction) {
+    var buf = Buffer.alloc(10)
+    crypto.randomFillSync(buf)
+    t.ok(buf instanceof Buffer)
+    t.equal(buf.length, 10)
+    t.equal(transaction.trace.root.children.length, 0)
+    t.end()
+  })
+})
+
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
