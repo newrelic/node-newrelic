@@ -64,7 +64,8 @@ test-ci: node_modules sub_node_modules $(CERTIFICATE)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
-	@cd test && npm install
+	@cd test && npm install;
+	@case $(NODE_VERSION) in "v0.8."*) cd test;npm i nock@^0.48.0;esac
 	@$(MOCHA) -c test/unit --recursive
 
 sub_node_modules:
@@ -90,6 +91,7 @@ integration: node_modules ca-gen $(CERTIFICATE) docker
 	@cd test && npm install glob@~3.2.9
 	@node test/bin/install_sub_deps integration
 	@node test/bin/install_sub_deps versioned
+	@case $(NODE_VERSION) in "v0.8."*) cd test;npm i nock@^0.48.0;esac
 	time $(TAP) $(INTEGRATION)
 
 prerelease: node_modules ca-gen $(CERTIFICATE) docker
@@ -216,7 +218,7 @@ update_npm_global:
 	fi
 
 	if node -v | grep -q "^v0"; then \
-	  npm install -g npm@latest; \
+	  npm install -g npm@3; \
 	fi
 
 	echo "\nUpgrading npm is expected to have many warnings due to tolerance changes over the years.\n"
