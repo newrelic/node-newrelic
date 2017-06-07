@@ -10,11 +10,11 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['My Application'],
+  app_name: ['automate-radicalromantic'],
   /**
    * Your New Relic license key.
    */
-  license_key: 'license key here',
+  license_key: '92ed3ff408b0658a917fe8fa7f3c6cfa7f5a6d27',
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
