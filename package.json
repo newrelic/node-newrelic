@@ -113,7 +113,6 @@
     "concat-stream",
     "https-proxy-agent",
     "json-stringify-safe",
-    "readable-stream",
     "semver"
   ],
   "devDependencies": {
