@@ -418,8 +418,6 @@ describe('MessageShim', function() {
           expect(segment.transaction).to.have.property('type', shim.MESSAGE)
         })
 
-        it('should associate the origin message with the transaction')
-
         it('should execute the wrapped function', function() {
           var executed = false
           var toWrap = function() { executed = true }
@@ -753,11 +751,6 @@ describe('MessageShim', function() {
         })
       })
     })
-  })
-
-  describe('#getTransactionMessage', function() {
-    it('should return null if this is not a message transaction')
-    it('should return the transaction\'s originating message object')
   })
 })
 
