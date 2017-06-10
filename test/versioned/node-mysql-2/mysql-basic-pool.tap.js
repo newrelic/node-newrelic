@@ -26,7 +26,7 @@ function getConfig(extras) {
     database : DBNAME,
   }
 
-  for (var key in extras) {
+  for (var key in extras) { // eslint-disable-line guard-for-in
     conf[key] = extras[key]
   }
 
