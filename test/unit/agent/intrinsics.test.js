@@ -42,11 +42,11 @@ function mockTransaction(agent, test, duration) {
   return trans
 }
 
-describe('when CAT is disabled', function () {
+describe('when CAT is disabled', function() {
   var agent
 
   before(function() {
-    agent = helper.loadMockedAgent({cat: false})
+    agent = helper.loadMockedAgent(null, {cross_application_tracer: {enabled: false}})
   })
 
   after(function() {
@@ -129,12 +129,12 @@ describe('when CAT is disabled', function () {
   })
 })
 
-describe('when CAT is enabled', function () {
+describe('when CAT is enabled', function() {
   var agent
 
   before(function() {
     // App name from test data
-    agent = helper.loadMockedAgent({cat: true})
+    agent = helper.loadMockedAgent(null, {cross_application_tracer: {enabled: true}})
     agent.config.applications = function newFake() {
       return ['testAppName']
     }

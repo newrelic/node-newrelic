@@ -418,7 +418,10 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function() {
-      agent = helper.instrumentMockedAgent({cat: true}, {encoding_key: encKey})
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey
+      })
     })
 
     after(function() {
@@ -505,7 +508,10 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function() {
-      agent = helper.instrumentMockedAgent({cat: false}, {encoding_key: encKey})
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: false},
+        encoding_key: encKey
+      })
     })
 
     after(function() {
@@ -551,10 +557,12 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function() {
-      agent = helper.instrumentMockedAgent(
-        {cat: true},
-        {encoding_key: encKey, trusted_account_ids: [123], cross_process_id: '456'}
-      )
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey,
+        trusted_account_ids: [123],
+        cross_process_id: '456'
+      })
     })
 
     after(function() {
@@ -655,10 +663,11 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function(done) {
-      agent = helper.instrumentMockedAgent(
-        {cat: true},
-        {encoding_key: encKey, obfuscatedId: 'o123'}
-      )
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey,
+        obfuscatedId: 'o123'
+      })
       http = require('http')
       server = http.createServer(function(req, res) {
         res.end()
@@ -801,10 +810,11 @@ describe("built-in http module instrumentation", function() {
     it('should preserve headers regardless of format', function(done) {
       var encKey = 'gringletoes'
 
-      agent = helper.instrumentMockedAgent(
-        {cat: true},
-        {encoding_key: encKey, obfuscatedId: 'o123'}
-      )
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey,
+        obfuscatedId: 'o123'
+      })
 
       var http = require('http')
       var had_expect = 0
