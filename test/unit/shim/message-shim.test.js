@@ -497,9 +497,8 @@ describe('MessageShim', function() {
               var segment = wrappable.getActiveSegment()
               var tx = segment.transaction
               setImmediate(function() {
-                var root = tx.trace.root
-                expect(root.parameters).property('message')
-                  .to.have.property('routingKey', 'routing.key')
+                expect(tx.trace.parameters)
+                  .to.have.property('message.routingKey', 'routing.key')
                 done()
               })
             })
@@ -528,9 +527,8 @@ describe('MessageShim', function() {
             var segment = wrappable.getActiveSegment()
             var tx = segment.transaction
             setImmediate(function() {
-              var root = tx.trace.root
-              expect(root.parameters).property('message')
-                .to.have.property('routingKey', 'routing.key')
+              expect(tx.trace.parameters)
+                .to.have.property('message.routingKey', 'routing.key')
               done()
             })
           })

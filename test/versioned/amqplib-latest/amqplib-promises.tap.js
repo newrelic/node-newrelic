@@ -63,7 +63,10 @@ tap.test('amqplib promise instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(tx) {
-      channel.sendToQueue('testQueue', new Buffer('hello'))
+      channel.sendToQueue('testQueue', new Buffer('hello'), {
+        replyTo: 'my.reply.queue',
+        correlationId: 'correlation-id'
+      })
       tx.end()
     })
   })

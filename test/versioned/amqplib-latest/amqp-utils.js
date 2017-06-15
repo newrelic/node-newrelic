@@ -71,7 +71,16 @@ function verifyConsumeTransaction(t, tx, exchange, routingKey) {
 
   t.doesNotThrow(function() {
     metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange}]
+      [{name: 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange}],
+      [{name: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange}],
+      [{name: 'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/' + exchange}],
+      [{name: 'OtherTransaction/Message/all'}],
+      [{name: 'OtherTransaction/all'}],
+      [{name: 'OtherTransactionTotalTime'}],
+      [{
+        name: 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange,
+        scope: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
+      }]
     ], false, false)
   }, 'should have expected metrics')
 
@@ -81,17 +90,17 @@ function verifyConsumeTransaction(t, tx, exchange, routingKey) {
     'should not set transaction name'
   )
 
-  var root = tx.trace.root
   var consume = metrics.findSegment(
-    root,
+    tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange
   )
   t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
 
 
-  if (t.ok(root.parameters.hasOwnProperty('message'), 'should have message params')) {
-    t.equal(root.parameters.message.routingKey, routingKey, 'should have routing key')
-  }
+  t.equal(
+    tx.trace.parameters['message.routingKey'], routingKey,
+    'should have message params'
+  )
 }
 
 function verifySendToQueue(t, tx) {
@@ -112,6 +121,11 @@ function verifySendToQueue(t, tx) {
     'MessageBroker/RabbitMQ/Queue/Produce/Named/Default'
   )
   t.equals(segment.parameters.routing_key, 'testQueue', 'should store routing key')
+  t.equals(segment.parameters.reply_to, 'my.reply.queue', 'should store reply to')
+  t.equals(
+    segment.parameters.correlation_id, 'correlation-id',
+    'should store correlation id'
+  )
 }
 
 function verifyPublish(t, tx, exchangeName, routingKey) {
