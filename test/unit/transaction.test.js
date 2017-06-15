@@ -16,19 +16,18 @@ describe("Transaction", function() {
   var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  it("should require an agent to create new transactions", function () {
-    var trans
-    expect(function () {
-      trans = new Transaction()
+  it("should require an agent to create new transactions", function() {
+    expect(function() {
+      return new Transaction()
     }).throws(/must be bound to the agent/)
   })
 
@@ -226,19 +225,19 @@ describe("Transaction", function() {
       })
     })
 
-    describe("getFullName", function() {
-      it("should return null if it doesn't have a name, partialName, or url", function() {
+    describe('getFullName', function() {
+      it('should return null if it does not have name, partialName, or url', function() {
         expect(trans.getFullName()).equal(null)
       })
 
-      it("partial name should remain unset if it wasn't set before", function() {
+      it('partial name should remain unset if it was not set before', function() {
         trans.url = '/some/pathname'
         expect(trans.nameState.getName()).to.equal(null)
         expect(trans.getFullName()).to.equal('WebTransaction/NormalizedUri/*')
         expect(trans.nameState.getName()).to.equal(null)
       })
 
-      it("should return the right name if partialName and url are set", function() {
+      it('should return the right name if partialName and url are set', function() {
         trans.nameState.setPrefix('Framework')
         trans.nameState.setVerb('verb')
         trans.nameState.appendPath('route')
@@ -248,24 +247,31 @@ describe("Transaction", function() {
         expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
       })
 
-      it("should return the name if it has already been set", function() {
+      it('should return the name if it has already been set', function() {
         trans.name = 'OtherTransaction/foo/bar'
-        expect(trans.getFullName()).equal('OtherTransaction/foo/bar')
+        expect(trans.getFullName()).to.equal('OtherTransaction/foo/bar')
+      })
+
+      it('should return the forced name if set', function() {
+        trans.name = 'FullName'
+        trans.partialName = 'PartialName'
+        trans.forceName = 'ForcedName'
+        expect(trans.getFullName()).to.equal('ForcedName')
       })
     })
 
-    describe("with no partial name set", function () {
-      it("produces a normalized (backstopped) name when status is 200", function () {
+    describe("with no partial name set", function() {
+      it("produces a normalized (backstopped) name when status is 200", function() {
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
-      it("produces a normalized partial name when status is 200", function () {
+      it("produces a normalized partial name when status is 200", function() {
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans._partialName).equal('NormalizedUri/*')
       })
 
-      it("passes through status code when status is 200", function () {
+      it("passes through status code when status is 200", function() {
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.statusCode).equal(200)
       })
