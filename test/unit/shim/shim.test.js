@@ -275,6 +275,7 @@ describe('Shim', function() {
       segment = {
         started: false,
         touched: false,
+        probed: false,
         start: function() { this.started = true },
         touch: function() { this.touched = true },
         probe: function() { this.probed = true }
@@ -307,6 +308,14 @@ describe('Shim', function() {
         expect(wrapped).to.not.equal(wrappable.getActiveSegment)
         expect(shim.isWrapped(wrapped)).to.be.true
         expect(shim.unwrap(wrapped)).to.equal(wrappable.getActiveSegment)
+      })
+    })
+
+    describe('with no segment', function() {
+      it('should not wrap the function at all', function() {
+        var wrapped = shim.bindSegment(wrappable.getActiveSegment)
+        expect(wrapped).to.equal(wrappable.getActiveSegment)
+        expect(shim.isWrapped(wrapped)).to.be.false
       })
     })
 

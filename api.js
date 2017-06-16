@@ -1282,6 +1282,45 @@ function instrumentWebframework(moduleName, onRequire, onError) {
 }
 
 /**
+ * Registers an instrumentation function for instrumenting message brokers.
+ *
+ *  - `newrelic.instrumentMessages(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentMessages(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrumentMessages =
+function instrumentMessages(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentMessages'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.MESSAGE
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
  * Shuts down the agent.
  *
  * @param {object}  [options]                           object with shut down options
