@@ -15,17 +15,15 @@ var CROSS_PROCESS_ID = '1337#7331'
 
 test('cross application tracing full integration', function(t) {
   t.plan(57)
-  var feature_flag = {
-    cat: true
-  }
   var config = {
+    cross_application_tracer: {enabled: true},
     trusted_account_ids: [1337],
     cross_process_id: CROSS_PROCESS_ID,
     encoding_key: 'some key',
   }
   config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
                                                      config.encoding_key)
-  var agent = helper.instrumentMockedAgent(feature_flag, config)
+  var agent = helper.instrumentMockedAgent(null, config)
   // require http after creating the agent
   var http = require('http')
   var api = new API(agent)

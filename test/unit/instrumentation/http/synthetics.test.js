@@ -34,11 +34,12 @@ describe('synthetics outbound header', function () {
     port: PORT
   }
 
-  before(function (done) {
-    agent = helper.instrumentMockedAgent(
-      {cat: true, synthetics: true},
-      {trusted_account_ids: [23, 567], encoding_key: ENCODING_KEY}
-    )
+  before(function(done) {
+    agent = helper.instrumentMockedAgent({synthetics: true}, {
+      cross_application_tracer: {enabled: true},
+      trusted_account_ids: [23, 567],
+      encoding_key: ENCODING_KEY
+    })
     http = require('http')
     server = http.createServer(function(req, res) {
       req.resume()
@@ -47,9 +48,9 @@ describe('synthetics outbound header', function () {
     server.listen(PORT, done)
   })
 
-  after(function (done) {
+  after(function(done) {
     helper.unloadAgent(agent)
-    server.close(function () {
+    server.close(function() {
       done()
     })
   })
@@ -105,7 +106,7 @@ describe('synthetics inbound header', function () {
     return server
   }
 
-  beforeEach(function () {
+  beforeEach(function() {
     synthData = [
       1, // version
       567, // account id
@@ -113,15 +114,15 @@ describe('synthetics inbound header', function () {
       'larry', // synthetics job id
       'curly' // synthetics monitor id
     ]
-    agent = helper.instrumentMockedAgent(
-      {cat: true, synthetics: true},
-      {trusted_account_ids: [23, 567], encoding_key: ENCODING_KEY}
-    )
+    agent = helper.instrumentMockedAgent({synthetics: true}, {
+      cross_application_tracer: {enabled: true},
+      trusted_account_ids: [23, 567],
+      encoding_key: ENCODING_KEY
+    })
     http = require('http')
-
   })
 
-  afterEach(function (done) {
+  afterEach(function(done) {
     helper.unloadAgent(agent)
     server.close(done)
   })

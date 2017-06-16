@@ -223,10 +223,11 @@ describe('should add data from cat header to segment', function() {
   ]
 
   before(function(done) {
-    agent = helper.instrumentMockedAgent(
-      {cat: true},
-      {encoding_key: encKey, trusted_account_ids: [123]}
-    )
+    agent = helper.instrumentMockedAgent(null, {
+      cross_application_tracer: {enabled: true},
+      encoding_key: encKey,
+      trusted_account_ids: [123]
+    })
     var obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
     server = http.createServer(function(req, res) {
       res.writeHead(200, {'x-newrelic-app-data': obfData})
