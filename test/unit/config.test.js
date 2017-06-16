@@ -509,6 +509,10 @@ describe("the agent configuration", function () {
 
       expect(configuration.error_collector.ignore_status_codes).eql([])
     })
+
+    it("should enable cross application tracer", function() {
+      expect(configuration.cross_application_tracer.enabled).equal(true)
+    })
   })
 
   describe("when overriding the config file location via NR_HOME", function () {
@@ -705,16 +709,22 @@ describe("the agent configuration", function () {
       expect(config.ignored_params).eql(['a', 'b'])
     })
 
-    it("should configure ignored params without stomping local config", function () {
+    it("should configure ignored params without stomping local config", function() {
       config.ignored_params = ['b', 'c']
 
       config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql(['b', 'c', 'a'])
     })
 
-    describe("when handling embedded agent_config", function () {
-      it("shouldn't blow up when agent_config is passed in", function () {
-        expect(function () {
+    it('should configure cross application tracing', function() {
+      expect(config.cross_application_tracer.enabled).to.be.true()
+      config.onConnect({'cross_application_tracer.enabled': false})
+      expect(config.cross_application_tracer.enabled).to.be.false()
+    })
+
+    describe("when handling embedded agent_config", function() {
+      it("shouldn't blow up when agent_config is passed in", function() {
+        expect(function() {
           config.onConnect({'agent_config': {}})
         }).not.throws()
       })
