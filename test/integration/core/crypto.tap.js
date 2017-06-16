@@ -4,11 +4,18 @@ var test = require('tap').test
 var crypto = require('crypto')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
+var semver = require('semver')
 
 test('pbkdf2', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    crypto.pbkdf2('hunter2', 'saltine', 5, 32, function(err, key) {
+    var fn
+    if (semver.satisfies(process.version, "<= 0.10")) {
+      fn = crypto.pbkdf2.bind(null, 'hunter2', 'saltine', 5, 32)
+    } else {
+      fn = crypto.pbkdf2.bind(null, 'hunter2', 'saltine', 5, 32, 'sha1')
+    }
+    fn(function(err, key) {
       t.notOk(err, 'should not error')
       t.equal(key.length, 32)
       verifySegments(t, agent, 'crypto.pbkdf2')
@@ -55,6 +62,36 @@ test('sync pseudoRandomBytes', function(t) {
     var bytes = crypto.pseudoRandomBytes(32)
     t.ok(bytes instanceof Buffer)
     t.equal(bytes.length, 32)
+    t.equal(transaction.trace.root.children.length, 0)
+    t.end()
+  })
+})
+
+test('randomFill', function(t) {
+  if (!crypto.randomFill) {
+    return t.end()
+  }
+  var agent = setupAgent(t)
+  helper.runInTransaction(agent, function() {
+    var buf = Buffer.alloc(10)
+    crypto.randomFill(buf, function(err, buf) {
+      t.notOk(err, 'should not error')
+      t.ok(buf.length, 10)
+      verifySegments(t, agent, 'crypto.randomFill')
+    })
+  })
+})
+
+test('sync randomFill', function(t) {
+  if (!crypto.randomFill) {
+    return t.end()
+  }
+  var agent = setupAgent(t)
+  helper.runInTransaction(agent, function(transaction) {
+    var buf = Buffer.alloc(10)
+    crypto.randomFillSync(buf)
+    t.ok(buf instanceof Buffer)
+    t.equal(buf.length, 10)
     t.equal(transaction.trace.root.children.length, 0)
     t.end()
   })

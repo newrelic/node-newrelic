@@ -1,4 +1,17 @@
 
+### v1.40.0 (2017-06-07):
+* Node v8 is officially supported with exception of `async`/`await`.
+
+  Support for the new [`async`/`await`][mdn-async-function] keywords is coming
+  in a future release. Until this support is added, using the agent with
+  applications that utilize async/await is unsupported and highly discouraged as
+  it could result in transaction state loss and data being mixed between
+  transactions.
+
+  Fixed issues related to changes in the core networking modules that resulted
+  in transaction state loss. Also instrumented new asynchronous API methods in
+  crypto and [inspector](https://nodejs.org/dist/v8.0.0/docs/api/inspector.html).
+
 ### v1.39.1 (2017-05-11):
 * Fixed a transaction state loss introduced in Node 7.10.0 when using
   `net.createConnection`.
@@ -2382,3 +2395,5 @@
 * The agent reports error metrics.
 * The agent gathers basic slow transaction trace data.
 * The agent reports transaction trace data.
+
+[mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
