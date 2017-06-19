@@ -1,17 +1,7 @@
 'use strict'
 
-var BETA_MESSAGE =
-  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' +
-  'This is a beta version of the New Relic agent and requires a valid beta\n' +
-  'token. If you would like to participate in the beta, please contact New\n' +
-  'Relic support. If you have received a beta token, make sure you have set\n' +
-  '`beta_token` in your newrelic.js file or set the environment variable\n' +
-  'NEW_RELIC_BETA_TOKEN.\n' +
-  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-
 var logger = require('./lib/logger.js')
 var semver = require('semver')
-var crypto = require('crypto')
 
 var message
 var agent
@@ -37,9 +27,6 @@ function initialize() {
     'Loading agent from %s',
     __dirname
   )
-
-  // Always warn that we're in a beta.
-  logger.warn(BETA_MESSAGE)
 
   try {
     logger.debug(
@@ -68,11 +55,6 @@ function initialize() {
 
     if (!config || !config.agent_enabled) {
       logger.info("Module not enabled in configuration; not starting.")
-    } else if (!_checkBetaToken(config.beta_token)) {
-      // The beta token is invalid. Make sure the user knows what's going on by
-      // sending them a large verbose message.
-      logger.info('Beta token is invalid; not starting.')
-      throw new Error(BETA_MESSAGE)
     } else {
       /* Only load the rest of the module if configuration is available and the
        * configurator didn't throw.
@@ -135,20 +117,4 @@ function initialize() {
   }
 
   require.cache.__NR_cache = module.exports = new API(agent)
-}
-
-function _checkBetaToken(betaToken) {
-  var hashCheck = new Buffer([
-    143, 233, 86, 59, 122, 214, 233, 135, 2, 173,
-    214, 141, 80, 195, 57, 198, 142, 193, 154, 148,
-    55, 92, 195, 114, 169, 253, 172, 40, 13, 110,
-    220, 209, 68, 39, 163, 73, 81, 83, 156, 84,
-    94, 121, 144, 147, 101, 47, 147, 49, 73, 40,
-    92, 81, 226, 224, 237, 1, 87, 238, 44, 27,
-    87, 145, 234, 223
-  ])
-
-  var hasher = crypto.createHash('sha512')
-  hasher.update(betaToken || '')
-  return hashCheck.toString('base64') === hasher.digest().toString('base64')
 }
