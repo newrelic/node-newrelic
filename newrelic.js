@@ -15,10 +15,6 @@ exports.config = {
    * Your New Relic license key.
    */
   license_key: 'license key here',
-  /**
-   * Your New Relic Agent Beta token.
-   */
-  beta_token: 'beta token here',
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
