@@ -31,25 +31,25 @@ function install(packages, retry) {
     var packagePath = path.resolve(packageJsonPath).split('/').slice(0, -1).join('/')
     console.log('installing deps in ' + packagePath)
     exec('cd ' + packagePath + '&&rm -rf node_modules&&npm i',
-        {maxBuffer: 1024 * 500},
-        function (err, stdout, stderr) {
+      {maxBuffer: 1024 * 500},
+      function (err, stdout, stderr) {
 
-      if (err || isErrorOutput(stderr)) {
-        printError(packageJsonPath, err || stderr)
-        if (retry < retries) {
-          failed.push(packageJsonPath)
+        if (err || isErrorOutput(stderr)) {
+          printError(packageJsonPath, err || stderr)
+          if (retry < retries) {
+            failed.push(packageJsonPath)
+          }
         }
-      }
 
-      if (++counter === packages.length) {
-        if (failed.length > 0 && retry < retries) {
-          console.log('%s package(s) failed to install, retrying...', failed.length)
-          exec('npm cache clean', function() {
-            install(failed, ++retry)
-          })
+        if (++counter === packages.length) {
+          if (failed.length > 0 && retry < retries) {
+            console.log('%s package(s) failed to install, retrying...', failed.length)
+            exec('npm cache clean', function() {
+              install(failed, ++retry)
+            })
+          }
         }
-      }
-    })
+      })
   })
 }
 
@@ -62,9 +62,9 @@ function getPackages(folder, callback) {
   if (folder) {
     getCommonPackages(function(commonPackages) {
       glob('**/test/' + folder + '/**/package.json', options,
-          function getPackages(err, packages) {
-        callback(commonPackages.concat(packages))
-      })
+        function getPackages(err, packages) {
+          callback(commonPackages.concat(packages))
+        })
     })
   } else {
     glob('**/test/**/package.json', options, function getPackages(err, packages) {

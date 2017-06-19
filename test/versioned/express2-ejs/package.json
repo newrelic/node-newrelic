@@ -1,0 +1,15 @@
+{
+  "name": "express2-ejs",
+  "version": "0.0.0",
+  "description": "tests for Express 2 with EJS template rendering",
+  "main": "express2-render-ejs.tap.js",
+  "scripts": {
+    "test": "tap express2-render-ejs.tap.js"
+  },
+  "author": "Forrest L Norvell <forrest@newrelic.com>",
+  "license": "proprietary",
+  "dependencies": {
+    "express": "~2"
+  },
+  "private": true
+}
