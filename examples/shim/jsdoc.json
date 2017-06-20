@@ -10,5 +10,8 @@
   },
   "Webframework-Simple": {
     "title": "Intro to Web Framework Instrumentation"
+  },
+  "Messaging-Simple": {
+    "title": "Intro to Message Broker Instrumentation"
   }
 }
