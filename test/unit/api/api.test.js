@@ -280,7 +280,7 @@ describe("the New Relic agent API", function() {
     })
 
     it("should not throw when no handler is supplied", function() {
-      expect(api.startWebTransaction('test')).to.not.throw
+      expect(function() { api.startWebTransaction('test') }).to.not.throw()
     })
   })
 
@@ -354,9 +354,11 @@ describe("the New Relic agent API", function() {
     })
 
     it("should not throw when no handler is supplied", function() {
-      expect(api.startBackgroundTransaction('test')).to.not.throw
-      expect(api.startBackgroundTransaction('test', 'asdf')).to.not.throw
-      expect(api.startBackgroundTransaction('test', 'asdf', 'not a function')).to.not.throw
+      expect(function() { api.startBackgroundTransaction('test') }).to.not.throw()
+      expect(function() { api.startBackgroundTransaction('test', 'asdf') }).to.not.throw()
+      expect(function() {
+        api.startBackgroundTransaction('test', 'asdf', 'not a function')
+      }).to.not.throw()
     })
   })
 
@@ -656,7 +658,6 @@ describe("the New Relic agent API", function() {
           transaction.end()
         })
       })
-
     })
 
     describe("outside a transaction", function() {
@@ -984,7 +985,7 @@ describe("the New Relic agent API", function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        expect(function() { api.noticeError({}); }).not.throws()
+        expect(function() { api.noticeError({}) }).not.throws()
         transaction.end()
       })
     })

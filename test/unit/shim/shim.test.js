@@ -1146,13 +1146,13 @@ describe('Shim', function() {
       it('should not error if a nodule is `null`', function() {
         expect(function() {
           shim.unwrap(null, 'bar')
-        }).to.not.throw
+        }).to.not.throw()
       })
 
       it('should not error if a property is `null`', function() {
         expect(function() {
           shim.unwrap(wrappable, 'this does not exist')
-        }).to.not.throw
+        }).to.not.throw()
       })
     })
   })
