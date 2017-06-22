@@ -8,6 +8,7 @@ var recordWeb = require('./lib/metrics/recorders/http.js')
 var recordBackground = require('./lib/metrics/recorders/other.js')
 var customRecorder = require('./lib/metrics/recorders/custom')
 var hashes = require('./lib/util/hashes')
+var properties = require('./lib/util/properties')
 var stringify = require('json-stringify-safe')
 var shimmer = require('./lib/shimmer.js')
 var Shim = require('./lib/shim/shim.js')
@@ -286,7 +287,7 @@ API.prototype.addCustomParameters = function addCustomParameters(params) {
   metric.incrementCallCount()
 
   for (var key in params) {
-    if (!params.hasOwnProperty(key)) {
+    if (!properties.hasOwn(params, key)) {
       continue
     }
 
