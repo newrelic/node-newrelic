@@ -94,10 +94,10 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should not cause any errors if called outside of a transaction', function () {
+    it.only('should not cause any errors if called outside of a transaction', function () {
       expect(function () {
         api.createTracer('custom:segment', function nop() {})
-      }).to.not.throw
+      }).to.not.throw()
     })
 
     it('should return the function unwrapped if it is called outside of a transaction', function () {
@@ -573,6 +573,6 @@ describe('The custom instrumentation API', function () {
     expect(tx).to.not.exist()
     expect(function () {
       api.endTransaction()
-    }).to.not.throw
+    }).to.not.throw()
   })
 });
