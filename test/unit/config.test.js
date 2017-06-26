@@ -355,6 +355,13 @@ describe("the agent configuration", function () {
         expect(tc.logging.enabled).equal(false)
       })
     })
+
+    it('should pick up message tracer segment reporting', function () {
+      idempotentEnv('NEW_RELIC_MESSAGE_TRACER_SEGMENT_PARAMETERS_ENABLED', false, function (tc) {
+        should.exist(tc.message_tracer.segment_parameters.enabled)
+        expect(tc.message_tracer.segment_parameters.enabled).equal(false)
+      })
+    })
   })
 
   describe("with default properties", function () {
@@ -512,6 +519,10 @@ describe("the agent configuration", function () {
 
     it("should enable cross application tracer", function() {
       expect(configuration.cross_application_tracer.enabled).equal(true)
+    })
+
+    it("should enable message tracer segment parameters", function() {
+      expect(configuration.message_tracer.segment_parameters.enabled).equal(true)
     })
   })
 

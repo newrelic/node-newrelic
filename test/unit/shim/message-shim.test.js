@@ -146,7 +146,7 @@ describe('MessageShim', function() {
     })
 
     describe('wrapper', function() {
-      it('should create a produce segment and metric', function() {
+      it('should create a produce segment', function() {
         shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
           return {destinationName: 'foobar'}
         })
@@ -159,6 +159,37 @@ describe('MessageShim', function() {
           expect(segment.name)
             .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should add parameters to segment', function() {
+        shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
+          return {extras: {
+            a: 'a',
+            b: 'b'
+          }}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var segment = wrappable.getActiveSegment()
+          expect(segment.parameters).to.have.property('a', 'a')
+          expect(segment.parameters).to.have.property('b', 'b')
+        })
+      })
+
+      it('should not add parameters when disabled', function() {
+        agent.config.message_tracer.segment_parameters.enabled = false
+        shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
+          return {extras: {
+            a: 'a',
+            b: 'b'
+          }}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var segment = wrappable.getActiveSegment()
+          expect(segment.parameters).to.not.have.property('a')
+          expect(segment.parameters).to.not.have.property('b')
         })
       })
 
@@ -355,7 +386,7 @@ describe('MessageShim', function() {
           })
         })
 
-        it('should create a consume segment and metric', function() {
+        it('should create a consume segment', function() {
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
             return {destinationName: 'foobar'}
           })
@@ -368,6 +399,37 @@ describe('MessageShim', function() {
             expect(segment.name)
               .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
             expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+
+        it('should add parameters to segment', function() {
+          shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
+            return {extras: {
+              a: 'a',
+              b: 'b'
+            }}
+          })
+
+          helper.runInTransaction(agent, function() {
+            var segment = wrappable.getActiveSegment()
+            expect(segment.parameters).to.have.property('a', 'a')
+            expect(segment.parameters).to.have.property('b', 'b')
+          })
+        })
+
+        it('should not add parameters when disabled', function() {
+          agent.config.message_tracer.segment_parameters.enabled = false
+          shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
+            return {extras: {
+              a: 'a',
+              b: 'b'
+            }}
+          })
+
+          helper.runInTransaction(agent, function() {
+            var segment = wrappable.getActiveSegment()
+            expect(segment.parameters).to.not.have.property('a')
+            expect(segment.parameters).to.not.have.property('b')
           })
         })
 
@@ -472,6 +534,43 @@ describe('MessageShim', function() {
           expect(tx.referringPathHash).to.exist()
         })
 
+        it('should add parameters to segment', function(done) {
+          var wrapped = shim.recordMessageConsumer(function() {}, function() {
+            return {extras: {
+              a: 'a',
+              b: 'b'
+            }}
+          })
+
+          wrapped()
+
+          agent.on('transactionFinished', function(tx) {
+            var segment = tx.trace.root.children[0]
+            expect(segment.parameters).to.have.property('a', 'a')
+            expect(segment.parameters).to.have.property('b', 'b')
+            done()
+          })
+        })
+
+        it('should not add parameters when disabled', function(done) {
+          agent.config.message_tracer.segment_parameters.enabled = false
+          var wrapped = shim.recordMessageConsumer(function() {}, function() {
+            return {extras: {
+              a: 'a',
+              b: 'b'
+            }}
+          })
+
+          wrapped()
+
+          agent.on('transactionFinished', function(tx) {
+            var segment = tx.trace.root.children[0]
+            expect(segment.parameters).to.not.have.property('a')
+            expect(segment.parameters).to.not.have.property('b')
+            done()
+          })
+        })
+
         describe('the created transaction', function() {
           it('should be named for a message consumption', function(done) {
             shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
@@ -516,20 +615,6 @@ describe('MessageShim', function() {
                 expect(root.parameters).to.not.have.property('message')
                 done()
               })
-            })
-          })
-
-          it('should have a message.routingKey attribute', function(done) {
-            shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-              return {destinationName: 'my.queue', routingKey: 'routing.key'}
-            })
-
-            var segment = wrappable.getActiveSegment()
-            var tx = segment.transaction
-            setImmediate(function() {
-              expect(tx.trace.parameters)
-                .to.have.property('message.routingKey', 'routing.key')
-              done()
             })
           })
 
@@ -614,6 +699,25 @@ describe('MessageShim', function() {
                 done()
               })
             })
+          })
+        })
+
+        it('should create message broker metrics', function(done) {
+          var wrapped = shim.recordMessageConsumer(function() {
+          }, function() {
+            return {destinationName: 'foobar'}
+          })
+
+          wrapped()
+
+          agent.on('transactionFinished', function() {
+            var metrics = agent.metrics
+            expect(metrics.unscoped).to.have.property(
+              'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar'
+            )
+            expect(metrics.scoped).property('OtherTransaction/Message/RabbitMQ/Exchange/Named/foobar')
+              .to.have.property('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+            done()
           })
         })
       })
