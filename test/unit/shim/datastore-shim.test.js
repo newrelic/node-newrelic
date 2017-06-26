@@ -354,18 +354,18 @@ describe('DatastoreShim', function() {
         })
       })
 
-      describe('with `extras`', function() {
+      describe('with `parameters`', function() {
         var localhost = null
         beforeEach(function() {
           localhost = getMetricHostName(agent, 'localhost')
           shim.recordOperation(wrappable, 'getActiveSegment', function(s, fn, n, args) {
-            return {extras: args[0]}
+            return {parameters: args[0]}
           })
         })
 
-        function run(extras, cb) {
+        function run(parameters, cb) {
           helper.runInTransaction(agent, function() {
-            var segment = wrappable.getActiveSegment(extras)
+            var segment = wrappable.getActiveSegment(parameters)
             cb(segment)
           })
         }
@@ -429,7 +429,7 @@ describe('DatastoreShim', function() {
         shim.recordOperation(wrappable, 'getActiveSegment', function() {
           return {
             name: 'op',
-            extras: {
+            parameters: {
               host: 'some_host',
               port_path_or_id: 1234,
               database_name: 'foobar'

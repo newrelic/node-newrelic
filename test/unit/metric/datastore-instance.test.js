@@ -48,7 +48,7 @@ describe('Datastore instance metrics collected via the datastore shim', function
           port = test.unix_socket || test.database_path || test.port
         }
         return {
-          extras: {
+          parameters: {
             host: dbHost,
             port_path_or_id: port
           }

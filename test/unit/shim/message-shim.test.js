@@ -164,7 +164,7 @@ describe('MessageShim', function() {
 
       it('should add parameters to segment', function() {
         shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
-          return {extras: {
+          return {parameters: {
             a: 'a',
             b: 'b'
           }}
@@ -180,7 +180,7 @@ describe('MessageShim', function() {
       it('should not add parameters when disabled', function() {
         agent.config.message_tracer.segment_parameters.enabled = false
         shim.recordMessagePublisher(wrappable, 'getActiveSegment', function() {
-          return {extras: {
+          return {parameters: {
             a: 'a',
             b: 'b'
           }}
@@ -404,7 +404,7 @@ describe('MessageShim', function() {
 
         it('should add parameters to segment', function() {
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-            return {extras: {
+            return {parameters: {
               a: 'a',
               b: 'b'
             }}
@@ -420,7 +420,7 @@ describe('MessageShim', function() {
         it('should not add parameters when disabled', function() {
           agent.config.message_tracer.segment_parameters.enabled = false
           shim.recordMessageConsumer(wrappable, 'getActiveSegment', function() {
-            return {extras: {
+            return {parameters: {
               a: 'a',
               b: 'b'
             }}
@@ -536,7 +536,7 @@ describe('MessageShim', function() {
 
         it('should add parameters to segment', function(done) {
           var wrapped = shim.recordMessageConsumer(function() {}, function() {
-            return {extras: {
+            return {parameters: {
               a: 'a',
               b: 'b'
             }}
@@ -555,7 +555,7 @@ describe('MessageShim', function() {
         it('should not add parameters when disabled', function(done) {
           agent.config.message_tracer.segment_parameters.enabled = false
           var wrapped = shim.recordMessageConsumer(function() {}, function() {
-            return {extras: {
+            return {parameters: {
               a: 'a',
               b: 'b'
             }}
