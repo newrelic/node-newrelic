@@ -94,7 +94,7 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it.only('should not cause any errors if called outside of a transaction', function () {
+    it('should not cause any errors if called outside of a transaction', function () {
       expect(function () {
         api.createTracer('custom:segment', function nop() {})
       }).to.not.throw()
