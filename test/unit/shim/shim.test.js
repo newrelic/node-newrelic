@@ -1439,12 +1439,12 @@ describe('Shim', function() {
       })
     })
 
-    describe('when an `extras` object is provided', function() {
+    describe('when an `parameters` object is provided', function() {
       var segment = null
-      var extras = null
+      var parameters = null
 
       beforeEach(function() {
-        extras = {
+        parameters = {
           host: 'my awesome host',
           port_path_or_id: 1234,
           database_name: 'my_db',
@@ -1465,7 +1465,7 @@ describe('Shim', function() {
         beforeEach(function() {
           agent.config.capture_params = true
           helper.runInTransaction(agent, function() {
-            segment = shim.createSegment({name: 'child', extras: extras})
+            segment = shim.createSegment({name: 'child', parameters: parameters})
           })
         })
 
@@ -1492,7 +1492,7 @@ describe('Shim', function() {
         beforeEach(function() {
           agent.config.capture_params = false
           helper.runInTransaction(agent, function() {
-            segment = shim.createSegment({name: 'child', extras: extras})
+            segment = shim.createSegment({name: 'child', parameters: parameters})
           })
         })
 
