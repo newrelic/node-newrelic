@@ -27,7 +27,7 @@
     "q": "*",
     "redis": "^1",
     "request": "*",
-    "restify": "*",
+    "restify": "4.x",
     "sequelize": "*",
     "should": "*",
     "sinon": "*",
