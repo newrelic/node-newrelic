@@ -18,8 +18,8 @@ function makeSegment(options) {
   return segment
 }
 
-function makeRecorder(model, operation) {
-  var statement = new ParsedStatement('MySQL', operation, model)
+function makeRecorder(collection, operation) {
+  var statement = new ParsedStatement('MySQL', operation, collection)
   return statement.recordMetrics.bind(statement)
 }
 

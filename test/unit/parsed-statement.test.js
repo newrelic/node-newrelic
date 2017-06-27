@@ -25,7 +25,7 @@ describe('recording database metrics', function() {
   })
 
   describe('on scoped transactions with parsed statements', function() {
-    describe('with model', function() {
+    describe('with collection', function() {
       before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
         var transaction = new Transaction(agent)
@@ -76,7 +76,7 @@ describe('recording database metrics', function() {
       })
     })
 
-    describe('without model', function() {
+    describe('without collection', function() {
       before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select')
         var transaction = new Transaction(agent)
@@ -125,7 +125,7 @@ describe('recording database metrics', function() {
   })
 
   describe('on unscoped transactions with parsed statements', function() {
-    describe('with model', function() {
+    describe('with collection', function() {
       before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
         var transaction = new Transaction(agent)
@@ -172,7 +172,7 @@ describe('recording database metrics', function() {
       })
     })
 
-    describe('without model', function() {
+    describe('without collection', function() {
       before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select')
         var transaction = new Transaction(agent)
@@ -218,7 +218,7 @@ describe('recording database metrics', function() {
 })
 
 describe('recording slow queries', function() {
-  describe('with model', function() {
+  describe('with collection', function() {
     var transaction
     var segment
     var agent
@@ -289,7 +289,7 @@ describe('recording slow queries', function() {
     })
   })
 
-  describe('without model', function() {
+  describe('without collection', function() {
     var transaction
     var segment
     var agent

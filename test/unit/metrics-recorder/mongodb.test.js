@@ -17,8 +17,8 @@ function makeSegment(options) {
   return segment
 }
 
-function makeRecorder(model, operation) {
-  var statement = new ParsedStatement('MongoDB', operation, model)
+function makeRecorder(collection, operation) {
+  var statement = new ParsedStatement('MongoDB', operation, collection)
   return statement.recordMetrics.bind(statement)
 }
 

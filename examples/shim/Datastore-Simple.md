@@ -190,7 +190,8 @@ is all we need to do to record queries.
 In the transaction breakdown graph above, the recorded query is the purple layer
 labeled `Cassandra test.testFamily select`. Because our instrumentation provided
 the query to the shim we can see some basic information about it, in this case
-the model queried (`test.testFamily`) as well as the query operation (`select`).
+the collection queried (`test.testFamily`) as well as the query operation
+(`select`).
 
 
 ### Recording Batch Queries
