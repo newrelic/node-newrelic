@@ -77,7 +77,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     var exchange = amqpUtils.FANOUT_EXCHANGE
 
     agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyPublish(t, tx, exchange)
+      amqpUtils.verifyProduce(t, tx, exchange)
       t.end()
     })
 
@@ -107,7 +107,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
 
     agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyPublish(t, tx, exchange, 'key1')
+      amqpUtils.verifyProduce(t, tx, exchange, 'key1')
       t.end()
     })
 

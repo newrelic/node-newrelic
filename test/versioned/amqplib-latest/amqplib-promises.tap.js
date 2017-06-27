@@ -73,7 +73,7 @@ tap.test('amqplib promise instrumentation', function(t) {
 
   t.test('publish to fanout exchange', function(t) {
     agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyPublish(t, tx, amqpUtils.FANOUT_EXCHANGE)
+      amqpUtils.verifyProduce(t, tx, amqpUtils.FANOUT_EXCHANGE)
       t.end()
     })
 
@@ -99,7 +99,7 @@ tap.test('amqplib promise instrumentation', function(t) {
 
   t.test('publish to direct exchange', function(t) {
     agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyPublish(t, tx, amqpUtils.DIRECT_EXCHANGE, 'key1')
+      amqpUtils.verifyProduce(t, tx, amqpUtils.DIRECT_EXCHANGE, 'key1')
       t.end()
     })
 
