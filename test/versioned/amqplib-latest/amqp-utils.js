@@ -11,7 +11,7 @@ exports.FANOUT_EXCHANGE = 'test-fanout-exchange'
 
 exports.verifyConsume = verifyConsume
 exports.verifyConsumeTransaction = verifyConsumeTransaction
-exports.verifyPublish = verifyPublish
+exports.verifyProduce = verifyProduce
 exports.verifyPurge = verifyPurge
 exports.verifySendToQueue = verifySendToQueue
 exports.verifyTransaction = verifyTransaction
@@ -128,7 +128,7 @@ function verifySendToQueue(t, tx) {
   )
 }
 
-function verifyPublish(t, tx, exchangeName, routingKey) {
+function verifyProduce(t, tx, exchangeName, routingKey) {
   var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {

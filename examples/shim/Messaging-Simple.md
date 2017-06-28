@@ -98,10 +98,10 @@ The first thing the instrumentation should specify is the name of the message br
 
 An application can publish a message to the broker. When this happens as part of a transaction, the agent can record this call to the broker as a separate segment in the transaction trace.
 
-``` js
+```js
 var Client = myMessageBrokerModule.Client
 
-shim.recordMessagePublisher(Client.prototype, 'publish', function(shim, fn, name, args) {
+shim.recordProducer(Client.prototype, 'publish', function(shim, fn, name, args) {
   // get queue name from args
   var queuName = args[0]
   return {
@@ -132,7 +132,7 @@ Let's assume that the client has a method `getMessage`. When the client calls th
 ``` js
 var Client = myMessageBrokerModule.Client
 
-shim.recordMessageConsumer(Client.prototype, 'getMessage', function(shim, fn, name, args) {
+shim.recordConsumer(Client.prototype, 'getMessage', function(shim, fn, name, args) {
   // ... get details from args
   return {
     destinationName: name,
@@ -156,11 +156,11 @@ For listening to messages sent by the broker, let's assume that the client has a
 ``` js
 var Client = myMessageBrokerModule.Client
 
-shim.recordSubscribeMessageConsumer(Client.prototype, 'subscribe', {
+shim.recordSubcribeConsumer(Client.prototype, 'subscribe', {
   queue: shim.FIRST,
   consumer: shim.LAST,
   wrapper: function(shim, consumer, name, queue) {
-    return shim.recordMessageConsumer(consumer, function(shim, fn, name, args) {
+    return shim.recordConsumer(consumer, function(shim, fn, name, args) {
       // ... get details from args
       return {
         destinationName: name,
@@ -171,7 +171,7 @@ shim.recordSubscribeMessageConsumer(Client.prototype, 'subscribe', {
 })
 ```
 
-There are two parts to this. First, we instrument the method for subscribing to a queue by calling [`recordSubscribeMessageConsumer`]{@link MessageShim#recordSubscribeMessageConsumer}. Here we tell the instrumentation which argument is the name of the queue, and which is the message handler function (referred to as `consumer`). The `wrapper` parameter is a function used to wrap the consumer function. Here we simply use the [`recordMessageConsumer`]{@link MessageShim#recordMessageConsumer} API method, which will work the same as in the case pulling messages on demand.
+There are two parts to this. First, we instrument the method for subscribing to a queue by calling [`recordSubcribeConsumer`]{@link MessageShim#recordSubcribeConsumer}. Here we tell the instrumentation which argument is the name of the queue, and which is the message handler function (referred to as `consumer`). The `wrapper` parameter is a function used to wrap the consumer function. Here we simply use the [`recordConsumer`]{@link MessageShim#recordConsumer} API method, which will work the same as in the case pulling messages on demand.
 
 ### Questions?
 

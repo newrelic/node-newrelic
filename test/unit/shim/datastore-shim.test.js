@@ -157,7 +157,7 @@ describe('DatastoreShim', function() {
       var query = 'SELECT 1 FROM test'
       var parsed = shim.parseQuery(query)
       expect(parsed.operation).to.equal('select')
-      expect(parsed.model).to.equal('test')
+      expect(parsed.collection).to.equal('test')
       expect(parsed.raw).to.equal(query)
     })
 
@@ -179,7 +179,7 @@ describe('DatastoreShim', function() {
       var query = 'SELECT 1 FROM test'
       var parsed = shim.parseQuery(query)
       expect(parsed.operation).to.equal('select')
-      expect(parsed.model).to.equal('test')
+      expect(parsed.collection).to.equal('test')
       expect(parsed.raw).to.equal(query)
     })
 
