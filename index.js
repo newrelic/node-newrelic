@@ -87,6 +87,12 @@ function initialize() {
 
       agent.start(function cb_start(error) {
         if (!error) {
+          // TODO: After deprecating Node 0.10 and 0.12, simplify this regex.
+          var nodeMajor = /^v?((?:0\.)?\d+)/.exec(process.version)
+          agent.metrics.getOrCreateMetric(
+            'Supportability/Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
+          )
+
           return logger.debug("New Relic for Node.js is connected to New Relic.")
         }
 
