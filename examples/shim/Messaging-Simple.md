@@ -156,7 +156,7 @@ For listening to messages sent by the broker, let's assume that the client has a
 ``` js
 var Client = myMessageBrokerModule.Client
 
-shim.recordSubcribeConsumer(Client.prototype, 'subscribe', {
+shim.recordSubscribedConsume(Client.prototype, 'subscribe', {
   queue: shim.FIRST,
   consumer: shim.LAST,
   wrapper: function(shim, consumer, name, queue) {
@@ -171,7 +171,7 @@ shim.recordSubcribeConsumer(Client.prototype, 'subscribe', {
 })
 ```
 
-There are two parts to this. First, we instrument the method for subscribing to a queue by calling [`recordSubcribeConsumer`]{@link MessageShim#recordSubcribeConsumer}. Here we tell the instrumentation which argument is the name of the queue, and which is the message handler function (referred to as `consumer`). The `wrapper` parameter is a function used to wrap the consumer function. Here we simply use the [`recordConsume`]{@link MessageShim#recordConsume} API method, which will work the same as in the case pulling messages on demand.
+There are two parts to this. First, we instrument the method for subscribing to a queue by calling [`recordSubscribedConsume`]{@link MessageShim#recordSubscribedConsume}. Here we tell the instrumentation which argument is the name of the queue, and which is the message handler function (referred to as `consumer`). The `wrapper` parameter is a function used to wrap the consumer function. Here we simply use the [`recordConsume`]{@link MessageShim#recordConsume} API method, which will work the same as in the case pulling messages on demand.
 
 ### Questions?
 
