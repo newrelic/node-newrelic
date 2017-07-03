@@ -226,10 +226,62 @@ describe("the agent configuration", function () {
     })
 
     it("should pick up which status codes are ignored", function () {
-      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-                    '401,404,502', function (tc) {
-        should.exist(tc.error_collector.ignore_status_codes)
-        expect(tc.error_collector.ignore_status_codes).eql([401, 404, 502])
+      idempotentEnv(
+        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+        '401,404,502',
+        function (tc) {
+          should.exist(tc.error_collector.ignore_status_codes)
+          expect(tc.error_collector.ignore_status_codes).eql([401, 404, 502])
+      })
+    })
+
+    it("should pick up which status codes are ignored when using a range", function () {
+      idempotentEnv(
+        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+        '401, 420-421, 502',
+        function (tc) {
+          should.exist(tc.error_collector.ignore_status_codes)
+          expect(tc.error_collector.ignore_status_codes).eql([401, 420, 421, 502])
+      })
+    })
+
+    it("should not add codes given with invalid range", function () {
+      idempotentEnv(
+        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+        '421-420',
+        function (tc) {
+          should.exist(tc.error_collector.ignore_status_codes)
+          expect(tc.error_collector.ignore_status_codes).eql([])
+      })
+    })
+
+    it("should not add codes if given out of range", function () {
+      idempotentEnv(
+        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+        '1 - 1776',
+        function (tc) {
+          should.exist(tc.error_collector.ignore_status_codes)
+          expect(tc.error_collector.ignore_status_codes).eql([])
+      })
+    })
+
+    it("should allow negative status codes ", function () {
+      idempotentEnv(
+        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+        '-7',
+        function (tc) {
+          should.exist(tc.error_collector.ignore_status_codes)
+          expect(tc.error_collector.ignore_status_codes).eql([-7])
+      })
+    })
+
+    it("should not add codes that parse to NaN ", function () {
+      idempotentEnv(
+        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
+        'abc',
+        function (tc) {
+          should.exist(tc.error_collector.ignore_status_codes)
+          expect(tc.error_collector.ignore_status_codes).eql([])
       })
     })
 
@@ -752,6 +804,41 @@ describe("the agent configuration", function () {
           'error_collector.ignore_status_codes': ['401', '409', '415']
         }})
         expect(config.error_collector.ignore_status_codes).eql([404, 401, 409, 415])
+      })
+
+      it("should ignore status codes set on the server when using a range", function () {
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': [401, '420-421', 415, 'abc']
+        }})
+        expect(config.error_collector.ignore_status_codes).eql([404, 401, 420, 421, 415])
+      })
+
+      it("should not add codes that parse to NaN", function () {
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': ['abc']
+        }})
+        expect(config.error_collector.ignore_status_codes).eql([404])
+      })
+
+      it("should not ignore status codes set on the server with invalid range", function () {
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': ['421-420']
+        }})
+        expect(config.error_collector.ignore_status_codes).eql([404])
+      })
+
+      it("should not ignore status codes set on the server if given out of range", function () {
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': ['1-1776']
+        }})
+        expect(config.error_collector.ignore_status_codes).eql([404])
+      })
+
+      it("should ignore status codes set on the server with negative status codes ", function () {
+        config.onConnect({'agent_config': {
+          'error_collector.ignore_status_codes': [-7]
+        }})
+        expect(config.error_collector.ignore_status_codes).eql([404, -7])
       })
     })
 
