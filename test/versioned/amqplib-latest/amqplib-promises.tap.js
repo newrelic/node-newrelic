@@ -184,11 +184,12 @@ tap.test('amqplib promise instrumentation', function(t) {
           channel.ack(msg)
           tx.end(function() {
             amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-            consumeTxnHandle.end(function () {
+            consumeTxnHandle.end(function() {
               amqpUtils.verifyConsumeTransaction(
                 t,
                 consumeTxn,
                 exchange,
+                queue,
                 'consume-tx-key'
               )
               amqpUtils.verifyCAT(t, tx, consumeTxn)
@@ -218,6 +219,7 @@ tap.test('amqplib promise instrumentation', function(t) {
       amqpUtils.verifyConsumeTransaction(
         t, tx,
         amqpUtils.DIRECT_EXCHANGE,
+        queue,
         'consume-tx-key'
       )
       t.end()

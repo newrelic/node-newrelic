@@ -83,7 +83,7 @@ function verifyCAT(t, produceTransaction, consumeTransaction) {
   )
 }
 
-function verifyConsumeTransaction(t, tx, exchange, routingKey) {
+function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
   t.doesNotThrow(function() {
     metrics.assertMetrics(tx.metrics, [
       [{name: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange}],
@@ -109,7 +109,11 @@ function verifyConsumeTransaction(t, tx, exchange, routingKey) {
 
   t.equal(
     tx.trace.parameters['message.routingKey'], routingKey,
-    'should have message params'
+    'should have routing key transaction parameter'
+  )
+  t.equal(
+    tx.trace.parameters['message.queueName'], queue,
+    'should have queue name transaction parameter'
   )
 }
 

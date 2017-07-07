@@ -142,6 +142,22 @@ describe("the New Relic agent API", function() {
         handle.end()
       })
     })
+
+    it("should call a callback when handle end is called", function(done) {
+      helper.runInTransaction(agent, function(txn) {
+        var handle = api.getTransaction()
+        handle.end(function() {
+          done()
+        })
+      })
+    })
+
+    it("does not blow up when end is called without a callback", function() {
+      helper.runInTransaction(agent, function(txn) {
+        var handle = api.getTransaction()
+        handle.end()
+      })
+    })
   })
 
 

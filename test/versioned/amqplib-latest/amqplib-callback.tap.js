@@ -201,11 +201,12 @@ tap.test('amqplib callback instrumentation', function(t) {
               channel.ack(msg)
               tx.end(function() {
                 amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-                consumeTxnHandle.end(function () {
+                consumeTxnHandle.end(function() {
                   amqpUtils.verifyConsumeTransaction(
                     t,
                     consumeTxn,
                     exchange,
+                    queue,
                     'consume-tx-key'
                   )
                   amqpUtils.verifyCAT(t, tx, consumeTxn)
@@ -233,7 +234,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     var queue = null
 
     agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyConsumeTransaction(t, tx, exchange, 'consume-tx-key')
+      amqpUtils.verifyConsumeTransaction(t, tx, exchange, queue, 'consume-tx-key')
       t.end()
     })
 

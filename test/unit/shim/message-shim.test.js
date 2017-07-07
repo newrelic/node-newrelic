@@ -611,9 +611,9 @@ describe('MessageShim', function() {
     })
   })
 
-  describe('#recordSubcribedConsume', function() {
+  describe('#recordSubscribedConsume', function() {
     it('should not wrap non-function objects', function() {
-      var wrapped = shim.recordSubcribedConsume(wrappable, {
+      var wrapped = shim.recordSubscribedConsume(wrappable, {
         consumer: shim.FIRST,
         messageHandler: function() {}
       })
@@ -623,7 +623,7 @@ describe('MessageShim', function() {
 
     describe('with no properties', function() {
       it('should wrap the first parameter if no properties are given', function() {
-        var wrapped = shim.recordSubcribedConsume(wrappable.bar, {
+        var wrapped = shim.recordSubscribedConsume(wrappable.bar, {
           consumer: shim.FIRST,
           messageHandler: function() {},
           wrapper: function() {}
@@ -634,7 +634,7 @@ describe('MessageShim', function() {
       })
 
       it('should wrap the first parameter if `null` is given for properties', function() {
-        var wrapped = shim.recordSubcribedConsume(wrappable.bar, null,{
+        var wrapped = shim.recordSubscribedConsume(wrappable.bar, null,{
           consumer: shim.FIRST,
           messageHandler: function() {},
           wrapper: function() {}
@@ -648,7 +648,7 @@ describe('MessageShim', function() {
     describe('with properties', function() {
       it('should replace wrapped properties on the original object', function() {
         var original = wrappable.bar
-        shim.recordSubcribedConsume(wrappable, 'bar', {
+        shim.recordSubscribedConsume(wrappable, 'bar', {
           consumer: shim.FIRST,
           messageHandler: function() {},
           wrapper: function() {}
@@ -659,7 +659,7 @@ describe('MessageShim', function() {
       })
 
       it('should not mark unwrapped properties as wrapped', function() {
-        shim.recordSubcribedConsume(wrappable, 'name', {
+        shim.recordSubscribedConsume(wrappable, 'name', {
           consumer: shim.FIRST,
           messageHandler: function() {},
           wrapper: function() {}
@@ -678,7 +678,7 @@ describe('MessageShim', function() {
 
       beforeEach(function() {
         message = {}
-        subscriber = function consumeSubscriber(consumer, cb) {
+        subscriber = function consumeSubscriber(queue, consumer, cb) {
           subscriberCalled = true
           if (cb) {
             setImmediate(cb)
@@ -689,9 +689,10 @@ describe('MessageShim', function() {
           return shim.getSegment()
         }
 
-        wrapped = shim.recordSubcribedConsume(subscriber, {
+        wrapped = shim.recordSubscribedConsume(subscriber, {
           name: 'Channel#subscribe',
-          consumer: shim.FIRST,
+          queue: shim.FIRST,
+          consumer: shim.SECOND,
           callback: shim.LAST,
           messageHandler: function(shim) {
             handlerCalled = true
@@ -720,7 +721,7 @@ describe('MessageShim', function() {
       })
 
       it('should start a new transaction in the consumer', function(done) {
-        var parent = wrapped(function consumer() {
+        var parent = wrapped('my.queue', function consumer() {
           var segment = shim.getSegment()
           expect(segment)
             .to.exist()
@@ -735,7 +736,7 @@ describe('MessageShim', function() {
       })
 
       it('should call spec.messageHandler before consumer is invoked', function(done) {
-        wrapped(function consumer() {
+        wrapped('my.queue', function consumer() {
           expect(handlerCalled).to.be.true()
           done()
         })
@@ -743,9 +744,10 @@ describe('MessageShim', function() {
       })
 
       it('should add agent attributes (e.g. routing key)', function(done) {
-        wrapped(function consumer() {
+        wrapped('my.queue', function consumer() {
           var traceParams = shim.getSegment().transaction.trace.parameters
           expect(traceParams).to.have.property('message.routingKey', 'routing.key')
+          expect(traceParams).to.have.property('message.queueName', 'my.queue')
           done()
         })
       })
@@ -759,7 +761,7 @@ describe('MessageShim', function() {
           'OtherTransactionTotalTime'
         ]
 
-        wrapped(function consumer() {
+        wrapped('my.queue', function consumer() {
           setTimeout(function() {
             var metrics = agent.metrics
             metricNames.forEach(function(name) {
@@ -796,7 +798,7 @@ describe('MessageShim', function() {
           }
         }
 
-        wrapped(function consumer() {
+        wrapped('my.queue', function consumer() {
           var tx = shim.getSegment().transaction
 
           expect(tx).to.have.property('incomingCatId', '9876#id')
@@ -810,7 +812,7 @@ describe('MessageShim', function() {
       })
 
       it('should invoke the consumer with the correct arguments', function(done) {
-        wrapped(function consumer(msg) {
+        wrapped('my.queue', function consumer(msg) {
           expect(msg).to.equal(message)
           done()
         })
@@ -820,7 +822,7 @@ describe('MessageShim', function() {
         it('should create a subscribe segment', function() {
           helper.runInTransaction(agent, function() {
             expect(subscriberCalled).to.be.false()
-            var segment = wrapped()
+            var segment = wrapped('my.queue')
             expect(subscriberCalled).to.be.true()
             expect(segment).to.have.property('name', 'Channel#subscribe')
           })
@@ -828,7 +830,7 @@ describe('MessageShim', function() {
 
         it('should bind the subscribe callback', function(done) {
           helper.runInTransaction(agent, function() {
-            var parent = wrapped(null, function subCb() {
+            var parent = wrapped('my.queue', null, function subCb() {
               var segment = shim.getSegment()
               expect(segment).to.have.property('name', 'Callback: subCb')
               expect(parent).property('children')
@@ -841,7 +843,7 @@ describe('MessageShim', function() {
 
         it('should still start a new transaction in the consumer', function(done) {
           helper.runInTransaction(agent, function() {
-            var parent = wrapped(function consumer() {
+            var parent = wrapped('my.queue', function consumer() {
               var segment = shim.getSegment()
               expect(segment).property('name')
                 .to.not.equal('Callback: consumer')
