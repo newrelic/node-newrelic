@@ -28,8 +28,17 @@ tap.test('amqplib promise instrumentation', function(t) {
   var api = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent()
-    agent.config.capture_params = true
+    agent = helper.instrumentMockedAgent(null, {
+      capture_params: true,
+    })
+
+    var params = {
+      encoding_key: 'this is an encoding key',
+      cross_process_id: '1234#4321'
+    }
+    agent.config._fromServer(params, 'encoding_key')
+    agent.config._fromServer(params, 'cross_process_id')
+    agent.config.trusted_account_ids = [1234]
 
     api = new API(agent)
 
@@ -153,34 +162,45 @@ tap.test('amqplib promise instrumentation', function(t) {
 
   t.test('consume in a transaction', function(t) {
     var queue = null
+    var consumeTxn = null
+    var exchange = amqpUtils.DIRECT_EXCHANGE
 
-    agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyConsume(t, tx, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
-      t.end()
-    })
-
-    channel.assertExchange(amqpUtils.DIRECT_EXCHANGE, 'direct').then(function() {
+    channel.assertExchange(exchange, 'direct').then(function() {
       return channel.assertQueue('', {exclusive: true})
     }).then(function(res) {
       queue = res.queue
-      return channel.bindQueue(queue, amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key')
+      return channel.bindQueue(queue, exchange, 'consume-tx-key')
     }).then(function() {
       return helper.runInTransaction(agent, function(tx) {
         return channel.consume(queue, function(msg) {
-          amqpUtils.verifyTransaction(t, tx, 'message consumer')
+          var consumeTxnHandle = api.getTransaction()
+          consumeTxn = consumeTxnHandle._transaction
+          t.notEqual(consumeTxn, tx, 'should not be in original transaction')
           t.ok(msg, 'should receive a message')
 
           var body = msg.content.toString('utf8')
           t.equal(body, 'hello', 'should receive expected body')
 
           channel.ack(msg)
-          setImmediate(function() { tx.end() })
+          tx.end(function() {
+            amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+            consumeTxnHandle.end(function () {
+              amqpUtils.verifyConsumeTransaction(
+                t,
+                consumeTxn,
+                exchange,
+                'consume-tx-key'
+              )
+              amqpUtils.verifyCAT(t, tx, consumeTxn)
+              t.end()
+            })
+          })
         }).then(function() {
           amqpUtils.verifyTransaction(t, tx, 'consume')
         })
       }).then(function() {
         channel.publish(
-          amqpUtils.DIRECT_EXCHANGE,
+          exchange,
           'consume-tx-key',
           new Buffer('hello')
         )
