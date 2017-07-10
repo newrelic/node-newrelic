@@ -386,7 +386,7 @@ describe('MessageShim', function() {
         var wrapped = shim.recordConsume(wrapMe, {
           destinationName: shim.FIRST,
           callback: shim.LAST,
-          resultHandler: function() {
+          messageHandler: function() {
             return {parameters: {a: 'a', b: 'b'}}
           }
         })
@@ -408,7 +408,7 @@ describe('MessageShim', function() {
         var wrapped = shim.recordConsume(wrapMe, {
           destinationName: shim.FIRST,
           callback: shim.LAST,
-          resultHandler: function() {
+          messageHandler: function() {
             return {parameters: {a: 'a', b: 'b'}}
           }
         })
