@@ -1,5 +1,6 @@
 'use strict'
 
+var API = require('../../../api')
 var chai = require('chai')
 var expect = chai.expect
 var hashes = require('../../../lib/util/hashes')
@@ -164,14 +165,15 @@ describe('MessageShim', function() {
 
       it('should add parameters to segment', function() {
         shim.recordProduce(wrappable, 'getActiveSegment', function() {
-          return {parameters: {
-            a: 'a',
-            b: 'b'
-          }}
+          return {
+            routingKey: 'foo.bar',
+            parameters: {a: 'a', b: 'b'}
+          }
         })
 
         helper.runInTransaction(agent, function() {
           var segment = wrappable.getActiveSegment()
+          expect(segment.parameters).to.have.property('routing_key', 'foo.bar')
           expect(segment.parameters).to.have.property('a', 'a')
           expect(segment.parameters).to.have.property('b', 'b')
         })
@@ -420,6 +422,33 @@ describe('MessageShim', function() {
         })
       })
 
+      it('should handle promise-based APIs', function() {
+        var msg = {}
+        var segment = null
+
+        function wrapMe() {
+          segment = shim.getSegment()
+          return Promise.resolve(msg)
+        }
+
+        var wrapped = shim.recordConsume(wrapMe, {
+          destinationName: shim.FIRST,
+          promise: true,
+          messageHandler: function(shim, fn, name, message) {
+            expect(message).to.equal(msg)
+            return {parameters: {a: 'a', b: 'b'}}
+          }
+        })
+
+        return helper.runInTransaction(agent, function() {
+          return wrapped('foo', function() {}).then(function(message) {
+            expect(message).to.equal(msg)
+            expect(segment.parameters).to.have.property('a', 'a')
+            expect(segment.parameters).to.have.property('b', 'b')
+          })
+        })
+      })
+
       it('should execute the wrapped function', function() {
         var executed = false
         var toWrap = function() { executed = true }
@@ -518,7 +547,7 @@ describe('MessageShim', function() {
     })
 
     describe('wrapper', function() {
-      it('should create a produce segment and metric', function() {
+      it('should create a purge segment and metric', function() {
         shim.recordPurgeQueue(wrappable, 'getActiveSegment', {queue: shim.FIRST})
 
         helper.runInTransaction(agent, function(tx) {
@@ -529,6 +558,21 @@ describe('MessageShim', function() {
           expect(segment.name)
             .to.equal('MessageBroker/RabbitMQ/Queue/Purge/Named/foobar')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should call the spec if it is not static', function() {
+        var called = false
+
+        shim.recordPurgeQueue(wrappable, 'getActiveSegment', function() {
+          called = true
+          return {queue: shim.FIRST}
+        })
+
+        helper.runInTransaction(agent, function() {
+          expect(called).to.be.false()
+          wrappable.getActiveSegment('foobar')
+          expect(called).to.be.true()
         })
       })
 
@@ -735,6 +779,58 @@ describe('MessageShim', function() {
         expect(parent).to.not.exist()
       })
 
+      it('should end the transaction immediately if not handled', function(done) {
+        wrapped('my.queue', function consumer() {
+          var tx = shim.getSegment().transaction
+          expect(tx.isActive()).to.be.true()
+          setTimeout(function() {
+            expect(tx.isActive()).to.be.false()
+            done()
+          }, 5)
+        })
+      })
+
+      it('should end the transaction based on a promise', function(done) {
+        messageHandler = function() {
+          return {promise: true}
+        }
+
+        wrapped('my.queue', function consumer() {
+          var tx = shim.getSegment().transaction
+          expect(tx.isActive()).to.be.true()
+
+          return new Promise(function(resolve) {
+            expect(tx.isActive()).to.be.true()
+            setImmediate(resolve)
+          }).then(function() {
+            expect(tx.isActive()).to.be.true()
+            setTimeout(function() {
+              expect(tx.isActive()).to.be.false()
+              done()
+            }, 5)
+          })
+        })
+      })
+
+      it('should end the transaction when the handle says to', function(done) {
+        var api = new API(agent)
+
+        wrapped('my.queue', function consumer() {
+          var tx = shim.getSegment().transaction
+          var handle = api.getTransaction()
+
+          expect(tx.isActive()).to.be.true()
+          setTimeout(function() {
+            expect(tx.isActive()).to.be.true()
+            handle.end()
+            setTimeout(function() {
+              expect(tx.isActive()).to.be.false()
+              done()
+            }, 5)
+          }, 5)
+        })
+      })
+
       it('should call spec.messageHandler before consumer is invoked', function(done) {
         wrapped('my.queue', function consumer() {
           expect(handlerCalled).to.be.true()
@@ -760,6 +856,30 @@ describe('MessageShim', function() {
           'OtherTransaction/all',
           'OtherTransactionTotalTime'
         ]
+
+        wrapped('my.queue', function consumer() {
+          setTimeout(function() {
+            var metrics = agent.metrics
+            metricNames.forEach(function(name) {
+              expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
+            })
+            done()
+          }, 15) // Let tx end from instrumentation
+        })
+      })
+
+      it('should handle a missing destination name as temp', function(done) {
+        var metricNames = [
+          'OtherTransaction/Message/RabbitMQ/Exchange/Temp',
+          'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Temp',
+        ]
+
+        messageHandler = function() {
+          return {
+            destinationName: null,
+            destinationType: shim.EXCHANGE
+          }
+        }
 
         wrapped('my.queue', function consumer() {
           setTimeout(function() {
