@@ -173,7 +173,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.test('get queue', function(t) {
+  t.test('get a message', function(t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
 

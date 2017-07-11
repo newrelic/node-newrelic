@@ -1,28 +1,53 @@
 'use strict'
 
-var test = require('tap').test
+var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var testPromiseSegments = require('./promises/segments.js')
 var testTransactionState = require('./promises/transaction-state.js')
 
 var runMultiple = testTransactionState.runMultiple
+var tasks = []
+var interval = null
 
+tap.beforeEach(function(done) {
+  if (interval) {
+    clearInterval(interval)
+  }
+  interval = setInterval(function() {
+    if (tasks.length) {
+      tasks.pop()()
+    }
+  }, 25)
+  done()
+})
+tap.afterEach(function(done) {
+  clearInterval(interval)
+  interval = null
+  done()
+})
+function addTask() {
+  var args = [].slice.apply(arguments)
+  var fn = args.shift() // Pop front.
+  tasks.push(function() {
+    fn.apply(null, args)
+  })
+}
 
-test('transaction state', function(t) {
+tap.test('transaction state', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
   testTransactionState(t, agent, Promise)
   t.autoend()
 })
 
-test('segments', function(t) {
+tap.test('segments', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
   testPromiseSegments(t, agent, Promise)
   t.autoend()
 })
 
-test('no transaction', function(t) {
+tap.test('no transaction', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -40,7 +65,7 @@ test('no transaction', function(t) {
   })
 })
 
-test('new Promise() throw', function(t) {
+tap.test('new Promise() throw', function(t) {
   t.plan(2)
 
   var agent = setupAgent(t)
@@ -61,7 +86,7 @@ test('new Promise() throw', function(t) {
   }
 })
 
-test('new Promise() resolve then throw', function(t) {
+tap.test('new Promise() resolve then throw', function(t) {
   t.plan(1)
 
   var agent = setupAgent(t)
@@ -82,7 +107,27 @@ test('new Promise() resolve then throw', function(t) {
   }
 })
 
-test('Promise.resolve', function(t) {
+tap.test('new Promise -> resolve', function(t) {
+  testPromiseClassMethod(t, 3, function resolveTest(Promise, name) {
+    var tracer = helper.getAgent().tracer
+    var inTx = !!tracer.segment
+    return new Promise(function(resolve) {
+      addTask(function() {
+        t.notOk(tracer.segment, name + 'should lose tx')
+        resolve('foobar ' + name)
+      })
+    }).then(function(res) {
+      if (inTx) {
+        t.ok(tracer.segment, name + 'should return tx')
+      } else {
+        t.notOk(tracer.segment, name + 'should not create tx')
+      }
+      t.equal(res, 'foobar ' + name, name + 'should resolve with correct value')
+    })
+  })
+})
+
+tap.test('Promise.resolve', function(t) {
   testPromiseClassMethod(t, 1, function resolveTest(Promise, name) {
     return Promise.resolve(name + ' resolve value')
       .then(function(res) {
@@ -91,7 +136,7 @@ test('Promise.resolve', function(t) {
   })
 })
 
-test('Promise.reject', function(t) {
+tap.test('Promise.reject', function(t) {
   testPromiseClassMethod(t, 1, function rejectTest(Promise, name) {
     return Promise.reject(name + ' reject value')
       .then(function() {
@@ -102,7 +147,7 @@ test('Promise.reject', function(t) {
   })
 })
 
-test('Promise.join', function(t) {
+tap.test('Promise.join', function(t) {
   testPromiseClassMethod(t, 1, function joinTest(Promise, name) {
     return Promise.join(
       Promise.resolve(1),
@@ -115,7 +160,7 @@ test('Promise.join', function(t) {
   })
 })
 
-test('Promise.try', function(t) {
+tap.test('Promise.try', function(t) {
   testPromiseClassMethod(t, 3, function tryTest(Promise, name) {
     return Promise.try(function() {
       throw new Error('Promise.try test error')
@@ -126,7 +171,7 @@ test('Promise.try', function(t) {
       if (err) {
         t.equal(err.message, 'Promise.try test error', name + 'should be correct error')
       }
-    }).then(function(){
+    }).then(function() {
       var foo = {what: 'Promise.try test object'}
       return Promise.try(function() {
         return foo
@@ -137,7 +182,7 @@ test('Promise.try', function(t) {
   })
 })
 
-test('Promise.method', function(t) {
+tap.test('Promise.method', function(t) {
   testPromiseClassMethod(t, 3, function methodTest(Promise, name) {
     var fn = Promise.method(function() {
       throw new Error('Promise.method test error')
@@ -148,9 +193,12 @@ test('Promise.method', function(t) {
     }, function(err) {
       t.ok(err, name + 'should have error')
       if (err) {
-        t.equal(err.message, 'Promise.method test error', name + 'should be correct error')
+        t.equal(
+          err.message, 'Promise.method test error',
+          name + 'should be correct error'
+        )
       }
-    }).then(function(){
+    }).then(function() {
       var foo = {what: 'Promise.method test object'}
       var fn2 = Promise.method(function() {
         return foo
@@ -163,15 +211,15 @@ test('Promise.method', function(t) {
   })
 })
 
-test('Promise.fromCallback', function(t) {
+tap.test('Promise.fromCallback', function(t) {
   testPromiseClassMethod(t, 3, function fromCallbackTest(Promise, name) {
     return Promise.fromCallback(function(cb) {
-      cb(null, 'foobar')
+      addTask(cb, null, 'foobar')
     }).then(function(res) {
       t.equal(res, 'foobar', name + 'should pass result through')
 
       return Promise.fromCallback(function(cb) {
-        cb(new Error('Promise.fromCallback test error'))
+        addTask(cb, new Error('Promise.fromCallback test error'))
       })
     }).then(function() {
       t.fail(name + 'should not resolve after rejecting')
@@ -188,7 +236,7 @@ test('Promise.fromCallback', function(t) {
   })
 })
 
-test('Promise#then', function(t) {
+tap.test('Promise#then', function(t) {
   testPromiseInstanceMethod(t, 3, function thenTest(p, name) {
     return p.then(function(res) {
       t.same(res, [1, 2, 3, name], name + 'should have the correct result value')
@@ -204,7 +252,7 @@ test('Promise#then', function(t) {
   })
 })
 
-test('Promise#catch', function(t) {
+tap.test('Promise#catch', function(t) {
   testPromiseInstanceMethod(t, 2, function catchTest(p, name) {
     return p.catch(function(err) {
       t.fail(name + 'should not go into catch from a resolved promise')
@@ -219,7 +267,7 @@ test('Promise#catch', function(t) {
   })
 })
 
-test('Promise#finally', function(t) {
+tap.test('Promise#finally', function(t) {
   testPromiseInstanceMethod(t, 6, function finallyTest(p, name) {
     return p.finally(function() {
       t.equal(arguments.length, 0, name + 'should not receive any parameters')
@@ -238,7 +286,7 @@ test('Promise#finally', function(t) {
   })
 })
 
-test('Promise#tap', function(t) {
+tap.test('Promise#tap', function(t) {
   testPromiseInstanceMethod(t, 4, function tapTest(p, name) {
     return p.tap(function(res) {
       t.same(res, [1, 2, 3, name], name + 'should pass values into tap handler')
@@ -256,7 +304,7 @@ test('Promise#tap', function(t) {
   })
 })
 
-test('Promise#spread', function(t) {
+tap.test('Promise#spread', function(t) {
   testPromiseInstanceMethod(t, 1, function spreadTest(p, name) {
     return p.spread(function(a, b, c, d) {
       t.same([a, b, c, d], [1, 2, 3, name], name + 'parameters should be correct')
@@ -265,7 +313,7 @@ test('Promise#spread', function(t) {
 })
 
 function testAsCallbackBehavior(methodName) {
-  test('Promise#' + methodName, function(t) {
+  tap.test('Promise#' + methodName, function(t) {
     testPromiseInstanceMethod(t, 8, function asCallbackTest(p, name, agent) {
       var startTransaction = agent.getTransaction();
       return p[methodName](function(err, result) {
@@ -300,7 +348,7 @@ function testAsCallbackBehavior(methodName) {
 testAsCallbackBehavior('asCallback')
 testAsCallbackBehavior('nodeify')
 
-test('Promise#bind', function(t) {
+tap.test('Promise#bind', function(t) {
   testPromiseInstanceMethod(t, 2, function bindTest(p, name) {
     var foo = {what: 'test object'}
     return p.bind(foo).then(function(res) {
@@ -310,7 +358,7 @@ test('Promise#bind', function(t) {
   })
 })
 
-test('Promise#call', function(t) {
+tap.test('Promise#call', function(t) {
   testPromiseInstanceMethod(t, 3, function callTest(p, name) {
     var foo = {
       test: function(){
@@ -327,7 +375,7 @@ test('Promise#call', function(t) {
   })
 })
 
-test('Promise#get', function(t) {
+tap.test('Promise#get', function(t) {
   testPromiseInstanceMethod(t, 1, function getTest(p, name) {
     return p.get('length').then(function(res) {
       t.equal(res, 4, name + 'should get the property specified')
@@ -335,7 +383,7 @@ test('Promise#get', function(t) {
   })
 })
 
-test('Promise#return', function(t) {
+tap.test('Promise#return', function(t) {
   testPromiseInstanceMethod(t, 1, function returnTest(p, name) {
     var foo = {what: 'return test object'}
     return p.return(foo).then(function(res) {
@@ -344,7 +392,7 @@ test('Promise#return', function(t) {
   })
 })
 
-test('Promise#throw', function(t) {
+tap.test('Promise#throw', function(t) {
   testPromiseInstanceMethod(t, 1, function throwTest(p, name) {
     var foo = {what: 'throw test object'}
     return p.throw(foo).then(function(){
@@ -356,7 +404,7 @@ test('Promise#throw', function(t) {
   })
 })
 
-test('Promise#catchReturn', function(t) {
+tap.test('Promise#catchReturn', function(t) {
   testPromiseInstanceMethod(t, 1, function catchReturnTest(p, name) {
     var foo = {what: 'catchReturn test object'}
     return p.throw(new Error('catchReturn test error'))
@@ -367,7 +415,7 @@ test('Promise#catchReturn', function(t) {
   })
 })
 
-test('Promise#catchThrow', function(t) {
+tap.test('Promise#catchThrow', function(t) {
   testPromiseInstanceMethod(t, 1, function catchThrowTest(p, name) {
     var foo = {what: 'catchThrow test object'}
     return p.throw(new Error('catchThrow test error'))
@@ -378,7 +426,7 @@ test('Promise#catchThrow', function(t) {
     })
 })
 
-test('all', function(t) {
+tap.test('all', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -398,7 +446,7 @@ test('all', function(t) {
   })
 })
 
-test('all on instance', function(t) {
+tap.test('all on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -414,7 +462,7 @@ test('all on instance', function(t) {
   })
 })
 
-test('props', function(t) {
+tap.test('props', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -439,7 +487,7 @@ test('props', function(t) {
   })
 })
 
-test('props on instance', function(t) {
+tap.test('props on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -460,7 +508,7 @@ test('props on instance', function(t) {
   })
 })
 
-test('any', function(t) {
+tap.test('any', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -476,7 +524,7 @@ test('any', function(t) {
   })
 })
 
-test('any on instance', function(t) {
+tap.test('any on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -493,7 +541,7 @@ test('any on instance', function(t) {
   })
 })
 
-test('race', function(t) {
+tap.test('race', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -509,7 +557,7 @@ test('race', function(t) {
   })
 })
 
-test('some', function(t) {
+tap.test('some', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -528,7 +576,7 @@ test('some', function(t) {
   })
 })
 
-test('some on instance', function(t) {
+tap.test('some on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -547,7 +595,7 @@ test('some on instance', function(t) {
   })
 })
 
-test('map', function(t) {
+tap.test('map', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -564,7 +612,7 @@ test('map', function(t) {
   })
 })
 
-test('map on instance', function(t) {
+tap.test('map on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -585,7 +633,7 @@ test('map on instance', function(t) {
   })
 })
 
-test('reduce', function(t) {
+tap.test('reduce', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -602,7 +650,7 @@ test('reduce', function(t) {
   })
 })
 
-test('reduce on instance', function(t) {
+tap.test('reduce on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -623,7 +671,7 @@ test('reduce on instance', function(t) {
   })
 })
 
-test('filter', function(t) {
+tap.test('filter', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -640,7 +688,7 @@ test('filter', function(t) {
   })
 })
 
-test('filter on instance', function(t) {
+tap.test('filter on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -661,7 +709,7 @@ test('filter on instance', function(t) {
   })
 })
 
-test('each', function(t) {
+tap.test('each', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -679,7 +727,7 @@ test('each', function(t) {
   })
 })
 
-test('each on instance', function(t) {
+tap.test('each on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -701,7 +749,7 @@ test('each on instance', function(t) {
   })
 })
 
-test('mapSeries', function(t) {
+tap.test('mapSeries', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -718,7 +766,7 @@ test('mapSeries', function(t) {
   })
 })
 
-test('mapSeries on instance', function(t) {
+tap.test('mapSeries on instance', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
 
@@ -779,7 +827,7 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
       .finally(function() {
         t.ok(isAsync, name + 'should have executed asynchronously')
       })
-      .then(function(){
+      .then(function() {
         t.notOk(agent.getTransaction(), name + 'has no transaction')
         testInTransaction()
       }, function(err) {

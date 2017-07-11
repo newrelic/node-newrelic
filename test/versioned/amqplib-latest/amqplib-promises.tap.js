@@ -28,6 +28,17 @@ tap.test('amqplib promise instrumentation', function(t) {
   var api = null
 
   t.beforeEach(function(done) {
+    // In promise mode, amqplib loads bluebird. In our tests we unwrap the
+    // instrumentation after each one. This is fine for first-order modules
+    // which the test itself re-requires, but second-order modules (deps of
+    // instrumented methods) are not reloaded and thus not re-instrumented. To
+    // resolve this we just delete everything. Kill it all.
+    Object.keys(require.cache).forEach(function(key) {
+      if (/amqplib|bluebird/.test(key)) {
+        delete require.cache[key]
+      }
+    })
+
     agent = helper.instrumentMockedAgent(null, {
       capture_params: true,
     })
@@ -160,7 +171,7 @@ tap.test('amqplib promise instrumentation', function(t) {
     })
   })
 
-  t.test('get queue', function(t) {
+  t.test('get a message', function(t) {
     var queue = null
     var exchange = amqpUtils.DIRECT_EXCHANGE
 
@@ -182,7 +193,7 @@ tap.test('amqplib promise instrumentation', function(t) {
           var body = msg.content.toString('utf8')
           t.equal(body, 'hello', 'should receive expected body')
 
-          amqpUtils.verifyTransaction(t, tx, 'consume')
+          amqpUtils.verifyTransaction(t, tx, 'get')
           channel.ack(msg)
         }).then(function() {
           return tx.end(function() {

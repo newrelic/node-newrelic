@@ -281,6 +281,10 @@ function verifyTransaction(t, tx, msg) {
 function getChannel(amqplib, cb) {
   if (cb) {
     amqplib.connect(CON_STRING, null, function(err, conn) {
+      if (err) {
+        return cb(err)
+      }
+
       conn.createChannel(function(err, channel) {
         cb(err, {
           connection: conn,
