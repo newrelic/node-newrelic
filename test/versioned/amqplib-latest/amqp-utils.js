@@ -13,6 +13,7 @@ exports.verifySubscribe = verifySubscribe
 exports.verifyConsumeTransaction = verifyConsumeTransaction
 exports.verifyProduce = verifyProduce
 exports.verifyCAT = verifyCAT
+exports.verifyGet = verifyGet
 exports.verifyPurge = verifyPurge
 exports.verifySendToQueue = verifySendToQueue
 exports.verifyTransaction = verifyTransaction
@@ -197,6 +198,34 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
   }
 }
 
+function verifyGet(t, tx, exchangeName, routingKey, queue) {
+  var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  var produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
+  var consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
+  if (isCallback) {
+    t.doesNotThrow(function() {
+      metrics.assertSegments(tx.trace.root, [
+        produceName,
+        consumeName, [
+            'Callback: <anonymous>'
+        ]
+      ])
+    }, 'should have expected segments')
+  } else {
+    t.doesNotThrow(function() {
+      metrics.assertSegments(tx.trace.root, [
+        produceName,
+        consumeName
+      ])
+    }, 'should have expected segments')
+  }
+  t.doesNotThrow(function() {
+    metrics.assertMetrics(tx.metrics, [
+      [{name: produceName}],
+      [{name: consumeName}]
+    ], false, false)
+  }, 'should have expected metrics')
+}
 
 function verifyPurge(t, tx) {
   var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')

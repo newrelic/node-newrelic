@@ -160,6 +160,43 @@ tap.test('amqplib promise instrumentation', function(t) {
     })
   })
 
+  t.test('get queue', function(t) {
+    var queue = null
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+
+    channel.assertExchange(exchange, 'direct').then(function() {
+      return channel.assertQueue('', {exclusive: true})
+    }).then(function(res) {
+      queue = res.queue
+      return channel.bindQueue(queue, exchange, 'consume-tx-key')
+    }).then(function() {
+      return helper.runInTransaction(agent, function(tx) {
+        channel.publish(
+          exchange,
+          'consume-tx-key',
+          new Buffer('hello')
+        )
+        return channel.get(queue).then(function(msg) {
+          t.ok(msg, 'should receive a message')
+
+          var body = msg.content.toString('utf8')
+          t.equal(body, 'hello', 'should receive expected body')
+
+          amqpUtils.verifyTransaction(t, tx, 'consume')
+          channel.ack(msg)
+        }).then(function() {
+          return tx.end(function() {
+            amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+            t.end()
+          })
+        })
+      })
+    }).catch(function(err) {
+      t.fail(err)
+      t.end()
+    })
+  })
+
   t.test('consume in a transaction', function(t) {
     var queue = null
     var consumeTxn = null
