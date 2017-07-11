@@ -121,19 +121,19 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
 function verifySendToQueue(t, tx) {
   t.doesNotThrow(function() {
     metrics.assertSegments(tx.trace.root, [
-      'MessageBroker/RabbitMQ/Queue/Produce/Named/Default'
+      'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
     ])
   }, 'should have expected segments')
 
   t.doesNotThrow(function() {
     metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Queue/Produce/Named/Default'}]
+      [{name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'}]
     ], false, false)
   }, 'should have expected metrics')
 
   var segment = metrics.findSegment(
     tx.trace.root,
-    'MessageBroker/RabbitMQ/Queue/Produce/Named/Default'
+    'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
   )
   t.equals(segment.parameters.routing_key, 'testQueue', 'should store routing key')
   t.equals(segment.parameters.reply_to, 'my.reply.queue', 'should store reply to')
