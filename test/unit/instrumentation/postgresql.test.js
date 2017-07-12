@@ -26,6 +26,23 @@ describe("agent instrumentation of PostgreSQL", function () {
       shim = new DatastoreShim(agent, 'postgres')
     })
 
+    function getMockModuleNoNative() {
+      function PG(clientConstructor) {
+        this.Client = clientConstructor
+      }
+
+      function DefaultClient() {}
+      DefaultClient.prototype.query = function() {}
+      function NativeClient() {}
+      NativeClient.prototype.query = function() {}
+
+      var mockPg = new PG(DefaultClient)
+      mockPg.__defineGetter__("native", function() {
+        return null
+      })
+      return mockPg
+    }
+
     function getMockModule() {
       function PG(clientConstructor) {
         this.Client = clientConstructor
@@ -38,9 +55,9 @@ describe("agent instrumentation of PostgreSQL", function () {
 
       var mockPg = new PG(DefaultClient)
       mockPg.__defineGetter__("native", function() {
-        delete mockPg.native;
-        mockPg.native = new PG(NativeClient);
-        return mockPg.native;
+        delete mockPg.native
+        mockPg.native = new PG(NativeClient)
+        return mockPg.native
       })
       return mockPg
     }
@@ -67,6 +84,15 @@ describe("agent instrumentation of PostgreSQL", function () {
       var pg2 = mockPg.native
 
       expect(pg1).equal(pg2)
+    })
+
+    it("does not throw when no native module is found", function() {
+      var mockPg = getMockModuleNoNative()
+
+      initialize(agent, mockPg, 'pg', shim)
+      expect(function pleaseDoNotThrow() {
+        mockPg.native
+      }).to.not.throw()
     })
 
     it("does not interfere with non-native instrumentation", function() {
