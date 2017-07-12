@@ -28,6 +28,17 @@ tap.test('amqplib promise instrumentation', function(t) {
   var api = null
 
   t.beforeEach(function(done) {
+    // In promise mode, amqplib loads bluebird. In our tests we unwrap the
+    // instrumentation after each one. This is fine for first-order modules
+    // which the test itself re-requires, but second-order modules (deps of
+    // instrumented methods) are not reloaded and thus not re-instrumented. To
+    // resolve this we just delete everything. Kill it all.
+    Object.keys(require.cache).forEach(function(key) {
+      if (/amqplib|bluebird/.test(key)) {
+        delete require.cache[key]
+      }
+    })
+
     agent = helper.instrumentMockedAgent(null, {
       capture_params: true,
     })
@@ -175,6 +186,43 @@ tap.test('amqplib promise instrumentation', function(t) {
         t.fail(err)
         t.end()
       })
+    })
+  })
+
+  t.test('get a message', function(t) {
+    var queue = null
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+
+    channel.assertExchange(exchange, 'direct').then(function() {
+      return channel.assertQueue('', {exclusive: true})
+    }).then(function(res) {
+      queue = res.queue
+      return channel.bindQueue(queue, exchange, 'consume-tx-key')
+    }).then(function() {
+      return helper.runInTransaction(agent, function(tx) {
+        channel.publish(
+          exchange,
+          'consume-tx-key',
+          new Buffer('hello')
+        )
+        return channel.get(queue).then(function(msg) {
+          t.ok(msg, 'should receive a message')
+
+          var body = msg.content.toString('utf8')
+          t.equal(body, 'hello', 'should receive expected body')
+
+          amqpUtils.verifyTransaction(t, tx, 'get')
+          channel.ack(msg)
+        }).then(function() {
+          return tx.end(function() {
+            amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+            t.end()
+          })
+        })
+      })
+    }).catch(function(err) {
+      t.fail(err)
+      t.end()
     })
   })
 

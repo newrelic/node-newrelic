@@ -192,6 +192,49 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
+  t.test('get a message', function(t) {
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+    var queue = null
+
+
+    channel.assertExchange(exchange, 'direct', null, function(err) {
+      t.error(err, 'should not error asserting exchange')
+
+      channel.assertQueue('', {exclusive: true}, function(err, res) {
+        t.error(err, 'should not error asserting queue')
+        queue = res.queue
+
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
+          t.error(err, 'should not error binding queue')
+
+          helper.runInTransaction(agent, function(tx) {
+            channel.publish(
+              exchange,
+              'consume-tx-key',
+              new Buffer('hello')
+            )
+            channel.get(queue, {}, function(err, msg) {
+              t.notOk(err, 'should not cause an error')
+              t.ok(msg, 'should receive a message')
+
+              amqpUtils.verifyTransaction(t, tx, 'get')
+              var body = msg.content.toString('utf8')
+              t.equal(body, 'hello', 'should receive expected body')
+
+              channel.ack(msg)
+              setImmediate(function() {
+                tx.end(function() {
+                  amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+                  t.end()
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+
   t.test('consume in a transaction', function(t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null

@@ -63,6 +63,7 @@ var helper = module.exports = {
       _agent.config.feature_flag = newFlags
     }
 
+    global.__NR_agent = _agent
     return _agent
   },
 
@@ -116,7 +117,10 @@ var helper = module.exports = {
     // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
-    if (agent === _agent) _agent = null
+    if (agent === _agent) {
+      global.__NR_agent = null
+      _agent = null
+    }
   },
 
   loadTestAgent: function loadTestAgent(t, flags, conf) {
