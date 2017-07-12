@@ -2,6 +2,7 @@
 
 var logger = require('./lib/logger.js')
 var RealAPI = require('./api.js')
+var TransactionHandle = require('./lib/transaction/handle')
 
 
 /* eslint-disable no-eval */
@@ -43,14 +44,7 @@ function getBrowserTimingHeader() {
 }
 
 function getTransaction() {
-  return {
-    end: function stubbedEnd() {
-      logger.debug('Not calling transaction.end because New Relic is disabled')
-    },
-    ignore: function stubbedIgnore() {
-      logger.debug('Not calling transaction.ignore because New Relic is disabled')
-    }
-  }
+  return TransactionHandle.stub
 }
 
 // Normally the following 3 calls return a wrapped callback, instead we

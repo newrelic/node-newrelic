@@ -5,19 +5,21 @@ var metrics = require('../../lib/metrics_helper')
 
 var CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 
+exports.CON_STRING = CON_STRING
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
 exports.FANOUT_EXCHANGE = 'test-fanout-exchange'
 
 
-exports.verifyConsume = verifyConsume
+exports.verifySubscribe = verifySubscribe
 exports.verifyConsumeTransaction = verifyConsumeTransaction
 exports.verifyProduce = verifyProduce
+exports.verifyCAT = verifyCAT
 exports.verifyPurge = verifyPurge
 exports.verifySendToQueue = verifySendToQueue
 exports.verifyTransaction = verifyTransaction
 exports.getChannel = getChannel
 
-function verifyConsume(t, tx, exchange, routingKey) {
+function verifySubscribe(t, tx, exchange, routingKey) {
   var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
@@ -26,8 +28,7 @@ function verifyConsume(t, tx, exchange, routingKey) {
         'amqplib.Channel#consume', [
           'Callback: <anonymous>', [
             'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
-          ],
-          'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange
+          ]
         ]
       ])
     }, 'should have expected segments')
@@ -36,7 +37,6 @@ function verifyConsume(t, tx, exchange, routingKey) {
       metrics.assertSegments(tx.trace.root, [
         'amqplib.Channel#consume', [
           'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange,
-          'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange
         ]
       ])
     }, 'should have expected segments')
@@ -45,7 +45,6 @@ function verifyConsume(t, tx, exchange, routingKey) {
   t.doesNotThrow(function() {
     metrics.assertMetrics(tx.metrics, [
       [{name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange}],
-      [{name: 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange}]
     ], false, false)
   }, 'should have expected metrics')
 
@@ -57,49 +56,65 @@ function verifyConsume(t, tx, exchange, routingKey) {
 
   var consume = metrics.findSegment(
     tx.trace.root,
-    'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange
+    'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
   )
   t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
 }
 
-function verifyConsumeTransaction(t, tx, exchange, routingKey) {
-  t.doesNotThrow(function() {
-    metrics.assertSegments(tx.trace.root, [
-      'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange,
-    ])
-  }, 'should have expected segments')
+function verifyCAT(t, produceTransaction, consumeTransaction) {
+  t.equals(
+    consumeTransaction.incomingCatId,
+    produceTransaction.agent.config.cross_process_id,
+    'should have the proper incoming CAT id'
+  )
+  t.equals(
+    consumeTransaction.referringTransactionGuid,
+    produceTransaction.id,
+    'should have the the correct referring transaction guid'
+  )
+  t.equals(
+    consumeTransaction.tripId,
+    produceTransaction.id,
+    'should have the the correct trip id'
 
+  )
+  t.notOk(
+    consumeTransaction.invalidIncomingExternalTransaction,
+    'invalid incoming external transaction should be false'
+  )
+}
+
+function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
   t.doesNotThrow(function() {
     metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange}],
       [{name: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange}],
       [{name: 'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/' + exchange}],
       [{name: 'OtherTransaction/Message/all'}],
       [{name: 'OtherTransaction/all'}],
       [{name: 'OtherTransactionTotalTime'}],
-      [{
-        name: 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange,
-        scope: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
-      }]
     ], false, false)
   }, 'should have expected metrics')
 
   t.equal(
     tx.getFullName(),
-    'OtherTransaction/Message/RabbitMQ/Exchange/Named/test-direct-exchange',
+    'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange,
     'should not set transaction name'
   )
 
   var consume = metrics.findSegment(
     tx.trace.root,
-    'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + exchange
+    'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
   t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
 
 
   t.equal(
     tx.trace.parameters['message.routingKey'], routingKey,
-    'should have message params'
+    'should have routing key transaction parameter'
+  )
+  t.equal(
+    tx.trace.parameters['message.queueName'], queue,
+    'should have queue name transaction parameter'
   )
 }
 
