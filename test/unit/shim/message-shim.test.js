@@ -422,6 +422,23 @@ describe('MessageShim', function() {
         })
       })
 
+      it('should be able to get destinationName from arguments', function() {
+        shim.recordConsume(wrappable, 'getActiveSegment', {
+          destinationName: shim.FIRST,
+          destinationType: shim.EXCHANGE
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          var startingSegment = agent.tracer.getSegment()
+          var segment = wrappable.getActiveSegment('fizzbang')
+          expect(segment).to.not.equal(startingSegment)
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/fizzbang')
+          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
       it('should handle promise-based APIs', function() {
         var msg = {}
         var segment = null
@@ -858,6 +875,32 @@ describe('MessageShim', function() {
         ]
 
         wrapped('my.queue', function consumer() {
+          setTimeout(function() {
+            var metrics = agent.metrics
+            metricNames.forEach(function(name) {
+              expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
+            })
+            done()
+          }, 15) // Let tx end from instrumentation
+        })
+      })
+
+      it('should be able to get destinationName from arguments', function(done) {
+        var metricNames = [
+          'OtherTransaction/Message/RabbitMQ/Exchange/Named/my.exchange',
+          'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/my.exchange',
+        ]
+
+        var func = shim.recordSubscribedConsume(subscriber, {
+          name: 'Channel#subscribe',
+          destinationName: shim.FIRST,
+          destinationType: shim.EXCHANGE,
+          consumer: shim.SECOND,
+          callback: shim.LAST,
+          messageHandler: function() { return {} }
+        })
+
+        func('my.exchange', function consumer() {
           setTimeout(function() {
             var metrics = agent.metrics
             metricNames.forEach(function(name) {
