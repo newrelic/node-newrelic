@@ -5,6 +5,7 @@ var metrics = require('../../lib/metrics_helper')
 
 var CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 
+exports.CON_STRING = CON_STRING
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
 exports.FANOUT_EXCHANGE = 'test-fanout-exchange'
 

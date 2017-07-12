@@ -65,6 +65,24 @@ tap.test('amqplib promise instrumentation', function(t) {
     conn.close().then(done, done)
   })
 
+  t.test('connect in a transaction', function(t) {
+    helper.runInTransaction(agent, function() {
+      t.doesNotThrow(function() {
+        amqplib.connect(amqpUtils.CON_STRING).then(function(_conn) {
+          _conn.close().then(t.end)
+        }, function(err) {
+          t.error(err, 'should not break connection')
+          t.bailout('Can not connect to RabbitMQ, stopping tests.')
+        })
+      }, 'should not error when connecting')
+
+      // If connect threw, we need to end the test immediately.
+      if (!t.passing()) {
+        t.end()
+      }
+    })
+  })
+
   t.test('sendToQueue', function(t) {
     agent.on('transactionFinished', function(tx) {
       amqpUtils.verifySendToQueue(t, tx)
