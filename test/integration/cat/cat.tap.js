@@ -190,7 +190,7 @@ test('cross application tracing full integration', function(t) {
       var trace = trans.trace
       t.ok(trace.intrinsics['trip_id'], 'start should have a trip_id variable')
       t.ok(trace.intrinsics['path_hash'], 'start should have a path_hash variable')
-      t.ok(trace.intrinsics['client_cross_process_id'], 'start should have a client_cross_process_id variable')
+      t.notOk(trace.intrinsics['client_cross_process_id'], 'start should not have a client_cross_process_id variable')
       t.notOk(trace.intrinsics['referring_transaction_guid'], 'start should not have a referring_transaction_guid variable')
 
       // check the external segment for its properties

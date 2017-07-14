@@ -1463,7 +1463,7 @@ describe('traced errors', function() {
       var transaction = createTransaction(agent, 200)
 
       transaction.referringTransactionGuid = '1234'
-      agent.config.cross_process_id = '2345'
+      transaction.incomingCatId = '2345'
 
       var error = new Error('some error')
       aggregator.add(transaction, error)

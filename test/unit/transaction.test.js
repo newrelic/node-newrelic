@@ -516,7 +516,7 @@ describe("Transaction", function() {
     it('includes CAT attributes', function() {
       transaction.tripId = '3456'
       transaction.referringTransactionGuid = '1234'
-      agent.config.cross_process_id = '2345'
+      transaction.incomingCatId = '2345'
 
       var attributes = transaction.getIntrinsicAttributes()
       expect(attributes.referring_transaction_guid).equal('1234')
