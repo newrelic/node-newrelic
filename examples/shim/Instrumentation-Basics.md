@@ -22,6 +22,7 @@ methods for registering custom instrumentation:
 * instrument
 * instrumentDatastore
 * instrumentWebframework
+* instrumentMessages
 
 These methods are used to tell the New Relic agent to use the provided instrumentation
 function when the specified module is loaded by Node. It is critically important that we
@@ -33,11 +34,10 @@ newrelic.instrument('my-module', instrumentMyModule)
 var myModule = require('my-module')
 ```
 
-All three methods have the same signature. The difference between them is in what type
+All four methods have the same signature. The difference between them is in what type
 of shim they provide when the instrumentation function is called. The `instrument`
-method provides only the base shim {@link Shim}, while `instrumentDatastore` and
-`instrumentWebframework` provide shims specific to the type of instrumentation
-({@link DatastoreShim} and {@link WebFrameworkShim} respectively).
+method provides only the base shim {@link Shim}, while `instrumentDatastore`, `instrumentWebframework`, and `instrumentMessages` provide shims specific to the type of instrumentation
+({@link DatastoreShim}, {@link WebFrameworkShim}, and {@link MessageShim} respectively).
 
 The `instrument` call could have also been written using named
 parameters like this:
