@@ -14,29 +14,30 @@ var EXPECTED = ['pid', 'host', 'language', 'app_name', 'labels', 'utilization',
                 'agent_version', 'environment', 'settings', 'high_security',
                 'display_host', 'identifier']
 
-describe("fun facts about apps that New Relic is interested in include", function () {
+describe("fun facts about apps that New Relic is interested in include", function() {
   var agent
 
-  before(function () {
+  before(function() {
     agent = helper.loadMockedAgent()
     agent.config.utilization = {
       detect_aws: false,
+      detect_azure: false,
       detect_docker: false
     }
   })
 
-  after(function () {
+  after(function() {
     helper.unloadAgent(agent)
   })
 
-  it("the current process ID as 'pid'", function (done) {
+  it("the current process ID as 'pid'", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(factsed.pid).equal(process.pid)
       done()
     })
   })
 
-  it("the current hostname as 'host' (hope it's not 'localhost' lol)", function (done) {
+  it("the current hostname as 'host' (hope it's not 'localhost' lol)", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(factsed.host).equal(hostname())
       expect(factsed.host).not.equal('localhost')
@@ -236,18 +237,18 @@ describe('utilization', function () {
       })
     })
   })
-
 })
 
-describe('display_host', function () {
+describe('display_host', function() {
   var os = require('os')
   var agent
   var original_hostname = os.hostname
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     agent.config.utilization = {
       detect_aws: false,
+      detect_azure: false,
       detect_docker: false
     }
     os.hostname = function() {
@@ -255,18 +256,20 @@ describe('display_host', function () {
     }
   })
 
-  afterEach(function () {
+  afterEach(function() {
     os.hostname = original_hostname
     helper.unloadAgent(agent)
   })
-  it('should be set to what the user specifies (happy path)', function (done) {
+
+  it('should be set to what the user specifies (happy path)', function(done) {
     agent.config.process_host.display_name = 'test-value'
     facts(agent, function getFacts(factsed) {
       expect(factsed.display_host).equal('test-value')
       done()
     })
   })
-  it("should be cached along with hostname in config", function (done) {
+
+  it("should be cached along with hostname in config", function(done) {
     agent.config.process_host.display_name = 'test-value'
     facts(agent, function getFacts(factsed) {
       var displayHost1 = factsed.display_host

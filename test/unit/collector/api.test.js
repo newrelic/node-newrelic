@@ -32,7 +32,7 @@ function generate(method, runID) {
 }
 
 var timeout = global.setTimeout
-function fast() { global.setTimeout = function (cb) {return timeout(cb, 0)} }
+function fast() { global.setTimeout = function(cb) {return timeout(cb, 0)} }
 function slow() { global.setTimeout = timeout }
 
 describe("CollectorAPI", function() {
@@ -49,6 +49,7 @@ describe("CollectorAPI", function() {
       license_key: 'license key here',
       utilization: {
         detect_aws: false,
+        detect_azure: false,
         detect_docker: false
       },
       browser_monitoring: {},
@@ -64,8 +65,8 @@ describe("CollectorAPI", function() {
     helper.unloadAgent(agent)
   })
 
-  describe("_login", function () {
-    describe("on the happy path", function () {
+  describe("_login", function() {
+    describe("on the happy path", function() {
       var bad
       var ssc
       var raw

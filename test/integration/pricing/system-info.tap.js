@@ -18,7 +18,7 @@ test('pricing system-info', function(t) {
   }
 
   var awsRedirect = nock(awsHost)
-  for (var awsPath in awsResponses) {
+  for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
     awsRedirect.get('/2016-09-02/' + awsPath).reply(200, awsResponses[awsPath])
   }
 
@@ -27,6 +27,7 @@ test('pricing system-info', function(t) {
   fakeAgent.config = {
     utilization: {
       detect_aws: true,
+      detect_azure: true,
       detect_docker: false
     }
   }
