@@ -1,4 +1,87 @@
 
+### v2.0.0 (2017-07-17):
+* [The New Relic Node Agent v2 is here!](https://blog.newrelic.com/2017/07/18/nodejs-agent-v2-api/)
+
+  This release contains major changes to the agent instrumentation API, making
+  it easier to create and distribute your own instrumentation for third party
+  modules. Check out [Upgrade the Node agent](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/upgrade-nodejs-agent)
+  or the [Migration Guide](./Migration%20Guide.md) for more information on
+  upgrading your application to this version.
+
+* BREAKING: Reversed naming and ignore rules.
+
+  Naming rules are now applied in the order they are defined.
+
+* BREAKING: De-duplicated HTTP request transactions.
+
+  Only one transaction is created per `request` event emitted by an HTTP server.
+  Previously this was one transaction per listener per event emitted.
+
+* BREAKING: Stopped swallowing outbound request errors.
+
+  Errors emitted by outbound HTTP requests will no longer be swallowed by the
+  agent.
+
+* BREAKING: Node v0.8 is no longer supported. Minimum version is now v0.10.
+
+  The v1 agent will continue to support Node 0.8 but will no longer receive
+  updates.
+
+* BREAKING: npm v1 is no longer supported. Minimum version is now v2.0.0.
+
+* Added API for writing messaging framework instrumentation.
+
+  Introduced new `MessageShim` class for writing instrumentation. This shim
+  can be accessed using the `newrelic.instrumentMessages()` API method.
+
+* Added `amqplib` instrumentation.
+
+  Applications driven by `amqplib` consumers will now have transactions
+  automatically created for consumed messages. See
+  [Troubleshoot message consumers](https://docs.newrelic.com/docs/agents/nodejs-agent/troubleshooting/troubleshoot-message-consumers)
+  for more information on this instrumentation and its limitations.
+
+* Advanced instrumentation API is now generally available.
+
+  New methods for instrumenting common modules were introduced during the Agent
+  v2 beta. These APIs are now available to everyone:
+
+  * `newrelic.instrument()`/`Shim`: This method can be used to instrument
+    generic modules, such as connection pooling libraries, task schedulers, or
+    anything else not covered by a specialized class.
+
+  * `newrelic.instrumentDatastore()`/`DatastoreShim`: This method is good for
+    instrumenting datastore modules such as `mongodb`, `mysql`, or `pg`.
+
+  * `newrelic.instrumentWebframework()`/`WebFrameworkShim`: This method is
+    used for instrumenting web frameworks like `restify` or `express`.
+
+  Documentation and tutorials for the new API can be found on our GitHub
+  documentation page: http://newrelic.github.io/node-newrelic/docs/
+
+* Rewrote built-in instrumentation using the new `Shim` classes.
+
+  The following instrumentations have been rewritten:
+    * Datastores
+      * `cassandra-driver`
+      * `ioredis`
+      * `memcached`
+      * `mongodb`
+      * `mysql`
+      * `node-cassandra-cql`
+      * `pg`
+      * `redis`
+    * Web frameworks
+      * `director`
+      * `express`
+      * `hapi`
+      * `restify`
+
+* The `@newrelic/native-metrics` module is now included as an optional dependency.
+
+  This module will be installed automatically with Agent v2. If it fails to
+  install the agent will still function.
+
 ### v1.40.0 (2017-06-07):
 * Node v8 is officially supported with exception of `async`/`await`.
 
