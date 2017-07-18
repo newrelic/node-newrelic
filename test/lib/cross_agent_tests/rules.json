@@ -1,12 +1,16 @@
 [
   {
     "testname":"replace first",
-    "rules":[{"match_expression":"(psi)", "replacement":"gamma", "ignore":false, "eval_order":0}],
+    "rules":[{"match_expression":"(psi)",                         "replacement":"gamma",                         "ignore":false, "eval_order":0},
+             {"match_expression":"^/userid/.*/folderid",          "replacement":"/userid/*/folderid/*",          "ignore":false, "eval_order":1},
+             {"match_expression":"/need_not_be_first_segment/.*", "replacement":"*/need_not_be_first_segment/*", "ignore":false, "eval_order":2}],
     "tests":
     [
-      {"input":"/alpha/psi/beta", "expected":"/alpha/gamma/beta"},
-      {"input":"/psi/beta",       "expected":"/gamma/beta"},
-      {"input":"/alpha/psi",      "expected":"/alpha/gamma"}
+      {"input":"/alpha/psi/beta",                       "expected":"/alpha/gamma/beta"},
+      {"input":"/psi/beta",                             "expected":"/gamma/beta"},
+      {"input":"/alpha/psi",                            "expected":"/alpha/gamma"},
+      {"input":"/userid/123abc/folderid/qwerty8855",    "expected":"/userid/*/folderid/*/qwerty8855"},
+      {"input":"/first/need_not_be_first_segment/uiop", "expected":"/first*/need_not_be_first_segment/*"}
     ]
   },
   {
@@ -16,16 +20,6 @@
     [
       {"input":"/test/dude/flower.jpg", "expected":"/test/dude/*.jpg"},
       {"input":"/DUDE.ICO",             "expected":"/*.ICO"}
-    ]
-  },
-  {
-    "testname":"replace first",
-    "rules":[{"match_expression":"^/userid/.*/folderid",          "replacement":"/userid/*/folderid/*",          "ignore":false, "eval_order":1},
-             {"match_expression":"/need_not_be_first_segment/.*", "replacement":"*/need_not_be_first_segment/*", "ignore":false, "eval_order":2}],
-    "tests":
-    [
-      {"input":"/userid/123abc/folderid/qwerty8855",    "expected":"/userid/*/folderid/*/qwerty8855"},
-      {"input":"/first/need_not_be_first_segment/uiop", "expected":"/first*/need_not_be_first_segment/*"}
     ]
   },
   {
