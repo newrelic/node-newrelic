@@ -10,14 +10,16 @@ test('pricing system-info', function(t) {
   var awsHost = "http://169.254.169.254"
 
   var awsResponses = {
-    "instance-type": "test.type",
-    "instance-id": "test.id",
-    "placement/availability-zone": "us-west-2b"
+    "dynamic/instance-identity/document": {
+      "instanceType": "test.type",
+      "instanceId": "test.id",
+      "availabilityZone": "us-west-2b"
+    }
   }
 
   var awsRedirect = nock(awsHost)
   for (var awsPath in awsResponses) {
-    awsRedirect.get('/2008-02-01/meta-data/' + awsPath).reply(200, awsResponses[awsPath])
+    awsRedirect.get('/2016-09-02/' + awsPath).reply(200, awsResponses[awsPath])
   }
 
 
@@ -30,19 +32,19 @@ test('pricing system-info', function(t) {
   }
 
   fetchSystemInfo(fakeAgent, function cb_fetchSystemInfo(systemInfo) {
-    t.same(systemInfo.aws, {
-      type: 'test.type',
-      id: 'test.id',
-      zone: 'us-west-2b'
+    t.same(systemInfo.vendors.aws, {
+      instanceType: 'test.type',
+      instanceId: 'test.id',
+      availabilityZone: 'us-west-2b'
     })
     // This will throw an error if the sys info isn't being cached
     // properly
     t.ok(awsRedirect.isDone(), 'should exhaust nock endpoints')
     fetchSystemInfo(fakeAgent, function checkCache(cachedInfo) {
-      t.same(cachedInfo.aws, {
-        type: 'test.type',
-        id: 'test.id',
-        zone: 'us-west-2b'
+      t.same(cachedInfo.vendors.aws, {
+        instanceType: 'test.type',
+        instanceId: 'test.id',
+        availabilityZone: 'us-west-2b'
       })
       t.end()
     })

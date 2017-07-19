@@ -128,7 +128,7 @@ describe("fun facts about apps that New Relic is interested in include", functio
 
 describe('utilization', function () {
   var agent
-  var awsInfo = require('../../lib/aws-info.js')
+  var awsInfo = require('../../lib/utilization/aws-info.js')
   var inputKeys = [
     'input_total_ram_mib',
     'input_logical_processors',

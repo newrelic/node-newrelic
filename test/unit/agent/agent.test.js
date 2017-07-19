@@ -11,7 +11,7 @@ var semver = require('semver')
 var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
-var clearAWSCache = require('../../../lib/aws-info').clearCache
+var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
 
 
 /*
@@ -25,9 +25,11 @@ var URL = 'https://collector.newrelic.com'
 var awsHost = "http://169.254.169.254"
 
 var awsResponses = {
-  "instance-type": "test.type",
-  "instance-id": "test.id",
-  "placement/availability-zone": "us-west-2b"
+  "dynamic/instance-identity/document": {
+    "instanceType": "test.type",
+    "instanceId": "test.id",
+    "availabilityZone": "us-west-2b"
+  }
 }
 
 var awsRedirect
@@ -36,7 +38,7 @@ function refreshAWSEndpoints() {
     clearAWSCache()
     awsRedirect = nock(awsHost)
     for (var awsPath in awsResponses) {
-      var redirect = awsRedirect.get('/2008-02-01/meta-data/' + awsPath)
+      var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
       redirect.reply(200, awsResponses[awsPath])
     }
 }
