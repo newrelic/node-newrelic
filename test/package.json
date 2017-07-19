@@ -21,7 +21,7 @@
     "mkdirp": "*",
     "mongodb": "*",
     "mysql": "*",
-    "nock": "git+https://github.com/martinkuba/nock.git#node8",
+    "nock": "^9.0.14",
     "node-cassandra-cql": "^0.5.0",
     "proxy": "^0.2.3",
     "q": "*",
