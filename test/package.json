@@ -24,6 +24,7 @@
     "nock": "^9.0.14",
     "node-cassandra-cql": "^0.5.0",
     "proxy": "^0.2.3",
+    "proxyquire": "^1.8.0",
     "q": "*",
     "redis": "^1",
     "request": "*",
