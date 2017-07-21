@@ -14,6 +14,7 @@ test('Agent#_sendErrors', function(t) {
     'ssl': false,
     'utilization': {
       'detect_aws': false,
+      'detect_gcp': false,
       'detect_docker': false
     },
     'logging': {

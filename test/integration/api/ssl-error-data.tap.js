@@ -16,6 +16,7 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
         'ssl': true,
         'utilization': {
           'detect_aws': false,
+          'detect_gcp': false,
           'detect_docker': false
         },
         'logging': {

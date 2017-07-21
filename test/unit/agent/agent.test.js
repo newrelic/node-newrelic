@@ -22,6 +22,8 @@ var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
 var RUN_ID = 1337
 var URL = 'https://collector.newrelic.com'
 
+// TODO: do we need to mock AWS (and other vendors) in these tests?
+// Why not just disable?
 var awsHost = "http://169.254.169.254"
 
 var awsResponses = {

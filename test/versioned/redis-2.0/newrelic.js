@@ -4,6 +4,7 @@ exports.config = {
   utilization: {
     detect_aws: false,
     detect_azure: false,
+    detect_gcp: false,
     detect_docker: false
   },
   logging: {

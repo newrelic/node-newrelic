@@ -14,6 +14,7 @@ test("Agent should send metrics to staging-collector.newrelic.com", function (t)
         'ssl': false,
         'utilization': {
           'detect_aws': false,
+          'detect_gcp': false,
           'detect_docker': false
         },
         'logging': {

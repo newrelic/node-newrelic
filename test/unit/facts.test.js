@@ -22,6 +22,7 @@ describe("fun facts about apps that New Relic is interested in include", functio
     agent.config.utilization = {
       detect_aws: false,
       detect_azure: false,
+      detect_gcp: false,
       detect_docker: false
     }
   })
@@ -127,6 +128,8 @@ describe("fun facts about apps that New Relic is interested in include", functio
   })
 })
 
+// TODO: update based on latest utilization_json.json cross-agent tests
+// that include other vendors aside from AWS
 describe('utilization', function () {
   var agent
   var awsInfo = require('../../lib/utilization/aws-info.js')
@@ -249,6 +252,7 @@ describe('display_host', function() {
     agent.config.utilization = {
       detect_aws: false,
       detect_azure: false,
+      detect_gcp: false,
       detect_docker: false
     }
     os.hostname = function() {
