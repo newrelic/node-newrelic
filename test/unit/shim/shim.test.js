@@ -343,6 +343,22 @@ describe('Shim', function() {
         expect(agent.tracer.segment).to.equal(startingSegment)
       })
 
+      it('should not require any arguments except a function', function() {
+        expect(startingSegment)
+          .to.not.equal(segment, 'test should start in clean condition')
+
+        // bindSegment will not wrap if there is no segment active and
+        // no segment is passed in.  To get around this we set the
+        // active segment to an object known not to be null then do the
+        // wrapping.
+        agent.tracer.segment = segment
+        var wrapped = shim.bindSegment(wrappable.getActiveSegment)
+        agent.tracer.segment = startingSegment
+
+        expect(wrapped()).to.equal(segment)
+        expect(agent.tracer.segment).to.equal(startingSegment)
+      })
+
       it('should default `full` to false', function() {
         shim.bindSegment(wrappable, 'getActiveSegment', segment)
         wrappable.getActiveSegment()
