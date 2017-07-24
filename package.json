@@ -120,7 +120,9 @@
     "jsdoc": "^3.4.0",
     "minami": "^1.1.1",
     "mocha": "*",
-    "tap": "^9.0.3"
+    "proxyquire": "~1.8.0",
+    "tap": "^9.0.3",
+    "xtend": "~4.0.1"
   },
   "repository": {
     "type": "git",
