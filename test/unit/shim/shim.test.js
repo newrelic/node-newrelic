@@ -317,6 +317,13 @@ describe('Shim', function() {
         expect(wrapped).to.equal(wrappable.getActiveSegment)
         expect(shim.isWrapped(wrapped)).to.be.false
       })
+
+      it('should be safe to pass a full param', function() {
+        var wrapped = shim.bindSegment(wrappable.getActiveSegment, null, true)
+        expect(wrapped).to.equal(wrappable.getActiveSegment)
+        expect(shim.isWrapped(wrapped)).to.be.false
+        expect(wrapped).to.not.throw()
+      })
     })
 
     describe('wrapper', function() {
