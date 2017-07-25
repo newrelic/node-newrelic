@@ -1,6 +1,7 @@
 var test_data = require('../lib/obfuscation-data')
 var hashes = require('../../lib/util/hashes')
 var expect = require('chai').expect
+var semver = require('semver')
 
 describe('obfuscation', function() {
   it('should objuscate strings correctly', function() {
@@ -34,7 +35,7 @@ describe('buffers', function() {
     Object.defineProperty(process, 'version', processVersion)
   })
 
-  it('should call the buffer constructor on versions 4.0-4.4', function() {
+  it('should call the buffer constructor on versions <5.10', function() {
     var constructorCalled = false
     Object.defineProperty(process, 'version', {
       value: 'v4.3.0'
@@ -50,6 +51,8 @@ describe('buffers', function() {
       return new stub()
     }
 
+    global.Buffer.prototype = oldBuffer.prototype
+
     Buffer.from = function pleaseDoNotCallMe() {
       throw new Error('i told you not to do it')
     }
@@ -63,8 +66,8 @@ describe('buffers', function() {
     expect(constructorCalled).to.be.true
   })
 
-  it('should call the Buffer.from if available', function() {
-    if (!Buffer.from) {
+  it('should call the Buffer.from on >=5.10', function() {
+    if (semver.satisfies(process.version, '<5.10')) {
       this.skip()
     }
 
