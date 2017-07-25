@@ -17,3 +17,69 @@ describe('deobfuscation', function() {
     })
   })
 })
+
+describe('buffers', function() {
+  var processVersion = Object.getOwnPropertyDescriptor(process, 'version')
+  var oldBuffer = global.Buffer
+  var oldFrom = global.Buffer.from
+  var testInput = test_data[0]
+
+  beforeEach(function() {
+    delete require.cache[require.resolve('../../lib/util/hashes')]
+  })
+
+  afterEach(function() {
+    global.Buffer = oldBuffer
+    global.Buffer.from = oldFrom
+    Object.defineProperty(process, 'version', processVersion)
+  })
+
+  it('should call the buffer constructor on versions 4.0-4.4', function() {
+    var constructorCalled = false
+    Object.defineProperty(process, 'version', {
+      value: 'v4.3.0'
+    })
+
+    global.Buffer = function fakeConstructor() {
+      constructorCalled = true
+      var args = arguments
+      function stub() {
+        return oldBuffer.apply(this, args)
+      }
+      stub.prototype = oldBuffer.prototype
+      return new stub()
+    }
+
+    Buffer.from = function pleaseDoNotCallMe() {
+      throw new Error('i told you not to do it')
+    }
+
+    var hashes = require('../../lib/util/hashes')
+
+    expect(
+      hashes.obfuscateNameUsingKey(testInput.input, testInput.key)
+    ).to.equal(testInput.output)
+
+    expect(constructorCalled).to.be.true
+  })
+
+  it('should call the Buffer.from if available', function() {
+    if (!Buffer.from) {
+      this.skip()
+    }
+
+    var fromCalled = false
+    Buffer.from = function pleaseCallMe() {
+      fromCalled = true
+      return oldFrom.apply(Buffer, arguments)
+    }
+
+    var hashes = require('../../lib/util/hashes')
+
+    expect(
+      hashes.obfuscateNameUsingKey(testInput.input, testInput.key)
+    ).to.equal(testInput.output)
+
+    expect(fromCalled).to.be.true
+  })
+})
