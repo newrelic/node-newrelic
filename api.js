@@ -731,9 +731,7 @@ function createWebTransaction(url, handle) {
  * @param {Function}  handle
  *  Function that represents the transaction work.
  */
-API.prototype.startWebTransaction = startWebTransaction
-
-function startWebTransaction(url, handle) {
+API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/startWebTransaction'
   )
@@ -784,6 +782,8 @@ function startWebTransaction(url, handle) {
   })()
 }
 
+API.prototype.startBackgroundTransaction = startBackgroundTransaction
+
 /**
  * Creates and starts a background transaction to record work done in
  * the handle supplied. This transaction will run until the handle
@@ -816,9 +816,9 @@ function startWebTransaction(url, handle) {
  *
  * @param {Function} handle
  *  Function that represents the background work.
+ *
+ * @memberOf API#
  */
-API.prototype.startBackgroundTransaction = startBackgroundTransaction
-
 function startBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/startBackgroundTransaction'
