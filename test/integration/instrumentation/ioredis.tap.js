@@ -12,25 +12,40 @@ var DB_INDEX = 2
 
 
 test('ioredis instrumentation', function(t) {
+
+  var agent, redisClient
+
+  t.beforeEach(function(done) {
+    setup(t, function(a, client) {
+      agent = a
+      redisClient = client
+      done()
+    })
+  })
+
+  t.afterEach(function(done) {
+    helper.unloadAgent(agent)
+    redisClient.disconnect()
+    done()
+  })
+
   t.test('creates expected metrics', {timeout : 5000}, function(t) {
     var onError = function(error) { return t.fail(error) }
 
-    setup(t, function runTest(agent, redisClient) {
-      agent.on('transactionFinished', function(tx) {
-        var expected = [
-          [{ name: 'Datastore/all' }],
-          [{ name: 'Datastore/Redis/all' }],
-          [{ name: 'Datastore/operation/Redis/set' }]
-        ]
-        assertMetrics(tx.metrics, expected, false, false)
-        t.end()
-      })
+    agent.on('transactionFinished', function(tx) {
+      var expected = [
+        [{ name: 'Datastore/all' }],
+        [{ name: 'Datastore/Redis/all' }],
+        [{ name: 'Datastore/operation/Redis/set' }]
+      ]
+      assertMetrics(tx.metrics, expected, false, false)
+      t.end()
+    })
 
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        redisClient.set('testkey', 'testvalue').then(function (ok) {
-          transaction.end()
-        }, onError).catch(onError)
-      })
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      redisClient.set('testkey', 'testvalue').then(function (ok) {
+        transaction.end()
+      }, onError).catch(onError)
     })
   })
 
@@ -40,37 +55,45 @@ test('ioredis instrumentation', function(t) {
     var self = this
     var onError = function(error){return t.fail(error)}
 
-    var name = require.resolve('ioredis')
-    name = require.resolve('bluebird')
+    agent.on('transactionFinished', function(tx) {
+      var root = tx.trace.root
+      t.equals(root.children.length, 2, 'root has two children')
 
-    setup(t, function runTest(agent, redisClient) {
-      agent.on('transactionFinished', function(tx) {
-        var root = tx.trace.root
-        t.equals(root.children.length, 2, 'root has two children')
+      var setSegment = root.children[0]
+      t.equals(setSegment.name, 'Datastore/operation/Redis/set')
 
-        var setSegment = root.children[0]
-        t.equals(setSegment.name, 'Datastore/operation/Redis/set')
+      // ioredis operations return promise, any 'then' callbacks will be sibling segments
+      // of the original redis call
+      var getSegment = root.children[1]
+      t.equals(getSegment.name, 'Datastore/operation/Redis/get')
+      t.equals(getSegment.children.length, 0, 'should not contain any segments')
 
-        // ioredis operations return promise, any 'then' callbacks will be sibling segments
-        // of the original redis call
-        var getSegment = root.children[1]
-        t.equals(getSegment.name, 'Datastore/operation/Redis/get')
-        t.equals(getSegment.children.length, 0, 'should not contain any segments')
+      t.end()
+    })
 
-        t.end()
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      var p1 = redisClient.set('testkey', 'testvalue')
+
+      p1.then(function() {
+        return redisClient.get('testkey')
       })
+      .then(function() {
+        transaction.end()
+      })
+      .catch(onError)
+    })
+  })
 
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        var p1 = redisClient.set('testkey', 'testvalue')
-
-        p1.then(function() {
-          return redisClient.get('testkey')
-        })
+  // NODE-1524 regression
+  t.test('does not crash when ending out of transaction', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      t.ok(agent.getTransaction(), 'transaction should be in progress')
+      redisClient.set('testkey', 'testvalue')
         .then(function() {
-          transaction.end()
+          t.notOk(agent.getTransaction(), 'transaction should have ended')
+          t.end()
         })
-        .catch(onError)
-      })
+        transaction.end()
     })
   })
 
@@ -90,11 +113,6 @@ function setup(t, callback) {
 
     var Redis = require('ioredis')
     var client = new Redis(params.redis_port, params.redis_host)
-
-    t.tearDown(function cb_tearDown() {
-      helper.unloadAgent(agent)
-      client.disconnect()
-    })
 
     callback(agent, client)
   })
