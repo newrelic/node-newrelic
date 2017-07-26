@@ -714,9 +714,9 @@ function createWebTransaction(url, handle) {
  * synchronously returns UNLESS:
  * 1. The handle function returns a promise, where the end of the
  *    transaction will be tied to the end of the promise returned.
- * 2. `API#getTransaction` is called in the handle, flagging the
+ * 2. {@link API#getTransaction} is called in the handle, flagging the
  *    transaction as externally handled.  In this case the transaction
- *    will be ended when `Transaction#end` is called in the user's code.
+ *    will be ended when {@link TransactionHandle#end} is called in the user's code.
  *
  * @example
  * var newrelic = require('newrelic')
@@ -794,9 +794,9 @@ API.prototype.startBackgroundTransaction = startBackgroundTransaction
  * synchronously returns UNLESS:
  * 1. The handle function returns a promise, where the end of the
  *    transaction will be tied to the end of the promise returned.
- * 2. `API#getTransaction` is called in the handle, flagging the
+ * 2. {@link API#getTransaction} is called in the handle, flagging the
  *    transaction as externally handled.  In this case the transaction
- *    will be ended when `Transaction#end` is called in the user's code.
+ *    will be ended when {@link TransactionHandle#end} is called in the user's code.
  *
  * @example
  * var newrelic = require('newrelic')
