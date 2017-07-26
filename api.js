@@ -622,6 +622,15 @@ API.prototype.createTracer = function createTracer(name, callback) {
   return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
 }
 
+API.prototype.createWebTransaction = util.deprecate(
+  createWebTransaction,
+  [
+    'API#createWebTransaction is being deprecated!',
+    'Please use API#startWebTransaction and API#getTransaction',
+    'for transaction creation and management.'
+  ].join(' ')
+)
+
 /**
  * Creates a function that represents a web transaction. It does not start the
  * transaction automatically - the returned function needs to be invoked to start it.
@@ -638,16 +647,11 @@ API.prototype.createTracer = function createTracer(name, callback) {
                                 related transactions in APM, so it should be a generic
                                 name and not iclude any variable parameters.
  * @param {Function}  handle    Function that represents the transaction work.
+ *
+ * @memberOf API#
+ *
+ * @deprecated since version 2.0
  */
-API.prototype.createWebTransaction = util.deprecate(
-  createWebTransaction,
-  [
-    'API#createWebTransaction is being deprecated!',
-    'Please use API#startWebTransaction and API#getTransaction',
-    'for transaction creation and management.'
-  ].join(' ')
-)
-
 function createWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
@@ -878,6 +882,15 @@ function startBackgroundTransaction(name, group, handle) {
   })()
 }
 
+API.prototype.createBackgroundTransaction = util.deprecate(
+  createBackgroundTransaction,
+  [
+    'API#createBackgroundTransaction is being deprecated!',
+    'Please use API#startBackgroundTransaction and API#getTransaction',
+    'for transaction creation and management.'
+  ].join(' ')
+)
+
 /**
  * Creates a function that represents a background transaction. It does not
  * start the transaction automatically - the returned function needs to be
@@ -908,16 +921,11 @@ function startBackgroundTransaction(name, group, handle) {
  * @return {Function} The `handle` function wrapped with starting a new
  *  transaction. This function can be called repeatedly to start multiple
  *  transactions.
+ *
+ * @memberOf API#
+ *
+ * @deprecated since version 2.0
  */
-API.prototype.createBackgroundTransaction = util.deprecate(
-  createBackgroundTransaction,
-  [
-    'API#createBackgroundTransaction is being deprecated!',
-    'Please use API#startBackgroundTransaction and API#getTransaction',
-    'for transaction creation and management.'
-  ].join(' ')
-)
-
 function createBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createBackgroundTransaction'
