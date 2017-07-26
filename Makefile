@@ -134,7 +134,7 @@ docs: node_modules
 	$(JSDOC) -c ./jsdoc-conf.json --private -r .
 
 public-docs: node_modules
-	$(JSDOC) -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/
+	$(JSDOC) -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js
 	cp examples/shim/*.png out/
 
 publish-docs:

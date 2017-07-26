@@ -102,7 +102,7 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  * - ignore: set the transaction that was active when
  *   `API#getTransaction` was called to be ignored.
  *
- * @returns {object} transaction The transaction object with the `end`
+ * @returns {TransactionHandle} transaction The transaction object with the `end`
  *                               and `ignore` methods on it.
  */
 API.prototype.getTransaction = function getTransaction() {
@@ -991,6 +991,10 @@ function createBackgroundTransaction(name, group, handle) {
   return arity.fixArity(handle, proxy)
 }
 
+/**
+ * End the current web or background custom transaction. This method requires being in
+ * the correct transaction context when called.
+ */
 API.prototype.endTransaction = function endTransaction() {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/endTransaction'
@@ -1019,6 +1023,21 @@ API.prototype.endTransaction = function endTransaction() {
   }
 }
 
+/**
+ * Record an event-based metric, usually associated with a particular duration.
+ * The `name` must be a string following standard metric naming rules. The `value` will
+ * usually be a number, but it can also be an object.
+ *   * When `value` is a numeric value, it should represent the magnitude of a measurement
+ *     associated with an event; for example, the duration for a particular method call.
+ *   * When `value` is an object, it must contain count, total, min, max, and sumOfSquares
+ *     keys, all with number values. This form is useful to aggregate metrics on your own
+ *     and report them periodically; for example, from a setInterval. These values will
+ *     be aggregated with any previously collected values for the same metric. The names
+ *     of these keys match the names of the keys used by the platform API.
+ *
+ * @param  {string} name  The name of the metric.
+ * @param  {number|object} value
+ */
 API.prototype.recordMetric = function recordMetric(name, value) {
   var supportMetric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordMetric'
@@ -1070,6 +1089,14 @@ API.prototype.recordMetric = function recordMetric(name, value) {
   metric.merge(stats)
 }
 
+/**
+ * Update a metric that acts as a simple counter. The count of the selected metric will
+ * be incremented by the specified amount, defaulting to 1.
+ *
+ * @param  {string} name  The name of the metric.
+ * @param  {number} [value] The amount that the count of the metric should be incremented
+ *                          by.
+ */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
@@ -1099,6 +1126,15 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
   })
 }
 
+/**
+ * Record an event-based metric, usually associated with a particular duration.
+ *
+ * @param  {string} eventType  The name of the event. It must be an alphanumeric string
+ *                             less than 255 characters.
+ * @param  {object} attributes Object of key and value pairs. The keys must be shorter
+ *                             than 255 characters, and the values must be string, number,
+ *                             or boolean.
+ */
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
