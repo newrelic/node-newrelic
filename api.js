@@ -626,8 +626,9 @@ API.prototype.createWebTransaction = util.deprecate(
   createWebTransaction,
   [
     'API#createWebTransaction is being deprecated!',
-    'Please use API#startWebTransaction and API#getTransaction',
-    'for transaction creation and management.'
+    'Please use API#startWebTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
   ].join(' ')
 )
 
@@ -886,8 +887,9 @@ API.prototype.createBackgroundTransaction = util.deprecate(
   createBackgroundTransaction,
   [
     'API#createBackgroundTransaction is being deprecated!',
-    'Please use API#startBackgroundTransaction and API#getTransaction',
-    'for transaction creation and management.'
+    'Please use API#startBackgroundTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
   ].join(' ')
 )
 
