@@ -102,7 +102,7 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  * - ignore: set the transaction that was active when
  *   `API#getTransaction` was called to be ignored.
  *
- * @returns {object} transaction The transaction object with the `end`
+ * @returns {TransactionHandle} transaction The transaction object with the `end`
  *                               and `ignore` methods on it.
  */
 API.prototype.getTransaction = function getTransaction() {
@@ -622,6 +622,16 @@ API.prototype.createTracer = function createTracer(name, callback) {
   return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
 }
 
+API.prototype.createWebTransaction = util.deprecate(
+  createWebTransaction,
+  [
+    'API#createWebTransaction is being deprecated!',
+    'Please use API#startWebTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
+  ].join(' ')
+)
+
 /**
  * Creates a function that represents a web transaction. It does not start the
  * transaction automatically - the returned function needs to be invoked to start it.
@@ -638,16 +648,11 @@ API.prototype.createTracer = function createTracer(name, callback) {
                                 related transactions in APM, so it should be a generic
                                 name and not iclude any variable parameters.
  * @param {Function}  handle    Function that represents the transaction work.
+ *
+ * @memberOf API#
+ *
+ * @deprecated since version 2.0
  */
-API.prototype.createWebTransaction = util.deprecate(
-  createWebTransaction,
-  [
-    'API#createWebTransaction is being deprecated!',
-    'Please use API#startWebTransaction and API#getTransaction',
-    'for transaction creation and management.'
-  ].join(' ')
-)
-
 function createWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
@@ -710,9 +715,9 @@ function createWebTransaction(url, handle) {
  * synchronously returns UNLESS:
  * 1. The handle function returns a promise, where the end of the
  *    transaction will be tied to the end of the promise returned.
- * 2. `API#getTransaction` is called in the handle, flagging the
+ * 2. {@link API#getTransaction} is called in the handle, flagging the
  *    transaction as externally handled.  In this case the transaction
- *    will be ended when `Transaction#end` is called in the user's code.
+ *    will be ended when {@link TransactionHandle#end} is called in the user's code.
  *
  * @example
  * var newrelic = require('newrelic')
@@ -731,9 +736,7 @@ function createWebTransaction(url, handle) {
  * @param {Function}  handle
  *  Function that represents the transaction work.
  */
-API.prototype.startWebTransaction = startWebTransaction
-
-function startWebTransaction(url, handle) {
+API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/startWebTransaction'
   )
@@ -784,15 +787,17 @@ function startWebTransaction(url, handle) {
   })()
 }
 
+API.prototype.startBackgroundTransaction = startBackgroundTransaction
+
 /**
  * Creates and starts a background transaction to record work done in
  * the handle supplied. This transaction will run until the handle
  * synchronously returns UNLESS:
  * 1. The handle function returns a promise, where the end of the
  *    transaction will be tied to the end of the promise returned.
- * 2. `API#getTransaction` is called in the handle, flagging the
+ * 2. {@link API#getTransaction} is called in the handle, flagging the
  *    transaction as externally handled.  In this case the transaction
- *    will be ended when `Transaction#end` is called in the user's code.
+ *    will be ended when {@link TransactionHandle#end} is called in the user's code.
  *
  * @example
  * var newrelic = require('newrelic')
@@ -816,9 +821,9 @@ function startWebTransaction(url, handle) {
  *
  * @param {Function} handle
  *  Function that represents the background work.
+ *
+ * @memberOf API#
  */
-API.prototype.startBackgroundTransaction = startBackgroundTransaction
-
 function startBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/startBackgroundTransaction'
@@ -878,6 +883,16 @@ function startBackgroundTransaction(name, group, handle) {
   })()
 }
 
+API.prototype.createBackgroundTransaction = util.deprecate(
+  createBackgroundTransaction,
+  [
+    'API#createBackgroundTransaction is being deprecated!',
+    'Please use API#startBackgroundTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
+  ].join(' ')
+)
+
 /**
  * Creates a function that represents a background transaction. It does not
  * start the transaction automatically - the returned function needs to be
@@ -908,16 +923,11 @@ function startBackgroundTransaction(name, group, handle) {
  * @return {Function} The `handle` function wrapped with starting a new
  *  transaction. This function can be called repeatedly to start multiple
  *  transactions.
+ *
+ * @memberOf API#
+ *
+ * @deprecated since version 2.0
  */
-API.prototype.createBackgroundTransaction = util.deprecate(
-  createBackgroundTransaction,
-  [
-    'API#createBackgroundTransaction is being deprecated!',
-    'Please use API#startBackgroundTransaction and API#getTransaction',
-    'for transaction creation and management.'
-  ].join(' ')
-)
-
 function createBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createBackgroundTransaction'
@@ -983,6 +993,10 @@ function createBackgroundTransaction(name, group, handle) {
   return arity.fixArity(handle, proxy)
 }
 
+/**
+ * End the current web or background custom transaction. This method requires being in
+ * the correct transaction context when called.
+ */
 API.prototype.endTransaction = function endTransaction() {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/endTransaction'
@@ -1011,6 +1025,21 @@ API.prototype.endTransaction = function endTransaction() {
   }
 }
 
+/**
+ * Record an event-based metric, usually associated with a particular duration.
+ * The `name` must be a string following standard metric naming rules. The `value` will
+ * usually be a number, but it can also be an object.
+ *   * When `value` is a numeric value, it should represent the magnitude of a measurement
+ *     associated with an event; for example, the duration for a particular method call.
+ *   * When `value` is an object, it must contain count, total, min, max, and sumOfSquares
+ *     keys, all with number values. This form is useful to aggregate metrics on your own
+ *     and report them periodically; for example, from a setInterval. These values will
+ *     be aggregated with any previously collected values for the same metric. The names
+ *     of these keys match the names of the keys used by the platform API.
+ *
+ * @param  {string} name  The name of the metric.
+ * @param  {number|object} value
+ */
 API.prototype.recordMetric = function recordMetric(name, value) {
   var supportMetric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordMetric'
@@ -1062,6 +1091,14 @@ API.prototype.recordMetric = function recordMetric(name, value) {
   metric.merge(stats)
 }
 
+/**
+ * Update a metric that acts as a simple counter. The count of the selected metric will
+ * be incremented by the specified amount, defaulting to 1.
+ *
+ * @param  {string} name  The name of the metric.
+ * @param  {number} [value] The amount that the count of the metric should be incremented
+ *                          by.
+ */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
@@ -1091,6 +1128,15 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
   })
 }
 
+/**
+ * Record an event-based metric, usually associated with a particular duration.
+ *
+ * @param  {string} eventType  The name of the event. It must be an alphanumeric string
+ *                             less than 255 characters.
+ * @param  {object} attributes Object of key and value pairs. The keys must be shorter
+ *                             than 255 characters, and the values must be string, number,
+ *                             or boolean.
+ */
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
