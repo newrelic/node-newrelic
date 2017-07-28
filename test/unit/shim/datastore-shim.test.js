@@ -681,6 +681,14 @@ describe('DatastoreShim', function() {
       var statement = shim.parseQuery('SELECT * FROM table')
       expect(statement).to.be.an.instanceof(ParsedStatement)
     })
+
+    it('should strip enclosing special characters from collection', function() {
+      expect(shim.parseQuery('select * from [table]').collection).to.equal('table')
+      expect(shim.parseQuery('select * from {table}').collection).to.equal('table')
+      expect(shim.parseQuery('select * from \'table\'').collection).to.equal('table')
+      expect(shim.parseQuery('select * from "table"').collection).to.equal('table')
+      expect(shim.parseQuery('select * from `table`').collection).to.equal('table')
+    })
   })
 
   describe('#bindRowCallbackSegment', function() {
