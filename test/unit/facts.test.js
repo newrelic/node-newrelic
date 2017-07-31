@@ -4,31 +4,58 @@ var hostname = require('os').hostname
 var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
-var helper = require('../lib/agent_helper.js')
-var facts = require('../../lib/collector/facts.js')
-var sysInfo = require('../../lib/system-info.js')
-var utilTests = require('../lib/cross_agent_tests/utilization/utilization_json.json')
+var helper = require('../lib/agent_helper')
+var facts = require('../../lib/collector/facts')
+var sysInfo = require('../../lib/system-info')
+var utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
+var bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
 
 
-var EXPECTED = ['pid', 'host', 'language', 'app_name', 'labels', 'utilization',
-                'agent_version', 'environment', 'settings', 'high_security',
-                'display_host', 'identifier']
+var EXPECTED = [
+  'pid', 'host', 'language', 'app_name', 'labels', 'utilization',
+  'agent_version', 'environment', 'settings', 'high_security', 'display_host',
+  'identifier'
+]
 
-describe("fun facts about apps that New Relic is interested in include", function() {
-  var agent
+var _ip6_digits = '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
+var _ip6_nums = '(?:(?:' + _ip6_digits + '\.){3,3}' + _ip6_digits + ')'
+var IP_V6_PATTERN = new RegExp(
+  '(?:(?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,7}:|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|' +
+  '[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|' +
+  ':(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|' +
+  'fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|' +
+  '::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:' + _ip6_nums + ')|' +
+  '(?:[0-9a-fA-F]{1,4}:){1,4}:(?:' + _ip6_nums + '))'
+)
 
-  before(function() {
-    agent = helper.loadMockedAgent()
-    agent.config.utilization = {
-      detect_aws: false,
-      detect_pcf: false,
-      detect_azure: false,
-      detect_gcp: false,
-      detect_docker: false
-    }
+var IP_V4_PATTERN = new RegExp(
+  '(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}' +
+  '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
+)
+
+var DISABLE_ALL_DETECTIONS = {utilization: {
+  detect_aws: false,
+  detect_azure: false,
+  detect_gcp: false,
+  detect_pcf: false,
+  detect_docker: false
+}}
+
+
+describe('fun facts about apps that New Relic is interested in include', function() {
+  var agent = null
+
+  beforeEach(function() {
+    agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
   })
 
-  after(function() {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
@@ -49,14 +76,14 @@ describe("fun facts about apps that New Relic is interested in include", functio
     })
   })
 
-  it("the agent's language (as 'language') to be 'nodejs'", function (done) {
+  it("the agent's language (as 'language') to be 'nodejs'", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(factsed.language).equal('nodejs')
       done()
     })
   })
 
-  it("an array of one or more application names as 'app_name' (sic)", function (done) {
+  it("an array of one or more application names as 'app_name' (sic)", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(factsed.app_name).an('array')
       expect(factsed.app_name).length.above(0)
@@ -64,14 +91,14 @@ describe("fun facts about apps that New Relic is interested in include", functio
     })
   })
 
-  it("the module's version as 'agent_version'", function (done) {
+  it("the module's version as 'agent_version'", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(factsed.agent_version).equal(agent.version)
       done()
     })
   })
 
-  it("the environment (see environment.test.js) as crazy nested arrays", function (done) {
+  it("the environment (see environment.test.js) as crazy nested arrays", function(done) {
     facts(agent, function getFacts(factsed) {
       should.exist(factsed.environment)
 
@@ -82,7 +109,7 @@ describe("fun facts about apps that New Relic is interested in include", functio
     })
   })
 
-  it("an 'identifier' for this agent", function (done) {
+  it("an 'identifier' for this agent", function(done) {
     facts(agent, function(factsed) {
       expect(factsed).to.have.property('identifier')
       var identifier = factsed.identifier
@@ -93,7 +120,7 @@ describe("fun facts about apps that New Relic is interested in include", functio
     })
   })
 
-  it("and nothing else", function (done) {
+  it("and nothing else", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(Object.keys(factsed).sort()).eql(EXPECTED.sort())
         done()
@@ -108,7 +135,10 @@ describe("fun facts about apps that New Relic is interested in include", functio
     agent.config.labels[long_key] = long_value
     facts(agent, function getFacts(factsed) {
       var expected = [{label_type: 'a', label_value: 'b'}]
-      expected.push({label_type: Array(256).join('€'), label_value: Array(256).join('𝌆')})
+      expected.push({
+        label_type: Array(256).join('€'),
+        label_value: Array(256).join('𝌆')
+      })
 
       expect(factsed.labels).deep.equal(expected)
       done()
@@ -121,7 +151,10 @@ describe("fun facts about apps that New Relic is interested in include", functio
     agent.config.labels = 'a: b; ' + long_key + ' : ' + long_value
     facts(agent, function getFacts(factsed) {
       var expected = [{label_type: 'a', label_value: 'b'}]
-      expected.push({label_type: Array(256).join('€'), label_value: Array(256).join('𝌆')})
+      expected.push({
+        label_type: Array(256).join('€'),
+        label_value: Array(256).join('𝌆')
+      })
 
       expect(factsed.labels).deep.equal(expected)
       done()
@@ -129,89 +162,163 @@ describe("fun facts about apps that New Relic is interested in include", functio
   })
 })
 
-// TODO: update based on latest utilization_json.json cross-agent tests
-// that include other vendors aside from AWS
-describe('utilization', function () {
-  var agent
-  var awsInfo = require('../../lib/utilization/aws-info.js')
-  var inputKeys = [
-    'input_total_ram_mib',
-    'input_logical_processors',
-    'input_environment_variables',
-    'input_hostname',
-    'input_aws_id',
-    'input_aws_type',
-    'input_aws_zone'
-  ]
+describe('utilization', function() {
+  var agent = null
+  var awsInfo = require('../../lib/utilization/aws-info')
+  var azureInfo = require('../../lib/utilization/azure-info')
+  var gcpInfo = require('../../lib/utilization/gcp-info')
+  var common = require('../../lib/utilization/common')
 
-  utilTests.forEach(function(test, index) {
+  var startingEnv = null
+  var startingGetMemory = null
+  var startingGetProcessor = null
+  var startingDockerInfo = null
+  var startingCommonRequest = null
+  var startingCommonReadProc = null
+
+
+  beforeEach(function() {
+    startingEnv = {}
+    Object.keys(process.env).forEach(function(key) {
+      startingEnv[key] = process.env[key]
+    })
+
+    startingGetMemory = sysInfo._getMemoryStats
+    startingGetProcessor = sysInfo._getProcessorStats
+    startingDockerInfo = sysInfo._getDockerContainerId
+    startingCommonRequest = common.request
+    startingCommonReadProc = common.readProc
+
+    common.readProc = function(file, cb) {
+      setImmediate(cb, null, null)
+    }
+
+    awsInfo.clearCache()
+    azureInfo.clearCache()
+    gcpInfo.clearCache()
+  })
+
+  afterEach(function() {
+    if (agent) {
+      helper.unloadAgent(agent)
+    }
+
+    process.env = startingEnv
+    sysInfo._getMemoryStats = startingGetMemory
+    sysInfo._getProcessorStats = startingGetProcessor
+    sysInfo._getDockerContainerId = startingDockerInfo
+    common.request = startingCommonRequest
+    common.readProc = startingCommonReadProc
+
+    startingEnv = null
+    startingGetMemory = null
+    startingGetProcessor = null
+    startingDockerInfo = null
+    startingCommonRequest = null
+    startingCommonReadProc = null
+
+    awsInfo.clearCache()
+    azureInfo.clearCache()
+    gcpInfo.clearCache()
+  })
+
+  utilTests.forEach(function(test) {
     it(test.testname, function(done) {
-      var awsInput = {}
-      var systemInput = {}
       var mockHostname = false
       var mockRam = false
       var mockProc = false
-      var queryMap = {}
-      var oldEnvVars = {}
+      var mockVendorMetadata = false
+      var config = {utilization: {
+        detect_aws: false,
+        detect_azure: false,
+        detect_gcp: false,
+        detect_pcf: false,
+        detect_docker: false
+      }}
 
-      inputKeys.forEach(function setVal(key) {
-        if (Object.keys(test).indexOf(key) !== -1) {
-          var testValue = test[key]
+      Object.keys(test).forEach(function setVal(key) {
+        var testValue = test[key]
 
-          switch (key) {
-            case 'input_environment_variables':
-              Object.keys(testValue).forEach(function (name) {
-                if (Object.hasOwnProperty.call(process.env, name)) {
-                  oldEnvVars[name] = process.env[name]
-                }
-                process.env[name] = testValue[name]
-              })
-              break
-            case 'input_aws_id':
-              queryMap['instance-id'] = testValue
-              break
-            case 'input_aws_type':
-              queryMap['instance-type'] = testValue
-              break
-            case 'input_aws_zone':
-              queryMap['placement/availability-zone'] = testValue
-              break
-            case 'input_hostname':
-              mockHostname = function () {
-                return testValue
-              }
-              break
-            case 'input_total_ram_mib':
-              mockRam = function (cb) {
-                return cb(testValue)
-              }
-              break
-            case 'input_logical_processors':
-              mockProc = function (cb) {
-                return cb({
-                  logical: testValue
-                })
-              }
-              break
-          }
+        switch (key) {
+          case 'input_environment_variables':
+            Object.keys(testValue).forEach(function(name) {
+              process.env[name] = testValue[name]
+            })
+            break
+
+          case 'input_aws_id':
+          case 'input_aws_type':
+          case 'input_aws_zone':
+            mockVendorMetadata = 'aws'
+            config.utilization.detect_aws = true
+            break
+
+          case 'input_azure_location':
+          case 'input_azure_name':
+          case 'input_azure_id':
+          case 'input_azure_size':
+            mockVendorMetadata = 'azure'
+            config.utilization.detect_azure = true
+            break
+
+          case 'input_gcp_id':
+          case 'input_gcp_type':
+          case 'input_gcp_name':
+          case 'input_gcp_zone':
+            mockVendorMetadata = 'gcp'
+            config.utilization.detect_gcp = true
+            break
+
+          case 'input_pcf_guid':
+            process.env.CF_INSTANCE_GUID = testValue
+            config.utilization.detect_pcf = true
+            break
+          case 'input_pcf_ip':
+            process.env.CF_INSTANCE_IP = testValue
+            config.utilization.detect_pcf = true
+            break
+          case 'input_pcf_mem_limit':
+            process.env.MEMORY_LIMIT = testValue
+            config.utilization.detect_pcf = true
+            break
+
+          case 'input_hostname':
+            mockHostname = function() {
+              return testValue
+            }
+            break
+
+          case 'input_total_ram_mib':
+            mockRam = function(cb) {
+              return cb(testValue)
+            }
+            break
+
+          case 'input_logical_processors':
+            mockProc = function(cb) {
+              return cb({logical: testValue})
+            }
+            break
+
+          // Ignore these keys.
+          case 'testname':
+          case 'expected_output_json':
+            break
+
+          default:
+            throw new Error('Unknown test key "' + key + '"')
+            break
         }
       })
 
-      agent = helper.loadMockedAgent()
       var expected = test.expected_output_json
-      var oldGetHostname = agent.config.getHostnameSafe
-      var oldGetMemory = sysInfo._getMemoryStats
-      var oldGetProcessor = sysInfo._getProcessorStats
-      var oldDockerInfo = sysInfo._getDockerContainerId
-      // stub out docker container id query to make this consistent on
-      // all os
-      sysInfo._getDockerContainerId = function (agent, callback) {
+
+      // Stub out docker container id query to make this consistent on all OSes.
+      sysInfo._getDockerContainerId = function(_agent, callback) {
         return callback(null)
       }
-      var oldAWSQuery = awsInfo._awsQuery
-      awsInfo._awsQuery = function (key, agent, callback) {
-        return callback(queryMap[key])
-      }
+
+      agent = helper.loadMockedAgent(null, config)
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
         mockHostname = false
@@ -224,23 +331,173 @@ describe('utilization', function () {
         sysInfo._getProcessorStats = mockProc
         mockProc = false
       }
-      awsInfo.clearCache()
+      if (mockVendorMetadata) {
+        common.request = makeMockCommonRequest(test, mockVendorMetadata)
+      }
       facts(agent, function getFacts(factsed) {
-        expect(factsed.utilization).deep.equals(expected)
-        Object.keys(oldEnvVars).forEach(function (name) {
-          process.env[name] = oldEnvVars[name]
-        })
-        agent.config.getHostnameSafe = oldGetHostname
-        sysInfo._getMemoryStats = oldGetMemory
-        sysInfo._getProcessorStats = oldGetProcessor
-        awsInfo._awsQuery = oldAWSQuery
-        awsInfo.clearCache()
-        sysInfo._getDockerContainerId = oldDockerInfo
-        helper.unloadAgent(agent)
+        expect(factsed.utilization).to.deep.equal(expected)
         done()
       })
     })
   })
+
+  function makeMockCommonRequest(test, type) {
+    return function(opts, _agent, cb) {
+      expect(_agent).to.equal(agent)
+      setImmediate(
+        cb,
+        null,
+        JSON.stringify(
+          type === 'aws' ? {
+            instanceId: test.input_aws_id,
+            instanceType: test.input_aws_type,
+            availabilityZone: test.input_aws_zone
+          } : type === 'azure' ? {
+            location: test.input_azure_location,
+            name: test.input_azure_name,
+            vmId: test.input_azure_id,
+            vmSize: test.input_azure_size
+          } : type === 'gcp' ? {
+            id: test.input_gcp_id,
+            machineType: test.input_gcp_type,
+            name: test.input_gcp_name,
+            zone: test.input_gcp_zone
+          } : null
+        )
+      )
+    }
+  }
+})
+
+describe('boot_id', function() {
+  var agent = null
+  var common = require('../../lib/utilization/common')
+  var os = require('os')
+
+  var startingGetMemory = null
+  var startingGetProcessor = null
+  var startingDockerInfo = null
+  var startingCommonReadProc = null
+  var startingOsPlatform = null
+
+
+  beforeEach(function() {
+    startingGetMemory = sysInfo._getMemoryStats
+    startingGetProcessor = sysInfo._getProcessorStats
+    startingDockerInfo = sysInfo._getDockerContainerId
+    startingCommonReadProc = common.readProc
+    startingOsPlatform = os.platform
+
+    os.platform = function() { return 'linux' }
+  })
+
+  afterEach(function() {
+    if (agent) {
+      helper.unloadAgent(agent)
+    }
+
+    sysInfo._getMemoryStats = startingGetMemory
+    sysInfo._getProcessorStats = startingGetProcessor
+    sysInfo._getDockerContainerId = startingDockerInfo
+    common.readProc = startingCommonReadProc
+    os.platform = startingOsPlatform
+
+    startingGetMemory = null
+    startingGetProcessor = null
+    startingDockerInfo = null
+    startingCommonReadProc = null
+    startingOsPlatform = null
+  })
+
+  bootIdTests.forEach(function(test) {
+    it(test.testname, function(done) {
+      var mockHostname = false
+      var mockRam = false
+      var mockProc = false
+      var mockReadProc = false
+
+      Object.keys(test).forEach(function setVal(key) {
+        var testValue = test[key]
+
+        switch (key) {
+          case 'input_hostname':
+            mockHostname = function() {
+              return testValue
+            }
+            break
+
+          case 'input_total_ram_mib':
+            mockRam = function(cb) {
+              return cb(testValue)
+            }
+            break
+
+          case 'input_logical_processors':
+            mockProc = function(cb) {
+              return cb({logical: testValue})
+            }
+            break
+
+          case 'input_boot_id':
+            mockReadProc = function(file, cb) {
+              return cb(null, testValue)
+            }
+            break
+
+          // Ignore these keys.
+          case 'testname':
+          case 'expected_output_json':
+          case 'expected_metrics':
+            break
+
+          default:
+            throw new Error('Unknown test key "' + key + '"')
+            break
+        }
+      })
+
+      var expected = test.expected_output_json
+
+      // Stub out docker container id query to make this consistent on all OSes.
+      sysInfo._getDockerContainerId = function(_agent, callback) {
+        return callback(null)
+      }
+
+      agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
+      if (mockHostname) {
+        agent.config.getHostnameSafe = mockHostname
+        mockHostname = false
+      }
+      if (mockRam) {
+        sysInfo._getMemoryStats = mockRam
+        mockRam = false
+      }
+      if (mockProc) {
+        sysInfo._getProcessorStats = mockProc
+        mockProc = false
+      }
+      if (mockReadProc) {
+        common.readProc = mockReadProc
+      }
+      facts(agent, function getFacts(factsed) {
+        expect(factsed.utilization).to.deep.equal(expected)
+        checkMetrics(test.expected_metrics)
+        done()
+      })
+    })
+  })
+
+  function checkMetrics(expectedMetrics) {
+    if (!expectedMetrics) {
+      return
+    }
+
+    Object.keys(expectedMetrics).forEach(function(expectedMetric) {
+      var metric = agent.metrics.getOrCreateMetric(expectedMetric)
+      expect(metric)
+        .to.have.property('callCount', expectedMetrics[expectedMetric].call_count)
+    })
+  }
 })
 
 describe('display_host', function() {
@@ -249,14 +506,8 @@ describe('display_host', function() {
   var original_hostname = os.hostname
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
-    agent.config.utilization = {
-      detect_aws: false,
-      detect_pcf: false,
-      detect_azure: false,
-      detect_gcp: false,
-      detect_docker: false
-    }
+    agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
+    agent.config.utilization = null
     os.hostname = function() {
       throw ('BROKEN')
     }
@@ -275,7 +526,7 @@ describe('display_host', function() {
     })
   })
 
-  it("should be cached along with hostname in config", function(done) {
+  it('should be cached along with hostname in config', function(done) {
     agent.config.process_host.display_name = 'test-value'
     facts(agent, function getFacts(factsed) {
       var displayHost1 = factsed.display_host
@@ -299,6 +550,7 @@ describe('display_host', function() {
       })
     })
   })
+
   it('should be set as os.hostname() (if available) when not specified', function(done) {
     os.hostname = original_hostname
     facts(agent, function getFacts(factsed) {
@@ -306,46 +558,40 @@ describe('display_host', function() {
       done()
     })
   })
-  it(
-    "should be ipv4 when ipv_preference === '4' and os.hostname() not available",
-    function(done) {
+
+  describe('when os.hostname() not available', function() {
+    it('should be ipv4 when ipv_preference === 4', function(done) {
       agent.config.process_host.ipv_preference = '4'
-      var ipv4Pattern = /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/
 
       facts(agent, function getFacts(factsed) {
-        expect(factsed.display_host).match(ipv4Pattern)
+        expect(factsed.display_host).match(IP_V4_PATTERN)
         done()
       })
-    }
-  )
-  it(
-    "should be ipv6 when ipv_preference === '6' and os.hostname() not available",
-    function(done) {
+    })
+
+    it('should be ipv6 when ipv_preference === 6', function(done) {
       if (!agent.config.getIPAddresses().ipv6) {
         console.log('this machine does not have an ipv6 address, skipping')
         return done()
       }
       agent.config.process_host.ipv_preference = '6'
-      var ipv6Pattern = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/
 
       facts(agent, function getFacts(factsed) {
-        expect(factsed.display_host).match(ipv6Pattern)
+        expect(factsed.display_host).match(IP_V6_PATTERN)
         done()
       })
-    }
-  )
-  it(
-    "should be ipv4 when invalid ipv_preference and os.hostname() not available",
-    function badIpPref(done) {
+    })
+
+    it('should be ipv4 when invalid ipv_preference', function badIpPref(done) {
       agent.config.process_host.ipv_preference = '9'
-      var ipv4Pattern = /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/
 
       facts(agent, function getFacts(factsed) {
-        expect(factsed.display_host).match(ipv4Pattern)
+        expect(factsed.display_host).match(IP_V4_PATTERN)
         done()
       })
-    }
-  )
+    })
+  })
+
   describe("When os.networkInterfaces()", function netInterface() {
     it("returns no ipv4, hostname should be ipv6 if possible",
       function noip4(done) {
@@ -363,10 +609,9 @@ describe('display_host', function() {
         }
         var original_NI = os.networkInterfaces
         os.networkInterfaces = createMock(mockedNI)
-        var ipv6Pattern = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/
 
         facts(agent, function getFacts(factsed) {
-          expect(factsed.display_host).match(ipv6Pattern)
+          expect(factsed.display_host).match(IP_V6_PATTERN)
           os.networkInterfaces = original_NI
           done()
         })

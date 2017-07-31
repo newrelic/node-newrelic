@@ -41,11 +41,9 @@ describe('Utilization Common Components', function() {
       expect(common.getKeys({foo: 'foo', bar: 'bar\0'}, ['foo', 'bar'])).to.be.null()
     })
 
-    it('should automatically reduce over-large values', function() {
-      var reduced = BIG.substr(0, 255)
-      expect(common.getKeys({foo: BIG}, ['foo'])).to.deep.equal({foo: reduced})
+    it('should return null if any value is too large', function() {
+      expect(common.getKeys({foo: BIG}, ['foo'])).to.be.null()
     })
-
 
     it('should pull only the desired values', function() {
       expect(common.getKeys({foo: 'foo', bar: 'bar', baz: 'baz'}, ['foo', 'baz']))

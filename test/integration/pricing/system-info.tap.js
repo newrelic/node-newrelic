@@ -1,9 +1,9 @@
 'use strict'
 
+var helper = require('../../lib/agent_helper')
 var test = require('tap').test
 var nock = require('nock')
 var fetchSystemInfo = require('../../../lib/system-info')
-var EventEmitter = require('events').EventEmitter
 
 
 test('pricing system-info aws', function(t) {
@@ -22,8 +22,7 @@ test('pricing system-info aws', function(t) {
     awsRedirect.get('/2016-09-02/' + awsPath).reply(200, awsResponses[awsPath])
   }
 
-  var fakeAgent = new EventEmitter()
-  fakeAgent.config = {
+  var agent = helper.loadMockedAgent(null, {
     utilization: {
       detect_aws: true,
       detect_pcf: false,
@@ -31,22 +30,72 @@ test('pricing system-info aws', function(t) {
       detect_gcp: false,
       detect_docker: false
     }
-  }
+  })
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
 
-  fetchSystemInfo(fakeAgent, function cb_fetchSystemInfo(systemInfo) {
+  fetchSystemInfo(agent, function cb_fetchSystemInfo(systemInfo) {
     t.same(systemInfo.vendors.aws, {
       instanceType: 'test.type',
       instanceId: 'test.id',
       availabilityZone: 'us-west-2b'
     })
-    // This will throw an error if the sys info isn't being cached
-    // properly
+
+    // This will throw an error if the sys info isn't being cached properly
     t.ok(awsRedirect.isDone(), 'should exhaust nock endpoints')
-    fetchSystemInfo(fakeAgent, function checkCache(cachedInfo) {
+    fetchSystemInfo(agent, function checkCache(cachedInfo) {
       t.same(cachedInfo.vendors.aws, {
         instanceType: 'test.type',
         instanceId: 'test.id',
         availabilityZone: 'us-west-2b'
+      })
+      t.end()
+    })
+  })
+})
+
+test('pricing system-info azure', function(t) {
+  var azureHost = "http://169.254.169.254"
+  var azureResponse = {
+    location: 'test.location',
+    name: 'test.name',
+    vmId: 'test.vmId',
+    vmSize: 'test.vmSize'
+  }
+
+  var azureRedirect = nock(azureHost)
+  azureRedirect.get('/metadata/instance/compute?api-version=2017-03-01')
+    .reply(200, azureResponse)
+
+  var agent = helper.loadMockedAgent(null, {
+    utilization: {
+      detect_aws: false,
+      detect_azure: true,
+      detect_gcp: false,
+      detect_docker: false
+    }
+  })
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
+
+  fetchSystemInfo(agent, function cb_fetchSystemInfo(systemInfo) {
+    t.same(systemInfo.vendors.azure, {
+      location: 'test.location',
+      name: 'test.name',
+      vmId: 'test.vmId',
+      vmSize: 'test.vmSize'
+    })
+
+    // This will throw an error if the sys info isn't being cached properly
+    t.ok(azureRedirect.isDone(), 'should exhaust nock endpoints')
+    fetchSystemInfo(agent, function checkCache(cachedInfo) {
+      t.same(cachedInfo.vendors.azure, {
+        location: 'test.location',
+        name: 'test.name',
+        vmId: 'test.vmId',
+        vmSize: 'test.vmSize'
       })
       t.end()
     })
@@ -61,10 +110,8 @@ test('pricing system-info gcp', function(t) {
   })
 
   var gcpRedirect = nock('http://metadata.google.internal', {
-      reqheaders: {
-        'Metadata-Flavor': 'Google'
-      }
-    })
+    reqheaders: {'Metadata-Flavor': 'Google'}
+  })
     .get('/computeMetadata/v1/instance/')
     .query({recursive: true})
     .reply(200, {
@@ -74,8 +121,7 @@ test('pricing system-info gcp', function(t) {
       zone: 'projects/492690098729/zones/us-central1-c'
     })
 
-  var fakeAgent = new EventEmitter()
-  fakeAgent.config = {
+  var agent = helper.loadMockedAgent(null, {
     utilization: {
       detect_aws: false,
       detect_pcf: false,
@@ -83,9 +129,12 @@ test('pricing system-info gcp', function(t) {
       detect_gcp: true,
       detect_docker: false
     }
-  }
+  })
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
 
-  fetchSystemInfo(fakeAgent, function cb_fetchSystemInfo(systemInfo) {
+  fetchSystemInfo(agent, function cb_fetchSystemInfo(systemInfo) {
     var expectedData = {
       id: '3161347020215157000',
       machineType: 'custom-1-1024',
@@ -93,10 +142,10 @@ test('pricing system-info gcp', function(t) {
       zone: 'us-central1-c'
     }
     t.same(systemInfo.vendors.gcp, expectedData)
-    // This will throw an error if the sys info isn't being cached
-    // properly
+
+    // This will throw an error if the sys info isn't being cached properly
     t.ok(gcpRedirect.isDone(), 'should exhaust nock endpoints')
-    fetchSystemInfo(fakeAgent, function checkCache(cachedInfo) {
+    fetchSystemInfo(agent, function checkCache(cachedInfo) {
       t.same(cachedInfo.vendors.gcp, expectedData)
       t.end()
     })
