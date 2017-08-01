@@ -1,3 +1,18 @@
+
+### v2.0.2 (2017-08-01)
+* Improved documentation for `newrelic.start*Transaction` and `TransactionHandle.`
+
+  Formatting for the `startWebTransaction` and `startBackgroundTransaction`
+  methods was fixed and documentation for the `TransactionHandle` class which
+  `getTransaction` returns was added.
+
+* Fixed parsing the table name from SQL queries.
+
+  Quotes around the table name are now stripped after parsing the query and
+  before constructing the metrics.
+
+* Fixed unhandled rejection error caused by `ioredis` instrumentation.
+
 ### v2.0.1 (2017-07-25)
 * Fixed issue with transaction events not including correct duration values.
 
