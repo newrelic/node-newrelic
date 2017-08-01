@@ -26,6 +26,7 @@ test('pricing system-info aws', function(t) {
   fakeAgent.config = {
     utilization: {
       detect_aws: true,
+      detect_pcf: false,
       detect_azure: false,
       detect_gcp: false,
       detect_docker: false
@@ -77,6 +78,7 @@ test('pricing system-info gcp', function(t) {
   fakeAgent.config = {
     utilization: {
       detect_aws: false,
+      detect_pcf: false,
       detect_azure: false,
       detect_gcp: true,
       detect_docker: false

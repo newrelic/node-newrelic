@@ -34,6 +34,7 @@ test("support ssl to the proxy", function (t) {
       'port': 443,
       'utilization': {
         'detect_aws': false,
+        'detect_pcf': false,
         'detect_gcp': false,
         'detect_docker': false
       },
@@ -80,6 +81,7 @@ test("setting proxy_port should use the proxy agent", function (t) {
       'ssl': true,
       'utilization': {
         'detect_aws': false,
+        'detect_pcf': false,
         'detect_gcp': false,
         'detect_docker': false
       },
@@ -125,6 +127,7 @@ test("proxy agent with SSL tunnel to collector", function (t) {
       'ssl': true,
       'utilization': {
         'detect_aws': false,
+        'detect_pcf': false,
         'detect_gcp': false,
         'detect_docker': false
       },
@@ -172,6 +175,7 @@ test("proxy agent with plain text to collector", function (t) {
       'ssl': false,
       'utilization': {
         'detect_aws': false,
+        'detect_pcf': false,
         'detect_gcp': false,
         'detect_docker': false
       },
@@ -231,6 +235,7 @@ test("proxy authentication should set headers", function (t) {
       'ssl': false,
       'utilization': {
         'detect_aws': false,
+        'detect_pcf': false,
         'detect_gcp': false,
         'detect_docker': false
       },
@@ -254,6 +259,7 @@ test("no proxy set should not use proxy agent", function (t) {
     'ssl': true,
     'utilization': {
       'detect_aws': false,
+      'detect_pcf': false,
       'detect_gcp': false,
       'detect_docker': false
     },

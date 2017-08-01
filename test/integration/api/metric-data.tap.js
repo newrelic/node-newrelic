@@ -16,6 +16,7 @@ test("Collector API should send metrics to staging-collector.newrelic.com", func
         'ssl': false,
         'utilization': {
           'detect_aws': false,
+          'detect_pcf': false,
           'detect_docker': false
         },
         'logging': {

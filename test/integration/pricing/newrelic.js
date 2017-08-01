@@ -7,6 +7,7 @@ exports.config = {
   },
   utilization: {
     detect_aws: true,
+    detect_pcf: true,
     detect_azure: true,
     detect_gcp: true,
     detect_docker: true

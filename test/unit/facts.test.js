@@ -21,6 +21,7 @@ describe("fun facts about apps that New Relic is interested in include", functio
     agent = helper.loadMockedAgent()
     agent.config.utilization = {
       detect_aws: false,
+      detect_pcf: false,
       detect_azure: false,
       detect_gcp: false,
       detect_docker: false
@@ -251,6 +252,7 @@ describe('display_host', function() {
     agent = helper.loadMockedAgent()
     agent.config.utilization = {
       detect_aws: false,
+      detect_pcf: false,
       detect_azure: false,
       detect_gcp: false,
       detect_docker: false
