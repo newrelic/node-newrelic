@@ -22,9 +22,12 @@ module.exports = function(t, vendor) {
   })
 
   fs.readFile(testFile, function(err, data) {
-    if (err) {
-      throw err
+    if (!t.error(err, 'should not error loading tests')) {
+      t.fail('Could not load tests!')
+      t.end()
+      return
     }
+
     var cases = JSON.parse(data)
 
     t.autoend()
