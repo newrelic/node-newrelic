@@ -24,9 +24,7 @@ test('await', function(t) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent({
-    feature_flag: {
-      await_support: true
-    }
+    await_support: true
   })
   t.tearDown(function() {
     helper.unloadAgent(agent)
