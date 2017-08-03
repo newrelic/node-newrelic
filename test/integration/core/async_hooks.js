@@ -1,11 +1,4 @@
 'use strict'
-var semver = require('semver')
-
-if (semver.satisfies(process.version, "<8")) {
-  console.log('async hooks are not supported in node version: ' + process.version)
-  return
-}
-
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var asyncHooks = require('async_hooks')
@@ -18,7 +11,26 @@ test('await', function(t) {
     await Promise.resolve("i'll be back")
     transaction = agent.getTransaction()
     t.equal(transaction && transaction.id, txn.id)
-    txn.end(t.end.bind(t))
+    txn.end(t.end)
+  })
+})
+
+test('promise hooks', function(t) {
+  var testMetrics = {
+    initCalled: 0,
+    beforeCalled: 0,
+    afterCalled: 0,
+    destroyCalled: 0
+  }
+  asyncHooks.createHook({
+    init: function initHook(id, type, triggerAsyncId) {
+    },
+    before: function beforeHook(id) {
+    },
+    after: function afterHook(id) {
+    },
+    destroy: function destHook(id) {
+    }
   })
 })
 
