@@ -4,7 +4,7 @@ var expect = require('chai').expect
 var helper = require('../../lib/agent_helper')
 var DatastoreShim = require('../../../lib/shim/datastore-shim')
 var ParsedStatement = require('../../../lib/db/parsed-statement')
-var tests = require('../../lib/cross_agent_tests/datastore_instances')
+var tests = require('../../lib/cross_agent_tests/datastores/datastore_instances')
 
 
 describe('Datastore instance metrics collected via the datastore shim', function() {
