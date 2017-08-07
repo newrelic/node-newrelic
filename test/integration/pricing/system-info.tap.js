@@ -3,6 +3,7 @@
 var helper = require('../../lib/agent_helper')
 var test = require('tap').test
 var nock = require('nock')
+var proxyquire = require('proxyquire')
 var fetchSystemInfo = require('../../../lib/system-info')
 
 
@@ -71,6 +72,7 @@ test('pricing system-info azure', function(t) {
   var agent = helper.loadMockedAgent(null, {
     utilization: {
       detect_aws: false,
+      detect_pcf: false,
       detect_azure: true,
       detect_gcp: false,
       detect_docker: false
@@ -149,5 +151,70 @@ test('pricing system-info gcp', function(t) {
       t.same(cachedInfo.vendors.gcp, expectedData)
       t.end()
     })
+  })
+})
+
+test('pricing system-info pcf', function(t) {
+  var agent = helper.loadMockedAgent(null, {
+    utilization: {
+      detect_aws: false,
+      detect_pcf: true,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: false
+    }
+  })
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
+
+  process.env.CF_INSTANCE_GUID = 'b977d090-83db-4bdb-793a-bb77'
+  process.env.CF_INSTANCE_IP = '10.10.147.130'
+  process.env.MEMORY_LIMIT = '1024m'
+
+  fetchSystemInfo(agent, function cb_fetchSystemInfo(systemInfo) {
+    var expectedData = {
+      cf_instance_guid: 'b977d090-83db-4bdb-793a-bb77',
+      cf_instance_ip: '10.10.147.130',
+      memory_limit: '1024m'
+    }
+    t.same(systemInfo.vendors.pcf, expectedData)
+    t.end()
+  })
+})
+
+test('pricing system-info docker', function(t) {
+  var mockUtilization = proxyquire('../../../lib/utilization', {
+    './docker-info': {
+      getVendorInfo: function(agent, callback) {
+        var data =
+          {id: '47cbd16b77c50cbf71401c069cd2189f0e659af17d5a2daca3bddf59d8a870b2'}
+        setImmediate(callback, null, data)
+      }
+    }
+  })
+  var fetchSystemInfo = proxyquire('../../../lib/system-info', {
+    './utilization': mockUtilization
+  })
+
+  var agent = helper.loadMockedAgent(null, {
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: true
+    }
+  })
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
+
+  fetchSystemInfo(agent, function cb_fetchSystemInfo(systemInfo) {
+    var expectedData = {
+      id: '47cbd16b77c50cbf71401c069cd2189f0e659af17d5a2daca3bddf59d8a870b2'
+    }
+    t.same(systemInfo.vendors.docker, expectedData)
+    t.end()
   })
 })
