@@ -1,4 +1,13 @@
 
+### v2.1.0 (2017-08-08)
+* Improved metadata collection for AWS, Azure, GCE, and Pivotal Cloud Foundry.
+
+* Fixed a bug in PG query obfuscation for `$` placeholders.
+
+  The agent used to mis-detect `$1` value placeholders as unmatched dollar-quoted
+  strings causing the whole query to be obfuscated to just `?`. These
+  placeholders are now correctly detected and obfuscated.
+
 ### v2.0.2 (2017-08-01)
 * Improved documentation for `newrelic.start*Transaction` and `TransactionHandle.`
 
