@@ -6,10 +6,10 @@ var asyncHooks = require('async_hooks')
 function testSegments(t, segmentMap) {
   global.gc()
   // Give the gc some time to work.
-  setImmediate(function() {
+  setTimeout(function() {
     t.notOk(Object.keys(segmentMap).length, 'segments should be cleared after gc')
     t.end()
-  })
+  }, 10)
 }
 
 test('await', function(t) {
@@ -46,7 +46,7 @@ test('await', function(t) {
   })
 })
 
-test("the agent's async hook", function (t) {
+test("the agent's async hook", function(t) {
   t.autoend()
   t.test('does not crash on multiple resolve calls', function(t) {
     var agent = setupAgent(t)
@@ -56,15 +56,81 @@ test("the agent's async hook", function (t) {
         new Promise(function(res, rej) {
           res()
           res()
-        }).then(function() {
-          if (!called) {
-            called = true
-          } else {
-            throw new Error('then called twice')
-          }
-        })
+        }).then(t.end)
       })
-      t.end()
+    })
+  })
+
+  t.test('handles multientry callbacks correctly', function(t) {
+    class TestResource extends asyncHooks.AsyncResource {
+      constructor(id) {
+        super('PROMISE', id)
+      }
+
+      doStuff(callback) {
+        setImmediate(() => {
+          this.emitBefore()
+          callback()
+          this.emitAfter()
+        })
+      }
+    }
+
+    var agent = setupAgent(t)
+    var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
+    helper.runInTransaction(agent, function(txn) {
+      var root = agent.tracer.segment
+
+      var aSeg = agent.tracer.createSegment('A')
+      agent.tracer.segment = aSeg
+      var resA = new TestResource(1)
+
+      var bSeg = agent.tracer.createSegment('B')
+      agent.tracer.segment = bSeg
+      var resB = new TestResource(2)
+
+      agent.tracer.segment = root
+
+      t.equal(
+        Object.keys(segmentMap).length,
+        2,
+        'all resources should create an entry on init'
+      )
+
+      resA.doStuff(() => {
+        t.equal(
+          agent.tracer.segment.name,
+          aSeg.name,
+          'calling emitBefore should restore the segment active when a resource was made'
+        )
+
+        resB.doStuff(() => {
+          t.equal(
+            agent.tracer.segment.name,
+            bSeg.name,
+            'calling emitBefore should restore the segment active when a resource was made'
+          )
+
+          t.end()
+        })
+        t.equal(
+          agent.tracer.segment.name,
+          aSeg.name,
+          'calling emitAfter should restore the segment active when a callback was called'
+        )
+      })
+      t.equal(
+        agent.tracer.segment.name,
+        root.name,
+        'root should be restored after we are finished'
+      )
+      resA.doStuff(() => {
+        t.equal(
+          agent.tracer.segment.name,
+          aSeg.name,
+          'calling emitBefore should restore the segment active when a resource was made'
+        )
+      })
     })
   })
 })
