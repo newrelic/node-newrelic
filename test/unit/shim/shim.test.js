@@ -1181,22 +1181,77 @@ describe('Shim', function() {
   })
 
   describe('#getSegment', function() {
+    var segment = null
+
+    beforeEach(function() {
+      segment = {probe: function() {}}
+    })
+
     it('should return the segment a function is bound to', function() {
-      var segment = { probe: function() {} }
       var bound = shim.bindSegment(function() {}, segment)
       expect(shim.getSegment(bound)).to.equal(segment)
     })
 
     it('should return the current segment if the function is not bound', function() {
-      var segment = { probe: function() {} }
       agent.tracer.segment = segment
       expect(shim.getSegment(function() {})).to.equal(segment)
     })
 
     it('should return the current segment if no object is provided', function() {
-      var segment = { probe: function() {} }
       agent.tracer.segment = segment
       expect(shim.getSegment()).to.equal(segment)
+    })
+  })
+
+  describe('#getActiveSegment', function() {
+    var segment = null
+
+    beforeEach(function() {
+      segment = {
+        probe: function() {},
+        transaction: {
+          active: true,
+          isActive: function() { return this.active }
+        }
+      }
+    })
+
+    describe('when the transaction is active', function() {
+      it('should return the segment a function is bound to', function() {
+        var bound = shim.bindSegment(function() {}, segment)
+        expect(shim.getActiveSegment(bound)).to.equal(segment)
+      })
+
+      it('should return the current segment if the function is not bound', function() {
+        agent.tracer.segment = segment
+        expect(shim.getActiveSegment(function() {})).to.equal(segment)
+      })
+
+      it('should return the current segment if no object is provided', function() {
+        agent.tracer.segment = segment
+        expect(shim.getActiveSegment()).to.equal(segment)
+      })
+    })
+
+    describe('when the transaction is not active', function() {
+      beforeEach(function() {
+        segment.transaction.active = false
+      })
+
+      it('should return null for a bound function', function() {
+        var bound = shim.bindSegment(function() {}, segment)
+        expect(shim.getActiveSegment(bound)).to.be.null()
+      })
+
+      it('should return null if the function is not bound', function() {
+        agent.tracer.segment = segment
+        expect(shim.getActiveSegment(function() {})).to.be.null()
+      })
+
+      it('should return null if no object is provided', function() {
+        agent.tracer.segment = segment
+        expect(shim.getActiveSegment()).to.be.null()
+      })
     })
   })
 
