@@ -65,9 +65,9 @@ describe('Shim', function() {
           return 'foobar'
         })
 
-        expect(getterCalled).to.be.false
+        expect(getterCalled).to.be.false()
         expect(foo.bar).to.equal('foobar')
-        expect(getterCalled).to.be.true
+        expect(getterCalled).to.be.true()
       })
     })
   })
@@ -194,7 +194,7 @@ describe('Shim', function() {
 
         expect(wrapped).to.not.equal(wrappable)
         expect(wrapped).to.have.property('wrappable', wrappable)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
       })
     })
 
@@ -243,11 +243,11 @@ describe('Shim', function() {
       })
 
       it('should mark wrapped properties as such', function() {
-        expect(shim.isWrapped(wrappable, 'bar')).to.be.true
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.true()
       })
 
       it('should not mark unwrapped properties as wrapped', function() {
-        expect(shim.isWrapped(wrappable, 'fiz')).to.be.false
+        expect(shim.isWrapped(wrappable, 'fiz')).to.be.false()
       })
     })
 
@@ -284,7 +284,7 @@ describe('Shim', function() {
 
     it('should not wrap non-functions', function() {
       shim.bindSegment(wrappable, 'name')
-      expect(shim.isWrapped(wrappable, 'name')).to.be.false
+      expect(shim.isWrapped(wrappable, 'name')).to.be.false()
     })
 
     it('should not error if `nodule` is `null`', function() {
@@ -298,7 +298,7 @@ describe('Shim', function() {
         var wrapped = shim.bindSegment(wrappable.getActiveSegment, segment)
 
         expect(wrapped).to.not.equal(wrappable.getActiveSegment)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.getActiveSegment)
       })
 
@@ -306,7 +306,7 @@ describe('Shim', function() {
         var wrapped = shim.bindSegment(wrappable.getActiveSegment, null, segment)
 
         expect(wrapped).to.not.equal(wrappable.getActiveSegment)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.getActiveSegment)
       })
     })
@@ -315,13 +315,13 @@ describe('Shim', function() {
       it('should not wrap the function at all', function() {
         var wrapped = shim.bindSegment(wrappable.getActiveSegment)
         expect(wrapped).to.equal(wrappable.getActiveSegment)
-        expect(shim.isWrapped(wrapped)).to.be.false
+        expect(shim.isWrapped(wrapped)).to.be.false()
       })
 
       it('should be safe to pass a full param', function() {
         var wrapped = shim.bindSegment(wrappable.getActiveSegment, null, true)
         expect(wrapped).to.equal(wrappable.getActiveSegment)
-        expect(shim.isWrapped(wrapped)).to.be.false
+        expect(shim.isWrapped(wrapped)).to.be.false()
         expect(wrapped).to.not.throw()
       })
     })
@@ -363,16 +363,16 @@ describe('Shim', function() {
         shim.bindSegment(wrappable, 'getActiveSegment', segment)
         wrappable.getActiveSegment()
 
-        expect(segment.started).to.be.false
-        expect(segment.touched).to.be.false
+        expect(segment.started).to.be.false()
+        expect(segment.touched).to.be.false()
       })
 
       it('should start and touch the segment if `full` is `true`', function() {
         shim.bindSegment(wrappable, 'getActiveSegment', segment, true)
         wrappable.getActiveSegment()
 
-        expect(segment.started).to.be.true
-        expect(segment.touched).to.be.true
+        expect(segment.started).to.be.true()
+        expect(segment.touched).to.be.true()
       })
 
       it('should default to the current segment', function() {
@@ -390,7 +390,7 @@ describe('Shim', function() {
   describe('#wrapReturn', function() {
     it('should not wrap non-function objects', function() {
       shim.wrapReturn(wrappable, 'name', function() {})
-      expect(shim.isWrapped(wrappable, 'name')).to.be.false
+      expect(shim.isWrapped(wrappable, 'name')).to.be.false()
     })
 
     describe('with no properties', function() {
@@ -398,7 +398,7 @@ describe('Shim', function() {
         var wrapped = shim.wrapReturn(wrappable.bar, function() {})
 
         expect(wrapped).to.not.equal(wrappable.bar)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
       })
 
@@ -406,7 +406,7 @@ describe('Shim', function() {
         var wrapped = shim.wrapReturn(wrappable.bar, null, function() {})
 
         expect(wrapped).to.not.equal(wrappable.bar)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
       })
     })
@@ -417,7 +417,7 @@ describe('Shim', function() {
         shim.wrapReturn(wrappable, 'bar', function() {})
 
         expect(wrappable.bar).to.not.equal(original)
-        expect(shim.isWrapped(wrappable, 'bar')).to.be.true
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.true()
         expect(shim.unwrap(wrappable.bar)).to.equal(original)
       })
     })
@@ -444,7 +444,7 @@ describe('Shim', function() {
       it('should execute the wrapped function', function() {
         shim.wrapReturn(toWrap, 'foo', function() {})
         var res = toWrap.foo('a', 'b', 'c')
-        expect(executed).to.be.true
+        expect(executed).to.be.true()
         expect(res.context).to.equal(toWrap)
         expect(res.args).to.eql(['a', 'b', 'c'])
       })
@@ -457,7 +457,7 @@ describe('Shim', function() {
         })
 
         toWrap.foo()
-        expect(specExecuted).to.be.true
+        expect(specExecuted).to.be.true()
       })
 
       it('should invoke the spec in the context of the wrapped function', function() {
@@ -499,7 +499,7 @@ describe('Shim', function() {
   describe('#wrapClass', function() {
     it('should not wrap non-function objects', function() {
       shim.wrapClass(wrappable, 'name', function() {})
-      expect(shim.isWrapped(wrappable, 'name')).to.be.false
+      expect(shim.isWrapped(wrappable, 'name')).to.be.false()
     })
 
     describe('with no properties', function() {
@@ -507,7 +507,7 @@ describe('Shim', function() {
         var wrapped = shim.wrapClass(wrappable.bar, function() {})
 
         expect(wrapped).to.not.equal(wrappable.bar)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
       })
 
@@ -515,7 +515,7 @@ describe('Shim', function() {
         var wrapped = shim.wrapClass(wrappable.bar, null, function() {})
 
         expect(wrapped).to.not.equal(wrappable.bar)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
       })
     })
@@ -526,7 +526,7 @@ describe('Shim', function() {
         shim.wrapClass(wrappable, 'bar', function() {})
 
         expect(wrappable.bar).to.not.equal(original)
-        expect(shim.isWrapped(wrappable, 'bar')).to.be.true
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.true()
         expect(shim.unwrap(wrappable.bar)).to.equal(original)
       })
     })
@@ -551,7 +551,7 @@ describe('Shim', function() {
       it('should execute the wrapped function', function() {
         shim.wrapClass(toWrap, 'Foo', function() {})
         var res = new toWrap.Foo('a', 'b', 'c')
-        expect(executed).to.be.true
+        expect(executed).to.be.true()
         expect(res.context).to.equal(res)
         expect(res.args).to.eql(['a', 'b', 'c'])
       })
@@ -575,9 +575,9 @@ describe('Shim', function() {
         })
 
         var foo = new toWrap.Foo()
-        expect(preExecuted).to.be.true
-        expect(foo.executed).to.be.true
-        expect(postExecuted).to.be.true
+        expect(preExecuted).to.be.true()
+        expect(foo.executed).to.be.true()
+        expect(postExecuted).to.be.true()
       })
 
       it('should pass items in the `args` parameter to the spec', function() {
@@ -620,21 +620,21 @@ describe('Shim', function() {
     it('should not wrap non-function objects', function() {
       var wrapped = shim.record(wrappable, function() {})
       expect(wrapped).to.equal(wrappable)
-      expect(shim.isWrapped(wrapped)).to.be.false
+      expect(shim.isWrapped(wrapped)).to.be.false()
     })
 
     describe('with no properties', function() {
       it('should wrap the first parameter if no properties are given', function() {
         var wrapped = shim.record(wrappable.bar, function() {})
         expect(wrapped).to.not.equal(wrappable.bar)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
       })
 
       it('should wrap the first parameter if `null` is given for properties', function() {
         var wrapped = shim.record(wrappable.bar, null, function() {})
         expect(wrapped).to.not.equal(wrappable.bar)
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
         expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
       })
     })
@@ -644,13 +644,13 @@ describe('Shim', function() {
         var original = wrappable.bar
         shim.record(wrappable, 'bar', function() {})
         expect(wrappable.bar).to.not.equal(original)
-        expect(shim.isWrapped(wrappable.bar)).to.be.true
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
         expect(shim.unwrap(wrappable.bar)).to.equal(original)
       })
 
       it('should not mark unwrapped properties as wrapped', function() {
         shim.record(wrappable, 'name', function() {})
-        expect(shim.isWrapped(wrappable.name)).to.be.false
+        expect(shim.isWrapped(wrappable.name)).to.be.false()
       })
     })
 
@@ -674,7 +674,7 @@ describe('Shim', function() {
 
       it('should still bind the callback', function() {
         var wrapped = shim.record(function(cb) {
-          expect(shim.isWrapped(cb)).to.be.true
+          expect(shim.isWrapped(cb)).to.be.true()
         }, function() {
           return {name: 'test segment', internal: true, callback: shim.LAST}
         })
@@ -926,9 +926,9 @@ describe('Shim', function() {
             return {name: 'test segment'}
           })
 
-          expect(executed).to.be.false
+          expect(executed).to.be.false()
           wrapped()
-          expect(executed).to.be.true
+          expect(executed).to.be.true()
         })
 
         it('should not invoke the spec', function() {
@@ -992,9 +992,9 @@ describe('Shim', function() {
           })
 
           helper.runInTransaction(agent, function() {
-            expect(executed).to.be.false
+            expect(executed).to.be.false()
             wrapped()
-            expect(executed).to.be.true
+            expect(executed).to.be.true()
           })
         })
 
@@ -1011,7 +1011,7 @@ describe('Shim', function() {
 
           helper.runInTransaction(agent, function() {
             wrappable.bar('a', 'b', 'c')
-            expect(executed).to.be.true
+            expect(executed).to.be.true()
           })
         })
 
@@ -1019,7 +1019,7 @@ describe('Shim', function() {
           var cb = function() {}
           var toWrap = function(wrappedCB) {
             expect(wrappedCB).to.not.equal(cb)
-            expect(shim.isWrapped(wrappedCB)).to.be.true
+            expect(shim.isWrapped(wrappedCB)).to.be.true()
             expect(shim.unwrap(wrappedCB)).to.equal(cb)
 
             expect(function() {
@@ -1040,7 +1040,7 @@ describe('Shim', function() {
           var cb = function() {}
           var toWrap = function(wrappedCB) {
             expect(wrappedCB).to.not.equal(cb)
-            expect(shim.isWrapped(wrappedCB)).to.be.true
+            expect(shim.isWrapped(wrappedCB)).to.be.true()
             expect(shim.unwrap(wrappedCB)).to.equal(cb)
 
             expect(function() {
@@ -1081,9 +1081,9 @@ describe('Shim', function() {
 
           helper.runInTransaction(agent, function(tx) {
             tx.end()
-            expect(executed).to.be.false
+            expect(executed).to.be.false()
             wrapped()
-            expect(executed).to.be.true
+            expect(executed).to.be.true()
           })
         })
 
@@ -1096,7 +1096,7 @@ describe('Shim', function() {
           helper.runInTransaction(agent, function(tx) {
             tx.end()
             wrappable.bar('a', 'b', 'c')
-            expect(executed).to.be.false
+            expect(executed).to.be.false()
           })
         })
 
@@ -1104,7 +1104,7 @@ describe('Shim', function() {
           var cb = function() {}
           var toWrap = function(wrappedCB) {
             expect(wrappedCB).to.equal(cb)
-            expect(shim.isWrapped(wrappedCB)).to.be.false
+            expect(shim.isWrapped(wrappedCB)).to.be.false()
           }
           var wrapped = shim.record(toWrap, function() {
             return {name: 'test segment', callback: shim.LAST}
@@ -1120,7 +1120,7 @@ describe('Shim', function() {
           var cb = function() {}
           var toWrap = function(wrappedCB) {
             expect(wrappedCB).to.equal(cb)
-            expect(shim.isWrapped(wrappedCB)).to.be.false
+            expect(shim.isWrapped(wrappedCB)).to.be.false()
           }
           var wrapped = shim.record(toWrap, function() {
             return {name: 'test segment', rowCallback: shim.LAST}
@@ -1139,10 +1139,10 @@ describe('Shim', function() {
     describe('without a property', function() {
       it('should return true if the object was wrapped', function() {
         var toWrap = function() {}
-        expect(shim.isWrapped(toWrap)).to.be.false
+        expect(shim.isWrapped(toWrap)).to.be.false()
 
         var wrapped = shim.wrap(toWrap, function() { return function() {} })
-        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.isWrapped(wrapped)).to.be.true()
       })
 
       it('should not error if the object is `null`', function() {
@@ -1150,30 +1150,30 @@ describe('Shim', function() {
           shim.isWrapped(null)
         }).to.not.throw()
 
-        expect(shim.isWrapped(null)).to.be.false
+        expect(shim.isWrapped(null)).to.be.false()
       })
     })
 
     describe('with a property', function() {
       it('should return true if the property was wrapped', function() {
-        expect(shim.isWrapped(wrappable, 'bar')).to.be.false
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.false()
 
         shim.wrap(wrappable, 'bar', function() { return function() {} })
-        expect(shim.isWrapped(wrappable, 'bar')).to.be.true
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.true()
       })
 
       it('should not error if the object is `null`', function() {
         expect(function() {
           shim.isWrapped(null, 'bar')
         }).to.not.throw()
-        expect(shim.isWrapped(null, 'bar')).to.be.false
+        expect(shim.isWrapped(null, 'bar')).to.be.false()
       })
 
       it('should not error if the property is `null`', function() {
         expect(function() {
           shim.isWrapped(wrappable, 'this does not exist')
         }).to.not.throw()
-        expect(shim.isWrapped(wrappable, 'this does not exist')).to.be.false
+        expect(shim.isWrapped(wrappable, 'this does not exist')).to.be.false()
       })
     })
   })
@@ -1221,23 +1221,23 @@ describe('Shim', function() {
 
     describe('with properties', function() {
       it('should accept a single property', function() {
-        expect(shim.isWrapped(wrappable.bar)).to.be.true
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
         expect(function() {
           shim.unwrap(wrappable, 'bar')
         }).to.not.throw()
-        expect(shim.isWrapped(wrappable.bar)).to.be.false
+        expect(shim.isWrapped(wrappable.bar)).to.be.false()
       })
 
       it('should accept an array of properties', function() {
-        expect(shim.isWrapped(wrappable.bar)).to.be.true
-        expect(shim.isWrapped(wrappable.fiz)).to.be.true
-        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.true
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
+        expect(shim.isWrapped(wrappable.fiz)).to.be.true()
+        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.true()
         expect(function() {
           shim.unwrap(wrappable, ['bar', 'fiz', 'getActiveSegment'])
         }).to.not.throw()
-        expect(shim.isWrapped(wrappable.bar)).to.be.false
-        expect(shim.isWrapped(wrappable.fiz)).to.be.false
-        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.false
+        expect(shim.isWrapped(wrappable.bar)).to.be.false()
+        expect(shim.isWrapped(wrappable.fiz)).to.be.false()
+        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.false()
       })
 
       it('should not error if a nodule is `null`', function() {
@@ -1376,20 +1376,20 @@ describe('Shim', function() {
         .to.be.an.instanceof(Function)
         .and.not.equal(cb)
       expect(args).to.deep.equal(['a', wrapped, 'b'])
-      expect(shim.isWrapped(wrapped)).to.be.true
+      expect(shim.isWrapped(wrapped)).to.be.true()
       expect(shim.unwrap(wrapped)).to.equal(cb)
     })
 
     it('should work with an array and numeric index', function() {
       var args = ['a', cb, 'b']
       shim.bindCallbackSegment(args, 1)
-      expect(shim.isWrapped(args[1])).to.be.true
+      expect(shim.isWrapped(args[1])).to.be.true()
     })
 
     it('should work with an object and a string index', function() {
       var opts = {a: 'a', cb: cb, b: 'b'}
       shim.bindCallbackSegment(opts, 'cb')
-      expect(shim.isWrapped(opts, 'cb')).to.be.true
+      expect(shim.isWrapped(opts, 'cb')).to.be.true()
     })
 
     it('should not error if `args` is `null`', function() {
@@ -1413,7 +1413,7 @@ describe('Shim', function() {
 
       var args = ['a']
       shim.bindCallbackSegment(args, 0)
-      expect(shim.isWrapped(args[0])).to.be.false
+      expect(shim.isWrapped(args[0])).to.be.false()
       expect(args[0]).to.equal('a')
     })
 
@@ -1422,9 +1422,9 @@ describe('Shim', function() {
         var args = ['a', 'b', cb]
         shim.bindCallbackSegment(args, shim.LAST)
 
-        expect(cbCalled).to.be.false
+        expect(cbCalled).to.be.false()
         args[2]()
-        expect(cbCalled).to.be.true
+        expect(cbCalled).to.be.true()
       })
 
       it('should create a new segment', function() {
@@ -1679,91 +1679,91 @@ describe('Shim', function() {
 
   describe('#isObject', function() {
     it('should detect if an item is an object', function() {
-      expect(shim.isObject({})).to.be.true
-      expect(shim.isObject([])).to.be.true
-      expect(shim.isObject(arguments)).to.be.true
-      expect(shim.isObject(function() {})).to.be.true
-      expect(shim.isObject(true)).to.be.false
-      expect(shim.isObject(false)).to.be.false
-      expect(shim.isObject('foobar')).to.be.false
-      expect(shim.isObject(1234)).to.be.false
-      expect(shim.isObject(null)).to.be.false
-      expect(shim.isObject(undefined)).to.be.false
+      expect(shim.isObject({})).to.be.true()
+      expect(shim.isObject([])).to.be.true()
+      expect(shim.isObject(arguments)).to.be.true()
+      expect(shim.isObject(function() {})).to.be.true()
+      expect(shim.isObject(true)).to.be.false()
+      expect(shim.isObject(false)).to.be.false()
+      expect(shim.isObject('foobar')).to.be.false()
+      expect(shim.isObject(1234)).to.be.false()
+      expect(shim.isObject(null)).to.be.false()
+      expect(shim.isObject(undefined)).to.be.false()
     })
   })
 
   describe('#isFunction', function() {
     it('should detect if an item is a function', function() {
-      expect(shim.isFunction({})).to.be.false
-      expect(shim.isFunction([])).to.be.false
-      expect(shim.isFunction(arguments)).to.be.false
-      expect(shim.isFunction(function() {})).to.be.true
-      expect(shim.isFunction(true)).to.be.false
-      expect(shim.isFunction(false)).to.be.false
-      expect(shim.isFunction('foobar')).to.be.false
-      expect(shim.isFunction(1234)).to.be.false
-      expect(shim.isFunction(null)).to.be.false
-      expect(shim.isFunction(undefined)).to.be.false
+      expect(shim.isFunction({})).to.be.false()
+      expect(shim.isFunction([])).to.be.false()
+      expect(shim.isFunction(arguments)).to.be.false()
+      expect(shim.isFunction(function() {})).to.be.true()
+      expect(shim.isFunction(true)).to.be.false()
+      expect(shim.isFunction(false)).to.be.false()
+      expect(shim.isFunction('foobar')).to.be.false()
+      expect(shim.isFunction(1234)).to.be.false()
+      expect(shim.isFunction(null)).to.be.false()
+      expect(shim.isFunction(undefined)).to.be.false()
     })
   })
 
   describe('#isString', function() {
     it('should detect if an item is a string', function() {
-      expect(shim.isString({})).to.be.false
-      expect(shim.isString([])).to.be.false
-      expect(shim.isString(arguments)).to.be.false
-      expect(shim.isString(function() {})).to.be.false
-      expect(shim.isString(true)).to.be.false
-      expect(shim.isString(false)).to.be.false
-      expect(shim.isString('foobar')).to.be.true
-      expect(shim.isString(1234)).to.be.false
-      expect(shim.isString(null)).to.be.false
-      expect(shim.isString(undefined)).to.be.false
+      expect(shim.isString({})).to.be.false()
+      expect(shim.isString([])).to.be.false()
+      expect(shim.isString(arguments)).to.be.false()
+      expect(shim.isString(function() {})).to.be.false()
+      expect(shim.isString(true)).to.be.false()
+      expect(shim.isString(false)).to.be.false()
+      expect(shim.isString('foobar')).to.be.true()
+      expect(shim.isString(1234)).to.be.false()
+      expect(shim.isString(null)).to.be.false()
+      expect(shim.isString(undefined)).to.be.false()
     })
   })
 
   describe('#isNumber', function() {
     it('should detect if an item is a number', function() {
-      expect(shim.isNumber({})).to.be.false
-      expect(shim.isNumber([])).to.be.false
-      expect(shim.isNumber(arguments)).to.be.false
-      expect(shim.isNumber(function() {})).to.be.false
-      expect(shim.isNumber(true)).to.be.false
-      expect(shim.isNumber(false)).to.be.false
-      expect(shim.isNumber('foobar')).to.be.false
-      expect(shim.isNumber(1234)).to.be.true
-      expect(shim.isNumber(null)).to.be.false
-      expect(shim.isNumber(undefined)).to.be.false
+      expect(shim.isNumber({})).to.be.false()
+      expect(shim.isNumber([])).to.be.false()
+      expect(shim.isNumber(arguments)).to.be.false()
+      expect(shim.isNumber(function() {})).to.be.false()
+      expect(shim.isNumber(true)).to.be.false()
+      expect(shim.isNumber(false)).to.be.false()
+      expect(shim.isNumber('foobar')).to.be.false()
+      expect(shim.isNumber(1234)).to.be.true()
+      expect(shim.isNumber(null)).to.be.false()
+      expect(shim.isNumber(undefined)).to.be.false()
     })
   })
 
   describe('#isBoolean', function() {
     it('should detect if an item is a boolean', function() {
-      expect(shim.isBoolean({})).to.be.false
-      expect(shim.isBoolean([])).to.be.false
-      expect(shim.isBoolean(arguments)).to.be.false
-      expect(shim.isBoolean(function() {})).to.be.false
-      expect(shim.isBoolean(true)).to.be.true
-      expect(shim.isBoolean(false)).to.be.true
-      expect(shim.isBoolean('foobar')).to.be.false
-      expect(shim.isBoolean(1234)).to.be.false
-      expect(shim.isBoolean(null)).to.be.false
-      expect(shim.isBoolean(undefined)).to.be.false
+      expect(shim.isBoolean({})).to.be.false()
+      expect(shim.isBoolean([])).to.be.false()
+      expect(shim.isBoolean(arguments)).to.be.false()
+      expect(shim.isBoolean(function() {})).to.be.false()
+      expect(shim.isBoolean(true)).to.be.true()
+      expect(shim.isBoolean(false)).to.be.true()
+      expect(shim.isBoolean('foobar')).to.be.false()
+      expect(shim.isBoolean(1234)).to.be.false()
+      expect(shim.isBoolean(null)).to.be.false()
+      expect(shim.isBoolean(undefined)).to.be.false()
     })
   })
 
   describe('#isArray', function() {
     it('should detect if an item is an array', function() {
-      expect(shim.isArray({})).to.be.false
-      expect(shim.isArray([])).to.be.true
-      expect(shim.isArray(arguments)).to.be.false
-      expect(shim.isArray(function() {})).to.be.false
-      expect(shim.isArray(true)).to.be.false
-      expect(shim.isArray(false)).to.be.false
-      expect(shim.isArray('foobar')).to.be.false
-      expect(shim.isArray(1234)).to.be.false
-      expect(shim.isArray(null)).to.be.false
-      expect(shim.isArray(undefined)).to.be.false
+      expect(shim.isArray({})).to.be.false()
+      expect(shim.isArray([])).to.be.true()
+      expect(shim.isArray(arguments)).to.be.false()
+      expect(shim.isArray(function() {})).to.be.false()
+      expect(shim.isArray(true)).to.be.false()
+      expect(shim.isArray(false)).to.be.false()
+      expect(shim.isArray('foobar')).to.be.false()
+      expect(shim.isArray(1234)).to.be.false()
+      expect(shim.isArray(null)).to.be.false()
+      expect(shim.isArray(undefined)).to.be.false()
     })
   })
 
