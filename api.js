@@ -91,6 +91,7 @@ API.prototype.setTransactionName = function setTransactionName(name) {
     return
   }
 
+  logger.trace('Setting transaction %s name to %s', transaction.id, name)
   transaction.forceName = NAMES.CUSTOM + '/' + name
 }
 
