@@ -623,8 +623,7 @@ API.prototype.createTracer = function createTracer(name, callback) {
 }
 
 API.prototype.createWebTransaction = util.deprecate(
-  createWebTransaction,
-  [
+  createWebTransaction, [
     'API#createWebTransaction is being deprecated!',
     'Please use API#startWebTransaction for transaction creation',
     'and API#getTransaction for transaction management including',
@@ -884,8 +883,7 @@ function startBackgroundTransaction(name, group, handle) {
 }
 
 API.prototype.createBackgroundTransaction = util.deprecate(
-  createBackgroundTransaction,
-  [
+  createBackgroundTransaction, [
     'API#createBackgroundTransaction is being deprecated!',
     'Please use API#startBackgroundTransaction for transaction creation',
     'and API#getTransaction for transaction management including',

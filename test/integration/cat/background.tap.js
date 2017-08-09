@@ -23,23 +23,24 @@ test('background transactions should not blow up with CAT', function(t) {
   var http = require('http')
   var api = new API(agent)
 
-  var server = http.createServer(function (req, res) {
+  var server = http.createServer(function(req, res) {
     t.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')
     t.ok(req.headers['x-newrelic-transaction'], 'got incoming x-newrelic-transaction')
     req.resume()
     res.end()
   })
 
-  server.listen(PORT, api.createBackgroundTransaction('myTx', function () {
+  server.listen(PORT, api.startBackgroundTransaction('myTx', function() {
+    var tx = api.getTransaction()
     var connOptions = {
       hostname: 'localhost',
       port: PORT,
       path: '/thing'
     }
-    http.get(connOptions, function (res) {
+    http.get(connOptions, function(res) {
       res.resume()
       server.close()
-      api.endTransaction();
+      tx.end()
     })
   }))
 

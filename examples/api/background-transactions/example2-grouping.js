@@ -1,16 +1,25 @@
+'use strict'
+
 var newrelic = require('newrelic')
 
 var transactionName = 'myCustomTransaction'
 
-// related background transactions can be grouped in APM
+// The second parameter to `startBackgroundTransaction` may be a group to
+// organize related background transactions on APM. More on this can be found
+// on our documentation website:
 // https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
 var groupName = 'myTransactionGroup'
 
-var invokeTransaction = newrelic.createBackgroundTransaction(transactionName, groupName,
-    function() {
-  // do some work
-  newrelic.endTransaction()
+newrelic.startBackgroundTransaction(transactionName, groupName, function handle() {
+  var transaction = newrelic.getTransaction()
+  doSomeWork(function cb() {
+    transaction.end()
+  })
 })
 
-// start the transaction
-invokeTransaction()
+// Function to simulate async work.
+function doSomeWork(callback) {
+  setTimeout(function work() {
+    callback()
+  }, 500)
+}

@@ -8,7 +8,6 @@ var configurator = require('../../../lib/config')
 var configDefaults = require('../../../lib/config.default').config
 var ErrorAggregator = require('../../../lib/errors/aggregator')
 var Transaction = require('../../../lib/transaction')
-var semver = require('semver')
 var API = require('../../../api.js')
 var NAMES = require('../../../lib/metrics/names.js')
 
@@ -38,7 +37,7 @@ function createBackgroundTransaction(agent) {
   return createTransaction(agent, null, false)
 }
 
-describe('agent attribute format', function () {
+describe('agent attribute format', function() {
   var PARAMS = 4
 
   var agent, trans, error
@@ -1204,13 +1203,11 @@ describe('ErrorAggregator', function () {
     var agent = helper.loadMockedAgent()
     var api = new API(agent)
 
-    var tx = api.createBackgroundTransaction('job', function () {
-      throw null
-    })
-
     try {
-      tx()
-    } catch(err) {
+      api.startBackgroundTransaction('job', function() {
+        throw null
+      })
+    } catch (err) {
       expect(err).equal(null)
       helper.unloadAgent(agent)
     }
@@ -1218,19 +1215,19 @@ describe('ErrorAggregator', function () {
 
   it('should copy parameters from background transactions', function(done) {
     var agent = helper.loadMockedAgent()
-    var tracer = agent.errors
+    var errorTracer = agent.errors
     var api = new API(agent)
 
-    api.createBackgroundTransaction('job', function () {
+    api.startBackgroundTransaction('job', function() {
       api.addCustomParameter('jobType', 'timer')
       api.noticeError(new Error('record an error'))
       agent.getTransaction().end(function() {
-        expect(tracer.errors.length).equal(1)
-        expect(tracer.errors[0][2]).equal('record an error')
+        expect(errorTracer.errors.length).equal(1)
+        expect(errorTracer.errors[0][2]).equal('record an error')
         helper.unloadAgent(agent)
         done()
       })
-    })()
+    })
   })
 
   describe('getTotalErrorCount()', function() {
