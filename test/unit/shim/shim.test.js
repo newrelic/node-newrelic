@@ -968,8 +968,7 @@ describe('Shim', function() {
         })
       })
 
-
-      describe('when called in a transaction', function() {
+      describe('when called in an active transaction', function() {
         it('should create a segment', function() {
           shim.record(wrappable, 'getActiveSegment', function() {
             return {name: 'test segment'}
@@ -1054,6 +1053,81 @@ describe('Shim', function() {
           })
 
           helper.runInTransaction(agent, function() {
+            wrapped(cb)
+          })
+        })
+      })
+
+      describe('when called with an inactive transaction', function() {
+        it('should not create a segment', function() {
+          shim.record(wrappable, 'getActiveSegment', function() {
+            return {name: 'test segment'}
+          })
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            tx.end()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.equal(startingSegment)
+          })
+        })
+
+        it('should execute the wrapped function', function() {
+          var executed = false
+          var toWrap = function() { executed = true }
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment'}
+          })
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.end()
+            expect(executed).to.be.false
+            wrapped()
+            expect(executed).to.be.true
+          })
+        })
+
+        it('should not invoke the spec', function() {
+          var executed = false
+          shim.record(wrappable, 'bar', function() {
+            executed = true
+          })
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.end()
+            wrappable.bar('a', 'b', 'c')
+            expect(executed).to.be.false
+          })
+        })
+
+        it('should not bind the callback if there is one', function() {
+          var cb = function() {}
+          var toWrap = function(wrappedCB) {
+            expect(wrappedCB).to.equal(cb)
+            expect(shim.isWrapped(wrappedCB)).to.be.false
+          }
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment', callback: shim.LAST}
+          })
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.end()
+            wrapped(cb)
+          })
+        })
+
+        it('should not bind the rowCallback if there is one', function() {
+          var cb = function() {}
+          var toWrap = function(wrappedCB) {
+            expect(wrappedCB).to.equal(cb)
+            expect(shim.isWrapped(wrappedCB)).to.be.false
+          }
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment', rowCallback: shim.LAST}
+          })
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.end()
             wrapped(cb)
           })
         })
