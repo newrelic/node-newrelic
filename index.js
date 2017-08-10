@@ -17,6 +17,9 @@ if (require.cache.__NR_cache) {
     'Attempting to load a second copy of newrelic from %s, using cache instead',
     __dirname
   )
+  if (require.cache.__NR_cache.agent) {
+    require.cache.__NR_cache.agent.recordSupportability('Agent/DoubleLoad')
+  }
   module.exports = require.cache.__NR_cache
 } else {
   initialize()
@@ -88,9 +91,10 @@ function initialize() {
       agent.start(function cb_start(error) {
         if (!error) {
           // TODO: After deprecating Node 0.10 and 0.12, simplify this regex.
+          // TODO: As new versions come out, make sure to update Angler metrics.
           var nodeMajor = /^v?((?:0\.)?\d+)/.exec(process.version)
-          agent.metrics.getOrCreateMetric(
-            'Supportability/Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
+          agent.recordSupportability(
+            'Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
           )
 
           return logger.debug("New Relic for Node.js is connected to New Relic.")

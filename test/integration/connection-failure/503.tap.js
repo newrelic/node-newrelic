@@ -15,6 +15,7 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
   var url = 'https://collector.newrelic.com'
   var agent = new Agent(configurator.initialize())
   var transaction = new Transaction(agent)
+  agent.recordSupportability = function() {}
 
 
   function path(method, runID) {
@@ -91,6 +92,7 @@ test("merging metrics and errors after a 503", function(t) {
 
   var agent = new Agent(agentConfig)
   var transaction = new Transaction(agent)
+  agent.recordSupportability = function() {}
 
   transaction.name = 'trans1'
 
