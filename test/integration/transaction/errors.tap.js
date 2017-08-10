@@ -350,22 +350,19 @@ test('multiple errors in web tx should gather and merge custom params', function
   })
 })
 
-test('errors in background transactions are collected with correct data', function (t) {
+test('errors in background transactions are collected with correct data', function(t) {
   var agent = helper.loadTestAgent(t)
   var api = new API(agent)
 
   agent.config.capture_params = true
 
   // Create transaction generator
-  var bg = api.createBackgroundTransaction('SomeWork', 'TheGroup', function named () {
+  api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
     api.noticeError(new Error('errors in tx test'))
-    api.endTransaction()
+    // Auto-end transaction in setImmediate.
   })
 
-  // start the transaction
-  bg()
-
-  agent.on('transactionFinished', function () {
+  agent.on('transactionFinished', function() {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')

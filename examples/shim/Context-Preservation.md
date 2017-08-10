@@ -18,7 +18,7 @@ module.exports = function initialize(agent, generic, moduleName, shim) {
         return original.call(this, shim.bindSegment(callback), priority)
       }
     })
-  } 
+  }
 
   if (proto && proto.acquire) {
     wrapPool(proto)
@@ -82,7 +82,7 @@ module.exports = function initialize(agent, generic, moduleName, shim) {
         return original.call(this, shim.bindSegment(callback), priority)
       }
     })
-  } 
+  }
 
 
   wrapPool(proto)
@@ -169,7 +169,7 @@ Queue.prototype.scheduleJob = function scheduleJob(job) {
 module.exports = Queue
 ```
 
-With example code that uses it: 
+With example code that uses it:
 
 ```js
 var Queue = require('jobQueue')
@@ -197,23 +197,24 @@ var nr = require('newrelic')
 var Queue = require('jobQueue')
 var queue = new Queue()
 
-nr.createBackgroundTransaction('firstTransaction', function first() {
+nr.startBackgroundTransaction('firstTransaction', function first() {
+  var transaction = nr.getTransaction()
   queue.scheduleJob(function firstJob() {
     // Do some work
-    nr.endTransaction()
+    transaction.end()
   })
-})()
+})
 
-nr.createBackgroundTransaction('secondTransaction', function second() {
+nr.startBackgroundTransaction('secondTransaction', function second() {
+  var transaction = nr.getTransaction()
   queue.scheduleJob(function secondJob() {
     // Do some work
 
     // Transaction state will be lost here because 'firstTransaction' will have
     // already ended the transaction
-
-    nr.endTransaction()
+    transaction.end()
   })
-})()
+})
 ```
 
 Without instrumentation executing this code will cause `'firstTransaction'` to
@@ -239,7 +240,7 @@ instrumentation is to wrap the job in a function that will restore transaction
 context for the duration of the job's execution.  Note this instrumentation will
 not handle timing the queue or the work executed by it, in order to do that we
 would use {@link Shim#record}.  Enough with the prose, here is the
-instrumentation in its entirety: 
+instrumentation in its entirety:
 
 ```js
 var nr = require('newrelic')
@@ -283,23 +284,24 @@ nr.instrument(
 var Queue = require('jobQueue')
 var queue = new Queue()
 
-nr.createBackgroundTransaction('firstTransaction', function first() {
+nr.startBackgroundTransaction('firstTransaction', function first() {
+  var transaction = nr.getTransaction()
   queue.scheduleJob(function firstJob() {
     // Do some work
-    nr.endTransaction()
+    transaction.end()
   })
-})()
+})
 
-nr.createBackgroundTransaction('secondTransaction', function second() {
+nr.startBackgroundTransaction('secondTransaction', function second() {
+  var transaction = nr.getTransaction()
   queue.scheduleJob(function secondJob() {
     // Do some work
 
-    // Transaction state is now set to 'secondTransaction' due to our
-    // instrumentation
-
-    nr.endTransaction()
+    // Transaction state will be lost here because 'firstTransaction' will have
+    // already ended the transaction
+    transaction.end()
   })
-})()
+})
 ```
 
 The correct instrumentation should be noticeable in the UI as now both

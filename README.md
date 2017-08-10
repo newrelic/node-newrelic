@@ -656,7 +656,7 @@ application, the agent can't tell when they should begin and end.
 Read more at:
 https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-custom-instrumentation
 
-#### newrelic.createWebTransaction(url, handle)
+#### newrelic.startWebTransaction(url, handle)
 
 `url` is the name of the web transaction. It should be pretty static, not
 including anything like user ids or any other data that is very specific to the
@@ -669,16 +669,22 @@ called within an active background transaction, it will create a new,
 independent transaction and any calls within the `handle` will be bound to the
 new web transaction.
 
-Custom transactions **must** be ended manually by calling `endTransaction()`.
-Timing for custom transaction starts from when the returned wrapped function is
-called until `endTransaction()` is called.
+Custom transactions can be ended within the `handle` in one of three ways:
 
-#### newrelic.createBackgroundTransaction(name, [group], handle)
+1. Call `transaction.end()`. The `transaction` can be received by calling
+  `newrelic.getTransaction()` first thing in the handler function. Then,
+  when you call `transaction.end()` timing will stop.
+2. Return a promise. The transaction will end when the promise resolves or
+  rejects.
+3. Do neither. If no promise is returned, and `getTransaction()` isn't
+  called, the transaction will end immediately after the handle returns.
+
+#### newrelic.startBackgroundTransaction(name [, group], handle)
 
 `name` is the name of the job. It should be pretty static, and not include job
 ids or anything very specific to that run of the job. `group` is optional, and
 allows you to group types of jobs together. This should follow similar rules as
-the `name`. `handle` is a function that encompases your background job. Both
+the `name`. `handle` is a function that encompasses your background job. Both
 custom and auto instrumentation will be captured as part of the transaction.
 
 If called within an active background transaction, it will act as a nested
@@ -686,14 +692,20 @@ tracer. If called within an active web transaction, it will create a new
 transaction and any calls within the `handle` will be bound to the new,
 independent background transaction.
 
-Custom transactions **must** be ended manually by calling `endTransaction()`.
-Timing for custom transaction starts from when the returned wrapped function is
-called until `endTransaction()` is called.
+1. Call `transaction.end()`. The `transaction` can be received by calling
+  `newrelic.getTransaction()` first thing in the handler function. Then,
+  when you call `transaction.end()` timing will stop.
+2. Return a promise. The transaction will end when the promise resolves or
+  rejects.
+3. Do neither. If no promise is returned, and `getTransaction()` isn't
+  called, the transaction will end immediately after the handle returns.
 
-#### newrelic.endTransaction()
+#### newrelic.getTransaction()
 
-This takes no arguments and must be called to end any custom transaction. It
-will detect what kind of transaction was active and end it.
+This takes no arguments and returns the currently active transaction. If the
+returned transaction is a custom one, started with either `startWebTransaction`
+or `startBackgroundTransaction`, then `transaction.end()` must be called to
+end the transaction.
 
 #### newrelic.createTracer(name, handle)
 
