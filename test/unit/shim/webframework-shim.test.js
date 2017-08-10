@@ -1006,4 +1006,36 @@ describe('WebFrameworkShim', function() {
       expect(called).to.be.true()
     })
   })
+
+  describe('#captureUrlParams', function() {
+    beforeEach(function() {
+      agent.config.capture_params = true
+    })
+
+    it('should copy the provided params onto the segment parameters', function() {
+      var segment = {parameters: {foo: 'other', bang: 'bam'}}
+      shim.getSegment = function() { return segment }
+      shim.captureUrlParams({foo: 'bar', biz: 'baz'})
+      expect(segment).property('parameters').to.deep.equal({
+        foo: 'other',
+        biz: 'baz',
+        bang: 'bam'
+      })
+    })
+
+    it('should obey the capture_params configuration', function() {
+      agent.config.capture_params = false
+      var segment = {parameters: {foo: 'other', bang: 'bam'}}
+      shim.getSegment = function() { return segment }
+      shim.captureUrlParams({foo: 'bar', biz: 'baz'})
+      expect(segment).property('parameters').to.deep.equal({foo: 'other', bang: 'bam'})
+    })
+
+    it('should not throw when out of a transaction', function() {
+      shim.getSegment = function() { return null }
+      expect(function() {
+        shim.captureUrlParams({foo: 'bar'})
+      }).to.not.throw()
+    })
+  })
 })
