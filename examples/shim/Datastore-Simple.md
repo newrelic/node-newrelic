@@ -79,6 +79,8 @@ server.get('/shim-demo', function(req, res, next) {
 
 ```js
 function instrumentCassandra(shim, cassandra, moduleName) {
+  // ...
+}
 ```
 
 This is the function that we'll hand to the New Relic agent to perform our
@@ -206,7 +208,7 @@ the collection queried (`test.testFamily`) as well as the query operation
 Recording batches of queries is just like recording a single one, except we need
 to do a little more work to pull out the query text. In this vein we call
 [`shim.recordBatchQuery`]{@link DatastoreShim#recordBatchQuery} just like we did
-for `shim.recordQuery`. This we time pass in a function for the spec's `query`
+for `shim.recordQuery`. This time we pass in a function for the spec's `query`
 parameter, `findBatchQueryArg`, which just looks like this:
 
 ```js
