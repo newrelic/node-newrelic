@@ -1073,7 +1073,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 
   for (var i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
-      logger.warn('Metric object must include ' + required[i] + ' as a number')
+      logger.warn('Metric object must include %s as a number', required[i])
       return
     }
 
