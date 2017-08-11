@@ -47,6 +47,20 @@ test('await', function(t) {
 })
 
 test("the agent's async hook", function(t) {
+  class TestResource extends asyncHooks.AsyncResource {
+    constructor(id) {
+      super('PROMISE', id)
+    }
+
+    doStuff(callback) {
+      setImmediate(() => {
+        this.emitBefore()
+        callback()
+        this.emitAfter()
+      })
+    }
+  }
+
   t.autoend()
   t.test('does not crash on multiple resolve calls', function(t) {
     var agent = setupAgent(t)
@@ -61,21 +75,42 @@ test("the agent's async hook", function(t) {
     })
   })
 
+  t.test('does not restore a segment for a resource created outside a transaction', function(t) {
+    var agent = setupAgent(t)
+    var res = new TestResource(1)
+    helper.runInTransaction(agent, function(txn) {
+      var root = agent.tracer.segment
+      var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
+      t.equal(Object.keys(segmentMap).length, 0, 'no segments should be tracked')
+      res.doStuff(function() {
+        t.equal(
+          agent.tracer.segment,
+          root,
+          'the agent loses transaction state for resources created outside of a transaction'
+        )
+        t.end()
+      })
+    })
+  })
+
+  t.test('restores context in inactive transactions', function(t) {
+    var agent = setupAgent(t)
+    helper.runInTransaction(agent, function(txn) {
+      var res = new TestResource(1)
+      var root = agent.tracer.segment
+      txn.end()
+      res.doStuff(function() {
+        t.equal(
+          agent.tracer.segment,
+          root,
+          'the hooks restore a segment when its transaction has been ended'
+        )
+        t.end()
+      })
+    })
+  })
+
   t.test('handles multientry callbacks correctly', function(t) {
-    class TestResource extends asyncHooks.AsyncResource {
-      constructor(id) {
-        super('PROMISE', id)
-      }
-
-      doStuff(callback) {
-        setImmediate(() => {
-          this.emitBefore()
-          callback()
-          this.emitAfter()
-        })
-      }
-    }
-
     var agent = setupAgent(t)
     var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
     helper.runInTransaction(agent, function(txn) {
