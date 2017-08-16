@@ -53,7 +53,7 @@ test("the agent's async hook", function(t) {
     }
 
     doStuff(callback) {
-      setImmediate(() => {
+      process.nextTick(() => {
         this.emitBefore()
         callback()
         this.emitAfter()
@@ -83,9 +83,10 @@ test("the agent's async hook", function(t) {
       var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
       t.equal(Object.keys(segmentMap).length, 0, 'no segments should be tracked')
       res.doStuff(function() {
+        t.ok(agent.tracer.segment, 'should be in a transaction')
         t.equal(
-          agent.tracer.segment,
-          root,
+          agent.tracer.segment.name,
+          root.name,
           'the agent loses transaction state for resources created outside of a transaction'
         )
         t.end()
