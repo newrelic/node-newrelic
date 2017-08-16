@@ -52,10 +52,11 @@ var helper = module.exports = {
     config.debug.double_linked_transactions = true
 
     // stub applications
-    config.applications = function faked() { return ['New Relic for Node.js tests']; }
+    config.applications = function faked() { return ['New Relic for Node.js tests'] }
 
     _agent = new Agent(config)
     _agent.__created = new Error("Only one agent at a time! This one was created at:")
+    _agent.recordSupportability = function() {} // Stub supportabilities.
 
     if (flags) {
       var newFlags = extend({}, _agent.config.feature_flag)
