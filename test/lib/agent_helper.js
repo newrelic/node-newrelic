@@ -52,7 +52,7 @@ var helper = module.exports = {
     config.debug.double_linked_transactions = true
 
     // stub applications
-    config.applications = function faked() { return ['New Relic for Node.js tests']; }
+    config.applications = function faked() { return ['New Relic for Node.js tests'] }
 
     _agent = new Agent(config)
     _agent.__created = new Error("Only one agent at a time! This one was created at:")
@@ -109,6 +109,7 @@ var helper = module.exports = {
    * @param Agent agent The agent to shut down.
    */
   unloadAgent : function unloadAgent(agent) {
+    agent.emit('unload')
     shimmer.unpatchModule()
     shimmer.unwrapAll()
     shimmer.debug = false
