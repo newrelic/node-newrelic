@@ -3,8 +3,8 @@
 var chai        = require('chai')
 var should      = chai.should()
 var expect      = chai.expect
-var helper      = require('../lib/agent_helper.js')
-var API         = require('../../api.js')
+var helper      = require('../lib/agent_helper')
+var API         = require('../../api')
 var Metrics     = require('../../lib/metrics')
 var Trace       = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
@@ -168,33 +168,56 @@ describe("Transaction", function() {
   })
 
   describe("when being named", function() {
-    var trans
-
     beforeEach(function() {
       trans = new Transaction(agent)
     })
 
-    it("should throw when called with no parameters", function() {
-      expect(function() { trans.finalizeNameFromUri() }).throws()
+    describe('finalizeNameFromUri', function() {
+      it('should throw when called with no parameters', function() {
+        expect(function() { trans.finalizeNameFromUri() }).throws()
+      })
+
+      it('should ignore a request path when told to by a rule', function() {
+        var api = new API(agent)
+        api.addIgnoringRule('^/test/')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+        return expect(trans.ignore).true
+      })
+
+      it('should ignore a transaction when told to by a rule', function() {
+        agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+        expect(trans.ignore).equal(true)
+      })
+
+      it('should pass through a name when told to by a rule', function() {
+        agent.userNormalizer.addSimple('^/config', '/foobar')
+        trans.finalizeNameFromUri('/config', 200)
+        expect(trans.name).equal('WebTransaction/NormalizedUri/foobar')
+      })
     })
 
-    it("should ignore a request path when told to by a rule", function () {
-      var api = new API(agent)
-      api.addIgnoringRule('^/test/')
-      trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-      return expect(trans.ignore).true
-    })
+    describe('finalizeName', function() {
+      it('should call finalizeNameFromUri if no name is given for a web tx', function() {
+        var called = false
+        trans.finalizeNameFromUri = function() { called = true }
+        trans.type = 'web'
+        trans.url = '/foo/bar'
+        trans.finalizeName()
+        expect(called).to.be.true()
+      })
 
-    it("should ignore a transaction when told to by a rule", function () {
-      agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
-      trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-      expect(trans.ignore).equal(true)
-    })
+      it('should apply ignore rules', function() {
+        agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
+        trans.finalizeName('foo')
+        expect(trans.ignore).to.be.true()
+      })
 
-    it("should pass through a name when told to by a rule", function () {
-      agent.userNormalizer.addSimple('^/config', '/config')
-      trans.finalizeNameFromUri('/config', 200)
-      expect(trans.name).equal('WebTransaction/NormalizedUri/config')
+      it('should not apply user naming rules', function() {
+        agent.userNormalizer.addSimple('^/config', '/foobar')
+        trans.finalizeName('/config')
+        expect(trans.getFullName()).to.equal('WebTransaction//config')
+      })
     })
 
     describe("getName", function() {
