@@ -3,37 +3,20 @@
 var helper = require('../lib/agent_helper')
 var benchmark = require('../lib/benchmark')
 
-var suite = benchmark.createBenchmark('async hooks')
-
-suite.add({
-  name: 'instrumentation',
+var suite = benchmark.createBenchmark({
+  name: 'async hooks',
   async: true,
-  agent: true,
   fn: test
 })
 
 suite.add({
-  name: 'native hooks',
-  async: true,
-  agent: {
-    feature_flag: {await_support: true},
-    config: {transaction_tracer: {
-      enable_native: true,
-      enable_hooks: false
-    }}},
-  fn: test
+  name: 'instrumentation',
+  agent: {feature_flag: {await_support: false}}
 })
 
 suite.add({
   name: 'async hooks',
-  async: true,
-  agent: {
-    feature_flag: {await_support: true},
-    config: {transaction_tracer: {
-      enable_native: false,
-      enable_hooks: true
-    }}},
-  fn: test
+  agent: {feature_flag: {await_support: true}}
 })
 
 suite.run()
