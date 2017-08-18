@@ -31,6 +31,22 @@ test('execFile', function(t) {
   })
 })
 
+test('transaction context is preserved in subscribed events', function(t) {
+  var agent = setupAgent(t)
+  helper.runInTransaction(agent, function(transaction) {
+    var child = cp.fork('./exec-me.js', {cwd: __dirname})
+
+    child.on('message', function(message) {
+      t.equal(agent.tracer.getTransaction(), transaction)
+    })
+
+    child.on('exit', function() {
+      t.equal(agent.tracer.getTransaction(), transaction)
+      t.end()
+    })
+  })
+})
+
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
   t.tearDown(function() {
