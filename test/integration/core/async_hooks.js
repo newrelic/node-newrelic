@@ -7,7 +7,7 @@ function testSegments(t, segmentMap) {
   global.gc()
   // Give the gc some time to work.
   setTimeout(function() {
-    t.notOk(Object.keys(segmentMap).length, 'segments should be cleared after gc')
+    t.notOk(segmentMap.size, 'segments should be cleared after gc')
     t.end()
   }, 10)
 }
@@ -35,7 +35,7 @@ test('await', function(t) {
     txn.end(function afterTransactionEnd() {
       // Segments won't be cleared till a gc cycle clears the promises
       // they are related with.
-      t.ok(Object.keys(segmentMap).length, 'segments should still be in the map')
+      t.ok(segmentMap.size, 'segments should still be in the map')
       if (global.gc) {
         // Unroll all the stack frames to let go of the refs to the
         // promises we want to gc, then call the segment tester.
@@ -81,7 +81,7 @@ test("the agent's async hook", function(t) {
     helper.runInTransaction(agent, function(txn) {
       var root = agent.tracer.segment
       var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
-      t.equal(Object.keys(segmentMap).length, 0, 'no segments should be tracked')
+      t.equal(segmentMap.size, 0, 'no segments should be tracked')
       res.doStuff(function() {
         t.ok(agent.tracer.segment, 'should be in a transaction')
         t.equal(
@@ -127,11 +127,7 @@ test("the agent's async hook", function(t) {
 
       agent.tracer.segment = root
 
-      t.equal(
-        Object.keys(segmentMap).length,
-        2,
-        'all resources should create an entry on init'
-      )
+      t.equal(segmentMap.size, 2, 'all resources should create an entry on init')
 
       resA.doStuff(() => {
         t.equal(
