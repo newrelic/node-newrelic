@@ -115,6 +115,7 @@
   },
   "devDependencies": {
     "async": "^2.1.4",
+    "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
     "eslint": "^2.9.0",
     "jsdoc": "^3.4.0",

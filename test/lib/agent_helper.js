@@ -110,6 +110,7 @@ var helper = module.exports = {
    * @param Agent agent The agent to shut down.
    */
   unloadAgent : function unloadAgent(agent) {
+    agent.emit('unload')
     shimmer.unpatchModule()
     shimmer.unwrapAll()
     shimmer.debug = false

@@ -20,6 +20,17 @@ exports.config = {
      * issues with the agent, 'info' and higher will impose the least overhead on
      * production applications.
      */
-    level: 'info'
+    level: 'info',
+    filepath: '../../newrelic_agent.log'
+  },
+  utilization: {
+    detect_aws: false,
+    detect_pcf: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_docker: false
+  },
+  transaction_tracer : {
+    enabled : true
   }
 }
