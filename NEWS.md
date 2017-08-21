@@ -1,14 +1,50 @@
 
-### v2.1.0 (2017-08-08)
+### v2.2.0 (2017-08-22):
+* Added support for ignoring ranges of status codes.
+
+  The configuration `error_collector.ignore_status_codes` can now take ranges
+  of numbers. For example, `ignore_status_codes: ['400-404']` would ignore 400,
+  401, 402, 403, and 404.
+
+* Fixed a bug when a custom collector port was provided in the configuration
+  that prevented redirected connections from working.
+
+* Fixed a bug in `Shim#record` that could cause an exception when trying to
+  create a new segment as part of an ended/inactive transaction.
+
+* Fixed issue with custom Hapi handlers causing an error.
+
+  Previously custom Hapi handlers defined using the `server.handler()` method
+  were causing the Hapi server to return a 500 error. Now they are correctly
+  handled and recorded as middleware functions.
+
+* Transaction state is now maintained in `ChildProcess` event listeners.
+
+* Updated examples and documentation regarding custom transaction creation.
+
+  All examples and documentation now point at the `newrelic.start*Transaction`
+  methods.
+
+* Reducing logging verbosity in the SQL query obfuscator.
+
+* Experimental instrumentation for `async/await`
+
+  This is experimental instrumentation and has not yet been tested in a wide
+  array of production environments. The feature is currently off by default
+  behind a feature flag. To enable this experimental instrumentation, add
+  `await_support: true` to the `feature_flag` setting in your agent config
+  file.
+
+### v2.1.0 (2017-08-08):
 * Improved metadata collection for AWS, Azure, GCE, and Pivotal Cloud Foundry.
 
 * Fixed a bug in PG query obfuscation for `$` placeholders.
 
-  The agent used to mis-detect `$1` value placeholders as unmatched dollar-quoted
-  strings causing the whole query to be obfuscated to just `?`. These
-  placeholders are now correctly detected and obfuscated.
+  The agent used to mis-detect `$1` value placeholders as unmatched
+  dollar-quoted strings causing the whole query to be obfuscated to just `?`.
+  These placeholders are now correctly detected and obfuscated.
 
-### v2.0.2 (2017-08-01)
+### v2.0.2 (2017-08-01):
 * Improved documentation for `newrelic.start*Transaction` and `TransactionHandle.`
 
   Formatting for the `startWebTransaction` and `startBackgroundTransaction`
@@ -22,7 +58,7 @@
 
 * Fixed unhandled rejection error caused by `ioredis` instrumentation.
 
-### v2.0.1 (2017-07-25)
+### v2.0.1 (2017-07-25):
 * Fixed issue with transaction events not including correct duration values.
 
   This issue was introduced in v2.0.0, and it has affected web transactions histogram
