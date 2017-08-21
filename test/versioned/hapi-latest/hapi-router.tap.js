@@ -56,7 +56,7 @@ test("Hapi router introspection", function(t) {
     server.stop(done)
   })
 
-  t.test("simple case using server.route", function(t) {
+  t.test("using route handler - simple case", function(t) {
     agent.on('transactionFinished', verifier(t))
 
     var route = {
@@ -82,7 +82,7 @@ test("Hapi router introspection", function(t) {
     })
   })
 
-  t.test("less simple case (server.addRoute & route.config.handler)", function(t) {
+  t.test("using route handler under config object", function(t) {
     agent.on('transactionFinished', verifier(t))
 
     var hello = {
@@ -97,6 +97,37 @@ test("Hapi router introspection", function(t) {
       method : 'GET',
       path   : '/test/{id}',
       config : hello
+    }
+    server.route(route)
+
+    server.start(function() {
+      request.get('http://localhost:8089/test/31337',
+                  {json : true},
+                  function(error, res, body) {
+
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, {status : 'ok'}, "got expected response")
+        t.end()
+      })
+    })
+  })
+
+  t.test("using custom handler type", function(t) {
+    agent.on('transactionFinished', verifier(t))
+
+    server.handler('hello', function(route, options) {
+      return function customHandler(request, reply) {
+        t.ok(agent.getTransaction(), "transaction is available")
+        reply({status : 'ok'})
+      }
+    })
+
+    var route = {
+      method : 'GET',
+      path   : '/test/{id}',
+      handler: {
+        hello: {}
+      }
     }
     server.route(route)
 
