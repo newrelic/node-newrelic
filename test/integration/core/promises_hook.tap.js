@@ -3,7 +3,9 @@
 var semver = require('semver')
 
 if (!(semver.satisfies(process.version, '>=8') || semver.prerelease(process.version))) {
-  console.error('Promise tests cant run without native Promises')
+  console.error(
+    'async hook promise instrumentation requires both native promises and async hooks'
+  )
   return
 }
 
