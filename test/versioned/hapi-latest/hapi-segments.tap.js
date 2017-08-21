@@ -41,6 +41,32 @@ test('route handler is recorded as middleware', function(t) {
   })
 })
 
+test('custom handler type is recorded as middleware', function(t) {
+  setup(t)
+
+  server.handler('customHandler', function(route, options) {
+    return function customHandler(request, reply) {
+      return reply(options.key1)
+    }
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/test',
+    handler: {customHandler: {key1: 'val1'}}
+  })
+
+  runTest(t, function(segments, transaction) {
+    checkMetrics(t, transaction.metrics, [
+      NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
+    ])
+    checkSegments(t, transaction.trace.root.children[0], [
+      NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
+    ])
+    t.end()
+  })
+})
+
 test('extensions are recorded as middleware', function(t) {
   setup(t)
 
