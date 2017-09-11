@@ -1,4 +1,11 @@
 
+### v2.2.1 (2017-09-11):
+* Added metrics for enabled/disabled feature flags.
+
+* Fixed transaction naming for Hapi plugins.
+
+  Thanks Marc Höffl (@KeKs0r) for providing a reproduction!
+
 ### v2.2.0 (2017-08-22):
 * Added support for ignoring ranges of status codes.
 
