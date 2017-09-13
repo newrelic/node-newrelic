@@ -3,6 +3,13 @@
 var tap    = require('tap')
 var test   = tap.test
 var helper = require('../../lib/agent_helper')
+var semver = require('semver')
+
+// Connect v1 has `mime >= 0.0.1` as a dependency. As of mime v2, only Node >=6
+// is supported, thus that's all connect can support either.
+if (!semver.satisfies(process.version, '>=6')) {
+  return
+}
 
 
 // connect is a loudmouth without this
