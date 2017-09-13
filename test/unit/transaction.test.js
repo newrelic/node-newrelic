@@ -31,19 +31,19 @@ describe("Transaction", function() {
     }).throws(/must be bound to the agent/)
   })
 
-  it("should create a trace on demand", function () {
+  it("should create a trace on demand", function() {
     var trace = trans.trace
     expect(trace).instanceOf(Trace)
     expect(trans.trace).equal(trace)
   })
 
-  it("should have at most one associated trace", function () {
+  it("should have at most one associated trace", function() {
     var trace = trans.trace
     expect(trace).not.instanceof(Array)
   })
 
-  it("should hand its metrics off to the agent upon finalization", function (done) {
-    agent.on('transactionFinished', function (inner) {
+  it("should hand its metrics off to the agent upon finalization", function(done) {
+    agent.on('transactionFinished', function(inner) {
       expect(inner.metrics).equal(trans.metrics)
 
       return done()
@@ -277,9 +277,9 @@ describe("Transaction", function() {
 
       it('should return the forced name if set', function() {
         trans.name = 'FullName'
-        trans.partialName = 'PartialName'
+        trans._partialName = 'PartialName'
         trans.forceName = 'ForcedName'
-        expect(trans.getFullName()).to.equal('ForcedName')
+        expect(trans.getFullName()).to.equal('WebTransaction/ForcedName')
       })
     })
 
@@ -299,13 +299,13 @@ describe("Transaction", function() {
         expect(trans.statusCode).equal(200)
       })
 
-      it("produces a non-error name when status code is ignored", function () {
+      it("produces a non-error name when status code is ignored", function() {
         agent.config.error_collector.ignore_status_codes = [404, 500]
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
-      it("produces a non-error partial name when status code is ignored", function () {
+      it("produces a non-error partial name when status code is ignored", function() {
         agent.config.error_collector.ignore_status_codes = [404, 500]
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 500)
         expect(trans._partialName).equal('NormalizedUri/*')

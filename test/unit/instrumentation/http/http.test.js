@@ -6,6 +6,7 @@ var expect = chai.expect
 var EventEmitter = require('events').EventEmitter
 var helper = require('../../../lib/agent_helper')
 var hashes = require('../../../../lib/util/hashes')
+var Segment = require('../../../../lib/transaction/trace/segment')
 var semver = require('semver')
 
 
@@ -97,13 +98,13 @@ describe("built-in http module instrumentation", function() {
 
     it("shouldn't crash when called with undefined host", function() {
       helper.runInTransaction(agent, function() {
-        expect(function() { http.request({port : 80}); }).not.throws()
+        expect(function() { http.request({port : 80}) }).not.throws()
       })
     })
 
     it("shouldn't crash when called with undefined port", function() {
       helper.runInTransaction(agent, function() {
-        expect(function() { http.request({host : 'localhost'}); }).not.throws()
+        expect(function() { http.request({host : 'localhost'}) }).not.throws()
       })
     })
   })
@@ -344,7 +345,7 @@ describe("built-in http module instrumentation", function() {
     })
 
     after(function() {
-      process._events['uncaughtException'] = mochaHandlers
+      process._events.uncaughtException = mochaHandlers
     })
 
     beforeEach(function() {
@@ -684,17 +685,13 @@ describe("built-in http module instrumentation", function() {
     function addSegment() {
       var transaction = agent.getTransaction()
       transaction.type = 'web'
-      transaction.baseSegment = {
-        getDurationInMillis: function fake() {
-          return 1000
-        }
-      }
+      transaction.baseSegment = new Segment(transaction, 'base-segment')
     }
 
     it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
       helper.runInTransaction(agent, function() {
         addSegment() // Add web segment so everything works properly
-        var req = http.request({host : 'localhost', port : 4123}, function(res) {
+        var req = http.request({host: 'localhost', port: 4123}, function(res) {
           expect(req.getHeader(NEWRELIC_ID_HEADER)).equal('o123')
           res.resume()
           agent.getTransaction().end()
@@ -883,11 +880,7 @@ describe("built-in http module instrumentation", function() {
     function addSegment() {
       var transaction = agent.getTransaction()
       transaction.type = 'web'
-      transaction.baseSegment = {
-        getDurationInMillis: function fake() {
-          return 1000
-        }
-      }
+      transaction.baseSegment = new Segment(transaction, 'base-segment')
     }
   })
 })

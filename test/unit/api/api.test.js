@@ -392,18 +392,19 @@ describe("the New Relic agent API", function() {
           done()
         })
 
-        helper.runInTransaction(agent, function(transaction) {
+        helper.runInTransaction(agent, function(tx) {
           // grab segment
           agent.tracer.addSegment(NAME, null, null, false, function() {
             // HTTP instrumentation sets URL as soon as it knows it
             segment = agent.tracer.getSegment()
-            transaction.url = URL
-            transaction.verb = 'POST'
+            tx.type = 'web'
+            tx.url = URL
+            tx.verb = 'POST'
 
-            // NAME THE TRANSACTION
+            // Name the transaction
             api.setTransactionName('Test')
 
-            transaction.end()
+            tx.end()
           })
         })
       })
@@ -422,8 +423,6 @@ describe("the New Relic agent API", function() {
     })
 
     it("uses the last name set when called multiple times", function(done) {
-      var segment
-
       agent.on('transactionFinished', function(transaction) {
         transaction.finalizeNameFromUri(URL, 200)
 
@@ -433,7 +432,7 @@ describe("the New Relic agent API", function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
+        agent.tracer.createSegment(NAME)
         transaction.url  = URL
         transaction.verb = 'GET'
 
@@ -907,9 +906,9 @@ describe("the New Relic agent API", function() {
       agent.on('transactionFinished', function(transaction) {
         expect(agent.errors.errors.length).to.equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).to.equal('Unknown')
-        expect(caught[2]).to.equal('test error')
-        expect(caught[3]).to.equal('TypeError')
+        expect(caught[1], 'transaction name').to.equal('Unknown')
+        expect(caught[2], 'message').to.equal('test error')
+        expect(caught[3], 'type').to.equal('TypeError')
 
         expect(transaction.ignore).equal(false)
 

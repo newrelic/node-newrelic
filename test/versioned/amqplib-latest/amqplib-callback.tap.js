@@ -339,7 +339,10 @@ tap.test('amqplib callback instrumentation', function(t) {
     var queue = null
 
     agent.on('transactionFinished', function(tx) {
-      t.equal(tx.getFullName(), 'Custom/foobar', 'should have specified name')
+      t.equal(
+        tx.getFullName(), 'OtherTransaction/Message/Custom/foobar',
+        'should have specified name'
+      )
       t.end()
     })
 
