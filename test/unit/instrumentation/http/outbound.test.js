@@ -11,24 +11,25 @@ var instrumentOutbound = require(
 )
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
+var Segment = require('../../../../lib/transaction/trace/segment')
 
 
-describe('instrumentOutbound', function () {
+describe('instrumentOutbound', function() {
   var agent
   var HOSTNAME = 'localhost'
   var PORT = 8890
 
 
-  before(function () {
+  before(function() {
     agent = helper.loadMockedAgent()
   })
 
-  after(function () {
+  after(function() {
     helper.unloadAgent(agent)
   })
 
-  describe('when working with http.createClient', function () {
-    before(function () {
+  describe('when working with http.createClient', function() {
+    before(function() {
       // capture the deprecation warning here
       if (!http.createClient) {
         this.skip(
@@ -245,11 +246,7 @@ describe('should add data from cat header to segment', function() {
   function addSegment() {
     var transaction = agent.getTransaction()
     transaction.type = 'web'
-    transaction.baseSegment = {
-      getDurationInMillis: function fake() {
-        return 1000
-      }
-    }
+    transaction.baseSegment = new Segment(transaction, 'base-segment')
   }
 
   it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {

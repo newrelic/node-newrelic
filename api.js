@@ -1017,8 +1017,8 @@ API.prototype.endTransaction = function endTransaction() {
       }
       tx.baseSegment.end()
     }
-    logger.debug('ending transaction with id: %s and name: %s', tx.id, tx.name)
     tx.end()
+    logger.debug('ended transaction with id: %s and name: %s', tx.id, tx.name)
   } else {
     logger.debug('endTransaction() called while not in a transaction.')
   }
