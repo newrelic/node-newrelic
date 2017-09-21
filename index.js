@@ -139,6 +139,7 @@ function addStartupSupportabilities(agent) {
   for (var i = 0; i < configFlags.length; ++i) {
     var flag = configFlags[i]
     var enabled = agent.config.feature_flag[flag]
+
     if (enabled !== featureFlags[flag]) {
       agent.recordSupportability(
         'FeatureFlag/' + flag + '/' + (enabled ? 'enabled' : 'disabled')
