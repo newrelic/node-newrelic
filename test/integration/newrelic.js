@@ -1,3 +1,5 @@
+'use strict'
+
 exports.config = {
   app_name           : ['My Application'],
   license_key        : 'license key here',
@@ -14,5 +16,9 @@ exports.config = {
   },
   transaction_tracer : {
     enabled : true
+  },
+  feature_flag: {
+    await_support: false,
+    synthetics: false
   }
 }
