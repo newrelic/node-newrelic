@@ -189,14 +189,15 @@ test("Hapi router introspection", function(t) {
     server.route(route)
 
     server.start(function() {
-      request.post('http://localhost:8089/test/31337',
-                  {json : true},
-                  function(error, res, body) {
-
-        t.equal(res.statusCode, 200, "nothing exploded")
-        t.deepEqual(body, {status : 'ok'}, "got expected response")
-        t.end()
-      })
+      request.post(
+        'http://localhost:8089/test/31337',
+        {json : true},
+        function(error, res, body) {
+          t.equal(res.statusCode, 200, "nothing exploded")
+          t.deepEqual(body, {status : 'ok'}, "got expected response")
+          t.end()
+        }
+      )
     })
   })
 })
