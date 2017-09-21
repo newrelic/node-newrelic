@@ -121,6 +121,7 @@
     "jsdoc": "^3.4.0",
     "minami": "^1.1.1",
     "mocha": "*",
+    "request": "2.81.0",
     "tap": "^9.0.3"
   },
   "repository": {

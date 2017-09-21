@@ -27,7 +27,6 @@
     "proxyquire": "^1.8.0",
     "q": "*",
     "redis": "^1",
-    "request": "*",
     "restify": "4.x",
     "sequelize": "*",
     "should": "*",
