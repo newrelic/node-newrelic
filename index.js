@@ -2,7 +2,8 @@
 
 var featureFlags = require('./lib/feature_flags').prerelease
 var logger = require('./lib/logger')
-var semver = require('semver')
+var psemver = require('./lib/util/process-version')
+
 
 var agentVersion = require('./package').version
 logger.info(
@@ -35,7 +36,7 @@ function initialize() {
     )
 
     // TODO: Update this check when Node v0.10 is deprecated.
-    if (semver.satisfies(process.version, '<0.10.0')) {
+    if (psemver.satisfies('<0.10.0')) {
       message = "New Relic for Node.js requires a version of Node equal to or\n" +
                 "greater than 0.10.0. Not starting!"
 
@@ -139,6 +140,7 @@ function addStartupSupportabilities(agent) {
   for (var i = 0; i < configFlags.length; ++i) {
     var flag = configFlags[i]
     var enabled = agent.config.feature_flag[flag]
+
     if (enabled !== featureFlags[flag]) {
       agent.recordSupportability(
         'FeatureFlag/' + flag + '/' + (enabled ? 'enabled' : 'disabled')

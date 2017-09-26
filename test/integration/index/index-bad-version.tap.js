@@ -1,9 +1,19 @@
 'use strict'
 
+var semver = require('semver')
 var test = require('tap').test
 
 
-test('loading the application via index.js', {timeout: 5000}, function(t) {
+// Some bug in early versions of node causes a bad process version to screw up
+// readable streams. Since this test is specifically about testing bad process
+// versions this renders the test incompatible with those versions of Node.
+// TODO: When deprecating Node 0.10 and 0.12, remove this check.
+if (semver.satisfies(process.version, '<4')) {
+  return
+}
+
+
+test('loading the agent with a bad version', {timeout: 5000}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
@@ -11,20 +21,20 @@ test('loading the application via index.js', {timeout: 5000}, function(t) {
   process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
 
   t.doesNotThrow(function() {
+    var _version = process.version
+    Object.defineProperty(process, 'version', {value: 'garbage', writable: true})
+    t.equal(process.version, 'garbage', 'should have set bad version')
+
     var api = require('../../../index.js')
     agent = api.agent
-    t.equal(agent._state, 'starting', "agent is booting")
-  }, "just loading the agent doesn't throw")
+    t.ok(agent)
 
-  var metric = agent.metrics.getMetric(
-    'Supportability/Nodejs/FeatureFlag/await_support/disabled'
-  )
-  t.notOk(metric, 'should not create metric for unchanged feature flags')
-
-  metric = agent.metrics.getMetric(
-    'Supportability/Nodejs/FeatureFlag/synthetics/disabled'
-  )
-  t.ok(metric, 'should create metric for changed feature flags')
+    process.version = _version
+  }, "malformed process.version doesn't blow up the process")
+  if (!t.passing()) {
+    t.comment('Bailing out early.')
+    return t.end()
+  }
 
   function shutdown() {
     t.equal(agent._state, 'started', "agent didn't error connecting to staging")
