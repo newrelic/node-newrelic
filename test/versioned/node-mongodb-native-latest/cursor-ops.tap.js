@@ -6,6 +6,7 @@ var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
+var concat = require('concat-stream')
 
 if (semver.satisfies(process.version, '0.8')) {
   console.log('The latest versions of the mongo driver are not compatible with v0.8')
@@ -81,6 +82,58 @@ collectionTest('toArray', function toArrayTest(t, collection, verify) {
       'toArray'
     ])
   })
+})
+
+tap.test('piping cursor stream hides internal calls', function(t) {
+  var agent = helper.instrumentMockedAgent()
+  var db = null
+  var collection = null
+
+  t.tearDown(function() {
+    db.close(function(err) {
+      helper.unloadAgent(agent)
+      agent = null
+    })
+  })
+
+  var mongodb = require('mongodb')
+  helper.bootstrapMongoDB(['testCollection'], function(err) {
+    if (err) return t.fail(err)
+
+    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+    db = new mongodb.Db(DB_NAME, server)
+    METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
+      ? agent.config.getHostnameSafe()
+      : params.mongodb_host
+    METRIC_HOST_PORT = String(params.mongodb_port)
+
+    db.open(function(err) {
+      if (err) return t.fail(err)
+      collection = db.collection('testCollection')
+      populate(db, collection, runTest)
+    })
+  })
+
+  function runTest() {
+    helper.runInTransaction(agent, function(transaction) {
+      transaction.name = TRANSACTION_NAME
+      var destination = concat(function() {})
+
+      destination.on('finish', function() {
+        transaction.end(function() {
+          t.equal(transaction.trace.root.children[0].name,
+            'Datastore/operation/MongoDB/pipe', 'should have pipe segment')
+          t.equal(0, transaction.trace.root.children[0].children.length,
+            'pipe should not have any children')
+          t.end()
+        })
+      })
+
+      var cursor = collection
+        .find({})
+        .pipe(destination)
+    })
+  }
 })
 
 function collectionTest(name, run) {
@@ -341,9 +394,9 @@ function checkMetrics(t, agent, metrics) {
   )
   var expectedUnscopedMetrics = [
     'Datastore/all',
-    'Datastore/allOther',
+    'Datastore/allWeb',
     'Datastore/MongoDB/all',
-    'Datastore/MongoDB/allOther',
+    'Datastore/MongoDB/allWeb',
     'Datastore/instance/MongoDB/' + METRIC_HOST_NAME + '/' + METRIC_HOST_PORT
   ]
   expectedUnscopedMetrics.forEach(function(metric) {

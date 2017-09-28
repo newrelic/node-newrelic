@@ -236,8 +236,9 @@ describe ("MetricNormalizer", function() {
     })
 
     describe('with feature flag reverse_naming_rules', function() {
-      describe('set to true (default)', function() {
+      describe('set to true', function() {
         beforeEach(function() {
+          config.feature_flag = {reverse_naming_rules: true}
           normalizer.loadFromConfig()
         })
 
@@ -253,9 +254,8 @@ describe ("MetricNormalizer", function() {
         })
       })
 
-      describe('set to false', function() {
+      describe('set to false (default)', function() {
         beforeEach(function() {
-          config.feature_flag = {reverse_naming_rules: false}
           normalizer.loadFromConfig()
         })
 

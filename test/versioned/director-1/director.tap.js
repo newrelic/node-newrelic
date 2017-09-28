@@ -1,6 +1,5 @@
 'use strict'
 
-
 var tap = require('tap')
 var http = require('http')
 var request = require('request')
@@ -47,8 +46,8 @@ tap.test("basic director test", function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Nodejs/GET//hello',
+  agent.on('transactionFinished', function(transaction) {
+    t.equal(transaction.name, 'WebTransaction/Director/GET//hello',
             "transaction has expected name")
     t.equal(transaction.url, '/hello/eric', "URL is left alone")
     t.equal(transaction.statusCode, 200, "status code is OK")
@@ -58,18 +57,14 @@ tap.test("basic director test", function (t) {
     var web = transaction.trace.root.children[0]
     t.ok(web, "trace has web segment")
     t.equal(web.name, transaction.name, "segment name and transaction name match")
-    t.equal(web.partialName, 'Nodejs/GET//hello',
+    t.equal(web.partialName, 'Director/GET//hello',
             "should have partial name for apdex")
 
-    if (semver.satisfies(process.versions.node, '<0.12.x')) {
-      var handler0 = web.children[0]
-      t.equal(handler0.name, "Truncated/Function/fn0", "route 0 segment has correct name")
-    }
-    else {
-      var handler0 = web.children[0]
-      t.equal(handler0.name, "Function/fn0", "route 0 segment has correct name")
+    var handler0 = web.children[0]
+    t.equal(handler0.name, "Nodejs/Middleware/Director/fn0//hello", "route 0 segment has correct name")
+    if (semver.satisfies(process.versions.node, '>=0.12')) {
       var handler1 = web.children[1]
-      t.equal(handler1.name, "Function/fn1", "route 1 segment has correct name")
+      t.equal(handler1.name, "Nodejs/Middleware/Director/fn1//hello/(\\w+)/", "route 1 segment has correct name")
     }
   })
 
@@ -126,11 +121,11 @@ tap.test("backward recurse director test", function (t) {
   agent.config.capture_params = true
 
   agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Nodejs/GET//hello',
+    t.equal(transaction.name, 'WebTransaction/Director/GET//hello',
             "transaction has expected name")
 
     var web = transaction.trace.root.children[0]
-    t.equal(web.partialName, 'Nodejs/GET//hello',
+    t.equal(web.partialName, 'Director/GET//hello',
             "should have partial name for apdex")
   })
 
@@ -171,11 +166,11 @@ tap.test("two routers with same URI director test", function (t) {
   agent.config.capture_params = true
 
   agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Nodejs/GET//helloWorld',
+    t.equal(transaction.name, 'WebTransaction/Director/GET//helloWorld',
             "transaction has expected name")
 
     var web = transaction.trace.root.children[0]
-    t.equal(web.partialName, 'Nodejs/GET//helloWorld',
+    t.equal(web.partialName, 'Director/GET//helloWorld',
             "should have partial name for apdex")
   })
 
@@ -222,30 +217,30 @@ tap.test("director async routes test", function (t) {
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Nodejs/GET//:foo/:bar/:bazz',
+  agent.on('transactionFinished', function(transaction) {
+    t.equal(transaction.name, 'WebTransaction/Director/GET//:foo/:bar/:bazz',
             "transaction has expected name")
 
     var web = transaction.trace.root.children[0]
-    t.equal(web.partialName, 'Nodejs/GET//:foo/:bar/:bazz',
+    t.equal(web.partialName, 'Director/GET//:foo/:bar/:bazz',
             "should have partial name for apdex")
     var handler0 = web.children[0]
-    t.equal(handler0.name, 'Function/fn0',
+    t.equal(handler0.name, 'Nodejs/Middleware/Director/fn0//:foo/:bar/:bazz',
             "route 0 segment has correct name")
-    var handler1 = web.children[0].children[0].children[0].children[0]
-    t.equal(handler1.name, 'Function/fn1',
+    var handler1 = web.children[1]
+    t.equal(handler1.name, 'Nodejs/Middleware/Director/fn1//:foo/:bar/:bazz',
             "route 1 segment has correct name")
   })
 
-  router.get('/:foo/:bar/:bazz', function fn0 (foo, bar, bazz, next) {
+  router.get('/:foo/:bar/:bazz', function fn0(foo, bar, bazz, next) {
     setTimeout(function(self) { next() }, 100, this)
   })
-  router.get('/:foo/:bar/:bazz', function fn1 (foo, bar, bazz, next) {
+  router.get('/:foo/:bar/:bazz', function fn1(foo, bar, bazz, next) {
      setTimeout(function(self) { self.res.end('dog') }, 100, this)
   })
 
-  var server = http.createServer(function (req, res) {
-    router.dispatch(req, res, function (err) {
+  var server = http.createServer(function(req, res) {
+    router.dispatch(req, res, function(err) {
       if (err) {
         res.writeHead(404)
         res.end()
@@ -292,11 +287,11 @@ tap.test("express w/ director subrouter test", function (t) {
   agent.config.capture_params = true
 
   agent.on('transactionFinished', function (transaction) {
-    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//express/hello',
+    t.equal(transaction.name, 'WebTransaction/Director/GET//express/hello',
             "transaction has expected name")
 
     var web = transaction.trace.root.children[0]
-    t.equal(web.partialName, 'Expressjs/GET//express/hello',
+    t.equal(web.partialName, 'Director/GET//express/hello',
             "should have partial name for apdex")
   })
 

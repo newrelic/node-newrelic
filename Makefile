@@ -3,7 +3,9 @@ MOCHA_NOBIN  = node_modules/.bin/_mocha
 COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
 ESLINT       = node_modules/.bin/eslint
+JSDOC        = node_modules/.bin/jsdoc
 NODE_VERSION = $(shell node --version)
+PACKAGE_VERSION = $(shell node -e 'console.log(require("./package").version)')
 INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
@@ -37,11 +39,11 @@ clean:
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 	rm -rf $(SSLKEY) $(CACERT) $(CAINDEX) $(CASERIAL) $(CERTIFICATE)
 	rm -rf test/lib/*.old test/lib/*.attr
+	rm -rf docs/
 
 node_modules: package.json
 	@rm -rf node_modules
 	npm --loglevel warn install
-	node ./bin/check-native-metrics.js
 
 build: clean node_modules
 	@echo "Currently using node $(NODE_VERSION)."
@@ -65,7 +67,6 @@ test-ci: node_modules sub_node_modules $(CERTIFICATE)
 unit: node_modules
 	@rm -f newrelic_agent.log
 	@cd test && npm install;
-	@case $(NODE_VERSION) in "v0.8."*) cd test;npm i nock@^0.48.0;esac
 	@$(MOCHA) -c test/unit --recursive
 
 sub_node_modules:
@@ -85,13 +86,13 @@ docker:
 	  export NR_NODE_TEST_REDIS_HOST=$${HOST}; \
 	  export NR_NODE_TEST_CASSANDRA_HOST=$${HOST}; \
 	  export NR_NODE_TEST_POSTGRES_HOST=$${HOST}; \
+	  export NR_NODE_TEST_RABBIT_HOST=$${HOST}; \
 	fi; \
 
 integration: node_modules ca-gen $(CERTIFICATE) docker
 	@cd test && npm install glob@~3.2.9
 	@node test/bin/install_sub_deps integration
 	@node test/bin/install_sub_deps versioned
-	@case $(NODE_VERSION) in "v0.8."*) cd test;npm i nock@^0.48.0;esac
 	time $(TAP) $(INTEGRATION)
 
 prerelease: node_modules ca-gen $(CERTIFICATE) docker
@@ -128,6 +129,24 @@ pending-core: node_modules
 	@$(MOCHA) test/unit --recursive --reporter list | egrep '^\s+\-' | grep -v 'agent instrumentation of'
 
 ssl: $(CERTIFICATE)
+
+docs: node_modules
+	$(JSDOC) -c ./jsdoc-conf.json --private -r .
+
+public-docs: node_modules
+	$(JSDOC) -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js
+	cp examples/shim/*.png out/
+
+publish-docs:
+	git checkout gh-pages
+	git pull origin gh-pages
+	git merge -
+	make public-docs
+	git rm -r docs
+	mv out docs
+	git add docs
+	git commit -m "docs: update for ${PACKAGE_VERSION}"
+	git push origin gh-pages && git push public gh-pages:gh-pages
 
 $(SSLKEY):
 	@openssl genrsa -out $(SSLKEY) 1024
@@ -195,6 +214,11 @@ services:
 	  docker start nr_node_postgres; \
 	else \
 	  docker run -d --name nr_node_postgres -p 5432:5432 postgres:9.2; \
+	fi
+	if docker ps -a | grep -q "nr_node_rabbit"; then \
+	  docker start nr_node_rabbit; \
+	else \
+	  docker run -d --name nr_node_rabbit -p 5672:5672 rabbitmq:3; \
 	fi
 	if docker ps -a | grep -q "nr_node_oracle"; then \
 	  docker start nr_node_oracle; \

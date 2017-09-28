@@ -18,7 +18,7 @@ var METRIC = 'WebTransaction/Restify/GET//hello/:name'
 test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
   {skip: semver.satisfies(process.version, '>=7.0.0')},
   function(t) {
-  t.plan(8)
+  t.plan(7)
 
   var agent   = helper.instrumentMockedAgent()
   var restify = require('restify')
@@ -35,10 +35,10 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
     res.send('hello ' + req.params.name)
   })
 
-  server.listen(8765, function () {
+  server.listen(8765, function() {
     t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-    request.get('http://localhost:8765/hello/friend', function (error, response, body) {
+    request.get('http://localhost:8765/hello/friend', function(error, response, body) {
       if (error) return t.fail(error)
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 
@@ -49,13 +49,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
 
       var found = false
       agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true
-      })
-      t.ok(found, "should indicate that the Restify dispatcher is in play")
-
-      found = false
-      agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Framework' && pair[1] === 'restify') found = true
+        if (pair[0] === 'Framework' && pair[1] === 'Restify') found = true
       })
       t.ok(found, "should indicate that restify itself is in play")
     })
@@ -64,8 +58,8 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
 
 test("Restify should still be instrumented when run with SSL",
   {skip: semver.satisfies(process.version, '>=7.0.0')},
-  function (t) {
-  t.plan(8)
+  function(t) {
+  t.plan(7)
 
   helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
     if (error) {
@@ -74,8 +68,8 @@ test("Restify should still be instrumented when run with SSL",
     }
 
     var agent   = helper.instrumentMockedAgent()
-      , restify = require('restify')
-      , server  = restify.createServer({key : key, certificate : certificate})
+    var restify = require('restify')
+    var server  = restify.createServer({key : key, certificate : certificate})
 
 
     t.tearDown(function cb_tearDown() {
@@ -88,11 +82,11 @@ test("Restify should still be instrumented when run with SSL",
       res.send('hello ' + req.params.name)
     })
 
-    server.listen(8443, function () {
+    server.listen(8443, function() {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-      request.get({url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca},
-                  function (error, response, body) {
+      var opts = {url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca}
+      request.get(opts, function(error, response, body) {
         if (error) {
           t.fail(error)
           return t.end()
@@ -109,13 +103,7 @@ test("Restify should still be instrumented when run with SSL",
 
         var found = false
         agent.environment.toJSON().forEach(function cb_forEach(pair) {
-          if (pair[0] === 'Dispatcher' && pair[1] === 'restify') found = true
-        })
-        t.ok(found, "should indicate that the Restify dispatcher is in play")
-
-        found = false
-        agent.environment.toJSON().forEach(function cb_forEach(pair) {
-          if (pair[0] === 'Framework' && pair[1] === 'restify') found = true
+          if (pair[0] === 'Framework' && pair[1] === 'Restify') found = true
         })
         t.ok(found, "should indicate that restify itself is in play")
       })

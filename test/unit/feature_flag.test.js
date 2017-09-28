@@ -9,6 +9,7 @@ chai.should()
 
 // please do not delete flags from here
 var used = [
+  'await_support',
   'cat',
   'custom_events',
   'custom_instrumentation',

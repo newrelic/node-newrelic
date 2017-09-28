@@ -32,7 +32,8 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
         Memcached = require('memcached')
         memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
 
-        HOST_ID = getMetricHostName(agent, 'memcached') + '/' + params.memcached_port
+        var hostName = getMetricHostName(agent, params.memcached_host)
+        HOST_ID = hostName + '/' + params.memcached_port
 
         done()
       })
@@ -59,9 +60,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/touch': 1
             })
           })
@@ -81,15 +82,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/get',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/get': 1
             })
           })
@@ -109,15 +110,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/gets',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/gets': 1
             })
           })
@@ -143,9 +144,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/get': 1
             })
           })
@@ -165,15 +166,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/set',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/set': 1
             })
           })
@@ -196,15 +197,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/replace',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
               ])
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/replace': 1
               })
             })
@@ -225,15 +226,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/add',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/add': 1
             })
           })
@@ -259,15 +260,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
                 verifySegments(t, transaction.trace.root, [
                   'Datastore/operation/Memcache/cas',
                   [
-                    'Truncated/Callback: anonymous'
+                    'Truncated/Callback: <anonymous>'
                   ]
                 ])
 
                 verifyMetrics(t, transaction.metrics, {
                   'Datastore/all': 1,
-                  'Datastore/allOther': 1,
+                  'Datastore/allWeb': 1,
                   'Datastore/Memcache/all': 1,
-                  'Datastore/Memcache/allOther': 1,
+                  'Datastore/Memcache/allWeb': 1,
                   'Datastore/operation/Memcache/cas': 1
                 })
               })
@@ -289,15 +290,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             transaction.end(function() {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/append', [
-                  'Truncated/Callback: anonymous'
+                  'Truncated/Callback: <anonymous>'
                 ]
               ])
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/append': 1
               })
             })
@@ -318,15 +319,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             transaction.end(function() {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/prepend', [
-                  'Truncated/Callback: anonymous'
+                  'Truncated/Callback: <anonymous>'
                 ]
               ])
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/prepend': 1
               })
             })
@@ -347,15 +348,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             transaction.end(function() {
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/delete', [
-                  'Truncated/Callback: anonymous'
+                  'Truncated/Callback: <anonymous>'
                 ]
               ])
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
-                'Datastore/allOther': 1,
+                'Datastore/allWeb': 1,
                 'Datastore/Memcache/all': 1,
-                'Datastore/Memcache/allOther': 1,
+                'Datastore/Memcache/allWeb': 1,
                 'Datastore/operation/Memcache/delete': 1
               })
             })
@@ -376,15 +377,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             verifySegments(t, transaction.trace.root, [
               'Datastore/operation/Memcache/incr',
               [
-                'Truncated/Callback: anonymous'
+                'Truncated/Callback: <anonymous>'
               ]
             ])
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/incr': 1
             })
           })
@@ -407,9 +408,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/decr': 1
             })
           })
@@ -423,7 +424,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.version(function (err, ok) {
+        memcached.version(function(err, ok) {
           t.notOk(err, 'should not throw an error')
           t.ok(ok, 'got a version')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -435,9 +436,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
-              'Datastore/allOther': 1,
+              'Datastore/allWeb': 1,
               'Datastore/Memcache/all': 1,
-              'Datastore/Memcache/allOther': 1,
+              'Datastore/Memcache/allWeb': 1,
               'Datastore/operation/Memcache/version': 1
             })
           })
@@ -482,6 +483,25 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(segment.parameters.key, "\"foo\"",
                      "should have the get key as a parameter")
+          })
+        })
+      })
+    })
+
+    t.test('get() when disabled', function(t) {
+      t.plan(2)
+      agent.config.capture_params = false
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.get('foo', function(err) {
+          t.error(err)
+
+          transaction.end(function() {
+            var segment = transaction.trace.root.children[0]
+            t.equals(
+              segment.parameters.key, undefined,
+              'should not have the get key as a parameter'
+            )
           })
         })
       })
@@ -553,7 +573,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(
               segment.parameters.host,
-              getMetricHostName(agent, 'memcached'),
+              getMetricHostName(agent, params.memcached_host),
               'should collect host instance parameters'
             )
             t.equals(
@@ -581,7 +601,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             var segment = transaction.trace.root.children[0]
             t.equals(
               segment.parameters.host,
-              getMetricHostName(agent, 'memcached'),
+              getMetricHostName(agent, params.memcached_host),
               'should collect host instance parameters'
             )
             t.equals(
@@ -814,7 +834,6 @@ function verifySegments(t, rootSegment, expected) {
 function verifyMetrics(t, metrics, expected) {
   var unscoped = metrics.unscoped
   var expectedNames = Object.keys(expected)
-  var unscopedNames = Object.keys(unscoped)
 
   expectedNames.forEach(function(name) {
     t.ok(unscoped[name], 'should have unscoped metric ' + name)

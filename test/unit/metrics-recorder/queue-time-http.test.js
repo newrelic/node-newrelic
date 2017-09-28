@@ -1,8 +1,5 @@
 'use strict'
 
-var path = require('path')
-var chai = require('chai')
-var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var assertMetrics = require('../../lib/metrics_helper').assertMetrics
 var recordWeb = require('../../../lib/metrics/recorders/http')
@@ -24,7 +21,7 @@ function record(options) {
   var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   transaction.queueTime = options.queueTime
   segment.markAsWeb(options.url)
   recordWeb(segment, options.transaction.name)

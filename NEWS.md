@@ -1,3 +1,180 @@
+### v2.2.2 (2017-09-26):
+* Hapi handlers will now preserve the defaults associated with them.
+ 
+  Previously when wrapping handlers, the agent would drop the associated defaults on
+  the ground, these are now properly forwarded to the wrapper.  Big thanks to Sean
+  Parmelee (@seanparmelee) for finding the root cause of this bug and reporting it!
+
+* Pinned `request` version for testing old versions of Node.
+
+* Added tests for feature flags created at agent initialization.
+
+* Fixed starting the agent with an invalid process version.
+
+### v2.2.1 (2017-09-11):
+* Added metrics for enabled/disabled feature flags.
+
+* Fixed transaction naming for Hapi plugins.
+
+  Thanks Marc Höffl (@KeKs0r) for providing a reproduction!
+
+### v2.2.0 (2017-08-22):
+* Added support for ignoring ranges of status codes.
+
+  The configuration `error_collector.ignore_status_codes` can now take ranges
+  of numbers. For example, `ignore_status_codes: ['400-404']` would ignore 400,
+  401, 402, 403, and 404.
+
+* Fixed a bug when a custom collector port was provided in the configuration
+  that prevented redirected connections from working.
+
+* Fixed a bug in `Shim#record` that could cause an exception when trying to
+  create a new segment as part of an ended/inactive transaction.
+
+* Fixed issue with custom Hapi handlers causing an error.
+
+  Previously custom Hapi handlers defined using the `server.handler()` method
+  were causing the Hapi server to return a 500 error. Now they are correctly
+  handled and recorded as middleware functions.
+
+* Transaction state is now maintained in `ChildProcess` event listeners.
+
+* Updated examples and documentation regarding custom transaction creation.
+
+  All examples and documentation now point at the `newrelic.start*Transaction`
+  methods.
+
+* Reducing logging verbosity in the SQL query obfuscator.
+
+* Experimental instrumentation for `async/await`
+
+  This is experimental instrumentation and has not yet been tested in a wide
+  array of production environments. The feature is currently off by default
+  behind a feature flag. To enable this experimental instrumentation, add
+  `await_support: true` to the `feature_flag` setting in your agent config
+  file.
+
+### v2.1.0 (2017-08-08):
+* Improved metadata collection for AWS, Azure, GCE, and Pivotal Cloud Foundry.
+
+* Fixed a bug in PG query obfuscation for `$` placeholders.
+
+  The agent used to mis-detect `$1` value placeholders as unmatched
+  dollar-quoted strings causing the whole query to be obfuscated to just `?`.
+  These placeholders are now correctly detected and obfuscated.
+
+### v2.0.2 (2017-08-01):
+* Improved documentation for `newrelic.start*Transaction` and `TransactionHandle.`
+
+  Formatting for the `startWebTransaction` and `startBackgroundTransaction`
+  methods was fixed and documentation for the `TransactionHandle` class which
+  `getTransaction` returns was added.
+
+* Fixed parsing the table name from SQL queries.
+
+  Quotes around the table name are now stripped after parsing the query and
+  before constructing the metrics.
+
+* Fixed unhandled rejection error caused by `ioredis` instrumentation.
+
+### v2.0.1 (2017-07-25):
+* Fixed issue with transaction events not including correct duration values.
+
+  This issue was introduced in v2.0.0, and it has affected web transactions histogram
+  and percentile charts.
+
+* Fixed issue with Redis instrumentation causing the agent to crash in some cases.
+
+  Previously, the Redis instrumentation would crash the agent when Redis commands were
+  called without a callback and after the transaction has ended.
+
+* Fixed issue with the agent crashing on Node v4.0-4.4 and v5.0-5.9.
+
+  This issue was caused by incorrect shim for Buffer.from(), and it affected older minor
+  versions of Node v4 and v5.
+
+### v2.0.0 (2017-07-17):
+* [The New Relic Node Agent v2 is here!](https://blog.newrelic.com/2017/07/18/nodejs-agent-v2-api/)
+
+  This release contains major changes to the agent instrumentation API, making
+  it easier to create and distribute your own instrumentation for third party
+  modules. Check out [Upgrade the Node agent](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/upgrade-nodejs-agent)
+  or the [Migration Guide](./Migration%20Guide.md) for more information on
+  upgrading your application to this version.
+
+* BREAKING: Reversed naming and ignore rules.
+
+  Naming rules are now applied in the order they are defined.
+
+* BREAKING: De-duplicated HTTP request transactions.
+
+  Only one transaction is created per `request` event emitted by an HTTP server.
+  Previously this was one transaction per listener per event emitted.
+
+* BREAKING: Stopped swallowing outbound request errors.
+
+  Errors emitted by outbound HTTP requests will no longer be swallowed by the
+  agent.
+
+* BREAKING: Node v0.8 is no longer supported. Minimum version is now v0.10.
+
+  The v1 agent will continue to support Node 0.8 but will no longer receive
+  updates.
+
+* BREAKING: npm v1 is no longer supported. Minimum version is now v2.0.0.
+
+* Added API for writing messaging framework instrumentation.
+
+  Introduced new `MessageShim` class for writing instrumentation. This shim
+  can be accessed using the `newrelic.instrumentMessages()` API method.
+
+* Added `amqplib` instrumentation.
+
+  Applications driven by `amqplib` consumers will now have transactions
+  automatically created for consumed messages. See
+  [Troubleshoot message consumers](https://docs.newrelic.com/docs/agents/nodejs-agent/troubleshooting/troubleshoot-message-consumers)
+  for more information on this instrumentation and its limitations.
+
+* Advanced instrumentation API is now generally available.
+
+  New methods for instrumenting common modules were introduced during the Agent
+  v2 beta. These APIs are now available to everyone:
+
+  * `newrelic.instrument()`/`Shim`: This method can be used to instrument
+    generic modules, such as connection pooling libraries, task schedulers, or
+    anything else not covered by a specialized class.
+
+  * `newrelic.instrumentDatastore()`/`DatastoreShim`: This method is good for
+    instrumenting datastore modules such as `mongodb`, `mysql`, or `pg`.
+
+  * `newrelic.instrumentWebframework()`/`WebFrameworkShim`: This method is
+    used for instrumenting web frameworks like `restify` or `express`.
+
+  Documentation and tutorials for the new API can be found on our GitHub
+  documentation page: http://newrelic.github.io/node-newrelic/docs/
+
+* Rewrote built-in instrumentation using the new `Shim` classes.
+
+  The following instrumentations have been rewritten:
+    * Datastores
+      * `cassandra-driver`
+      * `ioredis`
+      * `memcached`
+      * `mongodb`
+      * `mysql`
+      * `node-cassandra-cql`
+      * `pg`
+      * `redis`
+    * Web frameworks
+      * `director`
+      * `express`
+      * `hapi`
+      * `restify`
+
+* The `@newrelic/native-metrics` module is now included as an optional dependency.
+
+  This module will be installed automatically with Agent v2. If it fails to
+  install the agent will still function.
 
 ### v1.40.0 (2017-06-07):
 * Node v8 is officially supported with exception of `async`/`await`.
@@ -23,7 +200,6 @@
 * Fixed a typo about the name of the default configuration file. Thanks Jacob
   LeGrone (@jlegrone)!
 
-
 ### v1.39.0 (2017-05-01):
 * Updated the default value for `transaction_tracer.record_sql` to `obfuscated`.
 
@@ -46,6 +222,37 @@
   * `api.notice_error_enabled` controls `newrelic.noticeError()`
 
 * Fixed a bug in the generic pool instrumentation affecting version 3.
+
+### v2.6.0 / beta-47 (2017-05-03):
+* Incorporated fixes and features from 1.38.0, 1.38.1, and 1.38.2.
+
+* Fixed the beta sign up link in the [readme](README.md).
+
+* Improved API for writing web framework instrumentation.
+
+  Introduced a new `WebFrameworkShim` class for writing instrumentation. This
+  shim can be accessed using the `newrelic.instrumentWebframework` API method.
+
+* Rewrote instrumentation for Connect, Director, Express, Hapi, and Restify.
+
+  These instrumentations were rewritten using the new `WebFrameworkShim`. As a
+  consequence of this rewrite, all our instrumentations now have feature parity,
+  meaning every instrumentation will create Middleware metrics for your server.
+
+  Tutorials on using the new instrumentation shim can be found on our API docs:
+  http://newrelic.github.io/node-newrelic/docs/.
+
+* Removed `express_segments` feature flag.
+
+  This configuration previously controlled the creation of middleware metrics in
+  our Express instrumentation. With the move to the WebFrameworkShim this was
+  dropped.
+
+* Only one transaction is created for each request emitted by a server.
+
+  Previously we created a transaction for each _listener_ on the `request` event.
+
+* Dropped support for Express <4.6.
 
 ### v1.38.2 (2017-03-29):
 * When.js hooks similar to `Promise.onPotentiallyUnhandledRejection` now function
@@ -91,6 +298,20 @@
   Thanks to @Maubic for the contribution!
 
 * Updated tests to work with the latest version of Node 7.
+
+### v2.5.0 / beta-46 (2017-02-22):
+* Incorporated fixes and features from 1.36.2, 1.37.0, and 1.37.1.
+
+* Domains are no longer preemptively instrumented, thus applications that do not
+  use domains will not load the domain module.
+
+  Including the domain module causes a small amount of extra overhead in other
+  core libraries that must keep the domain state set correctly.
+
+* Added support for recording interfaces that return promises instead of taking
+  callbacks. See `RecorderSpec.promise` for more details.
+
+  Thanks to Gert Sallaerts (@Gertt) for this contribution.
 
 ### v1.37.1 (2017-02-16):
 * Agent now wraps `emit` on http request/response objects instead of relying
@@ -161,6 +382,23 @@
 * When the newrelic.js configuration file is not present, the agent now logs a message
   to the console and no longer prevents the app from starting up.
 
+### v2.4.0 / beta-45 (2017-01-25):
+* Rewrote the `cassandra-cql` and `memcached` instrumentations using the
+  `DatastoreShim`.
+
+* Improved instrumentation matching.
+
+  Previously, the agent would determine which instrumentation would run for a
+  given module being loaded using the basename of the file path. This lead to
+  false positives (e.g. `myapp/lib/express.js` would trigger the express
+  instrumentation) which we previously just ignored. Matches are now determined
+  using the string passed to `require`. This means you can now match local
+  relative paths (`./lib/something`) as well as package-relative paths
+  (`amqplib/callback_api`).
+
+### v2.3.1 / beta-44 (2017-01-12):
+* Incorporated fixes from 1.36.1
+
 ### v1.36.1 (2017-01-12):
 * Stop collecting URL parameters from the HTTP referer header
 
@@ -175,6 +413,16 @@
   This release fixes [New Relic Security Bulletin NR17-01](https://docs.newrelic.com/docs/accounts-partnerships/accounts/security-bulletins/security-bulletin-nr17-01).
 
 * Improved logging of modules that did not get instrumented.
+
+### v2.3.0 / beta-43 (2017-01-04):
+* Incorporated new features and fixes from 1.34.0, 1.35.1, and 1.36.0
+
+* The `@newrelic/native-metrics` module is now an optional dependency of the
+  agent.
+
+  Now npm will attempt to install the module when the agent is installed. If it
+  fails for whatever reason, the agent itself will still be installed correctly
+  and the rest of the npm install will finish normally.
 
 ### v1.36.0 (2016-12-21):
 * Added CPU metric gathering to Node.js versions <6.1
@@ -258,6 +506,11 @@
 * Added running the nsp (Node Security Platform) tool to the test suite to help with
   detecting security-related vulnerabilities.
 
+### v2.2.0 / beta-42 (2016-11-09):
+
+* Incorporated new features and fixes from v1.30.4, v1.30.5, v1.31.0, v1.32.0,
+  and v1.33.0.
+
 ### v1.33.0 (2016-10-31):
 
 * The agent now collects database instance information for Memcached operations.
@@ -328,6 +581,10 @@
   External service URLs will now be formatted the same as they are in the
   originating application.
 
+### v2.1.1 / beta-41 (2016-09-15):
+
+* Incorporated fixes from v1.30.1, v1.30.2, and v1.30.3.
+
 ### v1.30.3 (2016-09-14):
 
 * Published with npm v2.
@@ -350,7 +607,7 @@
 
   Previously transactions were not correctly named on older versions of Express 4.
 
-* Minor upates to logging.
+* Minor updates to logging.
 
 ### v1.30.1 (2016-09-01):
 
@@ -373,6 +630,22 @@
 
   Previously the agent's director instrumentation would crash in cases of null
   route handlers in director.
+
+### v2.1.0 / beta-40 (2016-08-29)
+
+* Incorporated fixes from v1.30.0
+
+* Added `rowCallback` property to datastore segment descriptors.
+
+  With this parameter the shim will record the given function/parameter as a
+  per-row callback which may be called multiple times. These calls will be
+  counted up for traces.
+
+* Rewrote PostgreSQL instrumentation using new `DatastoreShim` class.
+
+* Reversed `reverse_naming_rules` default.
+
+  Naming rules now default to evaluating in forward order.
 
 ### v1.30.0 (2016-08-25):
 
@@ -401,6 +674,42 @@
   better track segments created with the Express instrumentation.
 
 * Fixed mysql2 tests that were not being run correctly.
+
+### v2.0.0 / beta-39 (2016-08-04):
+
+* Dropped support for Nodejs < 0.10.
+
+  Starting with agent 2.0.0 we are no longer testing or supporting the agent on
+  Node.js prior to 0.10. Customers are strongly encouraged to follow best
+  practices and run supported versions of the Node.js runtime so that you can
+  get the latest and greatest New Relic features. For legacy Node support, agent
+  versions 1.x will continue to work, but we have no plans to backport any
+  future features or fixes.
+
+* Dropped support for `node-mysql` < 1.0.0.
+
+  Support for versions of the MySQL driver <1.0.0 has been removed. They will
+  not work with the agent versions >=2.0.0.
+
+* Improved API for writing instrumentation.
+
+  Introduced new classes for writing instrumentation, `Shim` and `DatastoreShim`.
+  These classes along with the new `newrelic.instrument` and
+  `newrelic.instrumentDatastore` methods make writing 3rd party instrumentation
+  much easier.
+
+* Rewrote instrumentation for Cassandra, Redis, ioredis, MySQL, and MongoDB.
+
+  These instrumentations were rewritten using the new `DatastoreShim` interface.
+  Their functionality is largely unchanged but the new code should be easier to
+  maintain and extend.
+
+* Added public API documentation.
+
+  Documentation for the New Relic agent API has been generated using JSDoc and
+  is now hosted on GitHub at https://newrelic.github.io/node-newrelic. There you
+  can find documentation on the new classes as well as the pre-existing API
+  methods.
 
 ### v1.29.0 (2016-08-03):
 
@@ -444,7 +753,6 @@
 * Added examples for using the `newrelic.createBackgroundTransaction` method in
   a number of different use cases.
 
-
 ### v1.28.2 (2016-07-07):
 
 * Director instrumentation that will now name the transaction correctly,
@@ -468,7 +776,6 @@
 
 * The agent now uses the correct units for slow queries - this fixes and issue
   where query traces in the databases tab were slower than the reported maximum.
-
 
 ### v1.28.1 (2016-06-15):
 

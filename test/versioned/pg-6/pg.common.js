@@ -83,9 +83,9 @@ module.exports = function runTests(name, clientFactory) {
 
     var expected = {
       'Datastore/all': 2,
-      'Datastore/allOther': 2,
+      'Datastore/allWeb': 2,
       'Datastore/Postgres/all': 2,
-      'Datastore/Postgres/allOther': 2,
+      'Datastore/Postgres/allWeb': 2,
       'Datastore/operation/Postgres/insert': 1,
       'Datastore/operation/Postgres/select': 1,
     }
@@ -93,7 +93,7 @@ module.exports = function runTests(name, clientFactory) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var metricHostName = getMetricHostName(agent, 'postgres')
+    var metricHostName = getMetricHostName(agent, params.postgres_host)
     var hostId = metricHostName + '/' + params.postgres_port
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
@@ -157,7 +157,7 @@ module.exports = function runTests(name, clientFactory) {
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
 
-    var metricHostName = getMetricHostName(agent, 'postgres')
+    var metricHostName = getMetricHostName(agent, params.postgres_host)
     t.equals(setSegment.parameters.host, metricHostName,
       'should add the host parameter')
     t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
@@ -170,11 +170,11 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySlowQueries(t, agent) {
-    var metricHostName = getMetricHostName(agent, 'postgres')
+    var metricHostName = getMetricHostName(agent, params.postgres_host)
 
     var slowQuerySamples = agent.queries.samples
     t.equals(Object.keys(agent.queries.samples).length, 1, 'should have one slow query')
-    for (var key in slowQuerySamples) {
+    for (var key in slowQuerySamples) { // eslint-disable-line guard-for-in
       var queryParams = slowQuerySamples[key].getParams()
 
       t.equal(
@@ -552,7 +552,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("should add datastore instance parameters to slow query traces", function(t) {
-      t.plan(5)
+      t.plan(7)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
@@ -566,19 +566,18 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
             return t.end()
           }
 
-          client.query('SELECT * FROM pg_sleep(1);', function(error) {
-            if (error) {
-              t.fail(error)
+          client.query('SELECT * FROM pg_sleep(1);', function slowQueryCB(error) {
+            if (!t.error(error)) {
               return t.end()
             }
 
             transaction.end(function() {
               verifySlowQueries(t, agent)
+              t.end()
             })
           })
         })
@@ -670,36 +669,26 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('query.on should not create segments for row events', function(t) {
-      t.plan(1)
-
+    t.test('query.on should create one segment for row events', function(t) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var client = new pg.Client(CON_STRING)
-
         t.tearDown(function() {
           client.end()
         })
 
-        client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+        client.connect(function(err) {
+          if (!t.error(err)) {
             return t.end()
           }
 
           var query = client.query('SELECT table_name FROM information_schema.tables')
-
-          query.on('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
-          })
-
-          query.on('row', function() {})
-
+          query.on('row', function onRow() {})
           query.on('end', function ended() {
             var segment = findSegment(tx.trace.root,
               'Datastore/statement/Postgres/information_schema.tables/select')
 
-            t.equal(segment.children.length, 1)
+            t.equal(segment.children.length, 2, 'should not have extra children')
+            t.end()
           })
         })
       })
@@ -734,7 +723,7 @@ module.exports = function runTests(name, clientFactory) {
             var segment = findSegment(tx.trace.root,
               'Datastore/statement/Postgres/information_schema.tables/select')
 
-            t.equal(segment.children.length, 1)
+            t.equal(segment.children.length, 2, 'should have end and row children')
           })
         })
       })
@@ -777,14 +766,14 @@ module.exports = function runTests(name, clientFactory) {
             var segment = findSegment(tx.trace.root,
               'Datastore/statement/Postgres/generate_series/select')
 
-            t.equal(segment.children.length, 1)
+            t.equal(segment.children.length, 2, 'should have end and row children')
             t.equal(called, 10, 'event was called for each row')
           })
         })
       })
     })
 
-    t.test('query.addListener should not create segments for each row with readable stream', function (t) {
+    t.test('query.addListener should not create segments for each row with readable stream', function(t) {
       t.plan(2)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -794,7 +783,7 @@ module.exports = function runTests(name, clientFactory) {
           client.end()
         })
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
@@ -808,12 +797,12 @@ module.exports = function runTests(name, clientFactory) {
           })
 
           // simulate readable stream by emitting 'readable' event for each row
-          query.addListener('row', function onRow(row) {
-            query.emit('readable', row)
+          query.addListener('row', function onRow() {
+            query.emit('readable')
           })
 
           var called = 0
-          query.addListener('readable', function onReadable(row) {
+          query.addListener('readable', function onReadable() {
             called++
           })
 
@@ -821,7 +810,7 @@ module.exports = function runTests(name, clientFactory) {
             var segment = findSegment(tx.trace.root,
               'Datastore/statement/Postgres/generate_series/select')
 
-            t.equal(segment.children.length, 1)
+            t.equal(segment.children.length, 2, 'should have end and row children')
             t.equal(called, 10, 'event was called for each row')
           })
         })

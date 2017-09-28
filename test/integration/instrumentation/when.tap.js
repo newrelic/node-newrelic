@@ -2,27 +2,17 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var testPromiseSegments = require('./promises/segments.js')
-var testTransactionState = require('./promises/transaction-state.js')
+var testPromiseSegments = require('./promises/segments')
+var testTransactionState = require('./promises/transaction-state')
 
 var runMultiple = testTransactionState.runMultiple
-
-var semver = require('semver')
-
-// We skip testing when on node v0.8 due to an interaction between
-// when's detection of potentially unhandled rejections and 0.8's
-// events.EventEmitter.listeners function.
-// TODO: Delete this when v0.8 is deprecated.
-if (semver.satisfies(process.version, '<=0.8')) {
-  return
-}
 
 
 test('Promise constructor retains all properties', function(t) {
   var Promise = require('when').Promise
   var originalKeys = Object.keys(Promise)
 
-  var agent = setupAgent(t)
+  setupAgent(t)
   var Promise = require('when').Promise
   var wrappedKeys = Object.keys(Promise)
 

@@ -147,9 +147,9 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
             var unscoped = transaction.metrics.unscoped
             var expected = {
               'Datastore/all': 2,
-              'Datastore/allOther': 2,
+              'Datastore/allWeb': 2,
               'Datastore/Redis/all': 2,
-              'Datastore/Redis/allOther': 2,
+              'Datastore/Redis/allWeb': 2,
               'Datastore/operation/Redis/set': 1,
               'Datastore/operation/Redis/get': 1,
             }
@@ -161,8 +161,43 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
+  t.test('should add `key` parameter to trace segment', function(t) {
+    agent.config.capture_params = true
+
+    helper.runInTransaction(agent, function() {
+      client.set('saveme', 'foobar', function(error) {
+        // Regardless of error, key should still be captured.
+        t.error(error)
+
+        var segment = agent.tracer.getSegment().parent
+        t.equals(segment.parameters.key, '"saveme"', 'should have key as parameter')
+        t.end()
+      })
+    })
+  })
+
+  t.test('should not add `key` parameter to trace segment', function(t) {
+    agent.config.capture_params = false
+
+    helper.runInTransaction(agent, function() {
+      client.set('saveme', 'foobar', function(error) {
+        // Regardless of error, key should still be captured.
+        t.error(error)
+
+        var segment = agent.tracer.getSegment().parent
+        t.equals(segment.parameters.key, undefined, 'should not have key as parameter')
+        t.end()
+      })
+    })
+  })
+
   t.test('should add datastore instance parameters to trace segments', function(t) {
     t.plan(3)
+
+    // Enable.
+    agent.config.datastore_tracer.instance_reporting.enabled = true
+    agent.config.datastore_tracer.database_name_reporting.enabled = true
+
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function(error) {
@@ -179,7 +214,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           'should have port as parameter'
         )
         t.equals(
-          setSegment.parameters.database_name, DB_INDEX,
+          setSegment.parameters.database_name, String(DB_INDEX),
           'should have database id as parameter'
         )
       })
@@ -188,7 +223,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
   t.test('should not add datastore instance parameters and metrics when disabled',
       function(t) {
-    t.plan(4)
+    t.plan(5)
 
     // disable
     agent.config.datastore_tracer.instance_reporting.enabled = false
@@ -197,7 +232,9 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function(error) {
-        if (error) return t.fail(error)
+        if (!t.error(error)) {
+          return t.end()
+        }
 
         var setSegment = transaction.trace.root.children[0]
         t.equals(
@@ -215,7 +252,8 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
         transaction.end(function() {
           var unscoped = transaction.metrics.unscoped
-          t.equals(unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
+          t.equals(
+            unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
             'should not have instance metric')
         })
       })
@@ -255,7 +293,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the first set'
       )
       t.equals(
-        setSegment1.parameters.database_name, DB_INDEX,
+        setSegment1.parameters.database_name, String(DB_INDEX),
         'should have the starting database id as parameter for the first set'
       )
       t.equals(
@@ -263,7 +301,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the select'
       )
       t.equals(
-        selectSegment.parameters.database_name, DB_INDEX,
+        selectSegment.parameters.database_name, String(DB_INDEX),
         'should have the starting database id as parameter for the select'
       )
       t.equals(
@@ -271,7 +309,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         'should register the second set'
       )
       t.equals(
-        setSegment2.parameters.database_name, SELECTED_DB,
+        setSegment2.parameters.database_name, String(SELECTED_DB),
         'should have the selected database id as parameter for the second set'
       )
     }

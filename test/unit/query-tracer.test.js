@@ -160,7 +160,6 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('prepareJSON', function testPrepareJSON() {
     describe('webTransaction when record_sql is "raw"', function testWebTransaction() {
-
       var queries
 
       beforeEach(function() {
@@ -887,6 +886,8 @@ function FakeTransaction(url) {
   this.url = url || null
   this.name = 'FakeTransaction'
 }
+
+FakeTransaction.prototype.getFullName = function() { return this.name }
 
 function FakeSegment(transaction, duration, name) {
   this.transaction = transaction

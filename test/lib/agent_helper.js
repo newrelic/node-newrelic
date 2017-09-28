@@ -52,10 +52,11 @@ var helper = module.exports = {
     config.debug.double_linked_transactions = true
 
     // stub applications
-    config.applications = function faked() { return ['New Relic for Node.js tests']; }
+    config.applications = function faked() { return ['New Relic for Node.js tests'] }
 
     _agent = new Agent(config)
     _agent.__created = new Error("Only one agent at a time! This one was created at:")
+    _agent.recordSupportability = function() {} // Stub supportabilities.
 
     if (flags) {
       var newFlags = extend({}, _agent.config.feature_flag)
@@ -63,6 +64,7 @@ var helper = module.exports = {
       _agent.config.feature_flag = newFlags
     }
 
+    global.__NR_agent = _agent
     return _agent
   },
 
@@ -108,17 +110,19 @@ var helper = module.exports = {
    * @param Agent agent The agent to shut down.
    */
   unloadAgent : function unloadAgent(agent) {
+    agent.emit('unload')
     shimmer.unpatchModule()
     shimmer.unwrapAll()
     shimmer.debug = false
 
-    // On v0.8 each mocked agent will add an uncaughtException handler, and on
-    // all versions each agent will add an unhandledRejection handler. These
-    // handlers need to be removed on unload.
-    removeListenerByName(process, 'uncaughtException', '__NR_uncaughtExceptionHandler')
+    // On all versions each agent will add an unhandledRejection handler. This
+    // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
-    if (agent === _agent) _agent = null
+    if (agent === _agent) {
+      global.__NR_agent = null
+      _agent = null
+    }
   },
 
   loadTestAgent: function loadTestAgent(t, flags, conf) {
@@ -146,10 +150,11 @@ var helper = module.exports = {
     if (!(agent && callback)) {
       throw new TypeError("Must include both agent and function!")
     }
+    type = type || 'web'
 
-    return agent.tracer.transactionProxy(function cb_transactionProxy() {
+    return agent.tracer.transactionNestProxy(type, function cb_transactionProxy() {
       var transaction = agent.getTransaction()
-      callback(transaction)
+      return callback(transaction)
     })() // <-- invoke immediately
   },
 
@@ -163,12 +168,10 @@ var helper = module.exports = {
       type = undefined
     }
 
-
     return helper.runInTransaction(agent, type, function wrappedCallback(transaction) {
       transaction.name = 'TestTransaction'
       return callback(transaction)
     })
-
   },
 
   /**

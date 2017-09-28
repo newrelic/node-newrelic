@@ -115,9 +115,10 @@ describe('TraceSegment', function() {
     segment.setDurationInMillis(10, 0)
 
     setTimeout(function() {
-      expect(trace.root.timer.duration).equal(null)
+      expect(trace.root.timer.hrDuration).equal(null)
       segment.end()
-      expect(trace.root.timer.duration).equal(segment.timer.duration)
+      expect(trace.root.timer.getDurationInMillis())
+        .to.be.above(segment.timer.getDurationInMillis() - 1) // alow for slop
       helper.unloadAgent(agent)
       done()
     }, 10)
@@ -170,7 +171,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
@@ -242,7 +243,7 @@ describe('TraceSegment', function() {
 
       webChild = segment.add(url)
       webChild.parameters = params
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
@@ -301,7 +302,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
@@ -347,7 +348,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.setName(url, 200)
+      transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)

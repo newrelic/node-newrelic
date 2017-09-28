@@ -7,9 +7,10 @@ var logger = require('../../../lib/logger')
 var helper = require('../../lib/agent_helper')
 var urltils = require('../../../lib/util/urltils')
 var params = require('../../lib/params')
+var urltils = require('../../../lib/util/urltils')
 
 
-var DBUSER = 'test_user'
+var DBUSER = 'root'
 var DBNAME = 'agent_integration'
 
 
@@ -19,6 +20,12 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
     var agent = helper.instrumentMockedAgent()
     var mysql   = require('mysql')
     var generic = require('generic-pool')
+
+    if (error) {
+      t.fail(error)
+      return t.end()
+    }
+    t.autoend()
 
     /*
      *
@@ -90,11 +97,6 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
       }
     }
 
-    if (error) {
-      t.fail(error)
-      return t.end()
-    }
-
     t.tearDown(function cb_tearDown() {
       pool.drain(function() {
         pool.destroyAllNow()
@@ -102,7 +104,7 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
       })
     })
 
-    t.plan(8)
+    t.plan(9)
 
     t.test('basic transaction', function testTransaction(t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
@@ -118,6 +120,7 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
 
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
             withRetry.release(client)
+
             agent.getTransaction().end(function checkQueries() {
               var queryKeys = Object.keys(agent.queries.samples)
               t.ok(queryKeys.length > 0, 'there should be a query sample')
@@ -276,7 +279,7 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
               var traceRootDuration = traceRoot.timer.getDurationInMillis()
               var segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
               var queryNodeDuration = segment.timer.getDurationInMillis()
-              t.ok(Math.abs(duration - queryNodeDuration) < 1,
+              t.ok(Math.abs(duration - queryNodeDuration) < 2,
                   'query duration should be roughly be the time between query and end')
               t.ok(traceRootDuration - queryNodeDuration > 900,
                   'query duration should be small compared to transaction duration')
@@ -303,30 +306,39 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
           t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
           var query = client.query('SELECT 1', [])
 
-          query.on('result', function () {
-            setTimeout(function () {
+          query.on('result', function resultCallback() {
+            setTimeout(function resultTimeout() {
             }, 10)
           })
 
-          query.on('error', function (err) {
+          query.on('error', function errorCallback(err) {
             if (err) return t.fail(err, 'streaming should not fail')
           })
 
-          query.on('end', function () {
+          query.on('end', function endCallback() {
             setTimeout(function actualEnd() {
               agent.getTransaction().end(function checkQueries(transaction) {
                 withRetry.release(client)
                 var traceRoot = transaction.trace.root
                 var querySegment = traceRoot.children[0]
-                t.ok(querySegment.children.length === 2,
-                     'the query segment should have two children')
-                querySegment.children.forEach(function (childSegment) {
-                  t.ok(childSegment.name === 'timers.setTimeout',
-                       'children should be timeouts')
-                })
+                t.equal(
+                  querySegment.children.length, 2,
+                  'the query segment should have two children'
+                )
+
+                var childSegment = querySegment.children[1]
+                t.equal(
+                  childSegment.name, 'Callback: endCallback',
+                  'children should be callbacks'
+                )
+                var grandChildSegment = childSegment.children[0]
+                t.equal(
+                  grandChildSegment.name, 'timers.setTimeout',
+                  'grand children should be timers'
+                )
                 t.end()
               })
-            }, 1000)
+            }, 100)
           })
         })
       })
@@ -382,6 +394,46 @@ test('Basic run through mysql functionality', {timeout : 30 * 1000}, function(t)
                 t.ok(query.total > 0, 'the samples should have positive duration')
               })
               t.end()
+            })
+          })
+        })
+      })
+    })
+
+    t.test('ensure database name changes with a use statement', function(t) {
+      helper.runInTransaction(agent, function transactionInScope(txn) {
+        withRetry.getClient(function(err, client) {
+          client.query('create database if not exists test_db;', function(err) {
+            t.error(err)
+            client.query('use test_db;', function(err) {
+              t.error(err)
+              client.query('SELECT 1 + 1 AS solution', function(err) {
+                var seg = agent.tracer.getSegment().parent
+                t.error(err)
+                if (t.ok(seg, 'should have a segment')) {
+                  t.equal(
+                    seg.parameters.host,
+                    urltils.isLocalhost(params.mysql_host)
+                      ? agent.config.getHostnameSafe()
+                      : params.mysql_host,
+                    'should set host parameter'
+                  )
+                  t.equal(
+                    seg.parameters.database_name,
+                    'test_db',
+                    'should use new database name'
+                  )
+                  t.equal(
+                    seg.parameters.port_path_or_id,
+                    "3306",
+                    'should set port parameter'
+                  )
+                }
+                client.query('drop test_db;', function() {
+                  withRetry.release(client)
+                  txn.end(t.end)
+                })
+              })
             })
           })
         })

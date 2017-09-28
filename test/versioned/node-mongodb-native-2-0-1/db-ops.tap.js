@@ -7,11 +7,6 @@ var params = require('../../lib/params')
 var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
 
-if (semver.satisfies(process.version, '0.8')) {
-  console.log('The latest versions of the mongo driver are not compatible with v0.8')
-  return
-}
-
 var DB_NAME = 'integration'
 var MONGO_HOST = null
 var MONGO_PORT = String(params.mongodb_port)

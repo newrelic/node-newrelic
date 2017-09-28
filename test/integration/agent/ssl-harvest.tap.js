@@ -14,6 +14,8 @@ test("Agent should send a whole harvest to New Relic staging", {timeout: 5000}, 
         'port': 443,
         'utilization': {
           'detect_aws': false,
+          'detect_pcf': false,
+          'detect_gcp': false,
           'detect_docker': false
         },
         'logging': {
@@ -31,7 +33,7 @@ test("Agent should send a whole harvest to New Relic staging", {timeout: 5000}, 
     var transaction
     var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction()
-      transaction.setName('/nonexistent', 501)
+      transaction.finalizeNameFromUri('/nonexistent', 501)
     })
     proxy()
     // ensure it's slow enough to get traced

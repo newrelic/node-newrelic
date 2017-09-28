@@ -1,27 +1,32 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , API    = require('../../../stub_api.js')
+var chai   = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var API    = require('../../../stub_api.js')
 
 
-describe("the stubbed New Relic agent API", function () {
+describe("the stubbed New Relic agent API", function() {
   var api
 
-  beforeEach(function () {
+  beforeEach(function() {
     api = new API()
   })
 
-  it("should export 17 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(17)
+  it("should export 25 API calls", function() {
+    expect(Object.keys(api.constructor.prototype).length).to.equal(25)
   })
 
-  it("exports a transaction naming function", function () {
+  it("exports a transaction naming function", function() {
     should.exist(api.setTransactionName)
     expect(api.setTransactionName).a('function')
   })
+
+  it("exports a dispatcher naming function", function () {
+    should.exist(api.setDispatcher)
+    expect(api.setDispatcher).a('function')
+  })
+
 
   it("shouldn't throw when transaction is named", function () {
     expect(function () { api.setTransactionName('TEST/*'); }).not.throws()
@@ -43,6 +48,11 @@ describe("the stubbed New Relic agent API", function () {
   it("exports a transaction ignoring function", function () {
     should.exist(api.setIgnoreTransaction)
     expect(api.setIgnoreTransaction).a('function')
+  })
+
+  it("exports a function to get the current transaction handle", function () {
+    should.exist(api.getTransaction)
+    expect(api.getTransaction).a('function')
   })
 
   it("exports a function for adding naming rules", function () {
@@ -104,6 +114,72 @@ describe("the stubbed New Relic agent API", function () {
     function myNop () {}
     var retVal = api.createTracer('name', myNop)
     expect(retVal).to.be.equal(myNop)
+  })
+
+  it("shouldn't throw when a custom web transaction is started", function () {
+    expect(function () {
+      api.startWebTransaction('test', function nop(){})
+    }).not.throws()
+  })
+
+  it("should call the function passed into startWebTransaction", function (done) {
+    api.startWebTransaction('test', function nop(){
+      done()
+    })
+  })
+
+  it("shouldn't throw when a callback isn't passed into startWebTransaction", function () {
+    expect(function () {
+      api.startWebTransaction('test')
+    }).not.throws()
+  })
+
+  it("shouldn't throw when a non-function callback is passed into startWebTransaction", function () {
+    expect(function () {
+      api.startWebTransaction('test', 'asdf')
+    }).not.throws()
+  })
+
+  it("shouldn't throw when a custom background transaction is started", function () {
+    expect(function () {
+      api.startBackgroundTransaction('test', 'group', function nop(){})
+    }).not.throws()
+  })
+
+  it("should call the function passed into startBackgroundTransaction", function (done) {
+    api.startBackgroundTransaction('test', 'group', function nop(){
+      done()
+    })
+  })
+
+  it("shouldn't throw when a callback isn't passed into startBackgroundTransaction", function () {
+    expect(function () {
+      api.startBackgroundTransaction('test', 'group')
+    }).not.throws()
+  })
+
+  it("shouldn't throw when a non-function callback is passed into startBackgroundTransaction", function () {
+    expect(function () {
+      api.startBackgroundTransaction('test', 'group', 'asdf')
+    }).not.throws()
+  })
+
+  it("shouldn't throw when a custom background transaction is started with no group", function () {
+    expect(function () {
+      api.startBackgroundTransaction('test', function nop(){})
+    }).not.throws()
+  })
+
+  it("should call the function passed into startBackgroundTransaction with no group", function (done) {
+    api.startBackgroundTransaction('test', function nop(){
+      done()
+    })
+  })
+
+  it("shouldn't throw when a callback isn't passed into startBackgroundTransaction with no group", function () {
+    expect(function () {
+      api.startBackgroundTransaction('test')
+    }).not.throws()
   })
 
   it("shouldn't throw when a custom web transaction is added", function () {

@@ -66,9 +66,9 @@ module.exports = function runTests(agent, pg, name) {
 
     var expected = {
       'Datastore/all': 2,
-      'Datastore/allOther': 2,
+      'Datastore/allWeb': 2,
       'Datastore/Postgres/all': 2,
-      'Datastore/Postgres/allOther': 2,
+      'Datastore/Postgres/allWeb': 2,
       'Datastore/operation/Postgres/insert': 1,
       'Datastore/operation/Postgres/select': 1,
     }
@@ -416,9 +416,7 @@ module.exports = function runTests(agent, pg, name) {
         })
       })
 
-      t.test('query.on should not create segments for row events', function (t) {
-        t.plan(1)
-
+      t.test('query.on should create one segment for row events', function(t) {
         helper.runInTransaction(agent, function transactionInScope(tx) {
           var client = new pg.Client(CON_STRING)
 
@@ -426,7 +424,7 @@ module.exports = function runTests(agent, pg, name) {
             client.end()
           })
 
-          client.connect(function (error) {
+          client.connect(function(error) {
             if (error) return t.fail(error)
             var query = client.query('SELECT table_name FROM information_schema.tables')
 
@@ -435,19 +433,22 @@ module.exports = function runTests(agent, pg, name) {
               t.end()
             })
 
-            query.on('row', function onRow(row) {})
+            query.on('row', function onRow() {})
 
             query.on('end', function ended() {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/information_schema.tables/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2)
+              client.end()
+              t.end()
             })
           })
         })
       })
 
-      t.test('query.addListener should not create segments for row events', function (t) {
+
+      t.test('query.addListener should not create segments for row events', function(t) {
         t.plan(1)
 
         helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -457,7 +458,7 @@ module.exports = function runTests(agent, pg, name) {
             client.end()
           })
 
-          client.connect(function (error) {
+          client.connect(function(error) {
             if (error) return t.fail(error)
             var query = client.query('SELECT table_name FROM information_schema.tables')
 
@@ -466,19 +467,19 @@ module.exports = function runTests(agent, pg, name) {
               t.end()
             })
 
-            query.addListener('row', function onRow(row) {})
+            query.addListener('row', function onRow() {})
 
             query.addListener('end', function ended() {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/information_schema.tables/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2, 'should have end and row children')
             })
           })
         })
       })
 
-      t.test('query.on should not create segments for each row with readable stream', function (t) {
+      t.test('query.on should not create segments for each row with readable stream', function(t) {
         t.plan(2)
 
         helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -515,7 +516,7 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/generate_series/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2, 'should have end and row children')
               t.equal(called, 10, 'event was called for each row')
             })
           })
@@ -559,7 +560,7 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/generate_series/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2, 'should have end and row children')
               t.equal(called, 10, 'event was called for each row')
             })
           })

@@ -26,5 +26,8 @@ module.exports = {
   oracle_port: process.env.NR_NODE_TEST_ORACLE_PORT || 1521,
   oracle_user: process.env.NR_NODE_TEST_ORACLE_USER || 'system',
   oracle_pass: process.env.NR_NODE_TEST_ORACLE_PASS || 'oracle',
-  oracle_db: process.env.NR_NODE_TEST_ORACLE_DB || 'xe'
+  oracle_db: process.env.NR_NODE_TEST_ORACLE_DB || 'xe',
+
+  rabbitmq_host: process.env.NR_NODE_TEST_RABBIT_HOST || 'localhost',
+  rabbitmq_port: process.env.NR_NODE_TEST_RABBIT_PORT || 5672
 }

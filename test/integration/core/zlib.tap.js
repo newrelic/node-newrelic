@@ -102,15 +102,11 @@ test('unzip', function(t) {
   })
 })
 
-// there is an incompatibility between the streams 1 and streams 2 that
-// breaks our instrumentation. This is tracked in issue #577.
-// TODO: break this incompatibility out into its own test when it comes
-// time to fix the instrumentation
-test('createGzip', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createGzip', function(t) {
   testStream(t, 'createGzip', CONTENT, GZIP_CONTENT)
 })
 
-test('createGunzip', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createGunzip', function(t) {
   testStream(
     t,
     'createGunzip',
@@ -119,7 +115,7 @@ test('createGunzip', {skip: semver.satisfies(process.version, "<0.10")}, functio
   )
 })
 
-test('createUnzip', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createUnzip', function(t) {
   testStream(
     t,
     'createUnzip',
@@ -128,11 +124,11 @@ test('createUnzip', {skip: semver.satisfies(process.version, "<0.10")}, function
   )
 })
 
-test('createDeflate', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createDeflate', function(t) {
   testStream(t, 'createDeflate', CONTENT, DEFLATED_CONTENT)
 })
 
-test('createInflate', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createInflate', function(t) {
   testStream(
     t,
     'createInflate',
@@ -141,11 +137,11 @@ test('createInflate', {skip: semver.satisfies(process.version, "<0.10")}, functi
   )
 })
 
-test('createDeflateRaw', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createDeflateRaw', function(t) {
   testStream(t, 'createDeflateRaw', CONTENT, DEFLATED_RAW)
 })
 
-test('createInflateRaw', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createInflateRaw', function(t) {
   testStream(
     t,
     'createInflateRaw',

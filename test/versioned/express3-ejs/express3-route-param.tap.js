@@ -41,7 +41,7 @@ test('Express 3 route param', function(t) {
 
       agent.once('transactionFinished', function(tx) {
         t.equal(
-          tx.name, 'WebTransaction/Expressjs/GET//a/:action',
+          tx.name, 'WebTransaction/Expressjs/GET//[param handler :action]',
           'should have correct transaction name'
         )
       })

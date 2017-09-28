@@ -32,7 +32,7 @@ function generate(method, runID) {
 }
 
 var timeout = global.setTimeout
-function fast() { global.setTimeout = function (cb) {return timeout(cb, 0)} }
+function fast() { global.setTimeout = function(cb) {return timeout(cb, 0)} }
 function slow() { global.setTimeout = timeout }
 
 describe("CollectorAPI", function() {
@@ -49,6 +49,9 @@ describe("CollectorAPI", function() {
       license_key: 'license key here',
       utilization: {
         detect_aws: false,
+        detect_pcf: false,
+        detect_azure: false,
+        detect_gcp: false,
         detect_docker: false
       },
       browser_monitoring: {},
@@ -64,8 +67,8 @@ describe("CollectorAPI", function() {
     helper.unloadAgent(agent)
   })
 
-  describe("_login", function () {
-    describe("on the happy path", function () {
+  describe("_login", function() {
+    describe("on the happy path", function() {
       var bad
       var ssc
       var raw
@@ -77,18 +80,18 @@ describe("CollectorAPI", function() {
 
       var response = {return_value: valid}
 
-      beforeEach(function (done) {
-        var redirection = nock(URL)
-                            .post(generate('get_redirect_host'))
-                            .reply(200, {return_value: HOST})
+      beforeEach(function(done) {
+        agent.config.port = 8080
+        var redirection = nock(URL + ':8080')
+          .post(generate('get_redirect_host'))
+          .reply(200, {return_value: HOST})
         var connection = nock(URL)
-                            .post(generate('connect'))
-                            .reply(200, response)
+          .post(generate('connect'))
+          .reply(200, response)
 
-
-        api._login(function test(error, response, json) {
+        api._login(function test(error, config, json) {
           bad = error
-          ssc = response
+          ssc = config
           raw = json
 
           redirection.done()
@@ -97,28 +100,28 @@ describe("CollectorAPI", function() {
         })
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should have a run ID", function () {
+      it('should have a run ID', function() {
         expect(ssc.agent_run_id).equal(RUN_ID)
       })
 
-      it("should pass through server-side configuration untouched", function () {
+      it('should pass through server-side configuration untouched', function() {
         expect(ssc).eql(valid)
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
 
-    describe("off the happy path", function () {
-      describe("receiving 503 response from get_redirect_host", function () {
+    describe("off the happy path", function() {
+      describe("receiving 503 response from get_redirect_host", function() {
         var captured
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL).post(generate('get_redirect_host')).reply(503)
 
           api._login(function test(error) {
@@ -129,26 +132,26 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function () {
+        it("should have gotten an error", function() {
           should.exist(captured)
         })
 
-        it("should have passed on the status code", function () {
+        it("should have passed on the status code", function() {
           expect(captured.statusCode).equal(503)
         })
 
-        it("should have included an informative error message", function () {
+        it("should have included an informative error message", function() {
           expect(captured.message)
             .equal("No body found in response to get_redirect_host.")
         })
       })
 
-      describe("receiving no hostname from get_redirect_host", function () {
+      describe("receiving no hostname from get_redirect_host", function() {
         var captured
         var ssc
 
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
                               .post(generate('get_redirect_host'))
                               .reply(200, {return_value: ''})
@@ -166,15 +169,15 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten no error", function () {
+        it("should have gotten no error", function() {
           should.not.exist(captured)
         })
 
-        it("should use preexisting collector hostname", function () {
+        it("should use preexisting collector hostname", function() {
           expect(api._agent.config.host).equal(HOST)
         })
 
-        it("should pass along server-side configuration from collector", function () {
+        it("should pass along server-side configuration from collector", function() {
           expect(ssc).eql({agent_run_id: RUN_ID})
         })
       })

@@ -16,6 +16,8 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
         'ssl': true,
         'utilization': {
           'detect_aws': false,
+          'detect_pcf': false,
+          'detect_gcp': false,
           'detect_docker': false
         },
         'logging': {
@@ -32,7 +34,7 @@ test("Collector API should send errors to staging-collector.newrelic.com", funct
     var transaction
     var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
       transaction = agent.getTransaction()
-      transaction.setName('/nonexistent', 501)
+      transaction.finalizeNameFromUri('/nonexistent', 501)
     })
     proxy()
     t.ok(transaction, "got a transaction")

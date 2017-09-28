@@ -1,5 +1,6 @@
 'use strict'
 
+var arity = require('./lib/util/arity')
 var util = require('util')
 var logger = require('./lib/logger').child({component: 'api'})
 var NAMES = require('./lib/metrics/names')
@@ -7,8 +8,13 @@ var recordWeb = require('./lib/metrics/recorders/http.js')
 var recordBackground = require('./lib/metrics/recorders/other.js')
 var customRecorder = require('./lib/metrics/recorders/custom')
 var hashes = require('./lib/util/hashes')
+var properties = require('./lib/util/properties')
 var stringify = require('json-stringify-safe')
+var shimmer = require('./lib/shimmer.js')
+var Shim = require('./lib/shim/shim.js')
+var TransactionHandle = require('./lib/transaction/handle.js')
 
+var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
  *
@@ -40,9 +46,15 @@ var CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 /**
  * The exported New Relic API. This contains all of the functions meant to be
  * used by New Relic customers. For now, that means transaction naming.
+ *
+ * You do not need to directly instantiate this class, as an instance of this is
+ * the return from `require('newrelic')`.
+ *
+ * @constructor
  */
 function API(agent) {
   this.agent = agent
+  this.shim = new Shim(agent, 'NewRelicAPI')
 }
 
 /**
@@ -79,7 +91,71 @@ API.prototype.setTransactionName = function setTransactionName(name) {
     return
   }
 
+  logger.trace('Setting transaction %s name to %s', transaction.id, name)
   transaction.forceName = NAMES.CUSTOM + '/' + name
+}
+
+/**
+ * This method returns an object with the following methods:
+ * - end: end the transaction that was active when `API#getTransaction`
+ *   was called.
+ *
+ * - ignore: set the transaction that was active when
+ *   `API#getTransaction` was called to be ignored.
+ *
+ * @returns {TransactionHandle} transaction The transaction object with the `end`
+ *                               and `ignore` methods on it.
+ */
+API.prototype.getTransaction = function getTransaction() {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getTransaction'
+  )
+  metric.incrementCallCount()
+
+  var transaction = this.agent.tracer.getTransaction()
+  if (!transaction) {
+    logger.debug("No transaction found when calling API#getTransaction")
+    return TransactionHandle.stub
+  }
+
+  transaction.handledExternally = true
+
+  return new TransactionHandle(transaction)
+}
+
+/**
+ * Specify the `Dispatcher` and `Dispatcher Version` environment values.
+ * A dispatcher is typically the service responsible for brokering
+ * the request with the process responsible for responding to the
+ * request.  For example Node's `http` module would be the dispatcher
+ * for incoming HTTP requests.
+ *
+ * @param {string} name The string you would like to report to New Relic
+ *                      as the dispatcher.
+ *
+ * @param {string} [version] The dispatcher version you would like to
+ *                           report to New Relic
+ */
+API.prototype.setDispatcher = function setDispatcher(name, version) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setDispatcher'
+  )
+  metric.incrementCallCount()
+
+  if (!name || typeof name !== 'string') {
+    logger.error("setDispatcher must be called with a name, and name must be a string.")
+    return
+  }
+
+  // No objects allowed.
+  if (version && typeof version !== 'object') {
+    version = String(version)
+  } else {
+    logger.info('setDispatcher was called with an object as the version parameter')
+    version = null
+  }
+
+  this.agent.environment.setDispatcher(name, version, true)
 }
 
 /**
@@ -212,7 +288,7 @@ API.prototype.addCustomParameters = function addCustomParameters(params) {
   metric.incrementCallCount()
 
   for (var key in params) {
-    if (!params.hasOwnProperty(key)) {
+    if (!properties.hasOwn(params, key)) {
       continue
     }
 
@@ -241,7 +317,7 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
     return logger.warn("No transaction found to ignore.")
   }
 
-  transaction.forceIgnore = ignored
+  transaction.setForceIgnore(ignored)
 }
 
 /**
@@ -359,7 +435,7 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
- * @returns {string} the <script> header to be injected
+ * @returns {string} The `<script>` header to be injected.
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   var metric = this.agent.metrics.getOrCreateMetric(
@@ -410,7 +486,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   // bail gracefully outside a transaction
   if (!trans) return _gracefail(1)
 
-  var name = trans.getName()
+  var name = trans.getFullName()
 
   /* If we're in an unnamed transaction, add a friendly warning this is to
    * avoid people going crazy, trying to figure out why browser monitoring is
@@ -544,8 +620,17 @@ API.prototype.createTracer = function createTracer(name, callback) {
 
   var segment = tracer.createSegment(name, customRecorder)
   segment.start()
-  return tracer.bindFunction(callback, segment, true)
+  return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
 }
+
+API.prototype.createWebTransaction = util.deprecate(
+  createWebTransaction, [
+    'API#createWebTransaction is being deprecated!',
+    'Please use API#startWebTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
+  ].join(' ')
+)
 
 /**
  * Creates a function that represents a web transaction. It does not start the
@@ -563,8 +648,12 @@ API.prototype.createTracer = function createTracer(name, callback) {
                                 related transactions in APM, so it should be a generic
                                 name and not iclude any variable parameters.
  * @param {Function}  handle    Function that represents the transaction work.
+ *
+ * @memberOf API#
+ *
+ * @deprecated since version 2.0
  */
-API.prototype.createWebTransaction = function createWebTransaction(url, handle) {
+function createWebTransaction(url, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
   )
@@ -577,7 +666,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
 
   var fail = false
   if (!url) {
-    logger.warn('createWebTransaction called without an url')
+    logger.warn('createWebTransaction called without a url')
     fail = true
   }
 
@@ -600,7 +689,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
 
   var tracer = this.agent.tracer
 
-  return tracer.transactionNestProxy('web', function createWebSegment() {
+  var proxy = tracer.transactionNestProxy('web', function createWebSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -612,35 +701,232 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
     tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
     tx.url = url
     tx.applyUserNamingRules(tx.url)
-    tx.webSegment = tracer.createSegment(url, recordWeb)
-    tx.webSegment.start()
+    tx.baseSegment = tracer.createSegment(url, recordWeb)
+    tx.baseSegment.start()
 
-    return tracer.bindFunction(handle, tx.webSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
   })
+  return arity.fixArity(handle, proxy)
 }
 
 /**
- * Creates a function that represents a background transaction. It does not start the
- * transaction automatically - the returned function needs to be invoked to start it.
- * Inside the handler function, the transaction must be ended by calling endTransaction().
+ * Creates and starts a web transaction to record work done in
+ * the handle supplied. This transaction will run until the handle
+ * synchronously returns UNLESS:
+ * 1. The handle function returns a promise, where the end of the
+ *    transaction will be tied to the end of the promise returned.
+ * 2. {@link API#getTransaction} is called in the handle, flagging the
+ *    transaction as externally handled.  In this case the transaction
+ *    will be ended when {@link TransactionHandle#end} is called in the user's code.
  *
  * @example
  * var newrelic = require('newrelic')
- * var transaction = newrelic.createBackgroundTransaction('myTransaction', function() {
- *   // do some work
- *   newrelic.endTransaction()
+ * newrelic.startWebTransaction('/some/url/path', function() {
+ *   var transaction = newrelic.getTransaction()
+ *   setTimeout(function() {
+ *     // do some work
+ *     transaction.end()
+ *   }, 100)
  * })
  *
- * @param {string}    name      The name of the transaction.  It is used to name and group
-                                related transactions in APM, so it should be a generic
-                                name and not iclude any variable parameters.
- * @param {string}    [group]   Optional, used for grouping background transactions in
- *                              APM.  For more information see:
- *                              https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
- * @param {Function}  handle    Function that represents the background work.
+ * @param {string} url
+ *  The URL of the transaction.  It is used to name and group related transactions in APM,
+ *  so it should be a generic name and not iclude any variable parameters.
+ *
+ * @param {Function}  handle
+ *  Function that represents the transaction work.
  */
-API.prototype.createBackgroundTransaction = createBackgroundTransaction
+API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/startWebTransaction'
+  )
+  metric.incrementCallCount()
 
+  if (typeof handle !== 'function') {
+    logger.warn('startWebTransaction called with a handle arg that is not a function')
+    return null
+  }
+
+  if (!url) {
+    logger.warn('startWebTransaction called without a url, transaction not started')
+    return handle()
+  }
+
+  logger.debug(
+    'starting web transaction %s (%s).',
+    url,
+    handle && handle.name
+  )
+
+  var shim = this.shim
+  var tracer = this.agent.tracer
+
+  return tracer.transactionNestProxy('web', function startWebSegment() {
+    var tx = tracer.getTransaction()
+
+    logger.debug(
+      'creating web transaction %s (%s) with transaction id: %s',
+      url,
+      handle && handle.name,
+      tx.id
+    )
+    tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
+    tx.url = url
+    tx.applyUserNamingRules(tx.url)
+    tx.baseSegment = tracer.createSegment(url, recordWeb)
+    tx.baseSegment.start()
+
+    var boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    var returnResult = boundHandle.call(this)
+    if (returnResult && shim.isPromise(returnResult)) {
+      returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
+    } else if (!tx.handledExternally) {
+      tx.end()
+    }
+    return returnResult
+  })()
+}
+
+API.prototype.startBackgroundTransaction = startBackgroundTransaction
+
+/**
+ * Creates and starts a background transaction to record work done in
+ * the handle supplied. This transaction will run until the handle
+ * synchronously returns UNLESS:
+ * 1. The handle function returns a promise, where the end of the
+ *    transaction will be tied to the end of the promise returned.
+ * 2. {@link API#getTransaction} is called in the handle, flagging the
+ *    transaction as externally handled.  In this case the transaction
+ *    will be ended when {@link TransactionHandle#end} is called in the user's code.
+ *
+ * @example
+ * var newrelic = require('newrelic')
+ * newrelic.startBackgroundTransaction('Red October', 'Subs', function() {
+ *   var transaction = newrelic.getTransaction()
+ *   setTimeout(function() {
+ *     // do some work
+ *     transaction.end()
+ *   }, 100)
+ * })
+ *
+ * @param {string} name
+ *  The name of the transaction. It is used to name and group related
+ *  transactions in APM, so it should be a generic name and not iclude any
+ *  variable parameters.
+ *
+ * @param {string} [group]
+ *  Optional, used for grouping background transactions in APM. For more
+ *  information see:
+ *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
+ *
+ * @param {Function} handle
+ *  Function that represents the background work.
+ *
+ * @memberOf API#
+ */
+function startBackgroundTransaction(name, group, handle) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/startBackgroundTransaction'
+  )
+  metric.incrementCallCount()
+
+  if (handle === undefined && typeof group === 'function') {
+    handle = group
+    group = 'Nodejs'
+  }
+
+  if (typeof handle !== 'function') {
+    logger.warn('startBackgroundTransaction called with a handle that is not a function')
+    return null
+  }
+
+  if (!name) {
+    logger.warn('startBackgroundTransaction called without a name')
+    return handle()
+  }
+
+  logger.debug(
+    'starting background transaction %s:%s (%s)',
+    name,
+    group,
+    handle && handle.name
+  )
+
+  var tracer = this.agent.tracer
+  var shim = this.shim
+  var txName = group + '/' + name
+
+  return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
+    var tx = tracer.getTransaction()
+
+    logger.debug(
+      'creating background transaction %s:%s (%s) with transaction id: %s',
+      name,
+      group,
+      handle && handle.name,
+      tx.id
+    )
+
+    tx.finalizeName(txName)
+    tx.baseSegment = tracer.createSegment(name, recordBackground)
+    tx.baseSegment.partialName = group
+    tx.baseSegment.start()
+
+    var boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    var returnResult = boundHandle.call(this)
+    if (returnResult && shim.isPromise(returnResult)) {
+      returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
+    } else if (!tx.handledExternally) {
+      tx.end()
+    }
+    return returnResult
+  })()
+}
+
+API.prototype.createBackgroundTransaction = util.deprecate(
+  createBackgroundTransaction, [
+    'API#createBackgroundTransaction is being deprecated!',
+    'Please use API#startBackgroundTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
+  ].join(' ')
+)
+
+/**
+ * Creates a function that represents a background transaction. It does not
+ * start the transaction automatically - the returned function needs to be
+ * invoked to start it. Inside the handler function, the transaction must be
+ * ended by calling `endTransaction()`.
+ *
+ * @example
+ *  var newrelic = require('newrelic')
+ *  var startTx = newrelic.createBackgroundTransaction('myTransaction', function(a, b) {
+ *    // Do some work
+ *    newrelic.endTransaction()
+ *  })
+ *  startTx('a', 'b') // Start the transaction.
+ *
+ * @param {string} name
+ *  The name of the transaction. It is used to name and group related
+ *  transactions in APM, so it should be a generic name and not iclude any
+ *  variable parameters.
+ *
+ * @param {string} [group]
+ *  Optional, used for grouping background transactions in APM. For more
+ *  information see:
+ *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
+ *
+ * @param {Function} handle
+ *  Function that represents the background work.
+ *
+ * @return {Function} The `handle` function wrapped with starting a new
+ *  transaction. This function can be called repeatedly to start multiple
+ *  transactions.
+ *
+ * @memberOf API#
+ *
+ * @deprecated since version 2.0
+ */
 function createBackgroundTransaction(name, group, handle) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createBackgroundTransaction'
@@ -658,7 +944,7 @@ function createBackgroundTransaction(name, group, handle) {
 
   var fail = false
   if (!name) {
-    logger.warn('createBackgroundTransaction called without an url')
+    logger.warn('createBackgroundTransaction called without a name')
     fail = true
   }
 
@@ -683,8 +969,9 @@ function createBackgroundTransaction(name, group, handle) {
   )
 
   var tracer = this.agent.tracer
+  var txName = group + '/' + name
 
-  return tracer.transactionNestProxy('bg', function createBackgroundSegment() {
+  var proxy = tracer.transactionNestProxy('bg', function createBGSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -695,15 +982,20 @@ function createBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.setBackgroundName(name, group)
-    tx.bgSegment = tracer.createSegment(name, recordBackground)
-    tx.bgSegment.partialName = group
-    tx.bgSegment.start()
+    tx.finalizeName(txName)
+    tx.baseSegment = tracer.createSegment(name, recordBackground)
+    tx.baseSegment.partialName = group
+    tx.baseSegment.start()
 
-    return tracer.bindFunction(handle, tx.bgSegment).apply(this, arguments)
+    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
   })
+  return arity.fixArity(handle, proxy)
 }
 
+/**
+ * End the current web or background custom transaction. This method requires being in
+ * the correct transaction context when called.
+ */
 API.prototype.endTransaction = function endTransaction() {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/endTransaction'
@@ -719,20 +1011,34 @@ API.prototype.endTransaction = function endTransaction() {
   var tx = tracer.getTransaction()
 
   if (tx) {
-    if (tx.webSegment) {
-      tx.setName(tx.url, 0)
-      tx.webSegment.markAsWeb(tx.url)
-      tx.webSegment.end()
-    } else if (tx.bgSegment) {
-      tx.bgSegment.end()
+    if (tx.baseSegment) {
+      if (tx.type === 'web') {
+        tx.finalizeNameFromUri(tx.url, 0)
+      }
+      tx.baseSegment.end()
     }
-    logger.debug('ending transaction with id: %s and name: %s', tx.id, tx.name)
     tx.end()
+    logger.debug('ended transaction with id: %s and name: %s', tx.id, tx.name)
   } else {
     logger.debug('endTransaction() called while not in a transaction.')
   }
 }
 
+/**
+ * Record an event-based metric, usually associated with a particular duration.
+ * The `name` must be a string following standard metric naming rules. The `value` will
+ * usually be a number, but it can also be an object.
+ *   * When `value` is a numeric value, it should represent the magnitude of a measurement
+ *     associated with an event; for example, the duration for a particular method call.
+ *   * When `value` is an object, it must contain count, total, min, max, and sumOfSquares
+ *     keys, all with number values. This form is useful to aggregate metrics on your own
+ *     and report them periodically; for example, from a setInterval. These values will
+ *     be aggregated with any previously collected values for the same metric. The names
+ *     of these keys match the names of the keys used by the platform API.
+ *
+ * @param  {string} name  The name of the metric.
+ * @param  {number|object} value
+ */
 API.prototype.recordMetric = function recordMetric(name, value) {
   var supportMetric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordMetric'
@@ -767,7 +1073,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 
   for (var i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
-      logger.warn('Metric object must include ' + required[i] + ' as a number')
+      logger.warn('Metric object must include %s as a number', required[i])
       return
     }
 
@@ -784,6 +1090,14 @@ API.prototype.recordMetric = function recordMetric(name, value) {
   metric.merge(stats)
 }
 
+/**
+ * Update a metric that acts as a simple counter. The count of the selected metric will
+ * be incremented by the specified amount, defaulting to 1.
+ *
+ * @param  {string} name  The name of the metric.
+ * @param  {number} [value] The amount that the count of the metric should be incremented
+ *                          by.
+ */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
@@ -813,6 +1127,15 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
   })
 }
 
+/**
+ * Record an event-based metric, usually associated with a particular duration.
+ *
+ * @param  {string} eventType  The name of the event. It must be an alphanumeric string
+ *                             less than 255 characters.
+ * @param  {object} attributes Object of key and value pairs. The keys must be shorter
+ *                             than 255 characters, and the values must be string, number,
+ *                             or boolean.
+ */
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
@@ -886,6 +1209,161 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   }
 
   this.agent.customEvents.add([instrinics, attributes])
+}
+
+/**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrument(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrument(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrument'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.GENERIC
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrumentDatastore(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentDatastore(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrumentDatastore =
+function instrumentDatastore(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentDatastore'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.DATASTORE
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrumentWebframework(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentWebframework(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrumentWebframework =
+function instrumentWebframework(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.WEB_FRAMEWORK
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
+ * Registers an instrumentation function for instrumenting message brokers.
+ *
+ *  - `newrelic.instrumentMessages(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentMessages(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrumentMessages =
+function instrumentMessages(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentMessages'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.MESSAGE
+  shimmer.registerInstrumentation(opts)
 }
 
 /**

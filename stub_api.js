@@ -2,13 +2,17 @@
 
 var logger = require('./lib/logger.js')
 var RealAPI = require('./api.js')
+var TransactionHandle = require('./lib/transaction/handle')
+var util = require('util')
 
 
 /* eslint-disable no-eval */
 function stubFunction(name) {
-  return eval("(function () {return function " + name + "() {" +
-              "logger.debug('Not calling " + name + " because New Relic is disabled.');" +
-              "}}())")
+  return eval(
+    "(function () {return function " + name + "() {" +
+    "logger.debug('Not calling " + name + " because New Relic is disabled.');" +
+    "}}())"
+  )
 }
 /* eslint-enable no-eval */
 
@@ -27,8 +31,25 @@ for (var i = 0; i < length; i++) {
 }
 
 Stub.prototype.createTracer = createTracer
-Stub.prototype.createWebTransaction = createWebTransaction
-Stub.prototype.createBackgroundTransaction = createBackgroundTransaction
+Stub.prototype.createWebTransaction = util.deprecate(
+  createWebTransaction, [
+    'API#createWebTransaction is being deprecated!',
+    'Please use API#startWebTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
+  ].join(' ')
+)
+Stub.prototype.createBackgroundTransaction = util.deprecate(
+  createBackgroundTransaction, [
+    'API#createBackgroundTransaction is being deprecated!',
+    'Please use API#startBackgroundTransaction for transaction creation',
+    'and API#getTransaction for transaction management including',
+    'ending transactions.'
+  ].join(' ')
+)
+Stub.prototype.startWebTransaction = startWebTransaction
+Stub.prototype.startBackgroundTransaction = startBackgroundTransaction
+Stub.prototype.getTransaction = getTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
 Stub.prototype.shutdown = shutdown
 
@@ -37,6 +58,10 @@ Stub.prototype.shutdown = shutdown
 function getBrowserTimingHeader() {
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.')
   return ''
+}
+
+function getTransaction() {
+  return TransactionHandle.stub
 }
 
 // Normally the following 3 calls return a wrapped callback, instead we
@@ -56,20 +81,42 @@ function createBackgroundTransaction(name, group, callback) {
   return (callback === undefined) ? group : callback
 }
 
+function startWebTransaction(url, callback) {
+  logger.debug('Not calling startWebTransaction because New Relic is disabled.')
+  if (typeof callback === 'function') {
+    return callback()
+  }
+
+  return null
+}
+
+function startBackgroundTransaction(name, group, callback) {
+  logger.debug('Not calling startBackgroundTransaction because New Relic is disabled.')
+  if (typeof callback === 'function') {
+    return callback()
+  }
+
+  if (typeof group === 'function') {
+    return group()
+  }
+
+  return null
+}
+
 // Normally the following call executes callback asynchronously
 function shutdown(options, cb) {
   logger.debug('Not calling shutdown because New Relic is disabled.')
-  
+
   var callback = cb
   if (!callback) {
     if (typeof options === 'function') {
       callback = options
     } else {
-      callback = new Function()
+      callback = function __NR_defaultCb() {}
     }
   }
-  
-  process.nextTick(callback)
+
+  setImmediate(callback)
 }
 
 module.exports = Stub

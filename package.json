@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "1.40.0",
+  "version": "2.2.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -91,7 +91,8 @@
   ],
   "homepage": "http://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=0.6.0"
+    "node": ">=0.10.0",
+    "npm": ">=2.0.0"
   },
   "directories": {
     "lib": "lib"
@@ -106,20 +107,21 @@
     "concat-stream": "^1.5.0",
     "https-proxy-agent": "^0.3.5",
     "json-stringify-safe": "^5.0.0",
-    "readable-stream": "^1.1.13",
+    "readable-stream": "^2.1.4",
     "semver": "^5.3.0"
   },
-  "bundledDependencies": [
-    "concat-stream",
-    "https-proxy-agent",
-    "json-stringify-safe",
-    "readable-stream",
-    "semver"
-  ],
+  "optionalDependencies": {
+    "@newrelic/native-metrics": "^2.1.0"
+  },
   "devDependencies": {
     "async": "^2.1.4",
+    "benchmark": "^2.1.4",
+    "bluebird": "^3.4.7",
     "eslint": "^2.9.0",
+    "jsdoc": "^3.4.0",
+    "minami": "^1.1.1",
     "mocha": "*",
+    "request": "2.81.0",
     "tap": "^9.0.3"
   },
   "repository": {

@@ -1,0 +1,18 @@
+{
+  "opts": {
+    "destination": "out/",
+    "readme": "./README.md",
+    "template": "./node_modules/minami"
+  },
+  "source": {
+    "exclude": ["node_modules", "test"],
+    "includePattern": ".+\\.js(doc)?$"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": true,
+    "showInheritedInNav": false
+  }
+}

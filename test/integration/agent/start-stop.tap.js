@@ -15,6 +15,8 @@ test("Collector API should connect to staging-collector.newrelic.com", function 
         'ssl': false,
         'utilization': {
           'detect_aws': false,
+          'detect_pcf': false,
+          'detect_gcp': false,
           'detect_docker': false
         },
         'logging': {

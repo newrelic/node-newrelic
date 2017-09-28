@@ -5,10 +5,6 @@ var async = require('async')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 
-// Cassandra driver doesn't have support for v0.8. It uses the stream API introduced
-// in v0.10. https://github.com/jorgebay/node-cassandra-cql/issues/11
-var semver = require('semver')
-if (semver.satisfies(process.versions.node, '<0.10.x')) return
 
 var agent = helper.instrumentMockedAgent()
 var cassandra = require('cassandra-driver')
@@ -75,7 +71,7 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
   cassSetup(runTest)
 
   function runTest() {
-    t.test('executeBatch', function (t) {
+    t.test('executeBatch', function(t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -105,7 +101,7 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
 
           var selQuery = 'SELECT * FROM ' + KS + '.' + FAM + ' WHERE '
           selQuery += PK + ' = 111;'
-          client.execute(selQuery, function (error, value) {
+          client.execute(selQuery, function(error, value) {
             if (error) return t.fail(error)
 
             t.ok(
@@ -125,36 +121,39 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
 
             var setSegment = trace.root.children[0]
             t.ok(setSegment, 'trace segment for insert should exist')
-            t.equals(
-              setSegment.name,
-              'Datastore/statement/Cassandra/test.testFamily/insert/batch',
-              'should register the executeBatch'
-            )
-            t.ok(
-              setSegment.children.length >= 2,
-              'set should have atleast a dns lookup and callback child'
-            )
+            if (setSegment) {
+              t.equals(
+                setSegment.name,
+                'Datastore/statement/Cassandra/test.testFamily/insert/batch',
+                'should register the executeBatch'
+              )
+              t.ok(
+                setSegment.children.length >= 2,
+                'set should have atleast a dns lookup and callback child'
+              )
 
-            var childIndex = setSegment.children.length - 1
-            var getSegment = setSegment.children[childIndex].children[0]
-            t.ok(getSegment, 'trace segment for select should exist')
-            t.equals(
-              getSegment.name,
-              'Datastore/statement/Cassandra/test.testFamily/select',
-              'should register the execute'
-            )
+              var childIndex = setSegment.children.length - 1
+              var getSegment = setSegment.children[childIndex].children[0]
+              t.ok(getSegment, 'trace segment for select should exist')
+              if (getSegment) {
+                t.equals(
+                  getSegment.name,
+                  'Datastore/statement/Cassandra/test.testFamily/select',
+                  'should register the execute'
+                )
 
-            t.ok(
-              getSegment.children.length >= 1,
-              'get should have a callback segment'
-            )
-
-            t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+                t.ok(
+                  getSegment.children.length >= 1,
+                  'get should have a callback segment'
+                )
+                t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+              }
+            }
 
             transaction.end(function end() {
               checkMetric('Datastore/operation/Cassandra/insert', 1)
-              checkMetric('Datastore/allOther', 2)
-              checkMetric('Datastore/Cassandra/allOther', 2)
+              checkMetric('Datastore/allWeb', 2)
+              checkMetric('Datastore/Cassandra/allWeb', 2)
               checkMetric('Datastore/Cassandra/all', 2)
               checkMetric('Datastore/all', 2)
               checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
@@ -169,7 +168,12 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
 
       function checkMetric(name, count, scoped) {
         var metric = agent.metrics[scoped ? 'scoped' : 'unscoped'][name]
-        t.equal(metric.callCount, count)
+        t.ok(metric, 'metric "' + name + '" should exist')
+        if (!metric) {
+          return
+        }
+
+        t.equal(metric.callCount, count, 'should be called ' + count + ' times')
         t.ok(metric.total, 'should have set total')
         t.ok(metric.totalExclusive, 'should have set totalExclusive')
         t.ok(metric.min, 'should have set min')

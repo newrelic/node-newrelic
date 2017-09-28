@@ -6,10 +6,6 @@ var params = require('../../lib/params')
 var test = tap.test
 var helper = require('../../lib/agent_helper')
 
-// Cassandra driver doesn't have support for v0.8. It uses the stream API introduced
-// in v0.10. https://github.com/jorgebay/node-cassandra-cql/issues/11
-var semver = require('semver')
-if (semver.satisfies(process.versions.node, '<0.10.x')) return
 
 var agent = helper.instrumentMockedAgent()
 var cassandra = require('node-cassandra-cql')
@@ -121,7 +117,7 @@ test("Cassandra instrumentation",
 
             var setSegment = trace.root.children[0]
             t.ok(setSegment, "trace segment for insert should exist")
-            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeBatch",
+            t.equals(setSegment.name, "Datastore/statement/Cassandra/test.testFamily/insert/batch",
                    "should register the executeBatch")
             t.ok(setSegment.children.length >= 2,
                    "set should have atleast a dns lookup and callback child")

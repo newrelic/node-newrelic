@@ -4,13 +4,8 @@ var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
-var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
 
-if (semver.satisfies(process.version, '0.8')) {
-  console.log('The latest versions of the mongo driver are not compatible with v0.8')
-  return
-}
 
 var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 var TRANSACTION_NAME = 'mongo test'
@@ -341,9 +336,9 @@ function checkMetrics(t, agent, metrics) {
   )
   var expectedUnscopedMetrics = [
     'Datastore/all',
-    'Datastore/allOther',
+    'Datastore/allWeb',
     'Datastore/MongoDB/all',
-    'Datastore/MongoDB/allOther',
+    'Datastore/MongoDB/allWeb',
     'Datastore/instance/MongoDB/' + METRIC_HOST_NAME + '/' + METRIC_HOST_PORT
   ]
   expectedUnscopedMetrics.forEach(function(metric) {

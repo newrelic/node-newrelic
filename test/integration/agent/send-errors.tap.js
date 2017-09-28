@@ -14,6 +14,8 @@ test('Agent#_sendErrors', function(t) {
     'ssl': false,
     'utilization': {
       'detect_aws': false,
+      'detect_pcf': false,
+      'detect_gcp': false,
       'detect_docker': false
     },
     'logging': {
@@ -79,7 +81,7 @@ test('Agent#_sendErrors', function(t) {
       })
 
       helper.runInTransaction(agent, function(tx) {
-        tx.setName('/nonexistent', 501)
+        tx.finalizeNameFromUri('/nonexistent', 501)
         tx.addAgentAttribute('foo', 'bar')
         tx.addAgentAttribute('request_uri', '/nonexistent')
         agent.errors.add(tx, new Error('test error'))

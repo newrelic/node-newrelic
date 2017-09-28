@@ -11,15 +11,8 @@ var semver = require('semver')
 var configurator = require('../../../lib/config.js')
 var Agent = require('../../../lib/agent.js')
 var Transaction = require('../../../lib/transaction')
-var clearAWSCache = require('../../../lib/aws-info').clearCache
+var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
 
-
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
 
 /*
  *
@@ -29,12 +22,16 @@ if (!global.setImmediate) {
 var RUN_ID = 1337
 var URL = 'https://collector.newrelic.com'
 
+// TODO: do we need to mock AWS (and other vendors) in these tests?
+// Why not just disable?
 var awsHost = "http://169.254.169.254"
 
 var awsResponses = {
-  "instance-type": "test.type",
-  "instance-id": "test.id",
-  "placement/availability-zone": "us-west-2b"
+  "dynamic/instance-identity/document": {
+    "instanceType": "test.type",
+    "instanceId": "test.id",
+    "availabilityZone": "us-west-2b"
+  }
 }
 
 var awsRedirect
@@ -43,25 +40,24 @@ function refreshAWSEndpoints() {
     clearAWSCache()
     awsRedirect = nock(awsHost)
     for (var awsPath in awsResponses) {
-      var redirect = awsRedirect.get('/2008-02-01/meta-data/' + awsPath)
+      var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
       redirect.reply(200, awsResponses[awsPath])
     }
 }
 
 
-describe("the New Relic agent", function () {
-  before(function () {
+describe("the New Relic agent", function() {
+  before(function() {
     nock.disableNetConnect()
     refreshAWSEndpoints()
   })
 
-  after(function () {
+  after(function() {
     nock.enableNetConnect()
   })
 
-  it("requires the configuration be passed to the constructor", function () {
-    /*jshint nonew: false */
-    expect(function () { new Agent(); }).throws()
+  it("requires the configuration be passed to the constructor", function() {
+    expect(function() { new Agent() }).to.throw() // eslint-disable-line no-new
   })
 
   it("doesn't throw when passed a valid configuration", function () {
@@ -262,12 +258,12 @@ describe("the New Relic agent", function () {
         expect(rules.length).equal(2 + 1) // +1 default ignore rule
 
         // Rules are reversed by default
-        expect(rules[1].pattern.source).equal('^\\/u')
+        expect(rules[2].pattern.source).equal('^\\/u')
 
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-            expect(rules[2].pattern.source).equal('^\\/t')
+            expect(rules[1].pattern.source).equal('^\\/t')
         } else {
-            expect(rules[2].pattern.source).equal('^/t')
+            expect(rules[1].pattern.source).equal('^/t')
         }
       })
     })
@@ -307,7 +303,7 @@ describe("the New Relic agent", function () {
       it("shouldn't error when forcing an ignore", function () {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = true
-        transaction.setName('/ham_snadwich/attend', 200)
+        transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
         expect(transaction.ignore).equal(true)
 
         expect(function () { transaction.end(); }).not.throws()
@@ -316,13 +312,13 @@ describe("the New Relic agent", function () {
       it("shouldn't error when forcing a non-ignore", function () {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = false
-        transaction.setName('/ham_snadwich/ignore', 200)
+        transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
         expect(transaction.ignore).equal(false)
 
         expect(function () { transaction.end(); }).not.throws()
       })
 
-      it("should ignore when setName is not called", function() {
+      it("should ignore when finalizeNameFromUri is not called", function() {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = true
         agent._transactionFinished(transaction)
@@ -977,20 +973,20 @@ describe("the New Relic agent", function () {
       }
     })
 
-    it("reports background transactions error count", function (done) {
+    it("reports background transactions error count", function(done) {
       var transaction = new Transaction(agent)
-      expect(transaction.isWeb()).to.be.false
+      transaction.type = Transaction.TYPES.BG
+      expect(transaction.isWeb()).to.be.false()
 
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
 
-      agent.collector.metricData = function (payload) {
+      agent.collector.metricData = function(payload) {
         var metrics = payload[3]
         var metric  = metrics.getMetric('Errors/allOther')
 
-        should.exist(metric)
-        expect(metric.callCount).equal(3)
+        expect(metric).to.exist().and.have.property('callCount', 3)
 
         done()
       }
@@ -1206,7 +1202,7 @@ describe("the New Relic agent", function () {
 
     it("sends query trace when there's a trace to send", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.trace.setDurationInMillis(4001)
       transaction.end()
 
@@ -1254,7 +1250,7 @@ describe("the New Relic agent", function () {
 
     it("merges queries when send fails", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.trace.setDurationInMillis(4001)
       transaction.end()
 
@@ -1314,7 +1310,7 @@ describe("the New Relic agent", function () {
 
     it("doesn't send transaction traces when slow traces disabled", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
@@ -1357,7 +1353,7 @@ describe("the New Relic agent", function () {
 
     it("doesn't send transaction traces when collect_traces disabled", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
@@ -1400,7 +1396,7 @@ describe("the New Relic agent", function () {
 
     it("sends transaction trace when there's a trace to send", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
@@ -1437,7 +1433,7 @@ describe("the New Relic agent", function () {
 
     it("passes through errror when sending trace fails", function (done) {
       var transaction = new Transaction(agent)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
       transaction.end()
@@ -1482,7 +1478,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.end()
 
       agent._sendMetrics(function cb__sendMetrics(error) {
@@ -1495,7 +1491,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.end()
 
       agent._sendErrors(function cb__sendErrors(error) {
@@ -1508,7 +1504,7 @@ describe("the New Relic agent", function () {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
-      transaction.setName('/test/path/31337', 501)
+      transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.end()
 
       agent._sendTrace(function cb__sendTrace(error) {

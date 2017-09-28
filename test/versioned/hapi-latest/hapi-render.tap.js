@@ -13,7 +13,7 @@ var API = require(path.join('..', '..', '..', 'api.js'))
 
 
 var TEST_PATH = '/test'
-var TEST_PORT = 9876
+var TEST_PORT = 8089
 var TEST_HOST = 'localhost'
 var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
 var BODY = "<!DOCTYPE html>\n" +
@@ -28,8 +28,7 @@ var BODY = "<!DOCTYPE html>\n" +
 
 
 test("agent instrumentation of Hapi", function (t) {
-  t.plan(4)
-
+  t.autoend()
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
@@ -37,11 +36,15 @@ test("agent instrumentation of Hapi", function (t) {
     var server = new hapi.Server()
     var transaction
 
+    t.tearDown(function cb_tearDown() {
+      server.stop()
+      helper.unloadAgent(agent)
+    })
+
     server.connection({
       host: TEST_HOST,
       port: TEST_PORT
     })
-
 
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
@@ -87,10 +90,7 @@ test("agent instrumentation of Hapi", function (t) {
         t.ok(serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
              "serialized metrics as expected")
 
-        server.stop(function () {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })
@@ -126,6 +126,7 @@ test("agent instrumentation of Hapi", function (t) {
 
     agent.once('transactionFinished', function (tx) {
       var stats = agent.metrics.getMetric('View/index/Rendering')
+      t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, "should note the view rendering")
       verifyEnded(tx.trace.root, tx)
     })
@@ -196,6 +197,7 @@ test("agent instrumentation of Hapi", function (t) {
 
     agent.once('transactionFinished', function () {
       var stats = agent.metrics.getMetric('View/index/Rendering')
+      t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, "should note the view rendering")
     })
 
@@ -219,6 +221,15 @@ test("agent instrumentation of Hapi", function (t) {
     var hapi = require('hapi')
     var server = new hapi.Server({debug: false})
 
+    t.tearDown(function() {
+      helper.unloadAgent(agent)
+      server.stop()
+    })
+
+    agent.on('transactionFinished', function(tx) {
+      t.equal(tx.name, 'WebTransaction/Hapi/GET/' + TEST_PATH,
+        'Transaction should be named correctly.')
+    })
 
     server.connection({
       host: TEST_HOST,
@@ -238,21 +249,20 @@ test("agent instrumentation of Hapi", function (t) {
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error)
 
-        t.ok(response, "got a response from Express")
+        t.ok(response, "got a response from Hapi")
         t.ok(body, "got back a body")
 
         var errors = agent.errors.errors
         t.ok(errors, "errors were found")
         t.equal(errors.length, 1, "should be 1 error")
+        t.equal(agent.errors.getWebTransactionsErrorCount(), 1,
+          "should be 1 web transaction error")
 
         var first = errors[0]
         t.ok(first, "have the first error")
-        t.equal(first[2], "HttpError 500", "got the expected error")
+        t.contains(first[2], 'ohno', 'got the expected error')
 
-        server.stop(function () {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })

@@ -3,7 +3,6 @@
 var assert = require('chai').assert
 var format = require('util').format
 var urltils = require('../../lib/util/urltils')
-var params = require('../lib/params')
 
 exports.assertMetrics = assertMetrics
 exports.assertSegments = assertSegments
@@ -85,13 +84,12 @@ function assertSegments(parent, expected, options) {
     exact = false
   }
 
-  function getChildren(parent) {
-    return parent.children.filter(function(item) {
+  function getChildren(_parent) {
+    return _parent.children.filter(function(item) {
       if (exact && options && options.exclude) {
         return (options.exclude.indexOf(item.name) === -1)
-      } else {
-        return true
       }
+      return true
     })
   }
 
@@ -109,14 +107,13 @@ function assertSegments(parent, expected, options) {
             '" in position ' + childCount
         )
 
-        // if the next expected item is not array, then check that the current child has no
-        // children
-        if (!Array.isArray(expected[i+1])) {
+        // If the next expected item is not array, then check that the current
+        // child has no children
+        if (!Array.isArray(expected[i + 1])) {
           // var children = child.children
           assert(getChildren(child).length === 0, 'segment "' + child.name +
             '" should not have any children')
         }
-
       } else if (typeof sequenceItem === 'object') {
         assertSegments(child, sequenceItem, options)
       }
@@ -144,8 +141,8 @@ function assertSegments(parent, expected, options) {
         }
         assert.ok(child, 'segment "' + parent.name + '" should have child "' +
           sequenceItem + '"')
-        if (typeof expected[i+1] === 'object') {
-          assertSegments(child, expected[i+1], exact)
+        if (typeof expected[i + 1] === 'object') {
+          assertSegments(child, expected[i + 1], exact)
         }
       }
     }
@@ -166,8 +163,6 @@ function findSegment(root, name) {
   }
 }
 
-function getMetricHostName(agent, db) {
-  return urltils.isLocalhost(params[db + '_host'])
-    ? agent.config.getHostnameSafe()
-    : params.postgres_host
+function getMetricHostName(agent, host) {
+  return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }

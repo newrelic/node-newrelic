@@ -8,30 +8,30 @@ var ParsedStatement = require('../../lib/db/parsed-statement')
 
 
 function checkDatMetric(metrics, name, scope) {
-  expect(metrics.getMetric(name, scope).total).to.equal(0.333)
+  expect(metrics.getMetric(name, scope)).to.have.property('total', 0.333)
 }
 
-describe('recording database metrics', function () {
+describe('recording database metrics', function() {
   var agent
   var metrics
 
 
-  before(function () {
+  before(function() {
     agent = helper.loadMockedAgent()
   })
 
-  after(function () {
+  after(function() {
     helper.unloadAgent(agent)
   })
 
-  describe('on scoped transactions with parsed statements', function () {
-    describe('with model', function() {
-      before(function () {
+  describe('on scoped transactions with parsed statements', function() {
+    describe('with collection', function() {
+      before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
-          , transaction = new Transaction(agent)
-          , segment     = transaction.trace.add('test')
+        var transaction = new Transaction(agent)
+        var segment     = transaction.trace.add('test')
 
-
+        transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
         ps.recordMetrics(segment, 'TEST')
         transaction.end()
@@ -76,13 +76,13 @@ describe('recording database metrics', function () {
       })
     })
 
-    describe('without model', function() {
-      before(function () {
+    describe('without collection', function() {
+      before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select')
-          , transaction = new Transaction(agent)
-          , segment     = transaction.trace.add('test')
+        var transaction = new Transaction(agent)
+        var segment     = transaction.trace.add('test')
 
-
+        transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
         ps.recordMetrics(segment, 'TEST')
         transaction.end()
@@ -124,14 +124,14 @@ describe('recording database metrics', function () {
     })
   })
 
-  describe('on unscoped transactions with parsed statements', function () {
-    describe('with model', function() {
-      before(function () {
+  describe('on unscoped transactions with parsed statements', function() {
+    describe('with collection', function() {
+      before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
-          , transaction = new Transaction(agent)
-          , segment     = transaction.trace.add('test')
+        var transaction = new Transaction(agent)
+        var segment     = transaction.trace.add('test')
 
-
+        transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
         ps.recordMetrics(segment, null)
         transaction.end()
@@ -172,13 +172,13 @@ describe('recording database metrics', function () {
       })
     })
 
-    describe('without model', function() {
-      before(function () {
+    describe('without collection', function() {
+      before(function() {
         var ps          = new ParsedStatement('NoSQL', 'select')
-          , transaction = new Transaction(agent)
-          , segment     = transaction.trace.add('test')
+        var transaction = new Transaction(agent)
+        var segment     = transaction.trace.add('test')
 
-
+        transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
         ps.recordMetrics(segment, null)
         transaction.end()
@@ -218,12 +218,12 @@ describe('recording database metrics', function () {
 })
 
 describe('recording slow queries', function() {
-  describe('with model', function() {
+  describe('with collection', function() {
     var transaction
     var segment
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent(null, {
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -239,6 +239,7 @@ describe('recording slow queries', function() {
       )
 
       transaction = new Transaction(agent)
+      transaction.type = Transaction.TYPES.BG
       segment = transaction.trace.add('test')
 
       segment.setDurationInMillis(503)
@@ -258,7 +259,7 @@ describe('recording slow queries', function() {
       transaction.end()
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
@@ -288,7 +289,7 @@ describe('recording slow queries', function() {
     })
   })
 
-  describe('without model', function() {
+  describe('without collection', function() {
     var transaction
     var segment
     var agent

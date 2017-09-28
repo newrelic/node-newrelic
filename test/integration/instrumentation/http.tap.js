@@ -1,6 +1,5 @@
 'use strict'
 
-var path       = require('path')
 var tap        = require('tap')
 var test       = tap.test
 var http       = require('http')
@@ -9,18 +8,18 @@ var StreamSink = require('../../../lib/util/stream-sink.js')
 
 
 test("built-in http instrumentation should handle internal & external requests",
-     function (t) {
-  t.plan(13)
+     function(t) {
+  t.plan(14)
 
   var agent = helper.instrumentMockedAgent()
 
   var TEST_INTERNAL_PORT = 8123
-    , TEST_INTERNAL_PATH = '/path'
-    , TEST_EXTERNAL_PORT = 8321
-    , TEST_EXTERNAL_PATH = '/status'
-    , TEST_HOST          = 'localhost'
-    , PAYLOAD            = JSON.stringify({msg : 'ok'})
-    , PAGE               = '<html>' +
+  var TEST_INTERNAL_PATH = '/path'
+  var TEST_EXTERNAL_PORT = 8321
+  var TEST_EXTERNAL_PATH = '/status'
+  var TEST_HOST          = 'localhost'
+  var PAYLOAD            = JSON.stringify({msg : 'ok'})
+  var PAGE               = '<html>' +
                            '<head><title>test response</title></head>' +
                            '<body><p>I heard you like HTML.</p></body>' +
                            '</html>'
@@ -35,15 +34,15 @@ test("built-in http instrumentation should handle internal & external requests",
 
   // save for later use in the test response handler
   var transaction
-  var internalResponseHandler = function (response) {
-    return function (requestResponse) {
+  var internalResponseHandler = function(response) {
+    return function(requestResponse) {
       transaction = agent.getTransaction()
       t.ok(transaction, "handler is part of transaction")
 
       if (requestResponse.statusCode !== 200) return t.fail(requestResponse.statusCode)
 
       requestResponse.setEncoding('utf8')
-      requestResponse.on('data', function (data) {
+      requestResponse.on('data', function(data) {
         t.equal(data, PAYLOAD, "response handler shouldn't alter payload")
       })
 
@@ -63,7 +62,7 @@ test("built-in http instrumentation should handle internal & external requests",
                             method : 'GET'},
                            internalResponseHandler(response))
 
-    req.on('error', function (error) { t.fail(error); })
+    req.on('error', function(error) { t.fail(error) })
 
     req.end()
   })
@@ -74,16 +73,16 @@ test("built-in http instrumentation should handle internal & external requests",
     helper.unloadAgent(agent)
   })
 
-  var testResponseHandler = function (response) {
+  var testResponseHandler = function(response) {
     if (response.statusCode !== 200) return t.fail(response.statusCode)
 
     response.setEncoding('utf8')
 
     var fetchedBody = ''
-    response.on('data', function (data) { fetchedBody += data; })
+    response.on('data', function(data) { fetchedBody += data })
 
     // this is where execution ends up -- test asserts go here
-    response.on('end', function () {
+    response.on('end', function() {
       if (!transaction) {
         t.fail("Transaction wasn't set by response handler")
         return t.end()
@@ -93,15 +92,16 @@ test("built-in http instrumentation should handle internal & external requests",
       t.equals(fetchedBody, PAGE, "page shouldn't change")
 
       var scope = 'WebTransaction/NormalizedUri/*'
-        , stats = agent.metrics.getOrCreateMetric(scope)
-        , found = false
+      var stats = agent.metrics.getOrCreateMetric(scope)
+      var found = false
 
 
-      t.equals(transaction.name, scope, 'transaction name should be set')
+      t.equals(transaction.type, 'web', 'should be a web transaction')
+      t.equals(transaction.name, scope, 'should set transaction name')
       t.equals(
         transaction.name,
-        transaction.webSegment.name,
-        'webSegment name should match transaction name'
+        transaction.baseSegment.name,
+        'baseSegment name should match transaction name'
       )
 
       t.equals(stats.callCount, 2,

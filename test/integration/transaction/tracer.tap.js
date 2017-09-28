@@ -441,10 +441,10 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
   var tracer = agent.tracer
   t.plan(20)
 
-  t.equal(tracer.transactionNestProxy('web', null), null)
-  t.equal(tracer.transactionNestProxy('web', 5), 5)
-  t.equal(tracer.transactionNestProxy('web'))
-  t.equal(tracer.transactionNestProxy('web', 'test'), 'test')
+  t.equal(tracer.transactionNestProxy('web', null), null, 'should not wrap null')
+  t.equal(tracer.transactionNestProxy('web', 5), 5, 'should not wrap numbers')
+  t.equal(tracer.transactionNestProxy('web'), undefined, 'should not wrap undefined')
+  t.equal(tracer.transactionNestProxy('web', 'test'), 'test', 'should not wrap strings')
   tracer.transactionNestProxy('web', handler)(1, 2, 3)
   t.end()
 
@@ -456,12 +456,13 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
     t.equal(root.name, 'ROOT')
     t.equal(root, tracer.getSegment())
     t.ok(transaction)
-    transaction.webSegment = root
+    transaction.type = 'web'
+    transaction.baseSegment = root
 
     tracer.transactionNestProxy('web', handler2)()
     tracer.transactionNestProxy('bg', handler3)()
-    tracer.webSegment = null
-    transaction.bgSegment = root
+    transaction.type = 'bg'
+    transaction.baseSegment = root
     tracer.transactionNestProxy('web', handler3)()
 
     function handler2() {
@@ -770,7 +771,6 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   var returnVal = {}
   var innerReturn = {}
 
-  var args = [callback, 1, 2, 3]
   var wrapped = tracer.wrapFunctionFirst(
     'my segment',
     record,
@@ -869,10 +869,4 @@ test('wrapSyncFunction', function testwrapSyncFunction(t) {
     t.equal(segment.name, 'my segment')
     t.end()
   }
-})
-
-test('wrapCallback', function testwrapCallback(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  t.end()
 })

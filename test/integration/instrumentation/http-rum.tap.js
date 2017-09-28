@@ -11,7 +11,7 @@ var hashes = require('../../../lib/util/hashes.js')
 
 var DATA_PREFIX = 'NREUM.info = '
 
-test('custom naming rules should be applied early for RUM', function (t) {
+test('custom naming rules should be applied early for RUM', function(t) {
   t.plan(3)
 
   var conf  = {
@@ -35,22 +35,22 @@ test('custom naming rules should be applied early for RUM', function (t) {
 
   var external = http.createServer(function cb_createServer(request, response) {
     t.equal(
-      agent.getTransaction()._partialName,
+      agent.getTransaction().getName(),
       'NormalizedUri/WORKING',
       'name rules should be applied'
     )
     response.end(api.getBrowserTimingHeader())
   })
 
-  external.listen(0, function(){
+  external.listen(0, function() {
     var port = external.address().port
 
     http.request({port: port, path: '/test'}, done).end()
 
     function done(res) {
-      res.pipe(new StreamSink(function (err, header) {
+      res.pipe(new StreamSink(function(err, header) {
         t.equal(header.substr(0,7), '<script', 'should generate RUM headers')
-        header.split(';').forEach(function (element) {
+        header.split(';').forEach(function(element) {
           if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
             var dataString = element.substr(DATA_PREFIX.length, element.length)
             var data = JSON.parse(dataString)
@@ -58,7 +58,10 @@ test('custom naming rules should be applied early for RUM', function (t) {
               data.transactionName,
               agent.config.license_key.substr(0,13)
             )
-            t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'url normalized before RUM')
+            t.equal(
+              tx, 'WebTransaction/NormalizedUri/WORKING',
+              'should normalize url before RUM'
+            )
           }
         })
         t.end()
@@ -72,7 +75,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
   })
 })
 
-test('custom web transactions should have rules applied for RUM', function (t) {
+test('custom web transactions should have rules applied for RUM', function(t) {
   t.plan(2)
 
   var conf  = {
@@ -95,10 +98,10 @@ test('custom web transactions should have rules applied for RUM', function (t) {
   agent.config.browser_monitoring.js_agent_loader = 'function () {}'
 
 
-  var handler = api.createWebTransaction('/test', function () {
+  api.startWebTransaction('/test', function() {
     var header = api.getBrowserTimingHeader()
     t.equal(header.substr(0,7), '<script', 'should generate RUM headers')
-    header.split(';').forEach(function (element) {
+    header.split(';').forEach(function(element) {
       if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
         var dataString = element.substr(DATA_PREFIX.length, element.length)
         var data = JSON.parse(dataString)
@@ -111,8 +114,6 @@ test('custom web transactions should have rules applied for RUM', function (t) {
     })
     t.end()
   })
-
-  handler()
 
   t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)

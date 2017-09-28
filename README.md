@@ -1,13 +1,13 @@
-[![npm status badge](https://nodei.co/npm/newrelic.png?stars=true&downloads=true)](https://nodei.co/npm/newrelic/)
+[![npm status badge][1]][2]
 
 # New Relic for Node.js
 
 This package instruments your application for performance monitoring
-with [New Relic](http://newrelic.com).
+with [New Relic][4].
 
-Make sure you have a [New Relic account](http://newrelic.com) before
-starting. To see all the features, such as slow transaction traces, you will
-need a [New Relic Pro](http://newrelic.com/application-monitoring/features) subscription (or equivalent).
+Make sure you have a [New Relic account][4] before starting. To see all the
+features, such as slow transaction traces, you will need a [New Relic Pro][5]
+subscription (or equivalent).
 
 As with any instrumentation tool, please test before using in production.
 
@@ -24,23 +24,22 @@ As with any instrumentation tool, please test before using in production.
 
 ## Getting started
 
-1. [Install node](http://nodejs.org/#download). The agent runs on v0.8 and
-   higher, but some features (e.g. error tracing) depend on features introduced
-   in v0.10. Development work on this module is done with the latest
+1. [Install node](https://nodejs.org/#download). The agent runs on v0.10 and
+   higher. Development work on this module is done with the latest
    non-development release of Node.
 2. Verify your version of node came with a new enough version of npm using
    `npm -v`. We require version 1.4.28 or newer, and recommend using
    the latest release. Read more about [upgrading npm here](#upgrading-npm).
-3. Install this module via `npm install newrelic` for the application you
-   want to monitor.
-4. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
-   your application.
+3. Install this module via `npm install newrelic` for the
+   application you want to monitor.
+4. Copy `newrelic.js` from `node_modules/newrelic` into the root
+   directory of your application.
 5. Edit `newrelic.js` and replace `license_key`'s value with the license key
    for your account.
 6. Add `require('newrelic');` as the first line of the app's main module.
 
 If you wish to keep the configuration for the module separate from your
-application, the module will look for newrelic.js in the directory referenced
+application, the module will look for `newrelic.js` in the directory referenced
 by the environment variable `NEW_RELIC_HOME` if it's set.
 
 When you start your app, New Relic should start up with it and start reporting
@@ -59,7 +58,7 @@ If you're running on a version of npm before 1.4.28, or are interested in moving
 up to latest follow these steps:
 
 1. Run `npm -v` to make sure you have npm installed and working.
-2. If you are on linux/smartos/osx/*nix run `ls -l $(which npm)` and check to
+2. If you are on linux/smartos/osx/\*nix run `ls -l $(which npm)` and check to
    see if the file is owned by "root" or "admin". If so, prefix the next command
    with `sudo`.
 3. Run `npm install -g npm@latest` to upgrade npm itself.
@@ -76,10 +75,9 @@ that if you feel you've found a security issue, contact us at security@newrelic.
 ## Configuring the module
 
 The module can be tailored to your app's requirements, both from the server and
-via the newrelic.js configuration file you created. For complete details on
-what can be configured, refer to
-[`lib/config.default.js`](https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js),
-which documents the available variables and their default values.
+via the `newrelic.js` configuration file you created. For complete details on
+what can be configured, refer to [`lib/config.default.js`][6], which documents
+the available variables and their default values.
 
 In addition, for those of you running in PaaS environments like Heroku or
 Microsoft Azure, all of the configuration variables in `newrelic.js` have
@@ -101,7 +99,7 @@ Here's the list of the most important variables and their values:
   altogether. Use with care. This presumes that all important configuration
   will be available via environment variables, and some log messages assume
   that a config file exists.
-* `NEW_RELIC_HOME`: path to the directory in which you've placed newrelic.js.
+* `NEW_RELIC_HOME`: path to the directory in which you've placed `newrelic.js`.
 * `NEW_RELIC_USE_SSL`: Use SSL for communication with New Relic's servers.
   Enabled by default.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including the
@@ -132,10 +130,10 @@ For completeness, here's the rest of the list:
   configuration for this application. Defaults to false.
 * `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow transaction
   traces to New Relic. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in seconds)
-  at which a transaction trace will count as slow and be sent to New Relic.
-  Can also be set to `apdex_f`, at which point it will set the trace threshold to 4 times
-  the current ApdexT. Defaults to `apdex_f`.
+* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in
+  seconds) at which a transaction trace will count as slow and be sent to New
+  Relic. Can also be set to `apdex_f`, at which point it will set the trace
+  threshold to 4 times the current ApdexT. Defaults to `apdex_f`.
 * `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value in
   seconds.  This is more often than not set from the server. Defaults to 0.100.
 * `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on slow
@@ -187,11 +185,11 @@ enable browser timings.
 
 ### Basics
 
-- Insert the result of `newrelic.getBrowserTimingHeader()`
-into your html page.
+- Insert the result of `newrelic.getBrowserTimingHeader()` into your html page.
 - The browser timing headers should be placed in the beginning of your `<head>` tag.
-  - As an exception to the above, for maximum IE compatability, the results of `getBrowserTimingHeader()`
-should be placed *after* any `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
+  - As an exception to the above, for maximum IE compatability, the results of
+    `getBrowserTimingHeader()` should be placed *after* any
+    `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
 - Do *not* cache the header, call it once for every request.
 
 ### Example
@@ -635,10 +633,10 @@ display.
 #### newrelic.shutdown([options], callback)
 
 Use this method to gracefully shut down the agent.  When called with
-`options.collectPendingData` set to true, the agent will send any pending data to
-the New Relic servers before shutting down.  This is useful when you want to shut down
-the Node process and make sure that all transactions and/or errors are captured by
-New Relic.
+`options.collectPendingData` set to true, the agent will send any pending data
+to the New Relic servers before shutting down.  This is useful when you want to
+shut down the Node process and make sure that all transactions and/or errors are
+captured by New Relic.
 
 Example of collecting pending data before shutting down the process:
 
@@ -658,7 +656,7 @@ application, the agent can't tell when they should begin and end.
 Read more at:
 https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-custom-instrumentation
 
-#### newrelic.createWebTransaction(url, handle)
+#### newrelic.startWebTransaction(url, handle)
 
 `url` is the name of the web transaction. It should be pretty static, not
 including anything like user ids or any other data that is very specific to the
@@ -671,16 +669,22 @@ called within an active background transaction, it will create a new,
 independent transaction and any calls within the `handle` will be bound to the
 new web transaction.
 
-Custom transactions **must** be ended manually by calling `endTransaction()`.
-Timing for custom transaction starts from when the returned wrapped function is
-called until `endTransaction()` is called.
+Custom transactions can be ended within the `handle` in one of three ways:
 
-#### newrelic.createBackgroundTransaction(name, [group], handle)
+1. Call `transaction.end()`. The `transaction` can be received by calling
+  `newrelic.getTransaction()` first thing in the handler function. Then,
+  when you call `transaction.end()` timing will stop.
+2. Return a promise. The transaction will end when the promise resolves or
+  rejects.
+3. Do neither. If no promise is returned, and `getTransaction()` isn't
+  called, the transaction will end immediately after the handle returns.
+
+#### newrelic.startBackgroundTransaction(name [, group], handle)
 
 `name` is the name of the job. It should be pretty static, and not include job
 ids or anything very specific to that run of the job. `group` is optional, and
 allows you to group types of jobs together. This should follow similar rules as
-the `name`. `handle` is a function that encompases your background job. Both
+the `name`. `handle` is a function that encompasses your background job. Both
 custom and auto instrumentation will be captured as part of the transaction.
 
 If called within an active background transaction, it will act as a nested
@@ -688,14 +692,20 @@ tracer. If called within an active web transaction, it will create a new
 transaction and any calls within the `handle` will be bound to the new,
 independent background transaction.
 
-Custom transactions **must** be ended manually by calling `endTransaction()`.
-Timing for custom transaction starts from when the returned wrapped function is
-called until `endTransaction()` is called.
+1. Call `transaction.end()`. The `transaction` can be received by calling
+  `newrelic.getTransaction()` first thing in the handler function. Then,
+  when you call `transaction.end()` timing will stop.
+2. Return a promise. The transaction will end when the promise resolves or
+  rejects.
+3. Do neither. If no promise is returned, and `getTransaction()` isn't
+  called, the transaction will end immediately after the handle returns.
 
-#### newrelic.endTransaction()
+#### newrelic.getTransaction()
 
-This takes no arguments and must be called to end any custom transaction. It
-will detect what kind of transaction was active and end it.
+This takes no arguments and returns the currently active transaction. If the
+returned transaction is a custom one, started with either `startWebTransaction`
+or `startBackgroundTransaction`, then `transaction.end()` must be called to
+end the transaction.
 
 #### newrelic.createTracer(name, handle)
 
@@ -760,8 +770,8 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 
 ### Known issues:
 
-* New Relic for Node is only supported on Node.js 0.8 and newer. Some features
-  may behave differently between 0.8, 0.10 and 0.11 / 0.12. The agent is
+* New Relic for Node is only supported on Node.js 0.10 and newer. Some features
+  may behave differently between the supported versions of Node. The agent is
   optimized for newer versions of Node.
 * There are irregularities around transaction trace capture and display.  If
   you notice missing or incorrect information from transaction traces, let us
@@ -775,8 +785,8 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
   gratitude.
 * The CPU and memory overhead incurred by New Relic for Node is relatively
   minor (~1-10%, depending on how much of the instrumentation your apps end up
-  using).  GC activity is significantly increased while the agent is active,
-  due to the large number of ephemeral objects created by metrics gathering.
+  using). GC activity is significantly increased while the agent is active, due
+  to the large number of ephemeral objects created by metrics gathering.
 * When using Node's included clustering support, each worker process will open
   its own connection to New Relic's servers, and will incur its own overhead
   costs.
@@ -795,3 +805,11 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 New Relic for Node is free-to-use, proprietary software. Please see the full
 license (found in [LICENSE](LICENSE) in this distribution) for details on its license and
 the licenses of its dependencies.
+
+
+[1]: https://nodei.co/npm/newrelic.png
+[2]: https://nodei.co/npm/newrelic
+[3]: https://www.npmjs.com/package/newrelic
+[4]: https://newrelic.com
+[5]: https://newrelic.com/application-monitoring/features
+[6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js

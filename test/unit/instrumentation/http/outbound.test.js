@@ -5,36 +5,31 @@ var events = require('events')
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../../lib/agent_helper')
-var semver = require('semver')
-var NAMES = require('../../../../lib/metrics/names.js')
-var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
+var NAMES = require('../../../../lib/metrics/names')
+var instrumentOutbound = require(
+  '../../../../lib/transaction/tracer/instrumentation/outbound'
+)
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
+var Segment = require('../../../../lib/transaction/trace/segment')
 
 
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
-
-describe('instrumentOutbound', function () {
+describe('instrumentOutbound', function() {
   var agent
   var HOSTNAME = 'localhost'
   var PORT = 8890
 
 
-  before(function () {
+  before(function() {
     agent = helper.loadMockedAgent()
   })
 
-  after(function () {
+  after(function() {
     helper.unloadAgent(agent)
   })
 
-  describe('when working with http.createClient', function () {
-    before(function () {
+  describe('when working with http.createClient', function() {
+    before(function() {
       // capture the deprecation warning here
       if (!http.createClient) {
         this.skip(
@@ -214,12 +209,12 @@ describe('instrumentOutbound', function () {
   })
 })
 
-describe('should add data from cat header to segment', function () {
+describe('should add data from cat header to segment', function() {
   var encKey = 'gringletoes'
   var server
   var agent
 
-  var app_data = [
+  var appData = [
     '123#456',
     'abc',
     0,
@@ -228,33 +223,30 @@ describe('should add data from cat header to segment', function () {
     'xyz'
   ]
 
-  before(function (done) {
-    agent = helper.instrumentMockedAgent(
-      {cat: true},
-      {encoding_key: encKey, trusted_account_ids: [123]}
-    )
+  before(function(done) {
+    agent = helper.instrumentMockedAgent(null, {
+      cross_application_tracer: {enabled: true},
+      encoding_key: encKey,
+      trusted_account_ids: [123]
+    })
+    var obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
     server = http.createServer(function(req, res) {
-      res.writeHead(200, {
-        'x-newrelic-app-data': hashes.obfuscateNameUsingKey(JSON.stringify(app_data), encKey)
-      })
+      res.writeHead(200, {'x-newrelic-app-data': obfData})
       res.end()
       req.resume()
     })
     server.listen(4123, done)
   })
 
-  after(function (done) {
+  after(function(done) {
     helper.unloadAgent(agent)
     server.close(done)
   })
 
   function addSegment() {
     var transaction = agent.getTransaction()
-    transaction.webSegment = {
-      getDurationInMillis: function fake() {
-        return 1000;
-      }
-    }
+    transaction.type = 'web'
+    transaction.baseSegment = new Segment(transaction, 'base-segment')
   }
 
   it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
@@ -294,7 +286,21 @@ describe('should add data from cat header to segment', function () {
   })
 
   it('should collect errors only if they are not being handled', function(done) {
+    var emit = events.EventEmitter.prototype.emit
+    events.EventEmitter.prototype.emit = function(evnt) {
+      if (evnt === 'error') {
+        this.once('error', function() {})
+      }
+      return emit.apply(this, arguments)
+    }
+    // This is really fucking gross.
+    afterEach(function() {
+      events.EventEmitter.prototype.emit = emit
+    })
+
+
     helper.runInTransaction(agent, handled)
+    var errRegex = /connect ECONNREFUSED( 127.0.0.1:12345)?/
 
     function handled(transaction) {
       var req = http.get({host : 'localhost', port : 12345}, function() {})
@@ -305,7 +311,7 @@ describe('should add data from cat header to segment', function () {
       })
 
       req.on('error', function(err) {
-        expect(err.message).match(/connect ECONNREFUSED( 127.0.0.1:12345)?/)
+        expect(err.message).match(errRegex)
       })
 
       req.end()
@@ -316,7 +322,7 @@ describe('should add data from cat header to segment', function () {
 
       req.on('close', function() {
         expect(transaction.exceptions).length(1)
-        expect(transaction.exceptions[0][0].message).match(/connect ECONNREFUSED( 127.0.0.1:12345)?/)
+        expect(transaction.exceptions[0][0].message).match(errRegex)
         done()
       })
 
@@ -327,8 +333,6 @@ describe('should add data from cat header to segment', function () {
 
 describe('when working with http.request', function () {
   var agent
-  var HOSTNAME = 'localhost'
-  var PORT = 8890
 
   before(function () {
     agent = helper.instrumentMockedAgent()
@@ -357,13 +361,13 @@ describe('when working with http.request', function () {
     })
   })
 
-  it('should start and end segment', function (done) {
+  it('should start and end segment', function(done) {
     var host = 'http://www.google.com'
     var path = '/index.html'
     nock(host).get(path).delay(10).reply(200, 'Hello from Google')
 
-    helper.runInTransaction(agent, function (transaction) {
-      http.get('http://www.google.com/index.html', function (res) {
+    helper.runInTransaction(agent, function(transaction) {
+      http.get('http://www.google.com/index.html', function(res) {
         var segment = agent.tracer.getSegment()
 
         expect(segment.timer.hrstart).instanceof(Array)
@@ -372,7 +376,7 @@ describe('when working with http.request', function () {
         res.resume()
         res.on('end', function onEnd() {
           expect(segment.timer.hrDuration).instanceof(Array)
-          expect(segment.timer.duration).above(0)
+          expect(segment.timer.getDurationInMillis()).above(0)
           transaction.end()
           done()
         })

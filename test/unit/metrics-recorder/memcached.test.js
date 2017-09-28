@@ -25,7 +25,7 @@ function record(options) {
   var transaction = options.transaction
 
 
-  transaction.setName(options.url, options.code)
+  transaction.finalizeNameFromUri(options.url, options.code)
   recordMemcache(segment, options.transaction.name)
 }
 
@@ -63,8 +63,8 @@ describe("recordMemcached", function () {
 
       var result = [
         [{name: 'Datastore/operation/Memcache/set'},[1, 0, 0, 0, 0, 0]],
-        [{name: 'Datastore/allOther'},[1, 0, 0, 0, 0, 0]],
-        [{name: 'Datastore/Memcache/allOther'},[1, 0, 0, 0, 0, 0]],
+        [{name: 'Datastore/allWeb'},[1, 0, 0, 0, 0, 0]],
+        [{name: 'Datastore/Memcache/allWeb'},[1, 0, 0, 0, 0, 0]],
         [{name: 'Datastore/all'},[1, 0, 0, 0, 0, 0]],
         [{name: 'Datastore/Memcache/all'},[1, 0, 0, 0, 0, 0]]
       ]

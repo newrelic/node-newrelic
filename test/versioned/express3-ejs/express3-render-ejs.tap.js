@@ -30,18 +30,26 @@ var BODY      = "<!DOCTYPE html>\n" +
 
 test("agent instrumentation of Express 3", function(t) {
   t.plan(6)
+  var agent
+  var app
+  var server
+  t.beforeEach(function (done) {
+    agent = helper.instrumentMockedAgent()
+    //purify the require cache
+    Object.keys(require.cache)
+      .filter(function getConnectAndExpress(key) { return /connect|express/.test(key) })
+      .map(function deleteConnectAndExpress(key) { delete require.cache[key] })
+    app = require('express')()
+    server = require('http').createServer(app)
+    done()
+  })
+
+  t.afterEach(function (done) {
+    helper.unloadAgent(agent)
+    server.close(done)
+  })
 
   t.test("for a normal request", {timeout : 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var app = require('express')()
-    var server = require('http').createServer(app)
-
-
-    t.tearDown(function cb_tearDown() {
-      server.close()
-      helper.unloadAgent(agent)
-    })
-
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
@@ -89,16 +97,6 @@ test("agent instrumentation of Express 3", function(t) {
   t.test("using EJS templates",
        {timeout : 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
-      , server = require('http').createServer(app)
-
-
-    t.tearDown(function cb_tearDown() {
-      server.close()
-      helper.unloadAgent(agent)
-    })
-
     app.set('views', __dirname + '/views')
     app.set('view engine', 'ejs')
 
@@ -126,20 +124,12 @@ test("agent instrumentation of Express 3", function(t) {
   t.test("should generate rum headers",
        {timeout : 1000},
        function (t) {
-    var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
-      , server = require('http').createServer(app)
-      , api    = new API(agent)
+    var api = new API(agent)
 
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
-
-    t.tearDown(function cb_tearDown() {
-      server.close()
-      helper.unloadAgent(agent)
-    })
 
     app.set('views', __dirname + '/views')
     app.set('view engine', 'ejs')
@@ -167,37 +157,14 @@ test("agent instrumentation of Express 3", function(t) {
   })
 
   t.test("should trap errors correctly", function (t) {
-    var agent = helper.instrumentMockedAgent()
-
-    // see shimmer.reinstrument for info on why this is here
-    var pathName = path.join(__dirname, 'node_modules/express/node_modules/connect')
-    // as of npm v3, dependencies are flattened into the root
-    // node_modules
-    if (fs.existsSync(pathName)) {
-      shimmer.reinstrument(agent, pathName)
-    } else {
-      shimmer.reinstrument(agent, path.join(__dirname, 'node_modules/connect'))
-    }
-
-    var app    = require('express')()
-      , server = require('http').createServer(app)
-
-
-    t.tearDown(function cb_tearDown() {
-      server.close()
-      helper.unloadAgent(agent)
-    })
-
     app.get(TEST_PATH, function () {
       var hmm
       hmm.ohno.failure.is.terrible()
     })
 
     server.listen(TEST_PORT, TEST_HOST, function () {
-      t.equal(app.stack.length, 4,
-              "4 middleware functions: query parser, Express, router, error trapper")
-      t.equal(app.stack[app.stack.length - 1].handle.name, 'sentinel',
-              "error handler is last function in middleware chain")
+      t.equal(app.stack.length, 3,
+              "3 middleware functions: query parser, Express, router")
 
       request.get(TEST_URL, function (error, response, body) {
         if (error) t.fail(error)
@@ -222,34 +189,19 @@ test("agent instrumentation of Express 3", function(t) {
 
   t.test("should measure request duration properly (NA-46)",
        {timeout : 2 * 1000},
-       function (t) {
-    var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
-      , server = require('http').createServer(app)
-
-
-    t.tearDown(function cb_tearDown() {
-      server.close()
-      helper.unloadAgent(agent)
-    })
-
-    app.get(TEST_PATH, function (request, response) {
+       function(t) {
+    app.get(TEST_PATH, function(request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler")
-           setTimeout(function () { response.send(BODY); }, DELAY)
+           setTimeout(function() { response.send(BODY) }, DELAY)
     })
 
     server.listen(TEST_PORT, TEST_HOST, function ready() {
-      request.get(TEST_URL, function (error, response, body) {
+      request.get(TEST_URL, function(error, response, body) {
         if (error) t.fail(error)
 
         t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Dispatcher' && pair[1] === 'express'
-        }),
-        "should indicate that the Express dispatcher is in play")
-
-        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Framework' && pair[1] === 'express'
+          return pair[0] === 'Framework' && pair[1] === 'Expressjs'
         }),
         "should indicate that Express itself is in play")
 
@@ -271,16 +223,6 @@ test("agent instrumentation of Express 3", function(t) {
   t.test("should capture URL correctly when configured with a prefix",
          {timeout : 2 * 1000},
          function (t) {
-    var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
-      , server = require('http').createServer(app)
-
-
-    t.tearDown(function cb_tearDown() {
-      server.close()
-      helper.unloadAgent(agent)
-    })
-
     app.use(TEST_PATH, function (request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler")
@@ -295,7 +237,7 @@ test("agent instrumentation of Express 3", function(t) {
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
         t.equals(body, BODY, "response and original page text match")
 
-        var stats = agent.metrics.getMetric('WebTransaction/NormalizedUri/*')
+        var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//test')
         t.ok(stats, "Statistics should have been found for request.")
 
         t.end()

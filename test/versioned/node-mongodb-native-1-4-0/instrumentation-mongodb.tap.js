@@ -41,7 +41,7 @@ function addMetricsVerifier(t, agent, operation, calls, host, port) {
         'should find all operations'
       )
       t.equals(
-        agent.metrics.getMetric('Datastore/allOther').callCount,
+        agent.metrics.getMetric('Datastore/allWeb').callCount,
         calls || 1,
         'should find all operations'
       )
@@ -132,7 +132,7 @@ function verifyNoStats(t, agent, operation) {
   try {
     var metrics = agent.metrics
     t.notOk(metrics.getMetric('Datastore/all'), 'should find no operations')
-    t.notOk(metrics.getMetric('Datastore/allOther'), 'should find no other operations')
+    t.notOk(metrics.getMetric('Datastore/allWeb'), 'should find no other operations')
     t.notOk(
       metrics.getMetric('Datastore/operation/MongoDB/' + operation),
       'generic ' + operation + ' should not be recorded'
@@ -234,8 +234,10 @@ test('agent instrumentation of node-mongodb-native',
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            verifyTrace(t, agent.tracer.getSegment(), 'insert')
-            transaction.end()
+            process.nextTick(function() {
+              transaction.end()
+              verifyTrace(t, agent.tracer.getSegment(), 'insert')
+            })
           })
         })
       })
@@ -363,8 +365,10 @@ test('agent instrumentation of node-mongodb-native',
                 t.ok(result, 'should have gotten back results')
                 cursor.nextObject(cb_nextObject)
               } else {
-                transaction.end(t.end.bind(t))
-                verifyTrace(t, agent.tracer.getSegment(), 'nextObject')
+                process.nextTick(function() {
+                  transaction.end(t.end.bind(t))
+                  verifyTrace(t, agent.tracer.getSegment(), 'nextObject')
+                })
               }
             }
 
@@ -743,8 +747,10 @@ test('agent instrumentation of node-mongodb-native',
             t.ok(result._id, 'should have evidence that it saved')
             t.ok(result.__saved, 'should have evidence we got our original document')
 
-            transaction.end()
-            verifyTrace(t, agent.tracer.getSegment(), 'save')
+            process.nextTick(function() {
+              transaction.end()
+              verifyTrace(t, agent.tracer.getSegment(), 'save')
+            })
           })
         })
       })

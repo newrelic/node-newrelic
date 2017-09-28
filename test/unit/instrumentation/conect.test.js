@@ -1,8 +1,9 @@
 var path   = require('path')
-  , chai   = require('chai')
-  , expect = chai.expect
-  , should = chai.should()
-  , helper = require('../../lib/agent_helper')
+var chai   = require('chai')
+var expect = chai.expect
+var should = chai.should()
+var helper = require('../../lib/agent_helper')
+var WebShim = require('../../../lib/shim/webframework-shim')
   
 
 function nextulator(req, res, next) { return next(); }
@@ -13,11 +14,13 @@ describe("an instrumented Connect stack", function () {
     'use strict'
 
     var agent
-      , initialize
+    var initialize
+    var shim
       
 
     before(function () {
       agent = helper.loadMockedAgent()
+      shim = new WebShim(agent, 'connect')
       initialize = require('../../../lib/instrumentation/connect')
     })
 
@@ -26,19 +29,19 @@ describe("an instrumented Connect stack", function () {
     })
 
     it("when passed no module", function () {
-      expect(function () { initialize(agent); }).not.throws()
+      expect(function () { initialize(agent, null, 'connect', shim); }).not.throws()
     })
 
     it("when passed an empty module", function () {
-      initialize(agent, {})
-      expect(function () { initialize(agent, {}); }).not.throws()
+      expect(function () { initialize(agent, {}, 'connect', shim); }).not.throws()
     })
   })
 
   describe("for Connect 1 (stubbed)", function () {
     var agent
-      , stub
-      , app
+    var stub
+    var app
+    var shim
       
 
     beforeEach(function () {
@@ -60,7 +63,8 @@ describe("an instrumented Connect stack", function () {
         }}
       }
 
-      require('../../../lib/instrumentation/connect')(agent, stub)
+      shim = new WebShim(agent, 'connect')
+      require('../../../lib/instrumentation/connect')(agent, stub, 'connect', shim)
 
       app = stub.HTTPServer.prototype
     })
@@ -86,29 +90,7 @@ describe("an instrumented Connect stack", function () {
       expect(function () { app.use.call(app, '/', 'hamburglar'); }).not.throws()
     })
 
-    it("should add an error interceptor to an empty middleware chain", function () {
-      app.stack = []
-
-      app.use.call(app)
-
-      expect(app.stack.length).equal(1)
-      should.exist(app.stack[0].handle)
-      expect(app.stack[0].handle.name).equal('sentinel')
-    })
-
-    it("should put the error interceptor at the end of the chain", function () {
-      app.stack = []
-
-      app.use.call(app, '/', nextulator)
-      app.use.call(app, '/test', nextulator)
-      app.use.call(app, '/help', nextulator)
-
-      expect(app.stack.length).equal(4)
-      should.exist(app.stack[3].handle)
-      expect(app.stack[3].handle.name).equal('sentinel')
-    })
-
-    it("should put the error interceptor before the first error handler", function () {
+    it("shouldn't break use", function () {
       function errulator(err, req, res, next) {
         return next(err)
       }
@@ -121,9 +103,7 @@ describe("an instrumented Connect stack", function () {
       app.use.call(app, '/help', nextulator)
       app.use.call(app, '/error2', errulator)
 
-      expect(app.stack.length).equal(6)
-      should.exist(app.stack[2].handle)
-      expect(app.stack[2].handle.name).equal('sentinel')
+      expect(app.stack.length).equal(5)
     })
 
     it("shouldn't barf on functions with ES5 future reserved keyword names", function () {
@@ -137,26 +117,13 @@ describe("an instrumented Connect stack", function () {
 
       expect(function () { app.use.call(app, '/', static); }).not.throws()
     })
-
-    it("should mangle function names with a reserved keyword name", function () {
-      // doin this on porpoise
-      // jshint -W024
-      function static(req, res, next) {
-        return next()
-      }
-
-      app.stack = []
-
-      app.use.call(app, '/', static)
-
-      expect(app.stack[0].handle.name).equal('static_')
-    })
   })
 
   describe("for Connect 2 (stubbed)", function () {
     var agent
-      , stub
-      , app
+    var stub
+    var app
+    var shim
       
 
     beforeEach(function () {
@@ -178,7 +145,8 @@ describe("an instrumented Connect stack", function () {
         }
       }
 
-      require('../../../lib/instrumentation/connect')(agent, stub)
+      shim = new WebShim(agent, 'connect')
+      require('../../../lib/instrumentation/connect')(agent, stub, 'connect', shim)
 
       app = stub.proto
     })
@@ -205,28 +173,7 @@ describe("an instrumented Connect stack", function () {
       expect(function () { app.use.call(app, '/', 'hamburglar'); }).not.throws()
     })
 
-    it("should add an error interceptor to an empty middleware chain", function () {
-      app.stack = []
-
-      app.use.call(app)
-      expect(app.stack.length).equal(1)
-      should.exist(app.stack[0].handle)
-      expect(app.stack[0].handle.name).equal('sentinel')
-    })
-
-    it("should put the error interceptor at the end of the chain", function () {
-      app.stack = []
-
-      app.use.call(app, '/', nextulator)
-      app.use.call(app, '/test', nextulator)
-      app.use.call(app, '/help', nextulator)
-
-      expect(app.stack.length).equal(4)
-      should.exist(app.stack[3].handle)
-      expect(app.stack[3].handle.name).equal('sentinel')
-    })
-
-    it("should put the error interceptor before the first error handler", function () {
+    it("shouldn't break use", function () {
       function errulator(err, req, res, next) {
         return next(err)
       }
@@ -239,9 +186,7 @@ describe("an instrumented Connect stack", function () {
       app.use.call(app, '/help', nextulator)
       app.use.call(app, '/error2', errulator)
 
-      expect(app.stack.length).equal(6)
-      should.exist(app.stack[2].handle)
-      expect(app.stack[2].handle.name).equal('sentinel')
+      expect(app.stack.length).equal(5)
     })
 
     it("shouldn't barf on functions with ES5 future reserved keyword names", function () {
@@ -254,20 +199,6 @@ describe("an instrumented Connect stack", function () {
       app.stack = []
 
       expect(function () { app.use.call(app, '/', static); }).not.throws()
-    })
-
-    it("should mangle function names with a reserved keyword name", function () {
-      // doin this on porpoise
-      // jshint -W024
-      function static(req, res, next) {
-        return next()
-      }
-
-      app.stack = []
-
-      app.use.call(app, '/', static)
-
-      expect(app.stack[0].handle.name).equal('static_')
     })
   })
 })

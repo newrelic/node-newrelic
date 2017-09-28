@@ -66,9 +66,9 @@ module.exports = function runTests(agent, pg, name) {
 
     var expected = {
       'Datastore/all': 2,
-      'Datastore/allOther': 2,
+      'Datastore/allWeb': 2,
       'Datastore/Postgres/all': 2,
-      'Datastore/Postgres/allOther': 2,
+      'Datastore/Postgres/allWeb': 2,
       'Datastore/operation/Postgres/insert': 1,
       'Datastore/operation/Postgres/select': 1,
     }
@@ -422,9 +422,7 @@ module.exports = function runTests(agent, pg, name) {
         })
       })
 
-      t.test('query.on should not create segments for row events', function (t) {
-        t.plan(1)
-
+      t.test('query.on should create one segment for row events', function (t) {
         helper.runInTransaction(agent, function transactionInScope(tx) {
           var client = new pg.Client(CON_STRING)
 
@@ -447,7 +445,9 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/information_schema.tables/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2)
+              client.end()
+              t.end()
             })
           })
         })
@@ -478,7 +478,7 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/information_schema.tables/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2, 'should have end and row children')
             })
           })
         })
@@ -521,7 +521,7 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/generate_series/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2, 'should have end and row children')
               t.equal(called, 10, 'event was called for each row')
             })
           })
@@ -565,7 +565,7 @@ module.exports = function runTests(agent, pg, name) {
               var segment = findSegment(tx.trace.root,
                 'Datastore/statement/Postgres/generate_series/select')
 
-              t.equal(segment.children.length, 1)
+              t.equal(segment.children.length, 2, 'should have end and row children')
               t.equal(called, 10, 'event was called for each row')
             })
           })

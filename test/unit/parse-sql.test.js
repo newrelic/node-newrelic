@@ -17,8 +17,8 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('select')
 
-      should.exist(ps.model)
-      ps.model.should.equal('dude')
+      should.exist(ps.collection)
+      ps.collection.should.equal('dude')
       ps.raw.should.equal('Select\n *\n from dude')
     })
 
@@ -32,8 +32,8 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('select')
 
-      should.exist(ps.model)
-      ps.model.should.equal('transaction_traces_12')
+      should.exist(ps.collection)
+      ps.collection.should.equal('transaction_traces_12')
       ps.raw.should.equal('Select * from transaction_traces_12')
     })
   })
@@ -49,8 +49,8 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('delete')
 
-      should.exist(ps.model)
-      ps.model.should.equal('dude')
+      should.exist(ps.collection)
+      ps.collection.should.equal('dude')
       ps.raw.should.equal('DELETE\nfrom dude')
     })
 
@@ -64,8 +64,8 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('delete')
 
-      should.exist(ps.model)
-      ps.model.should.equal('dude')
+      should.exist(ps.collection)
+      ps.collection.should.equal('dude')
       ps.raw.should.equal('DELETE\nfrom dude where name = \'man\'')
     })
   })
@@ -81,8 +81,8 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('update')
 
-      should.exist(ps.model)
-      ps.model.should.equal('test')
+      should.exist(ps.collection)
+      ps.collection.should.equal('test')
       ps.raw.should.equal('update test set value = 1 where id = 12')
     })
   })
@@ -98,8 +98,8 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('insert')
 
-      should.exist(ps.model)
-      ps.model.should.equal('test')
+      should.exist(ps.collection)
+      ps.collection.should.equal('test')
       ps.raw.should.equal('insert into\ntest\nselect * from dude')
     })
   })
@@ -115,7 +115,7 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('other')
 
-      should.not.exist(ps.model)
+      should.not.exist(ps.collection)
       ps.raw.should.equal('bulge into\ndudes\nselect * from dude')
     })
 
@@ -131,7 +131,7 @@ describe('database query parser', function () {
       should.exist(ps.operation)
       ps.operation.should.equal('other')
 
-      should.not.exist(ps.model)
+      should.not.exist(ps.collection)
       chai.expect(ps.raw).equal('')
     })
   })

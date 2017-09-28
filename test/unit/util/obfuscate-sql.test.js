@@ -1,21 +1,27 @@
 'use strict'
 
-var tests = require('../../lib/cross_agent_tests/sql_obfuscation/sql_obfuscation.json')
+var tests = require('../../lib/cross_agent_tests/sql_obfuscation/sql_obfuscation')
 var obfuscate = require('../../../lib/util/sql/obfuscate')
 var chai = require('chai')
 var expect = chai.expect
 
 describe('sql obfuscation', function testObfuscation() {
   tests.forEach(function load(test) {
-    for (var i = 0; i < test.dialects.length; ++i) {
-      runTest(test, test.dialects[i])
-    }
+    describe(test.name, function() {
+      for (var i = 0; i < test.dialects.length; ++i) {
+        runTest(test, test.dialects[i])
+      }
+    })
   })
 
   function runTest(test, dialect) {
-    it(dialect + ': ' + test.name, function() {
+    it(dialect, function() {
       var obfuscated = obfuscate(test.sql, dialect)
-      expect(test.obfuscated).contain(obfuscated)
+      if (test.obfuscated.length === 1) {
+        expect(obfuscated).to.equal(test.obfuscated[0])
+      } else {
+        expect(test.obfuscated).to.contain(obfuscated)
+      }
     })
   }
 

@@ -348,7 +348,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exit')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'MySQL pool.query', 'is named')
+          _t.equal(segment.name, 'MySQL Pool#query', 'is named')
           agent.getTransaction().end()
 
           _t.end()
@@ -367,7 +367,7 @@ test('mysql built-in connction pools', {timeout : 30 * 1000}, function(t) {
           _t.ok(segment, 'segment should exit')
           _t.ok(segment.timer.start > 0, 'starts at a postitive time')
           _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'MySQL pool.query', 'is named')
+          _t.equal(segment.name, 'MySQL Pool#query', 'is named')
           agent.getTransaction().end()
 
           _t.end()

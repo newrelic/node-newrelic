@@ -27,15 +27,15 @@ describe('The API supportability metrics', function() {
   }
 
   function testMetricCalls(name) {
-    var message = 'should create a metric for ' + name
+    var message = 'should create a metric for API#' + name
     it(message, function() {
       var beforeMetric = agent.metrics.getOrCreateMetric(
         NAMES.SUPPORTABILITY.API + '/' + name
       )
       expect(beforeMetric.callCount).equal(0)
-      
+
       // Some api calls required a name to be given rather than just an empty string
-      eval('api.' + name + '("test")')
+      api[name]('test')
 
       var afterMetric = agent.metrics.getOrCreateMetric(
         NAMES.SUPPORTABILITY.API + '/' + name
