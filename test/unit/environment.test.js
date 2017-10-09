@@ -1,6 +1,7 @@
 'use strict'
 
-// For consistent results, unset this in case the user had it set in their environment when testing.
+// For consistent results, unset this in case the user had it set in their
+// environment when testing.
 delete process.env.NODE_ENV
 
 var path = require('path')
@@ -12,6 +13,7 @@ var should = chai.should()
 var environment = require('../../lib/environment')
 var semver = require('semver')
 
+
 function find(settings, name) {
   var items = settings.filter(function cb_filter(candidate) {
     return candidate[0] === name
@@ -22,23 +24,23 @@ function find(settings, name) {
   return items[0][1]
 }
 
-describe("the environment scraper", function () {
-  var settings
+describe('the environment scraper', function() {
+  var settings = null
 
-  before(function () {
+  before(function() {
     settings = environment.toJSON()
   })
 
-  it("should allow clearing of the dispatcher", function () {
+  it('should allow clearing of the dispatcher', function() {
     environment.setDispatcher('custom')
 
     var dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['custom'])
 
-    expect(function () { environment.clearDispatcher() }).not.throws()
+    expect(function() { environment.clearDispatcher() }).not.throws()
   })
 
-  it("should allow setting dispatcher version", function () {
+  it('should allow setting dispatcher version', function() {
     environment.setDispatcher('custom', '2')
 
     var dispatchers = environment.get('Dispatcher')
@@ -47,10 +49,10 @@ describe("the environment scraper", function () {
     var dispatchers = environment.get('Dispatcher Version')
     expect(dispatchers).include.members(['2'])
 
-    expect(function () { environment.clearDispatcher() }).not.throws()
+    expect(function() { environment.clearDispatcher() }).not.throws()
   })
 
-  it("should collect only a single dispatcher", function () {
+  it('should collect only a single dispatcher', function() {
     environment.setDispatcher('first')
     var dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['first'])
@@ -59,64 +61,63 @@ describe("the environment scraper", function () {
     dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['custom'])
 
-    expect(function () { environment.clearDispatcher() }).not.throws()
+    expect(function() { environment.clearDispatcher() }).not.throws()
   })
 
-  it("should allow clearing of the framework", function () {
+  it('should allow clearing of the framework', function() {
     environment.setFramework('custom')
     environment.setFramework('another')
 
     var frameworks = environment.get('Framework')
     expect(frameworks).include.members(['custom', 'another'])
 
-    expect(function () { environment.clearFramework() }).not.throws()
+    expect(function() { environment.clearFramework() }).not.throws()
   })
 
-  it("should persist dispatcher between toJSON()s", function () {
+  it('should persist dispatcher between toJSON()s', function() {
     environment.setDispatcher('test')
     expect(environment.get('Dispatcher')).to.include.members(['test'])
 
     environment.refresh()
     expect(environment.get('Dispatcher')).to.include.members(['test'])
-
   })
 
-  it("should have some settings", function () {
+  it('should have some settings', function() {
     expect(settings.length).above(1)
   })
 
-  it("should find at least one CPU", function () {
+  it('should find at least one CPU', function() {
     expect(find(settings, 'Processors')).above(0)
   })
 
-  it("should have found an operating system", function () {
+  it('should have found an operating system', function() {
     should.exist(find(settings, 'OS'))
   })
 
-  it("should have found an operating system version", function () {
+  it('should have found an operating system version', function() {
     should.exist(find(settings, 'OS version'))
   })
 
-  it("should have found the system architecture", function () {
+  it('should have found the system architecture', function() {
     should.exist(find(settings, 'Architecture'))
   })
 
-  it("should know the Node.js version", function () {
+  it('should know the Node.js version', function() {
     should.exist(find(settings, 'Node.js version'))
   })
 
   // expected to be run when NODE_ENV is unset
-  it("should not find a value for NODE_ENV", function () {
+  it('should not find a value for NODE_ENV', function() {
     expect(environment.get('NODE_ENV')).to.be.empty
   })
 
   if (process.config) {
-    describe("for versions of Node with process.config", function () {
-      it("should know whether npm was installed with Node.js", function () {
+    describe('for versions of Node with process.config', function() {
+      it('should know whether npm was installed with Node.js', function() {
         should.exist(find(settings, 'npm installed?'))
       })
 
-      it("should know whether WAF was installed with Node.js", function () {
+      it('should know whether WAF was installed with Node.js', function() {
         // 0.10 drops node-waf support
         // FIXME: break this out into a Node-version-specific test
         var waf = process.config.variables.node_install_waf
@@ -125,15 +126,15 @@ describe("the environment scraper", function () {
         }
       })
 
-      it("should know whether OpenSSL support was compiled into Node.js", function () {
+      it('should know whether OpenSSL support was compiled into Node.js', function() {
         should.exist(find(settings, 'OpenSSL support?'))
       })
 
-      it("should know whether OpenSSL was dynamically linked in", function () {
+      it('should know whether OpenSSL was dynamically linked in', function() {
         should.exist(find(settings, 'Dynamically linked to OpenSSL?'))
       })
 
-      it("should know whether V8 was dynamically linked in", function () {
+      it('should know whether V8 was dynamically linked in', function() {
         // As of 1.7.0 this is no longer possible
         // https://github.com/nodejs/io.js/commit/d726a177ed
         if (semver.satisfies(process.versions.node, '<1.7.0')) {
@@ -141,21 +142,21 @@ describe("the environment scraper", function () {
         }
       })
 
-      it("should know whether Zlib was dynamically linked in", function () {
+      it('should know whether Zlib was dynamically linked in', function() {
         should.exist(find(settings, 'Dynamically linked to Zlib?'))
       })
 
-      it("should know whether DTrace support was configured", function () {
+      it('should know whether DTrace support was configured', function() {
         should.exist(find(settings, 'DTrace support?'))
       })
 
-      it("should know whether Event Tracing for Windows was configured", function () {
+      it('should know whether Event Tracing for Windows was configured', function() {
         should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'))
       })
     })
   }
 
-  it("should have built a flattened package list", function () {
+  it('should have built a flattened package list', function() {
     var packages = find(settings, 'Packages')
     expect(packages.length).above(5)
     packages.forEach(function cb_forEach(pair) {
@@ -163,7 +164,7 @@ describe("the environment scraper", function () {
     })
   })
 
-  it("should have built a flattened dependency list", function () {
+  it('should have built a flattened dependency list', function() {
     var dependencies = find(settings, 'Dependencies')
     expect(dependencies.length).above(5)
     dependencies.forEach(function cb_forEach(pair) {
@@ -171,7 +172,7 @@ describe("the environment scraper", function () {
     })
   })
 
-   it("should get correct version for dependencies", function () {
+   it('should get correct version for dependencies', function() {
     var root = path.join(__dirname, '../lib/example-packages')
     var versions = environment.listPackages(root).reduce(function(map, pkg) {
       map[pkg[0]] = pkg[1]
@@ -184,9 +185,9 @@ describe("the environment scraper", function () {
     })
   })
 
-  it("should not crash when given a file in NODE_PATH", function (done) {
+  it('should not crash when given a file in NODE_PATH', function(done) {
     var env = {
-      NODE_PATH: path.join(__dirname, "environment.test.js"),
+      NODE_PATH: path.join(__dirname, 'environment.test.js'),
       PATH: process.env.PATH
     }
 
@@ -200,14 +201,14 @@ describe("the environment scraper", function () {
     var args = [path.join(__dirname, '../helpers/environment.child.js')]
     var proc = spawn(exec, args, opt)
 
-    proc.on('exit', function (code) {
+    proc.on('exit', function(code) {
       expect(code).equal(0)
 
       done()
     })
   })
 
-  it("should not crash when encountering a dangling symlink", function (done) {
+  it('should not crash when encountering a dangling symlink', function(done) {
     var opt = {
       stdio: 'pipe',
       env: process.env,
@@ -219,7 +220,7 @@ describe("the environment scraper", function () {
     var dest = path.join(nmod, 'b')
 
     // cleanup in case dest is dirty
-    try {fs.unlinkSync(dest)} catch(e) {}
+    try {fs.unlinkSync(dest)} catch (e) {}
     if (!fs.existsSync(nmod)) fs.mkdirSync(nmod)
 
     fs.writeFileSync(into, 'hello world')
@@ -233,29 +234,27 @@ describe("the environment scraper", function () {
     proc.stdout.pipe(process.stderr)
     proc.stderr.pipe(process.stderr)
 
-    proc.on('exit', function (code) {
+    proc.on('exit', function(code) {
       expect(code).equal(0)
       fs.unlinkSync(dest)
       done()
     })
   })
 
-  describe("when NODE_ENV is 'production'", function () {
-    var nSettings
+  describe('when NODE_ENV is "production"', function() {
+    var nSettings = null
 
-    before(function () {
+    before(function() {
       process.env.NODE_ENV = 'production'
       nSettings = environment.toJSON()
     })
 
-    after(function () {
+    after(function() {
       delete process.env.NODE_ENV
     })
 
-    it("should save the NODE_ENV value in the environment settings", function () {
+    it('should save the NODE_ENV value in the environment settings', function() {
       (find(nSettings, 'NODE_ENV')).should.equal('production')
     })
-
   })
-
 })
