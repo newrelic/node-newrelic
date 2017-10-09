@@ -37,14 +37,25 @@ Benchmark.prototype.add = function add(opts) {
     }
   }
 
-  if (mergedOpts.agent) {
-    testOpts.onStart = function testStart() {
+  testOpts.onStart = function testStart() {
+    if (opts.before && opts.before instanceof Function) {
+      opts.before()
+    }
+
+    if (mergedOpts.agent) {
       agent = helper.instrumentMockedAgent(
         mergedOpts.agent.feature_flag,
         mergedOpts.agent.config
       )
     }
-    testOpts.onComplete = function testComplete() {
+  }
+
+  testOpts.onComplete = function testComplete() {
+    if (opts.after && opts.after instanceof Function) {
+      opts.after()
+    }
+
+    if (mergedOpts.agent) {
       helper.unloadAgent(agent)
     }
   }
