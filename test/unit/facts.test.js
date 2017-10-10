@@ -100,11 +100,8 @@ describe('fun facts about apps that New Relic is interested in include', functio
 
   it("the environment (see environment.test.js) as crazy nested arrays", function(done) {
     facts(agent, function getFacts(factsed) {
-      should.exist(factsed.environment)
-
-      var materialized = factsed.environment.toJSON()
-      expect(materialized).an('array')
-      expect(materialized).length.above(1)
+      expect(factsed.environment).to.be.an('array')
+      expect(factsed.environment).to.have.length.above(1)
       done()
     })
   })

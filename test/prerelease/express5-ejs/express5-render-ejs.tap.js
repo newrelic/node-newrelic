@@ -3,7 +3,6 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path = require('path')
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
@@ -28,7 +27,7 @@ var BODY = "<!DOCTYPE html>\n" +
 
 // Regression test for issue 154
 // https://github.com/newrelic/node-newrelic/pull/154
-test("using only the express router", function (t) {
+test("using only the express router", function(t) {
   var agent = helper.instrumentMockedAgent({express5: true})
   var router = require('express').Router()
 
@@ -36,11 +35,11 @@ test("using only the express router", function (t) {
     helper.unloadAgent(agent)
   })
 
-  router.get('/test', function () {
+  router.get('/test', function() {
     //
   })
 
-  router.get('/test2', function () {
+  router.get('/test2', function() {
     //
   })
 
@@ -271,38 +270,30 @@ test("agent instrumentation of Express 5", function (t) {
     })
   })
 
-  t.test("should measure request duration properly (NA-46)",
-       {timeout: 2 * 1000},
-       function (t) {
+  t.test('measure request duration properly (NA-46)', {timeout: 2000}, function(t) {
     var agent = helper.instrumentMockedAgent({express5: true})
     var app = require('express')()
     var server = require('http').createServer(app)
-
 
     t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
 
-    app.get(TEST_PATH, function (request, response) {
-      t.ok(agent.getTransaction(),
-           "the transaction should be visible inside the Express handler")
-           setTimeout(function () { response.send(BODY); }, DELAY)
+    app.get(TEST_PATH, function(req, res) {
+      t.ok(agent.getTransaction(), 'should have transaction inside middleware')
+      setTimeout(function() { res.send(BODY) }, DELAY)
     })
 
     server.listen(TEST_PORT, TEST_HOST, function ready() {
-      request.get(TEST_URL, function (error, response, body) {
+      request.get(TEST_URL, function(error, response, body) {
         if (error) t.fail(error)
 
-        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Dispatcher' && pair[1] === 'express'
-        }),
-        "should indicate that the Express dispatcher is in play")
+        var isDispatcher = agent.environment.get('Dispatcher').indexOf('express') > -1
+        var isFramework = agent.environment.get('Framework').indexOf('express') > -1
 
-        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Framework' && pair[1] === 'express'
-        }),
-        "should indicate that Express itself is in play")
+        t.ok(isDispatcher, 'should indicate that express is a dispatcher')
+        t.ok(isFramework, 'should indicate that express is a framework')
 
         t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
         t.equals(body, BODY, "response and original page text match")
@@ -311,8 +302,7 @@ test("agent instrumentation of Express 5", function (t) {
         t.ok(stats, "Statistics should have been found for request.")
 
         var timing = stats.total * 1000
-        t.ok(timing > DELAY - 50,
-             "given some setTimeout slop, the request was long enough")
+        t.ok(timing > DELAY - 50, 'should have expected timing (within reason)')
 
         t.end()
       })

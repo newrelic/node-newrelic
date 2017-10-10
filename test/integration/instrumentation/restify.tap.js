@@ -43,13 +43,10 @@ tap.test('should not crash when Restify handles a connection', function(t) {
       var metric = agent.metrics.getMetric(METRIC)
       t.ok(metric, "request metrics should have been gathered")
       t.equals(metric.callCount, 1, "handler should have been called")
-      t.equals(body, '"hello friend"', "data returned by restify should be as expected")
+      t.equals(body, '"hello friend"', 'should return expected data')
 
-      var found = false
-      agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Framework' && pair[1] === 'Restify') found = true
-      })
-      t.ok(found, "should indicate that restify itself is in play")
+      var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+      t.ok(isFramework, 'should indicate that restify is a framework')
     })
   })
 })
@@ -95,14 +92,10 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
         var metric = agent.metrics.getMetric(METRIC)
         t.ok(metric, "request metrics should have been gathered")
         t.equals(metric.callCount, 1, "handler should have been called")
-        t.equals(body, '"hello friend"',
-                 "data returned by restify should be as expected")
+        t.equals(body, '"hello friend"', 'should return expected data')
 
-        var found = false
-        agent.environment.toJSON().forEach(function cb_forEach(pair) {
-          if (pair[0] === 'Framework' && pair[1] === 'Restify') found = true
-        })
-        t.ok(found, "should indicate that restify itself is in play")
+        var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+        t.ok(isFramework, 'should indicate that restify is a framework')
       })
     })
   })

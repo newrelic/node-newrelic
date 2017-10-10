@@ -27,8 +27,11 @@ function find(settings, name) {
 describe('the environment scraper', function() {
   var settings = null
 
-  before(function() {
-    settings = environment.toJSON()
+  before(function(done) {
+    environment.getJSON(function(err, data) {
+      settings = data
+      done(err)
+    })
   })
 
   it('should allow clearing of the dispatcher', function() {
@@ -74,12 +77,14 @@ describe('the environment scraper', function() {
     expect(function() { environment.clearFramework() }).not.throws()
   })
 
-  it('should persist dispatcher between toJSON()s', function() {
+  it('should persist dispatcher between getJSON()s', function(done) {
     environment.setDispatcher('test')
     expect(environment.get('Dispatcher')).to.include.members(['test'])
 
-    environment.refresh()
-    expect(environment.get('Dispatcher')).to.include.members(['test'])
+    environment.refresh(function(err) {
+      expect(environment.get('Dispatcher')).to.include.members(['test'])
+      done(err)
+    })
   })
 
   it('should have some settings', function() {
@@ -172,16 +177,20 @@ describe('the environment scraper', function() {
     })
   })
 
-   it('should get correct version for dependencies', function() {
+   it('should get correct version for dependencies', function(done) {
     var root = path.join(__dirname, '../lib/example-packages')
-    var versions = environment.listPackages(root).reduce(function(map, pkg) {
-      map[pkg[0]] = pkg[1]
-      return map
-    }, {})
+    environment.listPackages(root, function(err, packages) {
+      var versions = packages.reduce(function(map, pkg) {
+        map[pkg[0]] = pkg[1]
+        return map
+      }, {})
 
-    expect(versions).deep.equal({
-      'invalid-json': '<unknown>',
-      'valid-json': '1.2.3'
+      expect(versions).deep.equal({
+        'invalid-json': '<unknown>',
+        'valid-json': '1.2.3'
+      })
+
+      done()
     })
   })
 
@@ -244,9 +253,12 @@ describe('the environment scraper', function() {
   describe('when NODE_ENV is "production"', function() {
     var nSettings = null
 
-    before(function() {
+    before(function(done) {
       process.env.NODE_ENV = 'production'
-      nSettings = environment.toJSON()
+      environment.getJSON(function(err, data) {
+        nSettings = data
+        done(err)
+      })
     })
 
     after(function() {
