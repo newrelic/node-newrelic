@@ -38,7 +38,7 @@ Benchmark.prototype.add = function add(opts) {
   }
 
   testOpts.onStart = function testStart() {
-    if (opts.before && opts.before instanceof Function) {
+    if (opts.before) {
       opts.before()
     }
 
@@ -51,7 +51,7 @@ Benchmark.prototype.add = function add(opts) {
   }
 
   testOpts.onComplete = function testComplete() {
-    if (opts.after && opts.after instanceof Function) {
+    if (opts.after) {
       opts.after()
     }
 

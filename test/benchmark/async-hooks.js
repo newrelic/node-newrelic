@@ -9,6 +9,14 @@ var suite = benchmark.createBenchmark({
   fn: test
 })
 
+var asyncHooks = require('async_hooks')
+var noopHook = asyncHooks.createHook({
+  init: function() {},
+  before: function() {},
+  after: function() {},
+  destroy: function() {}
+})
+
 suite.add({
   name: 'no agent, noop async hooks',
   before: function registerHook() {
@@ -33,14 +41,6 @@ suite.add({
   agent: {feature_flag: {await_support: true}}
 })
 
-var asyncHooks = require('async_hooks')
-var noopHook = asyncHooks.createHook({
-  init: function() {},
-  before: function() {},
-  after: function() {},
-  destroy: function() {}
-})
-
 suite.run()
 
 function test(agent, cb) {
@@ -52,10 +52,11 @@ function test(agent, cb) {
           throw new Error('Lost transaction state!')
         }
         tx.end()
+        cb()
       })
     })
   } else {
-    runTest()
+    runTest(cb)
   }
 
   function runTest(onEnd) {
@@ -67,7 +68,6 @@ function test(agent, cb) {
       if (onEnd) {
         onEnd()
       }
-      cb()
     })
   }
 }
