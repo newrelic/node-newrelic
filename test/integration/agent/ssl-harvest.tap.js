@@ -5,12 +5,11 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 
 
-test("Agent should send a whole harvest to New Relic staging", {timeout: 5000}, function(t) {
+test("Agent should send a whole harvest to New Relic", {timeout: 5000}, function(t) {
   var config = configurator.initialize({
         'ssl': true,
         'app_name': 'node.js Tests',
-        'license_key': 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
-        'host': 'staging-collector.newrelic.com',
+        'license_key': 'ed2a0ac637297d08c5592c0200050fe234802223',
         'port': 443,
         'utilization': {
           'detect_aws': false,
