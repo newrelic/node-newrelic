@@ -15,6 +15,9 @@ function Benchmark(opts) {
 
   this._suite.on('cycle', function printResult(event) {
     console.log(event.target.toString()) // eslint-disable-line no-console
+    if (opts.afterTest) {
+      opts.afterTest(event)
+    }
   })
 }
 
