@@ -17,7 +17,7 @@ test('loading the application via index.js', {timeout: 5000}, function(t) {
   }, "just loading the agent doesn't throw")
 
   var metric = agent.metrics.getMetric(
-    'Supportability/Nodejs/FeatureFlag/await_support/disabled'
+    'Supportability/Nodejs/FeatureFlag/await_support/enabled'
   )
   t.notOk(metric, 'should not create metric for unchanged feature flags')
 
