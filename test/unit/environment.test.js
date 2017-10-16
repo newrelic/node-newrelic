@@ -116,50 +116,48 @@ describe('the environment scraper', function() {
     expect(environment.get('NODE_ENV')).to.be.empty
   })
 
-  if (process.config) {
-    describe('for versions of Node with process.config', function() {
-      it('should know whether npm was installed with Node.js', function() {
-        should.exist(find(settings, 'npm installed?'))
-      })
-
-      it('should know whether WAF was installed with Node.js', function() {
-        // 0.10 drops node-waf support
-        // FIXME: break this out into a Node-version-specific test
-        var waf = process.config.variables.node_install_waf
-        if (waf === true || waf === false) {
-          should.exist(find(settings, 'WAF build system installed?'))
-        }
-      })
-
-      it('should know whether OpenSSL support was compiled into Node.js', function() {
-        should.exist(find(settings, 'OpenSSL support?'))
-      })
-
-      it('should know whether OpenSSL was dynamically linked in', function() {
-        should.exist(find(settings, 'Dynamically linked to OpenSSL?'))
-      })
-
-      it('should know whether V8 was dynamically linked in', function() {
-        // As of 1.7.0 this is no longer possible
-        // https://github.com/nodejs/io.js/commit/d726a177ed
-        if (semver.satisfies(process.versions.node, '<1.7.0')) {
-          should.exist(find(settings, 'Dynamically linked to V8?'))
-        }
-      })
-
-      it('should know whether Zlib was dynamically linked in', function() {
-        should.exist(find(settings, 'Dynamically linked to Zlib?'))
-      })
-
-      it('should know whether DTrace support was configured', function() {
-        should.exist(find(settings, 'DTrace support?'))
-      })
-
-      it('should know whether Event Tracing for Windows was configured', function() {
-        should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'))
-      })
+  describe('with process.config', function() {
+    it('should know whether npm was installed with Node.js', function() {
+      should.exist(find(settings, 'npm installed?'))
     })
-  }
+
+    it('should know whether WAF was installed with Node.js', function() {
+      // 0.10 drops node-waf support
+      // FIXME: break this out into a Node-version-specific test
+      var waf = process.config.variables.node_install_waf
+      if (waf === true || waf === false) {
+        should.exist(find(settings, 'WAF build system installed?'))
+      }
+    })
+
+    it('should know whether OpenSSL support was compiled into Node.js', function() {
+      should.exist(find(settings, 'OpenSSL support?'))
+    })
+
+    it('should know whether OpenSSL was dynamically linked in', function() {
+      should.exist(find(settings, 'Dynamically linked to OpenSSL?'))
+    })
+
+    it('should know whether V8 was dynamically linked in', function() {
+      // As of 1.7.0 this is no longer possible
+      // https://github.com/nodejs/io.js/commit/d726a177ed
+      if (semver.satisfies(process.versions.node, '<1.7.0')) {
+        should.exist(find(settings, 'Dynamically linked to V8?'))
+      }
+    })
+
+    it('should know whether Zlib was dynamically linked in', function() {
+      should.exist(find(settings, 'Dynamically linked to Zlib?'))
+    })
+
+    it('should know whether DTrace support was configured', function() {
+      should.exist(find(settings, 'DTrace support?'))
+    })
+
+    it('should know whether Event Tracing for Windows was configured', function() {
+      should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'))
+    })
+  })
 
   it('should have built a flattened package list', function() {
     var packages = find(settings, 'Packages')
