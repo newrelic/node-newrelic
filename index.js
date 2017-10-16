@@ -78,6 +78,12 @@ function initialize() {
   }
 
   require.cache.__NR_cache = module.exports = new API(agent)
+
+  // If we loaded an agent, record a startup time for the agent.
+  // NOTE: process.uptime() is in seconds, including fractions of a second.
+  if (agent) {
+    agent.recordSupportability('Application/Initialization/Duration', process.uptime())
+  }
 }
 
 function createAgent(config) {
