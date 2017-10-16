@@ -4,6 +4,7 @@
 // environment when testing.
 delete process.env.NODE_ENV
 
+var a = require('async')
 var path = require('path')
 var fs = require('fs')
 var spawn = require('child_process').spawn
@@ -11,6 +12,7 @@ var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
 var environment = require('../../lib/environment')
+var rimraf = require('rimraf')
 var semver = require('semver')
 
 
@@ -215,37 +217,91 @@ describe('the environment scraper', function() {
     })
   })
 
-  it('should not crash when encountering a dangling symlink', function(done) {
-    var opt = {
-      stdio: 'pipe',
-      env: process.env,
-      cwd: path.join(__dirname, '../helpers'),
+  describe('with symlinks', function() {
+    var nmod = path.resolve(__dirname, '../helpers/node_modules')
+
+    beforeEach(function(done) {
+      if (!fs.existsSync(nmod)) fs.mkdirSync(nmod)
+
+      // node_modules/
+      //  a/
+      //    package.json
+      //    node_modules/
+      //      b (symlink)
+      //  b/
+      //    package.json
+      //    node_modules/
+      //      a (symlink)
+      a.parallel([
+        a.apply(makePackage, 'a', 'b'),
+        a.apply(makePackage, 'b', 'a')
+      ], done)
+    })
+
+    afterEach(function(done) {
+      var aDir = path.join(nmod, 'a')
+      var bDir = path.join(nmod, 'b')
+      a.each([aDir, bDir], rimraf, done)
+    })
+
+    function makePackage(pkg, dep, cb) {
+      var dir = path.join(nmod, pkg)
+      a.series([
+        // Make the directory tree.
+        a.apply(makeDir, dir),
+        a.apply(makeDir, path.join(dir, 'node_modules')),
+
+        // Make the package.json
+        function(cb) {
+          var pkgJSON = {name: pkg, dependencies: {}}
+          pkgJSON.dependencies[dep] = '*'
+          fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON), cb)
+        },
+
+        // Make the dep a symlink.
+        function(cb) {
+          var depModule = path.join(dir, 'node_modules', dep)
+          fs.symlink(path.join(nmod, dep), depModule, 'dir', function(err) {
+            cb(err && err.code !== 'EEXIST' ? err : null)
+          })
+        }
+      ], cb)
+
+      function makeDir(dir, cb) {
+        fs.mkdir(dir, function(err) {
+          cb(err && err.code !== 'EEXIST' ? err : null)
+        })
+      }
     }
 
-    var nmod = path.join(__dirname, '../helpers/node_modules')
-    var into = path.join(nmod, 'a')
-    var dest = path.join(nmod, 'b')
-
-    // cleanup in case dest is dirty
-    try {fs.unlinkSync(dest)} catch (e) {}
-    if (!fs.existsSync(nmod)) fs.mkdirSync(nmod)
-
-    fs.writeFileSync(into, 'hello world')
-    fs.symlinkSync(into, dest)
-    fs.unlinkSync(into)
-
-    var exec = process.argv[0]
-    var args = [path.join(__dirname, '../helpers/environment.child.js')]
-    var proc = spawn(exec, args, opt)
-
-    proc.stdout.pipe(process.stderr)
-    proc.stderr.pipe(process.stderr)
-
-    proc.on('exit', function(code) {
-      expect(code).equal(0)
-      fs.unlinkSync(dest)
-      done()
+    it('should not crash when encountering a cyclical symlink', function(done) {
+      execChild(done)
     })
+
+    it('should not crash when encountering a dangling symlink', function(done) {
+      rimraf.sync(path.join(nmod, 'a'))
+      execChild(done)
+    })
+
+    function execChild(cb) {
+      var opt = {
+        stdio: 'pipe',
+        env: process.env,
+        cwd: path.join(__dirname, '../helpers'),
+      }
+
+      var exec = process.argv[0]
+      var args = [path.join(__dirname, '../helpers/environment.child.js')]
+      var proc = spawn(exec, args, opt)
+
+      proc.stdout.pipe(process.stderr)
+      proc.stderr.pipe(process.stderr)
+
+      proc.on('exit', function(code) {
+        expect(code).to.equal(0)
+        cb()
+      })
+    }
   })
 
   describe('when NODE_ENV is "production"', function() {
