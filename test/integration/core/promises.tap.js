@@ -5,4 +5,4 @@ if (!global.Promise) {
   return
 }
 
-require('./promises.js')()
+require('./promises.js')({await_support: false})
