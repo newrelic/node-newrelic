@@ -1,6 +1,21 @@
+### 2.3.0 (2017-10-16):
+* The agent will now support the `await` keyword by default.
+
+* Added cases for omitting the agent with and without async hooks to the async
+  hooks microbenchmark.
+
+* Pinned version of Mocha to 3.x due to the incompatibility of Mocha v4 and Node
+  v0.10 and v0.12.
+
+* Added benchmark for performance of function wrapping.
+
+* Added GC information to async_hooks benchmark.
+
+* Improved trace-level logging for capturing queries.
+
 ### v2.2.2 (2017-09-26):
 * Hapi handlers will now preserve the defaults associated with them.
- 
+
   Previously when wrapping handlers, the agent would drop the associated defaults on
   the ground, these are now properly forwarded to the wrapper.  Big thanks to Sean
   Parmelee (@seanparmelee) for finding the root cause of this bug and reporting it!
