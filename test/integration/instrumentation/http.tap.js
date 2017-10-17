@@ -93,8 +93,6 @@ test("built-in http instrumentation should handle internal & external requests",
 
       var scope = 'WebTransaction/NormalizedUri/*'
       var stats = agent.metrics.getOrCreateMetric(scope)
-      var found = false
-
 
       t.equals(transaction.type, 'web', 'should be a web transaction')
       t.equals(transaction.name, scope, 'should set transaction name')
@@ -104,45 +102,53 @@ test("built-in http instrumentation should handle internal & external requests",
         'baseSegment name should match transaction name'
       )
 
-      t.equals(stats.callCount, 2,
-               "should record unscoped path stats after a normal request")
+      t.equals(
+        stats.callCount, 2,
+        'should record unscoped path stats after a normal request'
+      )
 
-      agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true
-      })
-      t.ok(found, "should indicate that the http dispatcher is in play")
+      var isDispatcher = agent.environment.get('Dispatcher').indexOf('http') > -1
+      t.ok(isDispatcher, "should indicate that the http dispatcher is in play")
 
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
-      t.equals(stats.callCount, 2,
-               "should have accounted for all the internal http requests")
+      t.equals(
+        stats.callCount, 2,
+        'should have accounted for all the internal http requests'
+      )
 
       stats = agent.metrics.getOrCreateMetric('External/localhost:8321/http', scope)
-      t.equals(stats.callCount, 1,
-               "should record outbound HTTP requests in the agent's metrics")
+      t.equals(
+        stats.callCount, 1,
+        'should record outbound HTTP requests in metrics'
+      )
 
-      stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/http',
-                                                    scope)
-      t.equals(stats.callCount, 1,
-               "should associate outbound HTTP requests with the inbound transaction")
+      stats = transaction.metrics.getOrCreateMetric(
+        'External/localhost:8321/http',
+        scope
+      )
+      t.equals(
+        stats.callCount, 1,
+        'should associate outbound HTTP requests with the inbound transaction'
+      )
 
       t.end()
     })
   }.bind(this)
 
-  external.listen(TEST_EXTERNAL_PORT, TEST_HOST, function () {
-    server.listen(TEST_INTERNAL_PORT, TEST_HOST, function () {
+  external.listen(TEST_EXTERNAL_PORT, TEST_HOST, function() {
+    server.listen(TEST_INTERNAL_PORT, TEST_HOST, function() {
       // The transaction doesn't get created until after the instrumented
       // server handler fires.
-      t.notOk(agent.getTransaction(),
-              "transaction hasn't been created until the first request")
+      t.notOk(agent.getTransaction(), 'should create tx until first request')
 
-      var req = http.request({host   : TEST_HOST,
-                              port   : TEST_INTERNAL_PORT,
-                              path   : TEST_INTERNAL_PATH,
-                              method : 'GET'},
-                             testResponseHandler)
+      var req = http.request({
+        host    : TEST_HOST,
+        port    : TEST_INTERNAL_PORT,
+        path    : TEST_INTERNAL_PATH,
+        method  : 'GET'
+      }, testResponseHandler)
 
-      req.on('error', function (error) { t.fail(error); })
+      req.on('error', function(error) { t.fail(error) })
 
       req.end()
     })

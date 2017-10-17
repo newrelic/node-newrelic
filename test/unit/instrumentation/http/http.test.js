@@ -272,15 +272,7 @@ describe("built-in http module instrumentation", function() {
       })
 
       it("should indicate that the http dispatcher is in play", function() {
-        var found = false
-
-        agent.environment.toJSON().forEach(function cb_forEach(pair) {
-          if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true
-        })
-
-        if (!found) {
-          throw new Error('failed to find Dispatcher configuration')
-        }
+        expect(agent.environment.get('Dispatcher')).to.include('http')
       })
 
       it("should record unscoped HTTP dispatcher stats after a normal request",

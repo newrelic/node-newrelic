@@ -42,27 +42,27 @@ describe("the New Relic agent API", function() {
     })
     it("sets the dispatcher", function() {
       api.setDispatcher('test')
-      expect(agent.environment.get('Dispatcher')).include.members(['test'])
+      expect(agent.environment.get('Dispatcher')).to.include('test')
     })
 
     it("sets the dispatcher and version", function() {
       api.setDispatcher('test', 2)
-      expect(agent.environment.get('Dispatcher')).include.members(['test'])
-      expect(agent.environment.get('Dispatcher Version')).include.members(['2'])
+      expect(agent.environment.get('Dispatcher')).to.include('test')
+      expect(agent.environment.get('Dispatcher Version')).to.include('2')
     })
 
     it("does not allow internal calls to setDispatcher to override", function() {
       agent.environment.setDispatcher('internal', '3')
-      expect(agent.environment.get('Dispatcher')).include.members(['internal'])
-      expect(agent.environment.get('Dispatcher Version')).include.members(['3'])
+      expect(agent.environment.get('Dispatcher')).to.include('internal')
+      expect(agent.environment.get('Dispatcher Version')).to.include('3')
 
       api.setDispatcher('test', 2)
-      expect(agent.environment.get('Dispatcher')).include.members(['test'])
-      expect(agent.environment.get('Dispatcher Version')).include.members(['2'])
+      expect(agent.environment.get('Dispatcher')).to.include('test')
+      expect(agent.environment.get('Dispatcher Version')).to.include('2')
 
       agent.environment.setDispatcher('internal', '3')
-      expect(agent.environment.get('Dispatcher')).include.members(['test'])
-      expect(agent.environment.get('Dispatcher Version')).include.members(['2'])
+      expect(agent.environment.get('Dispatcher')).to.include('test')
+      expect(agent.environment.get('Dispatcher Version')).to.include('2')
     })
   })
 
