@@ -1,3 +1,10 @@
+### 2.3.1 (2017-10-24):
+* Agent will attempt to reconnect to the collector forever after backing off to
+  5 minute delays.
+
+* Refactored environment scan to improve startup time and fix cyclical symlink
+  resolving.
+
 ### 2.3.0 (2017-10-16):
 * The agent will now support the `await` keyword by default.
 
