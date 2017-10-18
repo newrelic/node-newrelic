@@ -8,13 +8,6 @@ var should = chai.should()
 var API = require('../../../lib/collector/api.js')
 
 
-// XXX Remove this when deprecating Node v0.8.
-if (!global.setImmediate) {
-  global.setImmediate = function(fn) {
-    global.setTimeout(fn, 0)
-  }
-}
-
 var HOST = 'collector.newrelic.com'
 var PORT = 80
 var URL = 'http://' + HOST
@@ -433,9 +426,9 @@ describe("CollectorAPI", function() {
     })
   })
 
-  describe("connect", function () {
-    it("requires a callback", function () {
-      expect(function () { api.connect(null) }).throws("callback is required")
+  describe("connect", function() {
+    it("requires a callback", function() {
+      expect(function() { api.connect(null) }).throws("callback is required")
     })
 
     describe("on the happy path", function () {
@@ -661,70 +654,109 @@ describe("CollectorAPI", function() {
       })
     })
 
-    describe("off the happy path", function () {
-      describe("fails after six 503s on get_redirect_host", function () {
-        var captured
-        var body
-        var raw
+    describe('off the happy path', function() {
+      var exception = {
+        exception: {
+          message: 'fake force disconnect',
+          error_type: 'NewRelic::Agent::ForceDisconnectException'
+        }
+      }
 
+      before(function() {
+        fast()
+      })
 
-        before(function (done) {
-          fast()
+      after(function() {
+        slow()
+      })
 
+      describe('fails after receiving force disconnect', function() {
+        var captured = null
+        var body = null
+
+        before(function(done) {
           var redirectURL = generate('get_redirect_host')
-          var failure = nock(URL).post(redirectURL).times(6).reply(503)
+          var failure = nock(URL).post(redirectURL).times(1).reply(503, exception)
 
-
-          api.connect(function test(error, response, json) {
+          api.connect(function test(error, response) {
             captured = error
             body = response
-            raw = json
 
             failure.done()
             done()
           })
         })
 
-        after(function () {
-          slow()
+        it('should have gotten an error', function() {
+          expect(captured).to.exist()
         })
 
-        it("should have gotten an error", function () {
-          should.exist(captured)
+        it('should have passed on the status code', function() {
+          expect(captured.statusCode).to.equal(503)
         })
 
-        it("should have passed on the status code", function () {
-          expect(captured.statusCode).equal(503)
-        })
-
-        it("should have included an informative error message", function () {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("No body found in response to get_redirect_host.")
+            .to.equal('fake force disconnect')
         })
 
-        it("should not have a response body", function () {
-          should.not.exist(body)
+        it('should not have a response body', function() {
+          expect(body).to.not.exist()
         })
       })
 
-      describe("fails on receiving InvalidLicenseKey", function () {
-        var captured
-        var data
-        var raw
+      describe('retries get_redirect_host until forced to disconnect', function() {
+        var captured = null
+        var body = null
 
+        before(function(done) {
+          var redirectURL = generate('get_redirect_host')
+          var failure = nock(URL).post(redirectURL).times(1000).reply(503)
+          var disconnect = nock(URL).post(redirectURL).times(1).reply(503, exception)
 
-        var response = {
+          api.connect(function test(error, response) {
+            captured = error
+            body = response
+
+            failure.done()
+            disconnect.done()
+            done()
+          })
+        })
+
+        it('should have gotten an error', function() {
+          expect(captured).to.exist()
+        })
+
+        it('should have passed on the status code', function() {
+          expect(captured.statusCode).to.equal(503)
+        })
+
+        it('should have included an informative error message', function() {
+          expect(captured.message)
+            .to.equal('fake force disconnect')
+        })
+
+        it('should not have a response body', function() {
+          expect(body).to.not.exist()
+        })
+      })
+
+      describe("fails on receiving InvalidLicenseKey", function() {
+        var captured = null
+        var data = null
+        var raw = null
+        var failure = null
+        var error = {
           exception: {
             message: 'Invalid license key. Please contact support@newrelic.com.',
             error_type: 'NewRelic::Agent::LicenseException'
           }
         }
 
-        before(function (done) {
-          fast()
+        before(function(done) {
           var redirectURL = generate('get_redirect_host')
-          var failure = nock(URL).post(redirectURL).times(6).reply(200, response)
-
+          failure = nock(URL).post(redirectURL).times(1).reply(200, error)
 
           api.connect(function test(error, response, json) {
             captured = error
@@ -736,95 +768,91 @@ describe("CollectorAPI", function() {
           })
         })
 
-        after(function () {
-          slow()
+        it('should call the expected number of times', function() {
+          failure.done()
         })
 
-        it("should have gotten an error", function () {
+        it("should have gotten an error", function() {
           should.exist(captured)
         })
 
-        it("should have a status code on the error", function () {
+        it("should have a status code on the error", function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function () {
+        it("should have included an informative error message", function() {
           expect(captured.message)
             .equal("Invalid license key. Please contact support@newrelic.com.")
         })
 
-        it("should have included the New Relic error class", function () {
+        it("should have included the New Relic error class", function() {
           expect(captured.class).equal("NewRelic::Agent::LicenseException")
         })
 
-        it("should have no return value", function () {
+        it("should have no return value", function() {
           should.not.exist(data)
         })
 
-        it("should have passed along raw response", function () {
-          expect(raw).eql(response)
+        it("should have passed along raw response", function() {
+          expect(raw).eql(error)
         })
       })
 
-      describe("fails on receiving InvalidLicenseKey after one 503", function () {
-        var captured
-        var data
-        var raw
-
-
-        var response = {
+      describe("fails on receiving InvalidLicenseKey after one 503", function() {
+        var captured = null
+        var data = null
+        var raw = null
+        var failure = null
+        var license = null
+        var error = {
           exception: {
             message: 'Invalid license key. Please contact support@newrelic.com.',
             error_type: 'NewRelic::Agent::LicenseException'
           }
         }
 
-        before(function (done) {
-          fast()
-
+        before(function(done) {
           var redirectURL = generate('get_redirect_host')
-          var failure = nock(URL).post(redirectURL).reply(503)
-          var license = nock(URL).post(redirectURL).times(5).reply(200, response)
-
+          failure = nock(URL).post(redirectURL).reply(503)
+          license = nock(URL).post(redirectURL).times(1).reply(200, error)
 
           api.connect(function test(error, response, json) {
             captured = error
             data = response
             raw = json
 
-            failure.done()
-            license.done()
             done()
           })
         })
 
-        after(function () {
-          slow()
+        it('should call the expected number of times', function() {
+          failure.done()
+          license.done()
         })
 
-        it("should have gotten an error", function () {
+        it("should have gotten an error", function() {
           should.exist(captured)
         })
 
-        it("should have a status code on the error", function () {
+        it("should have a status code on the error", function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function () {
+        it("should have included an informative error message", function() {
           expect(captured.message)
             .equal("Invalid license key. Please contact support@newrelic.com.")
         })
 
-        it("should have included the New Relic error class", function () {
+        it("should have included the New Relic error class", function() {
           expect(captured.class).equal("NewRelic::Agent::LicenseException")
         })
 
-        it("should have no return value", function () {
+        it("should have no return value", function() {
           should.not.exist(data)
         })
 
-        it("should have passed along raw response", function () {
-          expect(raw).eql(response)
+        it("should have passed along raw response", function() {
+          expect(raw).eql(error)
         })
       })
     })
