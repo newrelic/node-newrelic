@@ -45,7 +45,11 @@ a.series([
         return cb(err)
       }
       resolved.forEach(function mergeResolved(files) {
-        tests.push.apply(tests, files)
+        files.forEach(function mergeFile(file) {
+          if (tests.indexOf(file) === -1) {
+            tests.push(file)
+          }
+        })
       })
       cb()
     })
