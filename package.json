@@ -98,6 +98,7 @@
     "lib": "lib"
   },
   "scripts": {
+    "bench": "node ./bin/run-bench.js",
     "test": "make test"
   },
   "bin": {
@@ -118,6 +119,7 @@
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
     "eslint": "^2.9.0",
+    "glob": "^7.1.2",
     "jsdoc": "^3.4.0",
     "minami": "^1.1.1",
     "mocha": "^3.5.3",

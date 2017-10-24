@@ -15,7 +15,6 @@
     "cover": "*",
     "ejs": "0.8.5",
     "generic-pool": "*",
-    "glob": "^3.2.11",
     "ioredis": "*",
     "memcached": ">=0.2.8",
     "mkdirp": "*",
