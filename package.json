@@ -125,6 +125,7 @@
     "mocha": "^3.5.3",
     "request": "2.81.0",
     "rimraf": "^2.6.2",
+    "sinon": "^3.3.0",
     "tap": "^9.0.3"
   },
   "repository": {
