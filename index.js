@@ -1,5 +1,10 @@
 'use strict'
 
+// Record opening times before loading any other files.
+var preAgentTime = process.uptime()
+var agentStart = Date.now()
+
+
 var featureFlags = require('./lib/feature_flags').prerelease
 var logger = require('./lib/logger')
 var psemver = require('./lib/util/process-version')
@@ -32,7 +37,7 @@ function initialize() {
   try {
     logger.debug(
       'Process was running %s seconds before agent was loaded.',
-      process.uptime()
+      preAgentTime
     )
 
     // TODO: Update this check when Node v0.10 is deprecated.
@@ -80,9 +85,17 @@ function initialize() {
   require.cache.__NR_cache = module.exports = new API(agent)
 
   // If we loaded an agent, record a startup time for the agent.
-  // NOTE: process.uptime() is in seconds, including fractions of a second.
+  // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
   if (agent) {
-    agent.recordSupportability('Application/Initialization/Duration', process.uptime())
+    var initDuration = (Date.now() - agentStart) / 1000
+    agent.recordSupportability('Application/Opening/Duration', preAgentTime)
+    agent.recordSupportability('Application/Initialization/Duration', initDuration)
+    agent.once('started', function timeAgentStart() {
+      agent.recordSupportability(
+        'Application/Registration/Duration',
+        (Date.now() - agentStart) / 1000
+      )
+    })
   }
 }
 
