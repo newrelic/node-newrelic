@@ -29,7 +29,6 @@
     "restify": "4.x",
     "sequelize": "*",
     "should": "*",
-    "sinon": "*",
     "temp": "^0.8.1",
     "through": "^2.3.6",
     "wrench": "*"
