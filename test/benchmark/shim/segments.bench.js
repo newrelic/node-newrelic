@@ -30,12 +30,20 @@ suite.add({
     return test
   }
 })
+
 suite.add({
-  name: 'shim.getSegment',
+  name: 'shim.getSegment(obj)',
   fn: function() {
     var test = shared.getTest()
     shim.getSegment(test.func)
     return test
+  }
+})
+
+suite.add({
+  name: 'shim.getSegment()',
+  fn: function() {
+    return shim.getSegment()
   }
 })
 
