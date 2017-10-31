@@ -63,6 +63,7 @@ a.series([
       var child = cp.spawn('node', [file], {cwd: cwd, stdio: 'inherit'})
       child.on('error', cb)
       child.on('exit', function onChildExit(code) {
+        console.log('')
         if (code) {
           return cb(new Error('Benchmark exited with code ' + code))
         }
