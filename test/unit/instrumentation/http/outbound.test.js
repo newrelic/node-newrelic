@@ -6,9 +6,7 @@ var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../../lib/agent_helper')
 var NAMES = require('../../../../lib/metrics/names')
-var instrumentOutbound = require(
-  '../../../../lib/transaction/tracer/instrumentation/outbound'
-)
+var instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
 var Segment = require('../../../../lib/transaction/trace/segment')
