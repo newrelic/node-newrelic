@@ -1,3 +1,17 @@
+### 2.3.2 (2017-11-02):
+
+* Fixed a bug with Node >=8.9 that prevented https externals from being recorded.
+
+* Added Node 9 to test suite.
+
+* Removed problematic tests for ancient version of Hapi (7.1).
+
+* Document purpose of `throw` in tracer to prevent developer confusion.
+
+* Added script for running agent micro benchmarks.
+
+* Added benchmarks for all the `Shim` and `Tracer` methods.
+
 ### 2.3.1 (2017-10-24):
 * Agent will attempt to reconnect to the collector forever after backing off to
   5 minute delays.
