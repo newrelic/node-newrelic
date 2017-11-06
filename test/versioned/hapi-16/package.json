@@ -10,7 +10,7 @@
   "license": "proprietary",
   "dependencies": {
     "hapi": "^16.6.2",
-    "vision": "*"
+    "vision": "^4.0.0"
   },
   "private": true
 }

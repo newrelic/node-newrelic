@@ -35,7 +35,8 @@ SUBJECT      = "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me"
 all: build test
 
 clean:
-	find . -depth -type d -name node_modules -print0 | xargs -0 rm -rf
+	find . -depth -type d -name node_modules -or -name package-lock.json -print0 \
+		| xargs -0 rm -rf
 	rm -rf npm-debug.log newrelic_agent.log .coverage_data cover_html
 	rm -rf $(SSLKEY) $(CACERT) $(CAINDEX) $(CASERIAL) $(CERTIFICATE)
 	rm -rf test/lib/*.old test/lib/*.attr
@@ -70,7 +71,6 @@ unit: node_modules
 	@$(MOCHA) -c test/unit --recursive
 
 sub_node_modules:
-	@cd test && npm install glob@~3.2.9
 	@node test/bin/install_sub_deps
 
 ca-gen:
@@ -90,13 +90,11 @@ docker:
 	fi; \
 
 integration: node_modules ca-gen $(CERTIFICATE) docker
-	@cd test && npm install glob@~3.2.9
 	@node test/bin/install_sub_deps integration
 	@node test/bin/install_sub_deps versioned
 	time $(TAP) $(INTEGRATION)
 
 prerelease: node_modules ca-gen $(CERTIFICATE) docker
-	@cd test && npm install glob@~3.2.9
 	@node test/bin/install_sub_deps prerelease
 	time $(TAP) $(PRERELEASE)
 
