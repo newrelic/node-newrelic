@@ -77,7 +77,9 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
           'Promise startSomeWork', [
             'Promise#then firstThen', [
               'Promise secondChain', [
-                'Promise#then secondThen'
+                'Promise#finally __NR_continueContext', [ // Implementation detail.
+                  'Promise#then secondThen'
+                ]
               ]
             ]
           ]
@@ -168,17 +170,14 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, [
-        'doWork1',
-        [
-          'Promise startSomeWork',
-          [
-            'Promise#then firstThen',
-            [
-              'doWork2',
-              [
-                'Promise startSomeWork',
-                [
-                  'Promise#catch catchHandler'
+        'doWork1', [
+          'Promise startSomeWork', [
+            'Promise#then firstThen', [
+              'doWork2', [
+                'Promise startSomeWork', [
+                  'Promise#finally __NR_continueContext', [ // Implementation detail
+                    'Promise#catch catchHandler'
+                  ]
                 ]
               ]
             ]

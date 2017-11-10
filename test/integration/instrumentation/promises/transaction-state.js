@@ -9,7 +9,6 @@ runTests.runMultiple = runMultiple
 
 
 function runTests(t, agent, Promise, library) {
-
   /* eslint-disable no-shadow, brace-style */
   if (library) {
     performTests('Fullfillment Factories',
@@ -24,13 +23,13 @@ function runTests(t, agent, Promise, library) {
   )
 
   performTests('New Synchronous',
-    function(Promise, val) { return new Promise(function(res, rej) { res(val) }) },
+    function(Promise, val) { return new Promise(function(res) { res(val) }) },
     function(Promise, err) { return new Promise(function(res, rej) { rej(err) }) }
   )
 
   performTests('New Asynchronous',
     function(Promise, val) {
-      return new Promise(function(res, rej) {
+      return new Promise(function(res) {
         setTimeout(function() { res(val) }, 10)
       })
     },
@@ -62,16 +61,15 @@ function runTests(t, agent, Promise, library) {
   }
 
   function doPerformTests(name, resolve, reject) {
-    t.test(name + ': does not expose internal properties', function(t) {
+    t.test(name + ': does not cause JSON to crash', function(t) {
       t.plan(1 * COUNT + 1)
 
       runMultiple(COUNT, function(i, cb) {
         helper.runInTransaction(agent, function() {
           var p = resolve(Promise).then(cb, cb)
-          var nrKeys = Object.keys(p).filter(function(key) {
-            return /^__NR_/.test(key)
-          })
-          t.deepEqual(nrKeys, [], 'should not expose any internal keys')
+          t.doesNotThrow(function() {
+            JSON.stringify(p)
+          }, 'should not cause stringification to crash')
         })
       }, function(err) {
         t.error(err, 'should not error')
