@@ -136,8 +136,8 @@ describe('Promise trace', function() {
       //   /   / -e
       //  /   /
       // a- -b- - - - - -c---d
-      //     ^-(catch)  /
-      //  \------------/
+      //  \  ^-(catch)  /
+      //   \-----------/
       // a[e,c]; c[d]; d[]; e[]
 
       return helper.runInTransaction(agent, function(tx) {

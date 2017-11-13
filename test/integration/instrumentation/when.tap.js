@@ -174,8 +174,8 @@ test('when debug API', function(t) {
     var error = {val: 'test'}
     var p = when.reject(error)
 
-    setTimeout(function () {
-      p.catch(function(){})
+    setTimeout(function() {
+      p.catch(function() {})
     }, 10)
   })
 })
@@ -402,11 +402,11 @@ test('Promise#otherwise', function(t) {
     return p.otherwise(function() {
       t.fail(name + 'should not go into otherwise from a resolved promise')
     }).then(function() {
-      throw new Error('Promise#otherwise test error')
+      throw new Error(name + ' test error')
     }).otherwise(function(err) {
       t.ok(err, name + 'should pass error into rejection handler')
       if (err) {
-        t.equal(err.message, 'Promise#otherwise test error', name + 'should be correct error')
+        t.equal(err.message, name + ' test error', name + 'should be correct error')
       }
     })
   })

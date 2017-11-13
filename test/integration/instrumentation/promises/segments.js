@@ -67,21 +67,17 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
   })
 
   t.test('segments: then handler that returns a new promise', function(t) {
-    agent.config.feature_flag.promise_segments = true
+    // This test is prone to issues with implementation details of each library.
+    // To avoid that, we're manually constructing segments instead of
+    // piggy-backing on promise segments.
+    agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
-
       checkSegments(t, tx.trace.root, [
         'doWork1', [
-          'Promise startSomeWork', [
-            'Promise#then firstThen', [
-              'Promise secondChain', [
-                'Promise#finally __NR_continueContext', [ // Implementation detail.
-                  'Promise#then secondThen'
-                ]
-              ]
-            ]
+          'doWork2', [
+            'secondThen'
           ]
         ]
       ])
@@ -92,9 +88,12 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doWork1')
         .then(function firstThen() {
-          return new Promise(function secondChain(res) { res() })
+          return doSomeWork('doWork2')
         })
         .then(function secondThen() {
+          var s = tracer.createSegment('secondThen')
+          s.start()
+          s.end()
           process.nextTick(transaction.end.bind(transaction))
         })
     })
@@ -164,23 +163,18 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
   })
 
   t.test('segments: catch handler with error from subsequent promise', function(t) {
-    agent.config.feature_flag.promise_segments = true
+    // This test is prone to issues with implementation details of each library.
+    // To avoid that, we're manually constructing segments instead of
+    // piggy-backing on promise segments.
+    agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function(tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, [
         'doWork1', [
-          'Promise startSomeWork', [
-            'Promise#then firstThen', [
-              'doWork2', [
-                'Promise startSomeWork', [
-                  'Promise#finally __NR_continueContext', [ // Implementation detail
-                    'Promise#catch catchHandler'
-                  ]
-                ]
-              ]
-            ]
+          'doWork2', [
+            'catchHandler'
           ]
         ]
       ])
@@ -193,8 +187,15 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
         .then(function firstThen() {
           return doSomeWork('doWork2', true)
         })
-        .then(function secondThen() {})
+        .then(function secondThen() {
+          var s = tracer.createSegment('secondThen')
+          s.start()
+          s.end()
+        })
         .catch(function catchHandler() {
+          var s = tracer.createSegment('catchHandler')
+          s.start()
+          s.end()
           process.nextTick(transaction.end.bind(transaction))
         })
     })
@@ -207,8 +208,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
       t.equal(tx.trace.root.children.length, 2)
 
       checkSegments(t, tx.trace.root, [
-        'Promise startSomeWork',
-        [
+        'Promise startSomeWork', [
           'Promise#then myThen'
         ],
         'doSomeWork'
@@ -219,25 +219,21 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       var resolve
-      var p = new Promise(function startSomeWork(r){
+      var p = new Promise(function startSomeWork(r) {
         resolve = r
       })
 
       var segment = tracer.createSegment('doSomeWork')
-      tracer.bindFunction(doSomeWork, segment)
+      resolve = tracer.bindFunction(resolve, segment)
 
       p.then(function myThen() {
         segment.touch()
         process.nextTick(transaction.end.bind(transaction))
       })
 
-      // simulate call that resolves the promise, but its segment is created
+      // Simulate call that resolves the promise, but its segment is created
       // after the promise is created
-      function doSomeWork() {
-        resolve()
-      }
-
-      doSomeWork()
+      resolve()
     })
   })
 }
@@ -286,7 +282,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doWork1')
         .then(function firstThen() {
-          return new Promise(function secondChain(res){ res(); })
+          return new Promise(function secondChain(res) { res() })
         })
         .then(function secondThen() {
           process.nextTick(transaction.end.bind(transaction))
@@ -378,10 +374,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       var resolve
-      var p = new Promise(function startSomeWork(r){ resolve = r })
+      var p = new Promise(function startSomeWork(r) { resolve = r })
 
       var segment = tracer.createSegment('doSomeWork')
-      tracer.bindFunction(doSomeWork, segment)
+      resolve = tracer.bindFunction(resolve, segment)
 
       p.then(function myThen() {
         segment.touch()
@@ -390,11 +386,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
 
       // Simulate call that resolves the promise, but its segment is created
       // after the promise is created.
-      function doSomeWork() {
-        resolve()
-      }
-
-      doSomeWork()
+      resolve()
     })
   })
 }
