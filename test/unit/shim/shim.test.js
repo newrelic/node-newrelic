@@ -163,6 +163,20 @@ describe('Shim', function() {
       })
     })
 
+    it('should match the arity and name of the original when specified', function() {
+      function toWrap(a, b) {}
+      var wrapped = shim.wrap(toWrap, {
+        wrapper: function () {
+          return function wrapped() {
+          }
+        },
+        matchArity: true
+      })
+      expect(wrapped).to.not.equal(toWrap)
+      expect(wrapped.length).to.equal(toWrap.length)
+      expect(wrapped.name).to.equal(toWrap.name)
+    })
+
     it('should pass items in the `args` parameter to the spec', function() {
       /* eslint-disable max-params */
       shim.wrap(wrappable, function(_shim, toWrap, name, arg1, arg2, arg3) {
@@ -254,16 +268,16 @@ describe('Shim', function() {
     describe('with a function', function() {
       var wrapper = null
       beforeEach(function() {
-        wrapper = function wrapperFunc() {}
+        wrapper = function wrapperFunc() {return function wrapped() {}}
         shim.wrap(wrappable, 'bar', wrapper)
       })
 
-      it('should maintain the name', function() {
-        expect(wrappable.bar).to.have.property('name', 'barsName')
+      it('should not maintain the name', function() {
+        expect(wrappable.bar).to.have.property('name', 'wrapped')
       })
 
-      it('should maintain the arity', function() {
-        expect(wrappable.bar).to.have.length(2)
+      it('should not maintain the arity', function() {
+        expect(wrappable.bar).to.have.length(0)
       })
     })
   })
