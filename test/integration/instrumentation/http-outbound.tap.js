@@ -117,7 +117,8 @@ tap.test('external requests', function(t) {
     })
 
     function check() {
-      var segment = agent.tracer.getSegment()
+      var root = agent.tracer.getTransaction().trace.root
+      var segment = root.children[0]
 
       t.equal(
         segment.name,
@@ -132,7 +133,7 @@ tap.test('external requests', function(t) {
       t.notEqual(
           notDuped.name,
           segment.name,
-          'should not be named the same as the external segment')
+          'child should not be named the same as the external segment')
 
       t.end()
     }
