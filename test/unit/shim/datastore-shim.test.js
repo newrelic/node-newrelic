@@ -154,6 +154,7 @@ describe('DatastoreShim', function() {
     })
 
     it('should default to an SQL parser', function() {
+      shim.agent.config.transaction_tracer.record_sql = 'raw'
       var query = 'SELECT 1 FROM test'
       var parsed = shim.parseQuery(query)
       expect(parsed.operation).to.equal('select')
@@ -175,6 +176,7 @@ describe('DatastoreShim', function() {
     })
 
     it('should have constants to set the query parser with', function() {
+      shim.agent.config.transaction_tracer.record_sql = 'raw'
       shim.setParser(shim.SQL_PARSER)
       var query = 'SELECT 1 FROM test'
       var parsed = shim.parseQuery(query)
