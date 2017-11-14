@@ -1170,7 +1170,7 @@ describe("the New Relic agent", function() {
         new FakeSegment('test', 700),
         'mysql',
         'select * from foo',
-        new Error()
+        new Error().stack
       )
 
       expect(Object.keys(agent.queries.samples).length).equal(1)
@@ -1213,7 +1213,7 @@ describe("the New Relic agent", function() {
         transaction.trace.root,
         'mysql',
         'select * from foo',
-        new Error()
+        new Error().stack
       )
 
       var metricData =
@@ -1261,7 +1261,7 @@ describe("the New Relic agent", function() {
         transaction.trace.root,
         'mysql',
         'select * from foo',
-        new Error()
+        new Error().stack
       )
 
       var metricData =

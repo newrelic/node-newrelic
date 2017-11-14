@@ -875,9 +875,7 @@ function addQuery(queries, duration, url, query) {
   var transaction = new FakeTransaction(url)
   var segment = new FakeSegment(transaction, duration)
 
-  queries.addQuery(segment, 'mysql', query || 'select * from foo where a=2', {
-    stack: FAKE_STACK
-  })
+  queries.addQuery(segment, 'mysql', query || 'select * from foo where a=2', FAKE_STACK)
 
   return segment
 }
