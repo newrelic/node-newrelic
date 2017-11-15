@@ -112,6 +112,8 @@ module.exports = function(t, library) {
     })
   })
 
+  ptap.skip('Promise.config')
+
   ptap.test('Promise.each', function(t) {
     testPromiseClassMethod(t, 5, function(Promise, name) {
       return Promise.each([
@@ -185,6 +187,8 @@ module.exports = function(t, library) {
     })
   })
 
+  ptap.skip('Promise.longStackTraces')
+
   ptap.test('Promise.map', function(t) {
     testPromiseClassMethod(t, 1, function(Promise, name) {
       return Promise.map([
@@ -245,6 +249,9 @@ module.exports = function(t, library) {
       })
     })
   })
+
+  ptap.skip('Promise.onPossiblyUnhandledRejection')
+  ptap.skip('Promise.onUnhandledRejectionHandled')
 
   ptap.test('Promise.props', function(t) {
     testPromiseClassMethod(t, 1, function(Promise, name) {
@@ -854,6 +861,13 @@ PromiseTap.prototype.test = function(name, test) {
   }
 }
 
+PromiseTap.prototype.skip = function(name) {
+  this.test(name, function(t) {
+    t.pass('Skipping ' + name)
+    t.end()
+  })
+}
+
 PromiseTap.prototype.check = function() {
   var classMethods = Object.keys(this.Promise)
   this._check(classMethods, this.testedClassMethods, '.')
@@ -864,9 +878,12 @@ PromiseTap.prototype.check = function() {
 
 PromiseTap.prototype._check = function(methods, tested, type) {
   var prefix = 'Promise' + type
+  var source = type === '.' ? this.Promise : this.Promise.prototype
 
   methods.forEach(function(method) {
-    if (/^[_A-Z]/.test(method) || method[method.length - 1] === '_') {
+    // Skip this property if it is internal (starts or ends with underscore), is
+    // a class (starts with a capital letter), or is not a function.
+    if (/(?:^[_A-Z]|_$)/.test(method) || typeof source[method] !== 'function') {
       return
     }
 
