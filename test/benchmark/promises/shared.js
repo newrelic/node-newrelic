@@ -68,6 +68,36 @@ var tests = [
     }
   },
 
+  function promiseReturningPromise(Promise) {
+    return function runTest(agent, cb) {
+      var promises = []
+      for (var i = 0; i < NUM_PROMISES; ++i) {
+        promises.push(
+          new Promise(function(resolve, reject) {
+            resolve(new Promise(function(res, rej) {
+              setImmediate(res)
+            }))
+          })
+        )
+      }
+      Promise.all(promises).then(cb)
+    }
+  },
+
+  function thenReturningPromise(Promise) {
+    return function runTest(agent, cb) {
+      var prom = Promise.resolve()
+      for (var i = 0; i < NUM_PROMISES; ++i) {
+        var prom = prom.then(function() {
+          return new Promise(function(res) {
+            setImmediate(res)
+          })
+        })
+      }
+      prom.then(cb)
+    }
+  },
+
   function promiseConstructorThrow(Promise) {
     return function runTest(agent, cb) {
       for (var i = 0; i < NUM_PROMISES; ++i) {
