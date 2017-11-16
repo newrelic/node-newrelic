@@ -49,10 +49,29 @@ var tests = [
     }
   },
 
+  function longThrowToEnd(Promise) {
+    return function runTest(agent, cb) {
+      var prom = Promise.resolve()
+      for (var i = 0; i < NUM_PROMISES - 1; ++i) {
+        prom = prom.then(function() {})
+      }
+      prom.catch(function(){}).then(cb)
+    }
+  },
+
   function promiseConstructor(Promise) {
     return function runTest(agent, cb) {
       for (var i = 0; i < NUM_PROMISES; ++i) {
         new Promise(function(res, rej) {res()})
+      }
+      cb()
+    }
+  },
+
+  function promiseConstructorThrow(Promise) {
+    return function runTest(agent, cb) {
+      for (var i = 0; i < NUM_PROMISES; ++i) {
+        new Promise(function(res, rej) {throw new Error('Whoops!')})
       }
       cb()
     }
