@@ -51,7 +51,7 @@ var tests = [
 
   function longThrowToEnd(Promise) {
     return function runTest(agent, cb) {
-      var prom = Promise.resolve()
+      var prom = Promise.reject()
       for (var i = 0; i < NUM_PROMISES - 1; ++i) {
         prom = prom.then(function() {})
       }
@@ -71,7 +71,7 @@ var tests = [
   function promiseReturningPromise(Promise) {
     return function runTest(agent, cb) {
       var promises = []
-      for (var i = 0; i < NUM_PROMISES; ++i) {
+      for (var i = 0; i < NUM_PROMISES / 2; ++i) {
         promises.push(
           new Promise(function(resolve, reject) {
             resolve(new Promise(function(res, rej) {
@@ -87,7 +87,7 @@ var tests = [
   function thenReturningPromise(Promise) {
     return function runTest(agent, cb) {
       var prom = Promise.resolve()
-      for (var i = 0; i < NUM_PROMISES; ++i) {
+      for (var i = 0; i < NUM_PROMISES / 2; ++i) {
         var prom = prom.then(function() {
           return new Promise(function(res) {
             setImmediate(res)
