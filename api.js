@@ -344,7 +344,7 @@ API.prototype.noticeError = function noticeError(error, customParameters) {
   if (this.agent.config.high_security === true) {
     logger.warnOnce(
       "Notice Error",
-      "Notice error API are disabled by high security mode."
+      "Notice error API is disabled by high security mode."
     )
     return false
   } else if (!this.agent.config.api.notice_error_enabled) {
