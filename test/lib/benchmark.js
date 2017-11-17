@@ -27,7 +27,7 @@ Benchmark.prototype.add = function add(opts) {
   var agent = null
   copy.shallow(opts, mergedOpts)
 
-  if (mergedOpts.async) {
+  if (mergedOpts.defer) {
     testOpts.defer = true
     testOpts.fn = function asyncTest(deferred) {
       mergedOpts.fn(agent, function testEnd() {
@@ -45,7 +45,7 @@ Benchmark.prototype.add = function add(opts) {
       opts.before()
     }
 
-    if (mergedOpts.agent) {
+    if (mergedOpts.agent && !agent) {
       agent = helper.instrumentMockedAgent(
         mergedOpts.agent.feature_flag,
         mergedOpts.agent.config

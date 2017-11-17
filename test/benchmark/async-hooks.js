@@ -67,7 +67,7 @@ function printGCStats(event) {
 
 var suite = benchmark.createBenchmark({
   name: 'async hooks',
-  async: true,
+  defer: true,
   fn: test,
   afterTest: printGCStats
 })
