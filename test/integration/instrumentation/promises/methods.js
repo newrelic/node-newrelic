@@ -70,119 +70,189 @@ module.exports = function(t, library) {
   })
 
   ptap.test('new Promise -> resolve', function(t) {
-    testPromiseClassMethod(t, 3, function resolveTest(Promise, name) {
-      var tracer = helper.getAgent().tracer
-      var inTx = !!tracer.segment
-      return new Promise(function(resolve) {
-        addTask(function() {
-          t.notOk(tracer.segment, name + 'should lose tx')
-          resolve('foobar ' + name)
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return new Promise(function(resolve) { resolve(name) })
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 3, function resolveTest(Promise, name) {
+        var tracer = helper.getAgent().tracer
+        var inTx = !!tracer.segment
+        return new Promise(function(resolve) {
+          addTask(function() {
+            t.notOk(tracer.segment, name + 'should lose tx')
+            resolve('foobar ' + name)
+          })
+        }).then(function(res) {
+          if (inTx) {
+            t.ok(tracer.segment, name + 'should return tx')
+          } else {
+            t.notOk(tracer.segment, name + 'should not create tx')
+          }
+          t.equal(res, 'foobar ' + name, name + 'should resolve with correct value')
         })
-      }).then(function(res) {
-        if (inTx) {
-          t.ok(tracer.segment, name + 'should return tx')
-        } else {
-          t.notOk(tracer.segment, name + 'should not create tx')
-        }
-        t.equal(res, 'foobar ' + name, name + 'should resolve with correct value')
       })
     })
   })
 
-  ptap.test('Promise.all', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      var p1 = Promise.resolve(name + '1')
-      var p2 = Promise.resolve(name + '2')
+  // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
 
-      return Promise.all([p1, p2]).then(function(result) {
-        t.deepEqual(result, [name + '1', name + '2'], name + 'should not change result')
+  ptap.test('Promise.all', function(t) {
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.all([name])
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        var p1 = Promise.resolve(name + '1')
+        var p2 = Promise.resolve(name + '2')
+
+        return Promise.all([p1, p2]).then(function(result) {
+          t.deepEqual(result, [name + '1', name + '2'], name + 'should not change result')
+        })
       })
     })
   })
 
   ptap.test('Promise.any', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.any([
-        Promise.reject(name + 'rejection!'),
-        Promise.resolve(name + 'resolved'),
-        Promise.delay(15, name + 'delayed')
-      ]).then(function(result) {
-        t.equal(result, name + 'resolved', 'should not change the result')
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.any([name])
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.any([
+          Promise.reject(name + 'rejection!'),
+          Promise.resolve(name + 'resolved'),
+          Promise.delay(15, name + 'delayed')
+        ]).then(function(result) {
+          t.equal(result, name + 'resolved', 'should not change the result')
+        })
       })
     })
   })
 
+  testResolveBehavior('cast')
   ptap.skip('Promise.config')
+  ptap.skip('Promise.defer')
 
   ptap.test('Promise.each', function(t) {
-    testPromiseClassMethod(t, 5, function(Promise, name) {
-      return Promise.each([
-        Promise.resolve(name + '1'),
-        Promise.resolve(name + '2'),
-        Promise.resolve(name + '3'),
-        Promise.resolve(name + '4')
-      ], function(value, i) {
-        t.equal(value, name + (i + 1), 'should not change input to iterator')
-      }).then(function(result) {
-        t.deepEqual(result, [
-          name + '1',
-          name + '2',
-          name + '3',
-          name + '4'
-        ])
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.each([name], function() {})
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 5, function(Promise, name) {
+        return Promise.each([
+          Promise.resolve(name + '1'),
+          Promise.resolve(name + '2'),
+          Promise.resolve(name + '3'),
+          Promise.resolve(name + '4')
+        ], function(value, i) {
+          t.equal(value, name + (i + 1), 'should not change input to iterator')
+        }).then(function(result) {
+          t.deepEqual(result, [
+            name + '1',
+            name + '2',
+            name + '3',
+            name + '4'
+          ])
+        })
       })
     })
   })
 
   ptap.test('Promise.filter', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.filter([
-        Promise.resolve(name + '1'),
-        Promise.resolve(name + '2'),
-        Promise.resolve(name + '3'),
-        Promise.resolve(name + '4')
-      ], function(value) {
-        return Promise.resolve(/[24]$/.test(value))
-      }).then(function(result) {
-        t.deepEqual(result, [name + '2', name + '4'], 'should not change the result')
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.filter([name], function() { return true })
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.filter([
+          Promise.resolve(name + '1'),
+          Promise.resolve(name + '2'),
+          Promise.resolve(name + '3'),
+          Promise.resolve(name + '4')
+        ], function(value) {
+          return Promise.resolve(/[24]$/.test(value))
+        }).then(function(result) {
+          t.deepEqual(result, [name + '2', name + '4'], 'should not change the result')
+        })
       })
     })
   })
 
-  ptap.test('Promise.fromCallback', function(t) {
-    testPromiseClassMethod(t, 3, function fromCallbackTest(Promise, name) {
-      return Promise.fromCallback(function(cb) {
-        addTask(cb, null, 'foobar')
-      }).then(function(res) {
-        t.equal(res, 'foobar', name + 'should pass result through')
+  testResolveBehavior('fulfilled')
+  testFromCallbackBehavior('fromCallback')
+  testFromCallbackBehavior('fromNode')
 
-        return Promise.fromCallback(function(cb) {
-          addTask(cb, new Error('Promise.fromCallback test error'))
-        })
-      }).then(function() {
-        t.fail(name + 'should not resolve after rejecting')
-      }, function(err) {
-        t.ok(err, name + 'should have an error')
-        if (err) {
-          t.equal(
-            err.message,
-            'Promise.fromCallback test error',
-            name + 'should have correct error'
-          )
-        }
-      })
-    })
+  ptap.test('Promise.getNewLibraryCopy', function(t) {
+    helper.loadTestAgent(t)
+    var Promise = require(library)
+    var Promise2 = Promise.getNewLibraryCopy()
+
+    t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
+    t.ok(Promise2.prototype.then.__NR_original, 'should have wrapped instance methods')
+    t.end()
+  })
+
+  ptap.skip('Promise.hasLongStackTraces')
+
+  ptap.test('Promise.is', function(t) {
+    helper.loadTestAgent(t)
+    var Promise = require(library)
+
+    var p = new Promise(function(resolve) { setImmediate(resolve) })
+    t.ok(Promise.is(p), 'should not break promise identification (new)')
+
+    p = p.then(function() {})
+    t.ok(Promise.is(p), 'should not break promise identification (then)')
+
+    t.end()
   })
 
   ptap.test('Promise.join', function(t) {
-    testPromiseClassMethod(t, 1, function joinTest(Promise, name) {
-      return Promise.join(
-        Promise.resolve(1),
-        Promise.resolve(2),
-        Promise.resolve(3),
-        Promise.resolve(name)
-      ).then(function(res) {
-        t.same(res, [1, 2, 3, name], name + 'should have all the values')
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.join(name)
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function joinTest(Promise, name) {
+        return Promise.join(
+          Promise.resolve(1),
+          Promise.resolve(2),
+          Promise.resolve(3),
+          Promise.resolve(name)
+        ).then(function(res) {
+          t.same(res, [1, 2, 3, name], name + 'should have all the values')
+        })
       })
     })
   })
@@ -190,61 +260,91 @@ module.exports = function(t, library) {
   ptap.skip('Promise.longStackTraces')
 
   ptap.test('Promise.map', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.map([
-        Promise.resolve('1'),
-        Promise.resolve('2')
-      ], function(item) {
-        return Promise.resolve(name + item)
-      }).then(function(result) {
-        t.deepEqual(
-          result, [name + '1', name + '2'],
-          'should not change the result'
-        )
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.map([name], function(v) { return v.toUpperCase() })
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.map([
+          Promise.resolve('1'),
+          Promise.resolve('2')
+        ], function(item) {
+          return Promise.resolve(name + item)
+        }).then(function(result) {
+          t.deepEqual(
+            result, [name + '1', name + '2'],
+            'should not change the result'
+          )
+        })
       })
     })
   })
 
   ptap.test('Promise.mapSeries', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.mapSeries([
-        Promise.resolve('1'),
-        Promise.resolve('2')
-      ], function(item) {
-        return Promise.resolve(name + item)
-      }).then(function(result) {
-        t.deepEqual(
-          result, [name + '1', name + '2'],
-          'should not change the result'
-        )
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.mapSeries([name], function(v) { return v.toUpperCase() })
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.mapSeries([
+          Promise.resolve('1'),
+          Promise.resolve('2')
+        ], function(item) {
+          return Promise.resolve(name + item)
+        }).then(function(result) {
+          t.deepEqual(
+            result, [name + '1', name + '2'],
+            'should not change the result'
+          )
+        })
       })
     })
   })
 
   ptap.test('Promise.method', function(t) {
-    testPromiseClassMethod(t, 3, function methodTest(Promise, name) {
-      var fn = Promise.method(function() {
-        throw new Error('Promise.method test error')
-      })
+    t.plan(2)
 
-      return fn().then(function() {
-        t.fail(name + 'should not go into resolve after throwing')
-      }, function(err) {
-        t.ok(err, name + 'should have error')
-        if (err) {
-          t.equal(
-            err.message, 'Promise.method test error',
-            name + 'should be correct error'
-          )
-        }
-      }).then(function() {
-        var foo = {what: 'Promise.method test object'}
-        var fn2 = Promise.method(function() {
-          return foo
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.method(function() { return name })()
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 3, function methodTest(Promise, name) {
+        var fn = Promise.method(function() {
+          throw new Error('Promise.method test error')
         })
 
-        return fn2().then(function(obj) {
-          t.equal(obj, foo, name + 'should also work on success')
+        return fn().then(function() {
+          t.fail(name + 'should not go into resolve after throwing')
+        }, function(err) {
+          t.ok(err, name + 'should have error')
+          if (err) {
+            t.equal(
+              err.message, 'Promise.method test error',
+              name + 'should be correct error'
+            )
+          }
+        }).then(function() {
+          var foo = {what: 'Promise.method test object'}
+          var fn2 = Promise.method(function() {
+            return foo
+          })
+
+          return fn2().then(function(obj) {
+            t.equal(obj, foo, name + 'should also work on success')
+          })
         })
       })
     })
@@ -254,104 +354,110 @@ module.exports = function(t, library) {
   ptap.skip('Promise.onUnhandledRejectionHandled')
 
   ptap.test('Promise.props', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.props({
-        first: Promise.resolve(name + '1'),
-        second: Promise.resolve(name + '2')
-      }).then(function(result) {
-        t.deepEqual(
-          result, {first: name + '1', second: name + '2'},
-          'should not change results'
-        )
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.props({name: name})
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.props({
+          first: Promise.resolve(name + '1'),
+          second: Promise.resolve(name + '2')
+        }).then(function(result) {
+          t.deepEqual(
+            result, {first: name + '1', second: name + '2'},
+            'should not change results'
+          )
+        })
       })
     })
   })
 
   ptap.test('Promise.race', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.race([
-        Promise.resolve(name + 'resolved'),
-        Promise.reject(name + 'rejection!'),
-        Promise.delay(15, name + 'delayed')
-      ]).then(function(result) {
-        t.equal(result, name + 'resolved', 'should not change the result')
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.race([name])
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.race([
+          Promise.resolve(name + 'resolved'),
+          Promise.reject(name + 'rejection!'),
+          Promise.delay(15, name + 'delayed')
+        ]).then(function(result) {
+          t.equal(result, name + 'resolved', 'should not change the result')
+        })
       })
     })
   })
 
   ptap.test('Promise.reduce', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.reduce([
-        Promise.resolve('1'),
-        Promise.resolve('2'),
-        Promise.resolve('3'),
-        Promise.resolve('4')
-      ], function(a, b) {
-        return Promise.resolve(name + a + b)
-      }).then(function(result) {
-        t.equal(result, name + name + name + '1234', 'should not change the result')
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.reduce([name, name], function(a, b) { return a + b })
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.reduce([
+          Promise.resolve('1'),
+          Promise.resolve('2'),
+          Promise.resolve('3'),
+          Promise.resolve('4')
+        ], function(a, b) {
+          return Promise.resolve(name + a + b)
+        }).then(function(result) {
+          t.equal(result, name + name + name + '1234', 'should not change the result')
+        })
       })
     })
   })
 
-  ptap.test('Promise.resolve', function(t) {
-    testPromiseClassMethod(t, 1, function resolveTest(Promise, name) {
-      return Promise.resolve(name + ' resolve value')
-        .then(function(res) {
-          t.equal(res, name + ' resolve value', name + 'should pass the value')
-        })
-    })
-  })
-
-  ptap.test('Promise.reject', function(t) {
-    testPromiseClassMethod(t, 1, function rejectTest(Promise, name) {
-      return Promise.reject(name + ' reject value')
-        .then(function() {
-          t.fail(name + 'should not resolve after a rejection')
-        }, function(err) {
-          t.equal(err, name + ' reject value', name + 'should reject with the err')
-        })
-    })
-  })
+  ptap.skip('Promise.pending')
+  testRejectBehavior('reject')
+  testRejectBehavior('rejected')
+  testResolveBehavior('resolve')
+  ptap.skip('Promise.setScheduler')
 
   ptap.test('Promise.some', function(t) {
-    testPromiseClassMethod(t, 1, function(Promise, name) {
-      return Promise.some([
-        Promise.resolve(name + 'resolved'),
-        Promise.reject(name + 'rejection!'),
-        Promise.delay(10, name + 'delayed more'),
-        Promise.delay(5, name + 'delayed')
-      ], 2).then(function(result) {
-        t.deepEqual(
-          result, [name + 'resolved', name + 'delayed'],
-          'should not change the result'
-        )
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.some([name], 1)
       })
     })
-  })
 
-  ptap.test('Promise.try', function(t) {
-    testPromiseClassMethod(t, 3, function tryTest(Promise, name) {
-      return Promise.try(function() {
-        throw new Error('Promise.try test error')
-      }).then(function() {
-        t.fail(name + 'should not go into resolve after throwing')
-      }, function(err) {
-        t.ok(err, name + 'should have error')
-        if (err) {
-          t.equal(err.message, 'Promise.try test error', name + 'should be correct error')
-        }
-      }).then(function() {
-        var foo = {what: 'Promise.try test object'}
-        return Promise.try(function() {
-          return foo
-        }).then(function(obj) {
-          t.equal(obj, foo, name + 'should also work on success')
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        return Promise.some([
+          Promise.resolve(name + 'resolved'),
+          Promise.reject(name + 'rejection!'),
+          Promise.delay(10, name + 'delayed more'),
+          Promise.delay(5, name + 'delayed')
+        ], 2).then(function(result) {
+          t.deepEqual(
+            result, [name + 'resolved', name + 'delayed'],
+            'should not change the result'
+          )
         })
       })
     })
   })
 
+  testTryBehavior('attempt')
+  testTryBehavior('try')
 
   // ------------------------------------------------------------------------ //
   // ------------------------------------------------------------------------ //
@@ -384,6 +490,8 @@ module.exports = function(t, library) {
       })
     })
   })
+
+  testAsCallbackBehavior('asCallback')
 
   ptap.test('Promise#bind', function(t) {
     testPromiseInstanceMethod(t, 2, function bindTest(Promise, p, name) {
@@ -558,6 +666,8 @@ module.exports = function(t, library) {
     })
   })
 
+  testAsCallbackBehavior('nodeify')
+
   ptap.test('Promise#props', function(t) {
     testPromiseInstanceMethod(t, 1, function(Promise, p, name) {
       return p.then(function() {
@@ -689,6 +799,12 @@ module.exports = function(t, library) {
     })
   })
 
+  ptap.check()
+
+  // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
+
   function testAsCallbackBehavior(methodName) {
     ptap.test('Promise#' + methodName, function(t) {
       testPromiseInstanceMethod(t, 8, function asCallbackTest(Promise, p, name, agent) {
@@ -730,10 +846,120 @@ module.exports = function(t, library) {
     })
   }
 
-  testAsCallbackBehavior('asCallback')
-  testAsCallbackBehavior('nodeify')
+  function testFromCallbackBehavior(methodName) {
+    ptap.test('Promise.' + methodName, function(t) {
+      testPromiseClassMethod(t, 3, function fromCallbackTest(Promise, name) {
+        return Promise[methodName](function(cb) {
+          addTask(cb, null, 'foobar')
+        }).then(function(res) {
+          t.equal(res, 'foobar', name + 'should pass result through')
 
-  ptap.check()
+          return Promise[methodName](function(cb) {
+            addTask(cb, new Error('Promise.' + methodName + ' test error'))
+          })
+        }).then(function() {
+          t.fail(name + 'should not resolve after rejecting')
+        }, function(err) {
+          t.ok(err, name + 'should have an error')
+          if (err) {
+            t.equal(
+              err.message,
+              'Promise.' + methodName + ' test error',
+              name + 'should have correct error'
+            )
+          }
+        })
+      })
+    })
+  }
+
+  function testRejectBehavior(method) {
+    ptap.test('Promise.' + method, function(t) {
+      t.plan(2)
+
+      t.test('context', function(t) {
+        testPromiseContext(t, function(Promise, name) {
+          return Promise[method](name)
+        })
+      })
+
+      t.test('usage', function(t) {
+        testPromiseClassMethod(t, 1, function rejectTest(Promise, name) {
+          return Promise[method](name + ' ' + method + ' value')
+            .then(function() {
+              t.fail(name + 'should not resolve after a rejection')
+            }, function(err) {
+              t.equal(
+                err, name + ' ' + method + ' value',
+                name + 'should reject with the err'
+              )
+            })
+        })
+      })
+    })
+  }
+
+  function testResolveBehavior(method) {
+    ptap.test('Promise.' + method, function(t) {
+      t.plan(2)
+
+      t.test('context', function(t) {
+        testPromiseContext(t, function(Promise, name) {
+          return Promise[method](name)
+        })
+      })
+
+      t.test('usage', function(t) {
+        testPromiseClassMethod(t, 1, function resolveTest(Promise, name) {
+          return Promise[method](name + ' ' + method + ' value')
+            .then(function(res) {
+              t.equal(res, name + ' ' + method + ' value', name + 'should pass the value')
+            })
+        })
+      })
+    })
+  }
+
+  function testTryBehavior(method) {
+    ptap.test('Promise.' + method, function(t) {
+      t.plan(2)
+
+      t.test('context', function(t) {
+        testPromiseContext(t, function(Promise, name) {
+          return Promise[method](function() { return name })
+        })
+      })
+
+      t.test('usage', function(t) {
+        testPromiseClassMethod(t, 3, function tryTest(Promise, name) {
+          return Promise[method](function() {
+            throw new Error('Promise.' + method + ' test error')
+          }).then(function() {
+            t.fail(name + 'should not go into resolve after throwing')
+          }, function(err) {
+            t.ok(err, name + 'should have error')
+            if (err) {
+              t.equal(
+                err.message, 'Promise.' + method + ' test error',
+                name + 'should be correct error'
+              )
+            }
+          }).then(function() {
+            var foo = {what: 'Promise.' + method + ' test object'}
+            return Promise[method](function() {
+              return foo
+            }).then(function(obj) {
+              t.equal(obj, foo, name + 'should also work on success')
+            })
+          })
+        })
+      })
+    })
+  }
+
+  // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
 
   function testPromiseInstanceMethod(t, plan, testFunc) {
     var agent = helper.loadTestAgent(t)
@@ -752,6 +978,13 @@ module.exports = function(t, library) {
     _testPromiseMethod(t, plan, agent, function(name) {
       return testFunc(Promise, name)
     })
+  }
+
+  function testPromiseContext(t, factory) {
+    var agent = helper.loadTestAgent(t)
+    var Promise = require(library)
+
+    _testPromiseContext(t, agent, factory.bind(null, Promise))
   }
 }
 
@@ -824,6 +1057,101 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
       t.end()
     })
   }
+}
+
+function _testPromiseContext(t, agent, factory) {
+  t.plan(4)
+
+  // Create in tx a, continue in tx b
+  t.test('context switch', function(t) {
+    t.plan(2)
+
+    var ctxA = helper.runInTransaction(agent, function(tx) {
+      return {
+        transaction: tx,
+        promise: factory('[tx a]')
+      }
+    })
+
+    helper.runInTransaction(agent, function(txB) {
+      t.tearDown(function() {
+        ctxA.transaction.end()
+        txB.end()
+      })
+      t.notEqual(ctxA.transaction.id, txB.id, 'should not be in transaction a')
+
+      ctxA.promise.catch(function() {}).then(function() {
+        var tx = agent.tracer.getTransaction()
+        t.comment('A: ' + ctxA.transaction.id + ' | B: ' + txB.id)
+        t.equal(tx && tx.id, ctxA.transaction.id, 'should be in expected context')
+      })
+    })
+  })
+
+  // Create in tx a, continue outside of tx
+  t.test('context loss', function(t) {
+    t.plan(2)
+
+    var ctxA = helper.runInTransaction(agent, function(tx) {
+      t.tearDown(function() {
+        tx.end()
+      })
+
+      return {
+        transaction: tx,
+        promise: factory('[tx a]')
+      }
+    })
+
+    t.notOk(agent.tracer.getTransaction(), 'should not be in transaction')
+    ctxA.promise.catch(function() {}).then(function() {
+      var tx = agent.tracer.getTransaction()
+      t.equal(tx && tx.id, ctxA.transaction.id, 'should be in expected context')
+    })
+  })
+
+  // Create outside tx, continue in tx a
+  t.test('context gain', function(t) {
+    t.plan(2)
+
+    var promise = factory('[no tx]')
+
+    t.notOk(agent.tracer.getTransaction(), 'should not be in transaction')
+    helper.runInTransaction(agent, function(tx) {
+      promise.catch(function() {}).then(function() {
+        var tx2 = agent.tracer.getTransaction()
+        t.equal(tx2 && tx2.id, tx.id, 'should be in expected context')
+      })
+    })
+  })
+
+  // Create test in tx a, end tx a, continue in tx b
+  t.test('context expiration', function(t) {
+    t.plan(2)
+
+    var ctxA = helper.runInTransaction(agent, function(tx) {
+      return {
+        transaction: tx,
+        promise: factory('[tx a]')
+      }
+    })
+
+    ctxA.transaction.end(function() {
+      helper.runInTransaction(agent, function(txB) {
+        t.tearDown(function() {
+          ctxA.transaction.end()
+          txB.end()
+        })
+        t.notEqual(ctxA.transaction.id, txB.id, 'should not be in transaction a')
+
+        ctxA.promise.catch(function() {}).then(function() {
+          var tx = agent.tracer.getTransaction()
+          t.comment('A: ' + ctxA.transaction.id + ' | B: ' + txB.id)
+          t.equal(tx && tx.id, txB.id, 'should be in expected context')
+        })
+      })
+    })
+  })
 }
 
 function PromiseTap(t, Promise) {
