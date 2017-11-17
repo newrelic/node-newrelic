@@ -21,7 +21,7 @@ describe('logger', function() {
 
   beforeEach(function() {
     results = []
-    logger = Logger({
+    logger = new Logger({
       name: 'my-logger',
       level: 'info',
       hostname: 'my-host',
@@ -219,8 +219,8 @@ describe('logger', function() {
 
   it('should support child loggers with prepended extras from Error objects', function(done) {
     var error = new Error('error1')
-    expect(error.message).to.not.be.undefined
-    expect(error.stack).to.not.be.undefined
+    expect(error.message).to.not.be.undefined()
+    expect(error.stack).to.not.be.undefined()
 
     var child = logger.child({a: 1})
     child.info(error, 'log message')
@@ -233,14 +233,14 @@ describe('logger', function() {
     })
   })
 
-  describe('should have once methods', function () {
-    it('that respect log levels', function (done) {
+  describe('should have once methods', function() {
+    it('that respect log levels', function(done) {
       logger.level('info')
       logger.traceOnce('test', 'value')
-      process.nextTick(function () {
+      process.nextTick(function() {
         expect(results.length).equal(0)
         logger.infoOnce('test', 'value')
-        process.nextTick(function () {
+        process.nextTick(function() {
           expect(results.length).equal(1)
           compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
           done()
@@ -248,12 +248,12 @@ describe('logger', function() {
       })
     })
 
-    it('that log things once', function (done) {
+    it('that log things once', function(done) {
       logger.infoOnce('testkey', 'info')
       logger.infoOnce('testkey', 'info')
       logger.infoOnce('anothertestkey', 'another')
 
-      process.nextTick(function () {
+      process.nextTick(function() {
         expect(results.length).equal(2)
         compare_entry(results[0], 'info', 30, DEFAULT_KEYS)
         compare_entry(results[1], 'another', 30, DEFAULT_KEYS)
@@ -261,11 +261,11 @@ describe('logger', function() {
       })
     })
 
-    it('that can handle objects', function (done) {
+    it('that can handle objects', function(done) {
       logger.infoOnce('a', {a:2}, 'hello a')
       logger.infoOnce('a', {a:2}, 'hello c')
 
-      process.nextTick(function () {
+      process.nextTick(function() {
         expect(results.length).equal(1)
         expect(results[0].a).equal(2)
         compare_entry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
@@ -274,14 +274,14 @@ describe('logger', function() {
     })
   })
 
-  describe('should have once per interval methods', function () {
-    it('that respect log levels', function (done) {
+  describe('should have once per interval methods', function() {
+    it('that respect log levels', function(done) {
       logger.level('info')
       logger.traceOncePer('test', 30, 'value')
-      process.nextTick(function () {
+      process.nextTick(function() {
         expect(results.length).equal(0)
         logger.infoOncePer('test', 30, 'value')
-        process.nextTick(function () {
+        process.nextTick(function() {
           expect(results.length).equal(1)
           compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
           done()
@@ -289,12 +289,12 @@ describe('logger', function() {
       })
     })
 
-    it('that log things at most once in an interval', function (done) {
+    it('that log things at most once in an interval', function(done) {
       logger.infoOncePer('key', 50, 'value')
       logger.infoOncePer('key', 50, 'value')
-      setTimeout(function () {
+      setTimeout(function() {
         logger.infoOncePer('key', 50, 'value')
-        process.nextTick(function () {
+        process.nextTick(function() {
           expect(results.length).equal(2)
           compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
           compare_entry(results[1], 'value', 30, DEFAULT_KEYS)
@@ -302,15 +302,45 @@ describe('logger', function() {
         })
       }, 100)
     })
-    it('that can handle objects', function (done) {
+    it('that can handle objects', function(done) {
       logger.infoOncePer('a', 10, {a:2}, 'hello a')
 
-      process.nextTick(function () {
+      process.nextTick(function() {
         expect(results.length).equal(1)
         expect(results[0].a).equal(2)
         compare_entry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
         done()
       })
+    })
+  })
+
+  describe('should have enabled methods', function() {
+    it('that respect log levels', function() {
+      logger.level('info')
+      expect(logger.traceEnabled()).to.be.false()
+      expect(logger.debugEnabled()).to.be.false()
+      expect(logger.infoEnabled()).to.be.true()
+      expect(logger.warnEnabled()).to.be.true()
+      expect(logger.errorEnabled()).to.be.true()
+      expect(logger.fatalEnabled()).to.be.true()
+    })
+
+    it('that change with the log level', function() {
+      logger.level('fatal')
+      expect(logger.traceEnabled()).to.be.false()
+      expect(logger.debugEnabled()).to.be.false()
+      expect(logger.infoEnabled()).to.be.false()
+      expect(logger.warnEnabled()).to.be.false()
+      expect(logger.errorEnabled()).to.be.false()
+      expect(logger.fatalEnabled()).to.be.true()
+
+      logger.level('trace')
+      expect(logger.traceEnabled()).to.be.true()
+      expect(logger.debugEnabled()).to.be.true()
+      expect(logger.infoEnabled()).to.be.true()
+      expect(logger.warnEnabled()).to.be.true()
+      expect(logger.errorEnabled()).to.be.true()
+      expect(logger.fatalEnabled()).to.be.true()
     })
   })
 
@@ -327,8 +357,8 @@ describe('logger', function() {
 
   it('fail gracefully on unstringifiable objects', function(done) {
     var badObj = {
-      get testData () {
-        throw new Exception()
+      get testData() {
+        throw new Error()
       }
     }
     logger.info('JSON: %s', badObj)
@@ -344,7 +374,7 @@ describe('logger write queue', function() {
   it('should buffer writes', function(done) {
     var bigString = new Array(16 * 1024).join('a')
 
-    var logger = Logger({
+    var logger = new Logger({
       name: 'my-logger',
       level: 'info',
       hostname: 'my-host'
