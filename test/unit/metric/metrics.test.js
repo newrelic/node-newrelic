@@ -101,30 +101,18 @@ describe("Metrics", function () {
     })
   })
 
-  describe("when creating individual metrics", function () {
-    it("should require a name", function () {
-      expect(function () {
-        metrics.getOrCreateMetric()
-      }).throws("Metrics must be named")
-    })
-
-    it("should require a name even if a scope is provided", function () {
-      expect(function () {
-        metrics.getOrCreateMetric(null, 'TEST')
-      }).throws("Metrics must be named")
-    })
-
-    it("should create a metric when a nonexistent name is requested", function () {
+  describe("when creating individual metrics", function() {
+    it("should create a metric when a nonexistent name is requested", function() {
       var metric = metrics.getOrCreateMetric('Test/Nonexistent', 'TEST')
       should.exist(metric.callCount)
     })
 
-    it("should have statistics available", function () {
+    it("should have statistics available", function() {
       var metric = metrics.getOrCreateMetric('Agent/Test')
       should.exist(metric.callCount)
     })
 
-    it("should have have regular functions", function () {
+    it("should have have regular functions", function() {
       var metric = metrics.getOrCreateMetric('Agent/StatsTest')
       should.exist(metric.incrementCallCount)
     })
