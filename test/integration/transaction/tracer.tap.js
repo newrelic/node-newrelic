@@ -3,41 +3,43 @@
 var tap = require('tap')
 var test = tap.test
 var helper = require('../../lib/agent_helper')
-var EE = require('events').EventEmitter
+var EventEmitter = require('events').EventEmitter
 
 test('bind in transaction', function testBind(t) {
   var agent = helper.loadTestAgent(t)
   var tracer = agent.tracer
   var context = {}
-  t.plan(15)
+  t.plan(10)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     var root = transaction.trace.root
     var other = tracer.createSegment('other')
-    t.equal(tracer.getTransaction(), transaction)
+    t.equal(tracer.getTransaction(), transaction, 'should start in transaction')
 
+    t.comment('implicit segment bind')
+    t.equal(tracer.getSegment(), root, 'should start at root segment')
     var bound = tracer.bindFunction(compare)
-    compare.call(context, root)
 
     tracer.segment = null
-    compare.call(context, null)
-
     bound.call(context, root)
-    compare.call(context, null)
+    t.equal(tracer.getSegment(), null, 'should reset segment after being called')
 
+    t.comment('explicit segment bind')
     bound = tracer.bindFunction(compare, other)
     bound.call(context, other)
 
+    t.comment('null segment bind')
     tracer.segment = root
     bound = tracer.bindFunction(compare, null)
-    compare.call(context, root)
-    bound.call(context, null)
+
+    t.equal(tracer.getSegment(), root, 'should be back to root segment')
+    bound.call(context, root)
 
     t.end()
 
     function compare(expected) {
-      t.equal(this, context)
-      t.equal(tracer.getSegment(), expected)
+      t.equal(this, context, 'should pass through context')
+      t.equal(tracer.getSegment(), expected, 'should have expected segment')
     }
   })
 })
@@ -75,12 +77,16 @@ test('bind + throw', function testThrows(t) {
   t.plan(12)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
+    t.comment('root is active')
     var root = transaction.trace.root
-    compare(dangerous(root), root)
-    compare(dangerous(null), root)
+    compare(dangerous(root, root), root)
+    compare(dangerous(null, root), root)
+
+    t.comment('null is active')
     tracer.segment = null
-    compare(dangerous(root), null)
-    compare(dangerous(null), null)
+    compare(dangerous(root, root), null)
+    compare(dangerous(null, null), null)
+
     t.end()
   })
 
@@ -88,14 +94,14 @@ test('bind + throw', function testThrows(t) {
     try {
       run()
     } catch (err) {
-      t.equal(err, error)
-      t.equal(tracer.getSegment(), expected)
+      t.equal(err, error, 'should have expected error')
+      t.equal(tracer.getSegment(), expected, 'should catch in context')
     }
   }
 
-  function dangerous(segment) {
+  function dangerous(segment, expected) {
     return tracer.bindFunction(function bound() {
-      t.equal(tracer.getSegment(), segment)
+      t.equal(tracer.getSegment(), expected, 'should have expected segment')
       throw error
     }, segment)
   }
@@ -486,8 +492,8 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
 test('bindEmitter', function testbindEmitter(t) {
   var agent = helper.loadTestAgent(t)
   var tracer = agent.tracer
-  var emitter = new EE()
-  var emitter2 = new EE()
+  var emitter = new EventEmitter()
+  var emitter2 = new EventEmitter()
   var data = {}
   var root
 
@@ -506,6 +512,7 @@ test('bindEmitter', function testbindEmitter(t) {
     root = tracer.getSegment()
     emitter.emit('before', data)
     emitter.emit('after', data)
+
     emitter2.on('before', check(root))
     tracer.bindEmitter(emitter2)
     emitter2.on('after', check(root))
@@ -516,7 +523,7 @@ test('bindEmitter', function testbindEmitter(t) {
   emitter2.emit('before', data)
   emitter2.emit('after', data)
 
-  var emitter3 = new EE()
+  var emitter3 = new EventEmitter()
   emitter3.on('before', check(root))
   tracer.bindEmitter(emitter3, root)
   emitter3.on('after', check(root))
@@ -526,8 +533,8 @@ test('bindEmitter', function testbindEmitter(t) {
 
   function check(expected) {
     return function onEvent(eventData) {
-      t.equal(eventData, data)
-      t.equal(tracer.getSegment(), expected)
+      t.equal(eventData, data, 'should pass through event data')
+      t.equal(tracer.getSegment(), expected, 'should have expected segment')
     }
   }
 })
