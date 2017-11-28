@@ -60,7 +60,7 @@ a.series([
       var test = path.relative(benchpath, file)
 
       console.log(test)
-      var child = cp.spawn('node', [file], {cwd: cwd, stdio: 'inherit'})
+      var child = cp.spawn('node', ['--expose-gc', file], {cwd: cwd, stdio: 'inherit'})
       child.on('error', cb)
       child.on('exit', function onChildExit(code) {
         console.log('')

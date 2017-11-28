@@ -22,7 +22,7 @@ function Benchmark(opts) {
 }
 
 Benchmark.prototype.add = function add(opts) {
-  var testOpts = {async: true}
+  var testOpts = {async: true, delay: 0.01}
   var mergedOpts = copy.shallow(this._opts)
   var agent = null
   copy.shallow(opts, mergedOpts)
@@ -61,11 +61,15 @@ Benchmark.prototype.add = function add(opts) {
     if (mergedOpts.agent) {
       helper.unloadAgent(agent)
     }
+
+    if (global.gc) {
+      global.gc()
+    }
   }
 
   this._suite.add(opts.name, testOpts)
 }
 
 Benchmark.prototype.run = function run() {
-  this._suite.run()
+  this._suite.run({async: true})
 }
