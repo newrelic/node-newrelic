@@ -1,3 +1,18 @@
+### 2.4.1 (2017-11-28):
+* Added promise benchmarks to test non-async_hooks instrumentation.
+
+* Added logging for external calls made outside of a transaction.
+
+* Added logging for when `unhandledRejection` is noticed.
+
+* Improved performance of creating and merging metrics.
+
+* Improved performance of `tracer.bindFunction`.
+
+* Moved `require` calls for vendor metadata to module-level.
+
+* Removed try-catch around internal property setting on older versions of Node.
+
 ### 2.4.0 (2017-11-15):
 * Instrumentation will now only modify the arity of wrapped functions when needed.
 
