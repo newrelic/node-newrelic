@@ -32,6 +32,28 @@ describe('database query parser', function() {
       ps.collection.should.equal('dude')
       ps.query.should.equal('Select * from dude')
     })
+
+    it('should parse more interesting queries too', function() {
+      var sql = [
+        'SELECT P.postcode, ',
+        'P.suburb, ',
+        'R.region_state as state, ',
+        'PR.region_id , ',
+        'P.id ',
+        'FROM postcodes as P ',
+        'JOIN postcodes_regions as PR on PR.postcode = P.postcode ',
+        'join ref_region as R on PR.region_id = R.region_id ',
+        'join ref_state as S on S.state_id = R.region_state ',
+        'WHERE S.state_code = ? ',
+        'AND P.suburb_seo_key = ? ',
+        'LIMIT 1'
+      ].join('\n')
+      var ps = parseSql(sql)
+      expect(ps).to.exist()
+      expect(ps).to.have.property('operation', 'select')
+      expect(ps).to.have.property('collection', 'postcodes')
+      expect(ps).to.have.property('query', sql)
+    })
   })
 
   describe('DELETE SQL', function() {
