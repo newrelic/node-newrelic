@@ -1,9 +1,10 @@
 'use strict'
 
-var chai     = require('chai')
-var should   = chai.should()
-var expect   = chai.expect
+var chai = require('chai')
+var should = chai.should()
+var expect = chai.expect
 var parseSql = require('../../../../lib/db/query-parsers/sql')
+var CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
 
 describe('database query parser', function() {
@@ -106,4 +107,36 @@ describe('database query parser', function() {
       expect(ps.query).equal('')
     })
   })
+
+  describe('CAT', function() {
+    CATs.forEach(function(cat) {
+      describe(clean(cat.input), function() {
+        var ps = null
+
+        before(function() {
+          ps = parseSql(cat.input)
+        })
+
+        it('should parse the operation as ' + cat.operation, function() {
+          expect(ps).to.have.property('operation', cat.operation)
+        })
+
+        if (cat.table === '(subquery)') {
+          it('should parse subquery collections as ' + cat.table)
+        } else {
+          it('should parse the collection as ' + cat.table, function() {
+            expect(ps).to.have.property('collection', cat.table)
+          })
+        }
+      })
+    })
+  })
 })
+
+function clean(sql) {
+  return '"' + sql
+    .replace(/\n/gm, '\\n')
+    .replace(/\r/gm, '\\r')
+    .replace(/\t/gm, '\\t')
+    + '"'
+}
