@@ -1,13 +1,12 @@
 'use strict'
 
 var chai     = require('chai')
-  , should   = chai.should()
-  , expect   = chai.expect
-  , parseSql = require('../../../../lib/db/query-parsers/sql')
+var should   = chai.should()
+var expect   = chai.expect
+var parseSql = require('../../../../lib/db/query-parsers/sql')
 
 
-describe('database query parser', function () {
-
+describe('database query parser', function() {
   it("should accept query as a string", function() {
     var ps = parseSql("select * from someTable")
     ps.query.should.equal('select * from someTable')
@@ -20,8 +19,8 @@ describe('database query parser', function () {
     ps.query.should.equal('select * from someTable')
   })
 
-  describe('SELECT SQL', function () {
-    it("should parse a simple query", function () {
+  describe('SELECT SQL', function() {
+    it("should parse a simple query", function() {
       var ps = parseSql("Select * from dude")
       should.exist(ps)
 
@@ -34,8 +33,8 @@ describe('database query parser', function () {
     })
   })
 
-  describe('DELETE SQL', function () {
-    it("should parse a simple command", function () {
+  describe('DELETE SQL', function() {
+    it("should parse a simple command", function() {
       var ps = parseSql("DELETE\nfrom dude")
       should.exist(ps)
 
@@ -47,7 +46,7 @@ describe('database query parser', function () {
       ps.query.should.equal('DELETE\nfrom dude')
     })
 
-    it("should parse a command with conditions", function () {
+    it("should parse a command with conditions", function() {
       var ps = parseSql("DELETE\nfrom dude where name = 'man'")
       should.exist(ps)
 
@@ -60,8 +59,8 @@ describe('database query parser', function () {
     })
   })
 
-  describe('UPDATE SQL', function () {
-    it("should parse a command with gratuitous white space and conditions", function () {
+  describe('UPDATE SQL', function() {
+    it("should parse a command with gratuitous white space and conditions", function() {
       var ps = parseSql("  update test set value = 1 where id = 12")
       should.exist(ps)
 
@@ -74,8 +73,8 @@ describe('database query parser', function () {
     })
   })
 
-  describe('INSERT SQL', function () {
-    it("should parse a command with a subquery", function () {
+  describe('INSERT SQL', function() {
+    it("should parse a command with a subquery", function() {
       var ps = parseSql("  insert into\ntest\nselect * from dude")
       should.exist(ps)
 
@@ -88,8 +87,8 @@ describe('database query parser', function () {
     })
   })
 
-  describe('invalid SQL', function () {
-    it("should return 'other' when handed garbage", function () {
+  describe('invalid SQL', function() {
+    it("should return 'other' when handed garbage", function() {
       var ps = parseSql("  bulge into\ndudes\nselect * from dude")
       should.exist(ps)
       ps.operation.should.equal('other')
@@ -97,7 +96,7 @@ describe('database query parser', function () {
       ps.query.should.equal('bulge into\ndudes\nselect * from dude')
     })
 
-    it("should return 'other' when handed an object", function () {
+    it("should return 'other' when handed an object", function() {
       var ps = parseSql({
         key: 'value'
       })
