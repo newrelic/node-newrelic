@@ -133,11 +133,7 @@ describe('database query parser', function() {
   describe('CAT', function() {
     CATs.forEach(function(cat) {
       describe(clean(cat.input), function() {
-        var ps = null
-
-        before(function() {
-          ps = parseSql(cat.input)
-        })
+        var ps = parseSql(cat.input)
 
         it('should parse the operation as ' + cat.operation, function() {
           expect(ps).to.have.property('operation', cat.operation)
@@ -145,6 +141,8 @@ describe('database query parser', function() {
 
         if (cat.table === '(subquery)') {
           it('should parse subquery collections as ' + cat.table)
+        } else if (/\w+\.\w+/.test(ps.collection)) {
+          it('should strip database names from collection names as ' + cat.table)
         } else {
           it('should parse the collection as ' + cat.table, function() {
             expect(ps).to.have.property('collection', cat.table)
