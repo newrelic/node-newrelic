@@ -164,10 +164,10 @@ describe('Shim', function() {
     })
 
     it('should match the arity and name of the original when specified', function() {
-      function toWrap(a, b) {}
+      function toWrap(a, b) {} // eslint-disable-line no-unused-vars
       var wrapped = shim.wrap(toWrap, {
-        wrapper: function () {
-          return function wrapped() {
+        wrapper: function() {
+          return function wrappedFn() {
           }
         },
         matchArity: true
