@@ -6,5 +6,6 @@
   "https-proxy-agent": "MIT",
   "json-stringify-safe": "ISC",
   "readable-stream": "MIT",
-  "semver": "ISC"
+  "semver": "ISC",
+  "sqlstring": "MIT"
 }
