@@ -716,7 +716,7 @@ test('when using a regular expression in path', function(t) {
     checkSegments(t, transaction.trace.root.children[0], [
       NAMES.EXPRESS.MIDDLEWARE + 'query',
       NAMES.EXPRESS.MIDDLEWARE + 'expressInit',
-      'Expressjs/Route Path: //a/', [
+      'Expressjs/Route Path: /a/', [
         NAMES.EXPRESS.MIDDLEWARE + 'myHandler'
       ]
     ], assertSegmentsOptions)
