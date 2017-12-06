@@ -655,11 +655,11 @@ describe('WebFrameworkShim', function() {
               wrapped(req)
             } catch (err) {
               expect(txInfo).to.have.property('error', err)
-              expect(txInfo).to.have.property('errorHandled', false)
+              expect(txInfo).to.have.property('errorHandled').that.is.not.ok()
 
               errorware(err, req)
               expect(txInfo).to.have.property('error', err)
-              expect(txInfo).to.have.property('errorHandled', true)
+              expect(txInfo).to.have.property('errorHandled').that.is.ok()
             }
           })
         })

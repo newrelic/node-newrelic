@@ -9,9 +9,19 @@ var Transaction = require('../../lib/transaction')
 
 
 describe('TraceSegment', function() {
+  var agent = null
+
+  beforeEach(function() {
+    agent = helper.loadMockedAgent()
+  })
+
+  afterEach(function() {
+    helper.unloadAgent(agent)
+    agent = null
+  })
+
   it('should be bound to a Trace', function() {
     var segment = null
-    var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     expect(function noTrace() {
       segment = new TraceSegment(null, 'UnitTest')
@@ -21,11 +31,9 @@ describe('TraceSegment', function() {
     var success = new TraceSegment(trans, 'UnitTest')
     expect(success.transaction).equal(trans)
     trans.end()
-    helper.unloadAgent(agent)
   })
 
   it('should call an optional callback function', function(done) {
-    var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     expect(function noCallback() {
       new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
@@ -34,7 +42,6 @@ describe('TraceSegment', function() {
     var working = new TraceSegment(trans, 'UnitTest', callback)
 
     function callback() {
-      helper.unloadAgent(agent)
       return done()
     }
 
@@ -42,43 +49,32 @@ describe('TraceSegment', function() {
     trans.end()
   })
 
-  it('has a name', function () {
-    var agent = helper.loadMockedAgent()
+  it('has a name', function() {
     var trans = new Transaction(agent)
-    expect(function noName() {
-      new TraceSegment(trans)
-    }).throws()
+
     var success = new TraceSegment(trans, 'UnitTest')
     expect(success.name).equal('UnitTest')
-    helper.unloadAgent(agent)
   })
 
-  it('is created with no children', function () {
-    var agent = helper.loadMockedAgent()
+  it('is created with no children', function() {
     var trans = new Transaction(agent)
     var segment = new TraceSegment(trans, 'UnitTest')
     expect(segment.children.length).equal(0)
-    helper.unloadAgent(agent)
   })
 
-  it('has a timer', function () {
-    var agent = helper.loadMockedAgent()
+  it('has a timer', function() {
     var trans = new Transaction(agent)
     var segment = new TraceSegment(trans, 'UnitTest')
     should.exist(segment.timer)
-    helper.unloadAgent(agent)
   })
 
-  it('does not start its timer on creation', function () {
-    var agent = helper.loadMockedAgent()
+  it('does not start its timer on creation', function() {
     var trans = new Transaction(agent)
     var segment = new TraceSegment(trans, 'UnitTest')
     expect(segment.timer.isRunning()).equal(false)
-    helper.unloadAgent(agent)
   })
 
-  it('allows the timer to be updated without ending it', function () {
-    var agent = helper.loadMockedAgent()
+  it('allows the timer to be updated without ending it', function() {
     var trans = new Transaction(agent)
 
     var segment = new TraceSegment(trans, 'UnitTest')
@@ -86,19 +82,12 @@ describe('TraceSegment', function() {
     segment.touch()
     expect(segment.timer.isRunning()).equal(true)
     expect(segment.getDurationInMillis()).above(0)
-
-    helper.unloadAgent(agent)
   })
 
-  it('accepts a callback that records metrics associated with this segment',
-     function (done) {
-
-    var agent = helper.loadMockedAgent()
+  it('accepts a callback that records metrics for this segment', function(done) {
     var trans = new Transaction(agent)
-    var trace = trans.trace
-    var segment = new TraceSegment(trans, 'Test', function (insider) {
+    var segment = new TraceSegment(trans, 'Test', function(insider) {
       expect(insider).equal(segment)
-      helper.unloadAgent(agent)
       return done()
     })
 
@@ -107,7 +96,6 @@ describe('TraceSegment', function() {
   })
 
   it('updates root segment timer when end() is called', function(done) {
-    var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
     var trace = trans.trace
     var segment = new TraceSegment(trans, 'Test')
@@ -119,13 +107,11 @@ describe('TraceSegment', function() {
       segment.end()
       expect(trace.root.timer.getDurationInMillis())
         .to.be.above(segment.timer.getDurationInMillis() - 1) // alow for slop
-      helper.unloadAgent(agent)
       done()
     }, 10)
   })
 
-  it('properly tracks the number of segments that are active and harvested', function(done) {
-    var agent = helper.loadMockedAgent()
+  it('properly tracks the number of active or harvested segments', function(done) {
     expect(agent.activeTransactions).to.equal(0)
     expect(agent.totalActiveSegments).to.equal(0)
     expect(agent.segmentsCreatedInHarvest).to.equal(0)
@@ -136,18 +122,17 @@ describe('TraceSegment', function() {
     expect(tx.numSegments).to.equal(1)
     expect(agent.activeTransactions).to.equal(1)
 
-    var segment = new TraceSegment(tx, 'Test')
+    var segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
     expect(agent.totalActiveSegments).to.equal(2)
     expect(agent.segmentsCreatedInHarvest).to.equal(2)
     expect(tx.numSegments).to.equal(2)
     tx.end()
 
-    setTimeout(function () {
+    setTimeout(function() {
       expect(agent.totalActiveSegments).to.equal(0)
       expect(agent.segmentsClearedInHarvest).to.equal(2)
-      agent.harvest(function () {
-        helper.unloadAgent(agent)
-        agent.harvest(function () {
+      agent.harvest(function() {
+        agent.harvest(function() {
           expect(agent.totalActiveSegments).to.equal(0)
           expect(agent.segmentsClearedInHarvest).to.equal(0)
           expect(agent.segmentsCreatedInHarvest).to.equal(0)
@@ -157,11 +142,10 @@ describe('TraceSegment', function() {
     }, 10)
   })
 
-  describe('with children created from URLs', function () {
-    var webChild, agent
+  describe('with children created from URLs', function() {
+    var webChild
 
-    before(function () {
-      agent = helper.loadMockedAgent()
+    beforeEach(function() {
       agent.config.capture_params = true
 
       var transaction = new Transaction(agent)
@@ -178,32 +162,28 @@ describe('TraceSegment', function() {
       webChild.setDurationInMillis(1, 0)
     })
 
-    after(function () {
-      helper.unloadAgent(agent)
-    })
-
-    it('should return the URL minus any query parameters', function () {
+    it('should return the URL minus any query parameters', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the child segment', function () {
+    it('should have parameters on the child segment', function() {
       should.exist(webChild.parameters)
     })
 
-    it('should have the parameters that were passed in the query string', function () {
+    it('should have the parameters that were passed in the query string', function() {
       expect(webChild.parameters.test1).equal('value1')
       expect(webChild.parameters.test3).equal('50')
     })
 
-    it('should set bare parameters to true (as in present)', function () {
+    it('should set bare parameters to true (as in present)', function() {
       expect(webChild.parameters.test2).equal(true)
     })
 
-    it('should set parameters with empty values to ""', function () {
+    it('should set parameters with empty values to ""', function() {
       expect(webChild.parameters.test4).equal('')
     })
 
-    it('should serialize the segment with the parameters', function () {
+    it('should serialize the segment with the parameters', function() {
       var expected = [
         0,
         1,
@@ -221,11 +201,10 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with parameters parsed out by framework', function () {
-    var webChild, agent, trace
+  describe('with parameters parsed out by framework', function() {
+    var webChild, trace
 
-    before(function () {
-      agent = helper.loadMockedAgent()
+    beforeEach(function() {
       agent.config.capture_params = true
 
       var transaction = new Transaction(agent)
@@ -250,28 +229,24 @@ describe('TraceSegment', function() {
       webChild.setDurationInMillis(1, 0)
     })
 
-    after(function () {
-      helper.unloadAgent(agent)
-    })
-
-    it('should return the URL minus any query parameters', function () {
+    it('should return the URL minus any query parameters', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the trace', function () {
+    it('should have parameters on the trace', function() {
       should.exist(trace.parameters)
     })
 
-    it('should have the positional parameters from the params array', function () {
+    it('should have the positional parameters from the params array', function() {
       expect(trace.parameters[0]).equal('first')
       expect(trace.parameters[1]).equal('another')
     })
 
-    it('should have the named parameter from the params array', function () {
+    it('should have the named parameter from the params array', function() {
       expect(trace.parameters.test3).equal('50')
     })
 
-    it('should serialize the segment with the parameters', function () {
+    it('should serialize the segment with the parameters', function() {
       var expected = [
         0,
         1,
@@ -288,11 +263,10 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with capture_params disabled', function () {
-    var webChild, agent
+  describe('with capture_params disabled', function() {
+    var webChild
 
-    before(function () {
-      agent = helper.loadMockedAgent()
+    beforeEach(function() {
       agent.config.capture_params = false
 
       var transaction = new Transaction(agent)
@@ -309,19 +283,15 @@ describe('TraceSegment', function() {
       webChild.setDurationInMillis(1, 0)
     })
 
-    after(function () {
-      helper.unloadAgent(agent)
-    })
-
-    it('should return the URL minus any query parameters', function () {
+    it('should return the URL minus any query parameters', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the child segment', function () {
+    it('should have parameters on the child segment', function() {
       expect(webChild.parameters).eql({nr_exclusive_duration_millis : null})
     })
 
-    it('should serialize the segment without the parameters', function () {
+    it('should serialize the segment without the parameters', function() {
       var expected = [
         0,
         1,
@@ -333,11 +303,10 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with capture_params enabled and ignored_params set', function () {
-    var webChild, agent
+  describe('with capture_params enabled and ignored_params set', function() {
+    var webChild
 
-    before(function () {
-      agent = helper.loadMockedAgent()
+    beforeEach(function() {
       agent.config.capture_params = true
       agent.config.ignored_params = ['test1', 'test4']
 
@@ -355,33 +324,29 @@ describe('TraceSegment', function() {
       webChild.setDurationInMillis(1, 0)
     })
 
-    after(function () {
-      helper.unloadAgent(agent)
-    })
-
-    it('should return the URL minus any query parameters', function () {
+    it('should return the URL minus any query parameters', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the child segment', function () {
+    it('should have parameters on the child segment', function() {
       should.exist(webChild.parameters)
     })
 
     it('should have filtered the parameters that were passed in the query string',
-       function () {
+       function() {
       should.not.exist(webChild.parameters.test1)
       expect(webChild.parameters.test3).equal('50')
     })
 
-    it('should set bare parameters to true (as in present)', function () {
+    it('should set bare parameters to true (as in present)', function() {
       expect(webChild.parameters.test2).equal(true)
     })
 
-    it('should not have filtered parameter', function () {
+    it('should not have filtered parameter', function() {
       should.not.exist(webChild.parameters.test4)
     })
 
-    it('should serialize the segment with the parameters', function () {
+    it('should serialize the segment with the parameters', function() {
       var expected = [
         0,
         1,
@@ -400,23 +365,19 @@ describe('TraceSegment', function() {
   it('should retain any associated SQL statements')
   it('should allow an arbitrary number of segments in the scope of this segment')
 
-  describe('when ended', function () {
-    it('stops its timer', function () {
-      var agent = helper.loadMockedAgent()
+  describe('when ended', function() {
+    it('stops its timer', function() {
       var trans = new Transaction(agent)
 
       var segment = new TraceSegment(trans, 'UnitTest')
       segment.end()
       expect(segment.timer.isRunning()).equal(false)
-
-      helper.unloadAgent(agent)
     })
 
     it('knows its exclusive duration')
     it('produces human-readable JSON')
 
-    it('should produce JSON that conforms to the collector spec', function () {
-      var agent = helper.loadMockedAgent()
+    it('should produce JSON that conforms to the collector spec', function() {
       var transaction = new Transaction(agent)
       var trace = transaction.trace
       var segment = new TraceSegment(transaction, 'DB/select/getSome')
@@ -431,24 +392,19 @@ describe('TraceSegment', function() {
        {nr_exclusive_duration_millis : 14},
        []
       ])
-      helper.unloadAgent(agent)
     })
   })
 
   describe('when serialized', function() {
-    var agent = null
     var trans = null
     var segment = null
 
     beforeEach(function() {
-      agent = helper.loadMockedAgent()
       trans = new Transaction(agent)
       segment = new TraceSegment(trans, 'UnitTest')
     })
 
     afterEach(function() {
-      helper.unloadAgent(agent)
-      agent = null
       trans = null
       segment = null
     })
