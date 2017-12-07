@@ -6,6 +6,7 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var Promise = global.Promise || require('bluebird')
 var semver = require('semver')
+var sinon = require('sinon')
 var Shim = require('../../../lib/shim/shim')
 
 
@@ -1418,10 +1419,16 @@ describe('Shim', function() {
   })
 
   describe('#storeSegment', function() {
-    it('should set a non-enumerable property on the object', function() {
-      var keys = Object.keys(wrappable)
-      shim.storeSegment(wrappable, {})
-      expect(Object.keys(wrappable)).to.deep.equal(keys)
+    describe('when hide_internals is true', function() {
+      beforeEach(function() {
+        agent.config.transaction_tracer.hide_internals = true
+      })
+
+      it('should set a non-enumerable property on the object', function() {
+        var keys = Object.keys(wrappable)
+        shim.storeSegment(wrappable, {})
+        expect(Object.keys(wrappable)).to.deep.equal(keys)
+      })
     })
 
     it('should store the segment on the object', function() {
@@ -1903,51 +1910,125 @@ describe('Shim', function() {
   })
 
   describe('#setInternalProperty', function() {
-    it('should create a writable, non-enumerable value property', function() {
-      // Non enumerable
-      var obj = {}
-      shim.setInternalProperty(obj, 'foo', 'bar')
-      expect(obj).to.have.property('foo', 'bar')
-      expect(Object.keys(obj)).to.not.include('foo')
-
-      // Writable
-      expect(function() {
-        obj.foo = 'fizbang'
-      }).to.not.throw()
-      expect(obj).to.have.property('foo', 'fizbang')
-      expect(Object.keys(obj)).to.not.include('foo')
+    beforeEach(function() {
+      sinon.spy(Object, 'defineProperty')
     })
 
-    it('should not throw if the object has been frozen', function() {
-      var obj = {}
-      Object.freeze(obj)
-
-      /* eslint-disable strict */
-      expect(function() {
-        'use strict'
-        obj.fiz = 'bang'
-      }).to.throw()
-      /* eslint-enable strict */
-
-      expect(function() {
-        shim.setInternalProperty(obj, 'foo', 'bar')
-      }).to.not.throw()
+    afterEach(function() {
+      Object.defineProperty.restore()
     })
 
-    it('should not throw if the property has been sealed', function() {
-      var obj = {}
-      Object.seal(obj)
+    describe('when hide_internals is true', function() {
+      beforeEach(function() {
+        agent.config.transaction_tracer.hide_internals = true
+      })
 
-      /* eslint-disable strict */
-      expect(function() {
-        'use strict'
-        obj.fiz = 'bang'
-      }).to.throw()
-      /* eslint-enable strict */
-
-      expect(function() {
+      it('should create a writable, non-enumerable value property', function() {
+        // Non enumerable
+        var obj = {}
         shim.setInternalProperty(obj, 'foo', 'bar')
-      }).to.not.throw()
+        expect(obj).to.have.property('foo', 'bar')
+        expect(Object.keys(obj)).to.not.include('foo')
+
+        // Writable
+        expect(function() {
+          obj.foo = 'fizbang'
+        }).to.not.throw()
+        expect(obj).to.have.property('foo', 'fizbang')
+        expect(Object.keys(obj)).to.not.include('foo')
+      })
+
+      it('should not throw if the object has been frozen', function() {
+        var obj = {}
+        Object.freeze(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
+
+      it('should not throw if the property has been sealed', function() {
+        var obj = {}
+        Object.seal(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
+    })
+
+    describe('when hide_internals is false', function() {
+      beforeEach(function() {
+        agent.config.transaction_tracer.hide_internals = false
+      })
+
+      it('should create a writable, enumerable value property', function() {
+        // Enumerable
+        var obj = {}
+        shim.setInternalProperty(obj, 'foo', 'bar')
+        expect(obj).to.have.property('foo', 'bar')
+        expect(Object.keys(obj)).to.include('foo')
+
+        // Writable
+        expect(function() {
+          obj.foo = 'fizbang'
+        }).to.not.throw()
+        expect(obj).to.have.property('foo', 'fizbang')
+        expect(Object.keys(obj)).to.include('foo')
+      })
+
+      it('should not use defineProperty', function() {
+        var obj = {}
+        shim.setInternalProperty(obj, 'foo', 'bar')
+
+        expect(Object.defineProperty.calledOnce).to.be.false()
+      })
+
+      it('should not throw if the object has been frozen', function() {
+        var obj = {}
+        Object.freeze(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
+
+      it('should not throw if the property has been sealed', function() {
+        var obj = {}
+        Object.seal(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
     })
   })
 
