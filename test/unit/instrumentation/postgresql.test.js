@@ -1,28 +1,26 @@
 'use strict'
 
-var path   = require('path')
 var chai   = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var DatastoreShim = require('../../../lib/shim/datastore-shim.js')
 
-describe("agent instrumentation of PostgreSQL", function () {
-  var agent
-  var initialize
-  var shim
+describe("agent instrumentation of PostgreSQL", function() {
+  var agent = null
+  var initialize = null
+  var shim = null
 
-  before(function () {
+  before(function() {
     agent = helper.loadMockedAgent()
     initialize = require('../../../lib/instrumentation/pg')
   })
 
-  after(function () {
+  after(function() {
     helper.unloadAgent(agent)
   })
 
   describe("lazy loading of native PG client", function() {
-
-    before(function () {
+    before(function() {
       shim = new DatastoreShim(agent, 'postgres')
     })
 
@@ -68,7 +66,7 @@ describe("agent instrumentation of PostgreSQL", function () {
       initialize(agent, mockPg, 'pg', shim)
 
       var pg = mockPg.native
-      expect(pg.Client['__NR_original'].name).equal('NativeClient')
+      expect(pg.Client.__NR_original.name).equal('NativeClient')
 
       var pg = mockPg
       expect(pg.Client.name).equal('DefaultClient')
@@ -100,13 +98,13 @@ describe("agent instrumentation of PostgreSQL", function () {
 
       initialize(agent, mockPg, 'pg', shim)
       var nativeClient = mockPg.native
-      expect(nativeClient.Client['__NR_original'].name).equal('NativeClient')
+      expect(nativeClient.Client.__NR_original.name).equal('NativeClient')
       var defaultClient = mockPg
       expect(defaultClient.Client.name).equal('DefaultClient')
 
       initialize(agent, mockPg, 'pg', shim)
       var nativeClient = mockPg.native
-      expect(nativeClient.Client['__NR_original'].name).equal('NativeClient')
+      expect(nativeClient.Client.__NR_original.name).equal('NativeClient')
       var defaultClient = mockPg
       expect(defaultClient.Client.name).equal('DefaultClient')
     })
@@ -117,19 +115,19 @@ describe("agent instrumentation of PostgreSQL", function () {
       // instrument once
       initialize(agent, mockPg, 'pg', shim)
       var pg1 = mockPg.native
-      expect(pg1.Client['__NR_original'].name).equal('NativeClient')
+      expect(pg1.Client.__NR_original.name).equal('NativeClient')
 
       // simulate deleting from module cache
       mockPg = getMockModule()
       initialize(agent, mockPg, 'pg', shim)
       var pg2 = mockPg.native
-      expect(pg2.Client['__NR_original'].name).equal('NativeClient')
+      expect(pg2.Client.__NR_original.name).equal('NativeClient')
 
       expect(pg1).not.equal(pg2)
     })
   })
 
-  describe("for each operation", function () {
+  describe("for each operation", function() {
     it("should update the global database aggregate statistics")
     it("should also update the global web aggregate statistics")
     it("should update the aggregate statistics for the operation type")
@@ -137,7 +135,7 @@ describe("agent instrumentation of PostgreSQL", function () {
     it("should update the scoped aggregate statistics for the operation type")
   })
 
-  describe("should instrument", function () {
+  describe("should instrument", function() {
     it("INSERT")
     it("SELECT")
     it("UPDATE")
