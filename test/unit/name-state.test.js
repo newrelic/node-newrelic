@@ -50,6 +50,7 @@ describe('NameState', function() {
     state.appendPath(/regex2/)
     state.appendPath('path2')
 
+    expect(state.getPath()).to.equal('/regex1/path1/regex2/path2')
     expect(state.getName()).to.equal('Nodejs/GET//regex1/path1/regex2/path2')
   })
 })

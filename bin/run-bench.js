@@ -11,15 +11,19 @@ var benchpath = path.resolve(cwd, 'test/benchmark')
 
 var tests = []
 var globs = []
+var opts = Object.create(null)
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
-  if (/[*]/.test(file)) {
+  if (/^--/.test(file)) {
+    opts[file.substr(2)] = true
+  } else if (/[*]/.test(file)) {
     globs.push(path.join(benchpath, file))
   } else if (/\.bench\.js$/.test(file)) {
     tests.push(path.join(benchpath, file))
   } else {
     globs.push(
       path.join(benchpath, file, '*.bench.js'),
+      path.join(benchpath, file + '*.bench.js'),
       path.join(benchpath, file, '**/*.bench.js')
     )
   }
@@ -60,7 +64,11 @@ a.series([
       var test = path.relative(benchpath, file)
 
       console.log(test)
-      var child = cp.spawn('node', ['--expose-gc', file], {cwd: cwd, stdio: 'inherit'})
+      var args = ['--expose-gc', file]
+      if (opts.inspect) {
+        args.unshift('--inspect-brk')
+      }
+      var child = cp.spawn('node', args, {cwd: cwd, stdio: 'inherit'})
       child.on('error', cb)
       child.on('exit', function onChildExit(code) {
         console.log('')
