@@ -65,6 +65,7 @@ function runTests(t, agent, Promise, library) {
 
     t.test(name + ': does not cause JSON to crash', function(t) {
       t.plan(1 * COUNT + 1)
+      agent.config.transaction_tracer.hide_internals = true
 
       runMultiple(COUNT, function(i, cb) {
         if (inTx) {
