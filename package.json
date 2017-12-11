@@ -78,6 +78,11 @@
       "name": "Seth Shober",
       "email": "sshober@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Peter Svetlichny",
+      "email": "psvetlichny@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
@@ -118,13 +123,11 @@
   "devDependencies": {
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
-    "chai": "^1.10.0",
-    "eslint": "^4.12.1",
+    "eslint": "^2.9.0",
     "glob": "^7.1.2",
     "jsdoc": "^3.4.0",
     "minami": "^1.1.1",
     "mocha": "^3.5.3",
-    "nock": "^9.0.14",
     "request": "2.81.0",
     "rimraf": "^2.6.2",
     "sinon": "^3.3.0",
