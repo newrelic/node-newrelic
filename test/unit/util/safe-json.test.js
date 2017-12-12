@@ -1,48 +1,9 @@
 'use strict'
 
 var safeJSON = require('../../../lib/util/safe-json')
-var stringify = safeJSON.stringify
-var stringifySync = safeJSON.stringifySync
 var parse = safeJSON.parse
 var chai = require('chai')
 var expect = chai.expect
-
-describe('stringifier', function stringifierTest() {
-  it('should stringify objects', function(done) {
-    var obj = {a: 1, b: 2}
-    stringify(obj, function cb_stringify(err, stringified) {
-      expect(err).equal(null)
-      expect(stringified).equal('{"a":1,"b":2}')
-      done()
-    })
-  })
-
-  it('should fail gracefully on unstringifiable objects', function(done) {
-    var badObj = {
-      get testData () {
-        throw new Error()
-      }
-    }
-    stringify(badObj, function cb_stringify(err, stringified){
-      expect(err).not.equal(null)
-      expect(stringified).equal('[UNPARSABLE OBJECT]')
-      done()
-    })
-  })
-
-  it('should invoke the callback synchronously', function() {
-    var obj = {a: 1, b: 2}
-    var shouldBeChanged = false
-
-    stringify(obj, function cb_stringify(err, stringified) {
-      expect(err).equal(null)
-      expect(stringified).equal('{"a":1,"b":2}')
-      shouldBeChanged = true
-    })
-
-    expect(shouldBeChanged).equal(true)
-  })
-})
 
 describe('parser', function() {
   it('should parse json', function(done) {
@@ -65,43 +26,5 @@ describe('parser', function() {
       expect(obj).equal(null)
       done()
     })
-  })
-
-  it('should invoke the callback synchronously', function() {
-    var obj = {a: 1, b: 2}
-    var shouldBeChanged = false
-
-    stringify(obj, function cb_stringify(err, stringified) {
-      expect(err).equal(null)
-      expect(stringified).equal('{"a":1,"b":2}')
-      shouldBeChanged = true
-    })
-
-    expect(shouldBeChanged).equal(true)
-  })
-})
-
-describe('sync stringifier', function() {
-  it('should stringify objects', function() {
-    var obj = {a: 1, b: 2}
-    expect(stringifySync(obj)).equal('{"a":1,"b":2}')
-  })
-
-  it('should fail disgracefully on unstringifiable objects', function(){
-    var badObj = {
-      get testData () {
-        throw new Error()
-      }
-    }
-    expect(function () { stringifySync(badObj) }).to.throw()
-  })
-
-  it('should fail disgracefully on unstringifiable objects', function(){
-    var badObj = {
-      get testData () {
-        throw new Error()
-      }
-    }
-    expect(function () { stringifySync(badObj, 'On fail') }).to.throw()
   })
 })
