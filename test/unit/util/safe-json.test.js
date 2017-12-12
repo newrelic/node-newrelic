@@ -20,7 +20,7 @@ describe('stringifier', function stringifierTest() {
   it('should fail gracefully on unstringifiable objects', function(done) {
     var badObj = {
       get testData () {
-        throw new Exception()
+        throw new Error()
       }
     }
     stringify(badObj, function cb_stringify(err, stringified){
@@ -87,21 +87,21 @@ describe('sync stringifier', function() {
     expect(stringifySync(obj)).equal('{"a":1,"b":2}')
   })
 
-  it('should fail gracefully on unstringifiable objects', function(){
+  it('should fail disgracefully on unstringifiable objects', function(){
     var badObj = {
       get testData () {
-        throw new Exception()
+        throw new Error()
       }
     }
-    expect(stringifySync(badObj)).equal('[UNPARSABLE OBJECT]')
+    expect(function () { stringifySync(badObj) }).to.throw()
   })
 
-  it('should fail gracefully on unstringifiable objects', function(){
+  it('should fail disgracefully on unstringifiable objects', function(){
     var badObj = {
       get testData () {
-        throw new Exception()
+        throw new Error()
       }
     }
-    expect(stringifySync(badObj, 'On fail')).equal('On fail')
+    expect(function () { stringifySync(badObj, 'On fail') }).to.throw()
   })
 })
