@@ -1,3 +1,16 @@
+### 2.4.2 (2017-12-12):
+* Added Peter Svetlichny to the contributors list!
+
+* Optimized `NameState#getPath`.
+
+* Optimized `shim.record`.
+
+* Optimized `shim.recordMiddleware`.
+
+* Upgraded `eslint` to v4.
+
+* Fixed parsing SQL for queries containing newlines.
+
 ### 2.4.1 (2017-11-28):
 * Added promise benchmarks to test non-async_hooks instrumentation.
 
