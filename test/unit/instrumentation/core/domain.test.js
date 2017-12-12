@@ -8,13 +8,25 @@ var expect = chai.expect
 describe('Domains', function() {
   var agent = null
   var d = null
+  var tasks = []
+  var interval = null
 
   beforeEach(function() {
     agent = helper.instrumentMockedAgent()
+
+    // Starting on 9.3.0, calling `domain.exit` does not stop assertions in later
+    // tests from being caught in this domain. In order to get around that we
+    // are breaking out of the domain via a manual tasks queue.
+    interval = setInterval(function() {
+      while (tasks.length) {
+        tasks.pop()()
+      }
+    }, 10)
   })
 
   afterEach(function() {
     d && d.exit()
+    clearInterval(interval)
     helper.unloadAgent(agent)
   })
 
@@ -27,11 +39,11 @@ describe('Domains', function() {
     d = domain.create()
 
     var checkedTransaction
-    d.on('error', function(err) {
+    d.once('error', function(err) {
       expect(err).to.exist()
       expect(err.message).to.equal('whole new error!')
       expect(agent.getTransaction()).to.equal(checkedTransaction)
-      done()
+      tasks.push(done)
     })
 
     helper.runInTransaction(agent, function(transaction) {
