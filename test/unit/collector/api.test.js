@@ -711,9 +711,8 @@ describe("CollectorAPI", function() {
 
         before(function(done) {
           var redirectURL = generate('get_redirect_host')
-          var failure = nock(URL).post(redirectURL).times(1000).reply(503)
+          var failure = nock(URL).post(redirectURL).times(500).reply(503)
           var disconnect = nock(URL).post(redirectURL).times(1).reply(503, exception)
-
           api.connect(function test(error, response) {
             captured = error
             body = response

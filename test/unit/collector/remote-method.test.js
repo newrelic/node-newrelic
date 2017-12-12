@@ -6,7 +6,6 @@ var expect = chai.expect
 var should = chai.should()
 var Config = require('../../../lib/config')
 var RemoteMethod = require('../../../lib/collector/remote-method')
-var safeJSON = require('../../../lib/util/safe-json')
 var semver = require('semver')
 
 
@@ -61,16 +60,6 @@ describe("RemoteMethod", function() {
     })
 
     describe('with a bad payload', function() {
-      var original = safeJSON.stringifySync
-
-      before(function() {
-        safeJSON.stringifySync = JSON.stringify
-      })
-
-      after(function() {
-        safeJSON.stringifySync = original
-      })
-
       it('should catch serialization errors', function(done) {
         method.serialize({toJSON: function() {
           throw new Error('fake serialization error')
