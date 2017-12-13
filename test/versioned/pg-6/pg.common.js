@@ -9,7 +9,6 @@ var semver = require('semver')
 var test = tap.test
 var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
-
 module.exports = function runTests(name, clientFactory) {
   if (semver.satisfies(process.version, '<0.12.0')) {
     // PG v6 requires Promises.
@@ -20,10 +19,13 @@ module.exports = function runTests(name, clientFactory) {
   var TABLE = 'testTable'
   var PK = 'pk_column'
   var COL = 'test_column'
-  var CON_STRING =
-    'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@' +
-    params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db
-
+  var CON_OBJ = {
+    user: params.postgres_user,
+    password: params.postgres_pass,
+    host: params.postgres_host,
+    port: params.postgres_port,
+    database: params.postgres_db
+  }
 
   /**
    * Deletion of testing table if already exists,
@@ -34,7 +36,7 @@ module.exports = function runTests(name, clientFactory) {
    */
   function postgresSetup(runTest) {
     var pg = clientFactory()
-    var setupClient = new pg.Pool(CON_STRING)
+    var setupClient = new pg.Client(CON_OBJ)
 
     setupClient.connect(function(err) {
       if (err) {
@@ -204,7 +206,6 @@ module.exports = function runTests(name, clientFactory) {
 
     var agent
     var pg
-    var outerPool
 
     t.beforeEach(function(done) {
       // the pg module has `native` lazy getter that is removed after first call,
@@ -214,19 +215,17 @@ module.exports = function runTests(name, clientFactory) {
 
       agent = helper.instrumentMockedAgent()
       pg = clientFactory()
-      outerPool = new pg.Pool(CON_STRING)
 
       postgresSetup(done)
     })
 
     t.afterEach(function(done) {
-      outerPool.end()
       helper.unloadAgent(agent)
       done()
     })
 
     t.test('simple query with prepared statement', function(t) {
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -237,17 +236,17 @@ module.exports = function runTests(name, clientFactory) {
         var transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
-
+        
         var colVal = 'Hello'
         var pkVal = 111
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
-
+        
         client.connect(function(error) {
           if (!t.error(error)) {
             return t.end()
           }
-
+          
           client.query(insQuery, [pkVal, colVal], function(error, ok) {
             if (!t.error(error)) {
               return t.end()
@@ -279,7 +278,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test("simple query using query.on() events", function(t) {
       t.plan(35)
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -304,6 +303,7 @@ module.exports = function runTests(name, clientFactory) {
 
           var query = client.query(insQuery, [pkVal, colVal])
 
+          // Prints DeprecationWarning for pg@7 update
           query.on('error', function(err) {
             t.error(err, 'error while querying')
             t.end()
@@ -336,7 +336,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test("simple query using query.addListener() events", function(t) {
       t.plan(35)
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -391,7 +391,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(37)
+      t.plan(39)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -403,37 +403,30 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        outerPool.connect(function(error, clientPool, done) {
-          if (error) {
-            t.fail(error)
+        var pool = new pg.Pool(CON_OBJ)
+
+        pool.query(insQuery, function(error, ok) {
+          if (!t.error(error)) {
             return t.end()
           }
 
-          clientPool.query(insQuery, function(error, ok) {
-            if (error) {
-              t.fail(error)
+          t.ok(agent.getTransaction(), 'transaction should still be visible')
+          t.ok(ok, 'everything should be peachy after setting')
+
+          var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+          selQuery += PK + '=' + pkVal + ';'
+
+          pool.query(selQuery, function(error, value) {
+            if (!t.error(error)) {
               return t.end()
             }
 
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
-            t.ok(ok, 'everything should be peachy after setting')
+            t.ok(agent.getTransaction(), 'transaction should still still be visible')
+            t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
-
-            clientPool.query(selQuery, function(error, value) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-
-              t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
-
-              transaction.end(function() {
-                done()
-                verify(t, agent.tracer.getSegment())
-              })
+            transaction.end(function() {
+              pool.end()
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -500,7 +493,7 @@ module.exports = function runTests(name, clientFactory) {
     t.test("query using an config object with `text` getter instead of property",
         function(t) {
       t.plan(1)
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -556,7 +549,7 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
 
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -595,7 +588,7 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.datastore_tracer.instance_reporting.enabled = false
       agent.config.datastore_tracer.database_name_reporting.enabled = false
 
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -645,7 +638,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test('query.on should still be chainable', function(t) {
       t.plan(1)
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -670,7 +663,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test('query.on should create one segment for row events', function(t) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+        var client = new pg.Client(CON_OBJ)
         t.tearDown(function() {
           client.end()
         })
@@ -697,7 +690,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(1)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+        var client = new pg.Client(CON_OBJ)
 
         t.tearDown(function() {
           client.end()
@@ -732,7 +725,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(2)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+        var client = new pg.Client(CON_OBJ)
 
         t.tearDown(function() {
           client.end()
@@ -776,7 +769,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(2)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+        var client = new pg.Client(CON_OBJ)
 
         t.tearDown(function() {
           client.end()
