@@ -236,17 +236,17 @@ module.exports = function runTests(name, clientFactory) {
         var transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
-        
+
         var colVal = 'Hello'
         var pkVal = 111
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
-        
+
         client.connect(function(error) {
           if (!t.error(error)) {
             return t.end()
           }
-          
+
           client.query(insQuery, [pkVal, colVal], function(error, ok) {
             if (!t.error(error)) {
               return t.end()
@@ -447,15 +447,7 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        var config = {
-          host: params.postgres_host,
-          port: params.postgres_port,
-          user: params.postgres_user,
-          password: params.postgres_pass,
-          database: params.postgres_db
-        }
-
-        var pool = new pg.Pool(config)
+        var pool = new pg.Pool(CON_OBJ)
 
         pool.connect(function(error, client, done) {
           if (!t.error(error)) t.end()
