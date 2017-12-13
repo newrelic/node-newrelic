@@ -34,11 +34,11 @@ module.exports = function runTests(name, clientFactory) {
    */
   function postgresSetup(runTest) {
     var pg = clientFactory()
-    var setupClient = new pg.Client(CON_STRING)
+    var setupClient = new pg.Pool(CON_STRING)
 
-    setupClient.connect(function(error) {
-      if (error) {
-        throw error
+    setupClient.connect(function(err) {
+      if (err) {
+        throw err
       }
       var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE
 
@@ -204,6 +204,7 @@ module.exports = function runTests(name, clientFactory) {
 
     var agent
     var pg
+    var outerPool
 
     t.beforeEach(function(done) {
       // the pg module has `native` lazy getter that is removed after first call,
@@ -213,16 +214,14 @@ module.exports = function runTests(name, clientFactory) {
 
       agent = helper.instrumentMockedAgent()
       pg = clientFactory()
+      outerPool = new pg.Pool(CON_STRING)
 
       postgresSetup(done)
     })
 
     t.afterEach(function(done) {
+      outerPool.end()
       helper.unloadAgent(agent)
-
-      // close all clients in pool
-      pg.end()
-
       done()
     })
 
@@ -404,7 +403,7 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        pg.connect(CON_STRING, function(error, clientPool, done) {
+        outerPool.connect(function(error, clientPool, done) {
           if (error) {
             t.fail(error)
             return t.end()
