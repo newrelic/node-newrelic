@@ -6,7 +6,7 @@ var helper  = require('../../../lib/agent_helper')
 var expect = chai.expect
 
 if (global.Promise) {
-  describe('Unhandled rejection', function () {
+  describe('Unhandled rejection', function() {
     var agent = null
     var hasEvent = false
 
@@ -19,39 +19,39 @@ if (global.Promise) {
         hasEvent = true
       })
 
-      setTimeout(function(){
+      setTimeout(function() {
         agent = helper.instrumentMockedAgent()
         done()
       }, 15)
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should be associated with the transction if there is one', function(done){
-      helper.runInTransaction(agent, function (transaction) {
-        var rejected = Promise.reject('test rejection')
+    it('should be associated with the transction if there is one', function(done) {
+      helper.runInTransaction(agent, function(transaction) {
+        Promise.reject('test rejection')
 
-        setTimeout(function () {
+        setTimeout(function() {
           if (hasEvent) {
             expect(transaction.exceptions.length).to.equal(1)
             expect(transaction.exceptions[0][0]).to.equal('test rejection')
           }
-          done();
+          done()
         }, 15)
       })
     })
 
-    it('should not report it if there is another handler', function(done){
-      process.once('unhandledRejection', function(){})
+    it('should not report it if there is another handler', function(done) {
+      process.once('unhandledRejection', function() {})
 
-      helper.runInTransaction(agent, function (transaction) {
-        var rejected = Promise.reject('test rejection')
+      helper.runInTransaction(agent, function(transaction) {
+        Promise.reject('test rejection')
 
-        setTimeout(function () {
+        setTimeout(function() {
           expect(transaction.exceptions.length).to.equal(0)
-          done();
+          done()
         }, 15)
       })
     })
