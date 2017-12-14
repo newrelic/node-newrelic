@@ -576,9 +576,7 @@ describe('Shim', function() {
         shim.wrapClass(toWrap, 'Foo', {
           pre: function() {
             preExecuted = true
-            expect(this).to.not.have.property('executed')
-            expect(this).to.be.an.instanceOf(toWrap.Foo)
-            expect(this).to.be.an.instanceOf(original)
+            expect(this).to.be.null()
           },
           post: function() {
             postExecuted = true

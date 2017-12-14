@@ -205,7 +205,6 @@ module.exports = function runTests(name, clientFactory) {
 
     var agent
     var pg
-    var outerPool
 
     t.beforeEach(function(done) {
       // the pg module has `native` lazy getter that is removed after first call,
@@ -213,16 +212,18 @@ module.exports = function runTests(name, clientFactory) {
       var name = require.resolve('pg')
       delete require.cache[name]
 
-      agent = helper.instrumentMockedAgent()
-      pg = clientFactory()
-      outerPool = new pg.Pool(CON_OBJ)
+      try {
+        agent = helper.instrumentMockedAgent()
+        pg = clientFactory()
 
-      postgresSetup(done)
+        postgresSetup(done)
+      } catch (err) {
+        done(err)
+      }
     })
 
     t.afterEach(function(done) {
       helper.unloadAgent(agent)
-      outerPool.end()
       done()
     })
 
