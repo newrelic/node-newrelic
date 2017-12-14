@@ -1,0 +1,27 @@
+{
+  "name": "uninstrumented-tests",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "connect": "*",
+    "bluebird": "*",
+    "director": "*",
+    "express": "*",
+    "generic-pool": "*",
+    "hapi": "*",
+    "ioredis": "*",
+    "memcached": "*",
+    "mongodb": "*",
+    "mysql": "*",
+    "mysql2": "*",
+    "node-cassandra-cql": "*",
+    "cassandra-driver": "*",
+    "pg": "*",
+    "pg.js": "*",
+    "q": "*",
+    "redis": "*",
+    "restify": "*",
+    "oracle": "*",
+    "when": "*"
+  }
+}
