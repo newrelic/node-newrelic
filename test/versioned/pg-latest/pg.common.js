@@ -9,12 +9,13 @@ var semver = require('semver')
 var test = tap.test
 var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
-module.exports = function runTests(name, clientFactory) {
-  if (semver.satisfies(process.version, '<0.12.0')) {
-    // PG v6 requires Promises.
-    return
-  }
+// Latest pg (v7) does not work with instrumentation on node versions
+// below 5.0.0, due to necessary usage of rest/spread operators
+if (semver.satisfies(process.version, '<5.0.0')) {
+  process.exit(0)
+}
 
+module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
   var TABLE = 'testTable'
   var PK = 'pk_column'
