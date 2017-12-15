@@ -5,15 +5,8 @@ var tap = require('tap')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
-var semver = require('semver')
 var test = tap.test
 var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
-
-// Latest pg (v7) does not work with instrumentation on node versions
-// below 5.0.0, due to necessary usage of rest/spread operators
-if (semver.satisfies(process.version, '<5.0.0')) {
-  process.exit(0)
-}
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
