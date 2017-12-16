@@ -189,11 +189,16 @@ test('MySQL instrumentation with a connection pool and node-mysql 2.0+',
 
       t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
       t.equals(selectSegment.children[0].name, 'Callback: <anonymous>')
-      t.deepEqual(
-        selectSegment.children[0].children,
-        [],
-        'callback should not have children'
-      )
+      var grandChildren = selectSegment.children[0].children
+      if (grandChildren.length === 1) {
+        t.match(
+          grandChildren[0].name,
+          /timers\.setTimeout$/, // May be Truncated, hence matching the end of it.
+          'callback may have a timer as a child'
+        )
+      } else {
+        t.equal(grandChildren.length, 0, 'callback should not have children')
+      }
       t.end()
     }
   }.bind(this))
