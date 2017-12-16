@@ -5,16 +5,10 @@ var tap = require('tap')
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
 var findSegment = require('../../lib/metrics_helper').findSegment
-var semver = require('semver')
 var test = tap.test
 var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
 module.exports = function runTests(name, clientFactory) {
-  if (semver.satisfies(process.version, '<0.12.0')) {
-    // PG v6 requires Promises.
-    return
-  }
-
   // constants for table creation and db connection
   var TABLE = 'testTable'
   var PK = 'pk_column'
@@ -143,8 +137,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
              'should register the query call')
-    t.equals(segment.children.length, 0,
-             'get should leave us here at the end')
+    t.equals(segment.getCollectedChildren().length, 0, 'get should leave us here at the end')
 
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
@@ -213,10 +206,14 @@ module.exports = function runTests(name, clientFactory) {
       var name = require.resolve('pg')
       delete require.cache[name]
 
-      agent = helper.instrumentMockedAgent()
-      pg = clientFactory()
+      try {
+        agent = helper.instrumentMockedAgent()
+        pg = clientFactory()
 
-      postgresSetup(done)
+        postgresSetup(done)
+      } catch (err) {
+        done(err)
+      }
     })
 
     t.afterEach(function(done) {
@@ -301,7 +298,9 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query(insQuery, [pkVal, colVal])
+          var query = new pg.Query(insQuery, [pkVal, colVal])
+
+          client.query(query)
 
           // Prints DeprecationWarning for pg@7 update
           query.on('error', function(err) {
@@ -315,7 +314,9 @@ module.exports = function runTests(name, clientFactory) {
             var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            var query = client.query(selQuery)
+            var query = new pg.Query(selQuery)
+
+            client.query(query)
 
             query.on('error', function(err) {
               t.error(err, 'error while querying')
@@ -359,7 +360,9 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query(insQuery, [pkVal, colVal])
+          var query = new pg.Query(insQuery, [pkVal, colVal])
+
+          client.query(query)
 
           query.addListener('error', function(err) {
             t.error(err, 'error while querying')
@@ -371,7 +374,9 @@ module.exports = function runTests(name, clientFactory) {
             var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            var query = client.query(selQuery)
+            var query = new pg.Query(selQuery)
+
+            client.query(query)
 
             query.addListener('error', function(err) {
               t.error(err, 'error while querying')
@@ -471,9 +476,9 @@ module.exports = function runTests(name, clientFactory) {
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end(function() {
+                verify(t, agent.tracer.getSegment())
                 done()
                 pool.end()
-                verify(t, agent.tracer.getSegment())
               })
             })
           })
@@ -642,7 +647,8 @@ module.exports = function runTests(name, clientFactory) {
           return t.end()
         }
 
-        var query = client.query('SELECT table_name FROM information_schema.tables')
+        var query = new pg.Query('SELECT table_name FROM information_schema.tables')
+        client.query(query)
 
         query.on('error', function(err) {
           t.error(err, 'error while querying')
@@ -665,7 +671,9 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT table_name FROM information_schema.tables')
+          var query = new pg.Query('SELECT table_name FROM information_schema.tables')
+          client.query(query)
+
           query.on('row', function onRow() {})
           query.on('end', function ended() {
             var segment = findSegment(tx.trace.root,
@@ -694,7 +702,9 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT table_name FROM information_schema.tables')
+          var query = new pg.Query('SELECT table_name FROM information_schema.tables')
+
+          client.query(query)
 
           query.addListener('error', function(err) {
             t.error(err, 'error while querying')
@@ -729,7 +739,9 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT * FROM generate_series(0, 9)')
+          var query = new pg.Query('SELECT * FROM generate_series(0, 9)')
+
+          client.query(query)
 
           query.on('error', function(err) {
             t.error(err, 'error while querying')
@@ -773,7 +785,9 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT * FROM generate_series(0, 9)')
+          var query = new pg.Query('SELECT * FROM generate_series(0, 9)')
+
+          client.query(query)
 
           query.addListener('error', function(err) {
             t.error(err, 'error while querying')
