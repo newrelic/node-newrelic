@@ -943,14 +943,14 @@ describe('Shim', function() {
           expect(executed).to.be.true()
         })
 
-        it('should not invoke the spec', function() {
+        it('should still invoke the spec', function() {
           var executed = false
           shim.record(wrappable, 'bar', function() {
             executed = true
           })
 
           wrappable.bar('a', 'b', 'c')
-          expect(executed).to.be.false()
+          expect(executed).to.be.true()
         })
 
         it('should not bind the callback if there is one', function() {
@@ -1099,7 +1099,7 @@ describe('Shim', function() {
           })
         })
 
-        it('should not invoke the spec', function() {
+        it('should still invoke the spec', function() {
           var executed = false
           shim.record(wrappable, 'bar', function() {
             executed = true
@@ -1108,7 +1108,7 @@ describe('Shim', function() {
           helper.runInTransaction(agent, function(tx) {
             tx.end()
             wrappable.bar('a', 'b', 'c')
-            expect(executed).to.be.false()
+            expect(executed).to.be.true()
           })
         })
 
