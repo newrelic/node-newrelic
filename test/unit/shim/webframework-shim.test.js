@@ -460,6 +460,26 @@ describe('WebFrameworkShim', function() {
         }
       })
 
+      it('should reinstate its own context', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ''}
+          )
+          var tx = helper.runInTransaction(agent, function(tx) {
+            return tx
+          })
+          txInfo.transaction = tx
+          txInfo.segmentStack.push(tx.trace.root)
+
+          var segment = wrapped(req)
+
+          expect(segment).to.exist().and.have.property('name', expectedName)
+        }
+      })
+
       describe('when the middleware is synchronous', function() {
         it('should notice thrown exceptions', function() {
           var wrapped = shim.recordMiddleware(function() {
@@ -482,7 +502,7 @@ describe('WebFrameworkShim', function() {
           })
         })
 
-        it('should not pop the name if there was an error', function() {
+        it('should pop the name if an error was thrown and there is no next handler', function() {
           var wrapped = shim.recordMiddleware(function() {
             throw new Error('foobar')
           }, {route: '/foo/bar'})
@@ -492,6 +512,24 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             try {
               wrapped(req)
+            } catch (e) {
+              // Don't care about the error...
+            }
+
+            expect(tx.nameState.getPath()).to.equal('/foo/bar')
+          })
+        })
+
+        it('should not pop the name if there was an error and a next handler', function() {
+          var wrapped = shim.recordMiddleware(function() {
+            throw new Error('foobar')
+          }, {route: '/foo/bar', next: shim.SECOND})
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            try {
+              wrapped(req, function() {})
             } catch (e) {
               // Don't care about the error...
             }
