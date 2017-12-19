@@ -460,6 +460,26 @@ describe('WebFrameworkShim', function() {
         }
       })
 
+      it('should reinstate its own context', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ''}
+          )
+          var tx = helper.runInTransaction(agent, function(tx) {
+            return tx
+          })
+          txInfo.transaction = tx
+          txInfo.segmentStack.push(tx.trace.root)
+
+          var segment = wrapped(req)
+
+          expect(segment).to.exist().and.have.property('name', expectedName)
+        }
+      })
+
       describe('when the middleware is synchronous', function() {
         it('should notice thrown exceptions', function() {
           var wrapped = shim.recordMiddleware(function() {
