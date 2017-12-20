@@ -1,0 +1,11 @@
+{
+  "name": "hapi-latest-tests",
+  "version": "0.0.0",
+  "description": "tests for Hapi v17",
+  "license": "proprietary",
+  "dependencies": {
+    "hapi": "^17",
+    "vision": "^5"
+  },
+  "private": true
+}

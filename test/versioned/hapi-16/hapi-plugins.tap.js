@@ -72,4 +72,36 @@ tap.test('Hapi Plugins', function(t) {
       })
     })
   })
+
+  t.test('maintains transaction state while mounting array of plugins', function(t) {
+    t.plan(3)
+    var plugin = {
+      register: function plugin(srvr, opts, next) {
+        srvr.route({
+          method : 'GET',
+          path   : '/test',
+          handler : function myHandler(req, reply) {
+          t.ok(agent.getTransaction(), 'transaction is available')
+            reply('hello')
+          }
+        })
+        next()
+      }
+    }
+    plugin.register.attributes = { name: 'foo' }
+    server.register([ plugin ])
+
+    agent.on('transactionFinished', function(tx) {
+      t.equal(
+        tx.getFullName(), 'WebTransaction/Hapi/GET//test',
+        'should name transaction correctly'
+      )
+    })
+
+    server.start(function() {
+      request.get('http://localhost:8089/test', function(error, res, body) {
+        t.equal(body, 'hello', 'should not interfere with response')
+      })
+    })
+  })
 })

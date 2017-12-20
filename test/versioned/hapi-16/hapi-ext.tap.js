@@ -54,13 +54,71 @@ test("Hapi.ext", function(t) {
       method : 'GET',
       path   : '/test',
       handler : function myHandler(request, reply) {
+        t.ok(agent.getTransaction(), "transaction is available")
+        reply()
+      }
+    })
+
+    server.start(function() {
+      request.get('http://localhost:8089/test', function() {
+        t.end()
+      })
+    })
+  })
+
+  t.test('maintains transaction state, with config object', function(t) {
+    var config = {
+      type: 'onRequest',
+      method: function(request, reply) {
+        t.ok(agent.getTransaction(), "transaction is available")
+        tasks.push(function() {
+          reply.continue()
+        })
+      }
+    }
+    server.ext(config)
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: function myHandler(request, reply) {
+        t.ok(agent.getTransaction(), "transaction is available")
+        reply()
+      }
+    })
+
+    server.start(function() {
+      request.get('http://localhost:8089/test', function() {
+        t.end()
+      })
+    })
+  })
+
+  t.test('maintains transaction state, with array of config objects', function(t) {
+    var config = [
+      {
+        type: 'onRequest',
+        method: function(request, reply) {
+          t.ok(agent.getTransaction(), "transaction is available")
+          tasks.push(function() {
+            reply.continue()
+          })
+        }
+      }
+    ]
+    server.ext(config)
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: function myHandler(request, reply) {
       t.ok(agent.getTransaction(), "transaction is available")
         reply()
       }
     })
 
     server.start(function() {
-      request.get('http://localhost:8089/test', function(error, res, body) {
+      request.get('http://localhost:8089/test', function() {
         t.end()
       })
     })
