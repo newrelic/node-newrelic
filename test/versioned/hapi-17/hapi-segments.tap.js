@@ -93,6 +93,38 @@ tap.test('Hapi segments', conditions, function(t) {
       t.end()
     })
   })
+
+  t.test('custom route handler and extension recorded as middleware', function(t) {
+    setup(t)
+
+    server.ext('onRequest', function(req, h) {
+      return h.continue
+    })
+
+    server.decorate('handler', 'customHandler', function(route, options) {
+      return function customHandler() {
+        return options.key1
+      }
+    })
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: { customHandler: { key1: 'val1'} }
+    })
+
+    runTest(t, function(segments, transaction) {
+      checkMetrics(t, transaction.metrics, [
+        NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
+        NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
+      ])
+      checkSegments(t, transaction.trace.root.children[0], [
+        NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
+        NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
+      ])
+      t.end()
+    })
+  })
 })
 
 function runTest(t, callback) {
