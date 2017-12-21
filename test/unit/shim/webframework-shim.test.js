@@ -460,6 +460,28 @@ describe('WebFrameworkShim', function() {
         }
       })
 
+      it('should not prepend root if the value is an array', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
+        testType(shim.APPLICATION, 'Restify/Mounted App: /one,/two')
+        testType(shim.ROUTER, 'Restify/Router: /one,/two')
+        testType(shim.ROUTE, 'Restify/Route Path: /one,/two')
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
+        testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ['/one', '/two']}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist().and.have.property('name', expectedName)
+          })
+        }
+      })
+
       it('should reinstate its own context', function() {
         testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
 
@@ -502,7 +524,7 @@ describe('WebFrameworkShim', function() {
           })
         })
 
-        it('should pop the name if an error was thrown and there is no next handler', function() {
+        it('pops the name if error was thrown and there is no next handler', function() {
           var wrapped = shim.recordMiddleware(function() {
             throw new Error('foobar')
           }, {route: '/foo/bar'})
@@ -520,7 +542,7 @@ describe('WebFrameworkShim', function() {
           })
         })
 
-        it('should not pop the name if there was an error and a next handler', function() {
+        it('does not pop the name if there was an error and a next handler', function() {
           var wrapped = shim.recordMiddleware(function() {
             throw new Error('foobar')
           }, {route: '/foo/bar', next: shim.SECOND})
