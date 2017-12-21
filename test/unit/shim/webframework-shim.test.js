@@ -471,7 +471,7 @@ describe('WebFrameworkShim', function() {
         function testType(type, expectedName) {
           var wrapped = shim.recordMiddleware(
             wrappable.getActiveSegment,
-            {type: type, route: [ '/one', '/two' ]}
+            {type: type, route: ['/one', '/two']}
           )
           helper.runInTransaction(agent, function(tx) {
             txInfo.transaction = tx
