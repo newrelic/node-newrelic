@@ -1,7 +1,6 @@
 'use strict'
 
-process.exit(0) // TODO: Skipping until Vision instrumentation is added
-
+var path = require('path')
 var util = require('util')
 var test = require('tap').test
 var request = require('request')

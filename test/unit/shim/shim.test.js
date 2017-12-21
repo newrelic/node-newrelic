@@ -1266,6 +1266,82 @@ describe('Shim', function() {
     })
   })
 
+  describe('#unwrapOnce', function() {
+    var original
+    var wrapped
+
+    beforeEach(function() {
+      original = function() {}
+      wrapped = shim.wrap(original, function() { return function() {} })
+      shim.wrap(wrappable, ['bar', 'fiz', 'getActiveSegment'], function() {
+        return function() {}
+      })
+    })
+
+    it('should not error if the item is not wrapped', function() {
+      expect(function() {
+        shim.unwrapOnce(original)
+      }).to.not.throw()
+      expect(shim.unwrapOnce(original)).to.equal(original)
+    })
+
+    it('should not fully unwrap multiple nested wrappers', function() {
+      for (var i = 0; i < 10; ++i) {
+        wrapped = shim.wrap(wrapped, function() { return function() {} })
+      }
+
+      expect(wrapped).to.not.equal(original)
+      expect(wrapped.__NR_original).to.not.equal(original)
+      expect(shim.unwrapOnce(wrapped)).to.not.equal(original)
+    })
+
+    describe('with no properties', function() {
+      it('should unwrap the first parameter', function() {
+        expect(shim.unwrapOnce(wrapped)).to.equal(original)
+      })
+
+      it('should not error if `nodule` is `null`', function() {
+        expect(function() {
+          shim.unwrapOnce(null)
+        }).to.not.throw()
+      })
+    })
+
+    describe('with properties', function() {
+      it('should accept a single property', function() {
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
+        expect(function() {
+          shim.unwrapOnce(wrappable, 'bar')
+        }).to.not.throw()
+        expect(shim.isWrapped(wrappable.bar)).to.be.false()
+      })
+
+      it('should accept an array of properties', function() {
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
+        expect(shim.isWrapped(wrappable.fiz)).to.be.true()
+        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.true()
+        expect(function() {
+          shim.unwrapOnce(wrappable, ['bar', 'fiz', 'getActiveSegment'])
+        }).to.not.throw()
+        expect(shim.isWrapped(wrappable.bar)).to.be.false()
+        expect(shim.isWrapped(wrappable.fiz)).to.be.false()
+        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.false()
+      })
+
+      it('should not error if a nodule is `null`', function() {
+        expect(function() {
+          shim.unwrapOnce(null, 'bar')
+        }).to.not.throw()
+      })
+
+      it('should not error if a property is `null`', function() {
+        expect(function() {
+          shim.unwrapOnce(wrappable, 'this does not exist')
+        }).to.not.throw()
+      })
+    })
+  })
+
   describe('#getSegment', function() {
     var segment = null
 
