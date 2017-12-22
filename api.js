@@ -4,15 +4,15 @@ var arity = require('./lib/util/arity')
 var util = require('util')
 var logger = require('./lib/logger').child({component: 'api'})
 var NAMES = require('./lib/metrics/names')
-var recordWeb = require('./lib/metrics/recorders/http.js')
-var recordBackground = require('./lib/metrics/recorders/other.js')
+var recordWeb = require('./lib/metrics/recorders/http')
+var recordBackground = require('./lib/metrics/recorders/other')
 var customRecorder = require('./lib/metrics/recorders/custom')
 var hashes = require('./lib/util/hashes')
 var properties = require('./lib/util/properties')
 var stringify = require('json-stringify-safe')
-var shimmer = require('./lib/shimmer.js')
-var Shim = require('./lib/shim/shim.js')
-var TransactionHandle = require('./lib/transaction/handle.js')
+var shimmer = require('./lib/shimmer')
+var Shim = require('./lib/shim/shim')
+var TransactionHandle = require('./lib/transaction/handle')
 
 var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
@@ -505,7 +505,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
 
   /* This is only going to work if the agent has successfully handshaked with
    * the collector. If the networks is bad, or there is no license key set in
-   * newrelis.js, there will be no application_id set.  We bail instead of
+   * newrelic.js, there will be no application_id set.  We bail instead of
    * outputting null/undefined configuration values.
    */
   if (!appid) return _gracefail(4)
