@@ -266,6 +266,10 @@ describe("built-in http module instrumentation", function() {
         expect(transaction.trace.parameters['request.headers.referer']).to.equal('https://www.google.com/search/cats')
       })
 
+      it("should include a stringified response status code", function() {
+        expect(transaction.trace.parameters['response.status']).to.equal('200')
+      })
+
       it("should record unscoped path stats after a normal request", function() {
         var stats = agent.metrics.getOrCreateMetric('WebTransaction/NormalizedUri/*')
         expect(stats.callCount).equal(2)
