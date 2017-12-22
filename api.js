@@ -865,9 +865,19 @@ function startBackgroundTransaction(name, group, handle) {
   var tracer = this.agent.tracer
   var shim = this.shim
   var txName = group + '/' + name
+  var parent = tracer.getTransaction()
 
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
     var tx = tracer.getTransaction()
+
+    if (tx === parent) {
+      logger.debug(
+        'not creating nested transaction %s using transaction %s',
+        txName,
+        tx.id
+      )
+      return tracer.addSegment(txName, null, null, true, handle)
+    }
 
     logger.debug(
       'creating background transaction %s:%s (%s) with transaction id: %s',
