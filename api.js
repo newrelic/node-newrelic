@@ -760,9 +760,19 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
 
   var shim = this.shim
   var tracer = this.agent.tracer
+  var parent = tracer.getTransaction()
 
   return tracer.transactionNestProxy('web', function startWebSegment() {
     var tx = tracer.getTransaction()
+
+    if (tx === parent) {
+      logger.debug(
+        'not creating nested transaction %s using transaction %s',
+        url,
+        tx.id
+      )
+      return tracer.addSegment(url, null, null, true, handle)
+    }
 
     logger.debug(
       'creating web transaction %s (%s) with transaction id: %s',
