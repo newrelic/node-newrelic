@@ -221,7 +221,7 @@ describe("the New Relic agent API", function() {
       })
     })
 
-    it("should not add mutliple custom parameters when in high security mode", function() {
+    it("should not add multiple custom parameters when in high security mode", function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.high_security = true
         api.addCustomParameters({
@@ -250,6 +250,21 @@ describe("the New Relic agent API", function() {
     beforeEach(function() {
       thenCalled = false
       transaction = null
+    })
+
+    it('should add nested transaction as segment to parent transaction', function() {
+      api.startWebTransaction('test', function() {
+        nested()
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('web')
+        expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
+        expect(transaction.isActive()).to.be.true
+        expect(agent.tracer.segment.children[0].name).to.equal('nested')
+      })
+      function nested() {
+        api.startWebTransaction('nested', function() {})
+      }
+      expect(transaction.isActive()).to.be.false
     })
 
     it("should end the transaction after the handle returns by default", function() {
@@ -314,6 +329,21 @@ describe("the New Relic agent API", function() {
     beforeEach(function() {
       thenCalled = false
       transaction = null
+    })
+
+    it('should add nested transaction as segment to parent transaction', function() {
+      api.startBackgroundTransaction('test', function() {
+        nested()
+        transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
+        expect(transaction.isActive()).to.be.true
+        expect(agent.tracer.segment.children[0].name).to.equal('Nodejs/nested')
+      })
+      function nested() {
+        api.startBackgroundTransaction('nested', function() {})
+      }
+      expect(transaction.isActive()).to.be.false
     })
 
     it("should end the transaction after the handle returns by default", function() {
