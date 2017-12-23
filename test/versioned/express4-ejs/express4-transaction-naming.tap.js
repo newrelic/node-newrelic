@@ -1,6 +1,6 @@
 'use strict'
 
-var helper = require('../../lib/agent_helper.js')
+var helper = require('../../lib/agent_helper')
 var http = require('http')
 var test = require('tap').test
 
@@ -171,15 +171,15 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test('with error and an error handler', function(t) {
+  test('with error and path-specific error handler', function(t) {
     setup(t)
 
-    app.get('/path1', function(req, res, next) {
-      next(new Error('some error'))
+    app.get('/path1', function() {
+      throw new Error('some error')
     })
 
-    app.use(function(err, req, res, next) {
-      res.end()
+    app.use('/path1', function(err, req, res, next) {
+      res.status(500).end()
     })
 
     runTest(t, '/path1', '/path1')
