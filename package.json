@@ -146,7 +146,7 @@
     "proxy": "^0.2.3",
     "proxyquire": "^1.8.0",
     "q": "*",
-    "redis": "*",
+    "redis": "^1",
     "request": "2.81.0",
     "restify": "^4",
     "rimraf": "^2.6.2",
