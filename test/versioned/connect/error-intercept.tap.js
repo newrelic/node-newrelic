@@ -38,7 +38,7 @@ test("intercepting errors with connect 2", function(t) {
     t.end()
   })
 
-  t.test("should have only one error interceptor in the middleware stack", function (t) {
+  t.test("should have only one error interceptor in the middleware stack", function(t) {
     var agent   = helper.instrumentMockedAgent()
     var connect = require('connect')
     var app     = connect()
@@ -63,12 +63,11 @@ test("intercepting errors with connect 2", function(t) {
     t.end()
   })
 
-  t.test("should trace any errors that occur while executing a middleware stack",
-         function (t) {
+  t.test("should trace errors that occur while executing a middleware", function(t) {
     var agent = helper.instrumentMockedAgent()
     var server
-    agent.once('transactionFinished', function(tx) {
-      var errors = agent.errors.errors; // FIXME: redundancy is dumb
+    agent.once('transactionFinished', function() {
+      var errors = agent.errors.errors // FIXME: redundancy is dumb
       t.equal(errors.length, 1, "the error got traced")
 
       var error = errors[0]
@@ -89,24 +88,17 @@ test("intercepting errors with connect 2", function(t) {
 
       function wiggleware(req, res, next) {
         var harbl = null
-        harbl.bargl(); // OHHH NOOOOO
+        harbl.bargl() // OHHH NOOOOO
 
-        return next(); // will never get here
-      }
-
-      var stubReq = {
-        url: '/:test',
-        method: 'GET',
-        unpipe: new Function(),
-        resume: new Function()
+        return next() // will never get here
       }
 
       var stubRes = {
         headers : {},
-        setHeader : function (name, value) {
+        setHeader : function(name, value) {
           stubRes.headers[name] = value
         },
-        end : function () {
+        end : function() {
           stubRes._end = agent.tracer.slice(arguments)
         }
       }
@@ -116,15 +108,15 @@ test("intercepting errors with connect 2", function(t) {
       var http = require('http')
       server = http.createServer(function(req, res) {
         app.handle(req, res)
-      }).listen(0, function () {
+      }).listen(0, function() {
         var req = http.request({
           port: server.address().port,
           host: 'localhost',
           path: '/asdf',
           method: 'GET'
         }, function onResponse(res) {
-          res.on('data', function(data) {
-            //throw away the data
+          res.on('data', function() {
+            // throw away the data
           })
         })
         req.end()
