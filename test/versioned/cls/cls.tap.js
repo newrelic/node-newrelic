@@ -6,12 +6,12 @@ var helper = require('../../lib/agent_helper')
 test('transaction state', function(t) {
   t.plan(1)
 
-  t.test('should be preserved over timers regardless of order required', function (t) {
-    var cls = require('continuation-local-storage')
+  t.test('should be preserved over timers regardless of order required', function(t) {
+    require('continuation-local-storage')
     var agent = setupAgent(t)
     helper.runInTransaction(agent, function inTransaction(txn) {
-      setTimeout(function () {
-        t.ok(agent.getTransaction())
+      setTimeout(function() {
+        t.equal(agent.getTransaction(), txn, 'should maintain tx state')
         t.end()
       }, 0)
     })

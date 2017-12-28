@@ -1,0 +1,21 @@
+{
+  "name": "cls-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "dependencies": {
+        "continuation-local-storage": ">=1.0.0"
+      },
+      "files": [
+        "cls.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "continuation-local-storage": "^3.2.1"
+  }
+}
