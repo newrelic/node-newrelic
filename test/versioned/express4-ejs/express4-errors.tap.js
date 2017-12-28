@@ -203,10 +203,14 @@ function runTests(flags) {
 
     var server = app.listen(function() {
       var port = server.address().port
-      var req = http.request({port: port, path: '/test'}, function() {})
+      var req = http.request({
+        host: 'localhost',
+        port: port,
+        path: '/test'
+      }, function() {})
       req.end()
       // add error handler, otherwise aborting will cause an exception
-      req.on('error', function() {})
+      req.on('error', function(e) {console.log(e)})
 
       setTimeout(function() {
         req.abort()
