@@ -1,0 +1,21 @@
+{
+  "name": "redis-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "dependencies": {
+        "redis": ">=2.0.0"
+      },
+      "files": [
+        "redis.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "redis": "^2.8.0"
+  }
+}

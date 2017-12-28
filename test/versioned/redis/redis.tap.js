@@ -221,8 +221,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
-  t.test('should not add datastore instance parameters and metrics when disabled',
-      function(t) {
+  t.test('should not add instance parameters/metrics when disabled', function(t) {
     t.plan(5)
 
     // disable
