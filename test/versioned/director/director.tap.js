@@ -2,18 +2,10 @@
 
 var tap = require('tap')
 var http = require('http')
-var request = require('request')
-var helper = require('../../lib/agent_helper.js')
+var helper = require('../../lib/agent_helper')
 var semver = require('semver')
 
-tap.test("basic director test", function (t) {
-
-  if (semver.satisfies(process.versions.node, '<0.12.x')) {
-    t.plan(12)
-  }
-  else {
-    t.plan(13)
-  }
+tap.test("basic director test", function(t) {
   var agent = helper.instrumentMockedAgent()
   var director = require('director')
 
@@ -38,9 +30,9 @@ tap.test("basic director test", function (t) {
 
   var router = new director.http.Router(routes).configure({ recurse: 'forward' })
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     helper.unloadAgent(agent)
-    server.close(function cb_close() {})
+    server.close(function() {})
   })
 
   // need to capture parameters
@@ -61,15 +53,21 @@ tap.test("basic director test", function (t) {
             "should have partial name for apdex")
 
     var handler0 = web.children[0]
-    t.equal(handler0.name, "Nodejs/Middleware/Director/fn0//hello", "route 0 segment has correct name")
+    t.equal(
+      handler0.name, "Nodejs/Middleware/Director/fn0//hello",
+      "route 0 segment has correct name"
+    )
     if (semver.satisfies(process.versions.node, '>=0.12')) {
       var handler1 = web.children[1]
-      t.equal(handler1.name, "Nodejs/Middleware/Director/fn1//hello/(\\w+)/", "route 1 segment has correct name")
+      t.equal(
+        handler1.name, "Nodejs/Middleware/Director/fn1//hello/(\\w+)/",
+        "route 1 segment has correct name"
+      )
     }
   })
 
-  var server = http.createServer(function (req, res) {
-    router.dispatch(req, res, function (err) {
+  var server = http.createServer(function(req, res) {
+    router.dispatch(req, res, function(err) {
       if (err) {
         res.writeHead(404)
         res.end()
@@ -77,20 +75,19 @@ tap.test("basic director test", function (t) {
     })
   })
 
-  server.listen(8089, function () {
-    request.get('http://localhost:8089/hello/eric',
-                {json : true},
-                function (error, res, body) {
-      t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, {status : 'ok'}, "got expected response")
-      t.end()
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      var url = 'http://localhost:' + port + '/hello/eric'
+      helper.makeGetRequest(url, {json : true}, function(error, res, body) {
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, {status : 'ok'}, "got expected response")
+        t.end()
+      })
     })
   })
 })
 
-tap.test("backward recurse director test", function (t) {
-
-  t.plan(4)
+tap.test("backward recurse director test", function(t) {
   var agent = helper.instrumentMockedAgent()
   var director = require('director')
 
@@ -113,14 +110,14 @@ tap.test("backward recurse director test", function (t) {
 
   var router = new director.http.Router(routes).configure({ recurse: 'backward' })
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     helper.unloadAgent(agent)
-    server.close(function cb_close() {})
+    server.close(function() {})
   })
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//hello',
             "transaction has expected name")
 
@@ -129,8 +126,8 @@ tap.test("backward recurse director test", function (t) {
             "should have partial name for apdex")
   })
 
-  var server = http.createServer(function (req, res) {
-    router.dispatch(req, res, function (err) {
+  var server = http.createServer(function(req, res) {
+    router.dispatch(req, res, function(err) {
       if (err) {
         res.writeHead(404)
         res.end()
@@ -138,34 +135,33 @@ tap.test("backward recurse director test", function (t) {
     })
   })
 
-  server.listen(8089, function () {
-    request.get('http://localhost:8089/hello/eric',
-                {json : true},
-                function (error, res, body) {
-      t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, {status : 'ok'}, "got expected response")
-      t.end()
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      var url = 'http://localhost:' + port + '/hello/eric'
+      helper.makeGetRequest(url, {json : true}, function(error, res, body) {
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, {status : 'ok'}, "got expected response")
+        t.end()
+      })
     })
   })
 })
 
-tap.test("two routers with same URI director test", function (t) {
-
-  t.plan(4)
+tap.test("two routers with same URI director test", function(t) {
   var agent = helper.instrumentMockedAgent()
   var director = require('director')
 
   var router = new director.http.Router()
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     helper.unloadAgent(agent)
-    server.close(function cb_close() {})
+    server.close(function() {})
   })
 
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//helloWorld',
             "transaction has expected name")
 
@@ -174,16 +170,14 @@ tap.test("two routers with same URI director test", function (t) {
             "should have partial name for apdex")
   })
 
-  router.get('/helloWorld', function (req, res) {
-    null
-  })
-  router.get('/helloWorld', function (req, res) {
+  router.get('/helloWorld', function() {})
+  router.get('/helloWorld', function() {
     this.res.writeHead(200)
     this.res.end('{"status":"ok"}')
   })
 
-  var server = http.createServer(function (req, res) {
-    router.dispatch(req, res, function (err) {
+  var server = http.createServer(function(req, res) {
+    router.dispatch(req, res, function(err) {
       if (err) {
         res.writeHead(404)
         res.end()
@@ -191,27 +185,27 @@ tap.test("two routers with same URI director test", function (t) {
     })
   })
 
-  server.listen(8089, function () {
-    request.get('http://localhost:8089/helloWorld',
-                {json : true},
-                function (error, res, body) {
-      t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, {status : 'ok'}, "got expected response")
-      t.end()
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      var url = 'http://localhost:' + port + '/helloWorld'
+      helper.makeGetRequest(url, {json : true}, function(error, res, body) {
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, {status : 'ok'}, "got expected response")
+        t.end()
+      })
     })
   })
 })
 
-tap.test("director async routes test", function (t) {
-  t.plan(6)
+tap.test("director async routes test", function(t) {
   var agent = helper.instrumentMockedAgent()
   var director = require('director')
 
   var router = new director.http.Router().configure({ async: true })
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     helper.unloadAgent(agent)
-    server.close(function cb_close() {})
+    server.close(function() {})
   })
 
   // need to capture parameters
@@ -233,9 +227,9 @@ tap.test("director async routes test", function (t) {
   })
 
   router.get('/:foo/:bar/:bazz', function fn0(foo, bar, bazz, next) {
-    setTimeout(function(self) { next() }, 100, this)
+    setTimeout(function() { next() }, 100, this)
   })
-  router.get('/:foo/:bar/:bazz', function fn1(foo, bar, bazz, next) {
+  router.get('/:foo/:bar/:bazz', function fn1() {
      setTimeout(function(self) { self.res.end('dog') }, 100, this)
   })
 
@@ -248,23 +242,25 @@ tap.test("director async routes test", function (t) {
     })
   })
 
-  server.listen(8089, function () {
-    request.get('http://localhost:8089/three/random/things',
-                {json : true},
-                function (error, res, body) {
-      t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, 'dog', "got expected response")
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      var url = 'http://localhost:' + port + '/three/random/things'
+      helper.makeGetRequest(url, {json : true}, function(error, res, body) {
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, 'dog', "got expected response")
+        t.end()
+      })
     })
   })
 })
 
-tap.test("express w/ director subrouter test", function (t) {
+tap.test("express w/ director subrouter test", function(t) {
   t.plan(4)
   var agent = helper.instrumentMockedAgent()
   var director = require('director')
 
   var express = require('express')
-  var expressRouter = express.Router()
+  var expressRouter = express.Router() // eslint-disable-line new-cap
   var app = express()
   var server
 
@@ -278,15 +274,15 @@ tap.test("express w/ director subrouter test", function (t) {
   }
   var router = new director.http.Router(routes)
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     helper.unloadAgent(agent)
-    server.close(function cb_close() {})
+    server.close(function() {})
   })
 
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//express/hello',
             "transaction has expected name")
 
@@ -296,7 +292,7 @@ tap.test("express w/ director subrouter test", function (t) {
   })
 
   expressRouter.use(function myMiddleware(req, res, next) {
-    router.dispatch(req, res, function (err) {
+    router.dispatch(req, res, function(err) {
       if (err) {
         next(err)
       }
@@ -305,90 +301,90 @@ tap.test("express w/ director subrouter test", function (t) {
 
   app.use('/express/', expressRouter)
 
-  server = app.listen(8089, 'localhost', function () {
-    request.get('http://localhost:8089/express/hello',
-                {json : true},
-                function (error, res, body) {
-      t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, 'eric says hello', "got expected response")
+  helper.randomPort(function(port) {
+    server = app.listen(port, 'localhost', function() {
+      var url = 'http://localhost:' + port + '/express/hello'
+      helper.makeGetRequest(url, {json : true}, function(error, res, body) {
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, 'eric says hello', "got expected response")
+      })
     })
   })
 })
 
-tap.test('director instrumentation', function (t) {
-
+tap.test('director instrumentation', function(t) {
   t.plan(10)
 
-  t.test('should allow null routers through constructor on http router', function (t) {
+  t.test('should allow null routers through constructor on http router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var routes = {
       '/hello': null
     }
 
-    var router = new director.http.Router(routes)
+    new director.http.Router(routes) // eslint-disable-line no-new
 
     helper.unloadAgent(agent)
     t.end()
   })
 
-  t.test('should allow null routers through constructor on base router', function (t) {
+  t.test('should allow null routers through constructor on base router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var routes = {
       '/hello': null
     }
 
-    var router = new director.Router(routes)
+    new director.Router(routes) // eslint-disable-line no-new
 
     helper.unloadAgent(agent)
     t.end()
   })
 
-  t.test('should allow null routers through constructor on cli router', function (t) {
+  t.test('should allow null routers through constructor on cli router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var routes = {
       '/hello': null
     }
 
-    var router = new director.cli.Router(routes)
+    new director.cli.Router(routes) // eslint-disable-line no-new
 
     helper.unloadAgent(agent)
     t.end()
   })
 
-  t.test('should allow routers through .on on cli router', function (t) {
+  t.test('should allow routers through .on on cli router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.cli.Router()
-    router.on(/^$/, function () {})
+    router.on(/^$/, function() {})
 
     helper.unloadAgent(agent)
     t.end()
   })
 
-  t.test('should allow routers through .on on http router', function (t) {
+  t.test('should allow routers through .on on http router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.http.Router()
-    router.on('get', /^$/, function () {})
+    router.on('get', /^$/, function() {})
 
     helper.unloadAgent(agent)
     t.end()
   })
 
-  t.test('should allow routers through .on on base router', function (t) {
+  t.test('should allow routers through .on on base router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.Router()
-    router.on(/^$/, function () {})
+    router.on(/^$/, function() {})
 
     helper.unloadAgent(agent)
     t.end()
   })
 
-  t.test('should allow null routers through method mounters', function (t) {
+  t.test('should allow null routers through method mounters', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.http.Router()
@@ -399,7 +395,7 @@ tap.test('director instrumentation', function (t) {
     t.end()
   })
 
-  t.test('should allow null routers through .on on http router', function (t) {
+  t.test('should allow null routers through .on on http router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.http.Router()
@@ -410,7 +406,7 @@ tap.test('director instrumentation', function (t) {
     t.end()
   })
 
-  t.test('should allow null routers through .on on cli router', function (t) {
+  t.test('should allow null routers through .on on cli router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.cli.Router()
@@ -421,7 +417,7 @@ tap.test('director instrumentation', function (t) {
     t.end()
   })
 
-  t.test('should allow null routers through .on on base router', function (t) {
+  t.test('should allow null routers through .on on base router', function(t) {
     var agent = helper.instrumentMockedAgent()
     var director = require('director')
     var router = new director.Router()
