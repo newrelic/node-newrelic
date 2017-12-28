@@ -1,0 +1,38 @@
+{
+  "name": "express-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "dependencies": {
+        "express": ">=4.6.0",
+        "express-enrouten": "1.1"
+      },
+      "files": [
+        "app-use.tap.js",
+        "async-error.tap.js",
+        "bare-router.tap.js",
+        "captures-params.tap.js",
+        "errors.tap.js",
+        "express-enrouten.tap.js",
+        "ignoring.tap.js",
+        "issue171.tap.js",
+        "middleware-name.tap.js",
+        "render.tap.js",
+        "require.tap.js",
+        "route-iteration.tap.js",
+        "route-param.tap.js",
+        "router-params.tap.js",
+        "segments.tap.js",
+        "transaction-naming.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-enrouten": "^1.1.1"
+  }
+}

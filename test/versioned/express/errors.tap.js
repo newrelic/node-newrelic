@@ -20,7 +20,7 @@ function runTests(flags) {
   tap.test('reports error when thrown from a route', function(t) {
     setup(t)
 
-    app.get('/test', function(req, res) {
+    app.get('/test', function() {
       throw new Error('some error')
     })
 
@@ -34,7 +34,7 @@ function runTests(flags) {
   tap.test('reports error when thrown from a middleware', function(t) {
     setup(t)
 
-    app.use(function(req, res, next) {
+    app.use(function() {
       throw new Error('some error')
     })
 
@@ -62,11 +62,11 @@ function runTests(flags) {
   tap.test('should not report error when error handler responds', function(t) {
    setup(t)
 
-   app.get('/test', function(req, res) {
+   app.get('/test', function() {
      throw new Error('some error')
    })
 
-   app.use(function(error, req, res, next) {
+   app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
      res.end()
    })
 
@@ -81,11 +81,11 @@ function runTests(flags) {
       function(t) {
    setup(t)
 
-   app.get('/test', function(req, res) {
+   app.get('/test', function() {
      throw new Error('some error')
    })
 
-   app.use(function(error, req, res, next) {
+   app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
      res.status(400).end()
    })
 
@@ -97,10 +97,10 @@ function runTests(flags) {
    })
   })
 
-  tap.test('should report the error when error handler calls next with the error', function(t) {
+  tap.test('should report errors passed out of errorware', function(t) {
    setup(t)
 
-   app.get('/test', function(req, res) {
+   app.get('/test', function() {
      throw new Error('some error')
    })
 
@@ -115,11 +115,10 @@ function runTests(flags) {
    })
   })
 
-  tap.test('should report error when error handler does not handle error and is followed by ' +
-      'a route handler', function(t) {
+  tap.test('should report errors from errorware followed by routes', function(t) {
    setup(t)
 
-   app.use(function(req, res, next) {
+   app.use(function() {
     throw new Error('some error')
    })
 
@@ -138,11 +137,10 @@ function runTests(flags) {
    })
   })
 
-  tap.test('should not report error when error handler calls next without the error and is ' +
-      'followed by a route handler', function(t) {
+  tap.test('should not report errors swallowed by errorware', function(t) {
     setup(t)
 
-    app.get('/test', function(req, res, next) {
+    app.get('/test', function() {
       throw new Error('some error')
     })
 
@@ -150,7 +148,7 @@ function runTests(flags) {
       next()
     })
 
-    app.get('/test', function (req, res) {
+    app.get('/test', function(req, res) {
       res.end()
     })
 
@@ -161,18 +159,17 @@ function runTests(flags) {
     })
   })
 
-  tap.test('should not report error when error is thrown in a nested router but handled in' +
-      ' error handler outside of the router', function(t) {
+  tap.test('should not report errors handled by errorware outside router', function(t) {
     setup(t)
 
-    var router1 = express.Router()
-    router1.get('/test', function(req, res) {
+    var router1 = express.Router() // eslint-disable-line new-cap
+    router1.get('/test', function() {
       throw new Error('some error')
     })
 
     app.use(router1)
 
-    app.use(function(error, req, res, next) {
+    app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
       res.end()
     })
 
@@ -202,7 +199,7 @@ function runTests(flags) {
       }, 100)
     })
 
-    app.use(function(error, req, res, next) {
+    app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
       t.comment('errorware')
       t.ok(agent.getTransaction() == null, 'no active transaction when responding')
       res.end()
@@ -227,7 +224,7 @@ function runTests(flags) {
       })
     })
 
-    t.tearDown(function cb_tearDown() {
+    t.tearDown(function() {
       server.close()
     })
   })
@@ -236,7 +233,7 @@ function runTests(flags) {
     agent = helper.instrumentMockedAgent(flags)
     express = require('express')
     app = express()
-    t.tearDown(function cb_tearDown() {
+    t.tearDown(function() {
       helper.unloadAgent(agent)
     })
   }
@@ -262,7 +259,7 @@ function runTests(flags) {
         response.resume()
       })
     })
-    t.tearDown(function cb_tearDown() {
+    t.tearDown(function() {
       server.close()
     })
   }

@@ -2,19 +2,15 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var semver = require('semver')
 
 
-test('should name middleware correctly',
-    {skip: semver.satisfies(process.version, '<4')},
-    function(t) {
-
+test('should name middleware correctly', function(t) {
   var agent = helper.instrumentMockedAgent()
 
   var app = require('express')()
   var server
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     server.close()
     helper.unloadAgent(agent)
   })

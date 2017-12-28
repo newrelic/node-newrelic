@@ -1,18 +1,16 @@
 'use strict'
 
 var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper.js')
+var helper = require('../../lib/agent_helper')
 
 
-test("Express 4 router introspection", function(t) {
+test("Express router introspection", function(t) {
   t.plan(11)
 
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
   var app = express()
   var server  = require('http').createServer(app)
-
 
   t.tearDown(function cb_tearDown() {
     server.close(function cb_close() {
@@ -45,13 +43,13 @@ test("Express 4 router introspection", function(t) {
     res.end()
   })
 
-  server.listen(8089, function() {
-    request.get('http://localhost:8089/test',
-                {json : true},
-                function(error, res, body) {
-
-      t.equal(res.statusCode, 200, "nothing exploded")
-      t.deepEqual(body, {status : 'ok'}, "got expected response")
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      var url = 'http://localhost:' + port + '/test'
+      helper.makeGetRequest(url, {json : true}, function(error, res, body) {
+        t.equal(res.statusCode, 200, "nothing exploded")
+        t.deepEqual(body, {status : 'ok'}, "got expected response")
+      })
     })
   })
 })

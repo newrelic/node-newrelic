@@ -1,9 +1,8 @@
 'use strict'
 
 var path = require('path')
-  , test = require('tap').test
-  , fork = require('child_process').fork
-  
+var test = require('tap').test
+var fork = require('child_process').fork
 
 /*
  *
@@ -12,25 +11,26 @@ var path = require('path')
  */
 var COMPLETION = 27
 
-test("Express 4 async throw", function (t) {
+
+test("Express async throw", function(t) {
   var erk = fork(path.join(__dirname, 'erk.js'))
   var timer
 
-  erk.on('error', function (error) {
+  erk.on('error', function(error) {
     t.fail(error)
     t.end()
   })
 
-  erk.on('exit', function (code) {
+  erk.on('exit', function(code) {
     clearTimeout(timer)
     t.notEqual(code, COMPLETION, "request didn't complete")
     t.end()
   })
 
   // wait for the child vm to boot
-  erk.on('message', function (message) {
+  erk.on('message', function(message) {
     if (message === 'ready') {
-      timer = setTimeout(function () {
+      timer = setTimeout(function() {
         t.fail("hung waiting for exit")
         erk.kill()
       }, 1000)

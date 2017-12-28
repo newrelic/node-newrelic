@@ -1,8 +1,10 @@
+'use strict'
+
 /**
  * Created by lmarkus on 11/24/14.
  */
-var routes = function(router){
-  router.get('/', function(req,res){
+var routes = function(router) {
+  router.get('/', function(req,res) {
     res.send('kraken')
     res.end()
   })

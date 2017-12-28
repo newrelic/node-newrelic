@@ -69,7 +69,7 @@ function runTests(flags) {
     setup(t)
 
     var router = new express.Router()
-    router.get('/path1', function(req, res, next) {
+    router.get('/path1', function(req, res) {
       res.end()
     })
 
@@ -85,7 +85,7 @@ function runTests(flags) {
       next()
     })
 
-    app.get('/path1', function(req, res, next) {
+    app.get('/path1', function(req, res) {
       res.end()
     })
 
@@ -97,7 +97,7 @@ function runTests(flags) {
 
     var subapp = express()
 
-    subapp.get('/path1', function middleware(req, res, next) {
+    subapp.get('/path1', function middleware(req, res) {
       res.end()
     })
 
@@ -111,7 +111,7 @@ function runTests(flags) {
 
     var router = new express.Router()
 
-    router.get('/path1', function(req, res, next) {
+    router.get('/path1', function(req, res) {
       res.end()
     })
 
@@ -164,7 +164,7 @@ function runTests(flags) {
       next(new Error('some error'))
     })
 
-    app.use(function(err, req, res, next) {
+    app.use(function(err, req, res) {
       return res.status(500).end()
     })
 
@@ -178,7 +178,7 @@ function runTests(flags) {
       throw new Error('some error')
     })
 
-    app.use('/path1', function(err, req, res, next) {
+    app.use('/path1', function(err, req, res, next) { // eslint-disable-line
       res.status(500).end()
     })
 
@@ -196,7 +196,7 @@ function runTests(flags) {
 
     app.use('/router1', router)
 
-    app.use(function errorHandler(err, req, res, next) {
+    app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
       return res.status(500).end()
     })
 
@@ -236,7 +236,7 @@ function runTests(flags) {
   test('when using router with a route variable', function(t) {
     setup(t)
 
-    var router = express.Router()
+    var router = express.Router() // eslint-disable-line new-cap
 
     router.get('/:var2/path1', function(req, res) {
       res.end()
@@ -263,8 +263,8 @@ function runTests(flags) {
   test('using two routers', function(t) {
     setup(t)
 
-    var router1 = express.Router()
-    var router2 = express.Router()
+    var router1 = express.Router() // eslint-disable-line new-cap
+    var router2 = express.Router() // eslint-disable-line new-cap
 
     app.use('/:router1', router1)
     router1.use('/:router2', router2)
@@ -278,8 +278,8 @@ function runTests(flags) {
 
   test('transactions running in parallel should be recorded correctly', function(t) {
     setup(t)
-    var router1 = express.Router()
-    var router2 = express.Router()
+    var router1 = express.Router() // eslint-disable-line new-cap
+    var router2 = express.Router() // eslint-disable-line new-cap
 
     app.use('/:router1', router1)
     router1.use('/:router2', router2)
@@ -319,7 +319,7 @@ function runTests(flags) {
       }, 20)
     })
 
-    app.use(function(error, req, res, next) {
+    app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
       t.ok(agent.getTransaction() == null, 'no active transaction when responding')
       res.end()
     })

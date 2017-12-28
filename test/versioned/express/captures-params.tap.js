@@ -4,14 +4,12 @@
 process.env.NODE_ENV = 'test'
 
 var test = require('tap').test
-var request = require('request')
 var helper = require('../../lib/agent_helper')
 
 
 // CONSTANTS
-var TEST_PORT = 9876
 var TEST_HOST = 'localhost'
-var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
+var TEST_URL = 'http://' + TEST_HOST + ':'
 
 
 test("test capture_params for express", function(t) {
@@ -25,7 +23,7 @@ test("test capture_params for express", function(t) {
     })
     var app = require('express')()
     var server = require('http').createServer(app)
-
+    var port = null
 
     t.tearDown(function() {
       server.close()
@@ -49,7 +47,7 @@ test("test capture_params for express", function(t) {
       t.ok(transaction.trace, 'transaction has a trace.')
       if (transaction.trace.parameters.httpResponseMessage) {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -60,7 +58,7 @@ test("test capture_params for express", function(t) {
         }, 'parameters should only have request/response params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -71,18 +69,22 @@ test("test capture_params for express", function(t) {
       }
     })
 
-    server.listen(TEST_PORT, TEST_HOST, function () {
-      request.get(TEST_URL + '/user/', function (error, response, body) {
-        if (error) t.fail(error)
+    helper.randomPort(function(_port) {
+      port = _port
+      server.listen(port, TEST_HOST, function() {
+        var url = TEST_URL + port + '/user/'
+        helper.makeGetRequest(url, function(error, response, body) {
+          if (error) t.fail(error)
 
-        t.ok(/application\/json/.test(response.headers['content-type']),
-             "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+          t.ok(/application\/json/.test(response.headers['content-type']),
+               "got correct content type")
+          t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        })
       })
     })
   })
 
-  t.test("route variables", function (t) {
+  t.test("route variables", function(t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({
       express4: true,
@@ -90,9 +92,9 @@ test("test capture_params for express", function(t) {
     })
     var app = require('express')()
     var server = require('http').createServer(app)
+    var port = null
 
-
-    t.tearDown(function () {
+    t.tearDown(function() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -103,18 +105,18 @@ test("test capture_params for express", function(t) {
     // set capture_params so we get the data we need.
     agent.config.capture_params = true
 
-    app.get('/user/:id', function (req, res) {
+    app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
       res.send({yep : true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       if (transaction.trace.parameters.httpResponseMessage) {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -126,7 +128,7 @@ test("test capture_params for express", function(t) {
         }, 'parameters should include route params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -138,18 +140,22 @@ test("test capture_params for express", function(t) {
       }
     })
 
-    server.listen(TEST_PORT, TEST_HOST, function () {
-      request.get(TEST_URL + '/user/5', function (error, response, body) {
-        if (error) t.fail(error)
+    helper.randomPort(function(_port) {
+      port = _port
+      server.listen(port, TEST_HOST, function() {
+        var url = TEST_URL + port + '/user/5'
+        helper.makeGetRequest(url, function(error, response, body) {
+          if (error) t.fail(error)
 
-        t.ok(/application\/json/.test(response.headers['content-type']),
-             "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+          t.ok(/application\/json/.test(response.headers['content-type']),
+               "got correct content type")
+          t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        })
       })
     })
   })
 
-  t.test("query variables", {timeout : 1000}, function (t) {
+  t.test("query variables", {timeout : 1000}, function(t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({
       express4: true,
@@ -157,9 +163,9 @@ test("test capture_params for express", function(t) {
     })
     var app = require('express')()
     var server = require('http').createServer(app)
+    var port = null
 
-
-    t.tearDown(function () {
+    t.tearDown(function() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -170,18 +176,18 @@ test("test capture_params for express", function(t) {
     // set capture_params so we get the data we need.
     agent.config.capture_params = true
 
-    app.get('/user/', function (req, res) {
+    app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
       res.send({yep : true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       if (transaction.trace.parameters.httpResponseMessage) {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -193,7 +199,7 @@ test("test capture_params for express", function(t) {
         }, 'parameters should include query params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -205,18 +211,22 @@ test("test capture_params for express", function(t) {
       }
     })
 
-    server.listen(TEST_PORT, TEST_HOST, function () {
-      request.get(TEST_URL + '/user/?name=bob', function (error, response, body) {
-        if (error) t.fail(error)
+    helper.randomPort(function(_port) {
+      port = _port
+      server.listen(port, TEST_HOST, function() {
+        var url = TEST_URL + port + '/user/?name=bob'
+        helper.makeGetRequest(url, function(error, response, body) {
+          if (error) t.fail(error)
 
-        t.ok(/application\/json/.test(response.headers['content-type']),
-             "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+          t.ok(/application\/json/.test(response.headers['content-type']),
+               "got correct content type")
+          t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        })
       })
     })
   })
 
-  t.test("route and query variables", function (t) {
+  t.test("route and query variables", function(t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({
       express4: true,
@@ -224,9 +234,9 @@ test("test capture_params for express", function(t) {
     })
     var app = require('express')()
     var server = require('http').createServer(app)
+    var port = null
 
-
-    t.tearDown(function () {
+    t.tearDown(function() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -237,18 +247,18 @@ test("test capture_params for express", function(t) {
     // set capture_params so we get the data we need.
     agent.config.capture_params = true
 
-    app.get('/user/:id', function (req, res) {
+    app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
       res.send({yep : true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       if (transaction.trace.parameters.httpResponseMessage) {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -261,7 +271,7 @@ test("test capture_params for express", function(t) {
         }, 'parameters should include query params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
-          "request.headers.host" : "localhost:9876",
+          "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
           "httpResponseCode": "200",
@@ -274,27 +284,31 @@ test("test capture_params for express", function(t) {
       }
     })
 
-    server.listen(TEST_PORT, TEST_HOST, function () {
-      request.get(TEST_URL + '/user/5?name=bob', function (error, response, body) {
-        if (error) t.fail(error)
+    helper.randomPort(function(_port) {
+      port = _port
+      server.listen(port, TEST_HOST, function() {
+        var url = TEST_URL + port + '/user/5?name=bob'
+        helper.makeGetRequest(url, function(error, response, body) {
+          if (error) t.fail(error)
 
-        t.ok(/application\/json/.test(response.headers['content-type']),
-             "got correct content type")
-        t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+          t.ok(/application\/json/.test(response.headers['content-type']),
+               "got correct content type")
+          t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
+        })
       })
     })
   })
 
-  t.test("query params mask route parameters", function (t) {
+  t.test("query params mask route parameters", function(t) {
     var agent = helper.instrumentMockedAgent({
       express4: true,
       send_request_uri_attribute: true
     })
     var app = require('express')()
     var server = require('http').createServer(app)
+    var port = null
 
-
-    t.tearDown(function () {
+    t.tearDown(function() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -305,13 +319,13 @@ test("test capture_params for express", function(t) {
     // set capture_params so we get the data we need.
     agent.config.capture_params = true
 
-    app.get('/user/:id', function (req, res) {
+    app.get('/user/:id', function(req, res) {
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function(transaction) {
       var expectedValues = {
-            "request.headers.host" : "localhost:9876",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "httpResponseCode": "200",
@@ -335,9 +349,11 @@ test("test capture_params for express", function(t) {
       t.end()
     })
 
-    server.listen(TEST_PORT, TEST_HOST, function () {
-      request.get(TEST_URL + '/user/5?id=6')
+    helper.randomPort(function(_port) {
+      port = _port
+      server.listen(port, TEST_HOST, function() {
+        helper.makeGetRequest(TEST_URL + port + '/user/5?id=6')
+      })
     })
   })
-
 })

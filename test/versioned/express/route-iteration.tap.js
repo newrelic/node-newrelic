@@ -1,16 +1,16 @@
 'use strict'
 
-var test    = require('tap').test
-var helper  = require('../../lib/agent_helper.js')
+var test = require('tap').test
+var helper = require('../../lib/agent_helper')
 
 
 test("new relic should not break route iteration", function(t) {
   t.plan(1)
-  var agent   = helper.instrumentMockedAgent()
+  var agent = helper.instrumentMockedAgent()
   var express = require('express')
-  var router  = new express.Router()
-  var childA   = new express.Router()
-  var childB   = new express.Router()
+  var router = new express.Router()
+  var childA = new express.Router()
+  var childB = new express.Router()
 
 
   t.tearDown(function cb_tearDown() {
@@ -32,14 +32,15 @@ test("new relic should not break route iteration", function(t) {
   router.use(childA)
   router.use(childB)
 
-  function findAllRoutes(router, path) {
-    if (!router.stack) {
-      return path
-    }
-
-    return router.stack.map(function(router) {
-      return findAllRoutes(router.handle, path + (router.route && router.route.path || ''))
-    })
-  }
   t.deepEqual(findAllRoutes(router, ''), ['/get', ['/test'], ['/hello']])
 })
+
+function findAllRoutes(router, path) {
+  if (!router.stack) {
+    return path
+  }
+
+  return router.stack.map(function(router) {
+    return findAllRoutes(router.handle, path + (router.route && router.route.path || ''))
+  })
+}

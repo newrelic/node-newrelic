@@ -2,8 +2,8 @@
 
 var test = require('tap').test
 var helper  = require('../../lib/agent_helper')
-var request = require('request')
 var http = require('http')
+
 
 test('app should be at top of stack when mounted', function(t) {
   var agent = helper.instrumentMockedAgent()
@@ -13,7 +13,7 @@ test('app should be at top of stack when mounted', function(t) {
     helper.unloadAgent(agent)
   })
 
-  t.plan(2)
+  t.plan(1)
 
   var main = express()
   var child = express()
@@ -27,12 +27,6 @@ test('app should be at top of stack when mounted', function(t) {
   })
 
   main.use(child)
-
-  t.equal(
-    main._router.stack.length,
-    3,
-    '3 middleware functions: query parser, Express, child'
-  )
 })
 
 test('app should be at top of stack when mounted', function(t) {
@@ -68,50 +62,53 @@ test('app should be at top of stack when mounted', function(t) {
     finishedTransactions[tx.id] = tx
   })
 
-  server.listen(4123, function() {
-    request.get('http://localhost:4123/myApp/myChild/app', function(err, res, body) {
-      t.notOk(err)
-      t.equal(
-        finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:app/:child/app',
-        'should set partialName correctly for nested apps'
-      )
-    })
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      var host = 'http://localhost:' + port
+      helper.makeGetRequest(host + '/myApp/myChild/app', function(err, res, body) {
+        t.notOk(err)
+        t.equal(
+          finishedTransactions[body].nameState.getName(),
+          'Expressjs/GET//:app/:child/app',
+          'should set partialName correctly for nested apps'
+        )
+      })
 
-    request.get('http://localhost:4123/myApp/nestedApp  ', function(err, res, body) {
-      t.notOk(err)
-      t.equal(
-        finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:app/nestedApp',
-        'should set partialName correctly for deeply nested apps'
-      )
-    })
+      helper.makeGetRequest(host + '/myApp/nestedApp  ', function(err, res, body) {
+        t.notOk(err)
+        t.equal(
+          finishedTransactions[body].nameState.getName(),
+          'Expressjs/GET//:app/nestedApp',
+          'should set partialName correctly for deeply nested apps'
+        )
+      })
 
-    request.get('http://localhost:4123/myApp/myChild/router', function(err, res, body) {
-      t.notOk(err)
-      t.equal(
-        finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:router/:child/router',
-        'should set partialName correctly for nested routers'
-      )
-    })
+      helper.makeGetRequest(host + '/myApp/myChild/router', function(err, res, body) {
+        t.notOk(err)
+        t.equal(
+          finishedTransactions[body].nameState.getName(),
+          'Expressjs/GET//:router/:child/router',
+          'should set partialName correctly for nested routers'
+        )
+      })
 
-    request.get('http://localhost:4123/myApp/nestedRouter', function(err, res, body) {
-      t.notOk(err)
-      t.equal(
-        finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:router/nestedRouter',
-        'should set partialName correctly for deeply nested routers'
-      )
-    })
+      helper.makeGetRequest(host + '/myApp/nestedRouter', function(err, res, body) {
+        t.notOk(err)
+        t.equal(
+          finishedTransactions[body].nameState.getName(),
+          'Expressjs/GET//:router/nestedRouter',
+          'should set partialName correctly for deeply nested routers'
+        )
+      })
 
-    request.get('http://localhost:4123/foo/bar', function(err, res, body) {
-      t.notOk(err)
-      t.equal(
-        finishedTransactions[body].nameState.getName(),
-        'Expressjs/GET//:foo/:bar',
-        'should reset partialName after passing through a router without a matching route'
-      )
+      helper.makeGetRequest(host + '/foo/bar', function(err, res, body) {
+        t.notOk(err)
+        t.equal(
+          finishedTransactions[body].nameState.getName(),
+          'Expressjs/GET//:foo/:bar',
+          'should reset partialName after a router without a matching route'
+        )
+      })
     })
   })
 
@@ -153,11 +150,13 @@ test('should not pass wrong args when transaction is not present', function(t) {
     res.send('ok')
   })
 
-  server.listen(4123, function() {
-    request.get('http://localhost:4123/', function(err, res, body) {
-      t.notOk(err)
-      t.equal(body, 'ok')
-      t.end()
+  helper.randomPort(function(port) {
+    server.listen(port, function() {
+      helper.makeGetRequest('http://localhost:' + port + '/', function(err, res, body) {
+        t.notOk(err)
+        t.equal(body, 'ok')
+        t.end()
+      })
     })
   })
 })

@@ -2,9 +2,9 @@
 
 var test = require('tap').test
 var request = require('request')
-var helper = require('../../lib/agent_helper.js')
+var helper = require('../../lib/agent_helper')
 
-test("Express 4 router introspection", function(t) {
+test("Express router introspection", function(t) {
   t.plan(14)
 
   var agent = helper.instrumentMockedAgent()
@@ -49,8 +49,9 @@ test("Express 4 router introspection", function(t) {
     t.equal(web.parameters.param2, 'bar', 'should have param2')
   })
 
-  server.listen(8089, function() {
-    var url = 'http://localhost:8089/a/foo/b/bar'
+  server.listen(0, function() {
+    var port = server.address().port
+    var url = 'http://localhost:' + port + '/a/foo/b/bar'
     request.get(url, {json : true}, function(error, res, body) {
       t.error(error, 'should not have errored')
       t.equal(res.statusCode, 200, 'should have ok status')

@@ -1,19 +1,19 @@
 'use strict'
 
-var test    = require('tap').test
+var test = require('tap').test
 var request = require('request')
-var helper  = require('../../lib/agent_helper.js')
-var API     = require('../../../api.js')
+var helper = require('../../lib/agent_helper')
+var API = require('../../../api')
 
 
-test("ignoring an Express 4 route", function(t) {
+test("ignoring an Express route", function(t) {
   t.plan(7)
 
-  var agent   = helper.instrumentMockedAgent()
-  var api     = new API(agent)
+  var agent = helper.instrumentMockedAgent()
+  var api = new API(agent)
   var express = require('express')
-  var app     = express()
-  var server  = require('http').createServer(app)
+  var app = express()
+  var server = require('http').createServer(app)
 
 
   t.tearDown(function cb_tearDown() {
@@ -45,11 +45,10 @@ test("ignoring an Express 4 route", function(t) {
     res.end()
   })
 
-  server.listen(8089, function() {
-    request.get('http://localhost:8089/polling/31337',
-                {json : true},
-                function(error, res, body) {
-
+  server.listen(0, function() {
+    var port = server.address().port
+    var url = 'http://localhost:' + port + '/polling/31337'
+    request.get(url, {json : true}, function(error, res, body) {
       t.equal(res.statusCode, 400, "got expected error")
       t.deepEqual(body, {status : 'pollpollpoll'}, "got expected response")
     })

@@ -4,10 +4,8 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var request = require('request').defaults({json: true})
 
-var PORT = 8089
 
-
-test('Express 4 route param', function(t) {
+test('Express route param', function(t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
   var server = createServer(express)
@@ -18,8 +16,10 @@ test('Express 4 route param', function(t) {
     })
   })
 
-  server.listen(PORT, function() {
+  server.listen(0, function() {
     t.autoend()
+    var port = server.address().port
+
     t.test('pass-through param', function(t) {
       t.plan(4)
 
@@ -30,7 +30,7 @@ test('Express 4 route param', function(t) {
         )
       })
 
-      testRequest('foo', function(err, body) {
+      testRequest(port, 'foo', function(err, body) {
         t.notOk(err, 'should not have errored')
         t.equal(body.action, 'foo', 'should pass through correct parameter value')
         t.equal(body.name, 'action', 'should pass through correct parameter name')
@@ -47,7 +47,7 @@ test('Express 4 route param', function(t) {
         )
       })
 
-      testRequest('deny', function(err, body) {
+      testRequest(port, 'deny', function(err, body) {
         t.notOk(err, 'should not have errored')
         t.equal(body, 'denied', 'should have responded from within paramware')
       })
@@ -63,7 +63,7 @@ test('Express 4 route param', function(t) {
         )
       })
 
-      testRequest('preempt', function(err, body) {
+      testRequest(port, 'preempt', function(err, body) {
         t.notOk(err, 'should not have errored')
         t.equal(body.action, 'preempt', 'should pass through correct parameter value')
         t.equal(body.name, 'action', 'should pass through correct parameter name')
@@ -72,8 +72,8 @@ test('Express 4 route param', function(t) {
   })
 })
 
-function testRequest(param, cb) {
-  var url = 'http://localhost:' + PORT + '/a/b/' + param + '/c'
+function testRequest(port, param, cb) {
+  var url = 'http://localhost:' + port + '/a/b/' + param + '/c'
   request.get(url, function(err, response, body) {
     cb(err, body)
   })
