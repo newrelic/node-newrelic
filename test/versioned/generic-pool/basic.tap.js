@@ -2,16 +2,11 @@
 
 var a = require('async')
 var helper = require('../../lib/agent_helper')
-var semver = require('semver')
 var tap = require('tap')
 
 
 tap.test('generic-pool', function(t) {
   t.autoend()
-
-  if (semver.lt(process.version, '4.0.0')) {
-    return
-  }
 
   var agent = null
   var pool = null
