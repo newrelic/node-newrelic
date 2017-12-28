@@ -8,6 +8,7 @@ var async = require('async')
 var shimmer = require('../../lib/shimmer')
 var Agent = require('../../lib/agent')
 var params = require('../lib/params')
+var request = require('request')
 
 
 /*
@@ -196,8 +197,14 @@ var helper = module.exports = {
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
-  bootstrapMongoDB : function bootstrapMongoDB(collections, callback) {
-    var mongodb = require('mongodb')
+  bootstrapMongoDB : function bootstrapMongoDB(mongodb, collections, callback) {
+    if (!callback) {
+      // bootstrapMongoDB(collections, callback)
+      callback = collections
+      collections = mongodb
+      mongodb = require('mongodb')
+    }
+
     var server  = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
       auto_reconnect : true
     })
@@ -209,15 +216,15 @@ var helper = module.exports = {
       retryMiliSeconds: 300
     })
 
-    db.open(function(err, db) {
+    db.open(function(err) {
       if (err) return callback(err)
 
-      async.eachSeries(collections, function(collection, callback) {
+      async.eachSeries(collections, function(collection, cb) {
         db.dropCollection(collection, function(err) {
           // It's ok if the collection didn't exist before
           if (err && err.errmsg === 'ns not found') err = null
 
-          callback(err)
+          cb(err)
         })
       }, function(err) {
         db.close(function(err2) {
@@ -237,7 +244,7 @@ var helper = module.exports = {
   bootstrapMySQL : function bootstrapMySQL(callback) {
     var bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js')
     var config = architect.loadConfig(bootstrapped)
-    architect.createApp(config, function (error, app) {
+    architect.createApp(config, function(error, app) {
       if (error) return callback(error)
 
       return callback(null, app)
@@ -247,34 +254,40 @@ var helper = module.exports = {
   /**
    * Select Redis DB index and flush entries in it.
    *
-   * @param Function callback The operations to be performed while the server
-   *                          is running.
+   * @param {redis} [redis]
+   * @param {number} dbIndex
+   * @param {function} callback
+   *  The operations to be performed while the server is running.
    */
-  bootstrapRedis : function bootstrapRedis(db_index, callback) {
-    var redis = require('redis')
+  bootstrapRedis: function bootstrapRedis(redis, dbIndex, callback) {
+    if (!callback) {
+      // bootstrapRedis(dbIndex, callback)
+      callback = dbIndex
+      dbIndex = redis
+      redis = require('redis')
+    }
     var client = redis.createClient(params.redis_port, params.redis_host)
-    client.select(db_index, function cb_select(err) {
+    client.select(dbIndex, function cb_select(err) {
       if (err) {
-        client.end()
+        client.end(true)
         return callback(err)
       }
 
       client.flushdb(function(err) {
-        client.end()
-
+        client.end(true)
         callback(err)
       })
     })
   },
 
-  withSSL : function (callback) {
-    fs.readFile(KEYPATH, function (error, key) {
+  withSSL : function(callback) {
+    fs.readFile(KEYPATH, function(error, key) {
       if (error) return callback(error)
 
-      fs.readFile(CERTPATH, function (error, certificate) {
+      fs.readFile(CERTPATH, function(error, certificate) {
         if (error) return callback(error)
 
-        fs.readFile(CAPATH, function (error, ca) {
+        fs.readFile(CAPATH, function(error, ca) {
           if (error) return callback(error)
 
           callback(null, key, certificate, ca)
@@ -284,22 +297,59 @@ var helper = module.exports = {
   },
 
   // FIXME: I long for the day I no longer need this gross hack
-  onlyDomains : function () {
-    var exceptionHandlers = process._events['uncaughtException']
+  onlyDomains : function() {
+    var exceptionHandlers = process._events.uncaughtException
     if (exceptionHandlers) {
       if (Array.isArray(exceptionHandlers)) {
-        process._events['uncaughtException'] = exceptionHandlers.filter(function cb_filter(f) {
+        process._events.uncaughtException = exceptionHandlers.filter(function(f) {
           return f.name === 'uncaughtHandler'
         })
-      }
-      else {
-        if (exceptionHandlers.name !== 'uncaughtException') {
-          delete process._events['uncaughtException']
-        }
+      } else if (exceptionHandlers.name !== 'uncaughtException') {
+        delete process._events.uncaughtException
       }
     }
 
     return exceptionHandlers
+  },
+
+  randomPort: function(callback) {
+    var net = require('net')
+    // Min port: 1024 (without root)
+    // Max port: 65535
+    // Our range: 1024-65024
+    var port = Math.ceil(Math.random() * 64000 + 1024)
+    var server = net.createServer().once('listening', function() {
+      server.close(function onClose() {
+        process.nextTick(callback.bind(null, port))
+      })
+    }).once('error', function(err) {
+      if (err.code === 'EADDRINUSE') {
+        helper.randomPort(callback)
+      } else {
+        throw err
+      }
+    })
+    server.listen(port)
+  },
+
+  makeGetRequest: function(url, options, callback) {
+    if (!options || typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+    request.get(url, options, function requestCb(error, response, body) {
+      if (error) {
+        if (error.code === 'ECONNREFUSED') {
+          return request.get(url, requestCb)
+        }
+        if (typeof callback === 'function') {
+          return callback(error)
+        }
+      }
+      if (typeof callback === 'function') {
+        return callback(null, response, body)
+      }
+    })
   }
 }
 

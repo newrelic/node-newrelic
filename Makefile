@@ -91,9 +91,11 @@ docker:
 	fi; \
 
 integration: node_modules ca-gen $(CERTIFICATE) docker
-	@node test/bin/install_sub_deps integration
 	@node test/bin/install_sub_deps versioned
 	time $(TAP) $(INTEGRATION)
+
+versioned: node_modules ca-gen $(CERTIFICATE) docker
+	time ./bin/run-versioned-tests.sh
 
 prerelease: node_modules ca-gen $(CERTIFICATE) docker
 	@node test/bin/install_sub_deps prerelease

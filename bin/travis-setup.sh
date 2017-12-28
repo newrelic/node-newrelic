@@ -24,17 +24,17 @@ else
   echo " --- not upgrading GCC --- "
 fi
 
-if [ "$SUITE" = "integration" ]; then
-  echo " --- installing integration requirements --- "
+if [ "$SUITE" = "integration" ] || [ "$SUITE" = "versioned" ]; then
+  echo " --- installing $SUITE requirements --- "
 
-  # MongoDB is always installed in integrations.
+  # MongoDB is always installed in integrations and versioned.
   echo " --- installing mongodb --- "
   add_toolchain
   ./bin/travis-install-mongo.sh > /dev/null
 
-  echo " --- done installing integration requirements --- "
+  echo " --- done installing $SUITE requirements --- "
 else
-  echo " --- not installing integration requirements --- "
+  echo " --- not installing $SUITE requirements --- "
 fi
 
 if [ "$SUITE" = "security" ]; then

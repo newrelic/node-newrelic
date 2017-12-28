@@ -15,6 +15,7 @@ env:
   - SUITE=lint
   - SUITE=prerelease
   - SUITE=security
+  - SUITE=versioned
 matrix:
   exclude:
     - node_js: "0.10"
