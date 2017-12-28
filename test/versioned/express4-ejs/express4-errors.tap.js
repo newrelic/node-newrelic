@@ -2,7 +2,7 @@
 
 var helper = require('../../lib/agent_helper')
 var http = require('http')
-var test = require('tap').test
+var tap = require('tap')
 
 var express
 var agent
@@ -17,7 +17,7 @@ runTests({
 })
 
 function runTests(flags) {
-  test('reports error when thrown from a route', function(t) {
+  tap.test('reports error when thrown from a route', function(t) {
     setup(t)
 
     app.get('/test', function(req, res) {
@@ -31,7 +31,7 @@ function runTests(flags) {
     })
   })
 
-  test('reports error when thrown from a middleware', function(t) {
+  tap.test('reports error when thrown from a middleware', function(t) {
     setup(t)
 
     app.use(function(req, res, next) {
@@ -45,7 +45,7 @@ function runTests(flags) {
     })
   })
 
-  test('reports error when called in next from a middleware', function(t) {
+  tap.test('reports error when called in next from a middleware', function(t) {
     setup(t)
 
     app.use(function(req, res, next) {
@@ -59,7 +59,7 @@ function runTests(flags) {
     })
   })
 
-  test('should not report error when error handler responds', function(t) {
+  tap.test('should not report error when error handler responds', function(t) {
    setup(t)
 
    app.get('/test', function(req, res) {
@@ -77,7 +77,7 @@ function runTests(flags) {
    })
   })
 
-  test('should report error when error handler responds, but sets error status code',
+  tap.test('should report error when error handler responds, but sets error status code',
       function(t) {
    setup(t)
 
@@ -97,7 +97,7 @@ function runTests(flags) {
    })
   })
 
-  test('should report the error when error handler calls next with the error', function(t) {
+  tap.test('should report the error when error handler calls next with the error', function(t) {
    setup(t)
 
    app.get('/test', function(req, res) {
@@ -115,7 +115,7 @@ function runTests(flags) {
    })
   })
 
-  test('should report error when error handler does not handle error and is followed by ' +
+  tap.test('should report error when error handler does not handle error and is followed by ' +
       'a route handler', function(t) {
    setup(t)
 
@@ -138,7 +138,7 @@ function runTests(flags) {
    })
   })
 
-  test('should not report error when error handler calls next without the error and is ' +
+  tap.test('should not report error when error handler calls next without the error and is ' +
       'followed by a route handler', function(t) {
     setup(t)
 
@@ -161,7 +161,7 @@ function runTests(flags) {
     })
   })
 
-  test('should not report error when error is thrown in a nested router but handled in' +
+  tap.test('should not report error when error is thrown in a nested router but handled in' +
       ' error handler outside of the router', function(t) {
     setup(t)
 
@@ -183,38 +183,48 @@ function runTests(flags) {
     })
   })
 
-  test('does not error when request is aborted', function(t) {
+  tap.test('does not error when request is aborted', function(t) {
     t.plan(3)
     setup(t)
 
+    var request = null
+
     app.get('/test', function(req, res, next) {
+      t.comment('middleware')
       t.ok(agent.getTransaction(), 'transaction exists')
+
       // generate error after client has aborted
+      request.abort()
       setTimeout(function() {
+        t.comment('timed out')
         t.ok(agent.getTransaction() == null, 'transaction has already ended')
         next(new Error('some error'))
-      }, 20)
+      }, 100)
     })
 
     app.use(function(error, req, res, next) {
+      t.comment('errorware')
       t.ok(agent.getTransaction() == null, 'no active transaction when responding')
       res.end()
     })
 
     var server = app.listen(function() {
+      t.comment('making request')
       var port = server.address().port
-      var req = http.request({
+      request = http.request({
         hostname: 'localhost',
         port: port,
         path: '/test'
       }, function() {})
-      req.end()
-      // add error handler, otherwise aborting will cause an exception
-      req.on('error', function() {})
+      request.end()
 
-      setTimeout(function() {
-        req.abort()
-      }, 10)
+      // add error handler, otherwise aborting will cause an exception
+      request.on('error', function(err) {
+        t.comment('request errored: ' + err)
+      })
+      request.on('abort', function() {
+        t.comment('request aborted')
+      })
     })
 
     t.tearDown(function cb_tearDown() {
