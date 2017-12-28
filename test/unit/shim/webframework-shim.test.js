@@ -1,5 +1,6 @@
 'use strict'
 
+var sinon = require('sinon')
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
@@ -414,6 +415,27 @@ describe('WebFrameworkShim', function() {
           wrapped(req, 'a', 'b', 'c')
           expect(called).to.be.true()
         })
+      })
+
+      it('should not affect transaction name state if type is errorware', function() {
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: '/foo/bar'}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            sinon.spy(tx.nameState, 'appendPath')
+            sinon.spy(tx.nameState, 'popPath')
+            var segment = wrapped(req)
+
+            expect(tx.nameState.appendPath.called).to.be.false()
+            expect(tx.nameState.popPath.called).to.be.false()
+            expect(segment).to.exist().and.have.property('name', expectedName)
+          })
+        }
       })
 
       it('should name the segment according to the middleware type', function() {
