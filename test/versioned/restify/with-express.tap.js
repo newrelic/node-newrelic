@@ -1,20 +1,16 @@
 'use strict'
 
 var tap     = require('tap')
-var test    = tap.test
 var request = require('request')
 var helper  = require('../../lib/agent_helper')
-var semver = require('semver')
 
 
-test("agent instrumentation of restify shouldn't affect express query parsing middleware",
-  {skip: semver.satisfies(process.version, '>=7.0.0')},
-  function(t) {
+tap.test("restify shouldn't affect express query parsing middleware", function(t) {
   t.plan(2)
 
   var agent   = helper.instrumentMockedAgent()
   var express = require('express')
-  var restify = require('restify')
+  var restify = require('restify') // eslint-disable-line no-unused-vars
   var app     = express()
   var server  = require('http').createServer(app)
 

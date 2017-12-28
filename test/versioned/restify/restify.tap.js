@@ -1,23 +1,14 @@
 'use strict'
 
 var tap     = require('tap')
-var test    = tap.test
 var request = require('request')
 var helper  = require('../../lib/agent_helper')
-var semver = require('semver')
 
 
-/*
- *
- * CONSTANTS
- *
- */
 var METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
 
-test("agent instrumentation of HTTP shouldn't crash when Restify handles a connection",
-  {skip: semver.satisfies(process.version, '>=7.0.0')},
-  function(t) {
+tap.test("shouldn't crash when Restify handles a connection", function(t) {
   t.plan(7)
 
   var agent   = helper.instrumentMockedAgent()
@@ -35,10 +26,12 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
     res.send('hello ' + req.params.name)
   })
 
-  server.listen(8765, function() {
+  server.listen(0, function() {
+    var port = server.address().port
     t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-    request.get('http://localhost:8765/hello/friend', function(error, response, body) {
+    var url = 'http://localhost:' + port + '/hello/friend'
+    request.get(url, function(error, response, body) {
       if (error) return t.fail(error)
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 
@@ -53,9 +46,7 @@ test("agent instrumentation of HTTP shouldn't crash when Restify handles a conne
   })
 })
 
-test("Restify should still be instrumented when run with SSL",
-  {skip: semver.satisfies(process.version, '>=7.0.0')},
-  function(t) {
+tap.test("Restify should still be instrumented when run with SSL", function(t) {
   t.plan(7)
 
   helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
@@ -79,10 +70,11 @@ test("Restify should still be instrumented when run with SSL",
       res.send('hello ' + req.params.name)
     })
 
-    server.listen(8443, function() {
+    server.listen(0, function() {
+      var port = server.address().port
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-      var opts = {url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca}
+      var opts = {url : 'https://ssl.lvh.me:' + port + '/hello/friend', ca : ca}
       request.get(opts, function(error, response, body) {
         if (error) {
           t.fail(error)

@@ -1,16 +1,12 @@
 'use strict'
 
-var path    = require('path')
-var test    = require('tap').test
-var request = require('request')
-var helper  = require('../../lib/agent_helper.js')
-var API     = require('../../../api.js')
+var tap    = require('tap')
+var request = require('request').defaults({json: true})
+var helper  = require('../../lib/agent_helper')
+var API     = require('../../../api')
 
 
-test(
-  "Restify router introspection",
-  {skip: function () {return semver.satisfies(process.version, '>=7.0.0')}},
-  function (t) {
+tap.test("Restify router introspection", function(t) {
   t.plan(3)
 
   var agent  = helper.instrumentMockedAgent()
@@ -28,18 +24,16 @@ test(
     })
   })
 
-  server.get('/test/:id', function (req, res, next) {
+  server.get('/test/:id', function(req, res, next) {
     var rum = api.getBrowserTimingHeader()
     t.equal(rum.substr(0,7), '<script')
     res.send({status : 'ok'})
     next()
   })
 
-  server.listen(8089, function () {
-    request.get('http://localhost:8089/test/31337',
-                {json : true},
-                function (error, res, body) {
-
+  server.listen(0, function() {
+    var port = server.address().port
+    request.get('http://localhost:' + port + '/test/31337', function(error, res, body) {
       t.equal(res.statusCode, 200, "nothing exploded")
       t.deepEqual(body, {status : 'ok'}, "got expected respose")
       t.end()

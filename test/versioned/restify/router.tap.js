@@ -1,15 +1,11 @@
 'use strict'
 
-var path    = require('path')
-var test    = require('tap').test
-var request = require('request')
-var helper  = require('../../lib/agent_helper.js')
+var tap    = require('tap')
+var request = require('request').defaults({json: true})
+var helper  = require('../../lib/agent_helper')
 
 
-test(
-  "Restify router introspection",
-  {skip: function () {return semver.satisfies(process.version, '>=7.0.0')}},
-  function (t) {
+tap.test("Restify router introspection", function(t) {
   t.plan(12)
 
   var agent  = helper.instrumentMockedAgent()
@@ -25,7 +21,7 @@ test(
   // need to capture parameters
   agent.config.capture_params = true
 
-  agent.on('transactionFinished', function (transaction) {
+  agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Restify/GET//test/:id',
             "transaction has expected name")
     t.equal(transaction.url, '/test/31337', "URL is left alone")
@@ -41,18 +37,16 @@ test(
     t.equal(web.parameters.id, '31337', "namer gets parameters out of route")
   })
 
-  server.get('/test/:id', function (req, res, next) {
+  server.get('/test/:id', function(req, res, next) {
     t.ok(agent.getTransaction(), "transaction is available")
 
     res.send({status : 'ok'})
     next()
   })
 
-  server.listen(8089, function () {
-    request.get('http://localhost:8089/test/31337',
-                {json : true},
-                function (error, res, body) {
-
+  server.listen(0, function() {
+    var port = server.address().port
+    request.get('http://localhost:' + port + '/test/31337', function(error, res, body) {
       t.equal(res.statusCode, 200, "nothing exploded")
       t.deepEqual(body, {status : 'ok'}, "got expected respose")
     })
