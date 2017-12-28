@@ -2,8 +2,10 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var testPromiseSegments = require('../../integration/instrumentation/promises/segments.js')
-var testTransactionState = require('../../integration/instrumentation/promises/transaction-state.js')
+var testPromiseSegments =
+  require('../../integration/instrumentation/promises/segments')
+var testTransactionState =
+  require('../../integration/instrumentation/promises/transaction-state')
 
 
 test('transaction state', function(t) {
@@ -21,7 +23,7 @@ test('segments', function(t) {
 })
 
 test('no transaction', function(t) {
-  var agent = setupAgent(t)
+  setupAgent(t)
   var Promise = require('bluebird')
 
   Promise.resolve(0).then(function step1() {
@@ -43,9 +45,7 @@ test('asCallback', function(t) {
   var Promise = require('bluebird')
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve, reject) {
-      resolve(123)
-    }).asCallback(function() {
+    Promise.resolve(123).asCallback(function() {
       t.equal(agent.getTransaction(), transaction, 'has the right transaction')
       t.end()
     })
