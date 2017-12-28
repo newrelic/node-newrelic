@@ -1,5 +1,5 @@
 {
-  "name": "node-mongodb-native-2-0-1",
+  "name": "node-mongodb-native-2-x",
   "version": "0.0.0",
   "description": "in which we discover that the MongoDB instrumentation is brittle",
   "main": "mongodb-lifecycle.tap.js",
@@ -9,7 +9,7 @@
   "author": "Forrest L Norvell <forrest@newrelic.com>",
   "license": "proprietary",
   "dependencies": {
-    "mongodb": "*"
+    "mongodb": "^2"
   },
   "devDependencies": {},
   "private": true
