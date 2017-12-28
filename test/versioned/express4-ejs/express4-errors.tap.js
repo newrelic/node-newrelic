@@ -1,6 +1,6 @@
 'use strict'
 
-var helper = require('../../lib/agent_helper.js')
+var helper = require('../../lib/agent_helper')
 var http = require('http')
 var test = require('tap').test
 
@@ -204,13 +204,13 @@ function runTests(flags) {
     var server = app.listen(function() {
       var port = server.address().port
       var req = http.request({
-        host: 'localhost',
+        hostname: 'localhost',
         port: port,
         path: '/test'
       }, function() {})
       req.end()
       // add error handler, otherwise aborting will cause an exception
-      req.on('error', function(e) {console.log(e)})
+      req.on('error', function() {})
 
       setTimeout(function() {
         req.abort()
@@ -235,7 +235,7 @@ function runTests(flags) {
     var statusCode
     var errors
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function() {
       errors = agent.errors.errors
       if (statusCode) {
         callback(errors, statusCode)
@@ -243,7 +243,7 @@ function runTests(flags) {
     })
 
     var endpoint = '/test'
-    var server = app.listen(function(){
+    var server = app.listen(function() {
       makeRequest(server, endpoint, function(response) {
         statusCode = response.statusCode
         if (errors) {
