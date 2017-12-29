@@ -1,17 +1,16 @@
 'use strict'
-// process.exit(0) // TODO failing
 
 var helper = require('../../lib/agent_helper')
 var request = require('request')
 var tap = require('tap')
-var conditions = require('./conditions')
+var utils = require('../hapi/hapi-utils')
 
-tap.test('Hapi Plugins', conditions, function(t) {
+tap.test('Hapi Plugins', function(t) {
   t.autoend()
 
-  var hapi = null
   var agent = null
   var server = null
+  var port = null
 
   // queue that executes outside of a transaction context
   var tasks = []
@@ -28,8 +27,7 @@ tap.test('Hapi Plugins', conditions, function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
-    hapi = require('hapi')
-    server = new hapi.Server({ port: 8089 })
+    server = utils.getServer()
     done()
   })
 
@@ -67,7 +65,8 @@ tap.test('Hapi Plugins', conditions, function(t) {
         return server.start()
       })
       .then(function() {
-        request.get('http://localhost:8089/test', function(error, res, body) {
+        port = server.info.port
+        request.get('http://localhost:' + port + '/test', function(error, res, body) {
           t.equal(body, 'hello', 'should not interfere with response')
         })
       })

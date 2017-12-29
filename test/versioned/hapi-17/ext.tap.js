@@ -1,16 +1,16 @@
 'use strict'
 
 var request = require('request')
-var test = require('tap').test
+var tap = require('tap')
 var helper = require('../../lib/agent_helper')
-var conditions = require('./conditions')
+var utils = require('../hapi/hapi-utils')
 
-test('Hapi.ext', conditions, function(t) {
+tap.test('Hapi v17 ext', function(t) {
   t.autoend()
 
-  var hapi
   var agent
   var server
+  var port
 
   // queue that executes outside of a transaction context
   var tasks = []
@@ -27,8 +27,7 @@ test('Hapi.ext', conditions, function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
-    hapi = require('hapi')
-    server = new hapi.Server({port: 8089})
+    server = utils.getServer()
     done()
   })
 
@@ -57,7 +56,8 @@ test('Hapi.ext', conditions, function(t) {
     })
 
     server.start().then(function() {
-      request.get('http://localhost:8089/test', function() {
+      port = server.info.port
+      request.get('http://localhost:' + port + '/test', function() {
         t.end()
       })
     })

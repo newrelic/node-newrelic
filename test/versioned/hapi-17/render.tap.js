@@ -1,57 +1,46 @@
 'use strict'
 
-var path = require('path')
 var util = require('util')
-var test = require('tap').test
+var tap = require('tap')
 var request = require('request')
 var helper = require('../../lib/agent_helper')
 var API = require('../../../api')
-var conditions = require('./conditions')
+var utils = require('../hapi/hapi-utils')
+var fixtures = require('../hapi/fixtures')
 
-var TEST_PATH = '/test'
-var TEST_PORT = 8089
-var TEST_HOST = 'localhost'
-var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-var BODY = '<!DOCTYPE html>\n' +
-           '<html>\n' +
-           '<head>\n' +
-           '  <title>yo dawg</title>\n' +
-           '</head>\n' +
-           '<body>\n' +
-           '  <p>I heard u like HTML.</p>\n' +
-           '</body>\n' +
-           '</html>\n'
-
-
-test('agent instrumentation of Hapi', conditions, function(t) {
+tap.test('agent instrumentation of Hapi', function(t) {
   t.autoend()
 
+  var agent = null
+  var server = null
+  var port = null
+
+  t.beforeEach(function(done) {
+    agent = helper.instrumentMockedAgent()
+    server = utils.getServer()
+    done()
+  })
+
+  t.afterEach(function() {
+    helper.unloadAgent(agent)
+    return server.stop()
+  })
+
   t.test('for a normal request', {timeout: 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var hapi = require('hapi')
-    var server = new hapi.Server({
-      host: TEST_HOST,
-      port: TEST_PORT
-    })
-
-    t.tearDown(function() {
-      helper.unloadAgent(agent)
-      return server.stop()
-    })
-
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
     server.route({
       method: 'GET',
-      path: TEST_PATH,
+      path: '/test',
       handler: function() {
         return { yep: true }
       }
     })
 
     server.start().then(function() {
-      request.get(TEST_URL, function(error, response, body) {
+      port = server.info.port
+      request.get('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
 
         t.ok(/application\/json/.test(response.headers['content-type']),
@@ -88,21 +77,9 @@ test('agent instrumentation of Hapi', conditions, function(t) {
   })
 
   t.test('using EJS templates', {timeout: 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var hapi = require('hapi')
-    var server = new hapi.Server({
-      host: TEST_HOST,
-      port: TEST_PORT
-    })
-
-    t.tearDown(function() {
-      helper.unloadAgent(agent)
-      return server.stop()
-    })
-
     server.route({
       method: 'GET',
-      path: TEST_PATH,
+      path: '/test',
       handler: function(req, h) {
         return h.view('index', {title: 'yo dawg'})
       }
@@ -129,7 +106,7 @@ test('agent instrumentation of Hapi', conditions, function(t) {
     server.register(require('vision'))
       .then(function() {
         server.views({
-          path: path.join(__dirname, 'views'),
+          path: '../hapi/views',
           engines: {
             ejs: require('ejs')
           }
@@ -137,11 +114,12 @@ test('agent instrumentation of Hapi', conditions, function(t) {
         return server.start()
       })
       .then(function() {
-        request(TEST_URL, function(error, response, body) {
+        port = server.info.port
+        request('http://localhost:' + port + '/test', function(error, response, body) {
           if (error) t.fail(error)
 
           t.equal(response.statusCode, 200, 'response code should be 200')
-          t.equal(body, BODY, 'template should still render fine')
+          t.equal(body, fixtures.htmlBody, 'template should still render fine')
 
           t.end()
         })
@@ -149,27 +127,15 @@ test('agent instrumentation of Hapi', conditions, function(t) {
   })
 
   t.test('should generate rum headers', { timeout: 1000 }, function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var hapi = require('hapi')
     var api = new API(agent)
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    var server = new hapi.Server({
-      host: TEST_HOST,
-      port: TEST_PORT
-    })
-
-    t.tearDown(function() {
-      helper.unloadAgent(agent)
-      return server.stop()
-    })
-
     server.route({
       method: 'GET',
-      path: TEST_PATH,
+      path: '/test',
       handler: function(req, h) {
         var rum = api.getBrowserTimingHeader()
         t.equal(rum.substr(0,7), '<script')
@@ -194,11 +160,12 @@ test('agent instrumentation of Hapi', conditions, function(t) {
         return server.start()
       })
       .then(function() {
-        request(TEST_URL, function(error, response, body) {
+        port = server.info.port
+        request('http://localhost:' + port + '/test', function(error, response, body) {
           if (error) t.fail(error)
 
           t.equal(response.statusCode, 200, 'response code should be 200')
-          t.equal(body, BODY, 'template should still render fine')
+          t.equal(body, fixtures.htmlBody, 'template should still render fine')
 
           t.end()
         })
@@ -206,27 +173,16 @@ test('agent instrumentation of Hapi', conditions, function(t) {
   })
 
   t.test('should trap errors correctly', function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var hapi = require('hapi')
-    var server = new hapi.Server({
-      debug: false,
-      host: TEST_HOST,
-      port: TEST_PORT
-    })
-
-    t.tearDown(function() {
-      helper.unloadAgent(agent)
-      server.stop()
-    })
+    var server = new hapi.Server({ options: {debug: false} })
 
     agent.on('transactionFinished', function(tx) {
-      t.equal(tx.name, 'WebTransaction/Hapi/GET/' + TEST_PATH,
+      t.equal(tx.name, 'WebTransaction/Hapi/GET/' + '/test',
         'Transaction should be named correctly.')
     })
 
     server.route({
       method: 'GET',
-      path: TEST_PATH,
+      path: '/test',
       handler: function() {
         var hmm
         hmm.ohno.failure.is.terrible()
@@ -234,7 +190,8 @@ test('agent instrumentation of Hapi', conditions, function(t) {
     })
 
     server.start().then(function() {
-      request.get(TEST_URL, function(error, response, body) {
+      port = server.info.port
+      request.get('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
 
         t.ok(response, 'got a response from Hapi')

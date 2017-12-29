@@ -3,19 +3,18 @@
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
-var conditions = require('./conditions')
+var utils = require('../hapi/hapi-utils')
 
-test('Hapi capture params support', conditions, function(t) {
+test('Hapi capture params support', function(t) {
   t.autoend()
 
-  var hapi = null
   var agent = null
   var server = null
+  var port = null
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
-    hapi = require('hapi')
-    server = new hapi.Server({ port: 8089 })
+    server = utils.getServer()
 
     // disabled by default
     agent.config.capture_params = true
@@ -32,7 +31,7 @@ test('Hapi capture params support', conditions, function(t) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {
         'request.headers.accept': 'application/json',
-        'request.headers.host': 'localhost:8089',
+        'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
@@ -53,8 +52,9 @@ test('Hapi capture params support', conditions, function(t) {
     })
 
     server.start().then(function() {
+      port = server.info.port
       var params = {
-        uri: 'http://localhost:8089/test/',
+        uri: 'http://localhost:' + port + '/test/',
         json: true
       }
       request.get(params, function(error, res, body) {
@@ -70,7 +70,7 @@ test('Hapi capture params support', conditions, function(t) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {
         'request.headers.accept': 'application/json',
-        'request.headers.host': 'localhost:8089',
+        'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
@@ -92,8 +92,9 @@ test('Hapi capture params support', conditions, function(t) {
     })
 
     server.start().then(function() {
+      port = server.info.port
       var params = {
-        uri: 'http://localhost:8089/test/1337/',
+        uri: 'http://localhost:' + port + '/test/1337/',
         json: true
       }
       request.get(params, function(error, res, body) {
@@ -109,7 +110,7 @@ test('Hapi capture params support', conditions, function(t) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {
         'request.headers.accept': 'application/json',
-        'request.headers.host': 'localhost:8089',
+        'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
         'response.status': 200,
         'response.headers.contentLength': 15,
@@ -131,8 +132,9 @@ test('Hapi capture params support', conditions, function(t) {
     })
 
     server.start().then(function() {
+      port = server.info.port
       var params = {
-        uri: 'http://localhost:8089/test/?name=hapi',
+        uri: 'http://localhost:' + port + '/test/?name=hapi',
         json: true
       }
       request.get(params, function(error, res, body) {
@@ -148,7 +150,7 @@ test('Hapi capture params support', conditions, function(t) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {
         'request.headers.accept': 'application/json',
-        'request.headers.host': 'localhost:8089',
+        'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
         'response.status': 200,
         'response.headers.contentLength': 15,
@@ -171,8 +173,9 @@ test('Hapi capture params support', conditions, function(t) {
     })
 
     server.start().then(function() {
+      port = server.info.port
       var params = {
-        uri: 'http://localhost:8089/test/1337/?name=hapi',
+        uri: 'http://localhost:' + port + '/test/1337/?name=hapi',
         json: true
       }
       request.get(params, function(error, res, body) {

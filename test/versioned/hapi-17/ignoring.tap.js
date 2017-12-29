@@ -6,18 +6,14 @@ var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
 var API = require('../../../api')
-var conditions = require('./conditions')
+var utils = require('../hapi/hapi-utils')
 
-test('ignoring a Hapi route', conditions, function(t) {
+test('ignoring a Hapi route', function(t) {
   t.plan(6)
 
   var agent = helper.instrumentMockedAgent()
   var api = new API(agent)
-  var hapi = require('hapi')
-  var server = new hapi.Server({
-    host: 'localhost',
-    port: 8089
-  })
+  var server = utils.getServer()
 
   t.tearDown(function() {
     helper.unloadAgent(agent)
@@ -48,8 +44,9 @@ test('ignoring a Hapi route', conditions, function(t) {
   })
 
   server.start().then(function() {
+    var port = server.info.port
     var params = {
-      uri: 'http://localhost:8089/order/31337',
+      uri: 'http://localhost:' + port + '/order/31337',
       json: true
     }
     request.get(params, function(error, res, body) {
