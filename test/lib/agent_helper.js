@@ -241,7 +241,7 @@ var helper = module.exports = {
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
-  bootstrapMySQL : function bootstrapMySQL(callback) {
+  bootstrapMySQL: function bootstrapMySQL(callback) {
     var bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js')
     var config = architect.loadConfig(bootstrapped)
     architect.createApp(config, function(error, app) {
