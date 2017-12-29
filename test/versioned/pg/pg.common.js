@@ -8,15 +8,18 @@ var findSegment = require('../../lib/metrics_helper').findSegment
 var test = tap.test
 var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
-
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
   var TABLE = 'testTable'
   var PK = 'pk_column'
   var COL = 'test_column'
-  var CON_STRING = 'postgres://' + params.postgres_user + ':' + params.postgres_pass + '@'
-        + params.postgres_host + ':' + params.postgres_port + '/' + params.postgres_db
-
+  var CON_OBJ = {
+    user: params.postgres_user,
+    password: params.postgres_pass,
+    host: params.postgres_host,
+    port: params.postgres_port,
+    database: params.postgres_db
+  }
 
   /**
    * Deletion of testing table if already exists,
@@ -27,13 +30,14 @@ module.exports = function runTests(name, clientFactory) {
    */
   function postgresSetup(runTest) {
     var pg = clientFactory()
-    var setupClient = new pg.Client(CON_STRING)
+    var setupClient = new pg.Client(CON_OBJ)
 
-    setupClient.connect(function(error) {
-      if (error) {
-        throw error
+    setupClient.connect(function(err) {
+      if (err) {
+        throw err
       }
       var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE
+
       var tableCreate =
         'CREATE TABLE ' + TABLE + ' (' +
           PK + ' integer PRIMARY KEY, ' +
@@ -133,8 +137,6 @@ module.exports = function runTests(name, clientFactory) {
 
     t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
              'should register the query call')
-    t.equals(segment.children.length, 0,
-             'get should leave us here at the end')
 
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
@@ -166,7 +168,7 @@ module.exports = function runTests(name, clientFactory) {
 
     var slowQuerySamples = agent.queries.samples
     t.equals(Object.keys(agent.queries.samples).length, 1, 'should have one slow query')
-    for (var key in slowQuerySamples) {
+    for (var key in slowQuerySamples) { // eslint-disable-line guard-for-in
       var queryParams = slowQuerySamples[key].getParams()
 
       t.equal(
@@ -191,49 +193,34 @@ module.exports = function runTests(name, clientFactory) {
     }
   }
 
-  test('Postgres instrumentation: ' + name, function (t) {
+  test('Postgres instrumentation: ' + name, function(t) {
     t.autoend()
 
     var agent = null
     var pg = null
 
     t.beforeEach(function(done) {
-      try {
-        // the pg module has `native` lazy getter that is removed after first
-        // call, so in order to re-instrument, we need to remove the pg module
-        // from the cache
-        var name = require.resolve('pg')
-        delete require.cache[name]
+      // the pg module has `native` lazy getter that is removed after first call,
+      // so in order to re-instrument, we need to remove the pg module from the cache
+      var name = require.resolve('pg')
+      delete require.cache[name]
 
-        if (!agent) {
-          agent = helper.instrumentMockedAgent()
-        }
-        if (!pg) {
-          pg = clientFactory()
-        }
+      agent = helper.instrumentMockedAgent()
+      pg = clientFactory()
 
-        postgresSetup(done)
-      } catch (e) {
-        if (agent) {
-          helper.unloadAgent(agent)
-        }
-        done(e)
-      }
+      postgresSetup(done)
     })
 
     t.afterEach(function(done) {
       helper.unloadAgent(agent)
-
-      // close all clients in pool
-      pg.end()
-
       agent = null
       pg = null
       done()
     })
 
-    t.test('simple query with prepared statement', function (t) {
-      var client = new pg.Client(CON_STRING)
+    t.test('simple query with prepared statement', function(t) {
+      var client = new pg.Client(CON_OBJ)
+
       t.tearDown(function() {
         client.end()
       })
@@ -283,9 +270,12 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test("simple query using query.on() events", function (t) {
-      t.plan(35)
-      var client = new pg.Client(CON_STRING)
+    // In pg v7 the return value of a client query was turned into a
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test("simple query using query.on() events", {skip: !pg.connect}, function(t) {
+      t.plan(34)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
@@ -302,7 +292,7 @@ module.exports = function runTests(name, clientFactory) {
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
@@ -310,6 +300,7 @@ module.exports = function runTests(name, clientFactory) {
 
           var query = client.query(insQuery, [pkVal, colVal])
 
+          // Prints DeprecationWarning for pg@7 update
           query.on('error', function(err) {
             t.error(err, 'error while querying')
             t.end()
@@ -340,64 +331,75 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test("simple query using query.addListener() events", function (t) {
-      t.plan(35)
-      var client = new pg.Client(CON_STRING)
+    // In pg v7 the return value of a client query was turned into a
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test(
+      "simple query using query.addListener() events",
+      {skip: !pg.connect},
+      function(t) {
+        t.plan(34)
+        var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
-        client.end()
-      })
+        t.tearDown(function() {
+          client.end()
+        })
 
-      t.notOk(agent.getTransaction(), 'no transaction should be in play')
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
-        t.ok(transaction, 'transaction should be visible')
-        t.equal(tx, transaction, 'We got the same transaction')
+        t.notOk(agent.getTransaction(), 'no transaction should be in play')
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var transaction = agent.getTransaction()
+          t.ok(transaction, 'transaction should be visible')
+          t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'Sianara'
-        var pkVal = 444
-        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
-        insQuery += ') VALUES($1, $2);'
+          var colVal = 'Sianara'
+          var pkVal = 444
+          var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+          insQuery += ') VALUES($1, $2);'
 
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
+          client.connect(function(error) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
 
-          var query = client.query(insQuery, [pkVal, colVal])
-
-          query.addListener('error', function(err) {
-            t.error(err, 'error while querying')
-          })
-
-          query.addListener('end', function() {
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
-
-            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
-
-            var query = client.query(selQuery)
+            var query = client.query(insQuery, [pkVal, colVal])
 
             query.addListener('error', function(err) {
               t.error(err, 'error while querying')
-              t.end()
             })
 
             query.addListener('end', function() {
-              t.ok(agent.getTransaction(), 'transaction should still still be visible')
+              t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
+              var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+              selQuery += PK + '=' + pkVal + ';'
+
+              var query = client.query(selQuery)
+
+              query.addListener('error', function(err) {
+                t.error(err, 'error while querying')
+                t.end()
+              })
+
+              query.addListener('end', function() {
+                t.ok(agent.getTransaction(), 'transaction should still still be visible')
+
+                transaction.end(function() {
+                  verify(t, agent.tracer.getSegment())
+                })
               })
             })
           })
         })
-      })
-    })
+      }
+    )
 
-    t.test('client pooling query', function (t) {
-      t.plan(37)
+    t.test('client pooling query', function(t) {
+      if (pg.connect) {
+        t.plan(36)
+      } else {
+        t.plan(37)
+      }
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -408,14 +410,43 @@ module.exports = function runTests(name, clientFactory) {
         var pkVal = 222
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
+        if (pg.connect) { // For pg versions <= 6
+          pg.connect(CON_OBJ, function(error, clientPool, done) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
+            clientPool.query(insQuery, function(error, ok) {
+              if (error) {
+                t.fail(error)
+                return t.end()
+              }
 
-        pg.connect(CON_STRING, function(error, clientPool, done) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
+              t.ok(agent.getTransaction(), 'transaction should still be visible')
+              t.ok(ok, 'everything should be peachy after setting')
 
-          clientPool.query(insQuery, function (error, ok) {
+              var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+              selQuery += PK + '=' + pkVal + ';'
+
+              clientPool.query(selQuery, function(error, value) {
+                if (error) {
+                  t.fail(error)
+                  return t.end()
+                }
+
+                t.ok(agent.getTransaction(), 'transaction should still still be visible')
+                t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+
+                transaction.end(function() {
+                  done(true) // Pass true in here to destroy the client
+                  verify(t, agent.tracer.getSegment())
+                })
+              })
+            })
+          })
+        } else { // For pg versions > 6
+          var pool = new pg.Pool(CON_OBJ)
+          pool.query(insQuery, function(error, ok) {
             if (error) {
               t.fail(error)
               return t.end()
@@ -427,9 +458,8 @@ module.exports = function runTests(name, clientFactory) {
             var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            clientPool.query(selQuery, function (error, value) {
-              if (error) {
-                t.fail(error)
+            pool.query(selQuery, function(error, value) {
+              if (!t.error(error)) {
                 return t.end()
               }
 
@@ -437,7 +467,63 @@ module.exports = function runTests(name, clientFactory) {
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end(function() {
-                done()
+                pool.end()
+                verify(t, agent.tracer.getSegment())
+              })
+            })
+          })
+        }
+      })
+    })
+
+    t.test('using Pool constructor', function(t) {
+      t.plan(38)
+
+      t.notOk(agent.getTransaction(), 'no transaction should be in play')
+      helper.runInTransaction(agent, function transactionInScope(tx) {
+        var transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        var colVal = 'World!'
+        var pkVal = 222
+        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+        insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
+
+        var pool = null
+        if (pg.Pool) {
+          pool = new pg.Pool(CON_OBJ)
+        } else {
+          pool = pg.pools.getOrCreate(CON_OBJ)
+        }
+
+        pool.connect(function(error, client, done) {
+          if (!t.error(error)) t.end()
+
+          client.query(insQuery, function(error, ok) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
+
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            t.ok(ok, 'everything should be peachy after setting')
+
+            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+            selQuery += PK + '=' + pkVal + ';'
+
+            client.query(selQuery, function(error, value) {
+              if (!t.error(error)) t.end()
+
+              t.ok(agent.getTransaction(), 'transaction should still still be visible')
+              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+
+              transaction.end(function() {
+                if (pool.end instanceof Function) {
+                  pool.end()
+                }
+
+                done(true)
                 verify(t, agent.tracer.getSegment())
               })
             })
@@ -448,15 +534,15 @@ module.exports = function runTests(name, clientFactory) {
 
     // https://github.com/newrelic/node-newrelic/pull/223
     t.test("query using an config object with `text` getter instead of property",
-        function (t) {
+        function(t) {
       t.plan(1)
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
       })
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
 
         var colVal = 'Sianara'
@@ -478,54 +564,55 @@ module.exports = function runTests(name, clientFactory) {
         // create a config instance
         var config = new CustomConfigClass()
 
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
           }
 
-          var query = client.query(config, [pkVal, colVal], function (error, value) {
+          client.query(config, [pkVal, colVal], function(error) {
             if (error) {
               t.fail(error)
               return t.end()
             }
 
-            var segment = findSegment(transaction.trace.root,
-              'Datastore/statement/Postgres/' + TABLE + '/insert')
+            var segment = findSegment(
+              transaction.trace.root,
+              'Datastore/statement/Postgres/' + TABLE + '/insert'
+            )
             t.ok(segment, 'expected segment exists')
           })
         })
       })
     })
 
-    t.test("should add datastore instance parameters to slow query traces", function (t) {
-      t.plan(5)
+    t.test("should add datastore instance parameters to slow query traces", function(t) {
+      t.plan(7)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
 
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
       })
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
+        client.connect(function(error) {
+          if (!t.error(error)) {
             return t.end()
           }
 
-          client.query('SELECT * FROM pg_sleep(1);', function (error, value) {
-            if (error) {
-              t.fail(error)
+          client.query('SELECT * FROM pg_sleep(1);', function slowQueryCB(error) {
+            if (!t.error(error)) {
               return t.end()
             }
 
-            transaction.end(function () {
+            transaction.end(function() {
               verifySlowQueries(t, agent)
+              t.end()
             })
           })
         })
@@ -533,7 +620,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("should not add datastore instance parameters to slow query traces when" +
-        " disabled", function (t) {
+        " disabled", function(t) {
       t.plan(3)
 
       // enable slow queries
@@ -544,27 +631,27 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.datastore_tracer.instance_reporting.enabled = false
       agent.config.datastore_tracer.database_name_reporting.enabled = false
 
-      var client = new pg.Client(CON_STRING)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
       })
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
-        client.connect(function (error) {
+        client.connect(function(error) {
           if (error) {
             t.fail(error)
             return t.end()
           }
 
-          client.query('SELECT * FROM pg_sleep(1);', function (error, value) {
+          client.query('SELECT * FROM pg_sleep(1);', function(error) {
             if (error) {
               t.fail(error)
               return t.end()
             }
 
-            transaction.end(function () {
+            transaction.end(function() {
               var slowQuerySamples = agent.queries.samples
               var key = Object.keys(agent.queries.samples)[0]
               var queryParams = slowQuerySamples[key].getParams()
@@ -592,16 +679,19 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('query.on should still be chainable', function (t) {
-      t.plan(2)
-      var client = new pg.Client(CON_STRING)
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test('query.on should still be chainable', {skip: !pg.connect}, function(t) {
+      t.plan(1)
+      var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
         client.end()
       })
 
       client.connect(function(error) {
-        if (!t.error(error)) {
+        if (error) {
+          t.fail(error)
           return t.end()
         }
 
@@ -609,158 +699,187 @@ module.exports = function runTests(name, clientFactory) {
 
         query.on('error', function(err) {
           t.error(err, 'error while querying')
+          t.end()
         }).on('end', function ended() {
           t.pass('successfully completed')
         })
       })
     })
 
-    t.test('query.on should create one segment for row events', function(t) {
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
-        t.tearDown(function() {
-          client.end()
-        })
-
-        client.connect(function(err) {
-          if (!t.error(err)) {
-            return t.end()
-          }
-
-          var query = client.query('SELECT table_name FROM information_schema.tables')
-          query.on('row', function onRow() {})
-          query.on('end', function ended() {
-            var segment = findSegment(tx.trace.root,
-              'Datastore/statement/Postgres/information_schema.tables/select')
-
-            t.equal(segment.children.length, 2, 'should not have extra children')
-            t.end()
+    // In pg v7 the return value of a client query was turned into a
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test(
+      'query.on should create one segment for row events',
+      {skip: !pg.connect},
+      function(t) {
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_OBJ)
+          t.tearDown(function() {
+            client.end()
           })
-        })
-      })
+
+          client.connect(function(err) {
+            if (!t.error(err)) {
+              return t.end()
+            }
+
+            var query = client.query('SELECT table_name FROM information_schema.tables')
+            query.on('row', function onRow() {})
+            query.on('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/information_schema.tables/select')
+
+              t.equal(segment.children.length, 2, 'should not have extra children')
+              t.end()
+            })
+          })
+        }
+      )
     })
 
-    t.test('query.addListener should not create segments for row events', function (t) {
-      t.plan(1)
+    // In pg v7 the return value of a client query was turned into a
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test(
+      'query.addListener should not create segments for row events',
+      {skip: !pg.connect},
+      function (t) {
+        t.plan(1)
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_OBJ)
 
-        t.tearDown(function() {
-          client.end()
-        })
-
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
-
-          var query = client.query('SELECT table_name FROM information_schema.tables')
-
-          query.addListener('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
+          t.tearDown(function() {
+            client.end()
           })
 
-          query.addListener('row', function onRow(row) {})
+          client.connect(function (error) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
 
-          query.addListener('end', function ended() {
-            var segment = findSegment(tx.trace.root,
-              'Datastore/statement/Postgres/information_schema.tables/select')
+            var query = client.query('SELECT table_name FROM information_schema.tables')
 
-            t.equal(segment.children.length, 2, 'should have end and row children')
-          })
-        })
-      })
-    })
+            query.addListener('error', function(err) {
+              t.error(err, 'error while querying')
+              t.end()
+            })
 
-    t.test('query.on should not create segments for each row with readable stream', function (t) {
-      t.plan(2)
+            query.addListener('row', function onRow(row) {})
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+            query.addListener('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/information_schema.tables/select')
 
-        t.tearDown(function() {
-          client.end()
-        })
-
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
-
-          var query = client.query('SELECT * FROM generate_series(0, 9)')
-
-          query.on('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
-          })
-
-          // simulate readable stream by emitting 'readable' event for each row
-          query.on('row', function onRow(row) {
-            query.emit('readable', row)
-          })
-
-          var called = 0
-          query.on('readable', function onReadable(row) {
-            called++
-          })
-
-          query.on('end', function ended() {
-            var segment = findSegment(tx.trace.root,
-              'Datastore/statement/Postgres/generate_series/select')
-
-            t.equal(segment.children.length, 2, 'should have end and row children')
-            t.equal(called, 10, 'event was called for each row')
+              t.equal(segment.children.length, 2, 'should have end and row children')
+            })
           })
         })
-      })
-    })
+      }
+    )
 
-    t.test('query.addListener should not create segments for each row with readable stream', function (t) {
-      t.plan(2)
+    // In pg v7 the return value of a client query was turned into a
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test(
+      'query.on should not create segments for each row with readable stream',
+      {skip: !pg.connect},
+      function (t) {
+        t.plan(2)
 
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_STRING)
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_OBJ)
 
-        t.tearDown(function() {
-          client.end()
+          t.tearDown(function() {
+            client.end()
+          })
+
+          client.connect(function (error) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
+
+            var query = client.query('SELECT * FROM generate_series(0, 9)')
+
+            query.on('error', function(err) {
+              t.error(err, 'error while querying')
+              t.end()
+            })
+
+            // simulate readable stream by emitting 'readable' event for each row
+            query.on('row', function onRow(row) {
+              query.emit('readable', row)
+            })
+
+            var called = 0
+            query.on('readable', function onReadable(row) {
+              called++
+            })
+
+            query.on('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/generate_series/select')
+
+              t.equal(segment.children.length, 2, 'should have end and row children')
+              t.equal(called, 10, 'event was called for each row')
+            })
+          })
         })
+      }
+    )
 
-        client.connect(function (error) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
+    // In pg v7 the return value of a client query was turned into a
+    // promise.  We can check for the static connect method that was
+    // removed in v7 as well.
+    t.test(
+      'query.addListener should not create segments for each row with readable stream',
+      {skip: !pg.connect},
+      function(t) {
+        t.plan(2)
 
-          var query = client.query('SELECT * FROM generate_series(0, 9)')
+        helper.runInTransaction(agent, function transactionInScope(tx) {
+          var client = new pg.Client(CON_OBJ)
 
-          query.addListener('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
+          t.tearDown(function() {
+            client.end()
           })
 
-          // simulate readable stream by emitting 'readable' event for each row
-          query.addListener('row', function onRow(row) {
-            query.emit('readable', row)
-          })
+          client.connect(function(error) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
 
-          var called = 0
-          query.addListener('readable', function onReadable(row) {
-            called++
-          })
+            var query = client.query('SELECT * FROM generate_series(0, 9)')
 
-          query.addListener('end', function ended() {
-            var segment = findSegment(tx.trace.root,
-              'Datastore/statement/Postgres/generate_series/select')
+            query.addListener('error', function(err) {
+              t.error(err, 'error while querying')
+              t.end()
+            })
 
-            t.equal(segment.children.length, 2, 'should have end and row children')
-            t.equal(called, 10, 'event was called for each row')
+            // simulate readable stream by emitting 'readable' event for each row
+            query.addListener('row', function onRow() {
+              query.emit('readable')
+            })
+
+            var called = 0
+            query.addListener('readable', function onReadable() {
+              called++
+            })
+
+            query.addListener('end', function ended() {
+              var segment = findSegment(tx.trace.root,
+                'Datastore/statement/Postgres/generate_series/select')
+
+              t.equal(segment.children.length, 2, 'should have end and row children')
+              t.equal(called, 10, 'event was called for each row')
+            })
           })
         })
-      })
-    })
+      }
+    )
   })
 }

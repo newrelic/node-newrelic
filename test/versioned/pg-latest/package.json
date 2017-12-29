@@ -1,8 +1,0 @@
-{
-    "name": "pg-latest-test",
-    "dependencies": {
-        "pg": "*",
-        "pg-native": "*"
-    },
-    "private": true
-}
