@@ -1,0 +1,109 @@
+{
+  "name": "hapi-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "hapi": ">=2.0.0 <6"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "ignoring.tap.js",
+        "render.tap.js",
+        "router.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "hapi": ">=6.0.0 <7"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "ignoring.tap.js",
+        "render-v6.tap.js",
+        "router.tap.js",
+        "vhost.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "hapi": ">=7.0.0 <9"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "ignoring.tap.js",
+        "render-v7.tap.js",
+        "router.tap.js",
+        "vhost.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "hapi": ">=9.0.0 <10",
+        "vision": "^4"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "ignoring.tap.js",
+        "render-v9.tap.js",
+        "router.tap.js",
+        "vhost.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "hapi": ">=10.0.0 <16",
+        "vision": "^4"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "ignoring.tap.js",
+        "render-v9.tap.js",
+        "router.tap.js",
+        "vhost.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "hapi": ">=16.0.0 <17",
+        "vision": "^4"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "errors-v16.tap.js",
+        "ext-v16.tap.js",
+        "hapi.tap.js",
+        "ignoring.tap.js",
+        "plugins-v16.tap.js",
+        "render-v9.tap.js",
+        "router-v16.tap.js",
+        "segments-v16.tap.js",
+        "vhost.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "ejs": "*",
+    "hapi": "^9.5.1",
+    "vision": "^4.1.1"
+  }
+}
