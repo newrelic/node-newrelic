@@ -17,6 +17,12 @@ tap.test('Hapi vhost support', function(t) {
     // disabled by default
     agent.config.capture_params = true
 
+    t.tearDown(function() {
+      server.stop(function() {
+        helper.unloadAgent(agent)
+      })
+    })
+
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       t.deepEqual(transaction.trace.parameters, {
@@ -30,9 +36,6 @@ tap.test('Hapi vhost support', function(t) {
         'httpResponseMessage': 'OK',
         'request_uri': '/test/2'
       }, 'parameters should only have request/response params')
-
-      helper.unloadAgent(agent)
-      server.stop()
     })
 
     server.route({

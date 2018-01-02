@@ -19,7 +19,6 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
-    server = utils.getServer()
     done()
   })
 
@@ -29,6 +28,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('for a normal request', {timeout: 1000}, function(t) {
+      server = utils.getServer()
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
@@ -49,9 +49,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
              'got correct content type')
         t.deepEqual(JSON.parse(body), {'yep':true}, 'response survived')
 
-        var stats
-
-        stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
+        var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
         t.equal(stats.callCount, 1, '/test was only requested once')
 
@@ -79,6 +77,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('using EJS templates', {timeout: 1000}, function(t) {
+      server = utils.getServer()
     server.register(require('vision'), function() {
       server.views({
         path: path.join(__dirname, 'views'),
@@ -118,19 +117,14 @@ tap.test('agent instrumentation of Hapi', function(t) {
       port = server.info.port
       request('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
-
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
-
-        server.stop(function() {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })
 
-  t.test('should generate rum headers', {timeout: 1000}, function() {
+  t.test('should generate rum headers', {timeout: 1000}, function(t) {
     var api = new API(agent)
 
     agent.config.application_id = '12345'
@@ -168,14 +162,9 @@ tap.test('agent instrumentation of Hapi', function(t) {
       port = server.info.port
       request('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
-
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
-
-        server.stop(function() {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })

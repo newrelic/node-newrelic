@@ -3,11 +3,14 @@
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var http = require('http')
+var assertMetrics = require('../../lib/metrics_helper').assertMetrics
+var assertSegments = require('../../lib/metrics_helper').assertSegments
 var NAMES = require('../../../lib/metrics/names')
 var utils = require('./hapi-utils')
 
 var agent
 var server
+var port
 
 tap.test('Hapi v16 segments', function(t) {
   t.autoend()
@@ -33,10 +36,10 @@ tap.test('Hapi v16 segments', function(t) {
     })
 
     runTest(t, function(segments, transaction) {
-      utils.checkMetrics(t, transaction.metrics, [
+      checkMetrics(t, transaction.metrics, [
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
-      utils.checkSegments(t, transaction.trace.root.children[0], [
+      checkSegments(t, transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
       t.end()
@@ -57,10 +60,10 @@ tap.test('Hapi v16 segments', function(t) {
     })
 
     runTest(t, function(segments, transaction) {
-      utils.checkMetrics(t, transaction.metrics, [
+      checkMetrics(t, transaction.metrics, [
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
-      utils.checkSegments(t, transaction.trace.root.children[0], [
+      checkSegments(t, transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
       t.end()
@@ -81,11 +84,11 @@ tap.test('Hapi v16 segments', function(t) {
     })
 
     runTest(t, function(segments, transaction) {
-      utils.checkMetrics(t, transaction.metrics, [
+      checkMetrics(t, transaction.metrics, [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
-      utils.checkSegments(t, transaction.trace.root.children[0], [
+      checkSegments(t, transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
@@ -102,12 +105,35 @@ function runTest(t, callback) {
 
   server.start(function() {
     port = server.info.port
-    makeRequest(server, 'http://localhost:' + port + '/test', function(response) {
+    http.request({ port: port, path: '/test' }, function(response) {
       response.resume()
-    })
+    }).end()
   })
 }
 
-function makeRequest(server, path, callback) {
-  http.request({port: port, path: path}, callback).end()
+function checkMetrics(t, metrics, expected, path) {
+  path = path || '/test'
+  var expectedAll = [
+    [{name: 'WebTransaction'}],
+    [{name: 'WebTransactionTotalTime'}],
+    [{name: 'HttpDispatcher'}],
+    [{name: 'WebTransaction/Hapi/GET/' + path}],
+    [{name: 'WebTransactionTotalTime/Hapi/GET/' + path}],
+    [{name: 'Apdex/Hapi/GET/' + path}],
+    [{name: 'Apdex'}]
+  ]
+
+  for (var i = 0; i < expected.length; i++) {
+    var metric = expected[i]
+    expectedAll.push([{name: metric}])
+    expectedAll.push([{name: metric, scope: 'WebTransaction/Hapi/GET/' + path}])
+  }
+
+  assertMetrics(metrics, expectedAll, true, false)
+}
+
+function checkSegments(t, segments, expected, opts) {
+  t.doesNotThrow(function() {
+    assertSegments(segments, expected, opts)
+  }, 'should have expected segments')
 }

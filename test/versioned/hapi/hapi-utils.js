@@ -1,8 +1,5 @@
 'use strict'
 
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
-var assertSegments = require('../../lib/metrics_helper').assertSegments
-
 exports.getServer = function getServer(cfg) {
   cfg = cfg || {}
   var host = cfg.host || 'localhost'
@@ -13,20 +10,13 @@ exports.getServer = function getServer(cfg) {
 
   if (hapi.createServer) {
     return hapi.createServer(host, port, opts)
-  } else if (hapi.Server.prototype.connection) {
-    // v8-16
-    server = new hapi.Server()
-    server.connection({
-      host: host,
-      port: port
-    })
-  } else {
-    // v17
-    server = new hapi.Server({
-      host: host,
-      port: port
-    })
   }
+  // v8-16
+  server = new hapi.Server(opts)
+  server.connection({
+    host: host,
+    port: port
+  })
   return server
 }
 
@@ -47,31 +37,4 @@ exports.verifier = function verifier(t, verb) {
             'should have partial name for apdex')
     t.equal(web.parameters.id, '31337', 'namer gets parameters out of route')
   }
-}
-
-exports.checkMetrics = function checkMetrics(t, metrics, expected, path) {
-  path = path || '/test'
-  var expectedAll = [
-    [{name: 'WebTransaction'}],
-    [{name: 'WebTransactionTotalTime'}],
-    [{name: 'HttpDispatcher'}],
-    [{name: 'WebTransaction/Hapi/GET/' + path}],
-    [{name: 'WebTransactionTotalTime/Hapi/GET/' + path}],
-    [{name: 'Apdex/Hapi/GET/' + path}],
-    [{name: 'Apdex'}]
-  ]
-
-  for (var i = 0; i < expected.length; i++) {
-    var metric = expected[i]
-    expectedAll.push([{name: metric}])
-    expectedAll.push([{name: metric, scope: 'WebTransaction/Hapi/GET/' + path}])
-  }
-
-  assertMetrics(metrics, expectedAll, true, false)
-}
-
-exports.checkSegments = function checkSegments(t, segments, expected, opts) {
-  t.doesNotThrow(function() {
-    assertSegments(segments, expected, opts)
-  }, 'should have expected segments')
 }
