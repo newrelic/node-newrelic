@@ -1,11 +1,12 @@
 'use strict'
 
 var util = require('util')
+var path = require('path')
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../lib/agent_helper')
 var API = require('../../../api')
-var utils = require('../hapi/hapi-utils')
+var utils = require('./hapi-17-utils')
 var fixtures = require('../hapi/fixtures')
 
 tap.test('agent instrumentation of Hapi', function(t) {
@@ -106,7 +107,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.register(require('vision'))
       .then(function() {
         server.views({
-          path: '../hapi/views',
+          path: path.join(__dirname, '../hapi/views'),
           engines: {
             ejs: require('ejs')
           }
@@ -152,7 +153,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.register(require('vision'))
       .then(function() {
         server.views({
-          path: path.join(__dirname, 'views'),
+          path: path.join(__dirname, '../hapi/views'),
           engines: {
             ejs: require('ejs')
           }
@@ -173,7 +174,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('should trap errors correctly', function(t) {
-    var server = new hapi.Server({ options: {debug: false} })
+    server = utils.getServer({ options: {debug: false} })
 
     agent.on('transactionFinished', function(tx) {
       t.equal(tx.name, 'WebTransaction/Hapi/GET/' + '/test',

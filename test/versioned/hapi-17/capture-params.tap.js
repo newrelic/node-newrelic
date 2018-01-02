@@ -1,11 +1,11 @@
 'use strict'
 
-var test = require('tap').test
+var tap = require('tap')
 var request = require('request')
 var helper = require('../../lib/agent_helper')
-var utils = require('../hapi/hapi-utils')
+var utils = require('./hapi-17-utils')
 
-test('Hapi capture params support', function(t) {
+tap.test('Hapi capture params support', function(t) {
   t.autoend()
 
   var agent = null
@@ -74,7 +74,7 @@ test('Hapi capture params support', function(t) {
         'request.method': 'GET',
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
-        'response.status': 200,
+        'response.status': '200',
         'httpResponseCode': '200',
         'httpResponseMessage': 'OK',
         'id': '1337',
@@ -112,7 +112,7 @@ test('Hapi capture params support', function(t) {
         'request.headers.accept': 'application/json',
         'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
-        'response.status': 200,
+        'response.status': '200',
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
         'httpResponseCode': '200',
@@ -146,20 +146,20 @@ test('Hapi capture params support', function(t) {
   })
 
   t.test('case with both route and query params', function(t) {
-    agent.on('transactionFinished', function(transaction) {
-      t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {
+    agent.on('transactionFinished', function(tx) {
+      t.ok(tx.trace, 'transaction has a trace.')
+      t.deepEqual(tx.trace.parameters, {
         'request.headers.accept': 'application/json',
         'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
-        'response.status': 200,
+        'request_uri': '/test/1337/',
+        'name': 'hapi',
+        'httpResponseCode': '200',
+        'response.status': '200',
+        'httpResponseMessage': 'OK',
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
-        'httpResponseCode': '200',
-        'httpResponseMessage': 'OK',
-        'id': '1337',
-        'name': 'hapi',
-        'request_uri': '/test/1337/'
+        'id': '1337'
       }, 'parameters should have name and id')
     })
 

@@ -3,7 +3,7 @@
 var helper = require('../../lib/agent_helper')
 var request = require('request')
 var tap = require('tap')
-var utils = require('../hapi/hapi-utils')
+var utils = require('./hapi-17-utils')
 
 tap.test('Hapi Plugins', function(t) {
   t.autoend()

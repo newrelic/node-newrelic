@@ -3,7 +3,7 @@
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../lib/agent_helper')
-var utils = require('../hapi/hapi-utils')
+var utils = require('./hapi-17-utils')
 
 tap.test('Hapi router introspection', function(t) {
   t.autoend()
@@ -28,7 +28,7 @@ tap.test('Hapi router introspection', function(t) {
   })
 
   t.test('using route handler - simple case', function(t) {
-    agent.on('transactionFinished', utils.verifier(t))
+    agent.on('transactionFinished', verifier(t))
 
     server.route({
       method: 'GET',
@@ -54,7 +54,7 @@ tap.test('Hapi router introspection', function(t) {
   })
 
   t.test('using route handler under config object', function(t) {
-    agent.on('transactionFinished', utils.verifier(t))
+    agent.on('transactionFinished', verifier(t))
 
     var hello = {
       handler: function() {
@@ -84,7 +84,7 @@ tap.test('Hapi router introspection', function(t) {
   })
 
   t.test('using custom handler type', function(t) {
-    agent.on('transactionFinished', utils.verifier(t))
+    agent.on('transactionFinished', verifier(t))
 
     server.decorate('handler', 'hello', function() {
       return function customHandler() {
@@ -121,7 +121,7 @@ tap.test('Hapi router introspection', function(t) {
    * for example: https://github.com/hapijs/h2o2/blob/v6.0.1/lib/index.js#L189-L198
    */
   t.test('using custom handler defaults', function(t) {
-    agent.on('transactionFinished', utils.verifier(t, 'POST'))
+    agent.on('transactionFinished', verifier(t, 'POST'))
 
     function handler(route) {
       t.equal(route.settings.payload.parse, false, 'should set the payload parse setting')
@@ -168,3 +168,22 @@ tap.test('Hapi router introspection', function(t) {
     })
   })
 })
+
+function verifier(t, verb) {
+  verb = verb || 'GET'
+  return function(transaction) {
+    t.equal(transaction.name, 'WebTransaction/Hapi/' + verb + '//test/{id}',
+            'transaction has expected name')
+    t.equal(transaction.url, '/test/31337', 'URL is left alone')
+    t.equal(transaction.statusCode, 200, 'status code is OK')
+    t.equal(transaction.verb, verb, 'HTTP method is ' + verb)
+    t.ok(transaction.trace, 'transaction has trace')
+
+    var web = transaction.trace.root.children[0]
+    t.ok(web, 'trace has web segment')
+    t.equal(web.name, transaction.name, 'segment name and transaction name match')
+    t.equal(web.partialName, 'Hapi/' + verb + '//test/{id}',
+            'should have partial name for apdex')
+    t.equal(web.parameters.id, '31337', 'namer gets parameters out of route')
+  }
+}

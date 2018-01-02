@@ -3,7 +3,7 @@
 var helper = require('../../lib/agent_helper')
 var http = require('http')
 var tap = require('tap')
-var utils = require('../hapi/hapi-utils')
+var utils = require('./hapi-17-utils')
 
 var agent
 var server
