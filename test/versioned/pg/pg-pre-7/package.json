@@ -1,5 +1,5 @@
 {
-  "name": "pg-tests",
+  "name": "pg-pre-7-tests",
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -43,24 +43,10 @@
         "native.tap.js",
         "pg.tap.js"
       ]
-    },
-    {
-      "engines": {
-        "node": ">=4"
-      },
-      "dependencies": {
-        "pg": ">=7",
-        "pg-native": "1.10.x"
-      },
-      "files": [
-        "force-native.tap.js",
-        "native.tap.js",
-        "pg.tap.js"
-      ]
     }
   ],
   "dependencies": {
-    "pg": "^7.4.0",
+    "pg": "^6.4.2",
     "pg-native": "^1.10.1"
   }
 }

@@ -2,11 +2,11 @@
 
 var a = require('async')
 var tap = require('tap')
-var params = require('../../lib/params')
-var helper = require('../../lib/agent_helper')
-var findSegment = require('../../lib/metrics_helper').findSegment
+var params = require('../../../lib/params')
+var helper = require('../../../lib/agent_helper')
+var findSegment = require('../../../lib/metrics_helper').findSegment
 var test = tap.test
-var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
@@ -270,136 +270,8 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    // In pg v7 the return value of a client query was turned into a
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test("simple query using query.on() events", {skip: !pg.connect}, function(t) {
-      t.plan(34)
-      var client = new pg.Client(CON_OBJ)
-
-      t.tearDown(function() {
-        client.end()
-      })
-
-      t.notOk(agent.getTransaction(), 'no transaction should be in play')
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
-        t.ok(transaction, 'transaction should be visible')
-        t.equal(tx, transaction, 'We got the same transaction')
-
-        var colVal = 'Goodbye'
-        var pkVal = 333
-        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
-        insQuery += ') VALUES($1, $2);'
-
-        client.connect(function(error) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
-
-          var query = client.query(insQuery, [pkVal, colVal])
-
-          // Prints DeprecationWarning for pg@7 update
-          query.on('error', function(err) {
-            t.error(err, 'error while querying')
-            t.end()
-          })
-
-          query.on('end', function() {
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
-
-            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
-
-            var query = client.query(selQuery)
-
-            query.on('error', function(err) {
-              t.error(err, 'error while querying')
-              t.end()
-            })
-
-            query.on('end', function() {
-              t.ok(agent.getTransaction(), 'transaction should still still be visible')
-
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
-              })
-            })
-          })
-        })
-      })
-    })
-
-    // In pg v7 the return value of a client query was turned into a
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test(
-      "simple query using query.addListener() events",
-      {skip: !pg.connect},
-      function(t) {
-        t.plan(34)
-        var client = new pg.Client(CON_OBJ)
-
-        t.tearDown(function() {
-          client.end()
-        })
-
-        t.notOk(agent.getTransaction(), 'no transaction should be in play')
-        helper.runInTransaction(agent, function transactionInScope(tx) {
-          var transaction = agent.getTransaction()
-          t.ok(transaction, 'transaction should be visible')
-          t.equal(tx, transaction, 'We got the same transaction')
-
-          var colVal = 'Sianara'
-          var pkVal = 444
-          var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
-          insQuery += ') VALUES($1, $2);'
-
-          client.connect(function(error) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-
-            var query = client.query(insQuery, [pkVal, colVal])
-
-            query.addListener('error', function(err) {
-              t.error(err, 'error while querying')
-            })
-
-            query.addListener('end', function() {
-              t.ok(agent.getTransaction(), 'transaction should still be visible')
-
-              var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
-              selQuery += PK + '=' + pkVal + ';'
-
-              var query = client.query(selQuery)
-
-              query.addListener('error', function(err) {
-                t.error(err, 'error while querying')
-                t.end()
-              })
-
-              query.addListener('end', function() {
-                t.ok(agent.getTransaction(), 'transaction should still still be visible')
-
-                transaction.end(function() {
-                  verify(t, agent.tracer.getSegment())
-                })
-              })
-            })
-          })
-        })
-      }
-    )
-
     t.test('client pooling query', function(t) {
-      if (pg.connect) {
-        t.plan(36)
-      } else {
-        t.plan(37)
-      }
+      t.plan(37)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -410,69 +282,33 @@ module.exports = function runTests(name, clientFactory) {
         var pkVal = 222
         var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
-        if (pg.connect) { // For pg versions <= 6
-          pg.connect(CON_OBJ, function(error, clientPool, done) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-            clientPool.query(insQuery, function(error, ok) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+        var pool = new pg.Pool(CON_OBJ)
+        pool.query(insQuery, function(error, ok) {
+          if (error) {
+            t.fail(error)
+            return t.end()
+          }
 
-              t.ok(agent.getTransaction(), 'transaction should still be visible')
-              t.ok(ok, 'everything should be peachy after setting')
+          t.ok(agent.getTransaction(), 'transaction should still be visible')
+          t.ok(ok, 'everything should be peachy after setting')
 
-              var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
-              selQuery += PK + '=' + pkVal + ';'
+          var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+          selQuery += PK + '=' + pkVal + ';'
 
-              clientPool.query(selQuery, function(error, value) {
-                if (error) {
-                  t.fail(error)
-                  return t.end()
-                }
-
-                t.ok(agent.getTransaction(), 'transaction should still still be visible')
-                t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
-
-                transaction.end(function() {
-                  done(true) // Pass true in here to destroy the client
-                  verify(t, agent.tracer.getSegment())
-                })
-              })
-            })
-          })
-        } else { // For pg versions > 6
-          var pool = new pg.Pool(CON_OBJ)
-          pool.query(insQuery, function(error, ok) {
-            if (error) {
-              t.fail(error)
+          pool.query(selQuery, function(error, value) {
+            if (!t.error(error)) {
               return t.end()
             }
 
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
-            t.ok(ok, 'everything should be peachy after setting')
+            t.ok(agent.getTransaction(), 'transaction should still still be visible')
+            t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
-
-            pool.query(selQuery, function(error, value) {
-              if (!t.error(error)) {
-                return t.end()
-              }
-
-              t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
-
-              transaction.end(function() {
-                pool.end()
-                verify(t, agent.tracer.getSegment())
-              })
+            transaction.end(function() {
+              pool.end()
+              verify(t, agent.tracer.getSegment())
             })
           })
-        }
+        })
       })
     })
 
@@ -678,208 +514,5 @@ module.exports = function runTests(name, clientFactory) {
         })
       })
     })
-
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test('query.on should still be chainable', {skip: !pg.connect}, function(t) {
-      t.plan(1)
-      var client = new pg.Client(CON_OBJ)
-
-      t.tearDown(function() {
-        client.end()
-      })
-
-      client.connect(function(error) {
-        if (error) {
-          t.fail(error)
-          return t.end()
-        }
-
-        var query = client.query('SELECT table_name FROM information_schema.tables')
-
-        query.on('error', function(err) {
-          t.error(err, 'error while querying')
-          t.end()
-        }).on('end', function ended() {
-          t.pass('successfully completed')
-        })
-      })
-    })
-
-    // In pg v7 the return value of a client query was turned into a
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test(
-      'query.on should create one segment for row events',
-      {skip: !pg.connect},
-      function(t) {
-        helper.runInTransaction(agent, function transactionInScope(tx) {
-          var client = new pg.Client(CON_OBJ)
-          t.tearDown(function() {
-            client.end()
-          })
-
-          client.connect(function(err) {
-            if (!t.error(err)) {
-              return t.end()
-            }
-
-            var query = client.query('SELECT table_name FROM information_schema.tables')
-            query.on('row', function onRow() {})
-            query.on('end', function ended() {
-              var segment = findSegment(tx.trace.root,
-                'Datastore/statement/Postgres/information_schema.tables/select')
-
-              t.equal(segment.children.length, 2, 'should not have extra children')
-              t.end()
-            })
-          })
-        }
-      )
-    })
-
-    // In pg v7 the return value of a client query was turned into a
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test(
-      'query.addListener should not create segments for row events',
-      {skip: !pg.connect},
-      function (t) {
-        t.plan(1)
-
-        helper.runInTransaction(agent, function transactionInScope(tx) {
-          var client = new pg.Client(CON_OBJ)
-
-          t.tearDown(function() {
-            client.end()
-          })
-
-          client.connect(function (error) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-
-            var query = client.query('SELECT table_name FROM information_schema.tables')
-
-            query.addListener('error', function(err) {
-              t.error(err, 'error while querying')
-              t.end()
-            })
-
-            query.addListener('row', function onRow(row) {})
-
-            query.addListener('end', function ended() {
-              var segment = findSegment(tx.trace.root,
-                'Datastore/statement/Postgres/information_schema.tables/select')
-
-              t.equal(segment.children.length, 2, 'should have end and row children')
-            })
-          })
-        })
-      }
-    )
-
-    // In pg v7 the return value of a client query was turned into a
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test(
-      'query.on should not create segments for each row with readable stream',
-      {skip: !pg.connect},
-      function (t) {
-        t.plan(2)
-
-        helper.runInTransaction(agent, function transactionInScope(tx) {
-          var client = new pg.Client(CON_OBJ)
-
-          t.tearDown(function() {
-            client.end()
-          })
-
-          client.connect(function (error) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-
-            var query = client.query('SELECT * FROM generate_series(0, 9)')
-
-            query.on('error', function(err) {
-              t.error(err, 'error while querying')
-              t.end()
-            })
-
-            // simulate readable stream by emitting 'readable' event for each row
-            query.on('row', function onRow(row) {
-              query.emit('readable', row)
-            })
-
-            var called = 0
-            query.on('readable', function onReadable(row) {
-              called++
-            })
-
-            query.on('end', function ended() {
-              var segment = findSegment(tx.trace.root,
-                'Datastore/statement/Postgres/generate_series/select')
-
-              t.equal(segment.children.length, 2, 'should have end and row children')
-              t.equal(called, 10, 'event was called for each row')
-            })
-          })
-        })
-      }
-    )
-
-    // In pg v7 the return value of a client query was turned into a
-    // promise.  We can check for the static connect method that was
-    // removed in v7 as well.
-    t.test(
-      'query.addListener should not create segments for each row with readable stream',
-      {skip: !pg.connect},
-      function(t) {
-        t.plan(2)
-
-        helper.runInTransaction(agent, function transactionInScope(tx) {
-          var client = new pg.Client(CON_OBJ)
-
-          t.tearDown(function() {
-            client.end()
-          })
-
-          client.connect(function(error) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-
-            var query = client.query('SELECT * FROM generate_series(0, 9)')
-
-            query.addListener('error', function(err) {
-              t.error(err, 'error while querying')
-              t.end()
-            })
-
-            // simulate readable stream by emitting 'readable' event for each row
-            query.addListener('row', function onRow() {
-              query.emit('readable')
-            })
-
-            var called = 0
-            query.addListener('readable', function onReadable() {
-              called++
-            })
-
-            query.addListener('end', function ended() {
-              var segment = findSegment(tx.trace.root,
-                'Datastore/statement/Postgres/generate_series/select')
-
-              t.equal(segment.children.length, 2, 'should have end and row children')
-              t.equal(called, 10, 'event was called for each row')
-            })
-          })
-        })
-      }
-    )
   })
 }

@@ -1,0 +1,25 @@
+{
+  "name": "pg-post-7-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "pg": ">=7",
+        "pg-native": "1.10.x"
+      },
+      "files": [
+        "force-native.tap.js",
+        "native.tap.js",
+        "pg.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "pg": "^7.4.0",
+    "pg-native": "^1.10.1"
+  }
+}

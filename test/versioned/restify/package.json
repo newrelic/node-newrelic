@@ -39,6 +39,6 @@
   ],
   "dependencies": {
     "express": "^4.16.2",
-    "restify": "^5.0.1"
+    "restify": "^6.3.4"
   }
 }
