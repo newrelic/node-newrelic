@@ -77,7 +77,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('using EJS templates', {timeout: 1000}, function(t) {
-      server = utils.getServer()
+    server = utils.getServer()
     server.register(require('vision'), function() {
       server.views({
         path: path.join(__dirname, 'views'),
