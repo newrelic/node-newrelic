@@ -53,7 +53,7 @@
       },
       "dependencies": {
         "hapi": ">=9.0.0 <10",
-        "vision": "^4"
+        "vision": "^3"
       },
       "files": [
         "capture-params.tap.js",
