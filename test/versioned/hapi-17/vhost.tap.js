@@ -20,17 +20,20 @@ tap.test('Hapi vhost support', function(t) {
     // disabled by default
     agent.config.capture_params = true
 
-    agent.on('transactionFinished', function(transaction) {
-      t.ok(transaction.trace, 'transaction has a trace.')
-      t.deepEqual(transaction.trace.parameters, {
+    agent.on('transactionFinished', function(tx) {
+      t.ok(tx.trace, 'transaction has a trace.')
+      if (tx.trace.parameters.httpResponseMessage) {
+        t.ok(tx.trace.parameters.httpResponseMessage, 'OK')
+        delete tx.trace.parameters.httpResponseMessage
+      }
+      t.deepEqual(tx.trace.parameters, {
         'request.headers.accept': 'application/json',
         'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
-        'response.status': 200,
+        'response.status': '200',
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
         'httpResponseCode': '200',
-        'httpResponseMessage': 'OK',
         'id': '1337',
         'name': 'hapi',
         'request_uri': '/test/1337/2'
