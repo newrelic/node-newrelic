@@ -13,10 +13,21 @@ tap.test('agent instrumentation of Hapi', function(t) {
   t.plan(4)
 
   var port = null
+  var agent = null
+  var server = null
+
+  t.beforeEach(function(done) {
+    agent = helper.instrumentMockedAgent()
+    done()
+  })
+
+  t.afterEach(function(done) {
+    helper.unloadAgent(agent)
+    server.stop(done)
+  })
 
   t.test('for a normal request', {timeout: 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var server = utils.getServer()
+    server = utils.getServer()
 
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
@@ -62,17 +73,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.ok(serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
              'serialized metrics as expected')
 
-        server.stop(function() {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })
 
   t.test('using EJS templates', {timeout: 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
-
     var config = {
       options: {
         views: {
@@ -84,7 +90,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
       }
     }
 
-    var server = utils.getServer(config)
+    server = utils.getServer(config)
 
     server.route({
       method: 'GET',
@@ -107,16 +113,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
 
-        server.stop(function() {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })
 
   t.test('should generate rum headers', {timeout: 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
     var api = new API(agent)
 
     agent.config.application_id = '12345'
@@ -134,7 +136,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
       }
     }
 
-    var server = utils.getServer(config)
+    server = utils.getServer(config)
 
     server.route({
       method: 'GET',
@@ -159,17 +161,13 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
 
-        server.stop(function() {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })
 
   t.test('should trap errors correctly', function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var server = utils.getServer({ options: {debug: false} })
+    server = utils.getServer({ options: {debug: false} })
 
     server.route({
       method: 'GET',
@@ -196,10 +194,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.ok(first, 'have the first error')
         t.contains(first[2], 'ohno', 'got the expected error')
 
-        server.stop(function() {
-          helper.unloadAgent(agent)
-          t.end()
-        })
+        t.end()
       })
     })
   })

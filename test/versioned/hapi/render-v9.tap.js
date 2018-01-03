@@ -28,7 +28,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('for a normal request', {timeout: 1000}, function(t) {
-      server = utils.getServer()
+    server = utils.getServer()
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
