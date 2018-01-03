@@ -9,7 +9,6 @@ runTests.runMultiple = runMultiple
 
 
 function runTests(t, agent, Promise, library) {
-
   /* eslint-disable no-shadow, brace-style */
   if (library) {
     performTests('Fullfillment Factories',
@@ -24,13 +23,13 @@ function runTests(t, agent, Promise, library) {
   )
 
   performTests('New Synchronous',
-    function(Promise, val) { return new Promise(function(res, rej) { res(val) }) },
+    function(Promise, val) { return new Promise(function(res) { res(val) }) },
     function(Promise, err) { return new Promise(function(res, rej) { rej(err) }) }
   )
 
   performTests('New Asynchronous',
     function(Promise, val) {
-      return new Promise(function(res, rej) {
+      return new Promise(function(res) {
         setTimeout(function() { res(val) }, 10)
       })
     },
@@ -61,18 +60,25 @@ function runTests(t, agent, Promise, library) {
     doPerformTests(name, resolve, reject, false)
   }
 
-  function doPerformTests(name, resolve, reject) {
-    t.test(name + ': does not expose internal properties', function(t) {
+  function doPerformTests(name, resolve, reject, inTx) {
+    name += ' ' + (inTx ? 'with' : 'without') + ' transaction'
+
+    t.test(name + ': does not cause JSON to crash', function(t) {
       t.plan(1 * COUNT + 1)
 
       runMultiple(COUNT, function(i, cb) {
-        helper.runInTransaction(agent, function() {
-          var p = resolve(Promise).then(cb, cb)
-          var nrKeys = Object.keys(p).filter(function(key) {
-            return /^__NR_/.test(key)
-          })
-          t.deepEqual(nrKeys, [], 'should not expose any internal keys')
-        })
+        if (inTx) {
+          helper.runInTransaction(agent, test)
+        } else {
+          test(null)
+        }
+
+        function test(transaction) {
+          var p = resolve(Promise).then(end(transaction, cb), end(transaction, cb))
+          t.doesNotThrow(function() {
+            JSON.stringify(p)
+          }, 'should not cause stringification to crash')
+        }
       }, function(err) {
         t.error(err, 'should not error')
         t.end()
@@ -83,18 +89,24 @@ function runTests(t, agent, Promise, library) {
       t.plan(4 * COUNT + 1)
 
       runMultiple(COUNT, function(i, cb) {
-        helper.runInTransaction(agent, function transactionWrapper(transaction) {
+        if (inTx) {
+          helper.runInTransaction(agent, test)
+        } else {
+          test(null)
+        }
+
+        function test(transaction) {
           resolve(Promise)
             .then(function step() {
-              t.ok(true, 'should not change execution profile')
+              t.pass('should not change execution profile')
               return i
             })
             .then(function finalHandler(res) {
               t.equal(res, i, 'should be the correct value')
               checkTransaction(t, agent, transaction)
             })
-            .then(cb, cb)
-        })
+            .then(end(transaction, cb), end(transaction, cb))
+        }
       }, function(err) {
         t.error(err, 'should not error')
         t.end()
@@ -105,7 +117,13 @@ function runTests(t, agent, Promise, library) {
       t.plan(3 * COUNT + 1)
 
       runMultiple(COUNT, function(i, cb) {
-        helper.runInTransaction(agent, function transactionWrapper(transaction) {
+        if (inTx) {
+          helper.runInTransaction(agent, test)
+        } else {
+          test(null)
+        }
+
+        function test(transaction) {
           var err = new Error('some error ' + i)
           reject(Promise, err)
             .then(function unusedStep() {
@@ -115,8 +133,8 @@ function runTests(t, agent, Promise, library) {
               t.equal(reason, err, 'should be the same error')
               checkTransaction(t, agent, transaction)
             })
-            .then(cb, cb)
-        })
+            .then(end(transaction, cb), end(transaction, cb))
+        }
       }, function(err) {
         t.error(err, 'should not error')
         t.end()
@@ -125,7 +143,7 @@ function runTests(t, agent, Promise, library) {
   }
 
   t.test('preserves transaction with resolved chained promises', function(t) {
-    t.plan(3)
+    t.plan(4)
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       Promise.resolve(0).then(function step1() {
@@ -137,8 +155,10 @@ function runTests(t, agent, Promise, library) {
       .then(function finalHandler(res) {
         t.equal(res, 2, 'should be the correct result')
         checkTransaction(t, agent, transaction)
+        transaction.end()
       })
       .then(function() {
+        t.pass('should resolve cleanly')
         t.end()
       }, function(err) {
         t.fail(err)
@@ -148,7 +168,7 @@ function runTests(t, agent, Promise, library) {
   })
 
   t.test('preserves transaction with rejected chained promises', function(t) {
-    t.plan(3)
+    t.plan(4)
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       var err = new Error('some error')
@@ -164,8 +184,9 @@ function runTests(t, agent, Promise, library) {
       .catch(function catchHandler(reason) {
         t.equal(reason, err, 'should be the same error')
         checkTransaction(t, agent, transaction)
-      })
-      .then(function finallyHandler() {
+        transaction.end()
+      }).then(function finallyHandler() {
+        t.pass('should resolve cleanly')
         t.end()
       }, function(err) {
         t.fail(err)
@@ -188,9 +209,25 @@ function runMultiple(count, fn, cb) {
 
 function checkTransaction(t, agent, transaction) {
   var currentTransaction = agent.getTransaction()
-  t.ok(currentTransaction, 'should be in a transaction')
-  if (!currentTransaction) {
-    return
+
+  if (transaction) {
+    t.ok(currentTransaction, 'should be in a transaction')
+    if (!currentTransaction) {
+      return
+    }
+    t.equal(currentTransaction.id, transaction.id, 'should be the same transaction')
+  } else {
+    t.notOk(currentTransaction, 'should not be in a transaction')
+    t.pass('') // Make test count match for both branches.
   }
-  t.equal(currentTransaction.id, transaction.id, 'should be the same transaction')
+}
+
+function end(tx, cb) {
+  return function() {
+    if (tx) {
+      tx.end(cb)
+    } else {
+      cb()
+    }
+  }
 }

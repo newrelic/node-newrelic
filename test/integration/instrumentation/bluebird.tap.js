@@ -66,45 +66,38 @@ tap.test('no transaction', function(t) {
 })
 
 tap.test('new Promise() throw', function(t) {
-  t.plan(2)
-
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  try {
-    (new Promise(function(resolve, reject) {
-      throw new Error('test error')
-    })).then(function() {
-      t.fail('Error should have been caught.')
-    }, function(err) {
-      t.ok(err, 'Error should go to the reject handler')
-      t.equal(err.message, 'test error', 'Error should be as expected')
-      t.end()
-    })
-  } catch (e) {
-    t.fail('Error should have passed to `reject`.')
-  }
+  testPromiseClassMethod(t, 2, function throwTest(Promise, name) {
+    try {
+      return (new Promise(function() {
+        throw new Error(name + ' test error')
+      })).then(function() {
+        t.fail(name + ' Error should have been caught.')
+      }, function(err) {
+        t.ok(err, name + ' Error should go to the reject handler')
+        t.equal(err.message, name + ' test error', name + ' Error should be as expected')
+      })
+    } catch (e) {
+      t.error(e)
+      t.fail(name + ' Should have gone to reject handler')
+    }
+  })
 })
 
 tap.test('new Promise() resolve then throw', function(t) {
-  t.plan(1)
-
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  try {
-    (new Promise(function(resolve, reject) {
-      resolve('foo')
-      throw new Error('test error')
-    })).then(function(res) {
-      t.equal(res, 'foo', 'promise should be resolved.')
-      t.end()
-    }, function(err) {
-      t.fail('Error should have been swallowed by promise.')
-    })
-  } catch (e) {
-    t.fail('Error should have passed to `reject`.')
-  }
+  testPromiseClassMethod(t, 1, function resolveThrowTest(Promise, name) {
+    try {
+      return (new Promise(function(resolve) {
+        resolve(name + ' foo')
+        throw new Error(name + ' test error')
+      })).then(function(res) {
+        t.equal(res, name + ' foo', name + ' promise should be resolved.')
+      }, function() {
+        t.fail(name + ' Error should have been swallowed by promise.')
+      })
+    } catch (e) {
+      t.fail(name + ' Error should have passed to `reject`.')
+    }
+  })
 })
 
 tap.test('new Promise -> resolve', function(t) {

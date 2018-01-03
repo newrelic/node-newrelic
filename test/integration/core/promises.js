@@ -2,14 +2,20 @@
 
 var genericTestDir = '../../integration/instrumentation/promises/'
 
-var test = require('tap').test
+var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var util = require('util')
 var testPromiseSegments = require(genericTestDir + 'segments')
 var testTransactionState = require(genericTestDir + 'transaction-state')
 
 module.exports = function runTests(flags) {
-  test('transaction state', function(t) {
+  var RealPromise = global.Promise
+  tap.afterEach(function(done) {
+    Promise = global.Promise = RealPromise
+    done()
+  })
+
+  tap.test('transaction state', function(t) {
     var agent = helper.loadTestAgent(t, flags)
     t.autoend()
     testTransactionState(t, agent, Promise)
@@ -18,13 +24,13 @@ module.exports = function runTests(flags) {
   // XXX Promise segments in native instrumentation are currently less than ideal
   // XXX in structure. Transaction state is correctly maintained, and all segments
   // XXX are created, but the heirarchy is not correct.
-  test('segments', {skip: true}, function(t) {
+  tap.test('segments', {skip: true}, function(t) {
     var agent = helper.loadTestAgent(t, flags)
     t.autoend()
     testPromiseSegments(t, agent, Promise)
   })
 
-  test('then', function testThen(t) {
+  tap.test('then', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -58,7 +64,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('multi then', function testThen(t) {
+  tap.test('multi then', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -99,7 +105,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('multi then async', function testThen(t) {
+  tap.test('multi then async', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -147,7 +153,7 @@ module.exports = function runTests(flags) {
   })
 
 
-  test(
+  tap.test(
     'chain',
     {skip: !(global.Promise && Promise.prototype.chain)},
     function testChain(t) {
@@ -184,7 +190,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'multi chain',
     {skip: !(global.Promise && Promise.prototype.chain)},
     function testThen(t) {
@@ -228,7 +234,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'multi chain async',
     {skip: !(global.Promise && Promise.prototype.chain)},
     function testThen(t) {
@@ -278,7 +284,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('then reject', function testThenReject(t) {
+  tap.test('then reject', function testThenReject(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -312,7 +318,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('multi then reject', function testThen(t) {
+  tap.test('multi then reject', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -353,7 +359,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('multi then async reject', function testThen(t) {
+  tap.test('multi then async reject', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -400,7 +406,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'chain reject',
     {skip: !(global.Promise && Promise.prototype.chain)},
     function testChainReject(t) {
@@ -437,7 +443,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'multi chain reject',
     {skip: !(global.Promise && Promise.prototype.chain)},
     function testThen(t) {
@@ -481,7 +487,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'multi chain async reject',
     {skip: !(global.Promise && Promise.prototype.chain)},
     function testThen(t) {
@@ -531,7 +537,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('catch', function testCatch(t) {
+  tap.test('catch', function testCatch(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -560,7 +566,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('multi catch', function testThen(t) {
+  tap.test('multi catch', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -593,15 +599,10 @@ module.exports = function runTests(flags) {
           t.end()
         })
       }
-
-      function fail() {
-        t.fail('should not be called')
-        t.end()
-      }
     })
   })
 
-  test('multi catch async', function testThen(t) {
+  tap.test('multi catch async', function testThen(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -640,15 +641,10 @@ module.exports = function runTests(flags) {
           t.end()
         })
       }
-
-      function fail() {
-        t.fail('should not be called')
-        t.end()
-      }
     })
   })
 
-  test('Promise.resolve', function testResolve(t) {
+  tap.test('Promise.resolve', function testResolve(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -679,7 +675,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'Promise.accept',
     {skip: !(global.Promise && Promise.accept)},
     function testAccept(t) {
@@ -689,7 +685,7 @@ module.exports = function runTests(flags) {
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function accept() {
-        Promise.accept(15).then(function (val) {
+        Promise.accept(15).then(function(val) {
           segment = agent.tracer.getSegment()
           return val
         }).then(done, fail)
@@ -714,14 +710,14 @@ module.exports = function runTests(flags) {
   })
 
 
-  test('Promise.reject', function testReject(t) {
+  tap.test('Promise.reject', function testReject(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function reject() {
-        Promise.reject(10).then(null, function (error) {
+        Promise.reject(10).then(null, function(error) {
           segment = agent.tracer.getSegment()
           throw error
         }).then(fail, done)
@@ -746,7 +742,7 @@ module.exports = function runTests(flags) {
   })
 
 
-  test('Promise.all', function testAll(t) {
+  tap.test('Promise.all', function testAll(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -755,7 +751,7 @@ module.exports = function runTests(flags) {
       setTimeout(function resolve() {
         var a = Promise.resolve(15)
         var b = Promise.resolve(25)
-        Promise.all([a, b]).then(function (val){
+        Promise.all([a, b]).then(function(val) {
           segment = agent.tracer.getSegment()
           return val
         }).then(done, fail)
@@ -779,7 +775,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('Promise.all reject', function testAllReject(t) {
+  tap.test('Promise.all reject', function testAllReject(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
@@ -788,7 +784,7 @@ module.exports = function runTests(flags) {
       setTimeout(function reject() {
         var a = Promise.resolve(15)
         var b = Promise.reject(10)
-        Promise.all([a, b]).then(null, function (err){
+        Promise.all([a, b]).then(null, function(err) {
           segment = agent.tracer.getSegment()
           throw err
         }).then(fail, done)
@@ -812,16 +808,16 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('Promise.race', function testRace(t) {
+  tap.test('Promise.race', function testRace(t) {
     t.autoend()
     var agent = helper.loadTestAgent(t, flags)
     var segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      setTimeout(function resolve() {
+      setTimeout(function() {
         var a = Promise.resolve(15)
-        var b = new Promise(function (resolve) {setTimeout(resolve, 100)})
-        Promise.race([a, b]).then(function (val){
+        var b = new Promise(function(resolve) {setTimeout(resolve, 100)})
+        Promise.race([a, b]).then(function(val) {
           segment = agent.tracer.getSegment()
           return val
         }).then(done, fail)
@@ -845,7 +841,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'Promise.race reject',
     function testRaceReject(t) {
     t.autoend()
@@ -854,9 +850,9 @@ module.exports = function runTests(flags) {
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function reject() {
-        var a = new Promise(function (resolve) {setTimeout(resolve, 100)})
+        var a = new Promise(function(resolve) {setTimeout(resolve, 100)})
         var b = Promise.reject(10)
-        Promise.race([a, b]).then(null, function(err){
+        Promise.race([a, b]).then(null, function(err) {
           segment = agent.tracer.getSegment()
           throw err
         }).then(fail, done)
@@ -880,7 +876,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'Promise.defer',
     {skip: !(global.Promise && Promise.defer)},
     function testDefer(t) {
@@ -913,7 +909,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'Promise.defer reject',
     {skip: !(global.Promise && Promise.defer)},
     function testDeferReject(t) {
@@ -946,7 +942,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test(
+  tap.test(
     'instanceof Promise should not break',
     // skip this in the hook case, since we don't wrap
     {skip: flags && flags.await_support},
@@ -968,7 +964,7 @@ module.exports = function runTests(flags) {
     })
   })
 
-  test('should throw when called without executor', function testNoExecutor(t) {
+  tap.test('should throw when called without executor', function testNoExecutor(t) {
     var OriginalPromise = Promise
     var unwrappedError, wrappedError
     var wrapped, unwrapped
@@ -997,7 +993,7 @@ module.exports = function runTests(flags) {
     t.end()
   })
 
-  test('should work if something else wraps promises first', function testWrapSecond(t) {
+  tap.test('should work if something wraps promises first', function testWrapSecond(t) {
     var OriginalPromise = Promise
 
     util.inherits(WrappedPromise, Promise)
@@ -1009,65 +1005,75 @@ module.exports = function runTests(flags) {
       return promise
     }
 
-    helper.loadTestAgent(t, flags)
-    t.autoend()
-
-    var p = new Promise(function noop() {})
-
-    t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
-    t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
-    t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
-
-    t.end()
-  })
-
-  test('should work if something else wraps promises after', function testWrapFirst(t) {
-    var OriginalPromise = Promise
-
-    helper.loadTestAgent(t, flags)
-    util.inherits(WrappedPromise, Promise)
-    global.Promise = WrappedPromise
-
-    function WrappedPromise(executor) {
-      var promise = new OriginalPromise(executor)
-      promise.__proto__ = WrappedPromise.prototype
-      return promise
-    }
-
-    t.autoend()
-
-    var p = new Promise(function noop() {})
-
-    t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
-    t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
-    t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
-
-    t.end()
-  })
-
-  test('throw in executor', function testCatch(t) {
-    t.autoend()
     var agent = helper.loadTestAgent(t, flags)
-    var segment
+    t.tearDown(function() {
+      global.Promise = OriginalPromise
+    })
+
+    helper.runInTransaction(agent, function() {
+      var p = new Promise(function noop() {})
+
+      t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
+      t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
+      t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
+
+      t.end()
+    })
+  })
+
+  tap.test('should work if something wraps promises after', function testWrapFirst(t) {
+    var OriginalPromise = Promise
+
+    helper.loadTestAgent(t, flags)
+    util.inherits(WrappedPromise, Promise)
+    global.Promise = WrappedPromise
+
+    t.tearDown(function() {
+      global.Promise = OriginalPromise
+    })
+
+    function WrappedPromise(executor) {
+      var promise = new OriginalPromise(executor)
+      promise.__proto__ = WrappedPromise.prototype
+      return promise
+    }
+
+    var p = new Promise(function noop() {})
+
+    t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
+    t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
+    t.ok(p instanceof OriginalPromise, 'instanceof should work on unwrapped Promise')
+
+    t.end()
+  })
+
+  tap.test('throw in executor', function testCatch(t) {
+    var agent = helper.loadTestAgent(t, flags)
+    var segment = null
+    var exception = {}
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).catch(done)
-
-      function executor() {
+      new Promise(function() {
         segment = agent.tracer.getSegment()
-        throw 10
-      }
+        throw exception
+      }).then(function() {
+        t.fail('should have rejected promise')
+        t.end()
+      }, function(val) {
+        t.equal(this, undefined, 'context should be undefined')
 
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
-          t.equal(agent.getTransaction(), transaction, 'transaction should be preserved')
-          t.equal(val, 10, 'value should be preserved')
-          t.equal(agent.tracer.getSegment(), segment, 'segment should be preserved')
+        process.nextTick(function() {
+          var keptTx = agent.tracer.getTransaction()
+          t.equal(keptTx && keptTx.id, transaction.id, 'transaction should be preserved')
+          t.equal(val, exception, 'should pass through error')
+
+          // Using `.ok` intead of `.equal` to avoid giant test message that is
+          // not useful in this case.
+          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
           t.end()
         })
-      }
+      })
     })
   })
 }
