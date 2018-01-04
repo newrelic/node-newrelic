@@ -10,7 +10,7 @@ var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
-  var TABLE = 'testTable'
+  var TABLE = 'testTable-post'
   var PK = 'pk_column'
   var COL = 'test_column'
   var CON_OBJ = {
