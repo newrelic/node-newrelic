@@ -1,0 +1,34 @@
+{
+  "name": "mongodb-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10 <7"
+      },
+      "dependencies": {
+        "mongodb": "^1"
+      },
+      "files": [
+        "gridfs.tap.js",
+        "lifecycle.tap.js",
+        "mongodb.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "mongodb": "^2"
+      },
+      "files": [
+        "collection-v2.tap.js",
+        "cursor-v2.tap.js",
+        "db-v2.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
