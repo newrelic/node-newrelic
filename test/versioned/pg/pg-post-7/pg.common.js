@@ -284,8 +284,7 @@ module.exports = function runTests(name, clientFactory) {
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
         var pool = new pg.Pool(CON_OBJ)
         pool.query(insQuery, function(error, ok) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
             return t.end()
           }
 
@@ -337,8 +336,7 @@ module.exports = function runTests(name, clientFactory) {
           if (!t.error(error)) t.end()
 
           client.query(insQuery, function(error, ok) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
               return t.end()
             }
 
@@ -401,14 +399,12 @@ module.exports = function runTests(name, clientFactory) {
         var config = new CustomConfigClass()
 
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
             return t.end()
           }
 
           client.query(config, [pkVal, colVal], function(error) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
               return t.end()
             }
 
@@ -476,14 +472,12 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
             return t.end()
           }
 
           client.query('SELECT * FROM pg_sleep(1);', function(error) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
               return t.end()
             }
 
