@@ -1,11 +1,11 @@
 'use strict'
 
-var chai          = require('chai')
-var expect        = chai.expect
-var configurator  = require('../../lib/config.js')
-var sampler       = require('../../lib/sampler')
-var Agent         = require('../../lib/agent')
-var semver        = require('semver')
+var chai = require('chai')
+var expect = chai.expect
+var configurator = require('../../lib/config')
+var sampler = require('../../lib/sampler')
+var Agent = require('../../lib/agent')
+var semver = require('semver')
 
 
 var NAMES = require('../../lib/metrics/names')

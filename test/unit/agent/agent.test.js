@@ -5,11 +5,11 @@ var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
 var nock = require('nock')
-var helper = require('../../lib/agent_helper.js')
-var sampler = require('../../../lib/sampler.js')
+var helper = require('../../lib/agent_helper')
+var sampler = require('../../../lib/sampler')
 var semver = require('semver')
-var configurator = require('../../../lib/config.js')
-var Agent = require('../../../lib/agent.js')
+var configurator = require('../../../lib/config')
+var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
 
@@ -39,7 +39,7 @@ var awsRedirect
 function refreshAWSEndpoints() {
     clearAWSCache()
     awsRedirect = nock(awsHost)
-    for (var awsPath in awsResponses) {
+    for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
       var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
       redirect.reply(200, awsResponses[awsPath])
     }
@@ -60,83 +60,83 @@ describe("the New Relic agent", function() {
     expect(function() { new Agent() }).to.throw() // eslint-disable-line no-new
   })
 
-  it("doesn't throw when passed a valid configuration", function () {
+  it("doesn't throw when passed a valid configuration", function() {
     var config = configurator.initialize({agent_enabled : false})
     var agent = new Agent(config)
 
     expect(agent.config.agent_enabled).equal(false)
   })
 
-  describe("when configured", function () {
+  describe("when configured", function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it("bootstraps its configuration", function () {
+    it("bootstraps its configuration", function() {
       should.exist(agent.config)
     })
 
-    it("has an error tracer", function () {
+    it("has an error tracer", function() {
       should.exist(agent.errors)
     })
 
-    it("has query tracer", function () {
+    it("has query tracer", function() {
       should.exist(agent.queries)
     })
 
-    it("uses an aggregator to apply top N slow trace logic", function () {
+    it("uses an aggregator to apply top N slow trace logic", function() {
       should.exist(agent.traces)
     })
 
-    it("has a URL normalizer", function () {
+    it("has a URL normalizer", function() {
       should.exist(agent.urlNormalizer)
     })
 
-    it("has a metric name normalizer", function () {
+    it("has a metric name normalizer", function() {
       should.exist(agent.metricNameNormalizer)
     })
 
-    it("has a transaction name normalizer", function () {
+    it("has a transaction name normalizer", function() {
       should.exist(agent.transactionNameNormalizer)
     })
 
-    it("has a consolidated metrics collection that transactions feed into", function () {
+    it("has a consolidated metrics collection that transactions feed into", function() {
       should.exist(agent.metrics)
     })
 
-    it("has a function to look up the active transaction", function () {
-      expect(function () { agent.getTransaction(); }).not.throws()
+    it("has a function to look up the active transaction", function() {
+      expect(function() { agent.getTransaction() }).not.throws()
     })
 
-    it("requires new configuration to reconfigure the agent", function () {
-      expect(function () { agent.reconfigure(); }).throws()
+    it("requires new configuration to reconfigure the agent", function() {
+      expect(function() { agent.reconfigure() }).throws()
     })
 
-    it("defaults to a state of 'stopped'", function () {
+    it("defaults to a state of 'stopped'", function() {
       expect(agent._state).equal('stopped')
     })
 
-    it("requires a valid value when changing state", function () {
-      expect(function () { agent.setState('bogus'); }).throws('Invalid state bogus')
+    it("requires a valid value when changing state", function() {
+      expect(function() { agent.setState('bogus') }).throws('Invalid state bogus')
     })
 
-    it("has some debugging configuration by default", function () {
+    it("has some debugging configuration by default", function() {
       should.exist(agent.config.debug)
     })
 
-    describe("with debugging configured", function () {
-      it("internal instrumentation is disabled by default", function () {
+    describe("with debugging configured", function() {
+      it("internal instrumentation is disabled by default", function() {
         var debug = agent.config.debug
         expect(debug.internal_metrics).equal(false)
       })
 
-      it("internal instrumentation can be configured", function () {
+      it("internal instrumentation can be configured", function() {
         var config = configurator.initialize({debug : {internal_metrics : true}})
         var debugged = new Agent(config)
 
@@ -144,10 +144,10 @@ describe("the New Relic agent", function() {
         expect(debug.internal_metrics).equal(true)
       })
 
-      describe("with internal instrumentation enabled", function () {
+      describe("with internal instrumentation enabled", function() {
         var debugged
 
-        beforeEach(function () {
+        beforeEach(function() {
           var config = configurator.initialize({
             license_key : 'license key here',
             run_id      : RUN_ID,
@@ -156,12 +156,11 @@ describe("the New Relic agent", function() {
           debugged = new Agent(config)
         })
 
-        it("should have an object for tracking internal metrics", function () {
+        it("should have an object for tracking internal metrics", function() {
           should.exist(debugged.config.debug.supportability)
         })
 
-        it("should set apdexT on the supportability metrics on connect", function (done) {
-
+        it("should set apdexT on the supportability metrics on connect", function(done) {
           var config = configurator.initialize({
             license_key : 'license key here',
             debug       : {internal_metrics   : true}
@@ -206,8 +205,8 @@ describe("the New Relic agent", function() {
           })
         })
 
-        it("should find an internal metric for transaction processed", function (done) {
-          debugged.once('transactionFinished', function () {
+        it("should find an internal metric for transaction processed", function(done) {
+          debugged.once('transactionFinished', function() {
             var supportability = debugged.config.debug.supportability
             var metric = supportability.getMetric('Supportability/Transaction/Count')
 
@@ -222,8 +221,8 @@ describe("the New Relic agent", function() {
           transaction.end()
         })
 
-        it("should merge supportability metrics into sent payload", function (done) {
-          debugged.collector.metricData = function (payload, callback) {
+        it("should merge supportability metrics into sent payload", function(done) {
+          debugged.collector.metricData = function(payload, callback) {
             var metrics = payload[3]
             expect(metrics.getMetric('Supportability/Transaction/Count').callCount)
               .equal(1)
@@ -291,7 +290,7 @@ describe("the New Relic agent", function() {
     describe("when forcing transaction ignore status", function() {
       var agent
 
-      beforeEach(function () {
+      beforeEach(function() {
         var config = configurator.initialize({
           rules : {ignore : [
             /^\/ham_snadwich\/ignore/
@@ -300,22 +299,22 @@ describe("the New Relic agent", function() {
         agent = new Agent(config)
       })
 
-      it("shouldn't error when forcing an ignore", function () {
+      it("shouldn't error when forcing an ignore", function() {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = true
         transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
         expect(transaction.ignore).equal(true)
 
-        expect(function () { transaction.end(); }).not.throws()
+        expect(function() { transaction.end() }).not.throws()
       })
 
-      it("shouldn't error when forcing a non-ignore", function () {
+      it("shouldn't error when forcing a non-ignore", function() {
         var transaction = new Transaction(agent)
         transaction.forceIgnore = false
         transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
         expect(transaction.ignore).equal(false)
 
-        expect(function () { transaction.end(); }).not.throws()
+        expect(function() { transaction.end() }).not.throws()
       })
 
       it("should ignore when finalizeNameFromUri is not called", function() {
@@ -326,28 +325,28 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when starting", function () {
-      it("should require a callback", function () {
-        expect(function () { agent.start(); }).throws("callback required!")
+    describe("when starting", function() {
+      it("should require a callback", function() {
+        expect(function() { agent.start() }).throws("callback required!")
       })
 
-      it("should change state to 'starting'", function (done) {
-        agent.collector.connect = function () { done(); }
+      it("should change state to 'starting'", function(done) {
+        agent.collector.connect = function() { done() }
         agent.start(function cb_start() {})
         expect(agent._state).equal('starting')
       })
 
-      it("shouldn't error when disabled via configuration", function (done) {
+      it("shouldn't error when disabled via configuration", function(done) {
         agent.config.agent_enabled = false
-        agent.collector.connect = function () {
+        agent.collector.connect = function() {
           done(new Error("shouldn't be called"))
         }
         agent.start(done)
       })
 
-      it("should emit 'stopped' when disabled via configuration", function (done) {
+      it("should emit 'stopped' when disabled via configuration", function(done) {
         agent.config.agent_enabled = false
-        agent.collector.connect = function () {
+        agent.collector.connect = function() {
           done(new Error("shouldn't be called"))
         }
         agent.start(function cb_start() {
@@ -356,9 +355,9 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("should error when no license key is included", function (done) {
+      it("should error when no license key is included", function(done) {
         agent.config.license_key = undefined
-        agent.collector.connect = function () {
+        agent.collector.connect = function() {
           done(new Error("shouldn't be called"))
         }
         agent.start(function cb_start(error) {
@@ -368,9 +367,9 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("should say why startup failed without license key", function (done) {
+      it("should say why startup failed without license key", function(done) {
         agent.config.license_key = undefined
-        agent.collector.connect = function () {
+        agent.collector.connect = function() {
           done(new Error("shouldn't be called"))
         }
         agent.start(function cb_start(error) {
@@ -380,10 +379,10 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("should call connect when using proxy", function (done) {
+      it("should call connect when using proxy", function(done) {
         agent.config.proxy = 'fake://url'
 
-        agent.collector.connect = function (callback) {
+        agent.collector.connect = function(callback) {
           should.exist(callback)
           callback()
         }
@@ -391,8 +390,8 @@ describe("the New Relic agent", function() {
         agent.start(done)
       })
 
-      it("should call connect when config is correct", function (done) {
-        agent.collector.connect = function (callback) {
+      it("should call connect when config is correct", function(done) {
+        agent.collector.connect = function(callback) {
           should.exist(callback)
           callback()
         }
@@ -400,10 +399,10 @@ describe("the New Relic agent", function() {
         agent.start(done)
       })
 
-      it("should error when connection fails", function (done) {
+      it("should error when connection fails", function(done) {
         var passed = new Error("passin' on through")
 
-        agent.collector.connect = function (callback) {
+        agent.collector.connect = function(callback) {
           callback(passed)
         }
 
@@ -414,13 +413,13 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("should harvest at connect when metrics are already there", function (done) {
+      it("should harvest at connect when metrics are already there", function(done) {
         var metrics =
           nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value: []})
 
-        agent.collector.connect = function (callback) {
+        agent.collector.connect = function(callback) {
           callback(null, {agent_run_id : RUN_ID})
         }
 
@@ -436,9 +435,9 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("shouldn't blow up when harvest cycle runs", function (done) {
+      it("shouldn't blow up when harvest cycle runs", function(done) {
         var origInterval = global.setInterval
-        global.setInterval = function (callback) { return setTimeout(callback, 0); }
+        global.setInterval = function(callback) { return setImmediate(callback) }
 
         // manually harvesting
         agent.config.no_immediate_harvest = true
@@ -457,7 +456,7 @@ describe("the New Relic agent", function() {
             .reply(200, {return_value: []})
 
         agent.start(function cb_start() {
-          setTimeout(function () {
+          setTimeout(function() {
             global.setInterval = origInterval
 
             redirect.done()
@@ -469,9 +468,9 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("shouldn't blow up when harvest cycle errors", function (done) {
+      it("shouldn't blow up when harvest cycle errors", function(done) {
         var origInterval = global.setInterval
-        global.setInterval = function (callback) { return setTimeout(callback, 0); }
+        global.setInterval = function(callback) { return setImmediate(callback) }
 
         var redirect =
           nock(URL)
@@ -492,7 +491,7 @@ describe("the New Relic agent", function() {
             .reply(503)
 
         agent.start(function cb_start() {
-          setTimeout(function () {
+          setTimeout(function() {
             global.setInterval = origInterval
 
             redirect.done()
@@ -506,36 +505,36 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when stopping", function () {
+    describe("when stopping", function() {
       function nop() {}
 
-      it("should require a callback", function () {
-        expect(function () { agent.stop(); }).throws("callback required!")
+      it("should require a callback", function() {
+        expect(function() { agent.stop() }).throws("callback required!")
       })
 
-      it("shouldn't error if no harvester handle is set", function () {
+      it("shouldn't error if no harvester handle is set", function() {
         agent.harvesterHandle = undefined
         agent.collector.shutdown = nop
 
-        expect(function () { agent.stop(nop); }).not.throws()
+        expect(function() { agent.stop(nop) }).not.throws()
       })
 
-      it("shouldn't error if a harvester handle is set", function () {
-        agent.harvesterHandle = setInterval(function () { throw new Error("nope"); }, 5)
+      it("shouldn't error if a harvester handle is set", function() {
+        agent.harvesterHandle = setInterval(function() { throw new Error("nope") }, 5)
         agent.collector.shutdown = nop
 
-        expect(function () { agent.stop(nop); }).not.throws()
+        expect(function() { agent.stop(nop) }).not.throws()
       })
 
-      it("should clear harvester handle is set", function () {
-        agent.harvesterHandle = setInterval(function () { throw new Error("nope"); }, 5)
+      it("should clear harvester handle is set", function() {
+        agent.harvesterHandle = setInterval(function() { throw new Error("nope") }, 5)
         agent.collector.shutdown = nop
 
         agent.stop(nop)
         should.not.exist(agent.harvesterHandle)
       })
 
-      it("should stop sampler", function () {
+      it("should stop sampler", function() {
         sampler.start(agent)
         agent.collector.shutdown = nop
         agent.stop(nop)
@@ -543,7 +542,7 @@ describe("the New Relic agent", function() {
         expect(sampler.state).equal('stopped')
       })
 
-      it("should change state to 'stopping'", function () {
+      it("should change state to 'stopping'", function() {
         sampler.start(agent)
         agent.collector.shutdown = nop
         agent.stop(nop)
@@ -552,15 +551,15 @@ describe("the New Relic agent", function() {
       })
 
 
-      it("shouldn't shut down connection if not connected", function (done) {
+      it("shouldn't shut down connection if not connected", function(done) {
         agent.stop(function cb_stop(error) {
           should.not.exist(error)
           done()
         })
       })
 
-      describe("if connected", function () {
-        it("should call shutdown", function (done) {
+      describe("if connected", function() {
+        it("should call shutdown", function(done) {
           agent.config.run_id = RUN_ID
           var shutdown =
             nock(URL)
@@ -575,7 +574,7 @@ describe("the New Relic agent", function() {
           })
         })
 
-        it("should pass through error if shutdown fails", function (done) {
+        it("should pass through error if shutdown fails", function(done) {
           agent.config.run_id = RUN_ID
           var shutdown =
             nock(URL)
@@ -593,9 +592,9 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when calling out to the collector", function () {
+    describe("when calling out to the collector", function() {
       it("should update the metrics' apdex tolerating value when configuration changes",
-         function (done) {
+         function(done) {
         expect(agent.metrics.apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
           should.exist(agent.metrics.apdexT)
@@ -608,7 +607,7 @@ describe("the New Relic agent", function() {
       })
 
       it("should reset the configuration and metrics normalizer on connection",
-         function (done) {
+         function(done) {
         var config = {
           agent_run_id       : 404,
           apdex_t            : 0.742,
@@ -653,12 +652,12 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("should capture the trace off a finished transaction", function (done) {
+      it("should capture the trace off a finished transaction", function(done) {
         var trans = new Transaction(agent)
         // need to initialize the trace
         trans.trace.setDurationInMillis(2100)
 
-        agent.once('transactionFinished', function () {
+        agent.once('transactionFinished', function() {
           var trace = agent.traces.trace
           should.exist(trace)
           expect(trace.getDurationInMillis(), "same trace just passed in").equal(2100)
@@ -669,7 +668,7 @@ describe("the New Relic agent", function() {
         trans.end()
       })
 
-      it("should capture the synthetic trace off a finished transaction", function (done) {
+      it("should capture the synthetic trace off a finished transaction", function(done) {
         var trans = new Transaction(agent)
         // need to initialize the trace
         trans.trace.setDurationInMillis(2100)
@@ -681,7 +680,7 @@ describe("the New Relic agent", function() {
           monitorId: 'monId'
         }
 
-        agent.once('transactionFinished', function () {
+        agent.once('transactionFinished', function() {
           expect(agent.traces.trace).not.exist()
           expect(agent.traces.syntheticsTraces).length(1)
           var trace = agent.traces.syntheticsTraces[0]
@@ -694,10 +693,10 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when apdex_t changes", function () {
+    describe("when apdex_t changes", function() {
       var APDEX_T = 0.9876
 
-      it("should update the current metrics collection's apdexT", function () {
+      it("should update the current metrics collection's apdexT", function() {
         expect(agent.metrics.apdexT).not.equal(APDEX_T)
 
         agent._apdexTChange(APDEX_T)
@@ -706,17 +705,17 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when parsing metric mappings", function () {
+    describe("when parsing metric mappings", function() {
       var NAME     = 'Custom/Test/events'
       var SCOPE    = 'TEST'
       var METRICID = 17
 
 
-      beforeEach(function () {
+      beforeEach(function() {
         agent.config.run_id = RUN_ID
       })
 
-      it("shouldn't throw if no new rules are received", function (done) {
+      it("shouldn't throw if no new rules are received", function(done) {
         var metrics =
           nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -733,7 +732,7 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("shouldn't throw if new rules are received", function (done) {
+      it("shouldn't throw if new rules are received", function(done) {
         var rules = [[{name : 'Test/RenameMe1'}, 1001],
                      [{name : 'Test/RenameMe2', scope : 'TEST'}, 1002]]
 
@@ -753,7 +752,7 @@ describe("the New Relic agent", function() {
         })
       })
 
-      it("should add them to the existing mappings", function (done) {
+      it("should add them to the existing mappings", function(done) {
         var rules = [[{name : NAME, scope : SCOPE}, METRICID]]
 
         var metrics =
@@ -775,15 +774,15 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when handling finished transactions", function () {
+    describe("when handling finished transactions", function() {
       var transaction
 
-      beforeEach(function () {
+      beforeEach(function() {
         transaction = new Transaction(agent)
         transaction.ignore = true
       })
 
-      it("shouldn't merge metrics when transaction is ignored", function () {
+      it("shouldn't merge metrics when transaction is ignored", function() {
         /* Top-level method is bound into EE, so mock the metrics collection
          * instead.
          */
@@ -793,7 +792,7 @@ describe("the New Relic agent", function() {
         transaction.end()
       })
 
-      it("shouldn't merge errors when transaction is ignored", function () {
+      it("shouldn't merge errors when transaction is ignored", function() {
         /* Top-level method is bound into EE, so mock the error tracer instead.
          */
         var mock = sinon.mock(agent.errors)
@@ -802,7 +801,7 @@ describe("the New Relic agent", function() {
         transaction.end()
       })
 
-      it("shouldn't aggregate trace when transaction is ignored", function () {
+      it("shouldn't aggregate trace when transaction is ignored", function() {
         /* Top-level *and* second-level methods are bound into EEs, so mock the
          * transaction trace record method instead.
          */
@@ -813,36 +812,36 @@ describe("the New Relic agent", function() {
       })
     })
 
-    describe("when tweaking the harvest cycle", function () {
-      afterEach(function () {
+    describe("when tweaking the harvest cycle", function() {
+      afterEach(function() {
         agent._stopHarvester()
       })
 
-      it("should begin with no harvester active", function () {
+      it("should begin with no harvester active", function() {
         should.not.exist(agent.harvesterHandle)
       })
 
-      it("should start a harvester without throwing", function () {
-        expect(function () { agent._startHarvester(10); }).not.throws()
+      it("should start a harvester without throwing", function() {
+        expect(function() { agent._startHarvester(10) }).not.throws()
         should.exist(agent.harvesterHandle)
       })
 
-      it("should stop an unstarted harvester without throwing", function () {
-        expect(function () { agent._startHarvester(10); }).not.throws()
+      it("should stop an unstarted harvester without throwing", function() {
+        expect(function() { agent._startHarvester(10) }).not.throws()
       })
 
-      it("should stop a started harvester", function () {
+      it("should stop a started harvester", function() {
         agent._startHarvester(10)
         agent._stopHarvester()
         should.not.exist(agent.harvesterHandle)
       })
 
-      it("should restart an unstarted harvester without throwing", function () {
-        expect(function () { agent._restartHarvester(10); }).not.throws()
+      it("should restart an unstarted harvester without throwing", function() {
+        expect(function() { agent._restartHarvester(10) }).not.throws()
         should.exist(agent.harvesterHandle)
       })
 
-      it("should restart a started harvester", function () {
+      it("should restart a started harvester", function() {
         agent._startHarvester(10)
         var before = agent.harvesterHandle
         should.exist(before)
@@ -850,26 +849,26 @@ describe("the New Relic agent", function() {
         expect(agent.harvesterHandle).not.equal(before)
       })
 
-      it("shouldn't alter interval when harvester's not running", function (done) {
+      it("shouldn't alter interval when harvester's not running", function(done) {
         should.not.exist(agent.harvesterHandle)
-        agent._harvesterIntervalChange(13, function () {
+        agent._harvesterIntervalChange(13, function() {
           should.not.exist(agent.harvesterHandle)
 
           done()
         })
       })
 
-      it("shouldn't crash when no callback is passed on interval change", function () {
-        agent.harvesterHandle = setInterval(function () {}, 2 << 40)
-        expect(function () { agent._harvesterIntervalChange(69); }).not.throws()
+      it("shouldn't crash when no callback is passed on interval change", function() {
+        agent.harvesterHandle = setInterval(function() {}, 2 << 40)
+        expect(function() { agent._harvesterIntervalChange(69) }).not.throws()
       })
 
-      it("should alter interval when harvester's not running", function (done) {
+      it("should alter interval when harvester's not running", function(done) {
         agent._startHarvester(10)
         var before = agent.harvesterHandle
         should.exist(before)
 
-        agent._harvesterIntervalChange(13, function (error) {
+        agent._harvesterIntervalChange(13, function(error) {
           expect(error.message).equal("Not connected to New Relic!")
           expect(agent.harvesterHandle).not.equal(before)
 
@@ -879,10 +878,10 @@ describe("the New Relic agent", function() {
     })
   })
 
-  describe("when harvesting", function () {
+  describe("when harvesting", function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       var config = configurator.initialize({
         run_id      : RUN_ID,
         license_key : 'license key here'
@@ -893,15 +892,15 @@ describe("the New Relic agent", function() {
       agent.config.error_collector.capture_events = false
     })
 
-    it("harvest requires a callback", function () {
-      expect(function () { agent.harvest(); }).throws("callback required!")
+    it("harvest requires a callback", function() {
+      expect(function() { agent.harvest() }).throws("callback required!")
     })
 
-    it("the last reported time is congruent with reality", function () {
+    it("the last reported time is congruent with reality", function() {
       expect(agent.metrics.started).closeTo(Date.now(), 1000)
     })
 
-    it("sends transactions to the new error handler after harvest", function (done) {
+    it("sends transactions to the new error handler after harvest", function(done) {
       agent.metrics.started = 1337
 
       var metricData =
@@ -916,7 +915,7 @@ describe("the New Relic agent", function() {
         metricData.done()
 
         agent.errors = {
-          onTransactionFinished : function (t) {
+          onTransactionFinished : function(t) {
             expect(t).equal(transaction)
             done()
           }
@@ -928,12 +927,12 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("reports the error count", function (done) {
+    it("reports the error count", function(done) {
       agent.errors.add(null, new TypeError('no method last on undefined'))
       agent.errors.add(null, new Error('application code error'))
       agent.errors.add(null, new RangeError('stack depth exceeded'))
 
-      agent.collector.metricData = function (payload) {
+      agent.collector.metricData = function(payload) {
         var metrics = payload[3]
         var metric  = metrics.getMetric('Errors/all')
 
@@ -947,7 +946,7 @@ describe("the New Relic agent", function() {
       agent.harvest(function nop() {})
     })
 
-    it("reports web transactions error count", function (done) {
+    it("reports web transactions error count", function(done) {
       var transaction = new Transaction(agent)
       transaction.url = '/some/path'
       expect(transaction.isWeb()).to.be.true
@@ -956,7 +955,7 @@ describe("the New Relic agent", function() {
       agent.errors.add(transaction, new Error('application code error'))
       agent.errors.add(transaction, new RangeError('stack depth exceeded'))
 
-      agent.collector.metricData = function (payload) {
+      agent.collector.metricData = function(payload) {
         var metrics = payload[3]
         var metric  = metrics.getMetric('Errors/allWeb')
 
@@ -998,7 +997,7 @@ describe("the New Relic agent", function() {
       }
     })
 
-    it("resets error count after harvest", function (done) {
+    it("resets error count after harvest", function(done) {
       // turn off error events, so that does not interfere with this test
       agent.config.error_collector.capture_events = false
 
@@ -1006,14 +1005,14 @@ describe("the New Relic agent", function() {
       agent.errors.add(null, new Error('application code error'))
       agent.errors.add(null, new RangeError('stack depth exceeded'))
 
-      agent.collector.metricData = function (payload, cb) {
+      agent.collector.metricData = function(payload, cb) {
         // These tests do not clean up after themselves, at least call the cb
         // that harvest doesn't hang.
         cb()
       }
 
       var old_ed = agent.collector.errorData
-      agent.collector.errorData = function (errors, cb) {
+      agent.collector.errorData = function(errors, cb) {
         cb()
       }
 
@@ -1022,10 +1021,9 @@ describe("the New Relic agent", function() {
         agent.collector.errorData = old_ed
         done()
       })
-
     })
 
-    it("resets error count after harvest when error collector is off", function (done) {
+    it("resets error count after harvest when error collector is off", function(done) {
       // turn off error events, so that does not interfere with this test
       agent.config.error_collector.capture_events = false
 
@@ -1037,7 +1035,7 @@ describe("the New Relic agent", function() {
       var old_config = agent.config.error_collector.enabled
       agent.config.error_collector.enabled = false
 
-      agent.collector.metricData = function (payload, cb) {
+      agent.collector.metricData = function(payload, cb) {
         // These tests do not clean up after themselves, at least call the cb
         // that harvest doesn't hang.
         cb()
@@ -1050,7 +1048,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("bails out early when sending metrics fails", function (done) {
+    it("bails out early when sending metrics fails", function(done) {
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -1067,7 +1065,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("bails out early when sending errors fails", function (done) {
+    it("bails out early when sending errors fails", function(done) {
       var metricData =
         nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
@@ -1089,7 +1087,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("doesn't send errors when error tracer disabled", function (done) {
+    it("doesn't send errors when error tracer disabled", function(done) {
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
@@ -1119,7 +1117,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("doesn't send errors when server disables collect_errors", function (done) {
+    it("doesn't send errors when server disables collect_errors", function(done) {
       // turn off error events, so that does not interfere with this test
       agent.config.error_collector.capture_events = false
 
@@ -1152,7 +1150,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("doesn't send queries when slow_sql is disabled", function (done) {
+    it("doesn't send queries when slow_sql is disabled", function(done) {
       var settings =
         nock(URL)
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
@@ -1200,7 +1198,7 @@ describe("the New Relic agent", function() {
       }
     })
 
-    it("sends query trace when there's a trace to send", function (done) {
+    it("sends query trace when there's a trace to send", function(done) {
       var transaction = new Transaction(agent)
       transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.trace.setDurationInMillis(4001)
@@ -1242,13 +1240,14 @@ describe("the New Relic agent", function() {
 
         metricData.done()
         eventData.done()
+        errorData.done()
         queryData.done()
         transactionSampleData.done()
         done()
       })
     })
 
-    it("merges queries when send fails", function (done) {
+    it("merges queries when send fails", function(done) {
       var transaction = new Transaction(agent)
       transaction.finalizeNameFromUri('/test/path/31337', 501)
       transaction.trace.setDurationInMillis(4001)
@@ -1300,15 +1299,14 @@ describe("the New Relic agent", function() {
 
         metricData.done()
         eventData.done()
+        errorData.done()
         queryData.done()
         transactionSampleData.done()
         done()
       })
-
-
     })
 
-    it("doesn't send transaction traces when slow traces disabled", function (done) {
+    it("doesn't send transaction traces when slow traces disabled", function(done) {
       var transaction = new Transaction(agent)
       transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
@@ -1351,7 +1349,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("doesn't send transaction traces when collect_traces disabled", function (done) {
+    it("doesn't send transaction traces when collect_traces disabled", function(done) {
       var transaction = new Transaction(agent)
       transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
@@ -1394,7 +1392,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("sends transaction trace when there's a trace to send", function (done) {
+    it("sends transaction trace when there's a trace to send", function(done) {
       var transaction = new Transaction(agent)
       transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
@@ -1431,7 +1429,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("passes through errror when sending trace fails", function (done) {
+    it("passes through errror when sending trace fails", function(done) {
       var transaction = new Transaction(agent)
       transaction.finalizeNameFromUri('/test/path/31337', 501)
       agent.errors.add(transaction, new Error('application code error'))
@@ -1464,17 +1462,17 @@ describe("the New Relic agent", function() {
   })
 
 
-  describe("when performing harvest operations without a connection", function () {
+  describe("when performing harvest operations without a connection", function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       var config = configurator.initialize({
         license_key : 'license key here'
       })
       agent = new Agent(config)
     })
 
-    it("should bail informatively when sending metric data", function (done) {
+    it("should bail informatively when sending metric data", function(done) {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
@@ -1487,7 +1485,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("should bail informatively when sending error data", function (done) {
+    it("should bail informatively when sending error data", function(done) {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)
@@ -1500,7 +1498,7 @@ describe("the New Relic agent", function() {
       })
     })
 
-    it("should bail informatively when sending transaction trace", function (done) {
+    it("should bail informatively when sending transaction trace", function(done) {
       var transaction = new Transaction(agent)
       agent.errors.add(transaction, new Error('application code error'))
       transaction.trace.setDurationInMillis(4001)

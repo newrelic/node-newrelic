@@ -2,10 +2,10 @@
 
 var test = require('tap').test
 var nock = require('nock')
-var configurator = require('../../../lib/config.js')
-var Agent = require('../../../lib/agent.js')
+var configurator = require('../../../lib/config')
+var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
-var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
+var mockAWSInfo = require('../../lib/nock/aws').mockAWSInfo
 
 
 nock.disableNetConnect()

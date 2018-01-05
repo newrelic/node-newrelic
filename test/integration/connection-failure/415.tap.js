@@ -1,21 +1,21 @@
 'use strict'
 
-var test         = require('tap').test
-var nock         = require('nock')
-var configurator = require('../../../lib/config.js')
-var Agent        = require('../../../lib/agent.js')
-var sampler = require('../../../lib/sampler.js')
-var Transaction  = require('../../../lib/transaction')
-var mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
+var test = require('tap').test
+var nock = require('nock')
+var configurator = require('../../../lib/config')
+var Agent = require('../../../lib/agent')
+var sampler = require('../../../lib/sampler')
+var Transaction = require('../../../lib/transaction')
+var mockAWSInfo = require('../../lib/nock/aws').mockAWSInfo
 
 
 nock.disableNetConnect()
 
-test("harvesting with a mocked collector that returns 415 after connect", function (t) {
-  var RUN_ID      = 1337
-    , url         = 'https://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize())
-    , transaction = new Transaction(agent)
+test("harvesting with a mocked collector that returns 415 after connect", function(t) {
+  var RUN_ID = 1337
+  var url = 'https://collector.newrelic.com'
+  var agent = new Agent(configurator.initialize())
+  var transaction = new Transaction(agent)
 
 
   function path(method, runID) {
@@ -43,10 +43,10 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
                    .reply(200, {return_value : []})
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(415)
-    , sendEvents = nock(url).post(path('analytic_event_data', RUN_ID)).reply(415)
-    , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(415)
-    , sendErrorEvents = nock(url).post(path('error_event_data', RUN_ID)).reply(415)
-    , sendTrace   = nock(url).post(path('transaction_sample_data', RUN_ID)).reply(415)
+  var sendEvents = nock(url).post(path('analytic_event_data', RUN_ID)).reply(415)
+  var sendErrors = nock(url).post(path('error_data', RUN_ID)).reply(415)
+  var sendErrorEvents = nock(url).post(path('error_event_data', RUN_ID)).reply(415)
+  var sendTrace = nock(url).post(path('transaction_sample_data', RUN_ID)).reply(415)
 
 
   var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200)
@@ -85,13 +85,13 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
   })
 })
 
-test("discarding metrics and errors after a 415", function (t) {
+test("discarding metrics and errors after a 415", function(t) {
   t.plan(3)
 
-  var RUN_ID      = 1338
-    , url         = 'https://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize())
-    , transaction = new Transaction(agent)
+  var RUN_ID = 1338
+  var url = 'https://collector.newrelic.com'
+  var agent = new Agent(configurator.initialize())
+  var transaction = new Transaction(agent)
 
 
   function path(method, runID) {

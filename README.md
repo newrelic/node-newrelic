@@ -76,7 +76,7 @@ that if you feel you've found a security issue, contact us at security@newrelic.
 
 The module can be tailored to your app's requirements, both from the server and
 via the `newrelic.js` configuration file you created. For complete details on
-what can be configured, refer to [`lib/config.default.js`][6], which documents
+what can be configured, refer to [`lib/config/default.js`][6], which documents
 the available variables and their default values.
 
 In addition, for those of you running in PaaS environments like Heroku or
@@ -150,7 +150,7 @@ For completeness, here's the rest of the list:
   currently there is no way to escape commas in patterns. Defaults to empty.
 * `NEW_RELIC_TRACER_TOP_N`: Increase this number to increase the diversity of
   slow transaction traces sent to New Relic. Defaults to 1. See the description
-  in `lib/config.default.js`, as this feature is exceedingly hard to summarize.
+  in `lib/config/default.js`, as this feature is exceedingly hard to summarize.
 * `NEW_RELIC_HOST`: Hostname for the New Relic collector. You shouldn't
   need to change this.
 * `NEW_RELIC_PORT`: Port number on which the New Relic collector will be
@@ -812,4 +812,4 @@ the licenses of its dependencies.
 [3]: https://www.npmjs.com/package/newrelic
 [4]: https://newrelic.com
 [5]: https://newrelic.com/application-monitoring/features
-[6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config.default.js
+[6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config/default.js
