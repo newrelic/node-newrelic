@@ -3,7 +3,6 @@
 var hostname = require('os').hostname
 var chai = require('chai')
 var expect = chai.expect
-var should = chai.should()
 var helper = require('../lib/agent_helper')
 var facts = require('../../lib/collector/facts')
 var sysInfo = require('../../lib/system-info')
