@@ -9,16 +9,9 @@ var exec = require('child_process').exec
 var DBUSER = 'root'
 var DBNAME = 'agent_integration'
 
-var config = {
-  connectionLimit: 10,
-  host: params.mysql_host,
-  port: params.mysql_port,
-  user: DBUSER,
-  database: DBNAME
-}
-
+var config = getConfig({})
 function getConfig(extras) {
-  var conf =  {
+  var conf = {
     connectionLimit: 10,
     host: params.mysql_host,
     port: params.mysql_port,
@@ -26,7 +19,7 @@ function getConfig(extras) {
     database: DBNAME
   }
 
-  for (var key in extras) {
+  for (var key in extras) { // eslint-disable-line guard-for-in
     conf[key] = extras[key]
   }
 
