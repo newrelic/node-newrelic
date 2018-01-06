@@ -627,6 +627,10 @@ describe("the agent configuration", function() {
     it("should not enable browser monitoring attributes", function() {
       expect(configuration.browser_monitoring.attributes.enabled).to.be.false()
     })
+
+    it("should enable browser monitoring attributes", function() {
+      expect(configuration.browser_monitoring.attributes.enabled).equal(true)
+    })
   })
 
   describe("when overriding the config file location via NR_HOME", function() {
@@ -698,14 +702,17 @@ describe("the agent configuration", function() {
       process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
       process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
 
-      var configuration
+      var config
       expect(function envTest() {
-        configuration = Config.initialize()
+        config = Config.initialize()
       }).not.throws()
 
-      should.not.exist(configuration.newrelic_home)
-      expect(configuration.error_collector &&
-             configuration.error_collector.enabled).equal(true)
+      should.not.exist(config.newrelic_home)
+      expect(config.error_collector &&
+             config.error_collector.attributes &&
+             config.error_collector.attributes.enabled).equal(true)
+      expect(config.error_collector &&
+             config.error_collector.enabled).equal(true)
 
       delete process.env.NEW_RELIC_NO_CONFIG_FILE
       delete process.env.NEW_RELIC_HOME
@@ -1057,6 +1064,7 @@ describe("the agent configuration", function() {
         config.onConnect({'collect_analytics_events': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
+      expect(config.transaction_events.attributes.enabled).equals(false)
     })
 
     it("shouldn't blow up when transaction_events.max_samples_stored is received",
