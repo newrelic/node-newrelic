@@ -1,12 +1,10 @@
 'use strict'
 
 var tap = require('tap')
-var request = require('request')
-var API = require('../../../api')
 var shims = require('../../../lib/shim')
 var helper = require('../../lib/agent_helper')
 var instrument = require('../../../lib/instrumentation/hapi')
-var utils = require('./hapi-17-utils')
+var utils = require('./hapi-utils')
 
 tap.test('instrumentation of Hapi', function(t) {
   t.autoend()
