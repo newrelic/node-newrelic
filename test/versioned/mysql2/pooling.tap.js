@@ -27,7 +27,7 @@ tap.test('MySQL instrumentation with a connection pool', function(t) {
      *
      */
     var poolLogger = logger.child({component: 'pool'})
-    var pool = generic.Pool({ // eslint-disable-line new-cap
+    var pool = new generic.Pool({ // eslint-disable-line new-cap
       name: 'mysql',
       min: 2,
       max: 6,

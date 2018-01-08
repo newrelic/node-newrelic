@@ -223,7 +223,7 @@ tap.test('mysql built-in connection pools', {timeout: 30 * 1000}, function(t) {
 
       var pool = mysql.createPool(config)
       helper.runInTransaction(agent, function transactionInScope(txn) {
-        pool.query('SELECT 1 + 1 AS solution', function(err) {
+        pool.query('SELECT 1 + 1 AS solution', function() {
           // In the case where you don't have a server running on
           // localhost the data will still be correctly associated
           // with the query.
@@ -295,7 +295,7 @@ tap.test('mysql built-in connection pools', {timeout: 30 * 1000}, function(t) {
 
           var pool = mysql.createPool(config)
           helper.runInTransaction(agent, function transactionInScope(txn) {
-            pool.query('SELECT 1 + 1 AS solution', function(err) {
+            pool.query('SELECT 1 + 1 AS solution', function() {
               var seg = txn.trace.root.children[0].children[2]
               // In the case where you don't have a server running on
               // localhost the data will still be correctly associated
