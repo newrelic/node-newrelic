@@ -72,7 +72,7 @@ function setupPool(mysql, logger) {
   var generic = require('generic-pool')
 
   var pool = new generic.Pool({
-    name: 'mysql',
+    name: 'mysql2',
     min: 2,
     max: 6,
     idleTimeoutMillis: 250,
