@@ -3,17 +3,21 @@
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var setup = require('./setup')
 
 var DBUSER = 'test_user'
 var DBNAME = 'agent_integration'
 
-tap.test('MySQL transactions', {timeout: 30 * 1000}, function(t) {
-  t.plan(3)
+tap.test('MySQL transactions', {timeout: 30000}, function(t) {
+  t.plan(4)
 
-  helper.bootstrapMySQL(function(error) {
-    // set up the instrumentation before loading MySQL
-    var agent = helper.instrumentMockedAgent()
-    var mysql = require('mysql2')
+  // set up the instrumentation before loading MySQL
+  var agent = helper.instrumentMockedAgent()
+  var mysql = require('mysql2')
+
+  setup(mysql, function(error) {
+    t.error(error, 'should not error setting up database')
+
     var client = mysql.createConnection({
       user: DBUSER,
       database: DBNAME,
@@ -21,32 +25,25 @@ tap.test('MySQL transactions', {timeout: 30 * 1000}, function(t) {
       port: params.mysql_port
     })
 
-    if (error) t.fail(error)
-
     t.tearDown(function() {
       helper.unloadAgent(agent)
       client.end()
     })
 
-    /*
-     *
-     * TEST GOES HERE
-     *
-     */
     t.notOk(agent.getTransaction(), "no transaction should be in play yet")
     helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction(), "we should be in a transaction")
       client.beginTransaction(function(err) {
-        if (err) t.fail(err)
+        if (err) return t.fail(err)
         // trying the object mode of client.query
         client.query({sql: 'SELECT 1', timeout: 10}, function(err) {
-          if (err) t.fail(err)
+          if (err) return t.fail(err)
           client.commit(function(err) {
-            if (err) t.fail(err)
+            if (err) return t.fail(err)
             t.ok(agent.getTransaction(), "MySQL query should not lose the transaction")
           })
         })
       })
     })
-  }.bind(this))
+  })
 })

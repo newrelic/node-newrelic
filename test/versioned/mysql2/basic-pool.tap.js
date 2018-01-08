@@ -1,13 +1,16 @@
 'use strict'
 
+var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 var urltils = require('../../../lib/util/urltils')
 var exec = require('child_process').exec
+var setup = require('./setup')
 
 var DBUSER = 'root'
 var DBNAME = 'agent_integration'
+
 
 var config = getConfig({})
 function getConfig(extras) {
@@ -27,25 +30,9 @@ function getConfig(extras) {
 }
 
 tap.test('See if mysql is running', function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var mysql = require('mysql2')
-  var pool
-
-  t.tearDown(function() {
-    helper.unloadAgent(agent)
-    pool && pool.end()
-  })
-
-  helper.bootstrapMySQL(function cb_bootstrapMySQL() {
-    // set up the instrumentation before loading MySQL
-    pool = mysql.createPool(config)
-
-    pool.query('SELECT 1 + 1 AS solution', function(err) {
-      if (err) {
-        throw new Error('Are you sure mysql is running at ' + config.host)
-      }
-      t.end()
-    })
+  setup(require('mysql2'), function(err) {
+    t.error(err, 'should not fail to set up mysql database')
+    t.end()
   })
 })
 
@@ -54,13 +41,6 @@ tap.test('bad config', function(t) {
 
   var agent = helper.instrumentMockedAgent()
   var mysql = require('mysql2')
-  var poolCluster = null
-
-  t.tearDown(function() {
-    helper.unloadAgent(agent)
-    poolCluster && poolCluster.end()
-  })
-
   var badConfig = {
     connectionLimit: 10,
     host: 'nohost',
@@ -68,8 +48,9 @@ tap.test('bad config', function(t) {
     database: DBNAME,
   }
 
-  t.test('multiwrap', function(_t) {
-    poolCluster = mysql.createPoolCluster()
+  t.test(function(t) {
+    var poolCluster = mysql.createPoolCluster()
+    t.tearDown(function() { poolCluster.end() })
 
     poolCluster.add(badConfig) // anonymous group
     poolCluster.getConnection(function(err) {
@@ -79,14 +60,18 @@ tap.test('bad config', function(t) {
       var stack = new Error().stack
       var frames = stack.split('\n').slice(3,8)
 
-      _t.notEqual(frames[0], frames[1], 'do not multi-wrap')
-      _t.notEqual(frames[0], frames[2], 'do not multi-wrap')
-      _t.notEqual(frames[0], frames[3], 'do not multi-wrap')
-      _t.notEqual(frames[0], frames[4], 'do not multi-wrap')
+      t.notEqual(frames[0], frames[1], 'do not multi-wrap')
+      t.notEqual(frames[0], frames[2], 'do not multi-wrap')
+      t.notEqual(frames[0], frames[3], 'do not multi-wrap')
+      t.notEqual(frames[0], frames[4], 'do not multi-wrap')
 
-      _t.ok(err, 'should be an error')
-      _t.end()
+      t.ok(err, 'should be an error')
+      t.end()
     })
+  })
+
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
   })
 })
 
@@ -95,325 +80,328 @@ tap.test('bad config', function(t) {
 // TODO: test .query without callback
 // TODO: test notice errors
 // TODO: test sql capture
-tap.test('mysql built-in connection pools', {timeout: 30 * 1000}, function(t) {
-  var agent
-  var pool
-  var mysql
+tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
+  t.autoend()
 
-  helper.bootstrapMySQL(function cb_bootstrapMySQL(error) {
-    t.autoend()
-    t.notOk(error, 'setup should not error')
+  var agent = null
+  var mysql = null
+  var pool = null
 
-    // set up the instrumentation before loading MySQL
-    t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent()
-      mysql = require('mysql2')
-      pool  = mysql.createPool(config)
-      done()
+  t.beforeEach(function(done) {
+    agent = helper.instrumentMockedAgent()
+    mysql = require('mysql2')
+    pool = mysql.createPool(config)
+    setup(mysql, done)
+  })
+
+  t.afterEach(function(done) {
+    helper.unloadAgent(agent)
+    pool.end(done)
+
+    agent = null
+    mysql = null
+    pool = null
+  })
+
+  // make sure a connection exists in the pool before any tests are run
+  // we want to make sure connections are allocated outside any transaction
+  // this is to avoid tests that 'happen' to work because of how CLS works
+  t.test('primer', function(t) {
+    pool.query('SELECT 1 + 1 AS solution', function(err) {
+      t.notOk(err, 'are you sure mysql is running?')
+      t.notOk(agent.getTransaction(), 'transaction should not exist')
+      t.end()
     })
+  })
 
-    t.afterEach(function(done) {
-      pool.end(function() {
-        mysql = null
-        helper.unloadAgent(agent)
-        done()
-      })
-    })
-
-
-    // make sure a connection exists in the pool before any tests are run
-    // we want to make sure connections are allocated outside any transaction
-    // this is to avoid tests that 'happen' to work because of how CLS works
-    t.test('primer', function(_t) {
+  t.test('ensure host and port are set on segment', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SELECT 1 + 1 AS solution', function(err) {
-        _t.notOk(err, 'are you sure mysql is running?')
-        _t.notOk(agent.getTransaction(), 'transaction should not exist')
-        _t.end()
+        var seg = txn.trace.root.children[0].children[1]
+        t.error(err, 'should not error')
+        t.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
+        t.equal(
+          seg.parameters.host,
+          urltils.isLocalhost(config.host)
+            ? agent.config.getHostnameSafe()
+            : config.host,
+          'set host'
+        )
+        t.equal(
+          seg.parameters.database_name,
+          DBNAME,
+          'set database name'
+        )
+        t.equal(
+          seg.parameters.port_path_or_id,
+          String(config.port),
+          'set port'
+        )
+        txn.end(t.end)
       })
     })
+  })
 
-    t.test('respects `datastore_tracer.instance_reporting`', function(_t) {
-      helper.runInTransaction(agent, function(txn) {
-        agent.config.datastore_tracer.instance_reporting.enabled = false
-        pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0].children[2]
-          _t.notOk(err, 'no errors')
-          _t.ok(seg, 'there is a segment')
-          _t.notOk(
-            seg.parameters.host,
-            'should have no host parameter'
-          )
-          _t.notOk(
-            seg.parameters.port_path_or_id,
-            'should have no port parameter'
-          )
-          _t.equal(
-            seg.parameters.database_name,
-            DBNAME,
-            'set database name'
-          )
-          agent.config.datastore_tracer.instance_reporting.enabled = true
-          txn.end(_t.end)
+  t.test('respects `datastore_tracer.instance_reporting`', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      agent.config.datastore_tracer.instance_reporting.enabled = false
+      pool.query('SELECT 1 + 1 AS solution', function(err) {
+        var seg = getDatastoreSegment(agent.tracer.getSegment())
+        t.error(err, 'should not error making query')
+        t.ok(seg, 'should have a segment')
+
+        t.notOk(
+          seg.parameters.host,
+          'should have no host parameter'
+        )
+        t.notOk(
+          seg.parameters.port_path_or_id,
+          'should have no port parameter'
+        )
+        t.equal(
+          seg.parameters.database_name,
+          DBNAME,
+          'should set database name'
+        )
+        agent.config.datastore_tracer.instance_reporting.enabled = true
+        txn.end(t.end)
+      })
+    })
+  })
+
+  t.test('respects `datastore_tracer.database_name_reporting`', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      agent.config.datastore_tracer.database_name_reporting.enabled = false
+      pool.query('SELECT 1 + 1 AS solution', function(err) {
+        var seg = getDatastoreSegment(agent.tracer.getSegment())
+        t.notOk(err, 'no errors')
+        t.ok(seg, 'there is a segment')
+        t.equal(
+          seg.parameters.host,
+          urltils.isLocalhost(config.host)
+            ? agent.config.getHostnameSafe()
+            : config.host,
+          'set host'
+        )
+        t.equal(
+          seg.parameters.port_path_or_id,
+          String(config.port),
+          'set port'
+        )
+        t.notOk(
+          seg.parameters.database_name,
+          'should have no database name parameter'
+        )
+        agent.config.datastore_tracer.database_name_reporting.enabled = true
+        txn.end(t.end)
+      })
+    })
+  })
+
+  t.test('ensure host is the default (localhost) when not supplied', function(t) {
+    var defaultConfig = getConfig({
+      host: null
+    })
+    var defaultPool = mysql.createPool(defaultConfig)
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      defaultPool.query('SELECT 1 + 1 AS solution', function(err) {
+        t.error(err, 'should not fail to execute query')
+
+        // In the case where you don't have a server running on
+        // localhost the data will still be correctly associated
+        // with the query.
+        var seg = getDatastoreSegment(agent.tracer.getSegment())
+        t.ok(seg, 'there is a segment')
+        t.equal(
+          seg.parameters.host,
+          agent.config.getHostnameSafe(),
+          'set host'
+        )
+        t.equal(
+          seg.parameters.database_name,
+          DBNAME,
+          'set database name'
+        )
+        t.equal(seg.parameters.port_path_or_id, String(defaultConfig.port), 'set port')
+        txn.end(defaultPool.end.bind(defaultPool, t.end))
+      })
+    })
+  })
+
+  t.test('ensure port is the default (3306) when not supplied', function(t) {
+    var defaultConfig = getConfig({
+      host: null
+    })
+    var defaultPool = mysql.createPool(defaultConfig)
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      defaultPool.query('SELECT 1 + 1 AS solution', function(err) {
+        var seg = getDatastoreSegment(agent.tracer.getSegment())
+
+        t.error(err, 'should not error making query')
+        t.ok(seg, 'should have a segment')
+        t.equal(
+          seg.parameters.host,
+          urltils.isLocalhost(config.host)
+            ? agent.config.getHostnameSafe()
+            : config.host,
+          'should set host'
+        )
+        t.equal(
+          seg.parameters.database_name,
+          DBNAME,
+          'should set database name'
+        )
+        t.equal(
+          seg.parameters.port_path_or_id,
+          "3306",
+          'should set port'
+        )
+        txn.end(defaultPool.end.bind(defaultPool, t.end))
+      })
+    })
+  })
+
+  // The domain socket tests should only be run if there is a domain socket
+  // to connect to, which only happens if there is a MySQL instance running on
+  // the same box as these tests. This should always be the case on Travis,
+  // but just to be sure they're running there check for the environment flag.
+  getDomainSocketPath(function(socketPath) {
+    var shouldTestDomain = socketPath || process.env.TRAVIS
+    t.test(
+      'ensure host and port are set on segment when using a domain socket',
+      {skip: !shouldTestDomain},
+      function(t) {
+        var socketConfig = getConfig({
+          socketPath: socketPath
         })
-      })
-    })
+        var socketPool = mysql.createPool(socketConfig)
+        helper.runInTransaction(agent, function transactionInScope(txn) {
+          socketPool.query('SELECT 1 + 1 AS solution', function(err) {
+            t.error(err, 'should not error making query')
 
-    t.test('respects `datastore_tracer.database_name_reporting`', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope(txn) {
-        agent.config.datastore_tracer.database_name_reporting.enabled = false
-        pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0].children[2]
-          _t.notOk(err, 'no errors')
-          _t.ok(seg, 'there is a segment')
-          _t.equal(
-            seg.parameters.host,
-            urltils.isLocalhost(config.host)
-              ? agent.config.getHostnameSafe()
-              : config.host,
-            'set host'
-          )
-          _t.equal(
-            seg.parameters.port_path_or_id,
-            String(config.port),
-            'set port'
-          )
-          _t.notOk(
-            seg.parameters.database_name,
-            'should have no database name parameter'
-          )
-          agent.config.datastore_tracer.database_name_reporting.enabled = true
-          txn.end(_t.end)
-        })
-      })
-    })
+            var seg = getDatastoreSegment(agent.tracer.getSegment())
 
-
-    t.test('ensure host and port are set on segment', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope(txn) {
-        pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = agent.tracer.getTransaction().trace.root.children[0].children[2]
-          _t.notOk(err, 'no errors')
-          _t.ok(seg, 'there is a segment')
-          _t.equal(
-            seg.parameters.host,
-            urltils.isLocalhost(config.host)
-              ? agent.config.getHostnameSafe()
-              : config.host,
-            'set host'
-          )
-          _t.equal(
-            seg.parameters.database_name,
-            DBNAME,
-            'set database name'
-          )
-          _t.equal(
-            seg.parameters.port_path_or_id,
-            String(config.port),
-            'set port'
-          )
-          txn.end(_t.end)
-        })
-      })
-    })
-
-    t.test('ensure host is the default (localhost) when not supplied', function(_t) {
-      var config = getConfig({
-        host: null
-      })
-
-      var pool = mysql.createPool(config)
-      helper.runInTransaction(agent, function transactionInScope(txn) {
-        pool.query('SELECT 1 + 1 AS solution', function() {
-          // In the case where you don't have a server running on
-          // localhost the data will still be correctly associated
-          // with the query.
-          var seg = txn.trace.root.children[0].children[2]
-          _t.ok(seg, 'there is a segment')
-          _t.equal(
-            seg.parameters.host,
-            agent.config.getHostnameSafe(),
-            'set host'
-          )
-          _t.equal(
-            seg.parameters.database_name,
-            DBNAME,
-            'set database name'
-          )
-          _t.equal(seg.parameters.port_path_or_id, String(config.port), 'set port')
-          txn.end(pool.end.bind(pool, _t.end))
-        })
-      })
-    })
-
-    t.test('ensure port is the default (3306) when not supplied', function(_t) {
-      var config = getConfig({
-        port: null
-      })
-
-      var pool = mysql.createPool(config)
-      helper.runInTransaction(agent, function transactionInScope(txn) {
-        pool.query('SELECT 1 + 1 AS solution', function(err) {
-          var seg = txn.trace.root.children[0].children[2]
-          _t.notOk(err, 'no errors')
-          _t.ok(seg, 'there is a segment')
-          _t.equal(
-            seg.parameters.host,
-            urltils.isLocalhost(config.host)
-              ? agent.config.getHostnameSafe()
-              : config.host,
-            'set host'
-          )
-          _t.equal(
-            seg.parameters.database_name,
-            DBNAME,
-            'set database name'
-          )
-          _t.equal(
-            seg.parameters.port_path_or_id,
-            "3306",
-            'set port'
-          )
-          txn.end(pool.end.bind(pool, _t.end))
-        })
-      })
-    })
-
-    // The domain socket tests should only be run if there is a domain socket
-    // to connect to, which only happens if there is a MySQL instance running on
-    // the same box as these tests. This should always be the case on Travis,
-    // but just to be sure they're running there check for the environment flag.
-    getDomainSocketPath(function(domainPath) {
-      var shouldTestDomain = domainPath || process.env.TRAVIS
-      t.test(
-        'ensure host and port are set on segment when using a domain socket',
-        {skip: !shouldTestDomain},
-        function(_t) {
-          var socketPath = domainPath
-          var config = getConfig({
-            socketPath: socketPath
+            // In the case where you don't have a server running on localhost
+            // the data will still be correctly associated with the query.
+            t.ok(seg, 'there is a segment')
+            t.equal(
+              seg.parameters.host,
+              agent.config.getHostnameSafe(),
+              'set host'
+            )
+            t.equal(
+              seg.parameters.port_path_or_id,
+              socketPath,
+              'set path'
+            )
+            t.equal(
+              seg.parameters.database_name,
+              DBNAME,
+              'set database name'
+            )
+            txn.end(socketPool.end.bind(socketPool, t.end))
           })
+        })
+      }
+    )
+  })
 
-          var pool = mysql.createPool(config)
-          helper.runInTransaction(agent, function transactionInScope(txn) {
-            pool.query('SELECT 1 + 1 AS solution', function() {
-              var seg = txn.trace.root.children[0].children[2]
-              // In the case where you don't have a server running on
-              // localhost the data will still be correctly associated
-              // with the query.
-              _t.ok(seg, 'there is a segment')
-              _t.equal(
-                seg.parameters.host,
-                agent.config.getHostnameSafe(),
-                'set host'
-              )
-              _t.equal(
-                seg.parameters.port_path_or_id,
-                socketPath,
-                'set port'
-              )
-              txn.end(pool.end.bind(pool, _t.end))
-            })
-          })
+  t.test('query with error', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      pool.query('BLARG', function(err) {
+        t.ok(err)
+        t.ok(agent.getTransaction(), 'transaction should exit')
+        txn.end(t.end)
+      })
+    })
+  })
+
+  t.test('lack of callback does not explode', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      pool.query('SET SESSION auto_increment_increment=1')
+      txn.end(t.end)
+    })
+  })
+
+  t.test('pool.query', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      pool.query('SELECT 1 + 1 AS solution123123123123', function(err) {
+        var transxn = agent.getTransaction()
+        var segment = agent.tracer.getSegment().parent
+
+        t.ifError(err, 'no error ocurred')
+        t.ok(transxn, 'transaction should exist')
+        t.ok(segment, 'segment should exist')
+        t.ok(segment.timer.start > 0, 'starts at a postitive time')
+        t.ok(segment.timer.start <= Date.now(), 'starts in past')
+        t.equal(segment.name, 'MySQL Pool#query', 'is named')
+        txn.end(t.end)
+      })
+    })
+  })
+
+  t.test('pool.query with values', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      pool.query('SELECT ? + ? AS solution', [1, 1], function(err) {
+        var transxn = agent.getTransaction()
+        t.error(err)
+        t.ok(transxn, 'should not lose transaction')
+        if (transxn) {
+          var segment = agent.tracer.getSegment().parent
+          t.ok(segment, 'segment should exist')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'MySQL Pool#query', 'is named')
         }
-      )
-    })
 
-    t.test('query with error', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope() {
-        pool.query('BLARG', function(err) {
-          _t.ok(err)
-          _t.ok(agent.getTransaction(), 'transaction should exist')
-          agent.getTransaction().end()
-
-          _t.end()
-        })
+        txn.end(t.end)
       })
     })
+  })
 
-    t.test('pool.query', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope() {
-        pool.query('SELECT 1 + 1 AS solution123123123123', function(err) {
+  t.test('pool.getConnection -> connection.query', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      pool.getConnection(function shouldBeWrapped(err, connection) {
+        t.ifError(err, 'should not have error')
+        t.ok(agent.getTransaction(), 'transaction should exit')
+        t.tearDown(function() { connection.release() })
+
+        connection.query('SELECT 1 + 1 AS solution', function(err) {
           var transxn = agent.getTransaction()
           var segment = agent.tracer.getSegment().parent
 
-          _t.ifError(err, 'no error ocurred')
-          _t.ok(transxn, 'transaction should exit')
-          _t.ok(segment, 'segment should exit')
-          _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-          _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'MySQL Pool#query', 'is named')
-          agent.getTransaction().end()
-
-          _t.end()
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exist')
+          t.ok(segment, 'segment should exist')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          txn.end(t.end)
         })
       })
     })
+  })
 
-    t.test('pool.query with values', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope() {
-        pool.query('SELECT ? + ? AS solution', [1, 1], function(err) {
+  t.test('pool.getConnection -> connection.query with values', function(t) {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
+      pool.getConnection(function shouldBeWrapped(err, connection) {
+        t.ifError(err, 'should not have error')
+        t.ok(agent.getTransaction(), 'transaction should exit')
+        t.tearDown(function() { connection.release() })
+
+        connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
           var transxn = agent.getTransaction()
-          var segment = agent.tracer.getSegment().parent
-
-          _t.ifError(err, 'no error ocurred')
-          _t.ok(transxn, 'transaction should exit')
-          _t.ok(segment, 'segment should exit')
-          _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-          _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-          _t.equal(segment.name, 'MySQL Pool#query', 'is named')
-          agent.getTransaction().end()
-
-          _t.end()
-        })
-      })
-    })
-
-    t.test('pool.getConnection -> connection.query', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope() {
-        pool.getConnection(function shouldBeWrapped(err, connection) {
-          _t.ifError(err, 'should not have error')
-          _t.ok(agent.getTransaction(), 'transaction should exit')
-
-          connection.query('SELECT 1 + 1 AS solution', function(err) {
-            var transxn = agent.getTransaction()
+          t.error(err)
+          t.ok(transxn, 'should not lose transaction')
+          if (transxn) {
             var segment = agent.tracer.getSegment().parent
+            t.ok(segment, 'segment should exist')
+            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          }
 
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            agent.getTransaction().end()
-            connection.release()
-
-            _t.end()
-          })
-        })
-      })
-    })
-
-    t.test('pool.getConnection -> connection.query with placeholders', function(_t) {
-      helper.runInTransaction(agent, function transactionInScope() {
-        pool.getConnection(function shouldBeWrapped(err, connection) {
-          _t.ifError(err, 'should not have error')
-          _t.ok(agent.getTransaction(), 'transaction should exit')
-
-          connection.query('SELECT ? + ? AS solution', [1, 1], function(err) {
-            var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
-
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            agent.getTransaction().end()
-            connection.release()
-
-            _t.end()
-          })
+          txn.end(t.end)
         })
       })
     })
@@ -423,271 +411,344 @@ tap.test('mysql built-in connection pools', {timeout: 30 * 1000}, function(t) {
 tap.test('poolCluster', {timeout : 30 * 1000}, function(t) {
   t.autoend()
 
-  var agent
-  var mysql
-  var poolCluster
+  var agent = null
+  var mysql = null
 
-  helper.bootstrapMySQL(function cb_bootstrapMySQL(error) {
-    t.plan(12)
-    t.notOk(error, 'setup should not error')
+  t.beforeEach(function(done) {
+    agent = helper.instrumentMockedAgent()
+    mysql = require('mysql2')
+    setup(mysql, done)
+  })
 
-    // set up the instrumentation before loading MySQL
-    t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent()
-      mysql = require('mysql2')
-      poolCluster = mysql.createPoolCluster()
-      done()
+  t.afterEach(function(done) {
+    helper.unloadAgent(agent)
+
+    agent = null
+    mysql = null
+
+    done()
+  })
+
+  t.test('primer', function(t) {
+    var poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    poolCluster.getConnection(function(err, connection) {
+      t.ifError(err, 'should not be an error')
+      t.notOk(agent.getTransaction(), 'transaction should not exist')
+
+      connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
+        t.ifError(err)
+        t.notOk(agent.getTransaction(), 'transaction should not exist')
+
+        connection.release()
+        poolCluster.end()
+        t.end()
+      })
     })
+  })
 
-    t.afterEach(function(done) {
-      poolCluster.end()
-      mysql = null
-      helper.unloadAgent(agent)
-      done()
-    })
+  t.test('get any connection', function(t) {
+    var poolCluster = mysql.createPoolCluster()
 
-    t.test('primer', function(_t) {
-      poolCluster.add(config)  // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
 
+    helper.runInTransaction(agent, function(txn) {
       poolCluster.getConnection(function(err, connection) {
-        _t.ifError(err, 'should not be an error')
-        _t.notOk(agent.getTransaction(), 'transaction should not exist')
+        t.ifError(err, 'should not have error')
+        t.ok(agent.getTransaction(), 'transaction should exist')
+        t.equal(agent.getTransaction(), txn, 'transaction must be original')
 
+        txn.end()
+        connection.release()
+        poolCluster.end()
+        t.end()
+      })
+    })
+  })
+
+  t.test('get any connection', function(t) {
+    var poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    poolCluster.getConnection(function(err, connection) {
+      t.ifError(err, 'should not have error')
+
+      helper.runInTransaction(agent, function(txn) {
         connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
-          _t.ifError(err)
-          _t.notOk(agent.getTransaction(), 'transaction should not exist')
-          connection.release()
+          var transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
 
-          _t.end()
-        })
-      })
-    })
-
-    t.test('get any connection', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-
-      helper.runInTransaction(agent, function(txn) {
-        poolCluster.getConnection(function(err, connection) {
-          _t.ifError(err, 'should not have error')
-          _t.ok(agent.getTransaction(), 'transaction should exit')
-          _t.equal(agent.getTransaction(), txn, 'transaction must be original')
-          txn.end()
-          connection.release()
-
-          _t.end()
-        })
-      })
-    })
-
-    t.test('get any connection', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-
-      poolCluster.getConnection(function(err, connection) {
-        _t.ifError(err, 'should not have error')
-
-        helper.runInTransaction(agent, function(txn) {
-          connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
-            var transxn = agent.getTransaction()
+          if (transxn) {
             var segment = agent.tracer.getSegment().parent
+            t.ok(segment, 'segment should exist')
+            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          }
 
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            txn.end()
-            connection.release()
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
-            _t.end()
-          })
-        })
-      })
-    })
-
-    t.test('get MASTER connection', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-
-      helper.runInTransaction(agent, function(txn) {
-        poolCluster.getConnection('MASTER', function(err, connection) {
-          _t.notOk(err)
-          _t.ok(agent.getTransaction())
-          _t.strictEqual(agent.getTransaction(), txn)
           txn.end()
           connection.release()
-
-          _t.end()
+          poolCluster.end()
+          t.end()
         })
       })
     })
+  })
 
-    t.test('get MASTER connection', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
+  t.test('get MASTER connection', function(t) {
+    var poolCluster = mysql.createPoolCluster()
 
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    helper.runInTransaction(agent, function(txn) {
       poolCluster.getConnection('MASTER', function(err, connection) {
-        helper.runInTransaction(agent, function(txn) {
-          connection.query('SELECT ? + ? AS solution', [1, 1], function(err) {
-            var transxn = agent.getTransaction()
-            var segment = agent.tracer.getSegment().parent
+        t.notOk(err)
+        t.ok(agent.getTransaction())
+        t.strictEqual(agent.getTransaction(), txn)
 
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            txn.end()
-            connection.release()
-
-            _t.end()
-          })
-        })
+        txn.end()
+        connection.release()
+        poolCluster.end()
+        t.end()
       })
     })
+  })
 
-    t.test('get glob', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
 
+  t.test('get MASTER connection', function(t) {
+    var poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    poolCluster.getConnection('MASTER', function(err, connection) {
       helper.runInTransaction(agent, function(txn) {
-        poolCluster.getConnection('REPLICA*', 'ORDER', function(err, connection) {
-          _t.notOk(err)
-          _t.ok(agent.getTransaction())
-          _t.strictEqual(agent.getTransaction(), txn)
+        connection.query('SELECT ? + ? AS solution', [1, 1], function(err) {
+          var transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+
+          if (transxn) {
+            var segment = agent.tracer.getSegment().parent
+            t.ok(segment, 'segment should exist')
+            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          }
+
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
           txn.end()
           connection.release()
-
-          _t.end()
+          poolCluster.end()
+          t.end()
         })
       })
     })
+  })
 
-    t.test('get glob', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
+  t.test('get glob', function(t) {
+    var poolCluster = mysql.createPoolCluster()
 
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    helper.runInTransaction(agent, function(txn) {
       poolCluster.getConnection('REPLICA*', 'ORDER', function(err, connection) {
-        helper.runInTransaction(agent, function(txn) {
-          connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
-            var transxn = agent.getTransaction()
+        t.notOk(err)
+        t.ok(agent.getTransaction())
+        t.strictEqual(agent.getTransaction(), txn)
+
+        txn.end()
+        connection.release()
+        poolCluster.end()
+        t.end()
+      })
+    })
+  })
+
+  t.test('get glob', function(t) {
+    var poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    poolCluster.getConnection('REPLICA*', 'ORDER', function(err, connection) {
+      helper.runInTransaction(agent, function(txn) {
+        connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
+          var transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+
+          if (transxn) {
             var segment = agent.tracer.getSegment().parent
+            t.ok(segment, 'segment should exist')
+            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          }
 
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            txn.end()
-            connection.release()
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
-            _t.end()
-          })
-        })
-      })
-    })
-
-    t.test('get star', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-
-      helper.runInTransaction(agent, function() {
-        poolCluster.of('*').getConnection(function(err, connection) {
-          _t.notOk(err)
-          _t.ok(agent.getTransaction(), 'transaction should exist')
-          agent.getTransaction().end()
+          txn.end()
           connection.release()
-
-          _t.end()
+          poolCluster.end()
+          t.end()
         })
       })
     })
+  })
 
-    t.test('get star', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
+  t.test('get star', function(t) {
+    var poolCluster = mysql.createPoolCluster()
 
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    helper.runInTransaction(agent, function() {
       poolCluster.of('*').getConnection(function(err, connection) {
-        helper.runInTransaction(agent, function(txn) {
-          connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
-            var transxn = agent.getTransaction()
+        t.notOk(err)
+        t.ok(agent.getTransaction(), 'transaction should exist')
+
+        agent.getTransaction().end()
+        connection.release()
+        poolCluster.end()
+        t.end()
+      })
+    })
+  })
+
+  t.test('get star', function(t) {
+    var poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    poolCluster.of('*').getConnection(function(err, connection) {
+      helper.runInTransaction(agent, function(txn) {
+        connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
+          var transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+
+          if (transxn) {
             var segment = agent.tracer.getSegment().parent
+            t.ok(segment, 'segment should exist')
+            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          }
 
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            txn.end()
-            connection.release()
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
-            _t.end()
-          })
-        })
-      })
-    })
-
-    t.test('get wildcard', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-
-      helper.runInTransaction(agent, function() {
-        var pool = poolCluster.of('REPLICA*', 'RANDOM')
-        pool.getConnection(function(err, connection) {
-          _t.notOk(err)
-          _t.ok(agent.getTransaction(), 'should have transaction')
-          agent.getTransaction().end()
+          txn.end()
           connection.release()
-
-          _t.end()
+          poolCluster.end()
+          t.end()
         })
       })
     })
+  })
 
-    t.test('get wildcard with query', function(_t) {
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
+  t.test('get wildcard', function(t) {
+    var poolCluster = mysql.createPoolCluster()
 
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    helper.runInTransaction(agent, function() {
       var pool = poolCluster.of('REPLICA*', 'RANDOM')
       pool.getConnection(function(err, connection) {
-        helper.runInTransaction(agent, function(txn) {
-          connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
-            var transxn = agent.getTransaction()
+        t.notOk(err)
+        t.ok(agent.getTransaction(), 'should have transaction')
+
+        agent.getTransaction().end()
+        connection.release()
+        poolCluster.end()
+        t.end()
+      })
+    })
+  })
+
+  t.test('get wildcard', function(t) {
+    var poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    var pool = poolCluster.of('REPLICA*', 'RANDOM')
+    pool.getConnection(function(err, connection) {
+      helper.runInTransaction(agent, function(txn) {
+        connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
+          var transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+
+          if (transxn) {
             var segment = agent.tracer.getSegment().parent
+            t.ok(segment, 'segment should exist')
+            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start <= Date.now(), 'starts in past')
+            t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+          }
 
-            _t.ifError(err, 'no error ocurred')
-            _t.ok(transxn, 'transaction should exit')
-            _t.strictEqual(transxn, txn, 'transaction must be same')
-            _t.ok(segment, 'segment should exit')
-            _t.ok(segment.timer.start > 0, 'starts at a postitive time')
-            _t.ok(segment.timer.start <= Date.now(), 'starts in past')
-            _t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-            txn.end()
-            connection.release()
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
-            _t.end()
-          })
+          txn.end()
+          connection.release()
+          poolCluster.end()
+          t.end()
         })
       })
     })
@@ -699,6 +760,23 @@ function getDomainSocketPath(callback) {
     if (err || stderr.toString()) {
       return callback(null)
     }
-    callback(stdout.toString().trim())
+
+    // TODO: Remove the fs.exists check when deprecating Node <0.12
+    var sock = stdout.toString().trim()
+    if (fs.access) {
+      fs.access(sock, function(err) {
+        callback(err ? null : sock)
+      })
+    } else {
+      fs.exists(sock, function(exists) {
+        callback(exists ? sock : null)
+      })
+    }
   })
+}
+
+function getDatastoreSegment(segment) {
+  return segment.parent.children.filter(function(s) {
+    return /^Datastore/.test(s && s.name)
+  })[0]
 }
