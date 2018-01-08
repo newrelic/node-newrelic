@@ -5,17 +5,12 @@ var logger = require('../../../lib/logger')
 var helper = require('../../lib/agent_helper')
 var setup = require('./setup')
 
-
 var DBNAME = 'agent_integration'
 var DBTABLE = 'test'
 
-
-tap.test('MySQL instrumentation with a connection pool', {timeout: 30000}, function(t) {
-  var agent = null
-  var mysql = null
+tap.test('MySQL2 instrumentation with a connection pool', {timeout: 30000}, function(t) {
+  // set up the instrumentation before loading MySQL
   var poolLogger = logger.child({component: 'pool'})
-  var pool = null
-
   var agent = helper.instrumentMockedAgent()
   var mysql = require('mysql2')
   var pool = setup.pool(mysql, poolLogger)
@@ -48,29 +43,29 @@ tap.test('MySQL instrumentation with a connection pool', {timeout: 30000}, funct
       })
     },
 
-    release : function(client) {
+    release: function(client) {
       pool.release(client)
     }
   }
 
   var dal = {
-    lookup : function(params, callback) {
+    lookup: function(params, callback) {
       if (!params.id) return callback(new Error('Must include ID to look up.'))
 
       withRetry.getClient(function cb_getClient(err, client) {
         if (err) return callback(err)
 
-        var query =
-          'SELECT *' +
-          '  FROM ' + DBNAME + '.' + DBTABLE +
-          ' WHERE id = ?'
+        var query = 'SELECT *' +
+                    '  FROM ' + DBNAME + '.' + DBTABLE +
+                    ' WHERE id = ?'
         client.query(query, [params.id], function(err, results) {
-          withRetry.release(client) // always release back to the pool
+            withRetry.release(client) // always release back to the pool
 
-          if (err) return callback(err)
+            if (err) return callback(err)
 
-          callback(null, results.length ? results[0] : results)
-        })
+            callback(null, results.length ? results[0] : results)
+          }
+        )
       })
     }
   }
@@ -79,14 +74,8 @@ tap.test('MySQL instrumentation with a connection pool', {timeout: 30000}, funct
     t.error(err, 'should not error setting up test')
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
-      var context = {
-        id: 1
-      }
-      dal.lookup(context, function tester(error, row) {
-        if (error) {
-          t.fail(error)
-          return t.end()
-        }
+      dal.lookup({id: 1}, function(error, row) {
+        if (error) t.fail(error)
 
         // need to inspect on next tick, otherwise calling transaction.end() here
         // in the callback (which is its own segment) would mark it as truncated
@@ -102,9 +91,9 @@ tap.test('MySQL instrumentation with a connection pool', {timeout: 30000}, funct
         return t.end()
       }
 
-      t.equals(row.id, 1, 'node-mysql should still work (found id)')
+      t.equals(row.id, 1, 'mysql2 should still work (found id)')
       t.equals(row.test_value, 'hamburgefontstiv',
-               'mysql driver should still work (found value)')
+                'mysql driver should still work (found value)')
 
       transaction.end()
 
