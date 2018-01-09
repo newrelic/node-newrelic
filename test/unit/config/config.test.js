@@ -765,6 +765,12 @@ describe("the agent configuration", function() {
       expect(config.error_collector.enabled).equal(false)
     })
 
+    it('should disable the error attributes when told to', function() {
+      expect(config.error_collector.attributes.enabled).equal(true)
+      config.onConnect({'error_collector.attributes.enabled': false})
+      expect(config.error_collector.attributes.enabled).equal(false)
+    })
+
     it("should set apdex_t", function() {
       expect(config.apdex_t).equal(0.1)
       config.on('apdex_t', function(value) { expect(value).equal(0.05) })
@@ -1050,7 +1056,6 @@ describe("the agent configuration", function() {
         config.onConnect({'collect_analytics_events': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
-      expect(config.transaction_events.attributes.enabled).equals(false)
     })
 
     it("shouldn't blow up when transaction_events.max_samples_stored is received",
