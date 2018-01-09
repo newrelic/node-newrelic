@@ -241,11 +241,7 @@ describe("the agent configuration", function() {
     })
 
     it('should pick up whether error collector attributes are enabled', function() {
-<<<<<<< HEAD
       idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED', 'NO', function(tc) {
-=======
-      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES', 'NO', function(tc) {
->>>>>>> de965239... feat(config): update env var mapping
         should.exist(tc.error_collector.attributes.enabled)
         expect(tc.error_collector.attributes.enabled).equal(false)
       })
@@ -319,12 +315,8 @@ describe("the agent configuration", function() {
     })
 
     it('should pick up whether transaction tracer attributes are enabled', function() {
-<<<<<<< HEAD
       var key = 'NEW_RELIC_TRANSACTION_TRACER_ATTRIBUTES_ENABLED'
       idempotentEnv(key, false, function(tc) {
-=======
-      idempotentEnv('NEW_RELIC_TRACER_ATTRIBUTES', false, function(tc) {
->>>>>>> de965239... feat(config): update env var mapping
         should.exist(tc.transaction_tracer.attributes.enabled)
         expect(tc.transaction_tracer.attributes.enabled).equal(false)
       })
