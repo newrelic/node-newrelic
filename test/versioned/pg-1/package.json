@@ -1,7 +1,0 @@
-{
-  "name": "pg-1-test",
-  "dependencies": {
-    "pg": "^1.0.0"
-  },
-  "private": true
-}

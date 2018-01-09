@@ -1,29 +1,29 @@
 'use strict'
 
+var tap = require('tap')
+var request = require('request')
+var API = require('../../../api')
 var shims = require('../../../lib/shim')
-var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var instrument = require('../../../lib/instrumentation/hapi')
-var conditions = require('./conditions')
+var utils = require('./hapi-17-utils')
 
-test("instrumentation of Hapi", conditions, function(t) {
+tap.test('instrumentation of Hapi', function(t) {
   t.autoend()
 
-  t.test("preserves hapi.Server() return", function(t) {
+  t.test('preserves server creation return', function(t) {
     var agent = helper.loadMockedAgent()
+    var hapi = require('hapi')
+    var returned = utils.getServer({ hapi: hapi })
 
-    // check if Hapi is returning from function call
-    var hapi   = require('hapi')
-    var server = new hapi.Server()
-
-    t.ok(server != null, 'Hapi returns from new hapi.Server()')
+    t.ok(returned != null, 'Hapi returns from server creation')
 
     var shim = new shims.WebFrameworkShim(agent, 'hapi')
     instrument(agent, hapi, 'hapi', shim)
 
-    var server2 = new hapi.Server()
+    var returned2 = utils.getServer({ hapi: hapi })
 
-    t.ok(server2 != null, 'new hapi.Server() returns when instrumented')
+    t.ok(returned2 != null, 'Server creation returns when instrumented')
 
     t.end()
   })

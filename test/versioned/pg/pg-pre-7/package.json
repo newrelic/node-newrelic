@@ -1,0 +1,52 @@
+{
+  "name": "pg-pre-7-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": "<0.11"
+      },
+      "dependencies": {
+        "pg": ">=1 <=3"
+      },
+      "files": [
+        "force-native.tap.js",
+        "native.tap.js",
+        "pg.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "pg": ">=4 <6",
+        "pg-native": "1.10.x"
+      },
+      "files": [
+        "force-native.tap.js",
+        "native.tap.js",
+        "pg.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.12"
+      },
+      "dependencies": {
+        "pg": "6",
+        "pg-native": "1.10.x"
+      },
+      "files": [
+        "force-native.tap.js",
+        "native.tap.js",
+        "pg.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "pg": "^6.4.2",
+    "pg-native": "^1.10.1"
+  }
+}

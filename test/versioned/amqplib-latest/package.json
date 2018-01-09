@@ -1,9 +1,0 @@
-{
-  "name": "newrelic-ampqlib-tests-latest",
-  "version": "0.0.0",
-  "license": "proprietary",
-  "dependencies": {
-    "amqplib": "*"
-  },
-  "private": true
-}

@@ -12,11 +12,12 @@ function runTests(createServer) {
 
     var agent = null
     var server = null
+    var port = null
 
     t.beforeEach(function(done) {
       agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
 
-      server = createServer('localhost', 8089)
+      server = createServer()
 
       // disabled by default
       agent.config.capture_params = true
@@ -34,7 +35,7 @@ function runTests(createServer) {
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.headers.contentLength" : 15,
             "response.headers.contentType" : "application/json; charset=utf-8",
@@ -46,7 +47,7 @@ function runTests(createServer) {
         } else {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "response.headers.contentLength" : 15,
@@ -68,7 +69,8 @@ function runTests(createServer) {
       })
 
       server.start(function() {
-        request.get('http://localhost:8089/test/',
+        port = server.info.port || 8089
+        request.get('http://localhost:' + port + '/test/',
                     {json : true},
                     function(error, res, body) {
 
@@ -85,7 +87,7 @@ function runTests(createServer) {
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.headers.contentLength" : 15,
             "response.headers.contentType" : "application/json; charset=utf-8",
@@ -98,7 +100,7 @@ function runTests(createServer) {
         } else {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "response.headers.contentLength" : 15,
@@ -121,7 +123,8 @@ function runTests(createServer) {
       })
 
       server.start(function() {
-        request.get('http://localhost:8089/test/1337/',
+        port = server.info.port || 8089
+        request.get('http://localhost:' + port + '/test/1337/',
                     {json : true},
                     function(error, res, body) {
 
@@ -138,7 +141,7 @@ function runTests(createServer) {
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "response.headers.contentLength" : 15,
@@ -151,7 +154,7 @@ function runTests(createServer) {
         } else {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "response.headers.contentLength" : 15,
@@ -174,7 +177,8 @@ function runTests(createServer) {
       })
 
       server.start(function() {
-        request.get('http://localhost:8089/test/?name=hapi',
+        port = server.info.port || 8089
+        request.get('http://localhost:' + port + '/test/?name=hapi',
                     {json : true},
                     function(error, res, body) {
 
@@ -191,7 +195,7 @@ function runTests(createServer) {
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "response.headers.contentLength" : 15,
@@ -205,7 +209,7 @@ function runTests(createServer) {
         } else {
           t.deepEqual(transaction.trace.parameters, {
             "request.headers.accept" : "application/json",
-            "request.headers.host" : "localhost:8089",
+            "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
             "response.status" : 200,
             "response.headers.contentLength" : 15,
@@ -229,7 +233,8 @@ function runTests(createServer) {
       })
 
       server.start(function() {
-        request.get('http://localhost:8089/test/1337/?name=hapi',
+        port = server.info.port || 8089
+        request.get('http://localhost:' + port + '/test/1337/?name=hapi',
                     {json : true},
                     function(error, res, body) {
 

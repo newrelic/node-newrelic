@@ -18,6 +18,7 @@
     "dot-notation": "error",
     "func-names": "error",
     "guard-for-in": "error",
+    "key-spacing": ["off", { "beforeColon": false }],
     "max-len": ["error", 90, { "ignoreUrls": true }],
     "max-nested-callbacks": ["error", 3],
     "max-params": ["error", 5],
@@ -29,6 +30,7 @@
     "no-lonely-if": "error",
     "no-mixed-requires": "error",
     "no-multiple-empty-lines": "error",
+    "no-multi-spaces": ["off", { "ignoreEOLComments": true }],
     "no-new": "error",
     "no-new-func": "warn",
     "no-shadow": ["warn", {"allow": ["shim"]}],
@@ -36,6 +38,7 @@
     "no-underscore-dangle": "off",
     "no-unused-vars": "error",
     "no-use-before-define": "off",
+    "one-var": ["off", "never"],
     "padded-blocks": ["error", "never"],
     "radix": "error",
     "semi": ["error", "never"],
@@ -46,6 +49,7 @@
     "spaced-comment": "error",
     "space-unary-ops": "error",
     "strict": "error",
+    "quote-props": [ "off", "consistent-as-needed" ],
     "quotes": ["off", "single"],
     "wrap-iife": "error"
   }

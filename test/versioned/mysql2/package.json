@@ -1,0 +1,23 @@
+{
+  "name": "mysql2-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10"
+      },
+      "dependencies": {
+        "mysql2": ">=1",
+        "generic-pool": "2.4"
+      },
+      "files": [
+        "basic-pool.tap.js",
+        "basic.tap.js",
+        "pooling.tap.js",
+        "transaction.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
