@@ -27,7 +27,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.stop(done)
   })
 
-  t.test('for a normal request', {timeout: 1000}, function(t) {
+  t.test('for a normal request', {timeout: 5000}, function(t) {
     server = utils.getServer()
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
@@ -35,7 +35,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(request, reply) {
+      handler: function(req, reply) {
         reply({yep: true})
       }
     })
@@ -43,10 +43,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.start(function() {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function(error, response, body) {
-        if (error) t.fail(error)
+        t.error(error, 'should not fail to make request')
 
-        t.ok(/application\/json/.test(response.headers['content-type']),
-             'got correct content type')
+        t.ok(
+          /application\/json/.test(response.headers['content-type']),
+          'got correct content type'
+        )
         t.deepEqual(JSON.parse(body), {'yep':true}, 'response survived')
 
         var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
@@ -68,8 +70,10 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
 
         var serialized = JSON.stringify(agent.metrics)
-        t.ok(serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
-             'serialized metrics as expected')
+        t.ok(
+          serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
+          'serialized metrics as expected'
+        )
 
         t.end()
       })
@@ -90,7 +94,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(request, reply) {
+      handler: function(req, reply) {
         reply.view('index', {title: 'yo dawg'})
       }
     })
@@ -145,7 +149,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(request, reply) {
+      handler: function(req, reply) {
         var rum = api.getBrowserTimingHeader()
         t.equal(rum.substr(0,7), '<script')
         reply.view('index', {title: 'yo dawg', rum: rum})

@@ -310,30 +310,44 @@ function runTests(flags) {
     t.plan(4)
     setup(t)
 
+    var request = null
+
     app.get('/test', function(req, res, next) {
+      t.comment('middleware')
       t.ok(agent.getTransaction(), 'transaction exists')
+
       // generate error after client has aborted
+      request.abort()
       setTimeout(function() {
+        t.comment('timed out')
         t.ok(agent.getTransaction() == null, 'transaction has already ended')
         next(new Error('some error'))
-      }, 20)
+      }, 100)
     })
 
     app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
+      t.comment('errorware')
       t.ok(agent.getTransaction() == null, 'no active transaction when responding')
       res.end()
     })
 
     var server = app.listen(function() {
+      t.comment('making request')
       var port = server.address().port
-      var req = http.request({port: port, path: '/test'}, function() {})
-      req.end()
-      // add error handler, otherwise aborting will cause an exception
-      req.on('error', function() {})
+      request = http.request({
+        hostname: 'localhost',
+        port: port,
+        path: '/test'
+      }, function() {})
+      request.end()
 
-      setTimeout(function() {
-        req.abort()
-      }, 10)
+      // add error handler, otherwise aborting will cause an exception
+      request.on('error', function(err) {
+        t.comment('request errored: ' + err)
+      })
+      request.on('abort', function() {
+        t.comment('request aborted')
+      })
     })
 
     agent.on('transactionFinished', function(tx) {
