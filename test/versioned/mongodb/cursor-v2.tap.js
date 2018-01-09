@@ -4,14 +4,8 @@ var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
-var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
 var concat = require('concat-stream')
-
-if (semver.satisfies(process.version, '0.8')) {
-  console.log('The latest versions of the mongo driver are not compatible with v0.8')
-  return
-}
 
 var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 var TRANSACTION_NAME = 'mongo test'
@@ -90,7 +84,7 @@ tap.test('piping cursor stream hides internal calls', function(t) {
   var collection = null
 
   t.tearDown(function() {
-    db.close(function(err) {
+    db.close(function() {
       helper.unloadAgent(agent)
       agent = null
     })
@@ -129,7 +123,7 @@ tap.test('piping cursor stream hides internal calls', function(t) {
         })
       })
 
-      var cursor = collection
+      collection
         .find({})
         .pipe(destination)
     })

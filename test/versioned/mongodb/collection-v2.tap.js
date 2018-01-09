@@ -30,10 +30,11 @@ collectionTest('aggregate', function aggregateTest(t, collection, verify) {
     t.equal(data.length, 3)
     t.deepEqual(data, [{value: 5}, {value: 15}, {value: 25}])
     verify(null, [
-      'Datastore/statement/MongoDB/testCollection/aggregate',
-      'Callback: onResult'
-    ],
-    ['aggregate'])
+        'Datastore/statement/MongoDB/testCollection/aggregate',
+        'Callback: onResult'
+      ],
+      ['aggregate']
+    )
   }
 })
 
@@ -49,10 +50,10 @@ collectionTest('bulkWrite', function bulkWriteTest(t, collection, verify) {
     t.equal(data.insertedCount, 1)
     t.equal(data.deletedCount, 30)
     verify(null, [
-      'Datastore/statement/MongoDB/testCollection/bulkWrite',
-      'Callback: onWrite'
-    ],
-    ['bulkWrite']
+        'Datastore/statement/MongoDB/testCollection/bulkWrite',
+        'Callback: onWrite'
+      ],
+      ['bulkWrite']
     )
   }
 })
@@ -62,10 +63,10 @@ collectionTest('count', function countTest(t, collection, verify) {
       t.notOk(err)
       t.equal(data, 30)
       verify(null, [
-        'Datastore/statement/MongoDB/testCollection/count',
-        'Callback: onCount'
-      ],
-      ['count']
+          'Datastore/statement/MongoDB/testCollection/count',
+          'Callback: onCount'
+        ],
+        ['count']
       )
     }
   )
@@ -76,10 +77,10 @@ collectionTest('createIndex', function createIndexTest(t, collection, verify) {
       t.notOk(err)
       t.equal(data, 'i_1')
       verify(null, [
-        'Datastore/statement/MongoDB/testCollection/createIndex',
-        'Callback: onIndex'
-      ],
-      ['createIndex']
+          'Datastore/statement/MongoDB/testCollection/createIndex',
+          'Callback: onIndex'
+        ],
+        ['createIndex']
       )
     }
   )
@@ -90,10 +91,10 @@ collectionTest('deleteMany', function deleteManyTest(t, collection, verify) {
       t.notOk(err)
       t.deepEqual(data.result, {ok: 1, n: 3})
       verify(null, [
-        'Datastore/statement/MongoDB/testCollection/deleteMany',
-        'Callback: done'
-      ],
-      ['deleteMany']
+          'Datastore/statement/MongoDB/testCollection/deleteMany',
+          'Callback: done'
+        ],
+        ['deleteMany']
       )
     }
   )
@@ -104,10 +105,10 @@ collectionTest('deleteOne', function deleteOneTest(t, collection, verify) {
       t.notOk(err)
       t.deepEqual(data.result, {ok: 1, n: 1})
       verify(null, [
-        'Datastore/statement/MongoDB/testCollection/deleteOne',
-        'Callback: done'
-      ],
-      ['deleteOne']
+          'Datastore/statement/MongoDB/testCollection/deleteOne',
+          'Callback: done'
+        ],
+        ['deleteOne']
       )
     }
   )
@@ -118,10 +119,10 @@ collectionTest('distinct', function distinctTest(t, collection, verify) {
       t.notOk(err)
       t.deepEqual(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
       verify(null, [
-        'Datastore/statement/MongoDB/testCollection/distinct',
-        'Callback: done'
-      ],
-      ['distinct']
+          'Datastore/statement/MongoDB/testCollection/distinct',
+          'Callback: done'
+        ],
+        ['distinct']
       )
     }
   )

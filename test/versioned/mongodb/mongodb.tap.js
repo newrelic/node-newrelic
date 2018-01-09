@@ -1,12 +1,10 @@
 'use strict'
 
 var fs = require('fs')
-var test = require('tap').test
+var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
-var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
-
 
 /*
  *
@@ -16,6 +14,7 @@ var urltils = require('../../../lib/util/urltils')
 
 // centrally control how long we're willing to wait for mongo
 var SLUG_FACTOR = 30000
+var OPTS = { timeout: SLUG_FACTOR }
 
 var DB_NAME = 'integration'
 var COLLECTION = 'test_1_3_19_plus'
@@ -206,14 +205,12 @@ function runWithTransaction(t, callback) {
   })
 }
 
-test('agent instrumentation of node-mongodb-native',
-  {skip: semver.satisfies(process.version, '0.8 || >=7.0.0')},
-  function(t) {
-
-  helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(error) {
-    if (!t.error(error)) {
-      return t.end()
-    }
+/**
+ * TESTS
+ */
+tap.test('agent instrumentation of node-mongodb-native', function(t) {
+  helper.bootstrapMongoDB([COLLECTION], function cb_bootstrapMongoDB(err) {
+    if (err) t.fail(err)
     t.autoend()
 
     t.test('insert', function(t) {
@@ -226,12 +223,9 @@ test('agent instrumentation of node-mongodb-native',
 
           var hunx = {id: 1, hamchunx: 'verbloks'}
           collection.insert(hunx, {w: 1}, function(error, result) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-            t.ok(result, 'should have gotten back results')
+            if (error) t.fail(error)
 
+            t.ok(result, 'should have gotten back results')
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
             process.nextTick(function() {
@@ -248,10 +242,8 @@ test('agent instrumentation of node-mongodb-native',
         runWithoutTransaction(t, function(agent, collection) {
           var hunx = {id: 3, hamchunx: 'caramel'}
           collection.insert(hunx, {w: 1}, function(error, result) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+            if (error) t.fail(error)
+
             t.ok(result, 'should have gotten back results')
             t.notOk(agent.getTransaction(), 'should be not transaction in play')
 
@@ -269,27 +261,22 @@ test('agent instrumentation of node-mongodb-native',
       t.test('inside transaction', function(t) {
         t.autoend()
 
-        t.test('with selector, with callback, then toArray', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with selector, with callback, then toArray', OPTS, function(t) {
           t.plan(4 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'toArray')
 
             collection.find({id: 1337}, function(error, cursor) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
+
               t.ok(cursor, 'should have gotten back cursor')
-
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-              cursor.toArray(function cb_toArray(error, result) {
-                if (error) {
-                  t.fail(error)
-                  return t.end()
-                }
-                t.ok(result, 'should have gotten back results')
 
+              cursor.toArray(function(error, result) {
+                if (error) t.fail(error)
+
+                t.ok(result, 'should have gotten back results')
                 t.ok(agent.getTransaction(), 'transaction should still be visible')
 
                 transaction.end()
@@ -299,7 +286,7 @@ test('agent instrumentation of node-mongodb-native',
           })
         })
 
-        t.test('without selector, then toArray', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('without selector, then toArray', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
@@ -307,12 +294,9 @@ test('agent instrumentation of node-mongodb-native',
 
             var cursor = collection.find()
             cursor.toArray(function cb_toArray(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.ok(result, 'should have gotten back results')
+              if (error) t.fail(error)
 
+              t.ok(result, 'should have gotten back results')
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
               transaction.end()
@@ -321,18 +305,15 @@ test('agent instrumentation of node-mongodb-native',
           })
         })
 
-        t.test('with selector, then each', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with selector, then each', OPTS, function(t) {
           t.plan(3 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'each')
 
             var cursor = collection.find()
-            cursor.each(function cb_each(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            cursor.each(function(error, result) {
+              if (error) t.fail(error)
 
               // When result is null we've exhausted all results
 
@@ -347,23 +328,20 @@ test('agent instrumentation of node-mongodb-native',
           })
         })
 
-        t.test('with selector, then nextObject to exhaustion', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with selector, then nextObject to exhaustion', OPTS, function(t) {
           t.plan(5 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'nextObject', 3)
             var cursor = collection.find()
-            function cb_nextObject(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            function cb(error, result) {
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
               if (result) {
                 t.ok(result, 'should have gotten back results')
-                cursor.nextObject(cb_nextObject)
+                cursor.nextObject(cb)
               } else {
                 process.nextTick(function() {
                   transaction.end(t.end.bind(t))
@@ -372,24 +350,21 @@ test('agent instrumentation of node-mongodb-native',
               }
             }
 
-            cursor.nextObject(cb_nextObject)
+            cursor.nextObject(cb)
           })
         })
 
-        t.test('with selector, then nextObject, then close', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with selector, then nextObject, then close', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'nextObject')
 
             var cursor = collection.find()
-            cursor.nextObject(function cb_nextObject(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.ok(result, 'should have gotten back results')
+            cursor.nextObject(function(error, result) {
+              if (error) t.fail(error)
 
+              t.ok(result, 'should have gotten back results')
               cursor.close()
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -404,15 +379,13 @@ test('agent instrumentation of node-mongodb-native',
       t.test('outside transaction', function(t) {
         t.autoend()
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.find({id: 1337}, function(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
+
               t.ok(result, 'should have gotten back results')
               t.notOk(agent.getTransaction(), 'should be no transaction')
 
@@ -423,16 +396,14 @@ test('agent instrumentation of node-mongodb-native',
           })
         })
 
-        t.test('with Cursor', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with Cursor', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             var cursor = collection.find({id: 1337})
-            cursor.toArray(function cb_toArray(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            cursor.toArray(function(error, result) {
+              if (error) t.fail(error)
+
               t.ok(result, 'should have gotten back results')
               t.notOk(agent.getTransaction(), 'should be no transaction')
 
@@ -452,19 +423,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('findOne requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'findOne')
 
             collection.findOne({id: 1337}, function(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(result, 'shouldn\'t have gotten back nonexistent result')
+              if (error) t.fail(error)
 
+              t.notOk(result, 'shouldn\'t have gotten back nonexistent result')
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
               transaction.end()
@@ -478,15 +446,13 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('findOne requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.findOne({id: 1337}, function(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
+
               t.notOk(result, 'shouldn\'t have gotten back nonexistent result')
               t.notOk(agent.getTransaction(), 'should be no transaction')
 
@@ -506,21 +472,22 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('findAndModify requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(3 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'findAndModify')
 
-            collection.findAndModify({hamchunx: {$exists: true}},
-                                     [['id', 1]],
-                                     {$set: {__findAndModify: true}},
-                                     {'new': true},
-                                     function(error, doc) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            collection.findAndModify(
+              { hamchunx: {$exists: true} },
+              [['id', 1]],
+              { $set: {__findAndModify: true} },
+              { new: true },
+              cb
+            )
+
+            function cb(error, doc) {
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
@@ -529,7 +496,7 @@ test('agent instrumentation of node-mongodb-native',
 
               transaction.end()
               verifyTrace(t, agent.tracer.getSegment(), 'findAndModify')
-            })
+            }
           })
         })
       })
@@ -538,26 +505,27 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('findAndModify requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(8)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.findAndModify({hamchunx: {$exists: true}},
-                                     [['id', 1]],
-                                     {$set: {__findAndModify: true}},
-                                     {'new': true},
-                                     function(error, doc) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should be no transaction')
+            collection.findAndModify(
+              { hamchunx: {$exists: true} },
+              [['id', 1]],
+              { $set: {__findAndModify: true} },
+              { new: true },
+              cb
+            )
 
+            function cb(error, doc) {
+              if (error) t.fail(error)
+
+              t.notOk(agent.getTransaction(), 'should be no transaction')
               t.ok(doc, 'should have gotten back the modified document')
               t.ok(doc.__findAndModify, 'have evidence of modification')
 
               verifyNoStats(t, agent, 'findAndModify')
-            })
+            }
           })
         })
       })
@@ -570,36 +538,33 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('findAndRemove requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(3 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithDB(t, function(collection) {
             var it0rm = {id: 876, bornToDie: 'young'}
             collection.insert(it0rm, function(error) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
 
               runWithTransaction(t, function(agent, collection, transaction) {
                 addMetricsVerifier(t, agent, 'findAndRemove')
 
-                collection.findAndRemove({bornToDie: {$exists: true}},
-                                         [['id', 1]],
-                                         function(error, doc) {
-                  if (error) {
-                    t.fail(error)
-                    return t.end()
-                  }
+                collection.findAndRemove(
+                  { bornToDie: {$exists: true} },
+                  [['id', 1]],
+                  cb
+                )
+
+                function cb(error, doc) {
+                  if (error) t.fail(error)
 
                   t.ok(agent.getTransaction(), 'transaction should still be visible')
-
                   t.ok(doc, 'should have gotten back the removed document')
                   t.equal(doc.id, 876, 'should have evidence of removal')
 
                   transaction.end()
                   verifyTrace(t, agent.tracer.getSegment(), 'findAndRemove')
-                })
+                }
               })
             })
           })
@@ -610,33 +575,30 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('findAndRemove requires a callback')
 
-
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(8)
 
           runWithDB(t, function(collection) {
             var it0rm = {id: 987, bornToDie: 'young'}
             collection.insert(it0rm, function(error) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
 
               runWithoutTransaction(t, function(agent, collection) {
-                collection.findAndRemove({bornToDie: {$exists: true}},
-                                         [['id', 1]],
-                                         function(error, doc) {
-                  if (error) {
-                    t.fail(error)
-                    return t.end()
-                  }
-                  t.notOk(agent.getTransaction(), 'should have no transaction')
+                collection.findAndRemove(
+                  { bornToDie: {$exists: true} },
+                  [['id', 1]],
+                  cb
+                )
 
+                function cb(error, doc) {
+                  if (error) t.fail(error)
+
+                  t.notOk(agent.getTransaction(), 'should have no transaction')
                   t.ok(doc, 'should have gotten back the removed document')
                   t.equal(doc.id, 987, 'should have evidence of removal')
 
                   verifyNoStats(t, agent, 'findAndRemove')
-                })
+                }
               })
             })
           })
@@ -653,67 +615,66 @@ test('agent instrumentation of node-mongodb-native',
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'update')
 
-          collection.update({hamchunx: {$exists: true}},
-                            {$set: {__updatedWith: 'yup'}},
-                            {safe: true, multi: true},
-                            function(error, numberModified) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+          collection.update(
+            { hamchunx: {$exists: true} },
+            { $set: {__updatedWith: 'yup'} },
+            { safe: true, multi: true },
+            cb
+          )
+
+          function cb(error, numberModified) {
+            if (error) t.fail(error)
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
-
             t.equal(numberModified, 2, 'should have modified 2 documents')
-
             transaction.end()
+
             verifyTrace(t, agent.tracer.getSegment(), 'update')
-          })
+          }
         })
       })
 
       t.test('outside transaction', function(t) {
         t.autoend()
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.update({hamchunx: {$exists: true}},
-                              {$set: {__updatedWithout: 'yup'}},
-                              {safe: true, multi: true},
-                              function(error, numberModified) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should be no transaction')
+            collection.update(
+              { hamchunx: {$exists: true} },
+              { $set: {__updatedWithout: 'yup'} },
+              { safe: true, multi: true },
+              cb
+            )
+            function cb(error, numberModified) {
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should be no transaction')
               t.equal(numberModified, 2, 'should have modified 2 documents')
 
               verifyNoStats(t, agent, 'update')
-            })
+            }
           })
         })
 
-        t.test('with no callback (w = 0)', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with no callback (w = 0)', OPTS, function(t) {
           t.plan(10)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.update({hamchunx: {$exists: true}},
-                              {$set: {__updatedWithout: 'yup'}})
+            collection.update(
+              { hamchunx: {$exists: true} },
+              { $set: {__updatedWithout: 'yup'} }
+            )
 
             setTimeout(function() {
               collection.find({__updatedWithout: 'yup'}).toArray(function(error, docs) {
-                if (error) {
-                  t.fail(error)
-                  return t.end()
-                }
-                t.notOk(agent.getTransaction(), 'should be no transaction')
+                if (error) t.fail(error)
 
+                t.notOk(agent.getTransaction(), 'should be no transaction')
                 t.ok(docs, 'should have gotten back results')
                 t.equal(docs.length, 2, 'should have found 2 modified')
-                docs.forEach(function cb_forEach(doc) {
+                docs.forEach(function(doc) {
                   t.ok(doc.hamchunx, 'expected value found')
                 })
 
@@ -736,13 +697,9 @@ test('agent instrumentation of node-mongodb-native',
 
           var saved = {id: 999, oneoff: 'broccoli', __saved: true}
           collection.save(saved, {w: 1}, function(error, result) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+            if (error) t.fail(error)
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
-
             t.ok(result, 'should have the saved document')
             t.ok(result._id, 'should have evidence that it saved')
             t.ok(result.__saved, 'should have evidence we got our original document')
@@ -758,18 +715,15 @@ test('agent instrumentation of node-mongodb-native',
       t.test('outside transaction', function(t) {
         t.autoend()
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(9)
 
           runWithoutTransaction(t, function(agent, collection) {
             var saved = {id: 888, oneoff: 'daikon', __saved: true}
             collection.save(saved, {w: 1}, function(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.ok(result, 'should have the saved document')
               t.ok(result._id, 'should have evidence that it saved')
               t.ok(result.__saved, 'should have evidence we got our original document')
@@ -779,19 +733,16 @@ test('agent instrumentation of node-mongodb-native',
           })
         })
 
-        t.test('with no callback (w = 0)', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with no callback (w = 0)', OPTS, function(t) {
           t.plan(8)
 
           runWithoutTransaction(t, function(agent, collection) {
             var saved = {id: 444, oneoff: 'radicchio', __saved: true}
             collection.save(saved, function() {
                collection.find({oneoff: 'radicchio'}).toArray(function(error, docs) {
-                if (error) {
-                  t.fail(error)
-                  return t.end()
-                }
-                t.notOk(agent.getTransaction(), 'should be no transaction')
+                if (error) t.fail(error)
 
+                t.notOk(agent.getTransaction(), 'should be no transaction')
                 t.equal(docs.length, 1, 'should have only found one document')
                 t.equal(docs[0].id, 444, 'should have evidence it\'s the same document')
 
@@ -812,14 +763,10 @@ test('agent instrumentation of node-mongodb-native',
         runWithTransaction(t, function(agent, collection, transaction) {
           addMetricsVerifier(t, agent, 'count')
 
-          collection.count(function cb_count(error, count) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+          collection.count(function(error, count) {
+            if (error) t.fail(error)
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
-
             t.equal(count, 5, 'should have found 5 documents')
 
             transaction.end()
@@ -832,17 +779,14 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('count requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.count(function cb_count(error, count) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+            collection.count(function(error, count) {
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.equal(count, 5, 'should have found 5 documents')
 
               verifyNoStats(t, agent, 'count')
@@ -859,20 +803,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('distinct requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'distinct')
 
             collection.distinct('id', function(error, distinctSet) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-
               t.equal(distinctSet.length, 5, 'should have found 5 documents')
 
               transaction.end()
@@ -886,17 +826,14 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('distinct requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.distinct('id', function(error, distinctSet) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.equal(distinctSet.length, 5, 'should have found 5 documents')
 
               verifyNoStats(t, agent, 'distinct')
@@ -913,20 +850,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('createIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'createIndex')
 
             collection.createIndex('id', function(error, name) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-
               t.equal(name, 'id_1', 'should have created an index')
 
               transaction.end()
@@ -940,17 +873,14 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('createIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.createIndex('id', function(error, name) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.equal(name, 'id_1', 'should have created another index')
 
               verifyNoStats(t, agent, 'createIndex')
@@ -967,20 +897,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('ensureIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'ensureIndex')
 
             collection.ensureIndex('id', function(error, name) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-
               t.equal(name, 'id_1', 'should have found an index')
 
               transaction.end()
@@ -994,17 +920,14 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('ensureIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.ensureIndex('id', function(error, name) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.equal(name, 'id_1', 'should have created another index')
 
               verifyNoStats(t, agent, 'ensureIndex')
@@ -1021,20 +944,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('reIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'reIndex')
 
-            collection.reIndex(function cb_reIndex(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            collection.reIndex(function(error, result) {
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-
               t.equal(result, true, 'should have found an index')
 
               transaction.end()
@@ -1048,17 +967,14 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('reIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.reIndex(function cb_reIndex(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+            collection.reIndex(function(error, result) {
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.equal(result, true, 'should have created another index')
 
               verifyNoStats(t, agent, 'reIndex')
@@ -1075,20 +991,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('dropIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropIndex')
 
             collection.dropIndex('id_1', function(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-
               t.equal(result.nIndexesWas, 2, 'should have dropped an index')
 
               transaction.end()
@@ -1102,15 +1014,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('dropIndex requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.dropIndex('id_1', function(error) {
               t.notOk(agent.getTransaction(), 'should have no transaction')
-
-              t.ok(error.message.indexOf('index not found') === 0,
-                   'shouldn\'t have found index to drop')
+              t.ok(
+                error.message.indexOf('index not found') === 0,
+                'shouldn\'t have found index to drop'
+              )
 
               verifyNoStats(t, agent, 'dropIndex')
             })
@@ -1126,20 +1039,16 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('dropAllIndexes requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
 
           runWithTransaction(t, function(agent, collection, transaction) {
             addMetricsVerifier(t, agent, 'dropAllIndexes')
 
-            collection.dropAllIndexes(function cb_dropAllIndexes(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            collection.dropAllIndexes(function(error, result) {
+              if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-
               t.equal(result, true, 'should have dropped the indexes')
 
               transaction.end()
@@ -1153,18 +1062,14 @@ test('agent instrumentation of node-mongodb-native',
         t.autoend()
         t.comment('dropAllIndexes requires a callback')
 
-        t.test('with callback', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with callback', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.dropAllIndexes(function cb_dropAllIndexes(error, result) {
-              if (error) {
-                t.fail(error)
-                return t.end()
-              }
+            collection.dropAllIndexes(function(error, result) {
+              if (error) t.fail(error)
 
               t.notOk(agent.getTransaction(), 'should have no transaction')
-
               t.equal(result, true, 'should have dropped all those no indexes')
 
               verifyNoStats(t, agent, 'dropAllIndexes')
@@ -1184,13 +1089,9 @@ test('agent instrumentation of node-mongodb-native',
           addMetricsVerifier(t, agent, 'remove')
 
           collection.remove({id: 1}, {w: 1}, function(error, removed) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+            if (error) t.fail(error)
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
-
             t.equal(removed, 1, 'should have removed 1 document from collection')
 
             transaction.end()
@@ -1207,12 +1108,9 @@ test('agent instrumentation of node-mongodb-native',
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.remove({id: 3}, {w: 1}, function(error, removed) {
-              if (error) {
-                t.fail(error)
-                  return t.end()
-              }
-              t.notOk(agent.getTransaction(), 'should have no transaction')
+              if (error) t.fail(error)
 
+              t.notOk(agent.getTransaction(), 'should have no transaction')
               t.equal(removed, 1, 'should have removed 1 document from collection')
 
               verifyNoStats(t, agent, 'remove')
@@ -1220,19 +1118,16 @@ test('agent instrumentation of node-mongodb-native',
           })
         })
 
-        t.test('with no callback (w = 0)', {timeout: SLUG_FACTOR}, function(t) {
+        t.test('with no callback (w = 0)', OPTS, function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
             collection.remove({id: 4})
             setTimeout(function() {
               collection.count({id: 4}, function(error, nope) {
-                if (error) {
-                  t.fail(error)
-                  return t.end()
-                }
-                t.notOk(agent.getTransaction(), 'should have no transaction')
+                if (error) t.fail(error)
 
+                t.notOk(agent.getTransaction(), 'should have no transaction')
                 t.notOk(nope, 'should have removed document with id 4 from collection')
 
                 verifyNoStats(t, agent, 'remove')
@@ -1251,13 +1146,9 @@ test('agent instrumentation of node-mongodb-native',
 
         runWithTransaction(t, function(agent, collection, transaction) {
           collection.aggregate([{$match: {id: 1}}], function(error, data) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+            if (error) t.fail(error)
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
-
             t.deepEqual(data, [])
 
             transaction.end()
@@ -1271,12 +1162,9 @@ test('agent instrumentation of node-mongodb-native',
 
         runWithoutTransaction(t, function(agent, collection) {
           collection.aggregate([{$match: {id: 1}}], function(error, data) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
-            t.notOk(agent.getTransaction(), 'should have no transaction')
+            if (error) t.fail(error)
 
+            t.notOk(agent.getTransaction(), 'should have no transaction')
             t.deepEqual(data, [])
 
             verifyNoStats(t, agent, 'aggregate')
@@ -1311,28 +1199,23 @@ test('agent instrumentation of node-mongodb-native',
 
       t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
       db.open(function(err) {
-        if (!t.error(err)) {
-          return t.end()
-        }
+        if (err) t.fail(err)
+
         var collection = db.collection(COLLECTION)
         helper.runInTransaction(agent, function(tx) {
           addMetricsVerifier(t, agent, 'update', null, host, path)
 
-          collection.update({
-            hamchunx: {$exists: true}
-          }, {
-            $set: {__updatedWith: 'yup'},
-          }, {
-            safe: true, multi: true
-          }, function(err) {
-            if (!t.error(err)) {
-              return t.end()
+          collection.update(
+            { hamchunx: {$exists: true} },
+            { $set: {__updatedWith: 'yup'} },
+            { safe: true, multi: true },
+            function(err) {
+              if (err) t.fail(err)
+              tx.end(function() {
+                verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
+              })
             }
-
-            tx.end(function() {
-              verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
-            })
-          })
+          )
         })
       })
     })
