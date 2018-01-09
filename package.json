@@ -133,6 +133,7 @@
     "express": "*",
     "generic-pool": "*",
     "glob": "^7.1.2",
+    "got": "^8.0.1",
     "ioredis": "*",
     "jsdoc": "^3.4.0",
     "memcached": ">=0.2.8",
