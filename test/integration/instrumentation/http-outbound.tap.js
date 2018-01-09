@@ -1,6 +1,5 @@
 'use strict'
 
-var got = require('got')
 var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 var semver = require('semver')
@@ -143,14 +142,16 @@ tap.test('external requests', function(t) {
     }
   })
 
+  // TODO: Remove the skip after deprecating Node <6.
   var gotOpts = {
     timeout: 5000,
-    skip: semver.satisfies(process.version, '<4')
+    skip: semver.satisfies(process.version, '<4 || 5')
   }
   t.test('NODE-1647 should not interfere with `got`', gotOpts, function(t) {
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
     var agent = helper.loadTestAgent(t)
+    var got = require('got')
     helper.runInTransaction(agent, function() {
       var req = got('https://www.google.com/')
       t.tearDown(function() { req.cancel() })
