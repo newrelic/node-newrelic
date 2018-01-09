@@ -501,6 +501,8 @@ describe('display_host', function() {
   var agent
   var original_hostname = os.hostname
 
+  this.timeout(10000) // Environment scans can take a long time.
+
   beforeEach(function() {
     agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
     agent.config.utilization = null
@@ -567,7 +569,9 @@ describe('display_host', function() {
 
     it('should be ipv6 when ipv_preference === 6', function(done) {
       if (!agent.config.getIPAddresses().ipv6) {
+        /* eslint-disable no-console */
         console.log('this machine does not have an ipv6 address, skipping')
+        /* eslint-enable no-console */
         return done()
       }
       agent.config.process_host.ipv_preference = '6'
@@ -592,7 +596,9 @@ describe('display_host', function() {
     it("returns no ipv4, hostname should be ipv6 if possible",
       function noip4(done) {
         if (!agent.config.getIPAddresses().ipv6) {
+          /* eslint-disable no-console */
           console.log('this machine does not have an ipv6 address, skipping')
+          /* eslint-enable no-console */
           return done()
         }
         var mockedNI = {lo: [], en0: [{

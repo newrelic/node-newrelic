@@ -5,7 +5,7 @@
 var fs = require('fs')
 var path = require('path')
 var readline = require('readline')
-var url = require('url')
+var urltils = require('../lib/util/urltils')
 var MetricNormalizer = require('../lib/metrics/normalizer')
 
 var cwd = process.cwd()
@@ -71,21 +71,24 @@ function run(opts) {
   var reader = readline.createInterface({input: urlsFile, output: null})
   reader.on('line', function onUrlLine(urlLine) {
     appliedRules = []
-    var parsedUrl = url.parse(urlLine)
+    var scrubbedUrl = urltils.scrub(urlLine)
 
-    var normalized = userNormalizer.normalize(parsedUrl.path)
+    var normalized = userNormalizer.normalize(scrubbedUrl)
 
     if (!normalized.matched) {
-      normalized = defaultNormalizer.normalize(parsedUrl.path)
+      normalized = defaultNormalizer.normalize(scrubbedUrl)
     }
 
-    console.log(parsedUrl.path, ' => ', normalized.value)
+    console.log(urlLine, ' => ', normalized.value)
     if (appliedRules.length === 0) {
       console.log('no rules matched')
     } else {
       for (var i = 0; i < appliedRules.length; i++) {
         var match = appliedRules[i]
-        console.log(' %s: %s => %s (rule %s)', (i+1), match.original, match.normalized, match.rule.pattern)
+        console.log(
+          ' %s: %s => %s (rule %s)',
+          (i + 1), match.original, match.normalized, match.rule.pattern
+        )
       }
     }
 

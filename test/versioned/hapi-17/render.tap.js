@@ -27,7 +27,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     return server.stop()
   })
 
-  t.test('for a normal request', {timeout: 1000}, function(t) {
+  t.test('for a normal request', {timeout: 5000}, function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
@@ -42,10 +42,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.start().then(function() {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function(error, response, body) {
-        if (error) t.fail(error)
+        t.error(error, 'should not fail to make request')
 
-        t.ok(/application\/json/.test(response.headers['content-type']),
-             'got correct content type')
+        t.ok(
+          /application\/json/.test(response.headers['content-type']),
+          'got correct content type'
+        )
         t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
 
         var stats
@@ -69,8 +71,10 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
 
         var serialized = JSON.stringify(agent.metrics)
-        t.ok(serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
-             'serialized metrics as expected')
+        t.ok(
+          serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
+          'serialized metrics as expected'
+        )
 
         t.end()
       })
