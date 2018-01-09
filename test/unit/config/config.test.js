@@ -241,7 +241,11 @@ describe("the agent configuration", function() {
     })
 
     it('should pick up whether error collector attributes are enabled', function() {
+<<<<<<< HEAD
       idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED', 'NO', function(tc) {
+=======
+      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES', 'NO', function(tc) {
+>>>>>>> de965239... feat(config): update env var mapping
         should.exist(tc.error_collector.attributes.enabled)
         expect(tc.error_collector.attributes.enabled).equal(false)
       })
@@ -315,8 +319,12 @@ describe("the agent configuration", function() {
     })
 
     it('should pick up whether transaction tracer attributes are enabled', function() {
+<<<<<<< HEAD
       var key = 'NEW_RELIC_TRANSACTION_TRACER_ATTRIBUTES_ENABLED'
       idempotentEnv(key, false, function(tc) {
+=======
+      idempotentEnv('NEW_RELIC_TRACER_ATTRIBUTES', false, function(tc) {
+>>>>>>> de965239... feat(config): update env var mapping
         should.exist(tc.transaction_tracer.attributes.enabled)
         expect(tc.transaction_tracer.attributes.enabled).equal(false)
       })
@@ -702,17 +710,14 @@ describe("the agent configuration", function() {
       process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
       process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
 
-      var config
+      var configuration
       expect(function envTest() {
-        config = Config.initialize()
+        configuration = Config.initialize()
       }).not.throws()
 
-      should.not.exist(config.newrelic_home)
-      expect(config.error_collector &&
-             config.error_collector.attributes &&
-             config.error_collector.attributes.enabled).equal(true)
-      expect(config.error_collector &&
-             config.error_collector.enabled).equal(true)
+      should.not.exist(configuration.newrelic_home)
+      expect(configuration.error_collector &&
+             configuration.error_collector.enabled).equal(true)
 
       delete process.env.NEW_RELIC_NO_CONFIG_FILE
       delete process.env.NEW_RELIC_HOME
