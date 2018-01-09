@@ -1,9 +1,11 @@
+'use strict'
+
 exports.config = {
-  app_name           : ['My Application'],
-  license_key        : 'license key here',
-  logging            : {
-    level : 'trace',
-    filepath : '../../../newrelic_agent.log'
+  app_name: ['My Application'],
+  license_key: 'license key here',
+  logging: {
+    level: 'trace',
+    filepath: '../../../newrelic_agent.log'
   },
   utilization: {
     detect_aws: false,
@@ -18,6 +20,6 @@ exports.config = {
   transaction_tracer : {
     record_sql: 'raw',
     explain_threshold: 0,
-    enabled : true
+    enabled: true
   }
 }
