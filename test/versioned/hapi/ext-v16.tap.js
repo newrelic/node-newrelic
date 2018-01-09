@@ -37,34 +37,20 @@ tap.test('Hapi.ext', function(t) {
   })
 
   t.test('maintains transaction state', function(t) {
-    server.ext('onRequest', function(request, reply) {
+    server.ext('onRequest', function(req, reply) {
       t.ok(agent.getTransaction(), 'transaction is available')
       tasks.push(function() {
         reply.continue()
       })
     })
 
-    server.route({
-      method: 'GET',
-      path: '/test',
-      handler: function myHandler(request, reply) {
-        t.ok(agent.getTransaction(), 'transaction is available')
-        reply()
-      }
-    })
-
-    server.start(function() {
-      port = server.info.port
-      request.get('http://localhost:' + port + '/test', function() {
-        t.end()
-      })
-    })
+    addRouteAndGet(t)
   })
 
   t.test('maintains transaction state, with config object', function(t) {
     var config = {
       type: 'onRequest',
-      method: function(request, reply) {
+      method: function(req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
         tasks.push(function() {
           reply.continue()
@@ -73,28 +59,14 @@ tap.test('Hapi.ext', function(t) {
     }
     server.ext(config)
 
-    server.route({
-      method: 'GET',
-      path: '/test',
-      handler: function myHandler(request, reply) {
-        t.ok(agent.getTransaction(), 'transaction is available')
-        reply()
-      }
-    })
-
-    server.start(function() {
-      port = server.info.port
-      request.get('http://localhost:' + port + '/test', function() {
-        t.end()
-      })
-    })
+    addRouteAndGet(t)
   })
 
   t.test('maintains transaction state, with array of config objects', function(t) {
     var config = [
       {
         type: 'onRequest',
-        method: function(request, reply) {
+        method: function(req, reply) {
           t.ok(agent.getTransaction(), 'transaction is available')
           tasks.push(function() {
             reply.continue()
@@ -104,10 +76,24 @@ tap.test('Hapi.ext', function(t) {
     ]
     server.ext(config)
 
+    addRouteAndGet(t)
+  })
+
+  t.test('does not crash on non-request events', function(t) {
+    server.ext('onPreStart', function(s, next) {
+      t.notOk(agent.getTransaction(), 'should not have transaction in server events')
+      t.equal(s, server, 'should pass through arguments without change')
+      next()
+    })
+
+    addRouteAndGet(t)
+  })
+
+  function addRouteAndGet(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function myHandler(request, reply) {
+      handler: function myHandler(req, reply) {
       t.ok(agent.getTransaction(), 'transaction is available')
         reply()
       }
@@ -119,5 +105,5 @@ tap.test('Hapi.ext', function(t) {
         t.end()
       })
     })
-  })
+  }
 })
