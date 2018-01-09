@@ -1069,7 +1069,6 @@ describe("the agent configuration", function() {
         config.onConnect({'collect_analytics_events': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
-      expect(config.transaction_events.attributes.enabled).equals(false)
     })
 
     it("shouldn't blow up when transaction_events.max_samples_stored is received",
