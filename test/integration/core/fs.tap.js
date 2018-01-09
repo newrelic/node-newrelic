@@ -821,6 +821,8 @@ test('write', function(t) {
 })
 
 test('watch (file)', function(t) {
+  t.plan(5)
+
   var name = path.join(tempDir, 'watch-file')
   var content = 'some-content'
   var agent = setupAgent(t)
@@ -833,9 +835,14 @@ test('watch (file)', function(t) {
 
         // watch doesn't return the filename when watching files on OSX
         // on versions <0.12...
-        if (process.platform !== 'darwin' ||
-          semver.satisfies(process.version, '>=0.12.x')) {
+        // TODO: Remove this check when deprecating Node 0.10.
+        if (
+          process.platform !== 'darwin' ||
+          semver.satisfies(process.version, '>=0.12.x')
+        ) {
           t.equal(file, 'watch-file')
+        } else {
+          t.pass('skip checking file name')
         }
         t.equal(
           agent.getTransaction(),
@@ -847,14 +854,17 @@ test('watch (file)', function(t) {
           'should not create any segments'
         )
         watcher.close()
-        t.end()
       })
-      fs.writeFile(name, content + 'more')
+      fs.writeFile(name, content + 'more', function(err) {
+        t.error(err, 'should not fail to write to file')
+      })
     })
   }, 10)
 })
 
 test('watch (dir)', function(t) {
+  t.plan(5)
+
   var name = path.join(tempDir, 'watch-dir')
   var content = 'some-content'
   var agent = setupAgent(t)
@@ -874,14 +884,17 @@ test('watch (dir)', function(t) {
           'should not create any segments'
         )
         watcher.close()
-        t.end()
       })
-      fs.writeFile(name, content)
+      fs.writeFile(name, content, function(err) {
+        t.error(err, 'should not fail to write to file')
+      })
     })
   }, 10)
 })
 
 test('watch emitter', function(t) {
+  t.plan(5)
+
   var name = path.join(tempDir, 'watch')
   var content = 'some-content'
   var agent = setupAgent(t)
@@ -891,21 +904,20 @@ test('watch emitter', function(t) {
       var watcher = fs.watch(tempDir)
 
       watcher.on('change', function(ev, file) {
-        t.equal(ev, 'rename')
-        t.equal(file, 'watch')
-        t.equal(
-          agent.getTransaction(),
-          trans,
-          'should preserve transaction')
-        t.equal(
-          trans.trace.root.children.length,
-          1,
-          'should not create any segments'
-        )
+        t.equal(ev, 'rename', 'should have expected event')
+        t.equal(file, 'watch', 'should be for correct directory')
+
+        var tx = agent.getTransaction()
+        var root = trans.trace.root
+        t.equal(tx && tx.id, trans.id, 'should preserve transaction')
+        t.equal(root.children.length, 1, 'should not create any segments')
+
         watcher.close()
-        t.end()
       })
-      fs.writeFile(name, content)
+
+      fs.writeFile(name, content, function(err) {
+        t.error(err, 'should not fail to write to file')
+      })
     })
   }, 10)
 })

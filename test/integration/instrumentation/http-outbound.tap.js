@@ -1,7 +1,9 @@
 'use strict'
 
+var helper = require('../../lib/agent_helper')
 var tap = require('tap')
-var helper = require('../../lib/agent_helper.js')
+var semver = require('semver')
+
 
 tap.test('external requests', function(t) {
   t.autoend()
@@ -20,7 +22,7 @@ tap.test('external requests', function(t) {
       var req = http.get(notVeryReliable.address())
 
       req.on('error', function onError() {
-        var segment = agent.tracer.getSegment()
+        var segment = agent.tracer.getTransaction().trace.root.children[0]
 
         t.equal(
           segment.name,
@@ -98,7 +100,7 @@ tap.test('external requests', function(t) {
       var dnsLookup = connect.children[0]
       t.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
 
-      var callback = external.children[1] // or length - 1
+      var callback = external.children[external.children.length - 1]
       t.equal(callback.name, 'timers.setTimeout', 'should have timeout segment')
 
       t.end()
@@ -131,11 +133,32 @@ tap.test('external requests', function(t) {
 
       var notDuped = segment.children[0]
       t.notEqual(
-          notDuped.name,
-          segment.name,
-          'child should not be named the same as the external segment')
+        notDuped.name,
+        segment.name,
+        'child should not be named the same as the external segment'
+      )
 
       t.end()
     }
+  })
+
+  // TODO: Remove the skip after deprecating Node <6.
+  var gotOpts = {
+    timeout: 5000,
+    skip: semver.satisfies(process.version, '<4 || 5')
+  }
+  t.test('NODE-1647 should not interfere with `got`', gotOpts, function(t) {
+    // Our way of wrapping HTTP response objects caused `got` to hang. This was
+    // resolved in agent 2.5.1.
+    var agent = helper.loadTestAgent(t)
+    var got = require('got')
+    helper.runInTransaction(agent, function() {
+      var req = got('https://www.google.com/')
+      t.tearDown(function() { req.cancel() })
+      req.then(
+        function() { t.end() },
+        function(e) { t.error(e); t.end() }
+      )
+    })
   })
 })

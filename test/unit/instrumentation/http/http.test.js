@@ -8,6 +8,7 @@ var helper = require('../../../lib/agent_helper')
 var hashes = require('../../../../lib/util/hashes')
 var Segment = require('../../../../lib/transaction/trace/segment')
 var semver = require('semver')
+var Shim = require('../../../../lib/shim').Shim
 
 
 var NEWRELIC_ID_HEADER = 'x-newrelic-id'
@@ -42,7 +43,9 @@ describe("built-in http module instrumentation", function() {
     })
 
     it("when passed an empty module", function() {
-      expect(function() { initialize(agent, {}) }).not.throws()
+      expect(function() {
+        initialize(agent, {}, 'http', new Shim(agent, 'http'))
+      }).to.not.throw()
     })
   })
 
@@ -58,8 +61,7 @@ describe("built-in http module instrumentation", function() {
     })
 
     it("shouldn't have changed createServer's declared parameter names", function() {
-      var http = require('http')
-      var fn = http.createServer
+      var fn = require('http').createServer
       /* Taken from
        * https://github.com/dhughes/CoolBeans/blob/master/lib/CoolBeans.js#L199
        */
@@ -89,7 +91,7 @@ describe("built-in http module instrumentation", function() {
         }
       }
 
-      initialize(agent, http)
+      initialize(agent, http, 'http', new Shim(agent, 'http'))
     })
 
     afterEach(function() {
