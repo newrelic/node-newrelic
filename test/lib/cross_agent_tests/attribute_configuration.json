@@ -38,7 +38,11 @@
   {
     "testname": "attributes globally disabled",
     "config": {
-      "attributes.enabled": false
+      "attributes.enabled": false,
+      "transaction_events.attributes.enabled": true,
+      "transaction_tracer.attributes.enabled": true,
+      "error_collector.attributes.enabled": true,
+      "browser_monitoring.attributes.enabled": true
     },
     "input_key": "alpha",
     "input_default_destinations": [
@@ -487,6 +491,140 @@
       "transaction_tracer",
       "error_collector",
       "browser_monitoring"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 1",
+    "config": {
+      "transaction_events.attributes.include": ["b*", "bcd*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "b",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 2",
+    "config": {
+      "transaction_events.attributes.include": ["b*", "bcd*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "bc",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 3",
+    "config": {
+      "transaction_events.attributes.include": ["b*", "bcd*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "bcd",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 4",
+    "config": {
+      "transaction_events.attributes.include": ["b*", "bcd*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "bcde",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 5",
+    "config": {
+      "transaction_events.attributes.include": ["bcd*", "b*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "b",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 6",
+    "config": {
+      "transaction_events.attributes.include": ["bcd*", "b*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "bc",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 7",
+    "config": {
+      "transaction_events.attributes.include": ["bcd*", "b*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "bcd",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ]
+  },
+
+  {
+    "testname": "ordering of rules should not matter 8",
+    "config": {
+      "transaction_events.attributes.include": ["bcd*", "b*"],
+      "transaction_events.attributes.exclude": ["bc*"]
+    },
+    "input_key": "bcde",
+    "input_default_destinations": [
+      "transaction_events",
+      "transaction_tracer"
+    ],
+    "expected_destinations": [
+      "transaction_events",
+      "transaction_tracer"
     ]
   }
 ]
