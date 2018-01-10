@@ -617,15 +617,15 @@ describe("the agent configuration", function() {
     })
 
     it("should enable cross application tracer", function() {
-      expect(configuration.cross_application_tracer.enabled).equal(true)
+      expect(configuration.cross_application_tracer.enabled).to.be.true()
     })
 
     it("should enable message tracer segment parameters", function() {
-      expect(configuration.message_tracer.segment_parameters.enabled).equal(true)
+      expect(configuration.message_tracer.segment_parameters.enabled).to.be.true()
     })
 
-    it("should enable browser monitoring attributes", function() {
-      expect(configuration.browser_monitoring.attributes.enabled).equal(true)
+    it("should not enable browser monitoring attributes", function() {
+      expect(configuration.browser_monitoring.attributes.enabled).to.be.false()
     })
   })
 
