@@ -36,7 +36,7 @@ test("Restify capture params introspection", function(t) {
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
-          "request_uri" : "/test"
+          "request.uri" : "/test"
         }, 'parameters should only have request/response params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -47,7 +47,7 @@ test("Restify capture params introspection", function(t) {
           "httpResponseCode": "200",
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
-          "request_uri" : "/test"
+          "request.uri" : "/test"
         }, 'parameters should only have request/response params')
       }
     })
@@ -97,7 +97,7 @@ test("Restify capture params introspection", function(t) {
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
           "id" : "1337",
-          "request_uri" : "/test/1337"
+          "request.uri" : "/test/1337"
         }, 'parameters should have id')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -109,7 +109,7 @@ test("Restify capture params introspection", function(t) {
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
           "id" : "1337",
-          "request_uri" : "/test/1337"
+          "request.uri" : "/test/1337"
         }, 'parameters should have id')
       }
     })
@@ -159,7 +159,7 @@ test("Restify capture params introspection", function(t) {
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
           "name" : "restify",
-          "request_uri" : "/test"
+          "request.uri" : "/test"
         }, 'parameters should have name')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -171,7 +171,7 @@ test("Restify capture params introspection", function(t) {
           "response.headers.contentLength" : "15",
           "response.headers.contentType" : "application/json",
           "name" : "restify",
-          "request_uri" : "/test"
+          "request.uri" : "/test"
         }, 'parameters should have name')
       }
     })
@@ -223,7 +223,7 @@ test("Restify capture params introspection", function(t) {
           "response.headers.contentType" : "application/json",
           "id" : "1337",
           "name" : "restify",
-          "request_uri" : "/test/1337"
+          "request.uri" : "/test/1337"
         }, 'parameters should have id and name')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -236,7 +236,7 @@ test("Restify capture params introspection", function(t) {
           "response.headers.contentType" : "application/json",
           "id" : "1337",
           "name" : "restify",
-          "request_uri" : "/test/1337"
+          "request.uri" : "/test/1337"
         }, 'parameters should have id and name')
       }
     })

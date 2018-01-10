@@ -71,7 +71,7 @@ describe('when error events are enabled', function () {
 
       helper.runInTransaction(agent, function(tx) {
         tx.addAgentAttribute('foo', 'bar')
-        tx.addAgentAttribute('request_uri', '/my/awesome/url')
+        tx.addAgentAttribute('request.uri', '/my/awesome/url')
         agent.errors.add(tx, new Error('some error'))
         tx.statusCode = 500
         setTimeout(function() {
@@ -106,7 +106,7 @@ describe('when error events are enabled', function () {
 
           var attrs = payload[2][0][2]
           expect(attrs).to.have.property('foo', 'bar')
-          expect(attrs).to.have.property('request_uri')
+          expect(attrs).to.have.property('request.uri')
           done()
         })
       })

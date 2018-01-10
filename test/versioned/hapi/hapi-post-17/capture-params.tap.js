@@ -78,7 +78,7 @@ tap.test('Hapi capture params support', function(t) {
         'httpResponseCode': '200',
         'httpResponseMessage': 'OK',
         'id': '1337',
-        'request_uri': '/test/1337/'
+        'request.uri': '/test/1337/'
       }, 'parameters should have id')
     })
 
@@ -118,7 +118,7 @@ tap.test('Hapi capture params support', function(t) {
         'httpResponseCode': '200',
         'httpResponseMessage': 'OK',
         'name': 'hapi',
-        'request_uri': '/test/'
+        'request.uri': '/test/'
       }, 'parameters should have name')
     })
 

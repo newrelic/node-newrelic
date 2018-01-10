@@ -42,7 +42,7 @@ function runTests(createServer) {
             "response.status" : '200',
             "httpResponseCode": "200",
             "httpResponseMessage": "OK",
-            "request_uri": "/test/"
+            "request.uri": "/test/"
           }, 'parameters should only have request/response params')
         } else {
           t.deepEqual(transaction.trace.parameters, {
@@ -53,7 +53,7 @@ function runTests(createServer) {
             "response.headers.contentLength" : 15,
             "response.headers.contentType" : "application/json; charset=utf-8",
             "httpResponseCode": "200",
-            "request_uri": "/test/"
+            "request.uri": "/test/"
           }, 'parameters should only have request/response params')
         }
       })
@@ -95,7 +95,7 @@ function runTests(createServer) {
             "httpResponseCode": "200",
             "httpResponseMessage": "OK",
             "id" : "1337",
-            "request_uri": "/test/1337/"
+            "request.uri": "/test/1337/"
           }, 'parameters should have id')
         } else {
           t.deepEqual(transaction.trace.parameters, {
@@ -107,7 +107,7 @@ function runTests(createServer) {
             "response.headers.contentType" : "application/json; charset=utf-8",
             "httpResponseCode": "200",
             "id" : "1337",
-            "request_uri": "/test/1337/"
+            "request.uri": "/test/1337/"
           }, 'parameters should have id')
         }
       })
@@ -149,7 +149,7 @@ function runTests(createServer) {
             "httpResponseCode": "200",
             "httpResponseMessage": "OK",
             "name" : "hapi",
-            "request_uri": "/test/"
+            "request.uri": "/test/"
           }, 'parameters should have name')
         } else {
           t.deepEqual(transaction.trace.parameters, {
@@ -161,7 +161,7 @@ function runTests(createServer) {
             "response.headers.contentType" : "application/json; charset=utf-8",
             "httpResponseCode": "200",
             "name" : "hapi",
-            "request_uri": "/test/"
+            "request.uri": "/test/"
           }, 'parameters should have name')
         }
       })
@@ -204,7 +204,7 @@ function runTests(createServer) {
             "httpResponseMessage": "OK",
             "id" : "1337",
             "name" : "hapi",
-            "request_uri": "/test/1337/"
+            "request.uri": "/test/1337/"
           }, 'parameters should have name and id')
         } else {
           t.deepEqual(transaction.trace.parameters, {
@@ -217,7 +217,7 @@ function runTests(createServer) {
             "httpResponseCode": "200",
             "id" : "1337",
             "name" : "hapi",
-            "request_uri": "/test/1337/"
+            "request.uri": "/test/1337/"
           }, 'parameters should have name and id')
         }
       })

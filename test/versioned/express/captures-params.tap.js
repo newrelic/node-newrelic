@@ -54,7 +54,7 @@ test("test capture_params for express", function(t) {
           "httpResponseMessage": "OK",
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
-          "request_uri" : "/user/"
+          "request.uri" : "/user/"
         }, 'parameters should only have request/response params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -64,7 +64,7 @@ test("test capture_params for express", function(t) {
           "httpResponseCode": "200",
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
-          "request_uri" : "/user/"
+          "request.uri" : "/user/"
         }, 'parameters should only have request/response params')
       }
     })
@@ -124,7 +124,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
-          "request_uri" : "/user/5"
+          "request.uri" : "/user/5"
         }, 'parameters should include route params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -135,7 +135,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
-          "request_uri" : "/user/5"
+          "request.uri" : "/user/5"
         }, 'parameters should include route params')
       }
     })
@@ -195,7 +195,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           "name" : "bob",
-          "request_uri" : "/user/"
+          "request.uri" : "/user/"
         }, 'parameters should include query params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -206,7 +206,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           "name" : "bob",
-          "request_uri" : "/user/"
+          "request.uri" : "/user/"
         }, 'parameters should include query params')
       }
     })
@@ -267,7 +267,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           "name" : "bob",
-          "request_uri" : "/user/5"
+          "request.uri" : "/user/5"
         }, 'parameters should include query params')
       } else {
         t.deepEqual(transaction.trace.parameters, {
@@ -279,7 +279,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           "name" : "bob",
-          "request_uri" : "/user/5"
+          "request.uri" : "/user/5"
         }, 'parameters should include query params')
       }
     })
@@ -330,7 +330,7 @@ test("test capture_params for express", function(t) {
             "response.status" : 200,
             "httpResponseCode": "200",
             "id" : 5,
-            "request_uri": "/user/5"
+            "request.uri": "/user/5"
       }
       var possibleExpected = {
         "httpResponseMessage": "OK",

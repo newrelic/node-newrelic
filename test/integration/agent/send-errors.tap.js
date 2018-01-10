@@ -59,7 +59,7 @@ test('Agent#_sendErrors', function(t) {
           return cb()
         }
 
-        t.equal(errData.request_uri, '/nonexistent', 'should have request_uri')
+        t.equal(errData['request.uri'], '/nonexistent', 'should have `request.uri`')
 
         var attrs = errData.agentAttributes
         t.deepEqual(attrs, {foo: 'bar'}, 'should have the correct attributes')
@@ -83,7 +83,7 @@ test('Agent#_sendErrors', function(t) {
       helper.runInTransaction(agent, function(tx) {
         tx.finalizeNameFromUri('/nonexistent', 501)
         tx.addAgentAttribute('foo', 'bar')
-        tx.addAgentAttribute('request_uri', '/nonexistent')
+        tx.addAgentAttribute('request.uri', '/nonexistent')
         agent.errors.add(tx, new Error('test error'))
         tx.end()
       })
