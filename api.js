@@ -204,95 +204,110 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 }
 
 /**
- * Add a custom parameter to the current transaction. Some parameters are
+ * Deprecated. Please use `addCustomAttribute` instead.
+ */
+API.prototype.addCustomParameter = function addCustomParameter(name, value) {
+  logger.warn(
+    '`API.addCustomParameter` has been deprecated. '
+    + 'Please use `API.addCustomAttribute` instead.'
+  )
+  this.addCustomAttribute(name, value)
+}
+
+/**
+ * Add a custom attribute to the current transaction. Some attributes are
  * reserved (see CUSTOM_BLACKLIST for the current, very short list), and
  * as with most API methods, this must be called in the context of an
  * active transaction. Most recently set value wins.
  *
- * @param {string} name  The name you want displayed in the RPM UI.
+ * @param {string} key  The key you want displayed in the RPM UI.
  * @param {string} value The value you want displayed. Must be serializable.
  */
-API.prototype.addCustomParameter = function addCustomParameter(name, value) {
+API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addCustomParameter'
+    NAMES.SUPPORTABILITY.API + '/addCustomAttribute'
   )
   metric.incrementCallCount()
 
-  // If high security mode is on, custom params are disabled.
+  // If high security mode is on, custom attributes are disabled.
   if (this.agent.config.high_security === true) {
     logger.warnOnce(
-      "Custom params",
-      "Custom parameters are disabled by high security mode."
+      'Custom attributes',
+      'Custom attributes are disabled by high security mode.'
     )
     return false
-  } else if (!this.agent.config.api.custom_parameters_enabled) {
+  } else if (!this.agent.config.api.custom_attributes_enabled) {
     logger.debug(
-      "Config.api.custom_parameters_enabled set to false, not collecting value"
+      'Config.api.custom_attributes_enabled set to false, not collecting value'
     )
     return false
   }
 
-  var ignored = this.agent.config.ignored_params || []
+  var ignored = this.agent.config.attributes.exclude.length
+    ? this.agent.config.attributes.exclude
+    : this.agent.config.ignored_params || []
 
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
-    return logger.warn("No transaction found for custom parameters.")
+    return logger.warn('No transaction found for custom attributes.')
   }
 
   var trace = transaction.trace
   if (!trace.custom) {
     return logger.warn(
-      "Couldn't add parameter %s to nonexistent custom parameters.",
-      name
+      'Couldn\'t add parameter %s to nonexistent custom attributes.',
+      key
     )
   }
 
-  if (CUSTOM_BLACKLIST.indexOf(name) !== -1) {
-    return logger.warn("Not overwriting value of NR-only parameter %s.", name)
+  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  if (ignored.indexOf(name) !== -1) {
-    return logger.warn("Not setting ignored parameter name %s.", name)
+  if (ignored.indexOf(key) !== -1) {
+    return logger.warn('Not setting ignored attribute key %s.', key)
   }
 
-  if (name in trace.custom) {
-    logger.debug(
-      "Changing custom parameter %s from %s to %s.",
-      name,
-      trace.custom[name],
-      value
-    )
-  }
-
-  trace.custom[name] = value
+  trace.addCustomAttribute(key, value, logger)
 }
 
 /**
- * Adds all custom parameters in an object to the current transaction.
- *
- * See documentation for newrelic.addCustomParameter for more information on
- * setting custom parameters.
- *
- * An example of setting a custom parameter object:
- *
- *    newrelic.addCustomParameters({test: 'value', test2: 'value2'});
- *
- * @param {object} [params]
- * @param {string} [params.KEY] The name you want displayed in the RPM UI.
- * @param {string} [params.KEY.VALUE] The value you want displayed. Must be serializable.
+ * Deprecated. Please use `addCustomAttributes` instead.
  */
-API.prototype.addCustomParameters = function addCustomParameters(params) {
+API.prototype.addCustomParameters = function addCustomParameters(atts) {
+  logger.warn(
+    '`API.addCustomParameters` has been deprecated. '
+    + 'Please use `API.addCustomAttributes` instead.'
+  )
+  this.addCustomAttributes(atts)
+}
+
+/**
+ * Adds all custom attributes in an object to the current transaction.
+ *
+ * See documentation for newrelic.addCustomAttribute for more information on
+ * setting custom attributes.
+ *
+ * An example of setting a custom attribute object:
+ *
+ *    newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
+ *
+ * @param {object} [atts]
+ * @param {string} [atts.KEY] The name you want displayed in the RPM UI.
+ * @param {string} [atts.KEY.VALUE] The value you want displayed. Must be serializable.
+ */
+API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
   var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addCustomParameters'
+    NAMES.SUPPORTABILITY.API + '/addCustomAttributes'
   )
   metric.incrementCallCount()
 
-  for (var key in params) {
-    if (!properties.hasOwn(params, key)) {
+  for (var key in atts) {
+    if (!properties.hasOwn(atts, key)) {
       continue
     }
 
-    this.addCustomParameter(key, params[key])
+    this.addCustomAttribute(key, atts[key])
   }
 }
 
