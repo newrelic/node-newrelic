@@ -57,7 +57,7 @@ describe('agent attribute format', function() {
   })
 
   it('record captured params', function() {
-    trans.trace.parameters.a = 'A'
+    trans.trace.addAttribute('a', 'A')
     error.add(trans, new Error())
     agent.errors.onTransactionFinished(trans, agent.metrics)
 
@@ -73,7 +73,7 @@ describe('agent attribute format', function() {
   })
 
   it('records custom parameters', function() {
-    trans.trace.custom.a = 'A'
+    trans.trace.addCustomAttribute('a', 'A')
     error.add(trans, new Error())
     agent.errors.onTransactionFinished(trans, agent.metrics)
 
@@ -92,7 +92,7 @@ describe('agent attribute format', function() {
   })
 
   it('merge custom parameters', function() {
-    trans.trace.custom.a = 'A'
+    trans.trace.addCustomAttribute('a', 'A')
     error.add(trans, new Error(), {b: 'B'})
     agent.errors.onTransactionFinished(trans, agent.metrics)
 
