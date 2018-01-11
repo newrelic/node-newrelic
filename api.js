@@ -203,16 +203,64 @@ API.prototype.setControllerName = function setControllerName(name, action) {
   transaction.forceName = NAMES.CONTROLLER + '/' + name + '/' + action
 }
 
+
 /**
  * Deprecated. Please use `addCustomAttribute` instead.
  */
-API.prototype.addCustomParameter = function addCustomParameter(name, value) {
-  logger.warn(
-    '`API.addCustomParameter` has been deprecated. '
-    + 'Please use `API.addCustomAttribute` instead.'
+API.prototype.addCustomParameter = util.deprecate(
+  addCustomParameter, [
+    'API#addCustomParameter is being deprecated!',
+    'Please use API#addCustomAttribute instead.'
+  ].join(' ')
+)
+function addCustomParameter(key, value) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomAttribute'
   )
-  this.addCustomAttribute(name, value)
+  metric.incrementCallCount()
+
+  // If high security mode is on, custom attributes are disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      'Custom attributes',
+      'Custom attributes are disabled by high security mode.'
+    )
+    return false
+  } else if (!this.agent.config.api.custom_attributes_enabled) {
+    logger.debug(
+      'Config.api.custom_attributes_enabled set to false, not collecting value'
+    )
+    return false
+  }
+
+  var ignored = this.agent.config.attributes.exclude.length
+    ? this.agent.config.attributes.exclude
+    : this.agent.config.ignored_params || []
+
+  var transaction = this.agent.tracer.getTransaction()
+  if (!transaction) {
+    return logger.warn('No transaction found for custom attributes.')
+  }
+
+  var trace = transaction.trace
+  if (!trace.custom) {
+    return logger.warn(
+      'Couldn\'t add parameter %s to nonexistent custom attributes.',
+      key
+    )
+  }
+
+  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+  }
+
+  if (ignored.indexOf(key) !== -1) {
+    return logger.warn('Not setting ignored attribute key %s.', key)
+  }
+
+  trace.addCustomAttribute(key, value, logger)
 }
+
 
 /**
  * Add a custom attribute to the current transaction. Some attributes are
