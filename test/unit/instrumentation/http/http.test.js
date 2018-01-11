@@ -121,6 +121,7 @@ describe("built-in http module instrumentation", function() {
     before(function(done) {
       http = require('http')
       agent = helper.instrumentMockedAgent()
+      agent.config.attributes.enabled = true
       hookCalled = false
 
       var external = http.createServer(function cb_createServer(request, response) {
@@ -265,11 +266,13 @@ describe("built-in http module instrumentation", function() {
       })
 
       it("should capture a scrubbed version of the referer header", function() {
-        expect(transaction.trace.parameters['request.headers.referer']).to.equal('https://www.google.com/search/cats')
+        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        expect(attributes['request.headers.referer']).to.equal('https://www.google.com/search/cats')
       })
 
       it("should include a stringified response status code", function() {
-        expect(transaction.trace.parameters['response.status']).to.equal('200')
+        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        expect(attributes['response.status']).to.equal('200')
       })
 
       it("should record unscoped path stats after a normal request", function() {
@@ -295,9 +298,6 @@ describe("built-in http module instrumentation", function() {
                                          'WebTransaction/NormalizedUri/*')
         expect(stats.callCount).equal(1)
       })
-
-      it("should capture metrics for the last byte to exit as part of a response")
-      it("should capture metrics for the last byte to enter as part of a request")
 
       it("should set transaction.port to the server's port", function() {
         expect(transaction.port).equal(8123)
