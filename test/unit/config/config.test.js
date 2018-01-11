@@ -226,13 +226,6 @@ describe("the agent configuration", function() {
       })
     })
 
-    it('should pick up global excluded request attributes', function() {
-      idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
-        should.exist(tc.attributes.exclude)
-        expect(tc.attributes.exclude).eql(['one', 'two', 'three'])
-      })
-    })
-
     it("should pick up whether the error collector is enabled", function() {
       idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ENABLED', 'NO', function(tc) {
         should.exist(tc.error_collector.enabled)

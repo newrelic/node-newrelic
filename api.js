@@ -234,9 +234,7 @@ function addCustomParameter(key, value) {
     return false
   }
 
-  var ignored = this.agent.config.attributes.exclude.length
-    ? this.agent.config.attributes.exclude
-    : this.agent.config.ignored_params || []
+  var ignored = this.agent.config.ignored_params || []
 
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
@@ -292,9 +290,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     return false
   }
 
-  var ignored = this.agent.config.attributes.exclude.length
-    ? this.agent.config.attributes.exclude
-    : this.agent.config.ignored_params || []
+  var ignored = this.agent.config.ignored_params || []
 
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
