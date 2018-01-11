@@ -155,8 +155,8 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
+      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
-      webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
@@ -222,8 +222,8 @@ describe('TraceSegment', function() {
 
       webChild = segment.add(url)
       webChild.parameters = params
+      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
-      webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
@@ -233,17 +233,18 @@ describe('TraceSegment', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the trace', function() {
-      should.exist(trace.parameters)
+    it('should have attributes on the trace', function() {
+      should.exist(trace.attributes.get('transaction_tracer'))
     })
 
     it('should have the positional parameters from the params array', function() {
-      expect(trace.parameters[0]).equal('first')
-      expect(trace.parameters[1]).equal('another')
+      var attributes = trace.attributes.get('transaction_tracer')
+      expect(attributes[0]).equal('first')
+      expect(attributes[1]).equal('another')
     })
 
     it('should have the named parameter from the params array', function() {
-      expect(trace.parameters.test3).equal('50')
+      expect(trace.attributes.get('transaction_tracer').test3).equal('50')
     })
 
     it('should serialize the segment with the parameters', function() {
@@ -263,11 +264,11 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with capture_params disabled', function() {
+  describe('with attributes.enabled set to false', function() {
     var webChild
 
     beforeEach(function() {
-      agent.config.capture_params = false
+      agent.config.attributes.enabled = false
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -276,8 +277,8 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
+      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
-      webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
@@ -303,12 +304,12 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with capture_params enabled and ignored_params set', function() {
+  describe('with attributes.enabled and attributes.exclude set', function() {
     var webChild
 
     beforeEach(function() {
-      agent.config.capture_params = true
-      agent.config.ignored_params = ['test1', 'test4']
+      agent.config.attributes.enabled = true
+      agent.config.attributes.exclude = ['test1', 'test4']
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -317,6 +318,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
+      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
@@ -362,9 +364,6 @@ describe('TraceSegment', function() {
     })
   })
 
-  it('should retain any associated SQL statements')
-  it('should allow an arbitrary number of segments in the scope of this segment')
-
   describe('when ended', function() {
     it('stops its timer', function() {
       var trans = new Transaction(agent)
@@ -373,9 +372,6 @@ describe('TraceSegment', function() {
       segment.end()
       expect(segment.timer.isRunning()).equal(false)
     })
-
-    it('knows its exclusive duration')
-    it('produces human-readable JSON')
 
     it('should produce JSON that conforms to the collector spec', function() {
       var transaction = new Transaction(agent)
