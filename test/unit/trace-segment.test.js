@@ -304,12 +304,12 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with attributes.enabled and attributes.exclude set', function() {
+  describe('with attributes.enabled and ignored_params set', function() {
     var webChild
 
     beforeEach(function() {
       agent.config.attributes.enabled = true
-      agent.config.attributes.exclude = ['test1', 'test4']
+      agent.config.ignored_params = ['test1', 'test4']
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace

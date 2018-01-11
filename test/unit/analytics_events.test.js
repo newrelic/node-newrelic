@@ -127,7 +127,7 @@ describe('Analytics events', function() {
       })
     })
 
-    it('should contain custom parameters', function(done) {
+    it('should contain custom attributes', function(done) {
       trans.trace.addCustomAttribute('a', 'b')
       trans.end(function() {
         var event = agent.events.toArray()[0]
