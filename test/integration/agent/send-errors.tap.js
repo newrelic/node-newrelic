@@ -1,25 +1,26 @@
 'use strict'
 
 var helper = require('../../lib/agent_helper')
-var path = require('path')
-var test = require('tap').test
-var Agent = require('../../../lib/agent')
+var tap = require('tap')
 
-test('Agent#_sendErrors', function(t) {
+tap.test('Agent#_sendErrors', function(t) {
   var config = {
-    'app_name': 'node.js Tests',
-    'license_key': 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
-    'host': 'staging-collector.newrelic.com',
-    'port': 80,
-    'ssl': false,
-    'utilization': {
-      'detect_aws': false,
-      'detect_pcf': false,
-      'detect_gcp': false,
-      'detect_docker': false
+    app_name: 'node.js Tests',
+    license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+    host: 'staging-collector.newrelic.com',
+    port: 80,
+    ssl: false,
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_gcp: false,
+      detect_docker: false
     },
-    'logging': {
-      'level': 'trace'
+    logging: {
+      level: 'trace'
+    },
+    attributes: {
+      enabled: true
     }
   }
 
@@ -49,7 +50,6 @@ test('Agent#_sendErrors', function(t) {
       }
 
       agent.collector.errorData = function(payload, cb) {
-        // console.log('errorData', payload)
         if (!t.ok(payload, 'should get the payload')) {
           return cb()
         }
@@ -67,7 +67,7 @@ test('Agent#_sendErrors', function(t) {
         cb()
       }
 
-      agent.on('transactionFinished', function(transaction) {
+      agent.on('transactionFinished', function() {
         agent._sendErrors(function(error) {
           if (!t.notOk(error, "sent errors without error")) {
             console.log('Send error:', error)
