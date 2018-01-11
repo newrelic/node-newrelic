@@ -1708,9 +1708,9 @@ describe('Shim', function() {
         ]
       })
 
-      describe('and capture_params is true', function() {
+      describe('and attributes.enabled is true', function() {
         beforeEach(function() {
-          agent.config.capture_params = true
+          agent.config.attributes.enabled = true
           helper.runInTransaction(agent, function() {
             segment = shim.createSegment({name: 'child', parameters: parameters})
           })
@@ -1735,9 +1735,9 @@ describe('Shim', function() {
         })
       })
 
-      describe('and capture_params is false', function() {
+      describe('and attributes.enabled is false', function() {
         beforeEach(function() {
-          agent.config.capture_params = false
+          agent.config.attributes.enabled = false
           helper.runInTransaction(agent, function() {
             segment = shim.createSegment({name: 'child', parameters: parameters})
           })
