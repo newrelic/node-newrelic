@@ -401,16 +401,19 @@ test("built-in http instrumentation should not crash for requests that are in pr
     count++
 
     if (count === 1) {
-      t.ok(true, 'request #1 was received')
-      res.end()
+      setImmediate(function() {
+        t.ok(true, 'request #1 was received')
+        res.end()
 
-      closing = true
-      server.close()
+        closing = true
+        server.close()
+      })
     } else {
-      t.ok(true, 'request #2 was received')
-      t.notOk(!closing,
-        'server should be in the middle of closing when request #2 is handled')
-      res.end()
+      setImmediate(function() {
+        t.ok(true, 'request #2 was received')
+        t.ok(closing, 'server should be closing when request #2 is handled')
+        res.end()
+      })
     }
   })
 
@@ -432,7 +435,11 @@ test("built-in http instrumentation should not crash for requests that are in pr
       path: '/',
       agent: false
     }
-    http.request(options, callback).end()
+    var req = http.request(options, callback)
+    req.on('error', function(err) {
+      t.error(err, 'should not fail to make requests')
+    })
+    req.end()
   }
 })
 

@@ -585,7 +585,7 @@ module.exports = function(t, library, loadLibrary) {
         return Promise.some([
           Promise.resolve(name + 'resolved'),
           Promise.reject(name + 'rejection!'),
-          Promise.delay(10, name + 'delayed more'),
+          Promise.delay(100, name + 'delayed more'),
           Promise.delay(5, name + 'delayed')
         ], 2).then(function(result) {
           t.deepEqual(
@@ -1150,7 +1150,7 @@ module.exports = function(t, library, loadLibrary) {
         return Promise.resolve([
           Promise.resolve(name + 'resolved'),
           Promise.reject(name + 'rejection!'),
-          Promise.delay(10, name + 'delayed more'),
+          Promise.delay(100, name + 'delayed more'),
           Promise.delay(5, name + 'delayed')
         ]).some(2)
       })
@@ -1162,7 +1162,7 @@ module.exports = function(t, library, loadLibrary) {
           return [
             Promise.resolve(name + 'resolved'),
             Promise.reject(name + 'rejection!'),
-            Promise.delay(10, name + 'delayed more'),
+            Promise.delay(100, name + 'delayed more'),
             Promise.delay(5, name + 'delayed')
           ]
         }).some(2).then(function(result) {

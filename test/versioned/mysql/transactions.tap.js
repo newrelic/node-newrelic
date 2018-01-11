@@ -11,7 +11,7 @@ var DBNAME = 'agent_integration'
 
 
 tap.test('MySQL transactions', {timeout : 30000}, function(t) {
-  t.plan(4)
+  t.plan(7)
 
   // set up the instrumentation before loading MySQL
   var agent = helper.instrumentMockedAgent()
@@ -36,12 +36,21 @@ tap.test('MySQL transactions', {timeout : 30000}, function(t) {
     helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction(), "we should be in a transaction")
       client.beginTransaction(function(err) {
-        if (err) return t.fail(err)
+        if (!t.error(err, 'should not error')) {
+          return t.end()
+        }
+
         // trying the object mode of client.query
         client.query({sql: 'SELECT 1', timeout: 10}, function(err) {
-          if (err) return t.fail(err)
+          if (!t.error(err, 'should not error')) {
+            return t.end()
+          }
+
           client.commit(function(err) {
-            if (err) return t.fail(err)
+            if (!t.error(err, 'should not error')) {
+              return t.end()
+            }
+
             t.ok(agent.getTransaction(), "MySQL query should not lose the transaction")
           })
         })

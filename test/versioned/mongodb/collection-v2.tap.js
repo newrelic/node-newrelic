@@ -701,7 +701,12 @@ function collectionTest(name, run) {
           }
 
           var mongodb = require('mongodb')
-          var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+          var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
+            socketOptions: {
+              connectionTimeoutMS: 30000,
+              socketTimeoutMS: 30000
+            }
+          })
           db = new mongodb.Db(DB_NAME, server)
           METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
             ? agent.config.getHostnameSafe()
