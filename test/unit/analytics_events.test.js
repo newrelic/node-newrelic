@@ -12,6 +12,7 @@ describe('Analytics events', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
+    agent.config.attributes.enabled = true
   })
 
   afterEach(function() {

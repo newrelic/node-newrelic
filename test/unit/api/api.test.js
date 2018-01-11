@@ -167,6 +167,10 @@ describe('the New Relic agent API', function() {
   })
 
   describe("when adding custom attributes", function() {
+    beforeEach(function() {
+      agent.config.attributes.enabled = true
+    })
+
     it('should properly add custom attributes', function() {
       helper.runInTransaction(agent, function(transaction) {
         api.addCustomAttribute('test', 1)
@@ -650,6 +654,10 @@ describe('the New Relic agent API', function() {
   })
 
   describe('when adding a custom attribute', function() {
+    beforeEach(function() {
+      agent.config.attributes.enabled = true
+    })
+
     describe('inside a transaction', function() {
       it('should have set the value properly', function(done) {
         agent.on('transactionFinished', function(transaction) {
