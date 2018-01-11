@@ -206,6 +206,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 
 /**
  * Deprecated. Please use `addCustomAttribute` instead.
+ * TODO: remove in v4
  */
 API.prototype.addCustomParameter = util.deprecate(
   addCustomParameter, [
@@ -321,6 +322,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 
 /**
  * Deprecated. Please use `addCustomAttributes` instead.
+ * TODO: remove in v4
  */
 API.prototype.addCustomParameters = util.deprecate(
   addCustomParameters, [
