@@ -655,7 +655,7 @@ describe('ErrorAggregator', function() {
     })
 
     it('should have a request URL', function() {
-      expect(params['request.uri'] = '/test_action.json')
+      expect(params.request_uri = '/test_action.json')
     })
 
     it('should parse out the first agent parameter', function() {
@@ -865,7 +865,7 @@ describe('ErrorAggregator', function() {
     })
 
     it('should have a request URL', function() {
-      expect(params['request.uri'] = '/test_action.json')
+      expect(params.request_uri = '/test_action.json')
     })
 
     it('should parse out the first agent parameter', function() {
@@ -981,7 +981,7 @@ describe('ErrorAggregator', function() {
     })
 
     it('should have a request URL', function() {
-      expect(params['request.uri'] = '/test_action.json')
+      expect(params.request_uri = '/test_action.json')
     })
 
     it('should parse out the first agent parameter', function() {
