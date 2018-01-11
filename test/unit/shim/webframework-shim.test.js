@@ -512,8 +512,8 @@ describe('WebFrameworkShim', function() {
             wrappable.getActiveSegment,
             {type: type, route: ''}
           )
-          var tx = helper.runInTransaction(agent, function(tx) {
-            return tx
+          var tx = helper.runInTransaction(agent, function(_tx) {
+            return _tx
           })
           txInfo.transaction = tx
           txInfo.segmentStack.push(tx.trace.root)
@@ -591,6 +591,26 @@ describe('WebFrameworkShim', function() {
             wrapped(req)
 
             expect(tx.nameState.getPath()).to.equal('/')
+          })
+        })
+
+        it('should pop the namestate if error is not an error', function() {
+          var wrapped = shim.recordMiddleware(function(r, obj, next) {
+            next(obj)
+          }, {route: '/foo/bar'})
+
+          var err = new Error()
+          shim.setErrorPredicate(function(obj) { return obj === err })
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+
+            wrapped(req, {}, function() {}) // Not an error!
+            expect(tx.nameState.getPath()).to.equal('/')
+
+            wrapped(req, err, function() {}) // Error!
+            expect(tx.nameState.getPath()).to.equal('/foo/bar')
           })
         })
       })
