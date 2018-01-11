@@ -29,7 +29,7 @@ describe('MessageShim', function() {
   })
 
   beforeEach(function() {
-    agent = helper.instrumentMockedAgent(null, {capture_params: true})
+    agent = helper.instrumentMockedAgent(null, {attributes: { enabled: true }})
     shim = new MessageShim(agent, 'test-module')
     shim.setLibrary(shim.RABBITMQ)
     wrappable = {
@@ -858,7 +858,8 @@ describe('MessageShim', function() {
 
       it('should add agent attributes (e.g. routing key)', function(done) {
         wrapped('my.queue', function consumer() {
-          var traceParams = shim.getSegment().transaction.trace.parameters
+          var segment = shim.getSegment()
+          var traceParams = segment.transaction.trace.attributes.get('transaction_tracer')
           expect(traceParams).to.have.property('message.routingKey', 'routing.key')
           expect(traceParams).to.have.property('message.queueName', 'my.queue')
           done()
