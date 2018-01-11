@@ -146,7 +146,7 @@ describe('TraceSegment', function() {
     var webChild
 
     beforeEach(function() {
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -205,7 +205,7 @@ describe('TraceSegment', function() {
     var webChild, trace
 
     beforeEach(function() {
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
 
       var transaction = new Transaction(agent)
       trace = transaction.trace
