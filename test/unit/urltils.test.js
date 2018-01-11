@@ -195,9 +195,9 @@ describe('NR URL utilities', function() {
     beforeEach(function() {
       config = {
         attributes: {
-          enabled: true,
-          exclude: []
-        }
+          enabled: true
+        },
+        ignored_params: []
       }
       source = {}
       dest = {}
@@ -235,8 +235,8 @@ describe('NR URL utilities', function() {
       source.secondNew = 'accounted for'
       source.password = 'hamchunx'
 
-      config.attributes.exclude.push('firstNew')
-      config.attributes.exclude.push('password')
+      config.ignored_params.push('firstNew')
+      config.ignored_params.push('password')
 
       urltils.copyParameters(config, source, dest)
 
