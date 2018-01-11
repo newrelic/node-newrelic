@@ -15,7 +15,7 @@ tap.test('Attribute include/exclude configurations', function(t) {
 function runTest(t, test) {
   // Load the agent and set the test configuration as if from the server.
   // We don't actually need the agent, so unload it immediately after.
-  var agent = helper.loadMockedAgent(null, {capture_params: true})
+  var agent = helper.loadMockedAgent(null, {attributes: {enabled: true}})
   agent.config.onConnect(test.config)
   helper.unloadAgent(agent)
 
