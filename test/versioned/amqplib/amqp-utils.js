@@ -106,8 +106,7 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
     tx.trace.root,
     'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
-  t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
-
+  t.deepEquals(consume, tx.baseSegment)
 
   var attributes = tx.trace.attributes.get('transaction_tracer')
   t.equal(
