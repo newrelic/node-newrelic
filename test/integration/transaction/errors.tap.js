@@ -12,7 +12,7 @@ test('errors in web transactions should gather the query params', function(t) {
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   http.createServer(function (req, res) {
     req.resume()
@@ -88,7 +88,7 @@ test('multiple errors in web transactions should gather the query params', funct
     'second errors in tx test'
   ]
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   http.createServer(function (req, res) {
     req.resume()
@@ -170,7 +170,7 @@ test('errors in web transactions should gather and merge custom params', functio
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   http.createServer(function (req, res) {
     req.resume()
@@ -249,7 +249,7 @@ test('multiple errors in web tx should gather and merge custom params', function
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   var errorData = [{
     name: 'first error indexOf tx test',
@@ -354,7 +354,7 @@ test('errors in background transactions are collected with correct data', functi
   var agent = helper.loadTestAgent(t)
   var api = new API(agent)
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   // Create transaction generator
   api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
