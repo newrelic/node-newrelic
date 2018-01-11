@@ -213,7 +213,7 @@ describe("the agent configuration", function() {
     })
 
     it('should pick up whether to capture attributes', function() {
-      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'yes', function(tc) {
+      idempotentEnv('NEW_RELIC_ATTRIBUTES_ENABLED', 'yes', function(tc) {
         should.exist(tc.attributes.enabled)
         expect(tc.attributes.enabled).equal(true)
       })
