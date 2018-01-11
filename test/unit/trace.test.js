@@ -76,16 +76,15 @@ describe('Trace', function() {
 
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.parameters).deep.equal({'host.displayName': 'test-value'})
+    expect(trace.attributes.get('transaction_tracer'))
+      .deep.equal({'host.displayName': 'test-value'})
   })
 
   it('should not send host display name when not set by user', function() {
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.parameters).deep.equal({})
+    expect(trace.attributes.get('transaction_tracer')).deep.equal({})
   })
-
-  it('should produce human-readable JSON of the entire trace graph')
 
   describe('when inserting segments', function() {
     var trace = null
@@ -93,7 +92,7 @@ describe('Trace', function() {
 
     beforeEach(function() {
       transaction = new Transaction(agent)
-      trace       = transaction.trace
+      trace = transaction.trace
     })
 
     it('should allow child segments on a trace', function() {
@@ -468,7 +467,7 @@ function makeTrace(agent, callback) {
   agent.config.capture_params = true
 
   var transaction = new Transaction(agent)
-  transaction.trace.parameters.request_uri = URL
+  transaction.trace.addAttribute('request_uri', URL)
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -480,8 +479,8 @@ function makeTrace(agent, callback) {
   trace.setDurationInMillis(DURATION, 0)
 
   var web = trace.root.add(URL)
+  transaction.baseSegment = web
   transaction.finalizeNameFromUri(URL, 200)
-  web.markAsWeb(URL)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
@@ -506,7 +505,7 @@ function makeTrace(agent, callback) {
         0,
         DURATION,
         'WebTransaction/NormalizedUri/*',
-        {nr_exclusive_duration_millis : 8, test : 'value'},
+        {nr_exclusive_duration_millis: 8, request_uri: '/test?test=value', test: 'value'},
         [
           // TODO: ensure that the ordering is correct WRT start time
           db.toJSON(),
