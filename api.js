@@ -322,12 +322,25 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 /**
  * Deprecated. Please use `addCustomAttributes` instead.
  */
-API.prototype.addCustomParameters = function addCustomParameters(atts) {
-  logger.warn(
-    '`API.addCustomParameters` has been deprecated. '
-    + 'Please use `API.addCustomAttributes` instead.'
+API.prototype.addCustomParameters = logger.warn(
+  addCustomParameters, [
+    '`API#addCustomParameters` has been deprecated!',
+    'Please use `API#addCustomAttributes` instead.'
+  ].join(' ')
+)
+function addCustomParameters(atts) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomAttributes'
   )
-  this.addCustomAttributes(atts)
+  metric.incrementCallCount()
+
+  for (var key in atts) {
+    if (!properties.hasOwn(atts, key)) {
+      continue
+    }
+
+    this.addCustomAttribute(key, atts[key])
+  }
 }
 
 /**
