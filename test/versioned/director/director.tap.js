@@ -36,7 +36,7 @@ tap.test("basic director test", function(t) {
   })
 
   // need to capture parameters
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//hello',
@@ -115,7 +115,7 @@ tap.test("backward recurse director test", function(t) {
     server.close(function() {})
   })
   // need to capture parameters
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//hello',
@@ -159,7 +159,7 @@ tap.test("two routers with same URI director test", function(t) {
   })
 
   // need to capture parameters
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//helloWorld',
@@ -209,7 +209,7 @@ tap.test("director async routes test", function(t) {
   })
 
   // need to capture parameters
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//:foo/:bar/:bazz',
@@ -280,7 +280,7 @@ tap.test("express w/ director subrouter test", function(t) {
   })
 
   // need to capture parameters
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//express/hello',

@@ -109,12 +109,13 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
   t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
 
 
+  var attributes = tx.trace.attributes.get('transaction_tracer')
   t.equal(
-    tx.trace.parameters['message.routingKey'], routingKey,
+    attributes['message.routingKey'], routingKey,
     'should have routing key transaction parameter'
   )
   t.equal(
-    tx.trace.parameters['message.queueName'], queue,
+    attributes['message.queueName'], queue,
     'should have queue name transaction parameter'
   )
 }

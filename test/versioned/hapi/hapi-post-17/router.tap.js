@@ -17,7 +17,7 @@ tap.test('Hapi router introspection', function(t) {
     server = utils.getServer()
 
     // disabled by default
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     done()
   })
@@ -184,6 +184,6 @@ function verifier(t, verb) {
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
     t.equal(web.partialName, 'Hapi/' + verb + '//test/{id}',
             'should have partial name for apdex')
-    t.equal(web.parameters.id, '31337', 'namer gets parameters out of route')
+    t.equal(web.parameters.id, '31337', 'namer gets attributes out of route')
   }
 }

@@ -39,7 +39,7 @@ tap.test('Hapi capture params support', function(t) {
         'httpResponseCode': '200',
         'httpResponseMessage': 'OK',
         request_uri: '/test/'
-      }, 'parameters should only have request/response params')
+      }, 'attributes should only have request/response params')
     })
 
     server.route({
@@ -80,7 +80,7 @@ tap.test('Hapi capture params support', function(t) {
         'httpResponseMessage': 'OK',
         'id': '1337',
         request_uri: '/test/1337/'
-      }, 'parameters should have id')
+      }, 'attributes should have id')
     })
 
     server.route({
@@ -121,7 +121,7 @@ tap.test('Hapi capture params support', function(t) {
         'httpResponseMessage': 'OK',
         'name': 'hapi',
         request_uri: '/test/'
-      }, 'parameters should have name')
+      }, 'attributes should have name')
     })
 
     server.route({
@@ -163,7 +163,7 @@ tap.test('Hapi capture params support', function(t) {
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
         'id': '1337'
-      }, 'parameters should have name and id')
+      }, 'attributes should have name and id')
     })
 
     server.route({

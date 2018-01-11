@@ -33,7 +33,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
         // need to capture parameters
-        agent.config.capture_params = true
+        agent.config.attributes.enabled = true
 
         // Start testing!
         t.notOk(agent.getTransaction(), "no transaction should be in play")
@@ -162,7 +162,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
   })
 
   t.test('should add `key` parameter to trace segment', function(t) {
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     helper.runInTransaction(agent, function() {
       client.set('saveme', 'foobar', function(error) {
@@ -177,7 +177,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
   })
 
   t.test('should not add `key` parameter to trace segment', function(t) {
-    agent.config.capture_params = false
+    agent.config.attributes.enabled = false
 
     helper.runInTransaction(agent, function() {
       client.set('saveme', 'foobar', function(error) {

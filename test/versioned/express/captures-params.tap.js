@@ -12,7 +12,7 @@ var TEST_HOST = 'localhost'
 var TEST_URL = 'http://' + TEST_HOST + ':'
 
 
-test("test capture_params for express", function(t) {
+test("test attributes.enabled for express", function(t) {
   t.autoend()
 
   t.test("no variables", function(t) {
@@ -33,8 +33,8 @@ test("test capture_params for express", function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -45,8 +45,9 @@ test("test capture_params for express", function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -55,9 +56,9 @@ test("test capture_params for express", function(t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           request_uri : "/user/"
-        }, 'parameters should only have request/response params')
+        }, 'attributes should only have request/response params')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -65,7 +66,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentLength" : "12",
           "response.headers.contentType" : "application/json; charset=utf-8",
           request_uri : "/user/"
-        }, 'parameters should only have request/response params')
+        }, 'attributes should only have request/response params')
       }
     })
 
@@ -102,8 +103,8 @@ test("test capture_params for express", function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -114,8 +115,9 @@ test("test capture_params for express", function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -125,9 +127,9 @@ test("test capture_params for express", function(t) {
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           request_uri : "/user/5"
-        }, 'parameters should include route params')
+        }, 'attributes should include route params')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -136,7 +138,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           request_uri : "/user/5"
-        }, 'parameters should include route params')
+        }, 'attributes should include route params')
       }
     })
 
@@ -173,8 +175,8 @@ test("test capture_params for express", function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -185,8 +187,9 @@ test("test capture_params for express", function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -196,9 +199,9 @@ test("test capture_params for express", function(t) {
           "response.headers.contentType" : "application/json; charset=utf-8",
           "name" : "bob",
           request_uri : "/user/"
-        }, 'parameters should include query params')
+        }, 'attributes should include query params')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -207,7 +210,7 @@ test("test capture_params for express", function(t) {
           "response.headers.contentType" : "application/json; charset=utf-8",
           "name" : "bob",
           request_uri : "/user/"
-        }, 'parameters should include query params')
+        }, 'attributes should include query params')
       }
     })
 
@@ -244,8 +247,8 @@ test("test capture_params for express", function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -256,8 +259,9 @@ test("test capture_params for express", function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -268,9 +272,9 @@ test("test capture_params for express", function(t) {
           "id" : "5",
           "name" : "bob",
           request_uri : "/user/5"
-        }, 'parameters should include query params')
+        }, 'attributes should include query params')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
           "response.status" : 200,
@@ -280,7 +284,7 @@ test("test capture_params for express", function(t) {
           "id" : "5",
           "name" : "bob",
           request_uri : "/user/5"
-        }, 'parameters should include query params')
+        }, 'attributes should include query params')
       }
     })
 
@@ -299,7 +303,7 @@ test("test capture_params for express", function(t) {
     })
   })
 
-  t.test("query params mask route parameters", function(t) {
+  t.test("query params mask route attributes", function(t) {
     var agent = helper.instrumentMockedAgent({
       express4: true,
       send_request_uri_attribute: true
@@ -316,8 +320,8 @@ test("test capture_params for express", function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/:id', function(req, res) {
       res.end()
@@ -337,15 +341,16 @@ test("test capture_params for express", function(t) {
         "response.headers.contentLength": 0
       }
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
-        var value = transaction.trace.parameters[key]
+        var value = attributes[key]
         if (value !== undefined) {
           expectedValues[key] = possibleExpected[key]
         }
       }
-      t.deepEqual(transaction.trace.parameters,
-          expectedValues, 'parameters should include query params')
+      t.deepEqual(attributes,
+          expectedValues, 'attributes should include query params')
       t.end()
     })
 

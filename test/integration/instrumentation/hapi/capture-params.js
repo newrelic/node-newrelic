@@ -20,7 +20,7 @@ function runTests(createServer) {
       server = createServer()
 
       // disabled by default
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
       done()
     })
 
@@ -32,8 +32,9 @@ function runTests(createServer) {
     t.test("simple case with no params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        if (transaction.trace.parameters.httpResponseMessage) {
-          t.deepEqual(transaction.trace.parameters, {
+        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        if (attributes.httpResponseMessage) {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -45,7 +46,7 @@ function runTests(createServer) {
             request_uri: "/test/"
           }, 'parameters should only have request/response params')
         } else {
-          t.deepEqual(transaction.trace.parameters, {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -84,8 +85,9 @@ function runTests(createServer) {
     t.test("case with route params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        if (transaction.trace.parameters.httpResponseMessage) {
-          t.deepEqual(transaction.trace.parameters, {
+        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        if (attributes.httpResponseMessage) {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -98,7 +100,7 @@ function runTests(createServer) {
             request_uri: "/test/1337/"
           }, 'parameters should have id')
         } else {
-          t.deepEqual(transaction.trace.parameters, {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -138,8 +140,9 @@ function runTests(createServer) {
     t.test("case with query params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        if (transaction.trace.parameters.httpResponseMessage) {
-          t.deepEqual(transaction.trace.parameters, {
+        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        if (attributes.httpResponseMessage) {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -152,7 +155,7 @@ function runTests(createServer) {
             request_uri: "/test/"
           }, 'parameters should have name')
         } else {
-          t.deepEqual(transaction.trace.parameters, {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -192,8 +195,9 @@ function runTests(createServer) {
     t.test("case with both route and query params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        if (transaction.trace.parameters.httpResponseMessage) {
-          t.deepEqual(transaction.trace.parameters, {
+        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        if (attributes.httpResponseMessage) {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
@@ -207,7 +211,7 @@ function runTests(createServer) {
             request_uri: "/test/1337/"
           }, 'parameters should have name and id')
         } else {
-          t.deepEqual(transaction.trace.parameters, {
+          t.deepEqual(attributes, {
             "request.headers.accept" : "application/json",
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",

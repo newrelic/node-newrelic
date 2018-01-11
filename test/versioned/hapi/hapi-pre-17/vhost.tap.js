@@ -15,7 +15,7 @@ tap.test('Hapi vhost support', function(t) {
     var server = utils.getServer()
 
     // disabled by default
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     t.tearDown(function() {
       server.stop(function() {
@@ -25,11 +25,12 @@ tap.test('Hapi vhost support', function(t) {
 
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      if (tx.trace.parameters.httpResponseMessage) {
-        t.ok(tx.trace.parameters.httpResponseMessage, 'OK')
-        delete tx.trace.parameters.httpResponseMessage
+      var attributes = tx.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.ok(attributes.httpResponseMessage, 'OK')
+        delete attributes.httpResponseMessage
       }
-      t.deepEqual(tx.trace.parameters, {
+      t.deepEqual(attributes, {
         'request.headers.accept': 'application/json',
         'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
@@ -38,7 +39,7 @@ tap.test('Hapi vhost support', function(t) {
         'response.headers.contentType': 'application/json; charset=utf-8',
         'httpResponseCode': '200',
         request_uri: '/test/2'
-      }, 'parameters should only have request/response params')
+      }, 'attributes should only have request/response params')
     })
 
     server.route({

@@ -18,15 +18,16 @@ tap.test('Hapi vhost support', function(t) {
     })
 
     // disabled by default
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      if (tx.trace.parameters.httpResponseMessage) {
-        t.ok(tx.trace.parameters.httpResponseMessage, 'OK')
-        delete tx.trace.parameters.httpResponseMessage
+      var attributes = tx.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.ok(attributes.httpResponseMessage, 'OK')
+        delete attributes.httpResponseMessage
       }
-      t.deepEqual(tx.trace.parameters, {
+      t.deepEqual(attributes, {
         'request.headers.accept': 'application/json',
         'request.headers.host': 'localhost:' + port,
         'request.method': 'GET',
@@ -37,7 +38,7 @@ tap.test('Hapi vhost support', function(t) {
         'id': '1337',
         'name': 'hapi',
         request_uri: '/test/1337/2'
-      }, 'parameters should have name and id')
+      }, 'attributes should have name and id')
 
       helper.unloadAgent(agent)
     })

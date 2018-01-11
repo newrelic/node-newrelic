@@ -16,7 +16,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     t.tearDown(function() {
       server.close()
@@ -26,8 +26,9 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -39,7 +40,7 @@ test("Restify capture params introspection", function(t) {
           request_uri : "/test"
         }, 'parameters should only have request/response params')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -76,7 +77,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     t.tearDown(function() {
       server.close()
@@ -86,8 +87,9 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -100,7 +102,7 @@ test("Restify capture params introspection", function(t) {
           request_uri : "/test/1337"
         }, 'parameters should have id')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -138,7 +140,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     t.tearDown(function() {
       server.close()
@@ -148,8 +150,9 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -162,7 +165,7 @@ test("Restify capture params introspection", function(t) {
           request_uri : "/test"
         }, 'parameters should have name')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -201,7 +204,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     t.tearDown(function() {
       server.close()
@@ -211,8 +214,9 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      if (transaction.trace.parameters.httpResponseMessage) {
-        t.deepEqual(transaction.trace.parameters, {
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      if (attributes.httpResponseMessage) {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
@@ -226,7 +230,7 @@ test("Restify capture params introspection", function(t) {
           request_uri : "/test/1337"
         }, 'parameters should have id and name')
       } else {
-        t.deepEqual(transaction.trace.parameters, {
+        t.deepEqual(attributes, {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
