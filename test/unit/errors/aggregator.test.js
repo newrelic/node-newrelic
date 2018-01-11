@@ -1510,8 +1510,9 @@ describe('traced errors', function() {
     })
 
     it('should merge supplied custom parameters with custom parameters on the trace', function(done) {
+      agent.config.attributes.enabled = true
       var transaction = createTransaction(agent, 500)
-      transaction.trace.custom.a = 'b'
+      transaction.trace.addCustomAttribute('a', 'b')
       var error = new Error('some error')
 
       var customParameters = { c: 'd' }
