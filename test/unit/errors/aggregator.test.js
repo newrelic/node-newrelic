@@ -44,7 +44,7 @@ describe('agent attribute format', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     trans = new Transaction(agent)
     trans.url = '/'
@@ -163,7 +163,7 @@ describe('display name', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
   })
 
   afterEach(function() {
@@ -609,16 +609,16 @@ describe('ErrorAggregator', function() {
 
     beforeEach(function() {
       agent = helper.loadMockedAgent()
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
       transaction.statusCode = 501
       transaction.url = '/'
-      transaction.trace.parameters = {
+      transaction.trace.addAttributes({
         test_param: 'a value',
         thing: true
-      }
+      })
 
       tracer.add(transaction, null)
       tracer.onTransactionFinished(transaction, agent.metrics)
@@ -667,9 +667,9 @@ describe('ErrorAggregator', function() {
     })
   })
 
-  it('with capture_params disabled', function() {
+  it('with attributes.enabled disabled', function() {
     var agent = helper.loadMockedAgent()
-    agent.config.capture_params = false
+    agent.config.attributes.enabled = false
     var tracer = agent.errors
 
     var transaction = new Transaction(agent)
@@ -687,9 +687,9 @@ describe('ErrorAggregator', function() {
     helper.unloadAgent(agent)
   })
 
-  it('with capture_params enabled and ignored_params set', function() {
+  it('with attributes.enabled and ignored_params set', function() {
     var agent = helper.loadMockedAgent()
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
     agent.config.ignored_params = ['thing']
     var tracer = agent.errors
 
@@ -814,16 +814,16 @@ describe('ErrorAggregator', function() {
 
     beforeEach(function() {
       agent = helper.loadMockedAgent()
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
       var exception = new TypeError('wanted JSON, got XML')
 
-      transaction.trace.parameters = {
+      transaction.trace.addAttributes({
         test_param: 'a value',
         thing: true
-      }
+      })
       transaction.url = '/test_action.json'
 
       tracer.add(transaction, exception)
@@ -874,7 +874,7 @@ describe('ErrorAggregator', function() {
     })
   })
 
-  describe('with a thrown string and a transaction with agent parameters', function() {
+  describe('with a thrown string and a transaction', function() {
     var agent
     var tracer
     var errorJSON
@@ -930,16 +930,16 @@ describe('ErrorAggregator', function() {
 
     beforeEach(function() {
       agent = helper.loadMockedAgent()
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
       tracer = agent.errors
 
       var transaction = new Transaction(agent)
       var exception = 'wanted JSON, got XML'
 
-      transaction.trace.parameters = {
+      transaction.trace.addAttributes({
         test_param: 'a value',
         thing: true
-      }
+      })
 
       transaction.url = '/test_action.json'
 
@@ -1929,8 +1929,9 @@ describe('error events', function() {
     })
 
     it('should merge supplied custom parameters with custom parameters on the trace', function(done) {
+      agent.config.attributes.enabled = true
       var transaction = createTransaction(agent, 500)
-      transaction.trace.custom.a = 'b'
+      transaction.trace.addCustomAttribute('a', 'b')
       var error = new Error('some error')
 
       var customParameters = { c: 'd' }
@@ -1946,8 +1947,9 @@ describe('error events', function() {
     })
 
     it('should contain agent attributes', function() {
+      agent.config.attributes.enabled = true
       var transaction = createTransaction(agent, 500)
-      transaction.trace.parameters['host.displayName'] = 'myHost'
+      transaction.trace.addAttribute('host.displayName', 'myHost')
       var error = new Error('some error')
       aggregator.add(transaction, error, { a: 'a' })
 
