@@ -8,14 +8,25 @@
         "node": ">=0.10.0"
       },
       "dependencies": {
-        "bluebird": "^2.0.0"
+        "bluebird": ">=2"
       },
       "files": [
-        "bluebird.tap.js"
+        "regressions.tap.js",
+        "segments.tap.js",
+        "transaction-state.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "dependencies": {
+        "bluebird": ">=3"
+      },
+      "files": [
+        "methods.tap.js"
       ]
     }
   ],
-  "dependencies": {
-    "bluebird": "^2.11.0"
-  }
+  "dependencies": {}
 }
