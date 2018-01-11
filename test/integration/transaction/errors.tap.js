@@ -36,7 +36,7 @@ test('errors in web transactions should gather the query params', function(t) {
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes['request.uri'], '/', 'should have stripped the params from the uri')
+    t.equal(attributes.request_uri, '/', 'should have stripped the params from the uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -119,7 +119,7 @@ test('multiple errors in web transactions should gather the query params', funct
       var attributes = error[4]
       // top level attributes
       t.equal(
-        attributes['request.uri'],
+        attributes.request_uri,
         '/testing',
         'should have stripped the params from the uri'
       )
@@ -206,7 +206,7 @@ test('errors in web transactions should gather and merge custom params', functio
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes['request.uri'], '/', 'should have stripped the params from the uri')
+    t.equal(attributes.request_uri, '/', 'should have stripped the params from the uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -310,7 +310,7 @@ test('multiple errors in web tx should gather and merge custom params', function
 
       var attributes = error[4]
       // top level attributes
-      t.equal(attributes['request.uri'], '/', 'should have stripped the params from the uri')
+      t.equal(attributes.request_uri, '/', 'should have stripped the params from the uri')
       t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
@@ -370,7 +370,7 @@ test('errors in background transactions are collected with correct data', functi
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes['request.uri'], '', 'should have an empty uri')
+    t.equal(attributes.request_uri, '', 'should have an empty uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes

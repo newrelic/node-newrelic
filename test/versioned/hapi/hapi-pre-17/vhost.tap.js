@@ -37,7 +37,7 @@ tap.test('Hapi vhost support', function(t) {
         'response.headers.contentLength': 15,
         'response.headers.contentType': 'application/json; charset=utf-8',
         'httpResponseCode': '200',
-        'request.uri': '/test/2'
+        request_uri: '/test/2'
       }, 'parameters should only have request/response params')
     })
 

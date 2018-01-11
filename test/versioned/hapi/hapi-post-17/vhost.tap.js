@@ -36,7 +36,7 @@ tap.test('Hapi vhost support', function(t) {
         'httpResponseCode': '200',
         'id': '1337',
         'name': 'hapi',
-        'request.uri': '/test/1337/2'
+        request_uri: '/test/1337/2'
       }, 'parameters should have name and id')
 
       helper.unloadAgent(agent)
