@@ -215,7 +215,7 @@ API.prototype.addCustomParameter = util.deprecate(
 )
 function addCustomParameter(key, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addCustomAttribute'
+    NAMES.SUPPORTABILITY.API + '/addCustomParameter'
   )
   metric.incrementCallCount()
 
@@ -322,7 +322,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 /**
  * Deprecated. Please use `addCustomAttributes` instead.
  */
-API.prototype.addCustomParameters = logger.warn(
+API.prototype.addCustomParameters = util.deprecate(
   addCustomParameters, [
     '`API#addCustomParameters` has been deprecated!',
     'Please use `API#addCustomAttributes` instead.'
@@ -330,7 +330,7 @@ API.prototype.addCustomParameters = logger.warn(
 )
 function addCustomParameters(atts) {
   var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addCustomAttributes'
+    NAMES.SUPPORTABILITY.API + '/addCustomParameters'
   )
   metric.incrementCallCount()
 
