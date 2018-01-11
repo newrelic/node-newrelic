@@ -10,7 +10,7 @@ var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
 
 
-describe("the New Relic agent API", function() {
+describe('the New Relic agent API', function() {
   var URL = '/test/path/31337'
   var NAME = 'WebTransaction/Uri/test/path/31337'
   var agent
@@ -153,7 +153,7 @@ describe("the New Relic agent API", function() {
     })
 
     it("does not blow up when end is called without a callback", function() {
-      helper.runInTransaction(agent, function(txn) {
+      helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
         handle.end()
       })
@@ -161,75 +161,81 @@ describe("the New Relic agent API", function() {
   })
 
 
-  it("exports a function for adding multiple custom parameters at once", function() {
-    should.exist(api.addCustomParameters)
-    expect(api.addCustomParameters).a('function')
+  it("exports a function for adding multiple custom attributes at once", function() {
+    should.exist(api.addCustomAttributes)
+    expect(api.addCustomAttributes).a('function')
   })
 
-  describe("when adding custom parameters", function() {
-    it("should properly add custom parameters", function() {
+  describe("when adding custom attributes", function() {
+    it('should properly add custom attributes', function() {
       helper.runInTransaction(agent, function(transaction) {
-        api.addCustomParameter('test', 1)
-        expect(transaction.trace.custom['test']).to.equal(1)
+        api.addCustomAttribute('test', 1)
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.test).to.equal(1)
         transaction.end()
       })
     })
 
-    it("should properly add mutliple custom parameters", function() {
+    it('should properly add multiple custom attributes', function() {
       helper.runInTransaction(agent, function(transaction) {
-        api.addCustomParameters({
-          'test': 1,
-          'second': 2
+        api.addCustomAttributes({
+          one: 1,
+          two: 2
         })
-        expect(transaction.trace.custom['test']).to.equal(1)
-        expect(transaction.trace.custom['second']).to.equal(2)
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.one).to.equal(1)
+        expect(attributes.two).to.equal(2)
         transaction.end()
       })
     })
 
-    it("should not add custom parameters when disabled", function() {
+    it('should not add custom attributes when disabled', function() {
       helper.runInTransaction(agent, function(transaction) {
-        agent.config.api.custom_parameters_enabled = false
-        api.addCustomParameter('test', 1)
-        expect(transaction.trace.custom['test']).to.equal(undefined)
-        agent.config.api.custom_parameters_enabled = true
+        agent.config.api.custom_attributes_enabled = false
+        api.addCustomAttribute('test', 1)
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.test).to.equal(undefined)
+        agent.config.api.custom_attributes_enabled = true
         transaction.end()
       })
     })
 
-    it("should not add mutliple custom parameters when disabled", function() {
+    it('should not add multiple custom attributes when disabled', function() {
       helper.runInTransaction(agent, function(transaction) {
-        agent.config.api.custom_parameters_enabled = false
-        api.addCustomParameters({
-          'test': 1,
-          'second': 2
+        agent.config.api.custom_attributes_enabled = false
+        api.addCustomAttributes({
+          one: 1,
+          two: 2
         })
-        expect(transaction.trace.custom['test']).to.equal(undefined)
-        expect(transaction.trace.custom['second']).to.equal(undefined)
-        agent.config.api.custom_parameters_enabled = true
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.one).to.equal(undefined)
+        expect(attributes.two).to.equal(undefined)
+        agent.config.api.custom_attributes_enabled = true
         transaction.end()
       })
     })
 
-    it("should not add custom parameters when in high security mode", function() {
+    it('should not add custom attributes in high security mode', function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.high_security = true
-        api.addCustomParameter('test', 1)
-        expect(transaction.trace.custom['test']).to.equal(undefined)
+        api.addCustomAttribute('test', 1)
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.test).to.equal(undefined)
         agent.config.high_security = false
         transaction.end()
       })
     })
 
-    it("should not add multiple custom parameters when in high security mode", function() {
+    it('should not add multiple custom attributes in high security mode', function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.high_security = true
-        api.addCustomParameters({
-          'test': 1,
-          'second': 2
+        api.addCustomAttributes({
+          one: 1,
+          two: 2
         })
-        expect(transaction.trace.custom['test']).to.equal(undefined)
-        expect(transaction.trace.custom['second']).to.equal(undefined)
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.one).to.equal(undefined)
+        expect(attributes.two).to.equal(undefined)
         agent.config.high_security = false
         transaction.end()
       })
@@ -643,18 +649,18 @@ describe("the New Relic agent API", function() {
     })
   })
 
-  describe("when adding a custom parameter", function() {
-    describe("inside a transaction", function() {
-      it("should have set the value properly", function(done) {
+  describe('when adding a custom attribute', function() {
+    describe('inside a transaction', function() {
+      it('should have set the value properly', function(done) {
         agent.on('transactionFinished', function(transaction) {
-          var parameters = transaction.trace.custom
-          expect(parameters['TestName']).equal('TestValue')
+          var attributes = transaction.trace.custom.get('transaction_tracer')
+          expect(attributes.TestName).equal('TestValue')
 
           done()
         })
 
         helper.runInTransaction(agent, function(transaction) {
-          api.addCustomParameter('TestName', 'TestValue')
+          api.addCustomAttribute('TestName', 'TestValue')
 
           transaction.end()
         })
@@ -662,53 +668,53 @@ describe("the New Relic agent API", function() {
 
       it("should keep the most-recently seen value", function(done) {
         agent.on('transactionFinished', function(transaction) {
-          var parameters = transaction.trace.custom
-          expect(parameters['TestName']).equal('Third')
+          var attributes = transaction.trace.custom.get('transaction_tracer')
+          expect(attributes.TestName).equal('Third')
 
           done()
         })
 
         helper.runInTransaction(agent, function(transaction) {
-          api.addCustomParameter('TestName', 'TestValue')
-          api.addCustomParameter('TestName', 'Second')
-          api.addCustomParameter('TestName', 'Third')
+          api.addCustomAttribute('TestName', 'TestValue')
+          api.addCustomAttribute('TestName', 'Second')
+          api.addCustomAttribute('TestName', 'Third')
 
           transaction.end()
         })
       })
 
-      it("should roll with it if custom params are gone", function() {
+      it('should roll with it if custom attributes are gone', function() {
         helper.runInTransaction(agent, function(transaction) {
           var trace = transaction.trace
           delete trace.custom
           expect(function() {
-            api.addCustomParameter('TestName', 'TestValue')
+            api.addCustomAttribute('TestName', 'TestValue')
           }).not.throws()
         })
       })
 
-      it("shouldn't allow setting of ignored parameters", function(done) {
+      it('should not allow setting of ignored attributes', function(done) {
         agent.config.ignored_params.push('ignore_me')
 
         agent.on('transactionFinished', function(transaction) {
-          var parameters = transaction.trace.custom
-          should.not.exist(parameters['ignore_me'])
+          var attributes = transaction.trace.custom.get('transaction_tracer')
+          should.not.exist(attributes.ignore_me)
 
           done()
         })
 
         helper.runInTransaction(agent, function(transaction) {
-          api.addCustomParameter('ignore_me', 'set')
+          api.addCustomAttribute('ignore_me', 'set')
 
           transaction.end()
         })
       })
     })
 
-    describe("outside a transaction", function() {
+    describe('outside a transaction', function() {
       it("shouldn't blow up", function() {
         expect(function() {
-          api.addCustomParameter('TestName', 'TestValue')
+          api.addCustomAttribute('TestName', 'TestValue')
         }).not.throws()
       })
     })
