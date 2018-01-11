@@ -72,6 +72,7 @@ describe('Trace', function() {
   })
 
   it('should send host display name when set by user', function() {
+    agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
 
     var trace = new Trace(new Transaction(agent))
@@ -464,7 +465,7 @@ describe('Trace', function() {
 function makeTrace(agent, callback) {
   var DURATION = 33
   var URL = '/test?test=value'
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   var transaction = new Transaction(agent)
   transaction.trace.addAttribute('request_uri', URL)
