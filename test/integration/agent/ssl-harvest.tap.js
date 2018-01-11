@@ -5,7 +5,7 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 
 
-test("Agent should send a whole harvest to New Relic", {timeout: 5000}, function(t) {
+test("Agent should send a whole harvest to New Relic", {timeout: 10000}, function(t) {
   var config = configurator.initialize({
         'ssl': true,
         'app_name': 'node.js Tests',

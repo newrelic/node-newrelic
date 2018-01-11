@@ -422,7 +422,8 @@ describe('TraceSegment', function() {
     })
 
     it('should not cause a stack overflow', function() {
-      this.timeout(30000)
+      // TODO: After deprecating Node <4 decrease this timeout to 30 seconds again.
+      this.timeout(60000)
       var parent = segment
       for (var i = 0; i < 9000; ++i) {
         var child = new TraceSegment(trans, 'Child ' + i)

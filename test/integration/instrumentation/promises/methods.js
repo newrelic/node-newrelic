@@ -9,8 +9,9 @@ var tasks = []
 var interval = null
 
 
-module.exports = function(t, library) {
-  var ptap = new PromiseTap(t, require(library))
+module.exports = function(t, library, loadLibrary) {
+  loadLibrary = loadLibrary || function() { return require(library) }
+  var ptap = new PromiseTap(t, loadLibrary())
 
   t.beforeEach(function(done) {
     if (interval) {
@@ -217,8 +218,8 @@ module.exports = function(t, library) {
 
     t.test('usage', function(t) {
       testPromiseClassMethod(t, 3, function(Promise, name) {
-        var DELAY = 100
-        var MARGIN = 20
+        var DELAY = 500
+        var MARGIN = 100
         var start = Date.now()
         return Promise.delay(DELAY, name).then(function(result) {
           var duration = Date.now() - start
@@ -291,7 +292,7 @@ module.exports = function(t, library) {
 
   ptap.test('Promise.getNewLibraryCopy', function(t) {
     helper.loadTestAgent(t)
-    var Promise = require(library)
+    var Promise = loadLibrary()
     var Promise2 = Promise.getNewLibraryCopy()
 
     t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
@@ -303,7 +304,7 @@ module.exports = function(t, library) {
 
   ptap.test('Promise.is', function(t) {
     helper.loadTestAgent(t)
-    var Promise = require(library)
+    var Promise = loadLibrary()
 
     var p = new Promise(function(resolve) { setImmediate(resolve) })
     t.ok(Promise.is(p), 'should not break promise identification (new)')
@@ -432,7 +433,7 @@ module.exports = function(t, library) {
 
   ptap.test('Promise.noConflict', function(t) {
     helper.loadTestAgent(t)
-    var Promise = require(library)
+    var Promise = loadLibrary()
     var Promise2 = Promise.noConflict()
 
     t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
@@ -584,7 +585,7 @@ module.exports = function(t, library) {
         return Promise.some([
           Promise.resolve(name + 'resolved'),
           Promise.reject(name + 'rejection!'),
-          Promise.delay(10, name + 'delayed more'),
+          Promise.delay(100, name + 'delayed more'),
           Promise.delay(5, name + 'delayed')
         ], 2).then(function(result) {
           t.deepEqual(
@@ -772,8 +773,8 @@ module.exports = function(t, library) {
 
     t.test('usage', function(t) {
       testPromiseInstanceMethod(t, 3, function delayTest(Promise, p, name) {
-        var DELAY = 50
-        var MARGIN = 10
+        var DELAY = 500
+        var MARGIN = 100
         var start = Date.now()
         return p.return(name).delay(DELAY).then(function(result) {
           var duration = Date.now() - start
@@ -1149,7 +1150,7 @@ module.exports = function(t, library) {
         return Promise.resolve([
           Promise.resolve(name + 'resolved'),
           Promise.reject(name + 'rejection!'),
-          Promise.delay(10, name + 'delayed more'),
+          Promise.delay(100, name + 'delayed more'),
           Promise.delay(5, name + 'delayed')
         ]).some(2)
       })
@@ -1161,7 +1162,7 @@ module.exports = function(t, library) {
           return [
             Promise.resolve(name + 'resolved'),
             Promise.reject(name + 'rejection!'),
-            Promise.delay(10, name + 'delayed more'),
+            Promise.delay(100, name + 'delayed more'),
             Promise.delay(5, name + 'delayed')
           ]
         }).some(2).then(function(result) {
@@ -1634,7 +1635,7 @@ module.exports = function(t, library) {
 
   function testPromiseInstanceMethod(t, plan, testFunc) {
     var agent = helper.loadTestAgent(t)
-    var Promise = require(library)
+    var Promise = loadLibrary()
 
     _testPromiseMethod(t, plan, agent, function(name) {
       var p = Promise.resolve([1, 2, 3, name])
@@ -1644,7 +1645,7 @@ module.exports = function(t, library) {
 
   function testPromiseClassMethod(t, plan, testFunc) {
     var agent = helper.loadTestAgent(t)
-    var Promise = require(library)
+    var Promise = loadLibrary()
 
     _testPromiseMethod(t, plan, agent, function(name) {
       return testFunc(Promise, name)
@@ -1653,7 +1654,7 @@ module.exports = function(t, library) {
 
   function testPromiseContext(t, factory) {
     var agent = helper.loadTestAgent(t)
-    var Promise = require(library)
+    var Promise = loadLibrary()
 
     _testPromiseContext(t, agent, factory.bind(null, Promise))
   }
