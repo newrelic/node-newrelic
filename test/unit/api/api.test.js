@@ -701,8 +701,8 @@ describe('the New Relic agent API', function() {
         })
       })
 
-      it('should not allow setting of ignored attributes', function(done) {
-        agent.config.ignored_params.push('ignore_me')
+      it('should not allow setting of excluded attributes', function(done) {
+        agent.config.attributes.exclude.push('ignore_me')
 
         agent.on('transactionFinished', function(transaction) {
           var attributes = transaction.trace.custom.get('transaction_tracer')
@@ -967,8 +967,8 @@ describe('the New Relic agent API', function() {
 
     it("should notice custom parameters associated with an error", function(done) {
       expect(agent.errors.errors.length).equal(0)
-      var orig = agent.config.ignored_params
-      agent.config.ignored_params = ['ignored']
+      var orig = agent.config.attributes.exclude
+      agent.config.attributes.exclude = ['ignored']
 
       agent.on('transactionFinished', function(transaction) {
         expect(agent.errors.errors.length).equal(1)
@@ -981,7 +981,7 @@ describe('the New Relic agent API', function() {
 
         expect(transaction.ignore).equal(false)
 
-        agent.config.ignored_params = orig
+        agent.config.attributes.exclude = orig
         done()
       })
 
