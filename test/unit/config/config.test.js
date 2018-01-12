@@ -629,7 +629,7 @@ describe("the agent configuration", function() {
     })
 
     it("should enable browser monitoring attributes", function() {
-      expect(configuration.browser_monitoring.attributes.enabled).equal(true)
+      expect(configuration.browser_monitoring.attributes.enabled).equal(false)
     })
   })
 

@@ -221,7 +221,7 @@ describe('TraceSegment', function() {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      webChild.parameters = params
+      transaction.trace.addAttributes(params)
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 

@@ -1706,6 +1706,7 @@ describe('Shim', function() {
           'port_path_or_id',
           'database_name'
         ]
+        agent.config.emit('attributes.exclude')
       })
 
       describe('and attributes.enabled is true', function() {
