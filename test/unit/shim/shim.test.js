@@ -1700,7 +1700,7 @@ describe('Shim', function() {
           ignore_me: 'baz'
         }
 
-        agent.config.ignored_params = [
+        agent.config.attributes.exclude = [
           'ignore_me',
           'host',
           'port_path_or_id',
@@ -1722,12 +1722,12 @@ describe('Shim', function() {
           expect(segment.parameters).to.have.property('fiz', 'bang')
         })
 
-        it('should respect `ignored_params`', function() {
+        it('should not be affected by `attributes.exclude`', function() {
           expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.not.have.property('ignore_me')
+          expect(segment.parameters).to.have.property('ignore_me')
         })
 
-        it('should allow datastore instance attrs despite `ignored_params`', function() {
+        it('allows datastore instance attrs despite `attributes.exclude`', function() {
           expect(segment).to.have.property('parameters')
           expect(segment.parameters).to.have.property('host', 'my awesome host')
           expect(segment.parameters).to.have.property('port_path_or_id', 1234)
@@ -1743,11 +1743,11 @@ describe('Shim', function() {
           })
         })
 
-        it('should not copy parameters provided into `segment.parameters`', function() {
+        it('should still copy parameters provided into `segment.parameters`', function() {
           expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.not.have.property('foo')
-          expect(segment.parameters).to.not.have.property('fiz')
-          expect(segment.parameters).to.not.have.property('ignore_me')
+          expect(segment.parameters).to.have.property('foo')
+          expect(segment.parameters).to.have.property('fiz')
+          expect(segment.parameters).to.have.property('ignore_me')
         })
 
         it('should still allow datastore instance attrs', function() {

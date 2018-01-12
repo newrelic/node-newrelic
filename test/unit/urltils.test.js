@@ -208,11 +208,11 @@ describe('NR URL utilities', function() {
     })
 
     it('should not throw on missing source', function() {
-      expect(function() { urltils.copyParameters(config, null, dest) }).not.throws()
+      expect(function() { urltils.copyParameters(null, dest) }).not.throws()
     })
 
     it('should not throw on missing destination', function() {
-      expect(function() { urltils.copyParameters(config, source, null) }).not.throws()
+      expect(function() { urltils.copyParameters(source, null) }).not.throws()
     })
 
     it('should copy parameters from source to destination', function() {
@@ -220,31 +220,12 @@ describe('NR URL utilities', function() {
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
 
-      expect(function() { urltils.copyParameters(config, source, dest) }).not.throws()
+      expect(function() { urltils.copyParameters(source, dest) }).not.throws()
 
       expect(dest).eql({
         existing  : 'here',
         firstNew  : 'present',
         secondNew : 'accounted for'
-      })
-    })
-
-    it('should not copy ignored parameters', function() {
-      dest.existing = 'here'
-      source.firstNew = 'present'
-      source.secondNew = 'accounted for'
-      source.password = 'hamchunx'
-
-      config.ignored_params.push('firstNew')
-      config.ignored_params.push('password')
-
-      urltils.copyParameters(config, source, dest)
-
-      expect(dest).eql({
-        existing  : 'here',
-        // NOPE: firstNew  : 'present',
-        secondNew : 'accounted for'
-        // NOPE: password : '******'
       })
     })
 
@@ -254,7 +235,7 @@ describe('NR URL utilities', function() {
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
 
-      urltils.copyParameters(config, source, dest)
+      urltils.copyParameters(source, dest)
 
       expect(dest).eql({
         existing  : 'here',
@@ -268,7 +249,7 @@ describe('NR URL utilities', function() {
       dest.firstNew = null
       source.firstNew = 'present'
 
-      urltils.copyParameters(config, source, dest)
+      urltils.copyParameters(source, dest)
 
       expect(dest).eql({
         existing  : 'here',
@@ -281,7 +262,7 @@ describe('NR URL utilities', function() {
       dest.firstNew = undefined
       source.firstNew = 'present'
 
-      urltils.copyParameters(config, source, dest)
+      urltils.copyParameters(source, dest)
 
       expect(dest).eql({
         existing  : 'here',

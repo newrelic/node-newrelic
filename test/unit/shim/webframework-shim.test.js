@@ -1125,12 +1125,13 @@ describe('WebFrameworkShim', function() {
       })
     })
 
-    it('should obey the attributes.enabled configuration', function() {
+    it('should not obey the attributes.enabled configuration', function() {
       agent.config.attributes.enabled = false
       var segment = {parameters: {foo: 'other', bang: 'bam'}}
       shim.getSegment = function() { return segment }
       shim.captureUrlParams({foo: 'bar', biz: 'baz'})
-      expect(segment).property('parameters').to.deep.equal({foo: 'other', bang: 'bam'})
+      expect(segment).property('parameters')
+        .to.deep.equal({foo: 'other', biz: 'baz', bang: 'bam'})
     })
 
     it('should not throw when out of a transaction', function() {

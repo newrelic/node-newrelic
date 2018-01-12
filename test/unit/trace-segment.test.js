@@ -304,12 +304,12 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with attributes.enabled and ignored_params set', function() {
+  describe('with attributes.enabled set', function() {
     var webChild
 
     beforeEach(function() {
       agent.config.attributes.enabled = true
-      agent.config.ignored_params = ['test1', 'test4']
+      agent.config.attributes.exclude = ['test1', 'test4']
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -334,18 +334,8 @@ describe('TraceSegment', function() {
       should.exist(webChild.parameters)
     })
 
-    it('should have filtered the parameters that were passed in the query string',
-       function() {
-      should.not.exist(webChild.parameters.test1)
-      expect(webChild.parameters.test3).equal('50')
-    })
-
     it('should set bare parameters to true (as in present)', function() {
       expect(webChild.parameters.test2).equal(true)
-    })
-
-    it('should not have filtered parameter', function() {
-      should.not.exist(webChild.parameters.test4)
     })
 
     it('should serialize the segment with the parameters', function() {
@@ -355,8 +345,10 @@ describe('TraceSegment', function() {
         'WebTransaction/NormalizedUri/*',
         {
           nr_exclusive_duration_millis : 1,
-          test2 : true,
-          test3 : '50'
+          test1: 'value1',
+          test2: true,
+          test3: '50',
+          test4: ''
         },
         []
       ]

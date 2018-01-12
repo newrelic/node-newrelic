@@ -7,29 +7,29 @@ var should = chai.should()
 var helper = require('../../lib/agent_helper')
 var DatastoreShim = require('../../../lib/shim/datastore-shim')
 
-describe('agent instrumentation of MongoDB', function () {
+describe('agent instrumentation of MongoDB', function() {
   var shim
 
-  describe('shouldn\'t cause bootstrapping to fail', function () {
+  describe('shouldn\'t cause bootstrapping to fail', function() {
     var agent
     var initialize
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent()
       shim = new DatastoreShim(agent, 'mongodb')
       initialize = require('../../../lib/instrumentation/mongodb')
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('when passed no module', function () {
-      expect(function () { initialize(agent, null, 'mongodb', shim); }).not.throws()
+    it('when passed no module', function() {
+      expect(function() { initialize(agent, null, 'mongodb', shim) }).not.throws()
     })
 
-    it('when passed an empty module', function () {
-      expect(function () { initialize(agent, {}, 'mongodb', shim); }).not.throws()
+    it('when passed an empty module', function() {
+      expect(function() { initialize(agent, {}, 'mongodb', shim) }).not.throws()
     })
   })
 
@@ -118,7 +118,7 @@ describe('agent instrumentation of MongoDB', function () {
       agent = helper.loadMockedAgent()
       shim = new DatastoreShim(agent, 'mongodb')
       agent.config.capture_params = true
-      agent.config.ignored_params = ['other']
+      agent.config.attributes.exclude = ['other']
 
       initialize(agent, mockodb, 'mockodb', shim)
 
@@ -156,7 +156,7 @@ describe('agent instrumentation of MongoDB', function () {
     })
   })
 
-  describe('with child MongoDB operations', function () {
+  describe('with child MongoDB operations', function() {
     var agent
     var transaction
     var collection
@@ -164,8 +164,8 @@ describe('agent instrumentation of MongoDB', function () {
     var removed
 
 
-    before(function (done) {
-      function StubCollection (name) {
+    before(function(done) {
+      function StubCollection(name) {
         this.collectionName = name
       }
 
@@ -191,9 +191,9 @@ describe('agent instrumentation of MongoDB', function () {
 
       collection = new mockodb.Collection('test')
 
-      helper.runInTransaction(agent, function (trans) {
+      helper.runInTransaction(agent, function(trans) {
         transaction = trans
-        collection.findAndRemove({val : 'hi'}, {w : 333}, function (err, rem) {
+        collection.findAndRemove({val : 'hi'}, {w : 333}, function(err, rem) {
           error = err
           removed = rem
 
@@ -202,32 +202,32 @@ describe('agent instrumentation of MongoDB', function () {
       })
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should have left the query terms alone', function () {
+    it('should have left the query terms alone', function() {
       expect(collection.terms).eql({val : 'hi'})
     })
 
-    it('should have left the query options alone', function () {
+    it('should have left the query options alone', function() {
       expect(collection.options).eql({w : 333})
     })
 
-    it('shouldn\'t have messed with the error parameter', function () {
+    it('shouldn\'t have messed with the error parameter', function() {
       should.not.exist(error)
     })
 
-    it('shouldn\'t have messed with the result parameter', function () {
+    it('shouldn\'t have messed with the result parameter', function() {
       expect(removed).equal(1)
     })
 
-    it('should have only one segment (the parent) under the trace root', function () {
+    it('should have only one segment (the parent) under the trace root', function() {
       var root = transaction.trace.root
       expect(root.children.length).equal(1)
     })
 
-    it('should have recorded the findAndRemove operation', function () {
+    it('should have recorded the findAndRemove operation', function() {
       var root   = transaction.trace.root
       var parent = root.children[0]
 
@@ -235,14 +235,14 @@ describe('agent instrumentation of MongoDB', function () {
       expect(parent.name).equal('Datastore/statement/MongoDB/test/findAndRemove')
     })
 
-    it('should have no child segments under the parent', function () {
+    it('should have no child segments under the parent', function() {
       var root   = transaction.trace.root
       var parent = root.children[0]
 
       expect(parent.children.length).equal(1)
     })
 
-    it('its callback segment should have no child segments', function () {
+    it('its callback segment should have no child segments', function() {
       var root = transaction.trace.root
       var parent = root.children[0]
       var cb = parent.children[0]
@@ -250,19 +250,19 @@ describe('agent instrumentation of MongoDB', function () {
       expect(cb.children.length).equal(0)
     })
 
-    it('should have gathered metrics', function () {
+    it('should have gathered metrics', function() {
       var metrics = transaction.metrics
       should.exist(metrics)
     })
 
-    it('should have recorded only one database call', function () {
+    it('should have recorded only one database call', function() {
       var metrics = transaction.metrics
       transaction.end(function() {
         expect(metrics.getMetric('Datastore/all').callCount).equal(1)
       })
     })
 
-    it('should have that call be the findAndRemove', function () {
+    it('should have that call be the findAndRemove', function() {
       var metrics = transaction.metrics
       var metric  = metrics.getMetric('Datastore/statement/MongoDB/test/findAndRemove')
 
@@ -272,16 +272,16 @@ describe('agent instrumentation of MongoDB', function () {
     })
   })
 
-  describe('with Grid operations', function(){
+  describe('with Grid operations', function() {
     var agent
     var segment
 
-    before(function (done) {
-      function StubGrid () {}
+    before(function(done) {
+      function StubGrid() {}
 
       StubGrid.prototype.get = function get(id, callback) {
         this.id = id
-        process.nextTick(function cb_nextTick() { callback(null, 1); })
+        process.nextTick(function cb_nextTick() { callback(null, 1) })
       }
 
       var mockodb    = {Grid : StubGrid}
@@ -294,8 +294,8 @@ describe('agent instrumentation of MongoDB', function () {
 
       initialize(agent, mockodb, 'mockodb', shim)
 
-      helper.runInTransaction(agent, function (trans) {
-        grid.get(123, function () {
+      helper.runInTransaction(agent, function(trans) {
+        grid.get(123, function() {
           process.nextTick(function cb_nextTick() {
             // need to generate the trace so exclusive times are added to segment parameters
             trans.trace.generateJSON(function cb_generateJSON() {
@@ -307,22 +307,22 @@ describe('agent instrumentation of MongoDB', function () {
       })
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should have correct segment name', function () {
+    it('should have correct segment name', function() {
       expect(segment.name).equals('Datastore/operation/MongoDB/GridFS-get')
     })
   })
 
-  describe('when using APM API', function(){
+  describe('when using APM API', function() {
     var agent
     var grid
     var collection
     var db
 
-    before(function (done) {
+    before(function(done) {
       var instrumentations = [
         {
           name: "Gridstore",
@@ -440,13 +440,13 @@ describe('agent instrumentation of MongoDB', function () {
       done()
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
     it('should have the correct trace for Db ops', function() {
-      helper.runInTransaction(agent, function (trans) {
-        db.command({ping:1}, null, function (err, result) {
+      helper.runInTransaction(agent, function(trans) {
+        db.command({ping:1}, null, function(err, result) {
           process.nextTick(function cb_nextTick() {
             // need to generate the trace so exclusive times are added to segment parameters
             trans.trace.generateJSON(function cb_generateJSON() {
@@ -461,8 +461,8 @@ describe('agent instrumentation of MongoDB', function () {
     })
 
     it('should have the correct trace for Grid ops', function() {
-      helper.runInTransaction(agent, function (trans) {
-        grid.getc(function (err, chr) {
+      helper.runInTransaction(agent, function(trans) {
+        grid.getc(function(err, chr) {
           process.nextTick(function cb_nextTick() {
             // need to generate the trace so exclusive times are added to segment parameters
             trans.trace.generateJSON(function cb_generateJSON() {
@@ -477,9 +477,9 @@ describe('agent instrumentation of MongoDB', function () {
     })
 
     it('should have the correct trace for Collection and Cursor querues', function() {
-      helper.runInTransaction(agent, function (trans) {
+      helper.runInTransaction(agent, function(trans) {
         var cursor = collection.find()
-        cursor.each(function (err, item) {
+        cursor.each(function(err, item) {
           process.nextTick(function cb_nextTick() {
             // need to generate the trace so exclusive times are added to segment parameters
             trans.trace.generateJSON(function cb_generateJSON() {
