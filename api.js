@@ -292,7 +292,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
   var trace = transaction.trace
   if (!trace.custom) {
     return logger.warn(
-      'Couldn\'t add parameter %s to nonexistent custom attributes.',
+      'Could not add attribute %s to nonexistent custom attributes.',
       key
     )
   }
