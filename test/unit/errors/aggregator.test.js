@@ -687,10 +687,13 @@ describe('ErrorAggregator', function() {
     helper.unloadAgent(agent)
   })
 
-  it('with attributes.enabled and ignored_params set', function() {
-    var agent = helper.loadMockedAgent()
-    agent.config.attributes.enabled = true
-    agent.config.ignored_params = ['thing']
+  it('with attributes.enabled and attributes.exclude set', function() {
+    var agent = helper.loadMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        exclude: ['thing']
+      }
+    })
     var tracer = agent.errors
 
     var transaction = new Transaction(agent)
