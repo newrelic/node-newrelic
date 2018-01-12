@@ -11,7 +11,7 @@ test("Uncaught exceptions", function(t) {
   var timer = setTimeout(function() {
     t.fail('child did not exit')
     proc.kill()
-  }, 1000)
+  }, 10000)
 
   proc.on('exit', function() {
     clearTimeout(timer)
@@ -28,7 +28,7 @@ test("Caught uncaught exceptions", function(t) {
   var timer = setTimeout(function() {
     t.fail('child hung')
     proc.kill()
-  }, 1000)
+  }, 10000)
 
   proc.on('message', function(code) {
     t.equal(parseInt(code, 10), theRightStuff, 'should have the correct code')

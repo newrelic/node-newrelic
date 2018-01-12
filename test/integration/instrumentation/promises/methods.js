@@ -1333,12 +1333,12 @@ module.exports = function(t, library, loadLibrary) {
           start = Date.now()
         }, function(err) {
           t.error(err, name + 'should not have timed out')
-        }).delay(1000, 'never see me').timeout(50, name + 'timed out').then(function() {
+        }).delay(1000, 'never see me').timeout(500, name + 'timed out').then(function() {
           t.fail(name + 'should have timed out long delay')
         }, function(err) {
           var duration = Date.now() - start
-          t.ok(duration < 60, name + 'should not timeout slower than expected')
-          t.ok(duration > 40, name + 'should not timeout faster than expected')
+          t.ok(duration < 600, name + 'should not timeout slower than expected')
+          t.ok(duration > 400, name + 'should not timeout faster than expected')
           t.equal(err.message, name + 'timed out', name + 'should have expected error')
         })
       })
