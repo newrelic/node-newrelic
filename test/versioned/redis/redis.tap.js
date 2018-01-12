@@ -176,7 +176,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
-  t.test('should not add `key` parameter to trace segment', function(t) {
+  t.test('should still add `key` parameter to trace segment', function(t) {
     agent.config.attributes.enabled = false
 
     helper.runInTransaction(agent, function() {
@@ -185,7 +185,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         t.error(error)
 
         var segment = agent.tracer.getSegment().parent
-        t.equals(segment.parameters.key, undefined, 'should not have key as parameter')
+        t.equals(segment.parameters.key, '"saveme"', 'should still have key as parameter')
         t.end()
       })
     })
