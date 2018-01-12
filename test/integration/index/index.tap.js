@@ -3,7 +3,7 @@
 var test = require('tap').test
 
 
-test('loading the application via index.js', {timeout: 5000}, function(t) {
+test('loading the application via index.js', {timeout: 15000}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'

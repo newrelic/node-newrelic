@@ -26,7 +26,7 @@ collectionTest('aggregate', function aggregateTest(t, collection, verify) {
   )
 
   function onResult(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.length, 3)
     t.deepEqual(data, [{value: 5}, {value: 15}, {value: 25}])
     verify(null, [
@@ -46,7 +46,7 @@ collectionTest('bulkWrite', function bulkWriteTest(t, collection, verify) {
   )
 
   function onWrite(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.insertedCount, 1)
     t.equal(data.deletedCount, 30)
     verify(null, [
@@ -60,7 +60,7 @@ collectionTest('bulkWrite', function bulkWriteTest(t, collection, verify) {
 
 collectionTest('count', function countTest(t, collection, verify) {
   collection.count(function onCount(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.equal(data, 30)
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/count',
@@ -74,7 +74,7 @@ collectionTest('count', function countTest(t, collection, verify) {
 
 collectionTest('createIndex', function createIndexTest(t, collection, verify) {
   collection.createIndex('i', function onIndex(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.equal(data, 'i_1')
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/createIndex',
@@ -88,7 +88,7 @@ collectionTest('createIndex', function createIndexTest(t, collection, verify) {
 
 collectionTest('deleteMany', function deleteManyTest(t, collection, verify) {
   collection.deleteMany({mod10: 5}, function done(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.deepEqual(data.result, {ok: 1, n: 3})
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/deleteMany',
@@ -102,7 +102,7 @@ collectionTest('deleteMany', function deleteManyTest(t, collection, verify) {
 
 collectionTest('deleteOne', function deleteOneTest(t, collection, verify) {
   collection.deleteOne({mod10: 5}, function done(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.deepEqual(data.result, {ok: 1, n: 1})
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/deleteOne',
@@ -116,7 +116,7 @@ collectionTest('deleteOne', function deleteOneTest(t, collection, verify) {
 
 collectionTest('distinct', function distinctTest(t, collection, verify) {
   collection.distinct('mod10', function done(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.deepEqual(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/distinct',
@@ -130,7 +130,7 @@ collectionTest('distinct', function distinctTest(t, collection, verify) {
 
 collectionTest('drop', function dropTest(t, collection, verify) {
   collection.drop(function done(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.equal(data, true)
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/drop',
@@ -144,7 +144,7 @@ collectionTest('drop', function dropTest(t, collection, verify) {
 
 collectionTest('dropAllIndexes', function dropAllIndexesTest(t, collection, verify) {
   collection.dropAllIndexes(function done(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.equal(data, true)
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/dropAllIndexes',
@@ -158,9 +158,9 @@ collectionTest('dropAllIndexes', function dropAllIndexesTest(t, collection, veri
 
 collectionTest('dropIndex', function dropIndexTest(t, collection, verify) {
   collection.createIndex('i', function onIndex(err) {
-    t.notOk(err)
+    t.error(err)
     collection.dropIndex('i_1', function done(err, data) {
-      t.notOk(err)
+      t.error(err)
       t.equal(data.ok, 1)
       verify(null, [
           'Datastore/statement/MongoDB/testCollection/createIndex',
@@ -176,7 +176,7 @@ collectionTest('dropIndex', function dropIndexTest(t, collection, verify) {
 
 collectionTest('ensureIndex', function ensureIndexTest(t, collection, verify) {
   collection.ensureIndex('i', function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data, 'i_1')
     verify(null, [
         'Datastore/statement/MongoDB/testCollection/ensureIndex',
@@ -191,7 +191,7 @@ collectionTest('findAndModify', function findAndModifyTest(t, collection, verify
   collection.findAndModify({i: 1}, [['i', 1]], {$set: {a: 15}}, {new: true}, done)
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.value.a, 15)
     t.equal(data.value.i, 1)
     t.equal(data.ok, 1)
@@ -206,7 +206,7 @@ collectionTest('findAndModify', function findAndModifyTest(t, collection, verify
 
 collectionTest('findAndRemove', function findAndRemoveTest(t, collection, verify) {
   collection.findAndRemove({i: 1}, [['i', 1]], function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.value.i, 1)
     t.equal(data.ok, 1)
     verify(null, [
@@ -220,7 +220,7 @@ collectionTest('findAndRemove', function findAndRemoveTest(t, collection, verify
 
 collectionTest('findOne', function findOneTest(t, collection, verify) {
   collection.findOne({i: 15}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.i, 15)
     verify(null, [
         'Datastore/statement/MongoDB/testCollection/findOne',
@@ -233,7 +233,7 @@ collectionTest('findOne', function findOneTest(t, collection, verify) {
 
 collectionTest('findOneAndDelete', function findOneAndDeleteTest(t, collection, verify) {
   collection.findOneAndDelete({i: 15}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.ok, 1)
     t.equal(data.value.i, 15)
     verify(null, [
@@ -249,7 +249,7 @@ collectionTest('findOneAndReplace', function findAndReplaceTest(t, collection, v
   collection.findOneAndReplace({i: 15}, {b: 15}, {returnOriginal: false}, done)
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.value.b, 15)
     t.equal(data.ok, 1)
     verify(null, [
@@ -265,7 +265,7 @@ collectionTest('findOneAndUpdate', function findOneAndUpdateTest(t, collection, 
   collection.findOneAndUpdate({i: 15}, {$set: {a: 15}}, {returnOriginal: false}, done)
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.value.a, 15)
     t.equal(data.ok, 1)
     verify(null, [
@@ -281,12 +281,12 @@ collectionTest('geoHaystackSearch', function haystackSearchTest(t, collection, v
   collection.ensureIndex({loc: 'geoHaystack', type: 1}, {bucketSize: 1}, indexed)
 
   function indexed(err) {
-    t.notOk(err)
+    t.error(err)
     collection.geoHaystackSearch(15, 15, {maxDistance: 5, search: {}}, done)
   }
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.ok, 1)
     t.equal(data.results.length, 2)
     t.equal(data.results[0].i, 13)
@@ -308,12 +308,12 @@ collectionTest('geoNear', function geoNearTest(t, collection, verify) {
   collection.ensureIndex({loc: '2d'}, {bucketSize: 1}, indexed)
 
   function indexed(err) {
-    t.notOk(err)
+    t.error(err)
     collection.geoNear(20, 20, {maxDistance: 5}, done)
   }
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.ok, 1)
     t.equal(data.results.length, 2)
     t.equal(data.results[0].obj.i, 21)
@@ -337,7 +337,7 @@ collectionTest('group', function groupTest(t, collection, verify) {
   collection.group(['mod10'], {}, {count: 0, total: 0}, count, done)
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.sort(sort), [
       {mod10: 0, count: 3, total: 30},
       {mod10: 1, count: 3, total: 33},
@@ -389,7 +389,7 @@ collectionTest('indexes', function indexesTest(t, collection, verify) {
 
 collectionTest('indexExists', function indexExistsTest(t, collection, verify) {
   collection.indexExists(['_id_'], function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data, true)
 
     verify(null, [
@@ -403,7 +403,7 @@ collectionTest('indexExists', function indexExistsTest(t, collection, verify) {
 
 collectionTest('indexInformation', function indexInformationTest(t, collection, verify) {
   collection.indexInformation(function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data && data._id_, [['_id', 1]], 'should have expected results')
 
     verify(null, [
@@ -417,7 +417,7 @@ collectionTest('indexInformation', function indexInformationTest(t, collection, 
 
 collectionTest('insert', function insertTest(t, collection, verify) {
   collection.insert({foo: 'bar'}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 1})
 
     verify(null, [
@@ -431,7 +431,7 @@ collectionTest('insert', function insertTest(t, collection, verify) {
 
 collectionTest('insertMany', function insertManyTest(t, collection, verify) {
   collection.insertMany([{foo: 'bar'}, {foo: 'bar2'}], function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 2})
 
     verify(null, [
@@ -445,7 +445,7 @@ collectionTest('insertMany', function insertManyTest(t, collection, verify) {
 
 collectionTest('insertOne', function insertOneTest(t, collection, verify) {
   collection.insertOne({foo: 'bar'}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 1})
 
     verify(null, [
@@ -459,7 +459,7 @@ collectionTest('insertOne', function insertOneTest(t, collection, verify) {
 
 collectionTest('isCapped', function isCappedTest(t, collection, verify) {
   collection.isCapped(function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.notOk(data)
 
     verify(null, [
@@ -475,7 +475,7 @@ collectionTest('mapReduce', function mapReduceTest(t, collection, verify) {
   collection.mapReduce(map, reduce, {out: {inline: 1}}, done)
 
   function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data, [
       {_id: 0, value: 30},
       {_id: 1, value: 33},
@@ -532,10 +532,10 @@ collectionTest('options', function optionsTest(t, collection, verify) {
 
 collectionTest('parallelCollectionScan', function(t, collection, verify) {
   collection.parallelCollectionScan({numCursors: 1}, function done(err, cursors) {
-    t.notOk(err)
+    t.error(err)
 
     cursors[0].toArray(function toArray(err, items) {
-      t.notOk(err)
+      t.error(err)
       t.equal(items.length, 30)
 
       var total = items.reduce(function sum(prev, item) {
@@ -557,7 +557,7 @@ collectionTest('parallelCollectionScan', function(t, collection, verify) {
 
 collectionTest('reIndex', function reIndexTest(t, collection, verify) {
   collection.reIndex(function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data, true)
 
     verify(null, [
@@ -571,7 +571,7 @@ collectionTest('reIndex', function reIndexTest(t, collection, verify) {
 
 collectionTest('remove', function removeTest(t, collection, verify) {
   collection.remove({mod10: 5}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 3})
 
     verify(null, [
@@ -585,7 +585,7 @@ collectionTest('remove', function removeTest(t, collection, verify) {
 
 collectionTest('rename', function renameTest(t, collection, verify) {
   collection.rename('testCollection2', function done(err) {
-    t.notOk(err)
+    t.error(err)
 
     verify(null, [
         'Datastore/statement/MongoDB/testCollection/rename',
@@ -598,7 +598,7 @@ collectionTest('rename', function renameTest(t, collection, verify) {
 
 collectionTest('replaceOne', function replaceOneTest(t, collection, verify) {
   collection.replaceOne({i: 5}, {foo: 'bar'}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1})
 
     verify(null, [
@@ -612,7 +612,7 @@ collectionTest('replaceOne', function replaceOneTest(t, collection, verify) {
 
 collectionTest('save', function saveTest(t, collection, verify) {
   collection.save({foo: 'bar'}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 1})
 
     verify(null, [
@@ -626,7 +626,7 @@ collectionTest('save', function saveTest(t, collection, verify) {
 
 collectionTest('stats', function statsTest(t, collection, verify) {
   collection.stats({i: 5}, {foo: 'bar'}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.equal(data.ns, DB_NAME + '.testCollection')
     t.equal(data.count, 30)
     t.equal(data.ok, 1)
@@ -642,7 +642,7 @@ collectionTest('stats', function statsTest(t, collection, verify) {
 
 collectionTest('update', function updateTest(t, collection, verify) {
   collection.update({i: 5}, {foo: 'bar'}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1})
 
     verify(null, [
@@ -656,7 +656,7 @@ collectionTest('update', function updateTest(t, collection, verify) {
 
 collectionTest('updateMany', function updateManyTest(t, collection, verify) {
   collection.updateMany({mod10: 5}, {$set: {a: 5}}, function done(err, data) {
-    t.notOk(err)
+    t.error(err)
     t.deepEqual(data.result, {ok: 1, nModified: 3, n: 3})
 
     verify(null, [
@@ -734,7 +734,7 @@ function collectionTest(name, run) {
       t.test('should not error outside of a transaction', function(t) {
         t.notOk(agent.getTransaction(), 'should not be in a transaction')
         run(t, collection, function(err) {
-          t.notOk(err, 'running test should not error')
+          t.error(err, 'running test should not error')
           t.notOk(agent.getTransaction(), 'should not somehow gain a transaction')
           t.end()
         })
@@ -745,7 +745,7 @@ function collectionTest(name, run) {
           transaction.name = TRANSACTION_NAME
           run(t, collection, function(err, segments, metrics) {
             if (
-              !t.notOk(err, 'running test should not error') ||
+              !t.error(err, 'running test should not error') ||
               !t.ok(agent.getTransaction(), 'should maintain tx state')
             ) {
               return t.end()
@@ -781,7 +781,7 @@ function collectionTest(name, run) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
         helper.runInTransaction(agent, function(tx) {
           run(t, collection, function(err) {
-            if (!t.notOk(err, 'running test should not error')) {
+            if (!t.error(err, 'running test should not error')) {
               return t.end()
             }
 
@@ -813,7 +813,7 @@ function collectionTest(name, run) {
         agent.config.datastore_tracer.database_name_reporting.enabled = false
         helper.runInTransaction(agent, function(tx) {
           run(t, collection, function(err) {
-            if (!t.notOk(err, 'running test should not error')) {
+            if (!t.error(err, 'running test should not error')) {
               return t.end()
             }
 

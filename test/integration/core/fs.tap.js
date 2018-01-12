@@ -33,6 +33,7 @@ function test(title, options, callback) {
   if (!options.skip) {
     tasks++
   }
+  options.timeout = 15000 // Allow for a slow file system.
   tapTest(title, options, function(t) {
     t.tearDown(function() {
       if (++done === tasks) {
