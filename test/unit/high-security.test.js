@@ -140,6 +140,17 @@ describe('high security mode', function () {
         config._applyHighSecurity()
       })
 
+      it('should detect that attributes.enabled is on', function (done) {
+        var config = new Config({'high_security': true})
+        config.attributes.enabled = true
+        config.on('attributes.enabled', function(value) {
+          value.should.equal(false)
+          config.attributes.enabled.should.equal(false)
+          done()
+        })
+        config._applyHighSecurity()
+      })
+
       it('should detect that slow_sql is enabled', function (done) {
         var config = new Config({'high_security': true})
         config.slow_sql.enabled = true

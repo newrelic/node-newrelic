@@ -16,7 +16,7 @@ var TEST_HOST = 'localhost'
 var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
 
 
-test("test capture_params for express", function (t) {
+test("test attributes.enabled for express", function (t) {
   t.autoend()
 
   t.test("no variables", function (t) {
@@ -33,8 +33,8 @@ test("test capture_params for express", function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -94,8 +94,8 @@ test("test capture_params for express", function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/:id', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -157,8 +157,8 @@ test("test capture_params for express", function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -220,8 +220,8 @@ test("test capture_params for express", function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/:id', function (req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -284,8 +284,8 @@ test("test capture_params for express", function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
 
     app.get('/user/:id', function (req, res) {
       res.end()

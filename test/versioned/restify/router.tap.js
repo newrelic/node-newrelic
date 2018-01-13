@@ -27,8 +27,8 @@ tap.test('Restify router', function(t) {
   t.test('introspection', function(t) {
     t.plan(12)
 
-    // need to capture parameters
-    agent.config.capture_params = true
+    // need to capture attributes
+    agent.config.attributes.enabled = true
 
     agent.on('transactionFinished', function(transaction) {
       t.equal(
