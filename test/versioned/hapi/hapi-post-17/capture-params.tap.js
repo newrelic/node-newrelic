@@ -17,6 +17,7 @@ tap.test('Hapi capture params support', function(t) {
     server = utils.getServer()
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
     done()
   })
 

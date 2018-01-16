@@ -17,6 +17,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -32,10 +33,10 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           'request.uri' : "/test"
         }, 'parameters should only have request/response params')
@@ -44,9 +45,9 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           'request.uri' : "/test"
         }, 'parameters should only have request/response params')
@@ -78,6 +79,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -93,10 +95,10 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           "id" : "1337",
           'request.uri' : "/test/1337"
@@ -106,9 +108,9 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           "id" : "1337",
           'request.uri' : "/test/1337"
@@ -141,6 +143,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -156,10 +159,10 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           "name" : "restify",
           'request.uri' : "/test"
@@ -169,9 +172,9 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           "name" : "restify",
           'request.uri' : "/test"
@@ -205,6 +208,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -220,10 +224,10 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           "id" : "1337",
           "name" : "restify",
@@ -234,9 +238,9 @@ test("Restify capture params introspection", function(t) {
           "request.headers.accept" : "application/json",
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "15",
+          "response.headers.contentLength" : 15,
           "response.headers.contentType" : "application/json",
           "id" : "1337",
           "name" : "restify",

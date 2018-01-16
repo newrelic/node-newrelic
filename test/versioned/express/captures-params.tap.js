@@ -35,6 +35,7 @@ test("test attributes.enabled for express", function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -50,10 +51,10 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           'request.uri' : "/user/"
         }, 'attributes should only have request/response params')
@@ -61,9 +62,9 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           'request.uri' : "/user/"
         }, 'attributes should only have request/response params')
@@ -105,6 +106,7 @@ test("test attributes.enabled for express", function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -120,10 +122,10 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           'request.uri' : "/user/5"
@@ -132,9 +134,9 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           'request.uri' : "/user/5"
@@ -177,6 +179,7 @@ test("test attributes.enabled for express", function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -192,10 +195,10 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           "name" : "bob",
           'request.uri' : "/user/"
@@ -204,9 +207,9 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           "name" : "bob",
           'request.uri' : "/user/"
@@ -249,6 +252,7 @@ test("test attributes.enabled for express", function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
@@ -264,10 +268,10 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
           "httpResponseMessage": "OK",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           "name" : "bob",
@@ -277,9 +281,9 @@ test("test attributes.enabled for express", function(t) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:" + port,
           "request.method" : "GET",
-          "response.status" : 200,
+          "response.status" : '200',
           "httpResponseCode": "200",
-          "response.headers.contentLength" : "12",
+          "response.headers.contentLength" : 12,
           "response.headers.contentType" : "application/json; charset=utf-8",
           "id" : "5",
           "name" : "bob",
@@ -322,6 +326,7 @@ test("test attributes.enabled for express", function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       res.end()
@@ -331,7 +336,7 @@ test("test attributes.enabled for express", function(t) {
       var expectedValues = {
             "request.headers.host" : "localhost:" + port,
             "request.method" : "GET",
-            "response.status" : 200,
+            "response.status" : '200',
             "httpResponseCode": "200",
             "id" : 5,
             'request.uri': "/user/5"
