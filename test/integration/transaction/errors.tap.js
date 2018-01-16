@@ -14,21 +14,21 @@ test('errors in web transactions should gather the query params', function(t) {
 
   agent.config.attributes.enabled = true
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
     api.noticeError(new Error('errors in tx test'))
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/?some=param&data'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
+  agent.on('transactionFinished', function() {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -49,7 +49,7 @@ test('errors in web transactions should gather the query params', function(t) {
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 6
+    var expectedValue = 7
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -90,24 +90,24 @@ test('multiple errors in web transactions should gather the query params', funct
 
   agent.config.attributes.enabled = true
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
     api.noticeError(new Error(names[0]))
     api.noticeError(new Error(names[1]))
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/testing'
     url += '?some=param&data'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
-    agent.errors.errors.forEach(function (error) {
+  agent.on('transactionFinished', function() {
+    agent.errors.errors.forEach(function(error) {
       t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
       t.notEqual(names.indexOf(error[2]), -1, 'should have gathered the errors message')
@@ -135,7 +135,7 @@ test('multiple errors in web transactions should gather the query params', funct
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 6
+      var expectedValue = 7
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
@@ -172,7 +172,7 @@ test('errors in web transactions should gather and merge custom params', functio
 
   agent.config.attributes.enabled = true
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
 
     api.addCustomParameter('preErrorKeep', true)
@@ -188,17 +188,17 @@ test('errors in web transactions should gather and merge custom params', functio
     api.addCustomParameter('postErrorReplace', 'omg why')
 
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
+  agent.on('transactionFinished', function() {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -225,7 +225,7 @@ test('errors in web transactions should gather and merge custom params', functio
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 4
+    var expectedValue = 5
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -267,7 +267,7 @@ test('multiple errors in web tx should gather and merge custom params', function
     }
   }]
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
 
     api.addCustomParameter('preErrorKeep', true)
@@ -281,18 +281,18 @@ test('multiple errors in web tx should gather and merge custom params', function
     api.noticeError(new Error(errorData[1].name), errorData[1].customParams)
 
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
-    agent.errors.errors.forEach(function (error) {
+  agent.on('transactionFinished', function() {
+    agent.errors.errors.forEach(function(error) {
       var expectedParams
       if (errorData[0].name && errorData[0].name === error[2]) {
         expectedParams = errorData[0].customParams
@@ -321,7 +321,7 @@ test('multiple errors in web tx should gather and merge custom params', function
         'should have 5 custom attributes after merging'
       )
       // Overriden for error custom params
-      Object.keys(expectedParams).forEach(function (paramKey) {
+      Object.keys(expectedParams).forEach(function(paramKey) {
         t.equal(ua[paramKey], expectedParams[paramKey], 'has the passed in params')
       })
 
@@ -332,7 +332,7 @@ test('multiple errors in web tx should gather and merge custom params', function
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 4
+      var expectedValue = 5
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
