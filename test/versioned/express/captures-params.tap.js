@@ -36,6 +36,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -94,6 +95,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -143,6 +145,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -192,6 +195,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -242,6 +246,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       res.end()

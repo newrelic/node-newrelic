@@ -17,6 +17,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -63,6 +64,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -100,6 +102,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
@@ -138,6 +141,7 @@ test("Restify capture params introspection", function(t) {
 
 
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.close()
