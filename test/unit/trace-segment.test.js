@@ -310,6 +310,7 @@ describe('TraceSegment', function() {
     beforeEach(function() {
       agent.config.attributes.enabled = true
       agent.config.attributes.exclude = ['test1', 'test4']
+      agent.config.emit('attributes.exclude')
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -334,6 +335,13 @@ describe('TraceSegment', function() {
       should.exist(webChild.parameters)
     })
 
+    it('should have filtered the parameters that were passed in the query string',
+       function() {
+      should.not.exist(webChild.parameters.test1)
+      expect(webChild.parameters.test3).equal('50')
+      should.not.exist(webChild.parameters.test4)
+    })
+
     it('should set bare parameters to true (as in present)', function() {
       expect(webChild.parameters.test2).equal(true)
     })
@@ -345,10 +353,8 @@ describe('TraceSegment', function() {
         'WebTransaction/NormalizedUri/*',
         {
           nr_exclusive_duration_millis : 1,
-          test1: 'value1',
           test2: true,
-          test3: '50',
-          test4: ''
+          test3: '50'
         },
         []
       ]
