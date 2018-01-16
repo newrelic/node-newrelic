@@ -3,15 +3,17 @@
 var tap        = require('tap')
 var test       = tap.test
 var http       = require('http')
-var helper     = require('../../lib/agent_helper.js')
-var StreamSink = require('../../../lib/util/stream-sink.js')
+var helper     = require('../../lib/agent_helper')
+var StreamSink = require('../../../lib/util/stream-sink')
+var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
 
 
 test("built-in http instrumentation should handle internal & external requests",
      function(t) {
-  t.plan(14)
+  t.plan(20)
 
   var agent = helper.instrumentMockedAgent()
+  agent.config.attributes.enabled = true
 
   var TEST_INTERNAL_PORT = 8123
   var TEST_INTERNAL_PATH = '/path'
@@ -130,6 +132,12 @@ test("built-in http instrumentation should handle internal & external requests",
         stats.callCount, 1,
         'should associate outbound HTTP requests with the inbound transaction'
       )
+
+      var attributes = transaction.trace.attributes.get('transaction_tracer')
+
+      HTTP_ATTS.forEach(function(key) {
+        t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
+      })
 
       t.end()
     })
