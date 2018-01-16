@@ -7,7 +7,6 @@ module.exports = {
     'request.method',
     'request.headers.connection',
     'response.status',
-    'httpResponseCode',
-    'httpResponseMessage'
+    'httpResponseCode'
   ]
 }

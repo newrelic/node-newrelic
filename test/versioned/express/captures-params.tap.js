@@ -49,6 +49,9 @@ tap.test('test attributes.enabled for express', function(t) {
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
+      if (attributes.httpResponseMessage) {
+        t.ok(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+      }
     })
 
     helper.randomPort(function(_port) {

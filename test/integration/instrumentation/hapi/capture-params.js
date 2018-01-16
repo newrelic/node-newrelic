@@ -37,6 +37,9 @@ function runTests(createServer) {
         HTTP_ATTS.forEach(function(key) {
           t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
         })
+        if (attributes.httpResponseMessage) {
+          t.ok(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+        }
       })
 
       server.route({

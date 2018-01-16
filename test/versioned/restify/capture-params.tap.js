@@ -29,6 +29,9 @@ test("Restify capture params introspection", function(t) {
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
+      if (attributes.httpResponseMessage) {
+        t.ok(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+      }
     })
 
     server.get('/test', function(req, res, next) {
