@@ -18,7 +18,6 @@ tap.test('Hapi vhost support', function(t) {
 
     // disabled by default
     agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     t.tearDown(function() {
       server.stop(function() {

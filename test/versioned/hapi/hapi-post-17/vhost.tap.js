@@ -21,7 +21,6 @@ tap.test('Hapi vhost support', function(t) {
 
     // disabled by default
     agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
