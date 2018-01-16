@@ -10,8 +10,6 @@ var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
 
 test("built-in http instrumentation should handle internal & external requests",
      function(t) {
-  t.plan(20)
-
   var agent = helper.instrumentMockedAgent()
   agent.config.attributes.enabled = true
 
@@ -138,6 +136,9 @@ test("built-in http instrumentation should handle internal & external requests",
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
       })
+      if (attributes.httpResponseMessage) {
+        t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+      }
 
       t.end()
     })

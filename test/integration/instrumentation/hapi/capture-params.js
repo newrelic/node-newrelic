@@ -38,7 +38,7 @@ function runTests(createServer) {
           t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
         })
         if (attributes.httpResponseMessage) {
-          t.ok(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+          t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
         }
       })
 
