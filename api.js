@@ -301,7 +301,12 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  trace.addCustomAttribute(key, value, logger)
+  try {
+    trace.addCustomAttribute(key, value)
+  } catch (err) {
+    logger.error(err.message)
+    throw err
+  }
 }
 
 /**
