@@ -398,6 +398,26 @@ describe('Trace', function() {
     })
   })
 
+  describe('#addAttribute', function() {
+    var trace = null
+
+    beforeEach(function() {
+      trace = new Transaction(agent).trace
+    })
+
+    it('does not add attribute if key length limit is exceeded', function() {
+      var tooLong = [
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
+      ].join(' ')
+      trace.addAttribute(tooLong, 'will fail')
+      var attributes = Object.keys(trace.attributes.attributes)
+      expect(attributes.length).to.equal(0)
+    })
+  })
+
   describe('#generateJSON', function() {
     var details
 
