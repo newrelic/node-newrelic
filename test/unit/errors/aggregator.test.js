@@ -655,7 +655,7 @@ describe('ErrorAggregator', function() {
     })
 
     it('should have a request URL', function() {
-      expect(params.request_uri = '/test_action.json')
+      expect(params['request.uri'] = '/test_action.json')
     })
 
     it('should parse out the first agent parameter', function() {
@@ -865,7 +865,7 @@ describe('ErrorAggregator', function() {
     })
 
     it('should have a request URL', function() {
-      expect(params.request_uri = '/test_action.json')
+      expect(params['request.uri'] = '/test_action.json')
     })
 
     it('should parse out the first agent parameter', function() {
@@ -981,7 +981,7 @@ describe('ErrorAggregator', function() {
     })
 
     it('should have a request URL', function() {
-      expect(params.request_uri = '/test_action.json')
+      expect(params['request.uri'] = '/test_action.json')
     })
 
     it('should parse out the first agent parameter', function() {
@@ -1043,7 +1043,7 @@ describe('ErrorAggregator', function() {
       var params = error[4]
 
       should.exist(params)
-      expect(params.request_uri).equal('/test-request/zxrkbl')
+      expect(params['request.uri']).equal('/test-request/zxrkbl')
 
       should.exist(params.stack_trace)
       expect(params.stack_trace[0]).equal('Error: 500 test error')
@@ -1095,7 +1095,7 @@ describe('ErrorAggregator', function() {
     it('should associate errors with parameters', function() {
       var params = error[4]
 
-      expect(params.request_uri).equal('/test-request/zxrkbl')
+      expect(params['request.uri']).equal('/test-request/zxrkbl')
     })
   })
 

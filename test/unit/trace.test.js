@@ -468,7 +468,7 @@ function makeTrace(agent, callback) {
   agent.config.attributes.enabled = true
 
   var transaction = new Transaction(agent)
-  transaction.trace.addAttribute('request_uri', URL)
+  transaction.trace.addAttribute('request.uri', URL)
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -506,7 +506,7 @@ function makeTrace(agent, callback) {
         0,
         DURATION,
         'WebTransaction/NormalizedUri/*',
-        {nr_exclusive_duration_millis: 8, request_uri: '/test?test=value', test: 'value'},
+        {nr_exclusive_duration_millis: 8, 'request.uri': '/test?test=value', test: 'value'},
         [
           // TODO: ensure that the ordering is correct WRT start time
           db.toJSON(),
