@@ -526,13 +526,7 @@ describe("the agent configuration", function() {
     })
 
     it('should have the default excluded request attributes', function() {
-      expect(configuration.attributes.exclude).eql([
-        'request.headers.cookie',
-        'request.headers.authorization',
-        'request.headers.proxy-authorization',
-        'request.headers.set-cookie*',
-        'request.headers.x-*'
-      ])
+      expect(configuration.attributes.exclude).eql([])
     })
 
     it("should enable transaction event attributes", function() {
@@ -847,23 +841,9 @@ describe("the agent configuration", function() {
     })
 
     it('should configure global excluded attributes', function() {
-      expect(config.attributes.exclude).eql([
-        'request.headers.cookie',
-        'request.headers.authorization',
-        'request.headers.proxy-authorization',
-        'request.headers.set-cookie*',
-        'request.headers.x-*'
-      ])
+      expect(config.attributes.exclude).eql([])
       config.onConnect({'attributes.exclude': ['a', 'b']})
-      expect(config.attributes.exclude).eql([
-        'request.headers.cookie',
-        'request.headers.authorization',
-        'request.headers.proxy-authorization',
-        'a',
-        'b',
-        'request.headers.set-cookie*',
-        'request.headers.x-*'
-      ])
+      expect(config.attributes.exclude).eql(['a', 'b'])
     })
 
     it("should configure ignored params without stomping local config", function() {
@@ -1307,21 +1287,9 @@ describe("the agent configuration", function() {
     })
 
     it('should not configure attributes.exclude', function() {
-      expect(config.attributes.exclude).eql([
-        'request.headers.cookie',
-        'request.headers.authorization',
-        'request.headers.proxy-authorization',
-        'request.headers.set-cookie*',
-        'request.headers.x-*'
-      ])
+      expect(config.attributes.exclude).eql([])
       config.onConnect({'attributes.exclude': ['a', 'b']})
-      expect(config.attributes.exclude).eql([
-        'request.headers.cookie',
-        'request.headers.authorization',
-        'request.headers.proxy-authorization',
-        'request.headers.set-cookie*',
-        'request.headers.x-*'
-      ])
+      expect(config.attributes.exclude).eql([])
     })
 
     it('should not configure record_sql', function() {

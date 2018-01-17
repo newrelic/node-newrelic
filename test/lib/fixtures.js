@@ -5,7 +5,6 @@ module.exports = {
   httpAttributes: [
     'request.headers.host',
     'request.method',
-    'request.headers.connection',
     'response.status',
     'httpResponseCode'
   ]
