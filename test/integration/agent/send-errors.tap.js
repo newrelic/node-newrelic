@@ -84,7 +84,7 @@ tap.test('Agent#_sendErrors', function(t) {
       helper.runInTransaction(agent, function(tx) {
         tx.finalizeNameFromUri('/nonexistent', 501)
         tx.addAgentAttribute('foo', 'bar')
-        tx.addAgentAttribute('request_uri', '/nonexistent')
+        tx.addAgentAttribute('request.uri', '/nonexistent')
         agent.errors.add(tx, new Error('test error'))
         tx.end()
       })
