@@ -180,6 +180,34 @@ describe('the New Relic agent API', function() {
       })
     })
 
+    it('should fail if custom attribute limits are reached', function() {
+      helper.runInTransaction(agent, function(transaction) {
+        api.addCustomAttribute('test', 1)
+        transaction.trace.custom.limit = 1
+        expect(function() {
+          api.addCustomAttribute('two', 'will fail')
+        }).to.throw(/Trace attribute limit reached/)
+        var attributes = transaction.trace.custom.get('transaction_tracer')
+        expect(attributes.test).to.equal(1)
+        transaction.end()
+      })
+    })
+
+    it('should fail if attribute key length limit is reached', function() {
+      helper.runInTransaction(agent, function(transaction) {
+        expect(function() {
+          var tooLong = [
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+            'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+            'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
+          ].join(' ')
+          api.addCustomAttribute(tooLong, 'will fail')
+        }).to.throw(/Character limit exceeded for attribute name/)
+        transaction.end()
+      })
+    })
+
     it('should properly add multiple custom attributes', function() {
       helper.runInTransaction(agent, function(transaction) {
         api.addCustomAttributes({
