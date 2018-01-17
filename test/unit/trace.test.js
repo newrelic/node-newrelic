@@ -402,6 +402,7 @@ describe('Trace', function() {
     var trace = null
 
     beforeEach(function() {
+      agent.config.attributes.enabled = true
       trace = new Transaction(agent).trace
     })
 
@@ -415,6 +416,20 @@ describe('Trace', function() {
       trace.addAttribute(tooLong, 'will fail')
       var attributes = Object.keys(trace.attributes.attributes)
       expect(attributes.length).to.equal(0)
+    })
+
+    it('truncates attribute value length to 255', function() {
+      var tooLong = [
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.',
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+      ].join(' ')
+      trace.addAttribute('test', tooLong)
+      var attributes = trace.attributes.get('transaction_tracer')
+      expect(attributes.test).to.not.be.undefined()
+      expect(attributes.test.length).to.equal(255)
     })
   })
 
