@@ -50,15 +50,37 @@ describe('TraceAttributes', function() {
           destinations: [ 'test_destination' ],
           value: 'second'
         },
-        nope: {
-          destinations: [ 'some_other_destination' ],
-          value: 'hello'
+        third: {
+          destinations: [ 'test_destination' ],
+          value: 'third'
         }
       }
 
       var res = inst.get('test_destination')
       expect(Object.keys(res).length).to.equal(2)
-      expect(res.nope).to.be.undefined()
+      expect(res.third).to.be.undefined()
+    })
+
+    it('returns attributes up to specified limit, regardless of position', function() {
+      inst = new TraceAttributes({ limit: 2 })
+      inst.attributes = {
+        first: {
+          destinations: [ 'different_destination' ],
+          value: 'first'
+        },
+        second: {
+          destinations: [ 'test_destination' ],
+          value: 'second'
+        },
+        third: {
+          destinations: [ 'test_destination' ],
+          value: 'third'
+        }
+      }
+
+      var res = inst.get('test_destination')
+      expect(Object.keys(res).length).to.equal(2)
+      expect(res.first).to.be.undefined()
     })
   })
 })
