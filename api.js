@@ -791,6 +791,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
+      logger.debug('Ending unhandled web transaction immediately.')
       tx.end()
     }
     return returnResult
@@ -897,6 +898,7 @@ function startBackgroundTransaction(name, group, handle) {
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
+      logger.debug('Ending unhandled background transaction immediately.')
       tx.end()
     }
     return returnResult
