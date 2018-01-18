@@ -189,17 +189,27 @@ module.exports = function(t, library, loadLibrary) {
   //   })
   //
   //   t.test('usage', function(t) {
-  //     testPromiseClassMethod(t, 2, function(Promise, name) {
+  //     testPromiseClassMethod(t, 4, function(Promise, name) {
   //       var count = 0
+  //
+  //       t.doesNotThrow(function() {
+  //         Promise.coroutine.addYieldHandler(function(value) {
+  //           if (value === name) {
+  //             t.pass('should call yield handler')
+  //             return Promise.resolve(value + ' yielded')
+  //           }
+  //         })
+  //       }, 'should be able to add yield handler')
+  //
   //       return Promise.coroutine(function*(name) {
   //         for (var i = 0; i < 10; ++i) {
   //           yield Promise.delay(5)
   //           ++count
   //         }
-  //         return name
+  //         return yield name
   //       })(name).then(function(result) {
   //         t.equal(count, 10, 'should step through whole coroutine')
-  //         t.equal(result, name, 'should pass through resolve value')
+  //         t.equal(result, name + ' yielded', 'should pass through resolve value')
   //       })
   //     })
   //   })
@@ -1352,7 +1362,7 @@ module.exports = function(t, library, loadLibrary) {
   ptap.skip('Promise#value')
 
   // Check the tests against the library's own static and instance methods.
-  ptap.check()
+  ptap.check(loadLibrary)
 
   // ------------------------------------------------------------------------ //
   // ------------------------------------------------------------------------ //
@@ -1836,15 +1846,15 @@ PromiseTap.prototype.test = function(name, test) {
   var match = name.match(/^Promise([#.])(.+)$/)
   if (match) {
     var location = match[1]
-    var method = match[2]
+    var methodName = match[2]
     var exists = false
 
     if (location === '.') {
-      exists = typeof this.Promise[method] === 'function'
-      this.testedClassMethods.push(method)
+      exists = typeof this.Promise[methodName] === 'function'
+      this.testedClassMethods.push(methodName)
     } else if (location === '#') {
-      exists = typeof this.Promise.prototype[method] === 'function'
-      this.testedInstanceMethods.push(method)
+      exists = typeof this.Promise.prototype[methodName] === 'function'
+      this.testedInstanceMethods.push(methodName)
     }
 
     this.t.test(name, function(t) {
@@ -1867,25 +1877,41 @@ PromiseTap.prototype.skip = function(name) {
   })
 }
 
-PromiseTap.prototype.check = function() {
-  var classMethods = Object.keys(this.Promise).sort()
-  this._check(classMethods, this.testedClassMethods, '.')
+PromiseTap.prototype.check = function(loadLibrary) {
+  var self = this
+  this.t.test('check', function(t) {
+    helper.loadTestAgent(t)
+    var Promise = loadLibrary()
 
-  var instanceMethods = Object.keys(this.Promise.prototype).sort()
-  this._check(instanceMethods, this.testedInstanceMethods, '#')
+    var classMethods = Object.keys(self.Promise).sort()
+    self._check(t, Promise, classMethods, self.testedClassMethods, '.')
+
+    var instanceMethods = Object.keys(self.Promise.prototype).sort()
+    self._check(t, Promise.prototype, instanceMethods, self.testedInstanceMethods, '#')
+
+    t.end()
+  })
 }
 
-PromiseTap.prototype._check = function(methods, tested, type) {
+PromiseTap.prototype._check = function(t, source, methods, tested, type) {
   var prefix = 'Promise' + type
-  var source = type === '.' ? this.Promise : this.Promise.prototype
+  var originalSource = type === '.' ? this.Promise : this.Promise.prototype
 
   methods.forEach(function(method) {
+    var wrapped = source[method]
+    var original = wrapped.__NR_original || originalSource[method]
+
     // Skip this property if it is internal (starts or ends with underscore), is
     // a class (starts with a capital letter), or is not a function.
-    if (/(?:^[_A-Z]|_$)/.test(method) || typeof source[method] !== 'function') {
+    if (/(?:^[_A-Z]|_$)/.test(method) || typeof original !== 'function') {
       return
     }
 
-    this.t.ok(tested.indexOf(method) > -1, 'should test ' + prefix + method)
+    var longName = prefix + method
+    t.ok(tested.indexOf(method) > -1, 'should test ' + prefix + method)
+
+    Object.keys(original).forEach(function(key) {
+      t.ok(wrapped[key] != null, 'should copy ' + longName + '.' + key)
+    })
   }, this)
 }
