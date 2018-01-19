@@ -144,7 +144,7 @@ describe('the New Relic agent API', function() {
     })
 
     it("should call a callback when handle end is called", function(done) {
-      helper.runInTransaction(agent, function(txn) {
+      helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
         handle.end(function() {
           done()
@@ -524,8 +524,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("should force a transaction to not be ignored", function(done) {
-      var segment
-
       api.addIgnoringRule('^/test/.*')
 
       agent.on('transactionFinished', function(transaction) {
@@ -537,8 +535,8 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
-        transaction.url  = URL
+        agent.tracer.createSegment(NAME)
+        transaction.url = URL
         transaction.verb = 'GET'
 
         api.setIgnoreTransaction(false)
@@ -593,8 +591,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("uses the HTTP verb for the default action", function(done) {
-      var segment
-
       agent.on('transactionFinished', function(transaction) {
         transaction.finalizeNameFromUri(URL, 200)
 
@@ -604,8 +600,7 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment = agent.tracer.createSegment(NAME)
-
+        agent.tracer.createSegment(NAME)
         transaction.url = URL
 
         // SET THE ACTION
@@ -619,8 +614,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("allows a custom action", function(done) {
-      var segment
-
       agent.on('transactionFinished', function(transaction) {
         transaction.finalizeNameFromUri(URL, 200)
 
@@ -630,8 +623,8 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
-        transaction.url  = URL
+        agent.tracer.createSegment(NAME)
+        transaction.url = URL
         transaction.verb = 'GET'
 
         // NAME THE CONTROLLER AND ACTION
@@ -642,8 +635,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("uses the last controller set when called multiple times", function(done) {
-      var segment
-
       agent.on('transactionFinished', function(transaction) {
         transaction.finalizeNameFromUri(URL, 200)
 
@@ -653,8 +644,8 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
-        transaction.url  = URL
+        agent.tracer.createSegment(NAME)
+        transaction.url = URL
         transaction.verb = 'GET'
 
         // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
@@ -718,10 +709,11 @@ describe('the New Relic agent API', function() {
 
       it('should not allow setting of excluded attributes', function(done) {
         agent.config.attributes.exclude.push('ignore_me')
+        agent.config.emit('attributes.exclude')
 
         agent.on('transactionFinished', function(transaction) {
           var attributes = transaction.trace.custom.get('transaction_tracer')
-          should.not.exist(attributes.ignore_me)
+          expect(attributes).to.not.have.property('ignore_me')
 
           done()
         })
@@ -800,8 +792,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("applies a string pattern correctly", function(done) {
-      var segment
-
       api.addNamingRule('^/test/.*', 'Test')
 
       agent.on('transactionFinished', function(transaction) {
@@ -813,8 +803,8 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
-        transaction.url  = URL
+        agent.tracer.createSegment(NAME)
+        transaction.url = URL
         transaction.verb = 'GET'
 
         transaction.end()
@@ -822,8 +812,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("applies a regex pattern with capture groups correctly", function(done) {
-      var segment
-
       api.addNamingRule(/^\/test\/(.*)\/(.*)/, 'Test/$2')
 
       agent.on('transactionFinished', function(transaction) {
@@ -835,8 +823,8 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
-        transaction.url  = '/test/31337/related'
+        agent.tracer.createSegment(NAME)
+        transaction.url = '/test/31337/related'
         transaction.verb = 'GET'
 
         transaction.end()
@@ -905,8 +893,6 @@ describe('the New Relic agent API', function() {
     })
 
     it("applies a string pattern correctly", function(done) {
-      var segment
-
       api.addIgnoringRule('^/test/.*')
 
       agent.on('transactionFinished', function(transaction) {
@@ -918,8 +904,8 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        segment          = agent.tracer.createSegment(NAME)
-        transaction.url  = URL
+        agent.tracer.createSegment(NAME)
+        transaction.url = URL
         transaction.verb = 'GET'
 
         transaction.end()
