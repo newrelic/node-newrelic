@@ -1,11 +1,11 @@
 'use strict'
 
 var tap = require('tap')
-var helper = require('../../lib/agent_helper')
+var helper = require('../../../lib/agent_helper')
 var http = require('http')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
-var assertSegments = require('../../lib/metrics_helper').assertSegments
-var NAMES = require('../../../lib/metrics/names')
+var assertMetrics = require('../../../lib/metrics_helper').assertMetrics
+var assertSegments = require('../../../lib/metrics_helper').assertSegments
+var NAMES = require('../../../../lib/metrics/names')
 var utils = require('./hapi-17-utils')
 
 var agent

@@ -2,7 +2,7 @@
 
 var request = require('request')
 var tap = require('tap')
-var helper = require('../../lib/agent_helper')
+var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-17-utils')
 
 tap.test('Hapi v17 ext', function(t) {

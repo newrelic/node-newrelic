@@ -31,13 +31,12 @@
         "router.tap.js",
         "vhost.tap.js"
       ]
-    },
-    {
+    },{
       "engines": {
         "node": ">=0.10"
       },
       "dependencies": {
-        "hapi": ">=7.0.0 <9"
+        "hapi": ">=7.0.0 <8.3 || >=8.8 <9"
       },
       "files": [
         "capture-params.tap.js",
@@ -68,8 +67,8 @@
         "node": ">=4"
       },
       "dependencies": {
-        "hapi": ">=10.0.0 <16",
-        "vision": "^4"
+        "hapi": ">=10.0 <10.2 || >=10.4 <16",
+        "vision": "4.1"
       },
       "files": [
         "capture-params.tap.js",
@@ -85,7 +84,7 @@
       },
       "dependencies": {
         "hapi": ">=16.0.0 <17",
-        "vision": "^4"
+        "vision": "4.1"
       },
       "files": [
         "capture-params.tap.js",
@@ -101,9 +100,5 @@
       ]
     }
   ],
-  "dependencies": {
-    "ejs": "*",
-    "hapi": "^2.6.0",
-    "vision": "^4.1.1"
-  }
+  "dependencies": {}
 }

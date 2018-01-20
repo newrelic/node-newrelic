@@ -1,19 +1,21 @@
 'use strict'
 
+var util = require('util')
 var path = require('path')
-var test = require('tap').test
+var tap = require('tap')
 var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api.js')
+var helper = require('../../../lib/agent_helper')
+var API = require('../../../../api')
 var utils = require('./hapi-utils')
-var fixtures = require('./fixtures')
+var fixtures = require('../fixtures')
 
-test('agent instrumentation of Hapi', function(t) {
-  t.plan(4)
 
-  var port = null
-  var agent = null
+tap.test('agent instrumentation of Hapi', function(t) {
+  t.autoend()
+
   var server = null
+  var agent = null
+  var port = null
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
@@ -27,7 +29,6 @@ test('agent instrumentation of Hapi', function(t) {
 
   t.test('for a normal request', {timeout: 5000}, function(t) {
     server = utils.getServer()
-
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
@@ -80,18 +81,15 @@ test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('using EJS templates', {timeout: 1000}, function(t) {
-    var config = {
-      options: {
-        views: {
-          path: path.join(__dirname, 'views'),
-          engines: {
-            ejs: require('ejs')
-          }
+    server = utils.getServer()
+    server.register(require('vision'), function() {
+      server.views({
+        path: path.join(__dirname, '../views'),
+        engines: {
+          ejs: require('ejs')
         }
-      }
-    }
-
-    server = utils.getServer(config)
+      })
+    })
 
     server.route({
       method: 'GET',
@@ -101,19 +99,30 @@ test('agent instrumentation of Hapi', function(t) {
       }
     })
 
-    agent.once('transactionFinished', function() {
+    agent.once('transactionFinished', function(tx) {
       var stats = agent.metrics.getMetric('View/index/Rendering')
+      t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, 'should note the view rendering')
+      verifyEnded(tx.trace.root, tx)
     })
+
+    function verifyEnded(root, tx) {
+      for (var i = 0, len = root.children.length; i < len; i++) {
+        var segment = root.children[i]
+        t.ok(
+          segment.timer.hasEnd(),
+          util.format('verify %s (%s) has ended', segment.name, tx.id)
+        )
+        if (segment.children) verifyEnded(segment, tx)
+      }
+    }
 
     server.start(function() {
       port = server.info.port
       request('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
-
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
-
         t.end()
       })
     })
@@ -126,18 +135,16 @@ test('agent instrumentation of Hapi', function(t) {
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    var config = {
-      options: {
-        views: {
-          path: path.join(__dirname, 'views'),
-          engines: {
-            ejs: require('ejs')
-          }
-        }
-      }
-    }
+    server = utils.getServer()
 
-    server = utils.getServer(config)
+    server.register(require('vision'), function() {
+      server.views({
+        path: path.join(__dirname, '../views'),
+        engines: {
+          ejs: require('ejs')
+        }
+      })
+    })
 
     server.route({
       method: 'GET',
@@ -151,6 +158,7 @@ test('agent instrumentation of Hapi', function(t) {
 
     agent.once('transactionFinished', function() {
       var stats = agent.metrics.getMetric('View/index/Rendering')
+      t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
@@ -158,10 +166,8 @@ test('agent instrumentation of Hapi', function(t) {
       port = server.info.port
       request('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
-
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
-
         t.end()
       })
     })
@@ -169,6 +175,11 @@ test('agent instrumentation of Hapi', function(t) {
 
   t.test('should trap errors correctly', function(t) {
     server = utils.getServer({ options: {debug: false} })
+
+    agent.on('transactionFinished', function(tx) {
+      t.equal(tx.name, 'WebTransaction/Hapi/GET/' + '/test',
+        'Transaction should be named correctly.')
+    })
 
     server.route({
       method: 'GET',
@@ -184,12 +195,14 @@ test('agent instrumentation of Hapi', function(t) {
       request.get('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
 
-        t.ok(response, 'got a response from Express')
+        t.ok(response, 'got a response from Hapi')
         t.ok(body, 'got back a body')
 
         var errors = agent.errors.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
+        t.equal(agent.errors.getWebTransactionsErrorCount(), 1,
+          'should be 1 web transaction error')
 
         var first = errors[0]
         t.ok(first, 'have the first error')

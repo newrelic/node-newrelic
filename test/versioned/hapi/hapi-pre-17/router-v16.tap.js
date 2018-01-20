@@ -2,7 +2,7 @@
 
 var tap = require('tap')
 var request = require('request')
-var helper = require('../../lib/agent_helper')
+var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-utils')
 
 tap.test('Hapi router introspection', function(t) {
@@ -88,7 +88,7 @@ tap.test('Hapi router introspection', function(t) {
   t.test('using custom handler type', function(t) {
     agent.on('transactionFinished', utils.verifier(t))
 
-    server.handler('hello', function(route, options) {
+    server.handler('hello', function() {
       return function customHandler(request, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
         reply({status: 'ok'})
@@ -125,7 +125,7 @@ tap.test('Hapi router introspection', function(t) {
    */
   t.test('using custom handler defaults', function(t) {
     agent.on('transactionFinished', utils.verifier(t, 'POST'))
-    function handler(route, options) {
+    function handler(route) {
       t.equal(
         route.settings.payload.parse,
         false,
