@@ -8,7 +8,7 @@
         "node": ">=0.10.0"
       },
       "dependencies": {
-        "director": ">=1.0.0",
+        "director": ">=1.2",
         "express": "4.16"
       },
       "files": [
@@ -16,8 +16,5 @@
       ]
     }
   ],
-  "dependencies": {
-    "director": "^1.2.8",
-    "express": "^4.16.2"
-  }
+  "dependencies": {}
 }
