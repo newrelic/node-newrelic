@@ -860,7 +860,9 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
               if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-              t.equal(name, 'id_1', 'should have created an index')
+              // mongodb v1.0 returns `null`
+              var expected = name ? 'id_1' : null
+              t.equal(name, expected, 'should have created an index')
 
               transaction.end()
               verifyTrace(t, agent.tracer.getSegment(), 'createIndex')
@@ -881,7 +883,9 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
               if (error) t.fail(error)
 
               t.notOk(agent.getTransaction(), 'should have no transaction')
-              t.equal(name, 'id_1', 'should have created another index')
+              // mongodb v1.0 returns `null`
+              var expected = name ? 'id_1' : null
+              t.equal(name, expected, 'should have created another index')
 
               verifyNoStats(t, agent, 'createIndex')
             })
@@ -1001,7 +1005,9 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
               if (error) t.fail(error)
 
               t.ok(agent.getTransaction(), 'transaction should still be visible')
-              t.equal(result.nIndexesWas, 2, 'should have dropped an index')
+              // nIndexesWas is nested mongodb v1.0
+              var nIndexesWas = result.nIndexesWas || result.documents[0].nIndexesWas
+              t.equal(nIndexesWas, 2, 'should have dropped an index')
 
               transaction.end()
               verifyTrace(t, agent.tracer.getSegment(), 'dropIndex')
@@ -1018,10 +1024,12 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
           t.plan(7)
 
           runWithoutTransaction(t, function(agent, collection) {
-            collection.dropIndex('id_1', function(error) {
+            collection.dropIndex('id_1', function(error, result) {
               t.notOk(agent.getTransaction(), 'should have no transaction')
+              // mongodb v1.0 doesn't return error object
+              var msg = error ? error.message : result.documents[0].errmsg
               t.ok(
-                error.message.indexOf('index not found') === 0,
+                msg.indexOf('index not found') === 0,
                 'shouldn\'t have found index to drop'
               )
 
