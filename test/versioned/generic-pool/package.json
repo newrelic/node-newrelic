@@ -19,14 +19,12 @@
         "node": ">=0.10.0"
       },
       "dependencies": {
-        "generic-pool": ">=2 <3"
+        "generic-pool": ">=2.4 <3"
       },
       "files": [
         "basic-v2.tap.js"
       ]
     }
   ],
-  "dependencies": {
-    "generic-pool": "^2.5.4"
-  }
+  "dependencies": {}
 }

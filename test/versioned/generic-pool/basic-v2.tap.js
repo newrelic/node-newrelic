@@ -36,6 +36,7 @@ tap.test('generic-pool', function(t) {
   })
 
   function addTask(cb, args) {
+    cb = cb || function() {}
     tasks.push(function() {
       return cb.apply(null, args || [])
     })
