@@ -80,7 +80,7 @@ tap.test('bad config', function(t) {
 // TODO: test .query without callback
 // TODO: test notice errors
 // TODO: test sql capture
-tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
+tap.test('mysql2 built-in connection pools', {timeout : 30 * 1000}, function(t) {
   t.autoend()
 
   var agent = null
@@ -117,7 +117,11 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
   t.test('ensure host and port are set on segment', function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SELECT 1 + 1 AS solution', function(err) {
-        var seg = txn.trace.root.children[0].children[1]
+        // depending on the minor version of mysql2,
+        // relevant segment is either first or second index
+        var seg = txn.trace.root.children[0].children.filter(function(trace) {
+          return /Datastore\/statement\/MySQL/.test(trace.name)
+        })[0]
         t.error(err, 'should not error')
         t.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
         t.equal(
@@ -319,7 +323,10 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
   t.test('lack of callback does not explode', function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SET SESSION auto_increment_increment=1')
-      txn.end(t.end)
+      setTimeout(function() {
+        // without the timeout, the pool is closed before the query is able to execute
+        txn.end(t.end)
+      }, 500)
     })
   })
 
