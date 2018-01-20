@@ -11,6 +11,7 @@ var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
   var TABLE = 'testTable-post'
+  var TABLE_PREPARED = '"' + TABLE + '"'
   var PK = 'pk_column'
   var COL = 'test_column'
   var CON_OBJ = {
@@ -36,10 +37,10 @@ module.exports = function runTests(name, clientFactory) {
       if (err) {
         throw err
       }
-      var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE
+      var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
 
       var tableCreate =
-        'CREATE TABLE ' + TABLE + ' (' +
+        'CREATE TABLE ' + TABLE_PREPARED + ' (' +
           PK + ' integer PRIMARY KEY, ' +
           COL + ' text' +
         ');'
@@ -233,28 +234,28 @@ module.exports = function runTests(name, clientFactory) {
 
         var colVal = 'Hello'
         var pkVal = 111
-        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function(error) {
-          if (!t.error(error)) {
-            return t.end()
+          if (error) {
+            t.fail(error)
           }
 
           client.query(insQuery, [pkVal, colVal], function(error, ok) {
-            if (!t.error(error)) {
-              return t.end()
+            if (error) {
+              t.fail(error)
             }
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
-              if (!t.error(error)) {
-                return t.end()
+              if (error) {
+                t.fail(error)
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
@@ -271,7 +272,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(37)
+      t.plan(36)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -280,23 +281,23 @@ module.exports = function runTests(name, clientFactory) {
 
         var colVal = 'World!'
         var pkVal = 222
-        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
         var pool = new pg.Pool(CON_OBJ)
         pool.query(insQuery, function(error, ok) {
-          if (!t.error(error)) {
-            return t.end()
+          if (error) {
+            t.fail(error)
           }
 
           t.ok(agent.getTransaction(), 'transaction should still be visible')
           t.ok(ok, 'everything should be peachy after setting')
 
-          var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+          var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
           selQuery += PK + '=' + pkVal + ';'
 
           pool.query(selQuery, function(error, value) {
-            if (!t.error(error)) {
-              return t.end()
+            if (error) {
+              t.fail(error)
             }
 
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
@@ -312,7 +313,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('using Pool constructor', function(t) {
-      t.plan(38)
+      t.plan(36)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -322,7 +323,7 @@ module.exports = function runTests(name, clientFactory) {
 
         var colVal = 'World!'
         var pkVal = 222
-        var insQuery = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
         var pool = null
@@ -333,21 +334,25 @@ module.exports = function runTests(name, clientFactory) {
         }
 
         pool.connect(function(error, client, done) {
-          if (!t.error(error)) t.end()
+          if (error) {
+            t.fail(error)
+          }
 
           client.query(insQuery, function(error, ok) {
-            if (!t.error(error)) {
-              return t.end()
+            if (error) {
+              t.fail(error)
             }
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE + ' WHERE '
+            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
-              if (!t.error(error)) t.end()
+              if (error) {
+                t.fail(error)
+              }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
@@ -383,7 +388,7 @@ module.exports = function runTests(name, clientFactory) {
         var pkVal = 444
 
         function CustomConfigClass() {
-          this._text = 'INSERT INTO ' + TABLE + ' (' + PK + ',' +  COL
+          this._text = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
           this._text += ') VALUES($1, $2);'
         }
 
@@ -399,13 +404,13 @@ module.exports = function runTests(name, clientFactory) {
         var config = new CustomConfigClass()
 
         client.connect(function(error) {
-          if (!t.error(error)) {
-            return t.end()
+          if (error) {
+            t.fail(error)
           }
 
           client.query(config, [pkVal, colVal], function(error) {
-            if (!t.error(error)) {
-              return t.end()
+            if (error) {
+              t.fail(error)
             }
 
             var segment = findSegment(
@@ -419,7 +424,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("should add datastore instance parameters to slow query traces", function(t) {
-      t.plan(7)
+      t.plan(5)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
@@ -433,13 +438,13 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (!t.error(error)) {
-            return t.end()
+          if (error) {
+            t.fail(error)
           }
 
           client.query('SELECT * FROM pg_sleep(1);', function slowQueryCB(error) {
-            if (!t.error(error)) {
-              return t.end()
+            if (error) {
+              t.fail(error)
             }
 
             transaction.end(function() {
@@ -472,13 +477,13 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (!t.error(error)) {
-            return t.end()
+          if (error) {
+            t.fail(error)
           }
 
           client.query('SELECT * FROM pg_sleep(1);', function(error) {
-            if (!t.error(error)) {
-              return t.end()
+            if (error) {
+              t.fail(error)
             }
 
             transaction.end(function() {
