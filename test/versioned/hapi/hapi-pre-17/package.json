@@ -31,7 +31,8 @@
         "router.tap.js",
         "vhost.tap.js"
       ]
-    },{
+    },
+    {
       "engines": {
         "node": ">=0.10"
       },
@@ -52,7 +53,7 @@
       },
       "dependencies": {
         "hapi": ">=9.0.0 <10",
-        "vision": "^3"
+        "vision": "4.1"
       },
       "files": [
         "capture-params.tap.js",
