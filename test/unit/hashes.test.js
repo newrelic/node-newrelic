@@ -19,6 +19,16 @@ describe('deobfuscation', function() {
   })
 })
 
+describe('getHash', function() {
+  it('should not crash when changing the DEFAULT_ENCODING key on crypto', function() {
+    var crypto = require('crypto')
+    var oldEncoding = crypto.DEFAULT_ENCODING
+    crypto.DEFAULT_ENCODING = 'utf-8'
+    expect(hashes.getHash.bind(null, 'TEST_APP', 'TEST_TXN')).to.not.throw()
+    crypto.DEFAULT_ENCODING = oldEncoding
+  })
+})
+
 describe('buffers', function() {
   var processVersion = Object.getOwnPropertyDescriptor(process, 'version')
   var oldBuffer = global.Buffer
