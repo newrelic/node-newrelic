@@ -37,7 +37,7 @@
         "node": ">=0.10"
       },
       "dependencies": {
-        "hapi": ">=7.0.0 <8.3 || >=8.8 <9"
+        "hapi": ">=7.0.0 <9"
       },
       "files": [
         "capture-params.tap.js",
@@ -52,7 +52,8 @@
         "node": ">=0.10"
       },
       "dependencies": {
-        "hapi": ">=9.0.0 <10"
+        "hapi": ">=9.0.0 <10",
+        "vision": "^3"
       },
       "files": [
         "capture-params.tap.js",
@@ -67,7 +68,8 @@
         "node": ">=4"
       },
       "dependencies": {
-        "hapi": ">=10.0 <10.2 || >=10.4 <16"
+        "hapi": ">=10.0.0 <16",
+        "vision": "^4"
       },
       "files": [
         "capture-params.tap.js",
@@ -82,7 +84,8 @@
         "node": ">=4"
       },
       "dependencies": {
-        "hapi": ">=16.0.0 <17"
+        "hapi": ">=16.0.0 <17",
+        "vision": "^4"
       },
       "files": [
         "capture-params.tap.js",
@@ -98,7 +101,5 @@
       ]
     }
   ],
-  "dependencies": {
-    "vision": "4.1"
-  }
+  "dependencies": {}
 }
