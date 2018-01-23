@@ -30,7 +30,12 @@ for (var i = 0; i < length; i++) {
   Stub.prototype[functionName] = stubFunction(functionName)
 }
 
-Stub.prototype.createTracer = createTracer
+Stub.prototype.createTracer = util.deprecate(
+  createTracer, [
+    'API#createTracer is being deprecated!',
+    'Please use API#startSegment for segment creation.'
+  ].join(' ')
+)
 Stub.prototype.createWebTransaction = util.deprecate(
   createWebTransaction, [
     'API#createWebTransaction is being deprecated!',
@@ -47,6 +52,7 @@ Stub.prototype.createBackgroundTransaction = util.deprecate(
     'ending transactions.'
   ].join(' ')
 )
+Stub.prototype.startSegment = startSegment
 Stub.prototype.startWebTransaction = startWebTransaction
 Stub.prototype.startBackgroundTransaction = startBackgroundTransaction
 Stub.prototype.getTransaction = getTransaction
@@ -79,6 +85,14 @@ function createWebTransaction(url, callback) {
 function createBackgroundTransaction(name, group, callback) {
   logger.debug('Not calling createBackgroundTransaction because New Relic is disabled.')
   return (callback === undefined) ? group : callback
+}
+
+function startSegment(name, record, handler, callback) {
+  logger.debug('Not calling `startSegment` becuase New Relic is disabled.')
+  if (typeof handler === 'function') {
+    return handler(callback)
+  }
+  return null
 }
 
 function startWebTransaction(url, callback) {

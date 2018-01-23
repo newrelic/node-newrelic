@@ -629,13 +629,23 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   return out
 }
 
+API.prototype.createTracer = util.deprecate(
+  createTracer, [
+    'API#createTracer is being deprecated!',
+    'Please use API#startSegment for segment creation.'
+  ].join(' ')
+)
+
 /**
  * This creates a new tracer with the passed in name. It then wraps the
  * callback and binds it to the current transaction and segment so any further
  * custom instrumentation as well as auto instrumentation will also be able to
  * find the current transaction and segment.
+ *
+ * @memberof API#
+ * @deprecated use {@link API#startSegment} instead
  */
-API.prototype.createTracer = function createTracer(name, callback) {
+function createTracer(name, callback) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/createTracer'
   )
@@ -687,6 +697,70 @@ API.prototype.createTracer = function createTracer(name, callback) {
   return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
 }
 
+/**
+ * Wraps the given handler in a segment which may optionally be turned into a
+ * metric.
+ *
+ * @example
+ *  newrelic.startSegment('mySegment', false, function handler() {
+ *    // The returned promise here will signify the end of the segment.
+ *    return myAsyncTask().then(myNextTask)
+ *  })
+ *
+ * @param {string} name
+ *  The name to give the new segment. This will also be the name of the metric.
+ *
+ * @param {bool} record
+ *  Indicates if the segment should be recorded as a metric. Metrics will show
+ *  up on the transaction breakdown table and server breakdown graph. Segments
+ *  just show up in transaction traces.
+ *
+ * @param {function(cb) -> ?Promise} handler
+ *  The function to track as a segment.
+ *
+ * @param {function} [callback]
+ *  An optional callback for the handler. This will indicate the end of the
+ *  timing if provided.
+ *
+ * @return {*} Returns the result of calling `handler`.
+ */
+API.prototype.startSegment = function startSegment(name, record, handler, callback) {
+  this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/startSegment'
+  ).incrementCallCount()
+
+  // Check that we have usable arguments.
+  if (!name || typeof handler !== 'function') {
+    logger.warn('Name and handler function are both required for startSegment')
+    if (typeof handler === 'function') {
+      return handler(callback)
+    }
+    return
+  }
+  if (callback && typeof callback !== 'function') {
+    logger.warn('If using callback, it must be a function')
+    return handler(callback)
+  }
+
+  // Are we inside a transaction?
+  if (!this.shim.getActiveSegment()) {
+    logger.debug('startSegment(%j) called outside of a transaction, not recording.', name)
+    return handler(callback)
+  }
+
+  // Create the segment and call the handler.
+  var wrappedHandler = this.shim.record(handler, function handlerNamer(shim) {
+    return {
+      name: name,
+      recorder: record ? customRecorder : null,
+      callback: callback ? shim.FIRST : null,
+      promise: !!callback
+    }
+  })
+
+  return wrappedHandler(callback)
+}
+
 API.prototype.createWebTransaction = util.deprecate(
   createWebTransaction, [
     'API#createWebTransaction is being deprecated!',
@@ -713,7 +787,7 @@ API.prototype.createWebTransaction = util.deprecate(
                                 name and not iclude any variable parameters.
  * @param {Function}  handle    Function that represents the transaction work.
  *
- * @memberOf API#
+ * @memberof API#
  *
  * @deprecated since version 2.0
  */
