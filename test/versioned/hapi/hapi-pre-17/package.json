@@ -53,6 +53,7 @@
       },
       "dependencies": {
         "hapi": ">=9.0.0 <10",
+        "ejs": "2.5",
         "vision": "^3"
       },
       "files": [
@@ -69,6 +70,7 @@
       },
       "dependencies": {
         "hapi": ">=10.0.0 <16",
+        "ejs": "2.5",
         "vision": "^4"
       },
       "files": [
@@ -85,6 +87,7 @@
       },
       "dependencies": {
         "hapi": ">=16.0.0 <17",
+        "ejs": "2.5",
         "vision": "^4"
       },
       "files": [
