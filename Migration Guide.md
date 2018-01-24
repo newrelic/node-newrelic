@@ -34,6 +34,20 @@ the `error` event will always be emitted.
 If you are making outbound requests and currently do not listen for the `error`
 event, add a listener and handle the error as appropriate for your application.
 
+### Updated configuration options
+
+In `newrelic.js`, edit the configuration properties you use for compatiblity with the latest versions:
+
+* `capture_params`
+
+  Replaced with `attributes.enabled`. By default, request attributes are not sent to New Relic. Set `attributes.enabled`: true to include agent-defined or custom attributes in traces.
+
+* `ignored_params`
+
+  Replaced with `attributes.exclude`. Add any request attribute keys to the `attributes.exclude` list. Now, instead of having to be an exact match, wildcards (`*`) may be appended to each item for broader filtering.
+  
+**NOTE**: The new properties also have overrides for specific destinations (`transaction_tracer`, `transaction_events`, `error_collector`, and `browser_monitoring`). For example, setting `transaction_tracer.attributes.enabled: false`, would restrict attributes from being collected in transaction traces, while still allowing them for all others, assuming the root `attributes.enabled` is `true`. Please see [Node.js agent configuration](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration) for more details.
+
 ### Deprecated API Methods
 These methods have been marked as deprecated in Agent v2 and will be removed in
 v3.
@@ -45,6 +59,14 @@ v3.
 * `newrelic.createBackgroundTransaction()`
 
   Replace with `newrelic.startBackgroundTransaction()` and `newrelic.getTransaction()`.
+  
+* `newrelic.addCustomParameter()`
+
+  Replace with `newrelic.addCustomAttribute()`.
+  
+* `newrelic.addCustomParameters()`
+
+  Replace with `newrelic.addCustomAttributes()`.
 
 ### New API Methods
 
@@ -72,6 +94,14 @@ v3.
   including those already instrumented by the Node Agent. See our
   [instrumentation tutorials][instrumentation-tutorial] for more information
   on using these methods.
+  
+* `newrelic.addCustomAttribute()`
+
+  Use this method to add a custom trace attribute.
+  
+* `newrelic.addCustomAttributes()`
+
+  Use this method to add multiple custom trace attributes.
 
 ### Node Version Support
 The earliest version of Node supported by the v2 agent is 0.10. Node 0.8, which
