@@ -1,9 +1,11 @@
 'use strict'
 
-var tap = require('tap')
-var request = require('request')
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var helper = require('../../../lib/agent_helper')
-var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+var HTTP_ATTRS = require('../../../lib/fixtures').httpAttributes
+var request = require('request')
+var tap = require('tap')
+
 
 module.exports = runTests
 
@@ -33,19 +35,23 @@ function runTests(createServer) {
     t.test("simple case with no params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get('transaction_tracer')
-        HTTP_ATTS.forEach(function(key) {
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        HTTP_ATTRS.forEach(function(key) {
           t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
         })
         if (attributes.httpResponseMessage) {
-          t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+          t.equal(
+            attributes.httpResponseMessage,
+            'OK',
+            'Trace contains httpResponseMessage'
+          )
         }
       })
 
       server.route({
         method: 'GET',
         path: '/test/',
-        handler: function(request, reply) {
+        handler: function(req, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status: 'ok'})
@@ -61,14 +67,14 @@ function runTests(createServer) {
     t.test("case with route params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
       })
 
       server.route({
         method: 'GET',
         path: '/test/{id}/',
-        handler: function(request, reply) {
+        handler: function(req, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status: 'ok'})
@@ -84,14 +90,14 @@ function runTests(createServer) {
     t.test("case with query params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
       })
 
       server.route({
         method: 'GET',
         path: '/test/',
-        handler: function(request, reply) {
+        handler: function(req, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status: 'ok'})
@@ -107,7 +113,7 @@ function runTests(createServer) {
     t.test("case with both route and query params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
         t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
       })
@@ -115,7 +121,7 @@ function runTests(createServer) {
       server.route({
         method: 'GET',
         path: '/test/{id}/',
-        handler: function(request, reply) {
+        handler: function(req, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status: 'ok'})

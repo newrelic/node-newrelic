@@ -4,6 +4,13 @@ var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 var tests = require('../../lib/cross_agent_tests/attribute_configuration')
 
+var DEST_TO_ID = {
+  'transaction_events': 0x01,
+  'transaction_tracer': 0x02,
+  'error_collector': 0x04,
+  'browser_monitoring': 0x08
+}
+
 tap.test('Attribute include/exclude configurations', function(t) {
   t.plan(tests.length)
 
@@ -21,7 +28,7 @@ function runTest(t, test) {
 
   // Filter the destinations.
   var destinations = test.input_default_destinations.filter(function(dest) {
-    return agent.config.attributeFilter.test(dest, test.input_key)
+    return agent.config.attributeFilter.test(DEST_TO_ID[dest], test.input_key)
   })
 
   // Did we pass?

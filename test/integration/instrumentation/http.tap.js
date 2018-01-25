@@ -1,11 +1,12 @@
 'use strict'
 
-var tap        = require('tap')
-var test       = tap.test
-var http       = require('http')
-var helper     = require('../../lib/agent_helper')
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+var tap = require('tap')
+var test = tap.test
+var http = require('http')
+var helper = require('../../lib/agent_helper')
 var StreamSink = require('../../../lib/util/stream-sink')
-var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
+var HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
 
 
 test("built-in http instrumentation should handle internal & external requests",
@@ -131,13 +132,17 @@ test("built-in http instrumentation should handle internal & external requests",
         'should associate outbound HTTP requests with the inbound transaction'
       )
 
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
-      HTTP_ATTS.forEach(function(key) {
+      HTTP_ATTRS.forEach(function(key) {
         t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
       })
       if (attributes.httpResponseMessage) {
-        t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+        t.equal(
+          attributes.httpResponseMessage,
+          'OK',
+          'Trace contains httpResponseMessage'
+        )
       }
 
       t.end()
@@ -237,7 +242,7 @@ test("built-in http instrumentation shouldn't swallow errors", function(t) {
   server.listen(1337, makeRequest)
 })
 
-test("built-in http instrumentation making outbound requests", function (t) {
+test("built-in http instrumentation making outbound requests", function(t) {
   var agent = helper.instrumentMockedAgent()
 
   var server = http.createServer(function cb_createServer(req, res) {
@@ -254,10 +259,10 @@ test("built-in http instrumentation making outbound requests", function (t) {
   })
 
   function request(type, options, next) {
-    http.request(options, function (res) {
+    http.request(options, function(res) {
       t.equal(res.statusCode, 200, "got HTTP OK status code")
 
-      var sink = new StreamSink(function (err, body) {
+      var sink = new StreamSink(function(err, body) {
         if (err) {
           t.fail(err)
           return t.end()
@@ -297,11 +302,11 @@ test("built-in http instrumentation making outbound requests", function (t) {
     }, next)
   }
 
-  server.listen(1337, function () {
-    helper.runInTransaction(agent, function () {
-      requestWithHost(function () {
-        requestWithHostname(function () {
-          requestWithNOTHING(function () {
+  server.listen(1337, function() {
+    helper.runInTransaction(agent, function() {
+      requestWithHost(function() {
+        requestWithHostname(function() {
+          requestWithNOTHING(function() {
             t.end()
           })
         })
@@ -313,7 +318,7 @@ test("built-in http instrumentation making outbound requests", function (t) {
 test(
   "built-in http instrumentation making outbound requests obsoletely",
   {skip: !http.createClient},
-  function (t) {
+  function(t) {
   var agent = helper.instrumentMockedAgent()
 
   var server = http.createServer(function cb_createServer(req, res) {
@@ -335,12 +340,12 @@ test(
     var path = options.path
 
     var req = http.createClient(port, host).request('GET', path)
-    req.on('response', function (res) {
-      res.on('end', function () {
+    req.on('response', function(res) {
+      res.on('end', function() {
         t.equal(res.statusCode, 200, "got HTTP OK status code")
       })
 
-      var sink = new StreamSink(function (err, body) {
+      var sink = new StreamSink(function(err, body) {
         if (err) {
           t.fail(err)
           return t.end()
@@ -381,11 +386,11 @@ test(
     }, next)
   }
 
-  server.listen(1337, function () {
-    helper.runInTransaction(agent, function () {
-      requestWithHost(function () {
-        requestWithHostname(function () {
-          requestWithNOTHING(function () {
+  server.listen(1337, function() {
+    helper.runInTransaction(agent, function() {
+      requestWithHost(function() {
+        requestWithHostname(function() {
+          requestWithNOTHING(function() {
             t.end()
           })
         })

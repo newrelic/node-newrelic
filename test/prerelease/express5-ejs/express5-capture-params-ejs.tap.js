@@ -3,11 +3,10 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path = require('path')
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
-var API = require('../../../api.js')
 
 
 // CONSTANTS
@@ -46,7 +45,7 @@ test("test attributes.enabled for express", function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       if (attributes.httpResponseMessage) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:9876",
@@ -107,7 +106,7 @@ test("test attributes.enabled for express", function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       if (attributes.httpResponseMessage) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:9876",
@@ -170,7 +169,7 @@ test("test attributes.enabled for express", function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       if (attributes.httpResponseMessage) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:9876",
@@ -233,7 +232,7 @@ test("test attributes.enabled for express", function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       if (attributes.httpResponseMessage) {
         t.deepEqual(attributes, {
           "request.headers.host" : "localhost:9876",
@@ -306,7 +305,7 @@ test("test attributes.enabled for express", function (t) {
         "response.headers.contentLength": 0
       }
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
         var value = attributes[key]
