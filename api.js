@@ -393,10 +393,10 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
  * @param {Error} error
  *  The error to be traced.
  *
- * @param {object} [customParameters]
- *  Optional. Any custom parameters to be displayed in the New Relic UI.
+ * @param {object} [customAttributes]
+ *  Optional. Any custom attributes to be displayed in the New Relic UI.
  */
-API.prototype.noticeError = function noticeError(error, customParameters) {
+API.prototype.noticeError = function noticeError(error, customAttributes) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/noticeError'
   )
@@ -405,21 +405,23 @@ API.prototype.noticeError = function noticeError(error, customParameters) {
   // If high security mode is on, noticeError is disabled.
   if (this.agent.config.high_security === true) {
     logger.warnOnce(
-      "Notice Error",
-      "Notice error API is disabled by high security mode."
+      'Notice Error',
+      'Notice error API is disabled by high security mode.'
     )
     return false
   } else if (!this.agent.config.api.notice_error_enabled) {
     logger.debug(
-      "Config.api.notice_error_enabled set to false, not collecting error"
+      'Config.api.notice_error_enabled set to false, not collecting error'
     )
     return false
   }
 
-  if (typeof error === 'string') error = new Error(error)
+  if (typeof error === 'string') {
+    error = new Error(error)
+  }
   var transaction = this.agent.tracer.getTransaction()
 
-  this.agent.errors.addUserError(transaction, error, customParameters)
+  this.agent.errors.addUserError(transaction, error, customAttributes)
 }
 
 /**
