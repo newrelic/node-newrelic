@@ -49,7 +49,7 @@ test('errors in web transactions should gather the query params', function(t) {
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 7
+    var expectedValue = 8
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -135,7 +135,7 @@ test('multiple errors in web transactions should gather the query params', funct
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 7
+      var expectedValue = 8
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
@@ -225,7 +225,7 @@ test('errors in web transactions should gather and merge custom params', functio
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 5
+    var expectedValue = 6
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -332,7 +332,7 @@ test('multiple errors in web tx should gather and merge custom params', function
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 5
+      var expectedValue = 6
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
