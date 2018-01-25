@@ -546,7 +546,8 @@ function makeTrace(agent, callback) {
     rootSegment,
     {
       agentAttributes: {
-        test : 'value'
+        'request.uri': '/test?test=value',
+        test: 'value'
       },
       userAttributes: {
 
