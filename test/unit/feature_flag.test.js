@@ -1,6 +1,6 @@
 'use strict'
 
-var flags = require('../../lib/feature_flags.js')
+var flags = require('../../lib/feature_flags')
 var chai = require('chai')
 var assert = require('assert')
 var Config = require('../../lib/config')
@@ -30,52 +30,52 @@ var used = [
   'unreleased',
 ]
 
-describe("feature flags", function () {
+describe('feature flags', function() {
   var prerelease, unreleased, released
 
-  before(function(){
+  before(function() {
     prerelease = Object.keys(flags.prerelease)
     unreleased = flags.unreleased
-    released   = flags.released
+    released = flags.released
   })
 
-  it("should declare every prerelease feature in the *used* variable", function () {
-    prerelease.forEach(function cb_forEach(key) {
+  it('should declare every prerelease feature in the *used* variable', function() {
+    prerelease.forEach(function(key) {
       assert(used.indexOf(key) >= 0)
     })
   })
-  it("should declare every release feature in the *used* variable", function () {
-    released.forEach(function cb_forEach(key) {
+  it('should declare every release feature in the *used* variable', function() {
+    released.forEach(function(key) {
       assert(used.indexOf(key) >= 0)
     })
   })
-  it("should declare every unrelease feature in the *used* variable", function () {
-    unreleased.forEach(function cb_forEach(key) {
+  it('should declare every unrelease feature in the *used* variable', function() {
+    unreleased.forEach(function(key) {
       assert(used.indexOf(key) >= 0)
     })
   })
-  it("should not re-declare a flag in prerelease from released", function () {
-    prerelease.filter(function cb_filter(n) {
+  it('should not re-declare a flag in prerelease from released', function() {
+    prerelease.filter(function(n) {
       return released.indexOf(n) !== -1
     }).length.should.equal(0)
   })
-  it("should not re-declare a flag in prerelease from unreleased", function () {
-    Object.keys(flags.prerelease).filter(function cb_filter(n) {
+  it('should not re-declare a flag in prerelease from unreleased', function() {
+    Object.keys(flags.prerelease).filter(function(n) {
       return unreleased.indexOf(n) !== -1
     }).length.should.equal(0)
   })
-  it("should account for all *used* keys", function () {
-    used.forEach(function(key){
-      if (released  .indexOf(key) >= 0) return
+  it('should account for all *used* keys', function() {
+    used.forEach(function(key) {
+      if (released.indexOf(key) >= 0) return
       if (unreleased.indexOf(key) >= 0) return
       if (prerelease.indexOf(key) >= 0) return
 
       throw new Error('Flag not accounted for')
     })
   })
-  it("should warn if released flags are still in config", function () {
+  it('should warn if released flags are still in config', function() {
     Config.prototype.setLogger({
-      warn: function(){ called = true; }
+      warn: function() { called = true }
     })
     var called = false
     var config = new Config()
@@ -83,9 +83,9 @@ describe("feature flags", function () {
     config.validateFlags()
     called.should.equal(true)
   })
-  it("should warn if unreleased flags are still in config", function () {
+  it('should warn if unreleased flags are still in config', function() {
     Config.prototype.setLogger({
-      warn: function(){ called = true; }
+      warn: function() { called = true }
     })
     var called = false
     var config = new Config()
