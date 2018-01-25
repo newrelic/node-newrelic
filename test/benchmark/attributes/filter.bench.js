@@ -65,7 +65,7 @@ var attributes = [
 attributes.forEach(function(attr) {
   suite.add({
     name: attr,
-    fn: function() { return filter.test('transaction_tracer', attr) }
+    fn: function() { return filter.test(AttributeFilter.DESTINATIONS.TRANS_TRACE, attr) }
   })
 })
 
