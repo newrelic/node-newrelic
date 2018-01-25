@@ -3,6 +3,7 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
@@ -45,12 +46,16 @@ tap.test('test attributes.enabled for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
       if (attributes.httpResponseMessage) {
-        t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+        t.equal(
+          attributes.httpResponseMessage,
+          'OK',
+          'Trace contains httpResponseMessage'
+        )
       }
     })
 
@@ -99,7 +104,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '5', 'Trace attributes include `id` route param')
     })
 
@@ -148,7 +153,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.name, 'bob', 'Trace attributes include `name` query param')
     })
 
@@ -197,7 +202,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '5', 'Trace attributes include `id` route param')
       t.equal(attributes.name, 'bob', 'Trace attributes include `name` query param')
     })
@@ -243,8 +248,8 @@ tap.test('test attributes.enabled for express', function(t) {
     })
 
     agent.on('transactionFinished', function(transaction) {
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
-      t.equal(attributes.id, '5', 'attributes should include query params')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      t.equal(attributes.id, '6', 'attributes should include query params')
       t.end()
     })
 

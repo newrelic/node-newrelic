@@ -1,5 +1,6 @@
 'use strict'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
@@ -29,7 +30,7 @@ tap.test('Hapi capture params support', function(t) {
   t.test('simple case with no params', function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -53,7 +54,7 @@ tap.test('Hapi capture params support', function(t) {
   t.test('case with route params', function(t) {
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get('transaction_tracer')
+      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
     })
 
@@ -75,7 +76,7 @@ tap.test('Hapi capture params support', function(t) {
   t.test('case with query params', function(t) {
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get('transaction_tracer')
+      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
     })
 
@@ -97,7 +98,7 @@ tap.test('Hapi capture params support', function(t) {
   t.test('case with both route and query params', function(t) {
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get('transaction_tracer')
+      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
       t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
     })

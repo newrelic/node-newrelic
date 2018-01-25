@@ -1,5 +1,6 @@
 'use strict'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var test    = require('tap').test
 var request = require('request').defaults({json: true})
 var helper  = require('../../lib/agent_helper')
@@ -25,12 +26,16 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
       if (attributes.httpResponseMessage) {
-        t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
+        t.equal(
+          attributes.httpResponseMessage,
+          'OK',
+          'Trace contains httpResponseMessage'
+        )
       }
     })
 
@@ -67,7 +72,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
     })
 
@@ -104,7 +109,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.name, 'restify', 'Trace attributes include `name` query param')
     })
 
@@ -142,7 +147,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get('transaction_tracer')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
       t.equal(attributes.name, 'restify', 'Trace attributes include `name` query param')
     })

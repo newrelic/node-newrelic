@@ -1,5 +1,6 @@
 'use strict'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var params = require('../../lib/params')
 var metrics = require('../../lib/metrics_helper')
 
@@ -108,7 +109,7 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
   )
   t.equals(consume, tx.baseSegment)
 
-  var attributes = tx.trace.attributes.get('transaction_tracer')
+  var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
   t.equal(
     attributes['message.routingKey'], routingKey,
     'should have routing key transaction parameter'
