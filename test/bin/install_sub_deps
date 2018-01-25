@@ -15,7 +15,7 @@ if (process.argv.length > 2) {
 }
 
 getPackages(folder, function(packages) {
-  var correctPackages = packages.filter(function (line) {
+  var correctPackages = packages.filter(function(line) {
     return !/node_modules|example/.test(line)
   })
   install(correctPackages)
@@ -27,13 +27,12 @@ function install(packages, retry) {
 
   var failed = []
   var counter = 0
-  packages.forEach(function (packageJsonPath) {
+  packages.forEach(function(packageJsonPath) {
     var packagePath = path.resolve(packageJsonPath).split('/').slice(0, -1).join('/')
     console.log('installing deps in ' + packagePath)
-    exec('cd ' + packagePath + '&&rm -rf node_modules&&npm i',
+    exec('cd ' + packagePath + ' && rm -rf node_modules && npm i',
       {maxBuffer: 1024 * 500},
-      function (err, stdout, stderr) {
-
+      function(err, stdout, stderr) {
         if (err || isErrorOutput(stderr)) {
           printError(packageJsonPath, err || stderr)
           if (retry < retries) {
@@ -62,19 +61,19 @@ function getPackages(folder, callback) {
   if (folder) {
     getCommonPackages(function(commonPackages) {
       glob('**/test/' + folder + '/**/package.json', options,
-        function getPackages(err, packages) {
+        function gotPackages(err, packages) {
           callback(commonPackages.concat(packages))
         })
     })
   } else {
-    glob('**/test/**/package.json', options, function getPackages(err, packages) {
+    glob('**/test/**/package.json', options, function gotPackages(err, packages) {
       callback(packages)
     })
   }
 }
 
 function getCommonPackages(callback) {
-  glob('**/test/lib/**/package.json', options, function getPackages(err, packages) {
+  glob('**/test/lib/**/package.json', options, function gotPackages(err, packages) {
     packages.unshift('test/package.json', 'test/helpers/package.json')
     callback(packages)
   })

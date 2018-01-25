@@ -30,19 +30,24 @@ exports.config = {
   allow_all_headers: true,
   attributes: {
     /**
-     * Prefix of attributes to exclude from all destinations. Allows * as wildcard at end.
+     * Prefix of attributes to exclude from all destinations. Allows * as wildcard
+     * at end.
      *
-     * NOTE: If excluding headers, they must be in lowercase form to be
-     * effectively filtered, due to Node automatically lowercasing headers.
+     * NOTE: If excluding headers, they must be in camelCase form to be filtered.
      *
      * @env NEW_RELIC_ATTRIBUTES_EXCLUDE
      */
     exclude: [
       'request.headers.cookie',
       'request.headers.authorization',
-      'request.headers.proxy-authorization',
-      'request.headers.set-cookie*',
-      'request.headers.x-*'
+      'request.headers.proxyAuthorization',
+      'request.headers.setCookie*',
+      'request.headers.x*',
+      'response.headers.cookie',
+      'response.headers.authorization',
+      'response.headers.proxyAuthorization',
+      'response.headers.setCookie*',
+      'response.headers.x*'
     ]
   }
 }

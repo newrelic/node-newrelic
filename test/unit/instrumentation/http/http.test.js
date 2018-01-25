@@ -212,17 +212,17 @@ describe('built-in http module instrumentation', function() {
           path: '/path',
           method: 'GET',
           headers: {
-            invalid: 'header',
-            referer: 'valid',
-            'content-type': 'valid'
+            'invalid': 'header',
+            'referer': 'valid-referer',
+            'content-type': 'valid-type'
           }
         }, finish)
 
         function finish() {
           var attributes = transaction.trace.attributes.get('transaction_tracer')
-          expect(attributes['request.headers.invalid']).to.be.undefined()
-          expect(attributes['request.headers.referer']).to.equal('valid')
-          expect(attributes['request.headers.contentType']).to.equal('valid')
+          expect(attributes).to.not.have.property('request.headers.invalid')
+          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
+          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
           done()
         }
       })
@@ -238,19 +238,20 @@ describe('built-in http module instrumentation', function() {
           path: '/path',
           method: 'GET',
           headers: {
-            valid: 'header',
-            referer: 'valid',
-            'content-type': 'valid',
+            'valid': 'header',
+            'referer': 'valid-referer',
+            'content-type': 'valid-type',
             'X-filtered-out': 'invalid'
           }
         }, finish)
 
         function finish() {
           var attributes = transaction.trace.attributes.get('transaction_tracer')
-          expect(attributes['request.headers.x-filtered-out']).to.be.undefined()
-          expect(attributes['request.headers.valid']).to.equal('header')
-          expect(attributes['request.headers.referer']).to.equal('valid')
-          expect(attributes['request.headers.content-type']).to.equal('valid')
+          expect(attributes).to.not.have.property('request.headers.x-filtered-out')
+          expect(attributes).to.not.have.property('request.headers.xFilteredOut')
+          expect(attributes).to.have.property('request.headers.valid', 'header')
+          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
+          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
           done()
         }
       })
