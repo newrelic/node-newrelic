@@ -4,6 +4,8 @@ var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 
 tap.test('Agent#_sendErrors', function(t) {
+  t.plan(2)
+
   var config = {
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
@@ -38,14 +40,11 @@ tap.test('Agent#_sendErrors', function(t) {
     _testSendErrors(t, agent)
   })
 
-  t.autoend()
-
   function _testSendErrors(t, agent) {
     t.plan(7)
 
     agent.start(function(err) {
       if (!t.notOk(err, 'should connect without error')) {
-        console.log('Connection error:', err)
         return t.end()
       }
 
@@ -62,7 +61,11 @@ tap.test('Agent#_sendErrors', function(t) {
         t.equal(errData['request.uri'], '/nonexistent', 'should have `request.uri`')
 
         var attrs = errData.agentAttributes
-        t.deepEqual(attrs, {foo: 'bar'}, 'should have the correct attributes')
+        t.deepEqual(
+          attrs,
+          {foo: 'bar', 'request.uri': '/nonexistent'},
+          'should have the correct attributes'
+        )
 
         cb()
       }
@@ -70,7 +73,7 @@ tap.test('Agent#_sendErrors', function(t) {
       agent.on('transactionFinished', function() {
         agent._sendErrors(function(error) {
           if (!t.notOk(error, "sent errors without error")) {
-            console.log('Send error:', error)
+            return t.end()
           }
 
           agent.stop(function(error) {
