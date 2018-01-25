@@ -1,6 +1,7 @@
 'use strict'
 
 var chai = require('chai')
+var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
@@ -234,17 +235,18 @@ describe('TraceSegment', function() {
     })
 
     it('should have attributes on the trace', function() {
-      should.exist(trace.attributes.get('transaction_tracer'))
+      expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).to.exist()
     })
 
     it('should have the positional parameters from the params array', function() {
-      var attributes = trace.attributes.get('transaction_tracer')
+      var attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       expect(attributes[0]).equal('first')
       expect(attributes[1]).equal('another')
     })
 
     it('should have the named parameter from the params array', function() {
-      expect(trace.attributes.get('transaction_tracer').test3).equal('50')
+      expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
+        .to.have.property('test3', '50')
     })
 
     it('should serialize the segment with the parameters', function() {

@@ -30,7 +30,7 @@ describe('Analytics events', function() {
 
       var first = 0
       var agentAttrs = 2
-      expect(agent.events.toArray()[first][agentAttrs].test).equals('TEST')
+      expect(agent.events.toArray()[first][agentAttrs]).to.have.property('test', 'TEST')
     })
   })
 

@@ -1,10 +1,11 @@
 'use strict'
 
+var API = require('../../../api')
 var chai = require('chai')
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
 var semver = require('semver')
 var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
@@ -174,7 +175,7 @@ describe('the New Relic agent API', function() {
     it('should properly add custom attributes', function() {
       helper.runInTransaction(agent, function(transaction) {
         api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(1)
         transaction.end()
       })
@@ -189,7 +190,7 @@ describe('the New Relic agent API', function() {
           'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
         ].join(' ')
         api.addCustomAttribute(tooLong, 'will fail')
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes[tooLong]).to.be.undefined()
         transaction.end()
       })
@@ -201,7 +202,7 @@ describe('the New Relic agent API', function() {
           one: 1,
           two: 2
         })
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.one).to.equal(1)
         expect(attributes.two).to.equal(2)
         transaction.end()
@@ -212,7 +213,7 @@ describe('the New Relic agent API', function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.api.custom_attributes_enabled = false
         api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(undefined)
         agent.config.api.custom_attributes_enabled = true
         transaction.end()
@@ -226,7 +227,7 @@ describe('the New Relic agent API', function() {
           one: 1,
           two: 2
         })
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.one).to.equal(undefined)
         expect(attributes.two).to.equal(undefined)
         agent.config.api.custom_attributes_enabled = true
@@ -238,7 +239,7 @@ describe('the New Relic agent API', function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.high_security = true
         api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(undefined)
         agent.config.high_security = false
         transaction.end()
@@ -252,7 +253,7 @@ describe('the New Relic agent API', function() {
           one: 1,
           two: 2
         })
-        var attributes = transaction.trace.custom.get('transaction_tracer')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.one).to.equal(undefined)
         expect(attributes.two).to.equal(undefined)
         agent.config.high_security = false
@@ -561,18 +562,18 @@ describe('the New Relic agent API', function() {
           done()
         })
 
-        helper.runInTransaction(agent, function(transaction) {
+        helper.runInTransaction(agent, function(tx) {
           // grab segment
           agent.tracer.addSegment(NAME, null, null, false, function() {
             // HTTP instrumentation sets URL as soon as it knows it
             segment = agent.tracer.getSegment()
-            transaction.url = URL
-            transaction.verb = 'POST'
+            tx.url = URL
+            tx.verb = 'POST'
 
             // NAME THE CONTROLLER
             api.setControllerName('Test')
 
-            transaction.end()
+            tx.end()
           })
         })
       })
@@ -667,7 +668,7 @@ describe('the New Relic agent API', function() {
     describe('inside a transaction', function() {
       it('should have set the value properly', function(done) {
         agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom.get('transaction_tracer')
+          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes.TestName).equal('TestValue')
 
           done()
@@ -682,7 +683,7 @@ describe('the New Relic agent API', function() {
 
       it("should keep the most-recently seen value", function(done) {
         agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom.get('transaction_tracer')
+          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes.TestName).equal('Third')
 
           done()
@@ -712,7 +713,7 @@ describe('the New Relic agent API', function() {
         agent.config.emit('attributes.exclude')
 
         agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom.get('transaction_tracer')
+          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('ignore_me')
 
           done()

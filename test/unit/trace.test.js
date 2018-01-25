@@ -1,6 +1,7 @@
 'use strict'
 
 var chai = require('chai')
+var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
 var codec = require('../../lib/util/codec')
@@ -77,14 +78,14 @@ describe('Trace', function() {
 
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.attributes.get('transaction_tracer'))
+    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
       .deep.equal({'host.displayName': 'test-value'})
   })
 
   it('should not send host display name when not set by user', function() {
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.attributes.get('transaction_tracer')).deep.equal({})
+    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).deep.equal({})
   })
 
   describe('when inserting segments', function() {
@@ -527,7 +528,11 @@ function makeTrace(agent, callback) {
         0,
         DURATION,
         'WebTransaction/NormalizedUri/*',
-        {nr_exclusive_duration_millis: 8, 'request.uri': '/test?test=value', test: 'value'},
+        {
+          'nr_exclusive_duration_millis': 8,
+          'request.uri': '/test?test=value',
+          'test': 'value'
+        },
         [
           // TODO: ensure that the ordering is correct WRT start time
           db.toJSON(),
@@ -541,17 +546,15 @@ function makeTrace(agent, callback) {
     trace.root.timer.start / 1000,
     {},
     {
-      nr_flatten_leading : false
+      nr_flatten_leading: false
     },
     rootSegment,
     {
       agentAttributes: {
         'request.uri': '/test?test=value',
-        test: 'value'
+        'test': 'value'
       },
-      userAttributes: {
-
-      },
+      userAttributes: {},
       intrinsics: {}
     },
     []  // FIXME: parameter groups

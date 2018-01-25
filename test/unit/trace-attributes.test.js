@@ -20,21 +20,21 @@ describe('TraceAttributes', function() {
       inst = new TraceAttributes()
       inst.attributes = {
         valid: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: 50
         },
         tooLong: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: longVal
         },
         wrongDest: {
-          destinations: [ 'some_other_destination' ],
+          destinations: 0x08,
           value: 'hello'
         }
       }
 
       expect(Buffer.byteLength(longVal)).to.be.above(255)
-      var res = inst.get('test_destination')
+      var res = inst.get(0x01)
       expect(res.valid).to.equal(50)
       expect(Buffer.byteLength(res.tooLong)).to.equal(255)
     })
@@ -43,20 +43,20 @@ describe('TraceAttributes', function() {
       inst = new TraceAttributes({ limit: 2 })
       inst.attributes = {
         first: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: 'first'
         },
         second: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: 'second'
         },
         third: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: 'third'
         }
       }
 
-      var res = inst.get('test_destination')
+      var res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
       expect(res.third).to.be.undefined()
     })
@@ -65,20 +65,20 @@ describe('TraceAttributes', function() {
       inst = new TraceAttributes({ limit: 2 })
       inst.attributes = {
         first: {
-          destinations: [ 'different_destination' ],
+          destinations: 0x08,
           value: 'first'
         },
         second: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: 'second'
         },
         third: {
-          destinations: [ 'test_destination' ],
+          destinations: 0x01,
           value: 'third'
         }
       }
 
-      var res = inst.get('test_destination')
+      var res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
       expect(res.first).to.be.undefined()
     })

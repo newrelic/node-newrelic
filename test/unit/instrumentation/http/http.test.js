@@ -1,6 +1,7 @@
 'use strict'
 
 var chai = require('chai')
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var EventEmitter = require('events').EventEmitter
@@ -161,7 +162,7 @@ describe('built-in http module instrumentation', function() {
         server.listen(8123, 'localhost', function() {
           // The transaction doesn't get created until after the instrumented
           // server handler fires.
-          should.not.exist(agent.getTransaction())
+          expect(agent.getTransaction()).to.not.exist()
           done()
         })
       })
@@ -219,7 +220,7 @@ describe('built-in http module instrumentation', function() {
         }, finish)
 
         function finish() {
-          var attributes = transaction.trace.attributes.get('transaction_tracer')
+          var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('request.headers.invalid')
           expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
           expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
@@ -246,7 +247,7 @@ describe('built-in http module instrumentation', function() {
         }, finish)
 
         function finish() {
-          var attributes = transaction.trace.attributes.get('transaction_tracer')
+          var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('request.headers.x-filtered-out')
           expect(attributes).to.not.have.property('request.headers.xFilteredOut')
           expect(attributes).to.have.property('request.headers.valid', 'header')
@@ -285,19 +286,17 @@ describe('built-in http module instrumentation', function() {
       })
 
       it('should successfully fetch the page', function() {
-        fetchedStatusCode.should.equal(200)
-
-        should.exist(fetchedBody)
-        expect(fetchedBody).equal(PAGE)
+        expect(fetchedStatusCode).to.equal(200)
+        expect(fetchedBody).to.equal(PAGE)
       })
 
       it('should capture a scrubbed version of the referer header', function() {
-        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes['request.headers.referer']).to.equal('https://www.google.com/search/cats')
       })
 
       it('should include a stringified response status code', function() {
-        var attributes = transaction.trace.attributes.get('transaction_tracer')
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes['response.status']).to.equal('200')
       })
 
@@ -374,8 +373,7 @@ describe('built-in http module instrumentation', function() {
     })
 
     it('should have stored mocha\'s exception handler', function() {
-      should.exist(mochaHandlers)
-      expect(mochaHandlers.length).above(0)
+      expect(mochaHandlers).to.have.property('length').above(0)
     })
 
     describe('for http.createServer', function() {
@@ -383,7 +381,7 @@ describe('built-in http module instrumentation', function() {
         var server
         process.once('uncaughtException', function() {
           var errors = agent.errors.errors
-          expect(errors.length).equal(1)
+          expect(errors).to.have.property('length', 1)
 
           server.close()
           return done()

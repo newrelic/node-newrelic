@@ -2,6 +2,7 @@
 
 var API = require('../../../api')
 var chai = require('chai')
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var expect = chai.expect
 var hashes = require('../../../lib/util/hashes')
 var helper = require('../../lib/agent_helper')
@@ -858,8 +859,8 @@ describe('MessageShim', function() {
 
       it('should add agent attributes (e.g. routing key)', function(done) {
         wrapped('my.queue', function consumer() {
-          var segment = shim.getSegment()
-          var traceParams = segment.transaction.trace.attributes.get('transaction_tracer')
+          var tx = shim.getSegment().transaction
+          var traceParams = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(traceParams).to.have.property('message.routingKey', 'routing.key')
           expect(traceParams).to.have.property('message.queueName', 'my.queue')
           done()
