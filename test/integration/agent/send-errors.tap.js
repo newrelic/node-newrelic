@@ -41,7 +41,7 @@ tap.test('Agent#_sendErrors', function(t) {
   })
 
   function _testSendErrors(t, agent) {
-    t.plan(7)
+    t.plan(6)
 
     agent.start(function(err) {
       if (!t.notOk(err, 'should connect without error')) {
@@ -57,8 +57,6 @@ tap.test('Agent#_sendErrors', function(t) {
         if (!t.ok(errData, 'should contain error information')) {
           return cb()
         }
-
-        t.equal(errData['request.uri'], '/nonexistent', 'should have `request.uri`')
 
         var attrs = errData.agentAttributes
         t.deepEqual(

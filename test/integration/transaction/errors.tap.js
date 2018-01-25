@@ -6,7 +6,7 @@ var API = require('../../../api')
 var util = require('util')
 
 test('errors in web transactions should gather the query params', function(t) {
-  t.plan(10)
+  t.plan(9)
 
   var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
   var api = new API(agent)
@@ -36,7 +36,6 @@ test('errors in web transactions should gather the query params', function(t) {
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes['request.uri'], '/', 'should have stripped the params from the uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -78,7 +77,7 @@ test('errors in web transactions should gather the query params', function(t) {
 })
 
 test('multiple errors in web transactions should gather the query params', function(t) {
-  t.plan(19)
+  t.plan(17)
 
   var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
   var api = new API(agent)
@@ -118,11 +117,6 @@ test('multiple errors in web transactions should gather the query params', funct
 
       var attributes = error[4]
       // top level attributes
-      t.equal(
-        attributes['request.uri'],
-        '/testing',
-        'should have stripped the params from the uri'
-      )
       t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
@@ -164,7 +158,7 @@ test('multiple errors in web transactions should gather the query params', funct
 })
 
 test('errors in web transactions should gather and merge custom params', function(t) {
-  t.plan(13)
+  t.plan(12)
 
   var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
   var api = new API(agent)
@@ -175,8 +169,8 @@ test('errors in web transactions should gather and merge custom params', functio
   http.createServer(function(req, res) {
     req.resume()
 
-    api.addCustomParameter('preErrorKeep', true)
-    api.addCustomParameter('preErrorReplace', 'nooooooooo')
+    api.addCustomAttribute('preErrorKeep', true)
+    api.addCustomAttribute('preErrorReplace', 'nooooooooo')
 
     api.noticeError(new Error('errors in tx test'), {
       preErrorReplace: 'yesssssssss',
@@ -184,8 +178,8 @@ test('errors in web transactions should gather and merge custom params', functio
       postErrorReplace: 'this one is better'
     })
 
-    api.addCustomParameter('postErrorKeep', 2)
-    api.addCustomParameter('postErrorReplace', 'omg why')
+    api.addCustomAttribute('postErrorKeep', 2)
+    api.addCustomAttribute('postErrorReplace', 'omg why')
 
     res.end('success')
   }).listen(function() {
@@ -206,7 +200,6 @@ test('errors in web transactions should gather and merge custom params', functio
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes['request.uri'], '/', 'should have stripped the params from the uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -243,7 +236,7 @@ test('errors in web transactions should gather and merge custom params', functio
 })
 
 test('multiple errors in web tx should gather and merge custom params', function(t) {
-  t.plan(23)
+  t.plan(21)
 
   var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
   var api = new API(agent)
@@ -270,13 +263,13 @@ test('multiple errors in web tx should gather and merge custom params', function
   http.createServer(function(req, res) {
     req.resume()
 
-    api.addCustomParameter('preErrorKeep', true)
-    api.addCustomParameter('preErrorReplace', 'nooooooooo')
+    api.addCustomAttribute('preErrorKeep', true)
+    api.addCustomAttribute('preErrorReplace', 'nooooooooo')
 
     api.noticeError(new Error(errorData[0].name), errorData[0].customParams)
 
-    api.addCustomParameter('postErrorKeep', 2)
-    api.addCustomParameter('postErrorReplace', 'omg why')
+    api.addCustomAttribute('postErrorKeep', 2)
+    api.addCustomAttribute('postErrorReplace', 'omg why')
 
     api.noticeError(new Error(errorData[1].name), errorData[1].customParams)
 
@@ -310,7 +303,6 @@ test('multiple errors in web tx should gather and merge custom params', function
 
       var attributes = error[4]
       // top level attributes
-      t.equal(attributes['request.uri'], '/', 'should have stripped the params from the uri')
       t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
@@ -370,7 +362,6 @@ test('errors in background transactions are collected with correct data', functi
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes['request.uri'], '', 'should have an empty uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
