@@ -940,8 +940,6 @@ describe('Errors', function() {
         var params = error[4]
 
         should.exist(params)
-        expect(params['request.uri']).equal('/test-request/zxrkbl')
-
         should.exist(params.stack_trace)
         expect(params.stack_trace[0]).equal('Error: 500 test error')
       })
@@ -973,15 +971,10 @@ describe('Errors', function() {
         var message = error[2]
         expect(message).equal('HttpError 503')
       })
-
-<<<<<<< HEAD
-      should.exist(params)
-=======
       it('should associate errors with an error type', function() {
         var messageClass = error[3]
         expect(messageClass).equal('Error')
       })
->>>>>>> test(errors): update ErrorAggregator tests to use att filters; clean-up
 
       it('should associate errors with parameters', function() {
         var params = error[4]
@@ -1035,11 +1028,6 @@ describe('Errors', function() {
             transaction = agent.getTransaction()
             active = process.domain
 
-<<<<<<< HEAD
-      expect(messageClass).equal('Error')
-    })
-  })
-=======
             // trigger the error handler
             throw new Error('sample error')
           })
@@ -1053,7 +1041,6 @@ describe('Errors', function() {
         transaction.end()
         process._events.uncaughtException = mochaHandlers
       })
->>>>>>> test(errors): update ErrorAggregator tests to use att filters; clean-up
 
       it('should not have a domain active', function() {
         should.not.exist(active)
