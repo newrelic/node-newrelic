@@ -120,7 +120,7 @@ describe('Errors', function() {
       })
     })
 
-    it('passed in custom parameters overrides custom parameters', function() {
+    it('overrides existing custom attributes with new custom attributes', function() {
       trans.trace.custom.a = 'A'
       error.add(trans, new Error(), {a: 'AA'})
       agent.errors.onTransactionFinished(trans, agent.metrics)
@@ -139,7 +139,7 @@ describe('Errors', function() {
       })
     })
 
-    it('passed in custom parameters overrides custom parameters', function() {
+    it('does not add custom attributes in high security mode', function() {
       agent.config.high_security = true
       error.add(trans, new Error(), {a: 'AA'})
       agent.errors.onTransactionFinished(trans, agent.metrics)
