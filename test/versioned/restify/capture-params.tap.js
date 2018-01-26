@@ -11,7 +11,7 @@ test("Restify capture params introspection", function(t) {
   t.autoend()
 
   t.test('simple case with no params', function(t) {
-    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
@@ -58,7 +58,7 @@ test("Restify capture params introspection", function(t) {
   })
 
   t.test('case with route params', function(t) {
-    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
@@ -96,7 +96,7 @@ test("Restify capture params introspection", function(t) {
   })
 
   t.test('case with query params', function(t) {
-    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
@@ -135,7 +135,7 @@ test("Restify capture params introspection", function(t) {
   })
 
   t.test('case with both route and query params', function(t) {
-    var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 

@@ -92,7 +92,7 @@ tap.test('Agent#_sendErrors', function(t) {
   }
 
   function setupAgent(t, config) {
-    var agent = helper.loadMockedAgent({'send_request_uri_attribute': true}, config)
+    var agent = helper.loadMockedAgent(null, config)
     t.tearDown(function() {
       helper.unloadAgent(agent)
     })

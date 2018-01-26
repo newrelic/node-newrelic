@@ -6,46 +6,46 @@ var expect  = chai.expect
 
 
 describe('Error events', function() {
-  describe('when error events are disabled', function () {
+  describe('when error events are disabled', function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it("should not send events to server", function (done) {
-      agent.collector.errorEvents = function () {
+    it("should not send events to server", function(done) {
+      agent.collector.errorEvents = function() {
         throw new Error('Should not have sent error events.')
       }
       agent.config.error_collector.capture_events = false
       agent.errors.add(null, new Error('some error'))
-      agent._sendErrorEvents(function cb__sendEvents() {
+      agent._sendErrorEvents(function() {
         done()
       })
     })
 
-    it('collector can override', function () {
+    it('collector can override', function() {
       agent.config.error_collector.capture_events = false
-      expect(function () {
+      expect(function() {
         agent.config.onConnect({ 'error_collector.capture_events': true })
       }).not.throws()
       expect(agent.config.error_collector.capture_events).equals(true)
     })
   })
 
-  describe('when error events are enabled', function () {
+  describe('when error events are enabled', function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
       agent.config.error_collector.capture_events = true
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
@@ -55,11 +55,10 @@ describe('Error events', function() {
 
       beforeEach(function(done) {
         agent.config.attributes.enabled = true
-        agent.config.feature_flag.send_request_uri_attribute = true
 
         agent.collector.isConnected = function() { return true }
         agent.collector.metricData = function(payload, cb) { cb() }
-        agent.collector.errorEvents = function (_payload, cb) {
+        agent.collector.errorEvents = function(_payload, cb) {
           errorsSent = true
           payload = _payload
           cb()
@@ -87,7 +86,7 @@ describe('Error events', function() {
         payload = null
       })
 
-      it('should send events to server', function (done) {
+      it('should send events to server', function(done) {
         agent._sendMetrics(function() {
           agent._sendErrorEvents(function() {
             expect(errorsSent).to.be.true
@@ -96,7 +95,7 @@ describe('Error events', function() {
         })
       })
 
-      it('should send agent attributes', function (done) {
+      it('should send agent attributes', function(done) {
         agent._sendMetrics(function() {
           agent._sendErrorEvents(function() {
             expect(payload).to.be.an.instanceof(Array)
@@ -113,23 +112,23 @@ describe('Error events', function() {
       })
     })
 
-    it('collector can override', function () {
-      expect(function () {
+    it('collector can override', function() {
+      expect(function() {
         agent.config.onConnect({ 'error_collector.capture_events': false })
       }).not.throws()
       expect(agent.config.error_collector.capture_events).equals(false)
     })
 
-    it('collector can disable using the emergency shut off', function () {
-      expect(function () {
+    it('collector can disable using the emergency shut off', function() {
+      expect(function() {
         agent.config.onConnect({ collect_error_events: false })
       }).not.throws()
       expect(agent.config.error_collector.capture_events).equals(false)
     })
 
-    it('collector cannot enable using the emergency shut off', function () {
+    it('collector cannot enable using the emergency shut off', function() {
       agent.config.error_collector.capture_events = false
-      expect(function () {
+      expect(function() {
         agent.config.onConnect({ collect_error_events: true })
       }).not.throws()
       expect(agent.config.error_collector.capture_events).equals(false)
@@ -139,32 +138,32 @@ describe('Error events', function() {
   describe('top-level setting collect_error_events setting', function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it('overrides error_collector.capture_events when set to "false"', function() {
-      agent.collector.errorEvents = function () {
+    it('overrides error_collector.capture_events when "false"', function(done) {
+      agent.collector.errorEvents = function() {
         throw new Error() // FAIL
       }
       agent.config.error_collector.capture_events = true
       agent.config.collect_error_events = false
-      agent._sendErrorEvents(function cb__sendEvents() {
+      agent._sendErrorEvents(function() {
         done()
       })
     })
 
-    it('does not override error_collector.capture_events when set to "true"', function() {
-      agent.collector.errorEvents = function () {
+    it('does not override error_collector.capture_events when "true"', function(done) {
+      agent.collector.errorEvents = function() {
         throw new Error() // FAIL
       }
       agent.config.error_collector.capture_events = false
       agent.config.collect_error_events = true
-      agent._sendErrorEvents(function cb__sendEvents() {
+      agent._sendErrorEvents(function() {
         done()
       })
     })

@@ -11,7 +11,7 @@ tap.test('Hapi vhost support', function(t) {
   t.autoend()
 
   t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent = helper.instrumentMockedAgent()
     var server = utils.getServer()
     var port
 

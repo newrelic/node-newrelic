@@ -18,7 +18,7 @@ function runTests(createServer) {
     var port = null
 
     t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
+      agent = helper.instrumentMockedAgent()
 
       server = createServer()
 

@@ -15,7 +15,7 @@ tap.test('Hapi capture params support', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
+    agent = helper.instrumentMockedAgent()
     server = utils.getServer()
 
     agent.config.attributes.enabled = true
