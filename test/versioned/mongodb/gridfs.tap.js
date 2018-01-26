@@ -5,7 +5,7 @@ var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
 
 tap.test('agent instrumentation of MongoDB when GridFS is used', function(t) {
-  t.autoend()
+  t.plan(2)
 
   helper.bootstrapMongoDB([], function(err) {
     if (err) t.fail(err)

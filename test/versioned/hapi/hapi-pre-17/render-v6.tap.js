@@ -1,15 +1,14 @@
 'use strict'
 
 var path = require('path')
-var tap = require('tap')
+var test = require('tap').test
 var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
+var helper = require('../../../lib/agent_helper')
+var API = require('../../../../api')
 var utils = require('./hapi-utils')
-var fixtures = require('./fixtures')
+var fixtures = require('../fixtures')
 
-
-tap.test('agent instrumentation of Hapi', function(t) {
+test('agent instrumentation of Hapi', function(t) {
   t.plan(4)
 
   var port = null
@@ -43,13 +42,13 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.start(function() {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function(error, response, body) {
-        t.error(error, 'should not error making request')
+        t.error(error, 'should not fail to make request')
 
         t.ok(
           /application\/json/.test(response.headers['content-type']),
           'got correct content type'
         )
-        t.deepEqual(JSON.parse(body), {yep: true}, 'response survived')
+        t.deepEqual(JSON.parse(body), {'yep':true}, 'response survived')
 
         var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
@@ -84,9 +83,9 @@ tap.test('agent instrumentation of Hapi', function(t) {
     var config = {
       options: {
         views: {
-          path: path.join(__dirname, 'views'),
+          path: path.join(__dirname, '../views'),
           engines: {
-            ejs: 'ejs'
+            ejs: require('ejs')
           }
         }
       }
@@ -130,9 +129,9 @@ tap.test('agent instrumentation of Hapi', function(t) {
     var config = {
       options: {
         views: {
-          path: path.join(__dirname, 'views'),
+          path: path.join(__dirname, '../views'),
           engines: {
-            ejs: 'ejs'
+            ejs: require('ejs')
           }
         }
       }

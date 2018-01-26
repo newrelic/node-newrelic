@@ -9,7 +9,7 @@
       },
       "dependencies": {
         "mysql2": ">=1",
-        "generic-pool": "2.4"
+        "generic-pool": "2.4 <2.5"
       },
       "files": [
         "basic-pool.tap.js",
@@ -19,5 +19,8 @@
       ]
     }
   ],
-  "dependencies": {}
+  "dependencies": {
+    "generic-pool": "^2.4.6",
+    "mysql2": "^1.5.1"
+  }
 }

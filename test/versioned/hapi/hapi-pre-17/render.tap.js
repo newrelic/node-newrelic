@@ -1,16 +1,16 @@
 'use strict'
 
-var tap = require('tap')
 var path = require('path')
+var tap = require('tap')
 var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
+var helper = require('../../../lib/agent_helper')
+var API = require('../../../../api')
 var utils = require('./hapi-utils')
-var fixtures = require('./fixtures')
+var fixtures = require('../fixtures')
 
 
 tap.test('agent instrumentation of Hapi', function(t) {
-  t.autoend()
+  t.plan(4)
 
   var port = null
   var agent = null
@@ -51,9 +51,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
         )
         t.deepEqual(JSON.parse(body), {yep: true}, 'response survived')
 
-        var stats
-
-        stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
+        var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
         t.equal(stats.callCount, 1, '/test was only requested once')
 
@@ -83,14 +81,18 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('using EJS templates', {timeout: 1000}, function(t) {
-    server = utils.getServer()
-
-    server.views({
-      path: path.join(__dirname, 'views'),
-      engines: {
-        ejs: require('ejs')
+    var config = {
+      options: {
+        views: {
+          path: path.join(__dirname, '../views'),
+          engines: {
+            ejs: 'ejs'
+          }
+        }
       }
-    })
+    }
+
+    server = utils.getServer(config)
 
     server.route({
       method: 'GET',
@@ -125,14 +127,18 @@ tap.test('agent instrumentation of Hapi', function(t) {
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    server = utils.getServer()
-
-    server.views({
-      path: path.join(__dirname, 'views'),
-      engines: {
-        ejs: require('ejs')
+    var config = {
+      options: {
+        views: {
+          path: path.join(__dirname, '../views'),
+          engines: {
+            ejs: 'ejs'
+          }
+        }
       }
-    })
+    }
+
+    server = utils.getServer(config)
 
     server.route({
       method: 'GET',
@@ -184,7 +190,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
         var errors = agent.errors.errors
         t.ok(errors, 'errors were found')
-        t.equal(errors.length, 1, 'should be 1 error ')
+        t.equal(errors.length, 1, 'should be 1 error')
 
         var first = errors[0]
         t.ok(first, 'have the first error')

@@ -1,6 +1,6 @@
 'use strict'
 
-var helper = require('../../lib/agent_helper')
+var helper = require('../../../lib/agent_helper')
 var request = require('request')
 var tap = require('tap')
 var utils = require('./hapi-17-utils')

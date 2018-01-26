@@ -2,7 +2,7 @@
 
 var request = require('request')
 var tap = require('tap')
-var helper = require('../../lib/agent_helper')
+var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-utils')
 
 tap.test('Hapi.ext', function(t) {
@@ -74,6 +74,7 @@ tap.test('Hapi.ext', function(t) {
         }
       }
     ]
+
     server.ext(config)
 
     addRouteAndGet(t)
@@ -82,7 +83,6 @@ tap.test('Hapi.ext', function(t) {
   t.test('does not crash on non-request events', function(t) {
     server.ext('onPreStart', function(s, next) {
       t.notOk(agent.getTransaction(), 'should not have transaction in server events')
-      t.equal(s, server, 'should pass through arguments without change')
       next()
     })
 

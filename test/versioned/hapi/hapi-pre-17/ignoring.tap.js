@@ -2,8 +2,8 @@
 
 var tap = require('tap')
 var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
+var helper = require('../../../lib/agent_helper')
+var API = require('../../../../api')
 var utils = require('./hapi-utils')
 
 tap.test('ignoring a Hapi route', function(t) {
