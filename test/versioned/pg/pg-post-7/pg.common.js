@@ -238,13 +238,13 @@ module.exports = function runTests(name, clientFactory) {
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
+            return t.end()
           }
 
           client.query(insQuery, [pkVal, colVal], function(error, ok) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
+              return t.end()
             }
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -254,8 +254,8 @@ module.exports = function runTests(name, clientFactory) {
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
-              if (error) {
-                t.fail(error)
+              if (!t.error(error)) {
+                return t.end()
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
@@ -272,7 +272,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(36)
+      t.plan(38)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -285,8 +285,8 @@ module.exports = function runTests(name, clientFactory) {
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
         var pool = new pg.Pool(CON_OBJ)
         pool.query(insQuery, function(error, ok) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
+            return t.end()
           }
 
           t.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -296,8 +296,8 @@ module.exports = function runTests(name, clientFactory) {
           selQuery += PK + '=' + pkVal + ';'
 
           pool.query(selQuery, function(error, value) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
+              return t.end()
             }
 
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
@@ -313,7 +313,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('using Pool constructor', function(t) {
-      t.plan(36)
+      t.plan(39)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -334,13 +334,13 @@ module.exports = function runTests(name, clientFactory) {
         }
 
         pool.connect(function(error, client, done) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
+            return t.end()
           }
 
           client.query(insQuery, function(error, ok) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
+              return t.end()
             }
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
@@ -350,8 +350,8 @@ module.exports = function runTests(name, clientFactory) {
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
-              if (error) {
-                t.fail(error)
+              if (!t.error(error)) {
+                return t.end()
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
@@ -372,9 +372,9 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     // https://github.com/newrelic/node-newrelic/pull/223
-    t.test("query using an config object with `text` getter instead of property",
+    t.test('query using an config object with `text` getter instead of property',
         function(t) {
-      t.plan(1)
+      t.plan(3)
       var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
@@ -404,13 +404,13 @@ module.exports = function runTests(name, clientFactory) {
         var config = new CustomConfigClass()
 
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
+            return t.end()
           }
 
           client.query(config, [pkVal, colVal], function(error) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
+              return t.end()
             }
 
             var segment = findSegment(
@@ -423,8 +423,8 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test("should add datastore instance parameters to slow query traces", function(t) {
-      t.plan(5)
+    t.test('should add datastore instance parameters to slow query traces', function(t) {
+      t.plan(7)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
@@ -438,13 +438,13 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
+            return t.end()
           }
 
           client.query('SELECT * FROM pg_sleep(1);', function slowQueryCB(error) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
+              return t.end()
             }
 
             transaction.end(function() {
@@ -458,7 +458,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test("should not add datastore instance parameters to slow query traces when" +
         " disabled", function(t) {
-      t.plan(3)
+      t.plan(5)
 
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
@@ -477,13 +477,13 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         client.connect(function(error) {
-          if (error) {
-            t.fail(error)
+          if (!t.error(error)) {
+            return t.end()
           }
 
           client.query('SELECT * FROM pg_sleep(1);', function(error) {
-            if (error) {
-              t.fail(error)
+            if (!t.error(error)) {
+              return t.end()
             }
 
             transaction.end(function() {
