@@ -975,11 +975,6 @@ describe('Errors', function() {
         var messageClass = error[3]
         expect(messageClass).equal('Error')
       })
-
-      it('should associate errors with parameters', function() {
-        var params = error[4]
-        expect(params['request.uri']).equal('/test-request/zxrkbl')
-      })
     })
 
     describe('when merging from failed collector delivery', function() {
