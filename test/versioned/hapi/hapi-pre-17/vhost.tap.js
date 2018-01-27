@@ -1,6 +1,6 @@
 'use strict'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
