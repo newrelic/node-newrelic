@@ -167,6 +167,33 @@ tap.test('Hapi router introspection', function(t) {
       })
     })
   })
+
+  t.test('404 transaction is named correctly', function(t) {
+    agent.on('transactionFinished', function(tx) {
+      t.equal(
+        tx.trace.root.children[0].name,
+        'WebTransaction/Nodejs/GET/(not found)',
+        '404 segment has standardized name'
+      )
+    })
+
+    server.start().then(function() {
+      port = server.info.port
+      var params = {
+        uri: 'http://localhost:' + port + '/test',
+        json: true
+      }
+      request.get(params, function(error, res, body) {
+        t.equal(res.statusCode, 404, 'nonexistent route was not found')
+        t.deepEqual(
+          body,
+          {statusCode: 404, error: 'Not Found', message: 'Not Found'},
+          'got expected response'
+        )
+        t.end()
+      })
+    })
+  })
 })
 
 function verifier(t, verb) {
