@@ -97,12 +97,12 @@ module.exports = function runTests(name, clientFactory) {
     var expectedNames = Object.keys(expected)
     var unscopedNames = Object.keys(unscoped)
 
-    expectedNames.forEach(function(name) {
-      t.ok(unscoped[name], 'should have unscoped metric ' + name)
-      if (unscoped[name]) {
+    expectedNames.forEach(function(expectedName) {
+      t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
+      if (unscoped[expectedName]) {
         t.equals(
-          unscoped[name].callCount, expected[name],
-          'metric ' + name + ' should have correct callCount'
+          unscoped[expectedName].callCount, expected[expectedName],
+          'metric ' + expectedName + ' should have correct callCount'
         )
       }
     })
@@ -203,8 +203,8 @@ module.exports = function runTests(name, clientFactory) {
     t.beforeEach(function(done) {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
-      var name = require.resolve('pg')
-      delete require.cache[name]
+      var pgResolved = require.resolve('pg')
+      delete require.cache[pgResolved]
 
       agent = helper.instrumentMockedAgent()
       pg = clientFactory()
@@ -306,17 +306,17 @@ module.exports = function runTests(name, clientFactory) {
           query.on('end', function() {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
+            var selQueryStr = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            selQueryStr += PK + '=' + pkVal + ';'
 
-            var query = client.query(selQuery)
+            var selQuery = client.query(selQueryStr)
 
-            query.on('error', function(err) {
+            selQuery.on('error', function(err) {
               t.error(err, 'error while querying')
               t.end()
             })
 
-            query.on('end', function() {
+            selQuery.on('end', function() {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
 
               transaction.end(function() {
@@ -361,17 +361,17 @@ module.exports = function runTests(name, clientFactory) {
           query.addListener('end', function() {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
+            var selQueryStr = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            selQueryStr += PK + '=' + pkVal + ';'
 
-            var query = client.query(selQuery)
+            var selQuery = client.query(selQueryStr)
 
-            query.addListener('error', function(err) {
+            selQuery.addListener('error', function(err) {
               t.error(err, 'error while querying')
               t.end()
             })
 
-            query.addListener('end', function() {
+            selQuery.addListener('end', function() {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
 
               transaction.end(function() {
@@ -476,7 +476,7 @@ module.exports = function runTests(name, clientFactory) {
 
               transaction.end(function() {
                 if (pool.end instanceof Function) {
-                  pool.end()
+                  pool.end(function() {})
                 }
 
                 done(true)
