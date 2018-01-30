@@ -34,7 +34,10 @@
         "mongodb": ">=2.1 <3"
       },
       "files": [
-        "collection-v2.tap.js",
+        "collection-find.tap.js",
+        "collection-index.tap.js",
+        "collection-misc.tap.js",
+        "collection-update.tap.js",
         "cursor-v2.tap.js",
         "db-v2.tap.js"
       ]
