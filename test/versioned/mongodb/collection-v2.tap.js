@@ -371,8 +371,9 @@ collectionTest('group', function groupTest(t, collection, verify) {
 collectionTest('indexes', function indexesTest(t, collection, verify) {
   collection.indexes(function done(err, data) {
     t.error(err)
-    t.deepEqual(data && data[0], {
-      v: 1,
+    var result = data && data[0]
+    t.deepEqual(result, {
+      v: result && result.v,
       key: {_id: 1},
       name: '_id_',
       ns: DB_NAME + '.testCollection'

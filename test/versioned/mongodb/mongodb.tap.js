@@ -4,6 +4,7 @@ var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
 
 /*
@@ -33,6 +34,7 @@ function addMetricsVerifier(t, agent, operation, calls, host, port) {
   }
 
   agent.once('transactionFinished', function() {
+    t.comment('metrics verifier start')
     try {
       t.equals(
         agent.metrics.getMetric('Datastore/all').callCount,
@@ -64,15 +66,17 @@ function addMetricsVerifier(t, agent, operation, calls, host, port) {
         'should find all calls to the local instance'
       )
     } catch (error) {
-      t.fail(error.stack)
+      t.error(error.stack)
       t.end()
     }
+    t.comment('metrics verifier complete')
   })
 }
 
 /* eslint-disable max-params */
 function verifyTrace(t, segment, operation, host, port, done) {
   /* eslint-enable max-params */
+  t.comment('verifyTrace start')
   if (host instanceof Function) {
     // verifyTrace(t, segment, operation, done)
     done = host
@@ -118,11 +122,12 @@ function verifyTrace(t, segment, operation, host, port, done) {
     t.ok(op_segment.children.length > 0, 'should have at least one child')
     t.ok(op_segment._isEnded(), 'should have ended')
   } catch (error) {
-    t.fail(error)
+    t.error(error)
     t.end()
   }
 
   // done and done!
+  t.comment('verifyTrace complete')
   done && done()
 }
 
@@ -160,21 +165,21 @@ function runWithDB(t, callback) {
   var db = new mongodb.Db(DB_NAME, server, {w: 1, safe: true})
 
 
-  t.tearDown(function cb_tearDown() {
+  t.tearDown(function() {
     db.close(true, function(error) {
-      if (error) t.fail(error)
+      if (error) t.error(error)
     })
   })
 
-  db.open(function cb_open(error, db) {
+  db.open(function(error) {
     if (error) {
-      t.fail(error)
+      t.error(error)
       return t.end()
     }
 
     db.createCollection(COLLECTION, {safe: false}, function(error, collection) {
       if (error) {
-        t.fail(error)
+        t.error(error)
         return t.end()
       }
 
@@ -1149,12 +1154,15 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
     t.test('aggregate', function(t) {
       t.autoend()
 
-      t.test('inside transaction', function(t) {
-        t.plan(2 + TRACE_VERIFIER_COUNT)
+      var mongoVersion = require('mongodb/package').version
+      var skip = semver.satisfies(mongoVersion, '<2')
+
+      t.test('inside transaction', {skip: skip}, function(t) {
+        t.plan(3 + TRACE_VERIFIER_COUNT)
 
         runWithTransaction(t, function(agent, collection, transaction) {
           collection.aggregate([{$match: {id: 1}}], function(error, data) {
-            if (error) t.fail(error)
+            t.error(error)
 
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.deepEqual(data, [])
@@ -1165,12 +1173,12 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
         })
       })
 
-      t.test('outside transaction', function(t) {
-        t.plan(7)
+      t.test('outside transaction', {skip: skip}, function(t) {
+        t.plan(8)
 
         runWithoutTransaction(t, function(agent, collection) {
           collection.aggregate([{$match: {id: 1}}], function(error, data) {
-            if (error) t.fail(error)
+            t.error(error)
 
             t.notOk(agent.getTransaction(), 'should have no transaction')
             t.deepEqual(data, [])
@@ -1207,7 +1215,7 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
 
       t.plan(2 + TRACE_VERIFIER_COUNT + METRICS_VERIFIER_COUNT)
       db.open(function(err) {
-        if (err) t.fail(err)
+        t.error(err)
 
         var collection = db.collection(COLLECTION)
         helper.runInTransaction(agent, function(tx) {
@@ -1218,7 +1226,7 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
             { $set: {__updatedWith: 'yup'} },
             { safe: true, multi: true },
             function(err) {
-              if (err) t.fail(err)
+              t.error(err)
               tx.end(function() {
                 verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
               })
