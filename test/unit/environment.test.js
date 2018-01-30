@@ -17,24 +17,17 @@ var semver = require('semver')
 
 
 function find(settings, name) {
-  var items = settings.filter(function cb_filter(candidate) {
+  var items = settings.filter(function(candidate) {
     return candidate[0] === name
   })
 
-  expect(items.length).equal(1)
-
-  return items[0][1]
+  return items[0] && items[0][1]
 }
 
 describe('the environment scraper', function() {
   var settings = null
 
-  before(function(done) {
-    environment.getJSON(function(err, data) {
-      settings = data
-      done(err)
-    })
-  })
+  before(reloadEnvironment)
 
   it('should allow clearing of the dispatcher', function() {
     environment.setDispatcher('custom')
@@ -90,11 +83,11 @@ describe('the environment scraper', function() {
   })
 
   it('should have some settings', function() {
-    expect(settings.length).above(1)
+    expect(settings.length).to.be.above(1)
   })
 
   it('should find at least one CPU', function() {
-    expect(find(settings, 'Processors')).above(0)
+    expect(find(settings, 'Processors')).to.be.above(0)
   })
 
   it('should have found an operating system', function() {
@@ -120,7 +113,7 @@ describe('the environment scraper', function() {
 
   describe('with process.config', function() {
     it('should know whether npm was installed with Node.js', function() {
-      should.exist(find(settings, 'npm installed?'))
+      expect(find(settings, 'npm installed?')).to.exist()
     })
 
     it('should know whether WAF was installed with Node.js', function() {
@@ -158,6 +151,53 @@ describe('the environment scraper', function() {
 
     it('should know whether Event Tracing for Windows was configured', function() {
       should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'))
+    })
+  })
+
+  describe('without process.config', function() {
+    var conf = null
+
+    before(function(done) {
+      conf = process.config
+      process.config = null
+      reloadEnvironment(done)
+    })
+
+    after(function(done) {
+      process.config = conf
+      reloadEnvironment(done)
+    })
+
+    it('should not know whether npm was installed with Node.js', function() {
+      expect(find(settings, 'npm installed?')).to.not.exist()
+    })
+
+    it('should not know whether WAF was installed with Node.js', function() {
+      expect(find(settings, 'WAF build system installed?')).to.not.exist()
+    })
+
+    it('should not know whether OpenSSL support was compiled into Node.js', function() {
+      expect(find(settings, 'OpenSSL support?')).to.not.exist()
+    })
+
+    it('should not know whether OpenSSL was dynamically linked in', function() {
+      expect(find(settings, 'Dynamically linked to OpenSSL?')).to.not.exist()
+    })
+
+    it('should not know whether V8 was dynamically linked in', function() {
+      expect(find(settings, 'Dynamically linked to V8?')).to.not.exist()
+    })
+
+    it('should not know whether Zlib was dynamically linked in', function() {
+      expect(find(settings, 'Dynamically linked to Zlib?')).to.not.exist()
+    })
+
+    it('should not know whether DTrace support was configured', function() {
+      expect(find(settings, 'DTrace support?')).to.not.exist()
+    })
+
+    it('should not know whether Event Tracing for Windows was configured', function() {
+      expect(find(settings, 'Event Tracing for Windows (ETW) support?')).to.not.exist()
     })
   })
 
@@ -267,8 +307,8 @@ describe('the environment scraper', function() {
         }
       ], cb)
 
-      function makeDir(dir, cb) {
-        fs.mkdir(dir, function(err) {
+      function makeDir(dirp, cb) {
+        fs.mkdir(dirp, function(err) {
           cb(err && err.code !== 'EEXIST' ? err : null)
         })
       }
@@ -323,4 +363,11 @@ describe('the environment scraper', function() {
       (find(nSettings, 'NODE_ENV')).should.equal('production')
     })
   })
+
+  function reloadEnvironment(cb) {
+    environment.getJSON(function(err, data) {
+      settings = data
+      cb(err)
+    })
+  }
 })
