@@ -915,6 +915,10 @@ describe('the New Relic agent API', function() {
   })
 
   describe("when handed an error to trace", function() {
+    beforeEach(function() {
+      agent.config.attributes.enabled = true
+    })
+
     it("should add the error even without a transaction", function() {
       expect(agent.errors.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
@@ -946,6 +950,21 @@ describe('the New Relic agent API', function() {
       expect(params.userAttributes.present).equal('yep')
     })
 
+    it('should respect attribute filter rules', function() {
+      agent.config.attributes.exclude.push('unwanted')
+      agent.config.emit('attributes.exclude')
+      expect(agent.errors.errors.length).equal(0)
+      api.noticeError(
+        new TypeError('this test is bogus, man'),
+        {present: 'yep', unwanted: 'nope'}
+      )
+      expect(agent.errors.errors.length).equal(1)
+
+      var params = agent.errors.errors[0][4]
+      expect(params.userAttributes.present).equal('yep')
+      expect(params.userAttributes.unwanted).to.be.undefined()
+    })
+
     it("should add the error associated to a transaction", function(done) {
       expect(agent.errors.errors.length).to.equal(0)
 
@@ -967,10 +986,11 @@ describe('the New Relic agent API', function() {
       })
     })
 
-    it("should notice custom parameters associated with an error", function(done) {
+    it('should notice custom attributes associated with an error', function(done) {
       expect(agent.errors.errors.length).equal(0)
       var orig = agent.config.attributes.exclude
       agent.config.attributes.exclude = ['ignored']
+      agent.config.emit('attributes.exclude')
 
       agent.on('transactionFinished', function(transaction) {
         expect(agent.errors.errors.length).equal(1)
@@ -979,7 +999,7 @@ describe('the New Relic agent API', function() {
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
         expect(caught[4].userAttributes.hi).equal('yo')
-        should.not.exist(caught[4].ignored)
+        expect(caught[4].ignored).to.be.undefined()
 
         expect(transaction.ignore).equal(false)
 
@@ -988,7 +1008,7 @@ describe('the New Relic agent API', function() {
       })
 
       helper.runInTransaction(agent, function(transaction) {
-        api.noticeError(new TypeError('test error'), {hi : 'yo', ignored : 'yup'})
+        api.noticeError(new TypeError('test error'), {hi: 'yo', ignored: 'yup'})
         transaction.end()
       })
     })

@@ -1,11 +1,11 @@
 'use strict'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-utils')
-var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
+var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 tap.test('Hapi vhost support', function(t) {
   t.plan(1)
@@ -13,7 +13,7 @@ tap.test('Hapi vhost support', function(t) {
   var port = null
 
   t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent = helper.instrumentMockedAgent()
     var server = utils.getServer()
 
     // disabled by default

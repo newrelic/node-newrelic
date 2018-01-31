@@ -18,12 +18,13 @@ function runTests(createServer) {
     var port = null
 
     t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
+      agent = helper.instrumentMockedAgent()
 
       server = createServer()
 
       // disabled by default
       agent.config.attributes.enabled = true
+      agent.config.allow_all_headers = false
       done()
     })
 

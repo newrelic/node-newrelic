@@ -18,10 +18,7 @@ tap.test('test attributes.enabled for express', function(t) {
   t.autoend()
 
   t.test('no variables', function(t) {
-    var agent = helper.instrumentMockedAgent({
-      express4: true,
-      send_request_uri_attribute: true
-    })
+    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
@@ -36,6 +33,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -76,10 +74,7 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('route variables', function(t) {
-    var agent = helper.instrumentMockedAgent({
-      express4: true,
-      send_request_uri_attribute: true
-    })
+    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
@@ -94,6 +89,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -125,10 +121,7 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('query variables', {timeout : 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent({
-      express4: true,
-      send_request_uri_attribute: true
-    })
+    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
@@ -143,6 +136,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -174,10 +168,7 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('route and query variables', function(t) {
-    var agent = helper.instrumentMockedAgent({
-      express4: true,
-      send_request_uri_attribute: true
-    })
+    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
@@ -192,6 +183,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -224,10 +216,7 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('query params mask route attributes', function(t) {
-    var agent = helper.instrumentMockedAgent({
-      express4: true,
-      send_request_uri_attribute: true
-    })
+    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
@@ -242,6 +231,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
     // set attributes.enabled so we get the data we need.
     agent.config.attributes.enabled = true
+    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       res.end()

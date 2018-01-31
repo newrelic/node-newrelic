@@ -8,7 +8,7 @@ var util = require('util')
 test('errors in web transactions should gather the query params', function(t) {
   t.plan(9)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
@@ -79,7 +79,7 @@ test('errors in web transactions should gather the query params', function(t) {
 test('multiple errors in web transactions should gather the query params', function(t) {
   t.plan(17)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
   var names = [
@@ -160,7 +160,7 @@ test('multiple errors in web transactions should gather the query params', funct
 test('errors in web transactions should gather and merge custom params', function(t) {
   t.plan(12)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
@@ -238,7 +238,7 @@ test('errors in web transactions should gather and merge custom params', functio
 test('multiple errors in web tx should gather and merge custom params', function(t) {
   t.plan(21)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
