@@ -718,6 +718,24 @@ describe('Shim', function() {
         toWrap = null
       })
 
+      it('should make the segment translucent when `end` is emitted', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', stream: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.equal(stream)
+        })
+
+        expect(stream.segment.opaque).to.be.true()
+        setTimeout(function() {
+          stream.emit('end')
+          expect(stream.segment.opaque).to.be.false()
+          done()
+        }, 5)
+      })
+
       it('should touch the segment when `end` is emitted', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', stream: true}
@@ -732,6 +750,25 @@ describe('Shim', function() {
         setTimeout(function() {
           stream.emit('end')
           expect(stream.segment.timer.getDurationInMillis()).to.be.above(oldDur)
+          done()
+        }, 5)
+      })
+
+      it('should make the segment translucent when `error` is emitted', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', stream: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.equal(stream)
+        })
+
+        stream.on('error', function() {}) // to prevent the error being thrown
+        expect(stream.segment.opaque).to.be.true()
+        setTimeout(function() {
+          stream.emit('error', 'foobar')
+          expect(stream.segment.opaque).to.be.false()
           done()
         }, 5)
       })
@@ -850,6 +887,29 @@ describe('Shim', function() {
         toWrap = null
       })
 
+      it('should make the segment translucent when promise resolves', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function(val) {
+            expect(result).to.equal(val)
+            expect(promise.segment.opaque).to.be.false()
+            done()
+          }).catch(done)
+        })
+
+        expect(promise.segment.opaque).to.be.true()
+        var result = {}
+        setTimeout(function() {
+          promise.resolve(result)
+        }, 5)
+      })
+
       it('should touch the segment when promise resolves', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', promise: true}
@@ -870,6 +930,31 @@ describe('Shim', function() {
         var result = {}
         setTimeout(function() {
           promise.resolve(result)
+        }, 5)
+      })
+
+      it('should make the segment translucent when promise rejects', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function() {
+            done(new Error('Should not have resolved!'))
+          }, function(err) {
+            expect(err).to.equal(result)
+            expect(promise.segment.opaque).to.be.false()
+            done()
+          }).catch(done)
+        })
+
+        expect(promise.segment.opaque).to.be.true()
+        var result = {}
+        setTimeout(function() {
+          promise.reject(result)
         }, 5)
       })
 
@@ -1539,6 +1624,24 @@ describe('Shim', function() {
         })
       })
 
+      it('should make the `parentSegment` translucent after running', function() {
+        helper.runInTransaction(agent, function() {
+          var args = [wrappable.getActiveSegment]
+          var segment = wrappable.getActiveSegment()
+          var parent = shim.createSegment('test segment')
+          parent.opaque = true
+          shim.bindCallbackSegment(args, shim.LAST, parent)
+          var cbSegment = args[0]()
+
+          expect(cbSegment)
+            .to.not.equal(parent)
+          expect(parent)
+            .to.have.property('children')
+            .that.deep.equals([cbSegment])
+          //expect(parent.opaque).to.be.false()
+        })
+      })
+
       it('should default the `parentSegment` to the current one', function() {
         helper.runInTransaction(agent, function() {
           var args = [wrappable.getActiveSegment]
@@ -1662,6 +1765,18 @@ describe('Shim', function() {
         expect(parent)
           .to.have.property('children')
           .that.deep.equals([child])
+      })
+    })
+
+    it('should not create children for opaque segments', function() {
+      helper.runInTransaction(agent, function() {
+        var parent = shim.createSegment('parent')
+        parent.opaque = true
+        var child = shim.createSegment('child', parent)
+        expect(child).to.have.property('name', 'parent')
+        expect(parent)
+          .to.have.property('children')
+          .that.deep.equals([])
       })
     })
 

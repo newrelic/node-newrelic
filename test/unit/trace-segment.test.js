@@ -33,6 +33,19 @@ describe('TraceSegment', function() {
     trans.end()
   })
 
+  it('should not add new children when marked as opaque', function() {
+    var trans = new Transaction(agent)
+    var segment = new TraceSegment(trans, 'UnitTest')
+    expect(segment.opaque).to.be.false()
+    segment.opaque = true
+    segment.add('child')
+    expect(segment.children.length).to.equal(0)
+    segment.opaque = false
+    segment.add('child')
+    expect(segment.children.length).to.equal(1)
+    trans.end()
+  })
+
   it('should call an optional callback function', function(done) {
     var trans = new Transaction(agent)
     expect(function noCallback() {
