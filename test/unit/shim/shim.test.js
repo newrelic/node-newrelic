@@ -1638,7 +1638,7 @@ describe('Shim', function() {
           expect(parent)
             .to.have.property('children')
             .that.deep.equals([cbSegment])
-          //expect(parent.opaque).to.be.false()
+          expect(parent.opaque).to.be.false()
         })
       })
 
