@@ -34,8 +34,7 @@ test("Express async throw", function(t) {
         t.fail("hung waiting for exit")
         erk.kill()
       }, 1000)
-      // timer.unref is only 0.9+
-      if (timer.unref) timer.unref()
+      timer.unref()
       erk.send(COMPLETION)
     }
   })
