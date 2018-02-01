@@ -27,7 +27,6 @@ describe("the stubbed New Relic agent API", function() {
     expect(api.setDispatcher).a('function')
   })
 
-
   it("shouldn't throw when transaction is named", function() {
     expect(function() { api.setTransactionName('TEST/*') }).not.throws()
   })
@@ -115,7 +114,23 @@ describe("the stubbed New Relic agent API", function() {
   it("should return a function when calling createTracer", function() {
     function myNop() {}
     var retVal = api.createTracer('name', myNop)
-    expect(retVal).to.be.equal(myNop)
+    expect(retVal).to.equal(myNop)
+  })
+
+  it('should call the function passed into `startSegment`', function(done) {
+    api.startSegment('foo', false, done)
+  })
+
+  it('should not throw when a non-function is passed to `startSegment`', function() {
+    expect(function() {
+      api.startSegment('foo', false, null)
+    }).to.not.throw()
+  })
+
+  it('should return the return value of the handler', function() {
+    var obj = {}
+    var ret = api.startSegment('foo', false, function() { return obj })
+    expect(obj).to.equal(ret)
   })
 
   it("shouldn't throw when a custom web transaction is started", function() {

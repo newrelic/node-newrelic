@@ -262,6 +262,91 @@ describe('the New Relic agent API', function() {
     })
   })
 
+  describe('when creating a segment with `startSegment`', function() {
+    it('should name the segment as provided', function() {
+      helper.runInTransaction(agent, function() {
+        api.startSegment('foobar', false, function() {
+          var segment = api.shim.getSegment()
+          expect(segment).to.exist().and.have.property('name', 'foobar')
+        })
+      })
+    })
+
+    it('should return the return value of the handler', function() {
+      helper.runInTransaction(agent, function() {
+        var obj = {}
+        var ret = api.startSegment('foobar', false, function() {
+          return obj
+        })
+        expect(ret).to.equal(obj)
+      })
+    })
+
+    it('should not record a metric when `record` is `false`', function(done) {
+      helper.runInTransaction(agent, function(tx) {
+        tx.name = 'test'
+        api.startSegment('foobar', false, function() {
+          var segment = api.shim.getSegment()
+          expect(segment).to.exist().and.have.property('name', 'foobar')
+        })
+        tx.end(function() {
+          expect(tx.metrics.scoped).to.not.have.property(tx.name)
+          expect(tx.metrics.unscoped).to.not.have.property('Custom/foobar')
+          done()
+        })
+      })
+    })
+
+    it('should record a metric when `record` is `true`', function(done) {
+      helper.runInTransaction(agent, function(tx) {
+        tx.name = 'test'
+        api.startSegment('foobar', true, function() {
+          var segment = api.shim.getSegment()
+          expect(segment).to.exist().and.have.property('name', 'foobar')
+        })
+        tx.end(function() {
+          expect(tx.metrics.scoped).property(tx.name)
+            .to.have.property('Custom/foobar')
+          expect(tx.metrics.unscoped).to.have.property('Custom/foobar')
+          done()
+        })
+      })
+    })
+
+    it('should time the segment from the callback if provided', function(done) {
+      helper.runInTransaction(agent, function() {
+        api.startSegment('foobar', false, function(cb) {
+          var segment = api.shim.getSegment()
+          setTimeout(cb, 150, null, segment)
+        }, function(err, segment) {
+          expect(err).to.be.null()
+          expect(segment).to.exist()
+          expect(segment.getDurationInMillis()).to.be.within(100, 200)
+          done()
+        })
+      })
+    })
+
+    it('should time the segment from a returned promise', function() {
+      // TODO: Once Node <0.12 is deprecated, remove this check for Promise.
+      if (!global.Promise) {
+        return
+      }
+
+      return helper.runInTransaction(agent, function() {
+        return api.startSegment('foobar', false, function() {
+          var segment = api.shim.getSegment()
+          return new Promise(function(resolve) {
+            setTimeout(resolve, 150, segment)
+          })
+        }).then(function(segment) {
+          expect(segment).to.exist()
+          expect(segment.getDurationInMillis()).to.be.within(100, 200)
+        })
+      })
+    })
+  })
+
   describe("when starting a web transaction using startWebTransaction", function() {
     var thenCalled = false
     var FakePromise = {

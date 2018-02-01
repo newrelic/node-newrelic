@@ -754,7 +754,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
       name: name,
       recorder: record ? customRecorder : null,
       callback: callback ? shim.FIRST : null,
-      promise: !!callback
+      promise: !callback
     }
   })
 
