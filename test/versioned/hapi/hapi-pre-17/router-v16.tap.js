@@ -106,12 +106,22 @@ tap.test('Hapi router introspection', function(t) {
                 )
                 reply()
               }
+            },
+            {
+              assign: 'pre3',
+              method: function nested2(request, reply) {
+                t.ok(
+                  agent.getTransaction(),
+                  'transaction available in 2nd nested `pre` function'
+                )
+                reply.response('ok')
+              }
             }
           ]
         ],
         handler: function(request, reply) {
           t.ok(agent.getTransaction(), 'transaction is available in final handler')
-          reply({status: 'ok'})
+          reply({status: request.pre.pre3})
         }
       }
     }
