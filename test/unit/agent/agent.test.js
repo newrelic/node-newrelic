@@ -12,6 +12,7 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
+var extend = require('util')._extend
 
 
 /*
@@ -437,7 +438,9 @@ describe("the New Relic agent", function() {
 
       it("shouldn't blow up when harvest cycle runs", function(done) {
         var origInterval = global.setInterval
-        global.setInterval = function(callback) { return setImmediate(callback) }
+        global.setInterval = function(callback) {
+          return extend({unref: function() {}}, setImmediate(callback))
+        }
 
         // manually harvesting
         agent.config.no_immediate_harvest = true
@@ -470,7 +473,9 @@ describe("the New Relic agent", function() {
 
       it("shouldn't blow up when harvest cycle errors", function(done) {
         var origInterval = global.setInterval
-        global.setInterval = function(callback) { return setImmediate(callback) }
+        global.setInterval = function(callback) {
+          return extend({unref: function() {}}, setImmediate(callback))
+        }
 
         var redirect =
           nock(URL)
