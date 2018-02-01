@@ -58,8 +58,7 @@ describe("the agent configuration", function() {
     })
   })
 
-  describe("when overriding configuration values via environment variables",
-  function() {
+  describe("when overriding configuration values via environment variables", function() {
     it("should pick up the application name", function() {
       idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic',
                     function(tc) {
@@ -213,6 +212,13 @@ describe("the agent configuration", function() {
       })
     })
 
+    it('should pick up whether to capture attributes', function() {
+      idempotentEnv('NEW_RELIC_ATTRIBUTES_ENABLED', 'yes', function(tc) {
+        should.exist(tc.attributes.enabled)
+        expect(tc.attributes.enabled).equal(true)
+      })
+    })
+
     it("should pick up ignored request parameters", function() {
       idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
         should.exist(tc.ignored_params)
@@ -220,10 +226,24 @@ describe("the agent configuration", function() {
       })
     })
 
+    it('should pick up excluded attributes', function() {
+      idempotentEnv('NEW_RELIC_ATTRIBUTES_EXCLUDE', 'one,two,three', function(tc) {
+        should.exist(tc.attributes.exclude)
+        expect(tc.attributes.exclude).eql(['one', 'two', 'three'])
+      })
+    })
+
     it("should pick up whether the error collector is enabled", function() {
       idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ENABLED', 'NO', function(tc) {
         should.exist(tc.error_collector.enabled)
         expect(tc.error_collector.enabled).equal(false)
+      })
+    })
+
+    it('should pick up whether error collector attributes are enabled', function() {
+      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED', 'NO', function(tc) {
+        should.exist(tc.error_collector.attributes.enabled)
+        expect(tc.error_collector.attributes.enabled).equal(false)
       })
     })
 
@@ -291,6 +311,14 @@ describe("the agent configuration", function() {
       idempotentEnv('NEW_RELIC_TRACER_ENABLED', false, function(tc) {
         should.exist(tc.transaction_tracer.enabled)
         expect(tc.transaction_tracer.enabled).equal(false)
+      })
+    })
+
+    it('should pick up whether transaction tracer attributes are enabled', function() {
+      var key = 'NEW_RELIC_TRANSACTION_TRACER_ATTRIBUTES_ENABLED'
+      idempotentEnv(key, false, function(tc) {
+        should.exist(tc.transaction_tracer.attributes.enabled)
+        expect(tc.transaction_tracer.attributes.enabled).equal(false)
       })
     })
 
@@ -497,6 +525,14 @@ describe("the agent configuration", function() {
       expect(configuration.ignored_params).eql([])
     })
 
+    it('should have the default excluded request attributes', function() {
+      expect(configuration.attributes.exclude).eql([])
+    })
+
+    it("should enable transaction event attributes", function() {
+      expect(configuration.transaction_events.attributes.enabled).equal(true)
+    })
+
     it("should log at the info level", function() {
       expect(configuration.logging.level).equal('info')
     })
@@ -510,12 +546,20 @@ describe("the agent configuration", function() {
       expect(configuration.error_collector.enabled).equal(true)
     })
 
+    it("should enable error collector attributes", function() {
+      expect(configuration.error_collector.attributes.enabled).equal(true)
+    })
+
     it("should ignore status code 404", function() {
       expect(configuration.error_collector.ignore_status_codes).eql([404])
     })
 
     it("should enable the transaction tracer", function() {
       expect(configuration.transaction_tracer.enabled).equal(true)
+    })
+
+    it("should enable transaction tracer attributes", function() {
+      expect(configuration.transaction_tracer.attributes.enabled).equal(true)
     })
 
     it("should set the transaction tracer threshold to 'apdex_f'", function() {
@@ -573,11 +617,19 @@ describe("the agent configuration", function() {
     })
 
     it("should enable cross application tracer", function() {
-      expect(configuration.cross_application_tracer.enabled).equal(true)
+      expect(configuration.cross_application_tracer.enabled).to.be.true()
     })
 
     it("should enable message tracer segment parameters", function() {
-      expect(configuration.message_tracer.segment_parameters.enabled).equal(true)
+      expect(configuration.message_tracer.segment_parameters.enabled).to.be.true()
+    })
+
+    it("should not enable browser monitoring attributes", function() {
+      expect(configuration.browser_monitoring.attributes.enabled).to.be.false()
+    })
+
+    it("should enable browser monitoring attributes", function() {
+      expect(configuration.browser_monitoring.attributes.enabled).equal(false)
     })
   })
 
@@ -700,6 +752,12 @@ describe("the agent configuration", function() {
       expect(config.transaction_tracer.enabled).equal(false)
     })
 
+    it('should disable transaction tracer attributes when told to', function() {
+      expect(config.transaction_tracer.attributes.enabled).equal(true)
+      config.onConnect({'transaction_tracer.attributes.enabled': false})
+      expect(config.transaction_tracer.attributes.enabled).equal(false)
+    })
+
     it("should always respect collect_errors", function() {
       expect(config.collect_errors).equal(true)
       config.onConnect({'collect_errors': false})
@@ -710,6 +768,12 @@ describe("the agent configuration", function() {
       expect(config.error_collector.enabled).equal(true)
       config.onConnect({'error_collector.enabled': false})
       expect(config.error_collector.enabled).equal(false)
+    })
+
+    it('should disable the error attributes when told to', function() {
+      expect(config.error_collector.attributes.enabled).equal(true)
+      config.onConnect({'error_collector.attributes.enabled': false})
+      expect(config.error_collector.attributes.enabled).equal(false)
     })
 
     it("should set apdex_t", function() {
@@ -776,11 +840,22 @@ describe("the agent configuration", function() {
       expect(config.ignored_params).eql(['a', 'b'])
     })
 
+    it('should configure global excluded attributes', function() {
+      expect(config.attributes.exclude).eql([])
+      config.onConnect({'attributes.exclude': ['a', 'b']})
+      expect(config.attributes.exclude).eql(['a', 'b'])
+    })
+
     it("should configure ignored params without stomping local config", function() {
       config.ignored_params = ['b', 'c']
-
       config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql(['b', 'c', 'a'])
+    })
+
+    it('should configure excluded attributes without stomping local config', function() {
+      config.attributes.exclude = ['b', 'c']
+      config.onConnect({'attributes.exclude': ['a', 'b']})
+      expect(config.attributes.exclude).eql(['b', 'c', 'a'])
     })
 
     it('should configure cross application tracing', function() {
@@ -1011,6 +1086,13 @@ describe("the agent configuration", function() {
       expect(config.transaction_events.enabled).equals(false)
     })
 
+    it("shouldn't blow up when transaction_events.attributes.enabled is set", function() {
+      expect(function() {
+        config.onConnect({'transaction_events.attributes.enabled': false})
+      }).not.throws()
+      expect(config.transaction_events.attributes.enabled).equals(false)
+    })
+
     describe("when data_report_period is set", function() {
       it("should emit 'data_report_period' when harvest interval is changed",
          function(done) {
@@ -1162,10 +1244,22 @@ describe("the agent configuration", function() {
       expect(config.transaction_tracer.enabled).equal(true)
     })
 
-    it("shouldn't configure error_tracer.enabled", function() {
+    it("shouldn't configure transaction_tracer.attributes.enabled", function() {
+      expect(config.transaction_tracer.attributes.enabled).equal(true)
+      config.onConnect({'transaction_tracer.attributes.enabled': false})
+      expect(config.transaction_tracer.attributes.enabled).equal(true)
+    })
+
+    it("shouldn't configure error_collector.enabled", function() {
       expect(config.error_collector.enabled).equal(true)
       config.onConnect({'error_collector.enabled': false})
       expect(config.error_collector.enabled).equal(true)
+    })
+
+    it('should not configure error_collector.attributes.enabled', function() {
+      expect(config.error_collector.attributes.enabled).equal(true)
+      config.onConnect({'error_collector.attributes.enabled': false})
+      expect(config.error_collector.attributes.enabled).equal(true)
     })
 
     it("shouldn't configure transaction_tracer.transaction_threshold", function() {
@@ -1180,10 +1274,22 @@ describe("the agent configuration", function() {
       expect(config.capture_params).equal(false)
     })
 
+    it('should not configure attributes.enabled', function() {
+      expect(config.attributes.enabled).equal(false)
+      config.onConnect({'attributes.enabled': true})
+      expect(config.attributes.enabled).equal(false)
+    })
+
     it("shouldn't configure ignored_params", function() {
       expect(config.ignored_params).eql([])
       config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql([])
+    })
+
+    it('should not configure attributes.exclude', function() {
+      expect(config.attributes.exclude).eql([])
+      config.onConnect({'attributes.exclude': ['a', 'b']})
+      expect(config.attributes.exclude).eql([])
     })
 
     it('should not configure record_sql', function() {

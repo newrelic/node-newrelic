@@ -6,29 +6,29 @@ var API = require('../../../api')
 var util = require('util')
 
 test('errors in web transactions should gather the query params', function(t) {
-  t.plan(10)
+  t.plan(9)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
     api.noticeError(new Error('errors in tx test'))
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/?some=param&data'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
+  agent.on('transactionFinished', function() {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -36,7 +36,6 @@ test('errors in web transactions should gather the query params', function(t) {
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes.request_uri, '/', 'should have stripped the params from the uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -49,7 +48,7 @@ test('errors in web transactions should gather the query params', function(t) {
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 6
+    var expectedValue = 8
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -78,9 +77,9 @@ test('errors in web transactions should gather the query params', function(t) {
 })
 
 test('multiple errors in web transactions should gather the query params', function(t) {
-  t.plan(19)
+  t.plan(17)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
   var names = [
@@ -88,26 +87,26 @@ test('multiple errors in web transactions should gather the query params', funct
     'second errors in tx test'
   ]
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
     api.noticeError(new Error(names[0]))
     api.noticeError(new Error(names[1]))
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/testing'
     url += '?some=param&data'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
-    agent.errors.errors.forEach(function (error) {
+  agent.on('transactionFinished', function() {
+    agent.errors.errors.forEach(function(error) {
       t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
       t.notEqual(names.indexOf(error[2]), -1, 'should have gathered the errors message')
@@ -118,11 +117,6 @@ test('multiple errors in web transactions should gather the query params', funct
 
       var attributes = error[4]
       // top level attributes
-      t.equal(
-        attributes.request_uri,
-        '/testing',
-        'should have stripped the params from the uri'
-      )
       t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
@@ -135,7 +129,7 @@ test('multiple errors in web transactions should gather the query params', funct
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 6
+      var expectedValue = 8
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
@@ -164,19 +158,19 @@ test('multiple errors in web transactions should gather the query params', funct
 })
 
 test('errors in web transactions should gather and merge custom params', function(t) {
-  t.plan(13)
+  t.plan(12)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
 
-    api.addCustomParameter('preErrorKeep', true)
-    api.addCustomParameter('preErrorReplace', 'nooooooooo')
+    api.addCustomAttribute('preErrorKeep', true)
+    api.addCustomAttribute('preErrorReplace', 'nooooooooo')
 
     api.noticeError(new Error('errors in tx test'), {
       preErrorReplace: 'yesssssssss',
@@ -184,21 +178,21 @@ test('errors in web transactions should gather and merge custom params', functio
       postErrorReplace: 'this one is better'
     })
 
-    api.addCustomParameter('postErrorKeep', 2)
-    api.addCustomParameter('postErrorReplace', 'omg why')
+    api.addCustomAttribute('postErrorKeep', 2)
+    api.addCustomAttribute('postErrorReplace', 'omg why')
 
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
+  agent.on('transactionFinished', function() {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
@@ -206,7 +200,6 @@ test('errors in web transactions should gather and merge custom params', functio
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes.request_uri, '/', 'should have stripped the params from the uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -225,7 +218,7 @@ test('errors in web transactions should gather and merge custom params', functio
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 4
+    var expectedValue = 6
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -243,13 +236,13 @@ test('errors in web transactions should gather and merge custom params', functio
 })
 
 test('multiple errors in web tx should gather and merge custom params', function(t) {
-  t.plan(23)
+  t.plan(21)
 
-  var agent = helper.loadTestAgent(t, { send_request_uri_attribute: true })
+  var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   var errorData = [{
     name: 'first error indexOf tx test',
@@ -267,32 +260,32 @@ test('multiple errors in web tx should gather and merge custom params', function
     }
   }]
 
-  http.createServer(function (req, res) {
+  http.createServer(function(req, res) {
     req.resume()
 
-    api.addCustomParameter('preErrorKeep', true)
-    api.addCustomParameter('preErrorReplace', 'nooooooooo')
+    api.addCustomAttribute('preErrorKeep', true)
+    api.addCustomAttribute('preErrorReplace', 'nooooooooo')
 
     api.noticeError(new Error(errorData[0].name), errorData[0].customParams)
 
-    api.addCustomParameter('postErrorKeep', 2)
-    api.addCustomParameter('postErrorReplace', 'omg why')
+    api.addCustomAttribute('postErrorKeep', 2)
+    api.addCustomAttribute('postErrorReplace', 'omg why')
 
     api.noticeError(new Error(errorData[1].name), errorData[1].customParams)
 
     res.end('success')
-  }).listen(function () {
+  }).listen(function() {
     var server = this
     var url = 'http://localhost:' + server.address().port + '/'
-    http.get(url, function (res) {
+    http.get(url, function(res) {
       t.equal(res.statusCode, 200, 'request should be successful')
       res.resume()
       server.close()
     })
   })
 
-  agent.on('transactionFinished', function () {
-    agent.errors.errors.forEach(function (error) {
+  agent.on('transactionFinished', function() {
+    agent.errors.errors.forEach(function(error) {
       var expectedParams
       if (errorData[0].name && errorData[0].name === error[2]) {
         expectedParams = errorData[0].customParams
@@ -310,7 +303,6 @@ test('multiple errors in web tx should gather and merge custom params', function
 
       var attributes = error[4]
       // top level attributes
-      t.equal(attributes.request_uri, '/', 'should have stripped the params from the uri')
       t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
       // custom attributes
@@ -321,7 +313,7 @@ test('multiple errors in web tx should gather and merge custom params', function
         'should have 5 custom attributes after merging'
       )
       // Overriden for error custom params
-      Object.keys(expectedParams).forEach(function (paramKey) {
+      Object.keys(expectedParams).forEach(function(paramKey) {
         t.equal(ua[paramKey], expectedParams[paramKey], 'has the passed in params')
       })
 
@@ -332,7 +324,7 @@ test('multiple errors in web tx should gather and merge custom params', function
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 4
+      var expectedValue = 6
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
@@ -354,7 +346,7 @@ test('errors in background transactions are collected with correct data', functi
   var agent = helper.loadTestAgent(t)
   var api = new API(agent)
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   // Create transaction generator
   api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
@@ -370,7 +362,6 @@ test('errors in background transactions are collected with correct data', functi
 
     var attributes = error[4]
     // top level attributes
-    t.equal(attributes.request_uri, '', 'should have an empty uri')
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes

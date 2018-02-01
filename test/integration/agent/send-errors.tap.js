@@ -1,25 +1,28 @@
 'use strict'
 
 var helper = require('../../lib/agent_helper')
-var path = require('path')
-var test = require('tap').test
-var Agent = require('../../../lib/agent')
+var tap = require('tap')
 
-test('Agent#_sendErrors', function(t) {
+tap.test('Agent#_sendErrors', function(t) {
+  t.plan(2)
+
   var config = {
-    'app_name': 'node.js Tests',
-    'license_key': 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
-    'host': 'staging-collector.newrelic.com',
-    'port': 80,
-    'ssl': false,
-    'utilization': {
-      'detect_aws': false,
-      'detect_pcf': false,
-      'detect_gcp': false,
-      'detect_docker': false
+    app_name: 'node.js Tests',
+    license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+    host: 'staging-collector.newrelic.com',
+    port: 80,
+    ssl: false,
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_gcp: false,
+      detect_docker: false
     },
-    'logging': {
-      'level': 'trace'
+    logging: {
+      level: 'trace'
+    },
+    attributes: {
+      enabled: true
     }
   }
 
@@ -37,19 +40,15 @@ test('Agent#_sendErrors', function(t) {
     _testSendErrors(t, agent)
   })
 
-  t.autoend()
-
   function _testSendErrors(t, agent) {
-    t.plan(7)
+    t.plan(6)
 
     agent.start(function(err) {
       if (!t.notOk(err, 'should connect without error')) {
-        console.log('Connection error:', err)
         return t.end()
       }
 
       agent.collector.errorData = function(payload, cb) {
-        // console.log('errorData', payload)
         if (!t.ok(payload, 'should get the payload')) {
           return cb()
         }
@@ -59,18 +58,20 @@ test('Agent#_sendErrors', function(t) {
           return cb()
         }
 
-        t.equal(errData.request_uri, '/nonexistent', 'should have request_uri')
-
         var attrs = errData.agentAttributes
-        t.deepEqual(attrs, {foo: 'bar'}, 'should have the correct attributes')
+        t.deepEqual(
+          attrs,
+          {foo: 'bar', 'request.uri': '/nonexistent'},
+          'should have the correct attributes'
+        )
 
         cb()
       }
 
-      agent.on('transactionFinished', function(transaction) {
+      agent.on('transactionFinished', function() {
         agent._sendErrors(function(error) {
           if (!t.notOk(error, "sent errors without error")) {
-            console.log('Send error:', error)
+            return t.end()
           }
 
           agent.stop(function(error) {
@@ -83,7 +84,7 @@ test('Agent#_sendErrors', function(t) {
       helper.runInTransaction(agent, function(tx) {
         tx.finalizeNameFromUri('/nonexistent', 501)
         tx.addAgentAttribute('foo', 'bar')
-        tx.addAgentAttribute('request_uri', '/nonexistent')
+        tx.addAgentAttribute('request.uri', '/nonexistent')
         agent.errors.add(tx, new Error('test error'))
         tx.end()
       })
@@ -91,7 +92,7 @@ test('Agent#_sendErrors', function(t) {
   }
 
   function setupAgent(t, config) {
-    var agent = helper.loadMockedAgent({'send_request_uri_attribute': true}, config)
+    var agent = helper.loadMockedAgent(null, config)
     t.tearDown(function() {
       helper.unloadAgent(agent)
     })

@@ -59,23 +59,25 @@ describe('AttributeFilter', function() {
     })
 
     function makeAssertions(filter) {
-      expect(filter.test('transaction_events', 'a'), 'a -> events').to.be.true()
-      expect(filter.test('transaction_events', 'ab'), 'ab -> events').to.be.true()
-      expect(filter.test('transaction_events', 'abc'), 'abc -> events').to.be.false()
+      var TRANS_EVENT = AttributeFilter.DESTINATIONS.TRANS_EVENT
+      var TRANS_TRACE = AttributeFilter.DESTINATIONS.TRANS_TRACE
+      expect(filter.test(TRANS_EVENT, 'a'), 'a -> events').to.be.true()
+      expect(filter.test(TRANS_EVENT, 'ab'), 'ab -> events').to.be.true()
+      expect(filter.test(TRANS_EVENT, 'abc'), 'abc -> events').to.be.false()
 
-      expect(filter.test('transaction_events', 'b'), 'b -> events').to.be.true()
-      expect(filter.test('transaction_events', 'bc'), 'bc -> events').to.be.false()
-      expect(filter.test('transaction_events', 'bcd'), 'bcd -> events').to.be.true()
-      expect(filter.test('transaction_events', 'bcde'), 'bcde -> events').to.be.true()
+      expect(filter.test(TRANS_EVENT, 'b'), 'b -> events').to.be.true()
+      expect(filter.test(TRANS_EVENT, 'bc'), 'bc -> events').to.be.false()
+      expect(filter.test(TRANS_EVENT, 'bcd'), 'bcd -> events').to.be.true()
+      expect(filter.test(TRANS_EVENT, 'bcde'), 'bcde -> events').to.be.true()
 
-      expect(filter.test('transaction_tracer', 'a'), 'a -> tracer').to.be.true()
-      expect(filter.test('transaction_tracer', 'ab'), 'ab -> tracer').to.be.false()
-      expect(filter.test('transaction_tracer', 'abc'), 'abc -> tracer').to.be.false()
+      expect(filter.test(TRANS_TRACE, 'a'), 'a -> tracer').to.be.true()
+      expect(filter.test(TRANS_TRACE, 'ab'), 'ab -> tracer').to.be.false()
+      expect(filter.test(TRANS_TRACE, 'abc'), 'abc -> tracer').to.be.false()
 
-      expect(filter.test('transaction_tracer', 'b'), 'b -> tracer').to.be.true()
-      expect(filter.test('transaction_tracer', 'bc'), 'bc -> tracer').to.be.true()
-      expect(filter.test('transaction_tracer', 'bcd'), 'bcd -> tracer').to.be.true()
-      expect(filter.test('transaction_tracer', 'bcde'), 'bcde -> tracer').to.be.true()
+      expect(filter.test(TRANS_TRACE, 'b'), 'b -> tracer').to.be.true()
+      expect(filter.test(TRANS_TRACE, 'bc'), 'bc -> tracer').to.be.true()
+      expect(filter.test(TRANS_TRACE, 'bcd'), 'bcd -> tracer').to.be.true()
+      expect(filter.test(TRANS_TRACE, 'bcde'), 'bcde -> tracer').to.be.true()
     }
   })
 })

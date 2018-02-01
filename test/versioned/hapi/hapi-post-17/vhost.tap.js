@@ -1,15 +1,17 @@
 'use strict'
 
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-17-utils')
+var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 tap.test('Hapi vhost support', function(t) {
   t.autoend()
 
   t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
+    var agent = helper.instrumentMockedAgent()
     var server = utils.getServer()
     var port
 
@@ -18,26 +20,16 @@ tap.test('Hapi vhost support', function(t) {
     })
 
     // disabled by default
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      if (tx.trace.parameters.httpResponseMessage) {
-        t.ok(tx.trace.parameters.httpResponseMessage, 'OK')
-        delete tx.trace.parameters.httpResponseMessage
-      }
-      t.deepEqual(tx.trace.parameters, {
-        'request.headers.accept': 'application/json',
-        'request.headers.host': 'localhost:' + port,
-        'request.method': 'GET',
-        'response.status': '200',
-        'response.headers.contentLength': 15,
-        'response.headers.contentType': 'application/json; charset=utf-8',
-        'httpResponseCode': '200',
-        'id': '1337',
-        'name': 'hapi',
-        'request_uri': '/test/1337/2'
-      }, 'parameters should have name and id')
+      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      HTTP_ATTS.forEach(function(key) {
+        t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
+      })
+      t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
+      t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
 
       helper.unloadAgent(agent)
     })

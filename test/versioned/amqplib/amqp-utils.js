@@ -1,5 +1,6 @@
 'use strict'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var params = require('../../lib/params')
 var metrics = require('../../lib/metrics_helper')
 
@@ -106,15 +107,15 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
     tx.trace.root,
     'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
-  t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
+  t.equals(consume, tx.baseSegment)
 
-
+  var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
   t.equal(
-    tx.trace.parameters['message.routingKey'], routingKey,
+    attributes['message.routingKey'], routingKey,
     'should have routing key transaction parameter'
   )
   t.equal(
-    tx.trace.parameters['message.queueName'], queue,
+    attributes['message.queueName'], queue,
     'should have queue name transaction parameter'
   )
 }

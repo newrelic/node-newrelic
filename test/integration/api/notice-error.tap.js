@@ -3,9 +3,9 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 
-test('should not include query in request_uri', function testError(t) {
+test('http errors are noticed correctly', function testError(t) {
   var agent = helper.loadTestAgent(t)
-  t.plan(4)
+  t.plan(3)
   var http = require('http')
   var server = http.createServer(handler)
 
@@ -33,7 +33,6 @@ test('should not include query in request_uri', function testError(t) {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have correct transaction')
     t.equal(error[2], 'notice me!', 'should have right name')
-    t.equal(error[4].request_uri, '/test', 'should not include query')
     t.end()
   }
 })
