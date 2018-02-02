@@ -85,6 +85,62 @@ tap.test('Hapi router introspection', function(t) {
     })
   })
 
+  t.test('using `pre` config option', function(t) {
+    agent.on('transactionFinished', utils.verifier(t))
+
+    var route = {
+      method: 'GET',
+      path: '/test/{id}',
+      config: {
+        pre: [
+          function plain(request, reply) {
+            t.ok(agent.getTransaction(), 'transaction available in plain `pre` function')
+            reply()
+          },
+          [
+            {
+              method: function nested(request, reply) {
+                t.ok(
+                  agent.getTransaction(),
+                  'transaction available in nested `pre` function'
+                )
+                reply()
+              }
+            },
+            {
+              assign: 'pre3',
+              method: function nested2(request, reply) {
+                t.ok(
+                  agent.getTransaction(),
+                  'transaction available in 2nd nested `pre` function'
+                )
+                reply.response('ok')
+              }
+            }
+          ]
+        ],
+        handler: function(request, reply) {
+          t.ok(agent.getTransaction(), 'transaction is available in final handler')
+          reply({status: request.pre.pre3})
+        }
+      }
+    }
+    server.route(route)
+
+    server.start(function() {
+      port = server.info.port
+      var params = {
+        uri: 'http://localhost:' + port + '/test/31337',
+        json: true
+      }
+      request.get(params, function(error, res, body) {
+        t.equal(res.statusCode, 200, 'nothing exploded')
+        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.end()
+      })
+    })
+  })
+
   t.test('using custom handler type', function(t) {
     agent.on('transactionFinished', utils.verifier(t))
 
