@@ -1497,10 +1497,7 @@ API.prototype.shutdown = function shutdown(options, cb) {
       var shutdownTimeout = setTimeout(function shutdownTimeout() {
         agent.stop(callback)
       }, options.timeout)
-      // timer.unref only in 0.9+
-      if (shutdownTimeout.unref) {
-        shutdownTimeout.unref()
-      }
+      shutdownTimeout.unref()
     } else if (options.timeout) {
       logger.warn(
         'options.timeout should be of type "number". Got %s',
