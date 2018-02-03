@@ -20,7 +20,7 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 
   function path(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=14&' +
+      'marshal_format=json&protocol_version=15&' +
       'license_key=license%20key%20here&method=' + method
 
     if (runID) fragment += '&run_id=' + runID
@@ -98,7 +98,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
 
   function path(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=14&' +
+      'marshal_format=json&protocol_version=15&' +
       'license_key=license%20key%20here&method=' + method
 
     if (runID) fragment += '&run_id=' + runID
