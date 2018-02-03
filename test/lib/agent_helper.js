@@ -44,10 +44,12 @@ var helper = module.exports = {
    *                       created in this function.
    * @returns Agent Agent with a stubbed configuration.
    */
-  loadMockedAgent : function loadMockedAgent(flags, conf) {
-    if (_agent) throw _agent.__created
+  loadMockedAgent: function loadMockedAgent(flags, conf) {
+    if (_agent) {
+      throw _agent.__created
+    }
 
-    // agent needs a "real" configuration
+    // agent needs a 'real' configuration
     var configurator = require('../../lib/config')
     var config = configurator.initialize(conf)
 
@@ -62,7 +64,7 @@ var helper = module.exports = {
     config.applications = function faked() { return ['New Relic for Node.js tests'] }
 
     _agent = new Agent(config)
-    _agent.__created = new Error("Only one agent at a time! This one was created at:")
+    _agent.__created = new Error('Only one agent at a time! This one was created at:')
     _agent.recordSupportability = function() {} // Stub supportabilities.
 
     if (flags) {
@@ -84,12 +86,14 @@ var helper = module.exports = {
    *
    * @returns String URL path for the collector.
    */
-  generateCollectorPath : function generateCollectorPath(method, runID) {
+  generateCollectorPath: function generateCollectorPath(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
       'marshal_format=json&protocol_version=15&' +
       'license_key=license%20key%20here&method=' + method
 
-    if (runID) fragment += '&run_id=' + runID
+    if (runID) {
+      fragment += '&run_id=' + runID
+    }
 
     return fragment
   },
@@ -100,7 +104,7 @@ var helper = module.exports = {
    *
    * @returns Agent Agent with a stubbed configuration.
    */
-  instrumentMockedAgent : function instrumentMockedAgent(flags, conf) {
+  instrumentMockedAgent: function instrumentMockedAgent(flags, conf) {
     shimmer.debug = true
 
     var agent = helper.loadMockedAgent(flags, conf)
@@ -116,7 +120,7 @@ var helper = module.exports = {
    *
    * @param Agent agent The agent to shut down.
    */
-  unloadAgent : function unloadAgent(agent) {
+  unloadAgent: function unloadAgent(agent) {
     agent.emit('unload')
     shimmer.unpatchModule()
     shimmer.unwrapAll()
@@ -149,17 +153,17 @@ var helper = module.exports = {
    *                    transaction.
    * @param Function callback The function to be run within the transaction.
    */
-  runInTransaction : function runInTransaction(agent, type, callback) {
+  runInTransaction: function runInTransaction(agent, type, callback) {
     if (callback === undefined && typeof type === 'function') {
       callback = type
       type = undefined
     }
     if (!(agent && callback)) {
-      throw new TypeError("Must include both agent and function!")
+      throw new TypeError('Must include both agent and function!')
     }
     type = type || 'web'
 
-    return agent.tracer.transactionNestProxy(type, function cb_transactionProxy() {
+    return agent.tracer.transactionNestProxy(type, function onTransactionProxy() {
       var transaction = agent.getTransaction()
       return callback(transaction)
     })() // <-- invoke immediately
@@ -169,7 +173,7 @@ var helper = module.exports = {
    * Proxy for runInTransaction that names the transaction that the
    * callback is executed in
    */
-  runInNamedTransaction : function runInNamedTransaction(agent, type, callback) {
+  runInNamedTransaction: function runInNamedTransaction(agent, type, callback) {
     if (callback === undefined && typeof type === 'function') {
       callback = type
       type = undefined
@@ -187,7 +191,7 @@ var helper = module.exports = {
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
-  bootstrapMemcached : function bootstrapMemcached(callback) {
+  bootstrapMemcached: function bootstrapMemcached(callback) {
     var Memcached = require('memcached')
     var memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     memcached.flush(function(err) {
@@ -203,7 +207,7 @@ var helper = module.exports = {
    * @param Function callback The operations to be performed while the server
    *                          is running.
    */
-  bootstrapMongoDB : function bootstrapMongoDB(mongodb, collections, callback) {
+  bootstrapMongoDB: function bootstrapMongoDB(mongodb, collections, callback) {
     if (!callback) {
       // bootstrapMongoDB(collections, callback)
       callback = collections
@@ -211,24 +215,28 @@ var helper = module.exports = {
       mongodb = require('mongodb')
     }
 
-    var server  = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-      auto_reconnect : true
+    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
+      auto_reconnect: true
     })
     var db = new mongodb.Db('integration', server, {
       w: 1,
-      safe : true,
+      safe: true,
       numberOfRetries: 10,
       wtimeout: 100,
       retryMiliSeconds: 300
     })
 
     db.open(function(err) {
-      if (err) return callback(err)
+      if (err) {
+        return callback(err)
+      }
 
       async.eachSeries(collections, function(collection, cb) {
         db.dropCollection(collection, function(err) {
           // It's ok if the collection didn't exist before
-          if (err && err.errmsg === 'ns not found') err = null
+          if (err && err.errmsg === 'ns not found') {
+            err = null
+          }
 
           cb(err)
         })
@@ -251,7 +259,9 @@ var helper = module.exports = {
     var bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js')
     var config = architect.loadConfig(bootstrapped)
     architect.createApp(config, function(error, app) {
-      if (error) return callback(error)
+      if (error) {
+        return callback(error)
+      }
 
       return callback(null, app)
     })
@@ -273,7 +283,7 @@ var helper = module.exports = {
       redis = require('redis')
     }
     var client = redis.createClient(params.redis_port, params.redis_host)
-    client.select(dbIndex, function cb_select(err) {
+    client.select(dbIndex, function(err) {
       if (err) {
         client.end(true)
         return callback(err)
@@ -286,15 +296,21 @@ var helper = module.exports = {
     })
   },
 
-  withSSL : function(callback) {
+  withSSL: function(callback) {
     fs.readFile(KEYPATH, function(error, key) {
-      if (error) return callback(error)
+      if (error) {
+        return callback(error)
+      }
 
       fs.readFile(CERTPATH, function(error, certificate) {
-        if (error) return callback(error)
+        if (error) {
+          return callback(error)
+        }
 
         fs.readFile(CAPATH, function(error, ca) {
-          if (error) return callback(error)
+          if (error) {
+            return callback(error)
+          }
 
           callback(null, key, certificate, ca)
         })
@@ -303,7 +319,7 @@ var helper = module.exports = {
   },
 
   // FIXME: I long for the day I no longer need this gross hack
-  onlyDomains : function() {
+  onlyDomains: function() {
     var exceptionHandlers = process._events.uncaughtException
     if (exceptionHandlers) {
       if (Array.isArray(exceptionHandlers)) {
