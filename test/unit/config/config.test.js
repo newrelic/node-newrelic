@@ -40,23 +40,24 @@ describe("the agent configuration", function() {
   })
 
   it("should change the default port when no port is specified and ssl is turned off",
-  function() {
-    var c = Config.initialize({
-      ssl: false
-    })
-    expect(c.ssl).equal(false)
-    expect(c.port).equal(80)
-    var c = Config.initialize({
-      ssl: false,
-      port: 9000
-    })
-    expect(c.ssl).equal(false)
-    expect(c.port).equal(9000)
-    idempotentEnv('NEW_RELIC_USE_SSL', 'false', function(config) {
-      expect(config.ssl).equal(false)
-      expect(config.port).equal(80)
-    })
-  })
+    function() {
+      var c = Config.initialize({
+        ssl: false
+      })
+      expect(c.ssl).equal(false)
+      expect(c.port).equal(80)
+      var c = Config.initialize({
+        ssl: false,
+        port: 9000
+      })
+      expect(c.ssl).equal(false)
+      expect(c.port).equal(9000)
+      idempotentEnv('NEW_RELIC_USE_SSL', 'false', function(config) {
+        expect(config.ssl).equal(false)
+        expect(config.port).equal(80)
+      })
+    }
+  )
 
   describe("when overriding configuration values via environment variables", function() {
     it("should pick up the application name", function() {
@@ -68,17 +69,21 @@ describe("the agent configuration", function() {
     })
 
     it("should trim spaces from multiple application names ", function() {
-      idempotentEnv('NEW_RELIC_APP_NAME', 'zero,one, two,  three,   four',
-                    function(tc) {
-        should.exist(tc.app_name)
-        expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
-      })
+      idempotentEnv(
+        'NEW_RELIC_APP_NAME',
+        'zero,one, two,  three,   four',
+        function(tc) {
+          should.exist(tc.app_name)
+          expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
+        }
+      )
     })
 
     it("should pick up the license key", function() {
       idempotentEnv('NEW_RELIC_LICENSE_KEY', 'hambulance', function(tc) {
         should.exist(tc.license_key)
-        expect(tc.license_key).equal('hambulance')
+        expect(tc.license_key).to.equal('hambulance')
+        expect(tc.host).to.equal('collector.newrelic.com')
       })
     })
 
@@ -86,6 +91,22 @@ describe("the agent configuration", function() {
       idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
         should.exist(tc.host)
         expect(tc.host).equal('localhost')
+      })
+    })
+
+    it("should parse the region off the license key", function() {
+      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
+        should.exist(tc.host)
+        expect(tc.host).equal('collector.eu01.nr-data.net')
+      })
+    })
+
+    it("should take an explicit host over the license key parsed host", function() {
+      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
+        idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
+          should.exist(tc.host)
+          expect(tc.host).equal('localhost')
+        })
       })
     })
 
