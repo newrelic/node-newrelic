@@ -556,7 +556,7 @@ describe('CollectorAPI', function() {
 
         var response = {return_value: valid}
 
-        before(function(done) {
+        beforeEach(function(done) {
           fast()
 
           var redirectURL = generate('preconnect')
@@ -577,7 +577,7 @@ describe('CollectorAPI', function() {
           })
         })
 
-        after(function() {
+        afterEach(function() {
           slow()
         })
 
