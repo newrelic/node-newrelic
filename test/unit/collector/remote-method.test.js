@@ -544,8 +544,8 @@ describe('RemoteMethod', function() {
       parsed = reconstitute(method._path())
     })
 
-    it('should say that it supports protocol 14', function() {
-      expect(parsed.query.protocol_version).equal('14')
+    it('should say that it supports protocol 15', function() {
+      expect(parsed.query.protocol_version).equal('15')
     })
 
     it('should tell the collector it is sending JSON', function() {
