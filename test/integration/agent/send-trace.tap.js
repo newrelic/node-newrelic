@@ -36,13 +36,13 @@ tap.test('Agent should send trace to newrelic.com', function(t) {
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
     transaction.end(function() {
-      t.ok(agent.traces.trace, "have a slow trace to send")
+      t.ok(agent.traces.trace, 'have a slow trace to send')
 
-      agent._sendTrace(function cb__sendTrace(error) {
-        t.notOk(error, "trace sent correctly")
+      agent._sendTrace(function(error) {
+        t.notOk(error, 'trace sent correctly')
 
-        agent.stop(function cb_stop(error) {
-          t.notOk(error, "stopped without error")
+        agent.stop(function(error) {
+          t.notOk(error, 'stopped without error')
 
           t.end()
         })

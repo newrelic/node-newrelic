@@ -247,15 +247,15 @@ describe('high security mode', function() {
       helper.unloadAgent(agent)
     })
 
-    it('should disable addCustomParameter if high_security is on', function() {
+    it('should disable addCustomAttribute if high_security is on', function() {
       agent.config.high_security = true
-      var success = api.addCustomParameter('key', 'value')
+      var success = api.addCustomAttribute('key', 'value')
       success.should.equal(false)
     })
 
-    it('should not affect addCustomParameter if high_security is off', function() {
+    it('should not affect addCustomAttribute if high_security is off', function() {
       agent.config.high_security = false
-      var success = api.addCustomParameter('key', 'value')
+      var success = api.addCustomAttribute('key', 'value')
       should.not.exist(success)
     })
   })

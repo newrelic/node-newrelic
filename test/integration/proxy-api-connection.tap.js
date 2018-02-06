@@ -111,13 +111,13 @@ tap.test("proxy agent with SSL tunnel to collector", function(t) {
   })
 })
 
-test("proxy authentication should set headers", function (t) {
+tap.test("proxy authentication should set headers", function(t) {
   t.plan(2)
 
   var server = net.createServer()
 
-  server.on('connection', function (socket) {
-    socket.on('data', function (chunk) {
+  server.on('connection', function(socket) {
+    socket.on('data', function(chunk) {
       var data = chunk.toString().split('\r\n')
       t.equal(data[0], 'CONNECT staging-collector.newrelic.com:80 HTTP/1.1')
       t.equal(data[1], 'Proxy-Authorization: Basic YTpi')

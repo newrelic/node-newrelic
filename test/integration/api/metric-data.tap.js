@@ -28,8 +28,8 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
   var api = new CollectorAPI(agent)
 
 
-  api.connect(function cb_connect(error) {
-    t.notOk(error, "connected without error")
+  api.connect(function(error) {
+    t.notOk(error, 'connected without error')
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
     t.equal(agent.metrics.toJSON().length, 1, 'only one metric')
@@ -42,13 +42,13 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
     ]
 
     api.metricData(payload, function(error, response) {
-      t.notOk(error, "sent metrics without error")
-      t.ok(response, "got a response")
+      t.notOk(error, 'sent metrics without error')
+      t.ok(response, 'got a response')
 
-      t.equal(response.length, 0, "got back no mappings")
-      t.doesNotThrow(function cb_doesNotThrow() {
+      t.equal(response.length, 0, 'got back no mappings')
+      t.doesNotThrow(function() {
         agent.mapper.load(response)
-      }, "was able to load mapping")
+      }, 'was able to load mapping')
 
       t.end()
     })

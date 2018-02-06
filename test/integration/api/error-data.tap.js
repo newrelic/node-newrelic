@@ -44,10 +44,10 @@ test('Collector API should send errors to staging-collector.newrelic.com', funct
       agent.errors.errors
     ]
 
-    api.errorData(payload, function (error, response, json) {
-      t.notOk(error, "sent errors without error")
-      t.notOk(response, "return value is null")
-      t.deepEqual(json, {return_value: null}, "got raw return value")
+    api.errorData(payload, function(error, response, json) {
+      t.notOk(error, 'sent errors without error')
+      t.notOk(response, 'return value is null')
+      t.deepEqual(json, {return_value: null}, 'got raw return value')
 
       t.end()
     })
