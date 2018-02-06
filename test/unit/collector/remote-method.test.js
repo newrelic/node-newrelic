@@ -191,7 +191,7 @@ describe('RemoteMethod', function() {
 
   describe('when posting to collector', function() {
     var RUN_ID = 1337
-    var URL = 'http://collector.newrelic.com'
+    var URL = 'https://collector.newrelic.com'
     var nock
     var config
     var method
