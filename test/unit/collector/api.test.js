@@ -9,8 +9,8 @@ var API = require('../../../lib/collector/api')
 
 
 var HOST = 'collector.newrelic.com'
-var PORT = 80
-var URL = 'http://' + HOST
+var PORT = 443
+var URL = 'https://' + HOST
 var RUN_ID = 1337
 
 
@@ -38,7 +38,7 @@ describe('CollectorAPI', function() {
       host: HOST,
       port: PORT,
       app_name: ['TEST'],
-      ssl: false,
+      ssl: true,
       license_key: 'license key here',
       utilization: {
         detect_aws: false,

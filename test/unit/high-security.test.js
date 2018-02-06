@@ -3,8 +3,8 @@
 var _ = require('lodash')
 var chai   = require('chai')
 var helper = require('../lib/agent_helper')
-var facts  = require('../../lib/collector/facts')
-var API    = require('../../api')
+var facts = require('../../lib/collector/facts')
+var API = require('../../api')
 var Config = require('../../lib/config')
 
 
@@ -112,7 +112,7 @@ describe('high security mode', function() {
         // enabled by defualt, but lets make sure.
         config.ssl = true
         config.onConnect({ssl: false})
-        config.ssl.should.equal(false)
+        config.ssl.should.equal(true)
       })
 
       it('should reject enabling capture_params', function() {

@@ -3,7 +3,6 @@
 var tap = require('tap')
 var read = require('fs').readFileSync
 var join = require('path').join
-var http = require('http')
 var https = require('https')
 var url = require('url')
 var collector = require('../lib/fake-collector')
@@ -51,81 +50,42 @@ tap.test('DataSender (callback style) talking to fake collector', function(t) {
 tap.test('remote method to get redirect host', function(t) {
   t.test('https with custom certificate', function(t) {
     t.plan(3)
-    var method = createRemoteMethod(true, true)
+    var method = createRemoteMethod()
 
     // create mock collector
-    startMockCollector(t, true, function() {
+    startMockCollector(t, function() {
       method.invoke([], function(error, returnValue) {
         validateResponse(t, error, returnValue)
         t.end()
       })
     })
   })
-
-  t.test('http without custom certificate', function(t) {
-    t.plan(3)
-    var method = createRemoteMethod(false, false)
-
-    // create mock collector
-    startMockCollector(t, false, function() {
-      method.invoke([], function(error, returnValue) {
-        validateResponse(t, error, returnValue)
-        t.end()
-      })
-    })
-  })
-
-  t.test('http with custom certificate', function(t) {
-    t.plan(3)
-    var method = createRemoteMethod(false, true)
-
-    // create mock collector
-    startMockCollector(t, false, function() {
-      method.invoke([], function(error, returnValue) {
-        validateResponse(t, error, returnValue)
-        t.end()
-      })
-    })
-  })
-  t.autoend()
 
   function validateResponse(t, error, returnValue) {
     t.notOk(error, 'should not have an error')
     t.equal(returnValue, 'some-collector-url', 'should get expected response')
   }
 
-  function createRemoteMethod(ssl, useCertificate) {
+  function createRemoteMethod() {
     var config = {
-      host: 'localhost',
-      port: 8765
-    }
-
-    if (ssl) {
-      config.host = 'ssl.lvh.me'
-      config.ssl = true
-    }
-
-    if (useCertificate) {
-      config.certificates = read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
+      host: 'ssl.lvh.me',
+      port: 8765,
+      ssl: true,
+      certificates: read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
     }
 
     var method = new RemoteMethod('preconnect', config)
     return method
   }
 
-  function startMockCollector(t, ssl, startedCallback) {
+  function startMockCollector(t, startedCallback) {
     var opts = {
       port: 8765
     }
 
-    var server
-    if (ssl) {
-      opts.key = read(join(__dirname, '../lib/test-key.key'))
-      opts.cert = read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
-      server = https.createServer(opts, responder)
-    } else {
-      server = http.createServer(responder)
-    }
+    opts.key = read(join(__dirname, '../lib/test-key.key'))
+    opts.cert = read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
+    var server = https.createServer(opts, responder)
 
     server.listen(8765, function(err) {
       startedCallback(err, this)

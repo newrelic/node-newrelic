@@ -1,37 +1,37 @@
 'use strict'
 
-var path = require('path')
-var test = require('tap').test
+var tap = require('tap')
 var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
-var CollectorAPI = require('../../../lib/collector/api.js')
+var CollectorAPI = require('../../../lib/collector/api')
 
 
-test("Collector API should send errors to newrelic.com", function (t) {
+tap.test('Collector API should send errors to newrelic.com', function(t) {
   var config = configurator.initialize({
-        'app_name': 'node.js Tests',
-        'license_key': 'ed2a0ac637297d08c5592c0200050fe234802223',
-        'port': 80,
-        'ssl': false,
-        'utilization': {
-          'detect_aws': false,
-          'detect_pcf': false,
-          'detect_gcp': false,
-          'detect_docker': false
-        },
-        'logging': {
-          'level': 'trace'
-        }
-      })
+    app_name: 'node.js Tests',
+    license_key: 'ed2a0ac637297d08c5592c0200050fe234802223',
+    host: 'staging-collector.newrelic.com',
+    port: 443,
+    ssl: true,
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_gcp: false,
+      detect_docker: false
+    },
+    logging: {
+      level: 'trace'
+    }
+  })
   var agent = new Agent(config)
   var api = new CollectorAPI(agent)
 
 
-  api.connect(function cb_connect(error) {
-    t.notOk(error, "connected without error")
+  api.connect(function(error) {
+    t.notOk(error, 'connected without error')
 
     var transaction
-    var proxy = agent.tracer.transactionProxy(function cb_transactionProxy() {
+    var proxy = agent.tracer.transactionProxy(function() {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
     })

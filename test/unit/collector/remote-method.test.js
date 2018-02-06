@@ -211,8 +211,8 @@ describe('RemoteMethod', function() {
     beforeEach(function() {
       config = new Config({
         host: 'collector.newrelic.com',
-        port: 80,
-        ssl: false,
+        port: 443,
+        ssl: true,
         run_id: RUN_ID,
         license_key: 'license key here'
       })
@@ -356,8 +356,8 @@ describe('RemoteMethod', function() {
         beforeEach(function() {
           var config = new Config({
             host: 'collector.newrelic.com',
-            port: 80,
-            ssl: false,
+            port: 443,
+            ssl: true,
             license_key: 'license key here'
           })
           method = new RemoteMethod('preconnect', config)

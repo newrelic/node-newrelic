@@ -11,13 +11,13 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
     host: 'staging-collector.newrelic.com',
-    port: 80,
-    ssl: false,
+    port: 443,
+    ssl: true,
     utilization: {
       detect_aws: false,
       detect_azure: false,
-      detect_gcp: false,
       detect_pcf: false,
+      detect_gcp: false,
       detect_docker: false
     },
     logging: {
