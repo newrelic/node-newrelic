@@ -1275,9 +1275,9 @@ describe("the agent configuration", function() {
     })
 
     it('should not configure attributes.enabled', function() {
-      expect(config.attributes.enabled).equal(false)
-      config.onConnect({'attributes.enabled': true})
-      expect(config.attributes.enabled).equal(false)
+      expect(config.attributes.enabled).to.be.true()
+      config.onConnect({'attributes.enabled': false})
+      expect(config.attributes.enabled).to.be.true()
     })
 
     it("shouldn't configure ignored_params", function() {
