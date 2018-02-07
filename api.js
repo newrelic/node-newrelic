@@ -1154,7 +1154,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  var stats = {}
+  var stats = Object.create(null)
   var required = ['count', 'total', 'min', 'max', 'sumOfSquares']
   var keyMap = {count: 'callCount'}
 

@@ -57,7 +57,7 @@ describe('Error events', function() {
         agent.config.attributes.enabled = true
 
         agent.collector.isConnected = function() { return true }
-        agent.collector.metricData = function(payload, cb) { cb() }
+        agent.collector.metricData = function(_payload, cb) { cb() }
         agent.collector.errorEvents = function(_payload, cb) {
           errorsSent = true
           payload = _payload
@@ -98,10 +98,10 @@ describe('Error events', function() {
       it('should send agent attributes', function(done) {
         agent._sendMetrics(function() {
           agent._sendErrorEvents(function() {
-            expect(payload).to.be.an.instanceof(Array)
-            expect(payload[2]).to.be.an.instanceof(Array)
-            expect(payload[2][0]).to.be.an.instanceof(Array)
-            expect(payload[2][0][2]).to.be.an.instanceof(Object)
+            expect(payload).to.be.an('array')
+            expect(payload[2]).to.be.an('array')
+            expect(payload[2][0]).to.be.an('array')
+            expect(payload[2][0][2]).to.be.an('object')
 
             var attrs = payload[2][0][2]
             expect(attrs).to.have.property('foo', 'bar')
