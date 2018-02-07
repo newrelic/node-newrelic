@@ -251,7 +251,7 @@ function addCustomParameter(key, value) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  trace.addCustomAttribute(key, value, logger)
+  trace.addCustomAttribute(key, value)
 }
 
 
