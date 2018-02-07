@@ -27,7 +27,7 @@ var RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
 var RUM_ISSUES = [
   'NREUM: no browser monitoring headers generated; disabled',
-  'NREUM: transaction missing while generating browser monitoring headers',
+  'NREUM: transaction missing or ignored while generating browser monitoring headers',
   'NREUM: config.browser_monitoring missing, something is probably wrong',
   'NREUM: browser_monitoring headers need a transaction name',
   'NREUM: browser_monitoring requires valid application_id',
@@ -548,7 +548,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   var trans = this.agent.getTransaction()
 
   // bail gracefully outside a transaction
-  if (!trans) return _gracefail(1)
+  if (!trans || trans.isIgnored()) return _gracefail(1)
 
   var name = trans.getFullName()
 

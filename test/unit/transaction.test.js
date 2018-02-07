@@ -181,13 +181,13 @@ describe("Transaction", function() {
         var api = new API(agent)
         api.addIgnoringRule('^/test/')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        return expect(trans.ignore).true
+        return expect(trans.isIgnored()).true
       })
 
       it('should ignore a transaction when told to by a rule', function() {
         agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.ignore).equal(true)
+        expect(trans.isIgnored()).equal(true)
       })
 
       it('should pass through a name when told to by a rule', function() {
@@ -210,7 +210,7 @@ describe("Transaction", function() {
       it('should apply ignore rules', function() {
         agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
         trans.finalizeName('foo')
-        expect(trans.ignore).to.be.true()
+        expect(trans.isIgnored()).to.be.true()
       })
 
       it('should not apply user naming rules', function() {
@@ -245,6 +245,20 @@ describe("Transaction", function() {
       it("should return the name if it has already been set", function() {
         trans.setPartialName('foo/bar')
         expect(trans.getName()).equal('foo/bar')
+      })
+    })
+
+    describe('isIgnored', function() {
+      it('should return true if a transaction is ignored through the api', function() {
+        var api = new API(agent)
+        api.setIgnoreTransaction(true)
+        expect(trans.isIgnored()).to.be.true()
+      })
+      it ('should return true if a transaction is ignored by a rule', function() {
+        var api = new API(agent)
+        api.addIgnoringRule('^/test/')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+        expect(trans.isIgnored()).true
       })
     })
 
@@ -408,7 +422,7 @@ describe("Transaction", function() {
       it("should ignore a transaction when told to by a rule", function () {
         agent.transactionNameNormalizer.addSimple('^WebTransaction/Custom/test$')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        return expect(trans.ignore).true
+        return expect(trans.isIgnored()).true
       })
     })
   })
