@@ -38,6 +38,14 @@ describe("the RUM API", function() {
       .should.equal('<!-- NREUM: (1) -->')
   })
 
+  it('should issue a warning if the transaction was ignored', function () {
+    helper.runInTransaction(agent, function (txn) {
+      api.setIgnoreTransaction(true)
+      api.getBrowserTimingHeader()
+        .should.equal('<!-- NREUM: (1) -->')
+    })
+  })
+
   it('should issue a warning if transaction has no name', function () {
     helper.runInTransaction(agent, function () {
       api.getBrowserTimingHeader()
