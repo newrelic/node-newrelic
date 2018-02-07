@@ -9,7 +9,8 @@ var Config = require('../../../lib/config')
 
 
 function idempotentEnv(name, value, callback) {
-  var is, saved
+  var is
+  var saved
 
   // process.env is not a normal object
   if (Object.hasOwnProperty.call(process.env, name)) {
@@ -430,6 +431,12 @@ describe('the agent configuration', function() {
       idempotentEnv(env, false, function(tc) {
         should.exist(tc.message_tracer.segment_parameters.enabled)
         expect(tc.message_tracer.segment_parameters.enabled).equal(false)
+      })
+    })
+
+    it('should reject disabling ssl', function() {
+      idempotentEnv('NEW_RELIC_USE_SSL', false, function(tc) {
+        expect(tc.ssl).to.be.true()
       })
     })
   })
