@@ -4,6 +4,7 @@ var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
+var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')
 
 var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
@@ -23,6 +24,7 @@ function collectionTest(name, run) {
 
   tap.test(name, {timeout: 10000}, function(t) {
     var agent = null
+    var client = null
     var db = null
     var collection = null
     t.autoend()
@@ -37,22 +39,24 @@ function collectionTest(name, run) {
           }
 
           var mongodb = require('mongodb')
-          var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-            socketOptions: {
-              connectionTimeoutMS: 30000,
-              socketTimeoutMS: 30000
-            }
-          })
-          db = new mongodb.Db(DB_NAME, server)
+          var pkg = require('mongodb/package')
+
           METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
             ? agent.config.getHostnameSafe()
             : params.mongodb_host
           METRIC_HOST_PORT = String(params.mongodb_port)
 
-          db.open(function(err) {
+          var connector = semver.satisfies(pkg.version, '>=3')
+            ? _connectV3
+            : _connectV2
+
+          connector(mongodb, null, function(err, res) {
             if (err) {
               return done(err)
             }
+
+            client = res.client
+            db = res.db
             collection = db.collection('testCollection')
             populate(db, collection, done)
           })
@@ -60,7 +64,7 @@ function collectionTest(name, run) {
       })
 
       t.afterEach(function(done) {
-        db.close(function(err) {
+        _close(client, db, function(err) {
           helper.unloadAgent(agent)
           agent = null
           done(err)
@@ -196,12 +200,18 @@ function collectionTest(name, run) {
           }
 
           var mongodb = require('mongodb')
-          var server = new mongodb.Server(domainPath)
-          db = new mongodb.Db(DB_NAME, server)
-          db.open(function(err) {
+          var pkg = require('mongodb/package')
+          var connector = semver.satisfies(pkg.version, '>=3')
+            ? _connectV3
+            : _connectV2
+
+          connector(mongodb, domainPath, function(err, res) {
             if (err) {
               return done(err)
             }
+
+            client = res.client
+            db = res.db
 
             collection = db.collection('testCollection')
             populate(db, collection, done)
@@ -210,7 +220,7 @@ function collectionTest(name, run) {
       })
 
       t.afterEach(function(done) {
-        db.close(function(err) {
+        _close(client, db, function(err) {
           helper.unloadAgent(agent)
           agent = null
           done(err)
@@ -321,8 +331,8 @@ function populate(db, collection, done) {
     })
   }
 
-  db.dropCollection('testCollection2', function dropped() {
-    collection.deleteMany({}, function removed(err) {
+  db.collection('testCollection2').drop(function() {
+    collection.deleteMany({}, function(err) {
       if (err) return done(err)
       collection.insert(items, done)
     })
@@ -338,4 +348,50 @@ function getDomainSocketPath() {
     }
   }
   return null
+}
+
+function _connectV2(mongodb, path, cb) {
+  var server = null
+  if (path) {
+    server = new mongodb.Server(path)
+  } else {
+    server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
+      socketOptions: {
+        connectionTimeoutMS: 30000,
+        socketTimeoutMS: 30000
+      }
+    })
+  }
+
+  var db = new mongodb.Db(DB_NAME, server)
+
+  db.open(function(err) {
+    cb(err, {db: db, client: null})
+  })
+}
+
+function _connectV3(mongodb, host, cb) {
+  if (host) {
+    host = encodeURIComponent(host)
+  } else {
+    host = params.mongodb_host + ':' + params.mongodb_port
+  }
+  mongodb.MongoClient.connect('mongodb://' + host, function(err, client) {
+    if (err) {
+      return cb(err)
+    }
+
+    var db = client.db(DB_NAME)
+    cb(null, {db: db, client: client})
+  })
+}
+
+function _close(client, db, cb) {
+  if (typeof db.close === 'function') {
+    db.close(cb)
+  } else if (client) {
+    client.close(true, cb)
+  } else {
+    cb()
+  }
 }
