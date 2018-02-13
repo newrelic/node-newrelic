@@ -107,7 +107,7 @@ function collectionTest(name, run) {
             }
 
             t.equal(current.children.length, 0, 'should have no more children')
-            t.equal(current, segment, 'should test to the current segment')
+            t.ok(current === segment, 'should test to the current segment')
 
             transaction.end(function onTxEnd() {
               checkMetrics(t, agent, metrics || [])
@@ -234,6 +234,11 @@ function collectionTest(name, run) {
           run(t, collection, function(err, segments, metrics) {
             t.error(err)
             transaction.end(function() {
+              var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
+              var badMetrics = Object.keys(agent.metrics.unscoped).filter(function(m) {
+                return re.test(m)
+              })
+              t.notOk(badMetrics.length, 'should not use domain path as host name')
               checkMetrics(t, agent, metrics || [])
               t.end()
             })
@@ -249,14 +254,15 @@ function checkMetrics(t, agent, metrics) {
   var unscopedNames = Object.keys(unscopedMetrics)
   var scoped = agent.metrics.scoped[TRANSACTION_NAME]
   var total = 0
-  var count
-  var name
 
   if (!t.ok(scoped, 'should have scoped metrics')) {
     return
   }
-  t.equal(Object.keys(agent.metrics.scoped).length, 1, 'should have one scoped metric')
+  t.equal(Object.keys(agent.metrics.scoped).length, 1, 'should have one metric scope')
   for (var i = 0; i < metrics.length; ++i) {
+    var count = null
+    var name = null
+
     if (Array.isArray(metrics[i])) {
       count = metrics[i][1]
       name = metrics[i][0]
@@ -387,7 +393,7 @@ function _connectV3(mongodb, host, cb) {
 }
 
 function _close(client, db, cb) {
-  if (typeof db.close === 'function') {
+  if (db && typeof db.close === 'function') {
     db.close(cb)
   } else if (client) {
     client.close(true, cb)

@@ -1,28 +1,45 @@
 'use strict'
 
 var common = require('./collection-common')
+var mongoPackage = require('mongodb/package')
+var semver = require('semver')
 
 
 common.test('aggregate', function aggregateTest(t, collection, verify) {
-  collection.aggregate(
-    [
-      {$sort: {i: 1}},
-      {$match: {mod10: 5}},
-      {$limit: 3},
-      {$project: {value: '$i', _id: 0}}
-    ],
-    onResult
-  )
-
-  function onResult(err, data) {
-    t.error(err)
-    t.equal(data.length, 3)
-    t.deepEqual(data, [{value: 5}, {value: 15}, {value: 25}])
-    verify(null, [
+  collection.aggregate([
+    {$sort: {i: 1}},
+    {$match: {mod10: 5}},
+    {$limit: 3},
+    {$project: {value: '$i', _id: 0}}
+  ], function onResult(err, cursor) {
+    if (!cursor) {
+      t.fail('No data retrieved!')
+      verify(err)
+    } else if (cursor instanceof Array) {
+      _verifyData(cursor)
+      verify(err, [
         'Datastore/statement/MongoDB/testCollection/aggregate',
         'Callback: onResult'
-      ],
-      ['aggregate']
+      ], ['aggregate'])
+    } else {
+      cursor.toArray(function onResult2(err, data) {
+        _verifyData(data)
+        verify(err, [
+          'Datastore/statement/MongoDB/testCollection/aggregate',
+          'Callback: onResult',
+          'Datastore/statement/MongoDB/testCollection/toArray',
+          'Callback: onResult2'
+        ], ['aggregate', 'toArray'])
+      })
+    }
+  })
+
+  function _verifyData(data) {
+    t.equal(data.length, 3, 'should have expected amount of results')
+    t.deepEqual(
+      data,
+      [{value: 5}, {value: 15}, {value: 25}],
+      'should have expected results'
     )
   }
 })
@@ -117,34 +134,36 @@ common.test('geoHaystackSearch', function haystackSearchTest(t, collection, veri
   }
 })
 
-common.test('geoNear', function geoNearTest(t, collection, verify) {
-  collection.ensureIndex({loc: '2d'}, {bucketSize: 1}, indexed)
+if (semver.satisfies(mongoPackage.version, '<3')) {
+  common.test('geoNear', function geoNearTest(t, collection, verify) {
+    collection.ensureIndex({loc: '2d'}, {bucketSize: 1}, indexed)
 
-  function indexed(err) {
-    t.error(err)
-    collection.geoNear(20, 20, {maxDistance: 5}, done)
-  }
+    function indexed(err) {
+      t.error(err)
+      collection.geoNear(20, 20, {maxDistance: 5}, done)
+    }
 
-  function done(err, data) {
-    t.error(err)
-    t.equal(data.ok, 1)
-    t.equal(data.results.length, 2)
-    t.equal(data.results[0].obj.i, 21)
-    t.equal(data.results[1].obj.i, 17)
-    t.deepEqual(data.results[0].obj.loc, [21, 21])
-    t.deepEqual(data.results[1].obj.loc, [17, 17])
-    t.equal(data.results[0].dis, 1.4142135623730951)
-    t.equal(data.results[1].dis, 4.242640687119285)
-    verify(null, [
-        'Datastore/statement/MongoDB/testCollection/ensureIndex',
-        'Callback: indexed',
-        'Datastore/statement/MongoDB/testCollection/geoNear',
-        'Callback: done'
-      ],
-      ['ensureIndex', 'geoNear']
-    )
-  }
-})
+    function done(err, data) {
+      t.error(err)
+      t.equal(data.ok, 1)
+      t.equal(data.results.length, 2)
+      t.equal(data.results[0].obj.i, 21)
+      t.equal(data.results[1].obj.i, 17)
+      t.deepEqual(data.results[0].obj.loc, [21, 21])
+      t.deepEqual(data.results[1].obj.loc, [17, 17])
+      t.equal(data.results[0].dis, 1.4142135623730951)
+      t.equal(data.results[1].dis, 4.242640687119285)
+      verify(null, [
+          'Datastore/statement/MongoDB/testCollection/ensureIndex',
+          'Callback: indexed',
+          'Datastore/statement/MongoDB/testCollection/geoNear',
+          'Callback: done'
+        ],
+        ['ensureIndex', 'geoNear']
+      )
+    }
+  })
+}
 
 common.test('group', function groupTest(t, collection, verify) {
   collection.group(['mod10'], {}, {count: 0, total: 0}, count, done)
