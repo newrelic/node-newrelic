@@ -191,20 +191,6 @@ describe("the agent configuration", function() {
       })
     })
 
-    it("should pick up whether the apdexT is set", function() {
-      idempotentEnv('NEW_RELIC_APDEX', 0.666, function(tc) {
-        should.exist(tc.apdex_t)
-        expect(tc.apdex_t).equal(0.666)
-      })
-    })
-
-    it("should interpret apdexT as a float", function() {
-      idempotentEnv('NEW_RELIC_APDEX', '0.666', function(tc) {
-        should.exist(tc.apdex_t)
-        expect(tc.apdex_t).equal(0.666)
-      })
-    })
-
     it("should pick up whether to capture request parameters", function() {
       idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'yes', function(tc) {
         should.exist(tc.capture_params)
