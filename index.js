@@ -4,6 +4,8 @@
 var preAgentTime = process.uptime()
 var agentStart = Date.now()
 
+// Load unwrapped core now to ensure it gets the freshest properties.
+require('./lib/util/unwrapped-core')
 
 var featureFlags = require('./lib/feature_flags').prerelease
 var logger = require('./lib/logger')
