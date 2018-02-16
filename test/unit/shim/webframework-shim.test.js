@@ -38,7 +38,7 @@ describe('WebFrameworkShim', function() {
       errorHandled: false,
       error: null
     }
-    req = {__NR_transactionInfo: txInfo}
+    req = {__NR_transactionInfo: txInfo, params: {foo: 'bar', biz: 'bang'}}
     Promise = require('bluebird')
   })
 
@@ -522,6 +522,53 @@ describe('WebFrameworkShim', function() {
 
           expect(segment).to.exist().and.have.property('name', expectedName)
         }
+      })
+
+      describe('when high_security is off', function() {
+        beforeEach(function() {
+          agent.config.high_security = false
+        })
+
+        it('should capture route parameters', function() {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: shim.MIDDLEWARE, route: ['/one', '/two']}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist()
+              .and.property('parameters').to.deep.equal({
+                nr_exclusive_duration_millis: null,
+                foo: 'bar',
+                biz: 'bang'
+              })
+          })
+        })
+      })
+
+
+      describe('when high_security is on', function() {
+        beforeEach(function() {
+          agent.config.high_security = true
+        })
+
+        it('should not capture route parameters', function() {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: shim.MIDDLEWARE, route: ['/one', '/two']}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist()
+              .and.property('parameters').to.deep.equal({
+                nr_exclusive_duration_millis: null
+              })
+          })
+        })
       })
 
       describe('when the middleware is synchronous', function() {
@@ -1132,6 +1179,14 @@ describe('WebFrameworkShim', function() {
       shim.captureUrlParams({foo: 'bar', biz: 'baz'})
       expect(segment).property('parameters')
         .to.deep.equal({foo: 'other', biz: 'baz', bang: 'bam'})
+    })
+
+    it('should obey high_security mode', function() {
+      agent.config.high_security = true
+      var segment = {parameters: {foo: 'other'}}
+      shim.getSegment = function() { return segment }
+      shim.captureUrlParams({foo: 'bar', biz: 'baz'})
+      expect(segment).property('parameters').to.deep.equal({foo: 'other'})
     })
 
     it('should not throw when out of a transaction', function() {
