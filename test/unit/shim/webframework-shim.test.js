@@ -554,7 +554,7 @@ describe('WebFrameworkShim', function() {
           agent.config.high_security = true
         })
 
-        it('should capture route parameters', function() {
+        it('should not capture route parameters', function() {
           var wrapped = shim.recordMiddleware(
             wrappable.getActiveSegment,
             {type: shim.MIDDLEWARE, route: ['/one', '/two']}

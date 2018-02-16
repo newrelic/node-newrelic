@@ -1,14 +1,15 @@
 'use strict'
 
-var chai        = require('chai')
-var should      = chai.should()
-var expect      = chai.expect
-var helper      = require('../lib/agent_helper')
-var API         = require('../../api')
-var Metrics     = require('../../lib/metrics')
-var Trace       = require('../../lib/transaction/trace')
+var chai = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var helper = require('../lib/agent_helper')
+var API = require('../../api')
+var AttributeFilter = require('../../lib/config/attribute-filter')
+var Metrics = require('../../lib/metrics')
+var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
-var hashes      = require('../../lib/util/hashes')
+var hashes = require('../../lib/util/hashes')
 
 
 describe('Transaction', function() {
@@ -16,7 +17,9 @@ describe('Transaction', function() {
   var trans = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    agent = helper.loadMockedAgent(null, {
+      attributes: {enabled: true}
+    })
     trans = new Transaction(agent)
   })
 
@@ -171,26 +174,72 @@ describe('Transaction', function() {
 
     describe('with finalizeNameFromUri', function() {
       it('should throw when called with no parameters', function() {
-        expect(function() { trans.finalizeNameFromUri() }).throws()
+        expect(function() { trans.finalizeNameFromUri() }).to.throw()
       })
 
       it('should ignore a request path when told to by a rule', function() {
         var api = new API(agent)
         api.addIgnoringRule('^/test/')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        return expect(trans.isIgnored()).true
+        expect(trans.isIgnored()).to.be.true()
       })
 
       it('should ignore a transaction when told to by a rule', function() {
         agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).equal(true)
+        expect(trans.isIgnored()).to.be.true()
       })
 
       it('should pass through a name when told to by a rule', function() {
         agent.userNormalizer.addSimple('^/config', '/foobar')
         trans.finalizeNameFromUri('/config', 200)
-        expect(trans.name).equal('WebTransaction/NormalizedUri/foobar')
+        expect(trans.name).to.equal('WebTransaction/NormalizedUri/foobar')
+      })
+
+      describe('when tx.nameState is populated', function() {
+        beforeEach(function() {
+          trans.baseSegment = trans.trace.root.add('basesegment')
+          trans.nameState.setPrefix('Restify')
+          trans.nameState.setVerb('COOL')
+          trans.nameState.setDelimiter('/')
+          trans.nameState.appendPath('/foo/:foo', {foo: 'bar'})
+          trans.nameState.appendPath('/bar/:bar', {bar: 'bang'})
+        })
+
+        it('should name the transaction using the name stack', function() {
+          trans.finalizeNameFromUri('/some/random/path', 200)
+          expect(trans.name)
+            .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+        })
+
+        it('should copy parameters from the name stack', function() {
+          trans.finalizeNameFromUri('/some/random/path', 200)
+          var attrs = trans.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
+          expect(attrs).to.deep.equal({
+            'request.parameters.foo': 'bar',
+            'request.parameters.bar': 'bang'
+          })
+        })
+
+        describe('and high_security is on', function() {
+          beforeEach(function() {
+            agent.config.high_security = true
+          })
+
+          it('should still name the transaction using the name stack', function() {
+            trans.finalizeNameFromUri('/some/random/path', 200)
+            expect(trans.name)
+              .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+          })
+
+          it('should not copy parameters from the name stack', function() {
+            trans.finalizeNameFromUri('/some/random/path', 200)
+            var attrs = trans.trace.attributes.get(
+              AttributeFilter.DESTINATIONS.TRANS_TRACE
+            )
+            expect(attrs).to.deep.equal({})
+          })
+        })
       })
     })
 
