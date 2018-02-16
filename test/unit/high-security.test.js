@@ -30,7 +30,7 @@ describe('high security mode', function() {
   describe('conditional application of server side settings', function() {
     var config = null
 
-    describe('high_security === true', function() {
+    describe('when high_security === true', function() {
       beforeEach(function() {
         config = new Config({high_security: true})
       })
@@ -60,7 +60,7 @@ describe('high security mode', function() {
       })
     })
 
-    describe('high_security === false', function() {
+    describe('when high_security === false', function() {
       beforeEach(function() {
         config = new Config({high_security: false})
       })
@@ -109,7 +109,7 @@ describe('high security mode', function() {
     })
 
 
-    describe('high_security === true', function() {
+    describe('when high_security === true', function() {
       it('should detect that ssl is off', function(done) {
         var config = new Config({high_security: true})
         config.ssl = false
@@ -127,17 +127,6 @@ describe('high security mode', function() {
         config.on('capture_params', function(value) {
           value.should.equal(false)
           config.capture_params.should.equal(false)
-          done()
-        })
-        config._applyHighSecurity()
-      })
-
-      it('should detect that attributes.enabled is on', function(done) {
-        var config = new Config({'high_security': true})
-        config.attributes.enabled = true
-        config.on('attributes.enabled', function(value) {
-          value.should.equal(false)
-          config.attributes.enabled.should.equal(false)
           done()
         })
         config._applyHighSecurity()

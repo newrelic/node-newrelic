@@ -58,6 +58,14 @@ describe('AttributeFilter', function() {
       makeAssertions(filter)
     })
 
+    it('should filter `request.parameters` when HSM is enabled', function() {
+      var filter = new AttributeFilter(makeConfig({high_security: true}))
+
+      var TRANS_EVENT = AttributeFilter.DESTINATIONS.TRANS_EVENT
+      expect(filter.test(TRANS_EVENT, 'request.headers.foobar')).to.be.true()
+      expect(filter.test(TRANS_EVENT, 'request.parameters.foobar')).to.be.false()
+    })
+
     function makeAssertions(filter) {
       var TRANS_EVENT = AttributeFilter.DESTINATIONS.TRANS_EVENT
       var TRANS_TRACE = AttributeFilter.DESTINATIONS.TRANS_TRACE
