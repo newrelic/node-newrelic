@@ -215,10 +215,7 @@ describe('Transaction', function() {
         it('should copy parameters from the name stack', function() {
           trans.finalizeNameFromUri('/some/random/path', 200)
           var attrs = trans.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
-          expect(attrs).to.deep.equal({
-            'request.parameters.foo': 'bar',
-            'request.parameters.bar': 'bang'
-          })
+          expect(attrs).to.deep.equal({foo: 'bar', bar: 'bang'})
         })
 
         describe('and high_security is on', function() {
