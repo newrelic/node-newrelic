@@ -1,7 +1,6 @@
 'use strict'
 
 var common = require('./common')
-var fs = require('fs')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 
@@ -183,7 +182,7 @@ function collectionTest(name, run) {
     // to connect to, which only happens if there is a Mongo instance running on
     // the same box as these tests. This should always be the case on Travis,
     // but just to be sure they're running there check for the environment flag.
-    var domainPath = getDomainSocketPath()
+    var domainPath = common.getDomainSocketPath()
     var shouldTestDomain = domainPath || process.env.TRAVIS
     t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
       t.autoend()
@@ -283,15 +282,4 @@ function populate(db, collection, done) {
       collection.insert(items, done)
     })
   })
-}
-
-function getDomainSocketPath() {
-  var files = fs.readdirSync('/tmp')
-  for (var i = 0; i < files.length; ++i) {
-    var file = '/tmp/' + files[i]
-    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
-      return file
-    }
-  }
-  return null
 }
