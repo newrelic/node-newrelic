@@ -38,8 +38,8 @@
         "collection-index.tap.js",
         "collection-misc.tap.js",
         "collection-update.tap.js",
-        "cursor-v2.tap.js",
-        "db-v2.tap.js"
+        "cursor.tap.js",
+        "db.tap.js"
       ]
     },
     {
@@ -54,8 +54,8 @@
         "collection-index.tap.js",
         "collection-misc.tap.js",
         "collection-update.tap.js",
-        "cursor-v2.tap.js",
-        "db-v2.tap.js"
+        "cursor.tap.js",
+        "db.tap.js"
       ]
     }
   ],
