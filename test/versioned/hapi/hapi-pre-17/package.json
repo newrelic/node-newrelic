@@ -58,6 +58,7 @@
       },
       "files": [
         "capture-params.tap.js",
+        "errors.tap.js",
         "ignoring.tap.js",
         "render-v9.tap.js",
         "router.tap.js",
@@ -75,7 +76,7 @@
       },
       "files": [
         "capture-params.tap.js",
-        "errors-v16.tap.js",
+        "errors.tap.js",
         "ext-v16.tap.js",
         "hapi.tap.js",
         "ignoring.tap.js",
