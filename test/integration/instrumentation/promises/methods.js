@@ -1383,9 +1383,9 @@ module.exports = function(t, library, loadLibrary) {
           var startTransaction = agent.getTransaction()
           return p[methodName](function(err, result) {
             var inCallbackTransaction = agent.getTransaction()
-            t.same(
-              startTransaction,
-              inCallbackTransaction,
+            t.equal(
+              id(startTransaction),
+              id(inCallbackTransaction),
               name + 'should have the same transaction inside the success callback'
             )
             t.notOk(err, name + 'should not have an error')
@@ -1396,9 +1396,9 @@ module.exports = function(t, library, loadLibrary) {
             t.fail(name + 'should have skipped then after rejection')
           })[methodName](function(err, result) {
             var inCallbackTransaction = agent.getTransaction()
-            t.same(
-              startTransaction,
-              inCallbackTransaction,
+            t.equal(
+              id(startTransaction),
+              id(inCallbackTransaction),
               name + 'should have the same transaction inside the error callback'
             )
             t.ok(err, name + 'should have error in ' + methodName)
@@ -1717,8 +1717,8 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
             })
             .then(function() {
               t.equal(
-                agent.getTransaction(),
-                transaction,
+                id(agent.getTransaction()),
+                id(transaction),
                 name + 'has the right transaction'
               )
             }, function(err) {
@@ -1759,12 +1759,12 @@ function _testPromiseContext(t, agent, factory) {
         ctxA.transaction.end()
         txB.end()
       })
-      t.notEqual(ctxA.transaction.id, txB.id, 'should not be in transaction a')
+      t.notEqual(id(ctxA.transaction), id(txB), 'should not be in transaction a')
 
       ctxA.promise.catch(function() {}).then(function() {
         var tx = agent.tracer.getTransaction()
-        t.comment('A: ' + ctxA.transaction.id + ' | B: ' + txB.id)
-        t.equal(tx && tx.id, ctxA.transaction.id, 'should be in expected context')
+        t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
+        t.equal(id(tx), id(ctxA.transaction), 'should be in expected context')
       })
     })
   })
@@ -1787,7 +1787,7 @@ function _testPromiseContext(t, agent, factory) {
     t.notOk(agent.tracer.getTransaction(), 'should not be in transaction')
     ctxA.promise.catch(function() {}).then(function() {
       var tx = agent.tracer.getTransaction()
-      t.equal(tx && tx.id, ctxA.transaction.id, 'should be in expected context')
+      t.equal(id(tx), id(ctxA.transaction), 'should be in expected context')
     })
   })
 
@@ -1801,7 +1801,7 @@ function _testPromiseContext(t, agent, factory) {
     helper.runInTransaction(agent, function(tx) {
       promise.catch(function() {}).then(function() {
         var tx2 = agent.tracer.getTransaction()
-        t.equal(tx2 && tx2.id, tx.id, 'should be in expected context')
+        t.equal(id(tx2), id(tx), 'should be in expected context')
       })
     })
   })
@@ -1823,12 +1823,12 @@ function _testPromiseContext(t, agent, factory) {
           ctxA.transaction.end()
           txB.end()
         })
-        t.notEqual(ctxA.transaction.id, txB.id, 'should not be in transaction a')
+        t.notEqual(id(ctxA.transaction), id(txB), 'should not be in transaction a')
 
         ctxA.promise.catch(function() {}).then(function() {
           var tx = agent.tracer.getTransaction()
-          t.comment('A: ' + ctxA.transaction.id + ' | B: ' + txB.id)
-          t.equal(tx && tx.id, txB.id, 'should be in expected context')
+          t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
+          t.equal(id(tx), id(txB), 'should be in expected context')
         })
       })
     })
@@ -1914,4 +1914,8 @@ PromiseTap.prototype._check = function(t, source, methods, tested, type) {
       t.ok(wrapped[key] != null, 'should copy ' + longName + '.' + key)
     })
   }, this)
+}
+
+function id(tx) {
+  return tx && tx.id
 }

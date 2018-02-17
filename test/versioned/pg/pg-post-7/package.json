@@ -9,7 +9,7 @@
       },
       "dependencies": {
         "pg": ">=7",
-        "pg-native": "1.10.x"
+        "pg-native": "2.x"
       },
       "files": [
         "force-native.tap.js",
