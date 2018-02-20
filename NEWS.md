@@ -1,4 +1,34 @@
 
+### 2.8.0 (2018-02-21):
+
+* Added instrumentation support for MongoDB version 3.
+
+  Version 3 of [mongodb](https://npmjs.org/package/mongodb) is now supported.
+  Previously datastore host information (instance metrics) was incorrectly
+  captured by the agent with `mongodb` v3. This has been fixed and all features
+  should be functional now.
+
+* Enable certain agent attributes when high security mode is enabled.
+
+  During the switch from the old `capture_params`/`ignored_params` to the new
+  attribute include/exclude rules, high security mode was over-zealous in what
+  attributes it disallowed. This has been trimmed back to be in line with other
+  agents.
+
+* Updated documentation for `apdex_t` setting and removed environment variable.
+
+  This was never configurable on client side and the documentation was misleading.
+
+* Documented environment variables for `slow_sql` configurations.
+
+  Thanks to Olivier Tassinari (@oliviertassinari) for the update!
+
+* Updated `hapi/hapi-pre-17/package.json` to run `errors.tap.js` in more versions.
+
+* Added internal cache to unwrapped core modules for agent use.
+
+* Improved logging around environment facts gathering.
+
 ### 2.7.1 (2018-02-08):
 
 * Change `attributes.enabled` to `true` by default.
@@ -95,7 +125,6 @@
   instance of a Buffer. If `crypto.DEFAULT_ENCODING` is changed, `hash.digest()`
   will return a string and the agent would crash.  The agent now ensures that
   the value is a Buffer instance before moving on.
-
 
 * Renamed `request_uri` attribute to `request.uri`.
 
