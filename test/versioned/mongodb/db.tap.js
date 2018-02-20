@@ -1,76 +1,128 @@
 'use strict'
 
-var fs = require('fs')
-var tap = require('tap')
+var common = require('./common')
 var helper = require('../../lib/agent_helper')
+var mongoPackage = require('mongodb/package')
 var params = require('../../lib/params')
 var semver = require('semver')
-var urltils = require('../../../lib/util/urltils')
+var tap = require('tap')
 
-var DB_NAME = 'integration'
 var MONGO_HOST = null
-var MONGO_PORT = String(params.mongodb_port)
+var MONGO_PORT = null
 var BAD_MONGO_COMMANDS = [
   'collection'
 ]
 
-mongoTest('open', [], function openTest(t, agent) {
-  var mongodb = require('mongodb')
-  var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-  var db = new mongodb.Db(DB_NAME, server)
+if (semver.satisfies(mongoPackage.version, '<3')) {
+  mongoTest('open', [], function openTest(t, agent) {
+    var mongodb = require('mongodb')
+    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+    var db = new mongodb.Db(common.DB_NAME, server)
 
-  // TODO: Tighten this semver check once mongo resolves this bug:
-  // https://jira.mongodb.org/browse/NODE-826
-  var mongoPkg = require('mongodb/package')
-  if (semver.satisfies(mongoPkg.version, '2.2.x')) {
-    BAD_MONGO_COMMANDS.push('authenticate', 'logout')
-  }
+    // TODO: Tighten this semver check once mongo resolves this bug:
+    // https://jira.mongodb.org/browse/NODE-826
+    if (semver.satisfies(mongoPackage.version, '2.2.x')) {
+      BAD_MONGO_COMMANDS.push('authenticate', 'logout')
+    }
 
-  helper.runInTransaction(agent, function inTransaction(transaction) {
-    db.open(function onOpen(err, _db) {
-      var segment = agent.tracer.getSegment()
-      t.error(err)
-      t.equal(db, _db, 'should pass through the arguments correctly')
-      t.equal(agent.getTransaction(), transaction, 'should not lose tx state')
-      t.equal(segment.name, 'Callback: onOpen', 'should create segments')
-      t.equal(transaction.trace.root.children.length, 1, 'should only create one')
-      var parent = transaction.trace.root.children[0]
-      t.equal(
-        parent.name, 'Datastore/operation/MongoDB/open',
-        'should name segment correctly'
-      )
-      t.notEqual(parent.children.indexOf(segment), -1, 'should have callback as child')
-      db.close()
-      t.end()
-    })
-  })
-})
-
-dbTest('addUser, authenticate,  removeUser', [], function addUserTest(t, db, verify) {
-  db.addUser('user-test', 'user-test-pass', {roles: ['readWrite']}, added)
-  function added(err, user) {
-    t.notOk(err, 'addUser should not have error')
-    db.authenticate('user-test', 'user-test-pass', function authed(err2) {
-      t.notOk(err2, 'authenticate should not have error')
-      db.removeUser('user-test', function removed(err3) {
-        t.notOk(err3, 'removeUser should not have error')
-        t.equal(user[0].user, 'user-test')
-        verify([
-          'Datastore/operation/MongoDB/addUser',
-          'Callback: added',
-          'Datastore/operation/MongoDB/authenticate',
-          'Callback: authed',
-          'Datastore/operation/MongoDB/removeUser',
-          'Callback: removed'
-        ])
+    helper.runInTransaction(agent, function inTransaction(transaction) {
+      db.open(function onOpen(err, _db) {
+        var segment = agent.tracer.getSegment()
+        t.error(err)
+        t.equal(db, _db, 'should pass through the arguments correctly')
+        t.equal(agent.getTransaction(), transaction, 'should not lose tx state')
+        t.equal(segment.name, 'Callback: onOpen', 'should create segments')
+        t.equal(transaction.trace.root.children.length, 1, 'should only create one')
+        var parent = transaction.trace.root.children[0]
+        t.equal(
+          parent.name, 'Datastore/operation/MongoDB/open',
+          'should name segment correctly'
+        )
+        t.notEqual(parent.children.indexOf(segment), -1, 'should have callback as child')
+        db.close()
+        t.end()
       })
     })
+  })
+
+  dbTest('logout', [], function logoutTest(t, db, verify) {
+    db.logout({}, function loggedOut(err) {
+      t.error(err, 'should not have error')
+      verify([
+        'Datastore/operation/MongoDB/logout',
+        'Callback: loggedOut',
+      ])
+    })
+  })
+}
+
+dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, verify) {
+  var user = null
+  var userName = 'user-test'
+  var userPass = 'user-test-pass'
+
+  db.removeUser(userName, function preRemove() {
+    // Don't care if this first remove fails, it's just to ensure a clean slate.
+    db.addUser(userName, userPass, {roles: ['readWrite']}, added)
+  })
+
+  function added(err, _user) {
+    if (!t.error(err, 'addUser should not have error')) {
+      return t.end()
+    }
+    user = _user
+
+    if (typeof db.authenticate === 'function') {
+      db.authenticate(userName, userPass, authed)
+    } else {
+      t.comment('Skipping authentication test, not supported on db')
+      db.removeUser(userName, removedNoAuth)
+    }
+  }
+
+  function authed(err) {
+    if (!t.error(err, 'authenticate should not have error')) {
+      return t.end()
+    }
+    db.removeUser(userName, removed)
+  }
+
+  function removed(err) {
+    if (!t.error(err, 'removeUser should not have error')) {
+      return t.end()
+    }
+    t.equal(user[0].user, userName)
+    verify([
+      'Datastore/operation/MongoDB/removeUser',
+      'Callback: preRemove',
+      'Datastore/operation/MongoDB/addUser',
+      'Callback: added',
+      'Datastore/operation/MongoDB/authenticate',
+      'Callback: authed',
+      'Datastore/operation/MongoDB/removeUser',
+      'Callback: removed'
+    ])
+  }
+
+  function removedNoAuth(err) {
+    if (!t.error(err, 'removeUser should not have error')) {
+      return t.end()
+    }
+    t.equal(user[0].user, userName)
+    verify([
+      'Datastore/operation/MongoDB/removeUser',
+      'Callback: preRemove',
+      'Datastore/operation/MongoDB/addUser',
+      'Callback: added',
+      'Datastore/operation/MongoDB/removeUser',
+      'Callback: removedNoAuth'
+    ])
   }
 })
 
 dbTest('collection', ['testCollection'], function collectionTest(t, db, verify) {
   db.collection('testCollection', function gotCollection(err, collection) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.ok(collection, 'collection is not null')
     verify([
       'Datastore/operation/MongoDB/collection',
@@ -81,7 +133,7 @@ dbTest('collection', ['testCollection'], function collectionTest(t, db, verify) 
 
 dbTest('collections', [], function collectionTest(t, db, verify) {
   db.collections(function gotCollections(err2, collections) {
-    t.notOk(err2, 'should not have error')
+    t.error(err2, 'should not have error')
     t.ok(Array.isArray(collections), 'got array of collections')
     verify([
       'Datastore/operation/MongoDB/collections',
@@ -92,7 +144,7 @@ dbTest('collections', [], function collectionTest(t, db, verify) {
 
 dbTest('command', [], function commandTest(t, db, verify) {
   db.command({ping: 1}, function onCommand(err, result) {
-   t.notOk(err, 'should not have error')
+   t.error(err, 'should not have error')
    t.deepEqual(result, {ok: 1}, 'got correct result')
    verify([
      'Datastore/operation/MongoDB/command',
@@ -103,7 +155,7 @@ dbTest('command', [], function commandTest(t, db, verify) {
 
 dbTest('createCollection', ['testCollection'], function createTest(t, db, verify) {
   db.createCollection('testCollection', function gotCollection(err, collection) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.equal(collection.s.name, 'testCollection',
       'new collection should have the right name')
     verify([
@@ -115,7 +167,7 @@ dbTest('createCollection', ['testCollection'], function createTest(t, db, verify
 
 dbTest('createIndex', ['testCollection'], function createIndexTest(t, db, verify) {
   db.createIndex('testCollection', 'foo', function createdIndex(err, result) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.equal(result, 'foo_1', 'should have the right result')
     verify([
       'Datastore/operation/MongoDB/createIndex',
@@ -126,10 +178,10 @@ dbTest('createIndex', ['testCollection'], function createIndexTest(t, db, verify
 
 dbTest('dropCollection', ['testCollection'], function dropTest(t, db, verify) {
   db.createCollection('testCollection', function gotCollection(err) {
-    t.notOk(err, 'should not have error getting collection')
+    t.error(err, 'should not have error getting collection')
 
     db.dropCollection('testCollection', function droppedCollection(err, result) {
-      t.notOk(err, 'should not have error dropping colleciton')
+      t.error(err, 'should not have error dropping colleciton')
       t.ok(result === true, 'result should be boolean true')
       verify([
         'Datastore/operation/MongoDB/createCollection',
@@ -143,7 +195,7 @@ dbTest('dropCollection', ['testCollection'], function dropTest(t, db, verify) {
 
 dbTest('dropDatabase', ['testCollection'], function dropDbTest(t, db, verify) {
   db.dropDatabase(function droppedDatabase(err, result) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.ok(result, 'result should be truthy')
     verify([
       'Datastore/operation/MongoDB/dropDatabase',
@@ -154,7 +206,7 @@ dbTest('dropDatabase', ['testCollection'], function dropDbTest(t, db, verify) {
 
 dbTest('ensureIndex', ['testCollection'], function ensureIndexTest(t, db, verify) {
   db.ensureIndex('testCollection', 'foo', function ensuredIndex(err, result) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.equal(result, 'foo_1')
     verify([
       'Datastore/operation/MongoDB/ensureIndex',
@@ -165,7 +217,7 @@ dbTest('ensureIndex', ['testCollection'], function ensureIndexTest(t, db, verify
 
 dbTest('eval', [], function evalTest(t, db, verify) {
   db.eval('function (x) {return x;}', [3], function evaled(err, result) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.equal(3, result, 'should produce the right result')
     verify([
       'Datastore/operation/MongoDB/eval',
@@ -176,9 +228,9 @@ dbTest('eval', [], function evalTest(t, db, verify) {
 
 dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, verify) {
   db.ensureIndex('testCollection', 'foo', function ensuredIndex(err) {
-    t.notOk(err, 'ensureIndex should not have error')
+    t.error(err, 'ensureIndex should not have error')
     db.indexInformation('testCollection', function gotInfo(err2, result) {
-      t.notOk(err2, 'indexInformation should not have error')
+      t.error(err2, 'indexInformation should not have error')
       t.deepEqual(result, { _id_: [ [ '_id', 1 ] ], foo_1: [ [ 'foo', 1 ] ] },
         'result is the expected object')
       verify([
@@ -191,24 +243,13 @@ dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, ver
   })
 })
 
-dbTest('logout', [], function logoutTest(t, db, verify) {
-  db.logout({}, function loggedOut(err) {
-    t.notOk(err, 'should not have error')
-    verify([
-      'Datastore/operation/MongoDB/logout',
-      'Callback: loggedOut',
-    ])
-  })
-})
-
-
 dbTest('renameCollection', ['testColl', 'testColl2'], function(t, db, verify) {
   db.createCollection('testColl', function gotCollection(err) {
-    t.notOk(err, 'should not have error getting collection')
+    t.error(err, 'should not have error getting collection')
     db.renameCollection('testColl', 'testColl2', function renamedCollection(err2) {
-      t.notOk(err2, 'should not have error renaming collection')
+      t.error(err2, 'should not have error renaming collection')
       db.dropCollection('testColl2', function droppedCollection(err3) {
-        t.notOk(err3)
+        t.error(err3)
         verify([
           'Datastore/operation/MongoDB/createCollection',
           'Callback: gotCollection',
@@ -224,7 +265,7 @@ dbTest('renameCollection', ['testColl', 'testColl2'], function(t, db, verify) {
 
 dbTest('stats', [], function statsTest(t, db, verify) {
   db.stats({}, function gotStats(err, stats) {
-    t.notOk(err, 'should not have error')
+    t.error(err, 'should not have error')
     t.ok(stats, 'got stats')
     verify([
       'Datastore/operation/MongoDB/stats',
@@ -236,36 +277,28 @@ dbTest('stats', [], function statsTest(t, db, verify) {
 function dbTest(name, collections, run) {
   mongoTest(name, collections, function init(t, agent) {
     var LOCALHOST = agent.config.getHostnameSafe()
-    var domainPath = getDomainSocketPath()
+    var domainPath = common.getDomainSocketPath()
     var mongodb = require('mongodb')
-    var server = null
     var db = null
+    var client = null
 
     t.autoend()
 
     t.test('remote connection', function(t) {
       t.autoend()
       t.beforeEach(function(done) {
-        MONGO_HOST = urltils.isLocalhost(params.mongodb_host)
-          ? LOCALHOST
-          : params.mongodb_host
-        MONGO_PORT = String(params.mongodb_port)
+        MONGO_HOST = common.getHostName(agent)
+        MONGO_PORT = common.getPort()
 
-        server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-        db = new mongodb.Db(DB_NAME, server)
-        db.open(function onOpen(err) {
-          if (err) {
-            t.fail(err)
-            return t.end()
-          }
-
-          done()
+        common.connect(mongodb, null, function(err, res) {
+          client = res.client
+          db = res.db
+          done(err)
         })
       })
 
       t.afterEach(function(done) {
-        db.close(done)
-        db = null
+        common.close(client, db, done)
       })
 
       t.test('without transaction', function(t) {
@@ -299,14 +332,15 @@ function dbTest(name, collections, run) {
         MONGO_HOST = LOCALHOST
         MONGO_PORT = domainPath
 
-        server = new mongodb.Server(domainPath)
-        db = new mongodb.Db(DB_NAME, server)
-        db.open(done)
+        common.connect(mongodb, domainPath, function(err, res) {
+          client = res.client
+          db = res.db
+          done(err)
+        })
       })
 
       t.afterEach(function(done) {
-        db.close(done)
-        db = null
+        common.close(client, db, done)
       })
 
       t.test('with transaction', function(t) {
@@ -327,8 +361,7 @@ function dbTest(name, collections, run) {
 function mongoTest(name, collections, run) {
   tap.test(name, function testWrap(t) {
     helper.bootstrapMongoDB(collections, function bootstrapped(err) {
-      if (err) {
-        t.fail(err)
+      if (!t.error(err)) {
         return t.end()
       }
 
@@ -361,7 +394,7 @@ function verifyMongoSegments(t, agent, transaction, names) {
       // database regardless of the DB the connection is actually connected to.
       // This is apparently by design.
       // https://jira.mongodb.org/browse/NODE-827
-      var dbName = DB_NAME
+      var dbName = common.DB_NAME
       if (/\/renameCollection$/.test(current.name)) {
         dbName = 'admin'
       }
@@ -389,15 +422,4 @@ function isBadSegment(segment) {
     !parms.hasOwnProperty('host') &&              // instance attributes.
     !parms.hasOwnProperty('port_path_or_id')
   )
-}
-
-function getDomainSocketPath() {
-  var files = fs.readdirSync('/tmp')
-  for (var i = 0; i < files.length; ++i) {
-    var file = '/tmp/' + files[i]
-    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
-      return file
-    }
-  }
-  return null
 }

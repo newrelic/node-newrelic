@@ -38,8 +38,24 @@
         "collection-index.tap.js",
         "collection-misc.tap.js",
         "collection-update.tap.js",
-        "cursor-v2.tap.js",
-        "db-v2.tap.js"
+        "cursor.tap.js",
+        "db.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "mongodb": ">=3"
+      },
+      "files": [
+        "collection-find.tap.js",
+        "collection-index.tap.js",
+        "collection-misc.tap.js",
+        "collection-update.tap.js",
+        "cursor.tap.js",
+        "db.tap.js"
       ]
     }
   ],

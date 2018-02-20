@@ -1,28 +1,28 @@
 'use strict'
 
-var fs = require('fs')
+var common = require('./common')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
-var params = require('../../lib/params')
-var urltils = require('../../../lib/util/urltils')
 
-var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
-var TRANSACTION_NAME = 'mongo test'
-var DB_NAME = 'integration'
 var METRIC_HOST_NAME = null
 var METRIC_HOST_PORT = null
 
 
+exports.MONGO_SEGMENT_RE = common.MONGO_SEGMENT_RE
+exports.TRANSACTION_NAME = common.TRANSACTION_NAME
+exports.DB_NAME = common.DB_NAME
+
+exports.connect = common.connect
+exports.close = common.close
+exports.populate = populate
 exports.test = collectionTest
-exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
-exports.TRANSACTION_NAME = TRANSACTION_NAME
-exports.DB_NAME = DB_NAME
 
 function collectionTest(name, run) {
   var collections = ['testCollection', 'testCollection2']
 
   tap.test(name, {timeout: 10000}, function(t) {
     var agent = null
+    var client = null
     var db = null
     var collection = null
     t.autoend()
@@ -37,22 +37,16 @@ function collectionTest(name, run) {
           }
 
           var mongodb = require('mongodb')
-          var server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-            socketOptions: {
-              connectionTimeoutMS: 30000,
-              socketTimeoutMS: 30000
-            }
-          })
-          db = new mongodb.Db(DB_NAME, server)
-          METRIC_HOST_NAME = urltils.isLocalhost(params.mongodb_host)
-            ? agent.config.getHostnameSafe()
-            : params.mongodb_host
-          METRIC_HOST_PORT = String(params.mongodb_port)
 
-          db.open(function(err) {
+          METRIC_HOST_NAME = common.getHostName(agent)
+          METRIC_HOST_PORT = common.getPort()
+          common.connect(mongodb, null, function(err, res) {
             if (err) {
               return done(err)
             }
+
+            client = res.client
+            db = res.db
             collection = db.collection('testCollection')
             populate(db, collection, done)
           })
@@ -60,7 +54,7 @@ function collectionTest(name, run) {
       })
 
       t.afterEach(function(done) {
-        db.close(function(err) {
+        common.close(client, db, function(err) {
           helper.unloadAgent(agent)
           agent = null
           done(err)
@@ -78,7 +72,7 @@ function collectionTest(name, run) {
 
       t.test('should generate the correct metrics and segments', function(t) {
         helper.runInTransaction(agent, function(transaction) {
-          transaction.name = TRANSACTION_NAME
+          transaction.name = common.TRANSACTION_NAME
           run(t, collection, function(err, segments, metrics) {
             if (
               !t.error(err, 'running test should not error') ||
@@ -97,16 +91,22 @@ function collectionTest(name, run) {
               t.equal(current.children.length, 1, 'should have one child')
               current = current.children[0]
               t.equal(current.name, segments[i], 'child should be named ' + segments[i])
-              if (MONGO_SEGMENT_RE.test(current.name)) {
+              if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 checkSegmentParams(t, current)
               }
             }
 
             t.equal(current.children.length, 0, 'should have no more children')
-            t.equal(current, segment, 'should test to the current segment')
+            t.ok(current === segment, 'should test to the current segment')
 
             transaction.end(function onTxEnd() {
-              checkMetrics(t, agent, metrics || [])
+              common.checkMetrics(
+                t,
+                agent,
+                METRIC_HOST_NAME,
+                METRIC_HOST_PORT,
+                metrics || []
+              )
               t.end()
             })
           })
@@ -123,7 +123,7 @@ function collectionTest(name, run) {
 
             var current = tx.trace.root
             while (current) {
-              if (MONGO_SEGMENT_RE.test(current.name)) {
+              if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
                 t.notOk(
                   current.parameters.hasOwnProperty('host'),
@@ -155,7 +155,7 @@ function collectionTest(name, run) {
 
             var current = tx.trace.root
             while (current) {
-              if (MONGO_SEGMENT_RE.test(current.name)) {
+              if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
                 t.ok(
                   current.parameters.hasOwnProperty('host'),
@@ -182,7 +182,7 @@ function collectionTest(name, run) {
     // to connect to, which only happens if there is a Mongo instance running on
     // the same box as these tests. This should always be the case on Travis,
     // but just to be sure they're running there check for the environment flag.
-    var domainPath = getDomainSocketPath()
+    var domainPath = common.getDomainSocketPath()
     var shouldTestDomain = domainPath || process.env.TRAVIS
     t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
       t.autoend()
@@ -196,12 +196,14 @@ function collectionTest(name, run) {
           }
 
           var mongodb = require('mongodb')
-          var server = new mongodb.Server(domainPath)
-          db = new mongodb.Db(DB_NAME, server)
-          db.open(function(err) {
+
+          common.connect(mongodb, domainPath, function(err, res) {
             if (err) {
               return done(err)
             }
+
+            client = res.client
+            db = res.db
 
             collection = db.collection('testCollection')
             populate(db, collection, done)
@@ -210,7 +212,7 @@ function collectionTest(name, run) {
       })
 
       t.afterEach(function(done) {
-        db.close(function(err) {
+        common.close(client, db, function(err) {
           helper.unloadAgent(agent)
           agent = null
           done(err)
@@ -220,11 +222,22 @@ function collectionTest(name, run) {
       t.test('should have domain socket in metrics', function(t) {
         t.notOk(agent.getTransaction(), 'should not have transaction')
         helper.runInTransaction(agent, function(transaction) {
-          transaction.name = TRANSACTION_NAME
+          transaction.name = common.TRANSACTION_NAME
           run(t, collection, function(err, segments, metrics) {
             t.error(err)
             transaction.end(function() {
-              checkMetrics(t, agent, metrics || [])
+              var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
+              var badMetrics = Object.keys(agent.metrics.unscoped).filter(function(m) {
+                return re.test(m)
+              })
+              t.notOk(badMetrics.length, 'should not use domain path as host name')
+              common.checkMetrics(
+                t,
+                agent,
+                METRIC_HOST_NAME,
+                METRIC_HOST_PORT,
+                metrics || []
+              )
               t.end()
             })
           })
@@ -234,67 +247,9 @@ function collectionTest(name, run) {
   })
 }
 
-function checkMetrics(t, agent, metrics) {
-  var unscopedMetrics = agent.metrics.unscoped
-  var unscopedNames = Object.keys(unscopedMetrics)
-  var scoped = agent.metrics.scoped[TRANSACTION_NAME]
-  var total = 0
-  var count
-  var name
-
-  if (!t.ok(scoped, 'should have scoped metrics')) {
-    return
-  }
-  t.equal(Object.keys(agent.metrics.scoped).length, 1, 'should have one scoped metric')
-  for (var i = 0; i < metrics.length; ++i) {
-    if (Array.isArray(metrics[i])) {
-      count = metrics[i][1]
-      name = metrics[i][0]
-    } else {
-      count = 1
-      name = metrics[i]
-    }
-
-    total += count
-
-    t.equal(
-      unscopedMetrics['Datastore/operation/MongoDB/' + name].callCount,
-      count,
-      'unscoped operation metric should be called ' + count + ' times'
-    )
-    t.equal(
-      unscopedMetrics['Datastore/statement/MongoDB/testCollection/' + name].callCount,
-      count,
-      'unscoped statement metric should be called ' + count + ' times'
-    )
-    t.equal(
-      scoped['Datastore/statement/MongoDB/testCollection/' + name].callCount,
-      count,
-      'scoped statement metric should be called ' + count + ' times'
-    )
-  }
-
-  var expectedUnscopedCount = 5 + (2 * metrics.length)
-  t.equal(
-    unscopedNames.length, expectedUnscopedCount,
-    'should have ' + expectedUnscopedCount + ' unscoped metrics'
-  )
-  var expectedUnscopedMetrics = [
-    'Datastore/all',
-    'Datastore/allWeb',
-    'Datastore/MongoDB/all',
-    'Datastore/MongoDB/allWeb',
-    'Datastore/instance/MongoDB/' + METRIC_HOST_NAME + '/' + METRIC_HOST_PORT
-  ]
-  expectedUnscopedMetrics.forEach(function(metric) {
-    if (t.ok(unscopedMetrics[metric], 'should have unscoped metric ' + metric)) {
-      t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
-    }
-  })
-}
 
 function checkSegmentParams(t, segment) {
-  var dbName = DB_NAME
+  var dbName = common.DB_NAME
   if (/\/rename$/.test(segment.name)) {
     dbName = 'admin'
   }
@@ -321,21 +276,10 @@ function populate(db, collection, done) {
     })
   }
 
-  db.dropCollection('testCollection2', function dropped() {
-    collection.deleteMany({}, function removed(err) {
+  db.collection('testCollection2').drop(function() {
+    collection.deleteMany({}, function(err) {
       if (err) return done(err)
       collection.insert(items, done)
     })
   })
-}
-
-function getDomainSocketPath() {
-  var files = fs.readdirSync('/tmp')
-  for (var i = 0; i < files.length; ++i) {
-    var file = '/tmp/' + files[i]
-    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
-      return file
-    }
-  }
-  return null
 }
