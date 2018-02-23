@@ -17,7 +17,7 @@
     "eqeqeq": ["error", "smart"],
     "camelcase": ["error", {"properties": "never"}],
     "dot-notation": "error",
-    "func-names": "off",
+    "func-names": "error",
     "guard-for-in": "error",
     "key-spacing": ["error", { "beforeColon": false }],
     "max-len": ["error", 90, { "ignoreUrls": true }],
