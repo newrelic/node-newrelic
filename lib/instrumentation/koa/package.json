@@ -17,6 +17,7 @@
   "devDependencies": {
     "@newrelic/test-utilities": "^1.1.2",
     "eslint": "^4.18.1",
+    "koa": "^2.5.0",
     "newrelic": "^2.8.0",
     "tap": "^10.7.3"
   },
