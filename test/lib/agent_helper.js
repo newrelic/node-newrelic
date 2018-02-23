@@ -21,6 +21,12 @@ var CAPATH = path.join(__dirname, 'ca-certificate.crt')
 
 
 var _agent
+var tasks = []
+setInterval(function() {
+  while (tasks.length) {
+    tasks.pop()()
+  }
+}, 50).unref()
 
 var helper = module.exports = {
   getAgent: function getAgent() {
@@ -350,6 +356,28 @@ var helper = module.exports = {
         return callback(null, response, body)
       }
     })
+  },
+
+  temporarilyRemoveListeners: function(t, emitter, evnt) {
+    if (!emitter) {
+      t.comment('Not removing %s listeners, emitter does not exist', evnt)
+      return
+    }
+
+    t.comment('Removing listeners for %s', evnt)
+    var listeners = emitter.listeners(evnt)
+    t.tearDown(function() {
+      t.comment('Re-adding listeners for %s', evnt)
+      listeners.forEach(function(fn) {
+        process.on('uncaughtException', fn)
+      })
+      listeners = []
+    })
+    emitter.removeAllListeners(evnt)
+  },
+
+  runOutOfContext: function(fn) {
+    tasks.push(fn)
   }
 }
 
