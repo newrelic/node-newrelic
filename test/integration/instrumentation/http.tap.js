@@ -169,25 +169,32 @@ test("built-in http instrumentation should handle internal & external requests",
   })
 })
 
-test("built-in http instrumentation shouldn't swallow errors", function(t) {
+test('built-in http instrumentation should not swallow errors', function(t) {
   t.plan(8)
 
   var agent = helper.instrumentMockedAgent()
-  var listeners = []
+  var server = null
+
+  t.tearDown(function cb_tearDown() {
+    server.close()
+    helper.unloadAgent(agent)
+  })
+
+  helper.runOutOfContext(function() {
+    server = http.createServer(handleRequest)
+  })
+
+  setTimeout(function() {
+    server.listen(1337, makeRequest)
+  }, 100)
 
   function handleRequest(req, res) {
     // Remove tap's uncaughtException handler for this test because we are
     // testing an unhandled exception case.
-    listeners = process.listeners('uncaughtException')
-    process.removeAllListeners('uncaughtException')
-
-    process.on('uncaughtException', function(error) {
-      listeners.forEach(function(fn) {
-        process.on('uncaughtException', fn)
-      })
-      listeners = []
-
-      t.ok(error, "got error in uncaughtException handler.")
+    helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
+    helper.temporarilyRemoveListeners(t, t.domain, 'error')
+    process.once('uncaughtException', function(error) {
+      t.ok(error, 'got error in uncaughtException handler.')
       res.statusCode = 501
 
       res.end()
@@ -207,39 +214,28 @@ test("built-in http instrumentation shouldn't swallow errors", function(t) {
     }
 
     http.get(options, function(res) {
-      t.equal(res.statusCode, 501, "got expected (error) status code")
+      t.equal(res.statusCode, 501, 'should get expected (error) status code')
 
       var errors = agent.errors.errors
-      t.ok(errors, "errors were found")
-      t.equal(errors.length, 2, "should be 2 errors")
+      t.ok(errors, 'should find error')
+      t.equal(errors.length, 2, 'should be 2 errors')
 
       var first = errors[0]
       var second = errors[1]
-      t.ok(first, "have the first error")
+      t.ok(first, 'should have the first error')
 
-      t.equal(first[2], "Cannot read property 'dieshere' of undefined",
-              "got the expected error")
+      t.equal(
+        first[2], 'Cannot read property \'dieshere\' of undefined',
+        'should get the expected error'
+      )
 
-      t.ok(second, "have the second error")
-      t.equal(second[2], "HttpError 501", "got the expected error")
+      if (t.ok(second, 'should have the second error')) {
+        t.equal(second[2], 'HttpError 501', 'should get the expected error')
+      }
 
       t.end()
     })
   }
-
-  var server = http.createServer(handleRequest)
-
-  t.tearDown(function cb_tearDown() {
-    listeners.forEach(function(fn) {
-      process.on('uncaughtException', fn)
-    })
-    listeners = []
-
-    server.close()
-    helper.unloadAgent(agent)
-  })
-
-  server.listen(1337, makeRequest)
 })
 
 test("built-in http instrumentation making outbound requests", function(t) {
