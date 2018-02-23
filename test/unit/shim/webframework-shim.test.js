@@ -1091,16 +1091,20 @@ describe('WebFrameworkShim', function() {
     })
   })
 
-  describe('#markName', function() {
+  describe('#savePossibleTransactionName', function() {
     it('should mark the path on the namestate', function() {
       helper.runInTransaction(agent, function(tx) {
         txInfo.transaction = tx
         var ns = tx.nameState
         ns.appendPath('asdf')
-        shim.markName(req)
+        shim.savePossibleTransactionName(req)
         ns.popPath()
         expect(ns.getPath()).to.equal('/asdf')
       })
+    })
+
+    it('should not explode when no req object is passed in', function() {
+      shim.savePossibleTransactionName()
     })
   })
 
