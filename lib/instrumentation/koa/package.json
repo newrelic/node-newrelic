@@ -1,5 +1,5 @@
 {
-  "name": "newrelic-koa",
+  "name": "@newrelic/koa",
   "version": "1.0.0",
   "description": "Koa instrumentation for the New Relic Node agent",
   "main": "index.js",
