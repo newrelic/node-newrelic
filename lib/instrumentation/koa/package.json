@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "tap tests/**/*.tap.js",
+    "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests"
   },
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
