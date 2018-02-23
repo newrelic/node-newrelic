@@ -1091,6 +1091,23 @@ describe('WebFrameworkShim', function() {
     })
   })
 
+  describe('#savePossibleTransactionName', function() {
+    it('should mark the path on the namestate', function() {
+      helper.runInTransaction(agent, function(tx) {
+        txInfo.transaction = tx
+        var ns = tx.nameState
+        ns.appendPath('asdf')
+        shim.savePossibleTransactionName(req)
+        ns.popPath()
+        expect(ns.getPath()).to.equal('/asdf')
+      })
+    })
+
+    it('should not explode when no req object is passed in', function() {
+      shim.savePossibleTransactionName()
+    })
+  })
+
   describe('#noticeError', function() {
     it('should cache errors in the transaction info', function() {
       var err = new Error('test error')

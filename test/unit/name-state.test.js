@@ -53,4 +53,35 @@ describe('NameState', function() {
     expect(state.getPath()).to.equal('/regex1/path1/regex2/path2')
     expect(state.getName()).to.equal('Nodejs/GET//regex1/path1/regex2/path2')
   })
+
+  it('should pick the current stack name over marked paths', function() {
+    var state = new NameState('Nodejs', 'GET', '/')
+    state.appendPath('path1')
+    state.markPath()
+    state.appendPath('path2')
+
+    expect(state.getPath()).to.equal('/path1/path2')
+    expect(state.getName()).to.equal('Nodejs/GET//path1/path2')
+  })
+
+  it('should pick marked paths if the path stack is empty', function() {
+    var state = new NameState('Nodejs', 'GET', '/')
+    state.appendPath('path1')
+    state.markPath()
+    state.popPath()
+
+    expect(state.getPath()).to.equal('/path1')
+    expect(state.getName()).to.equal('Nodejs/GET//path1')
+  })
+
+  it('should not report as empty if a path has been marked', function() {
+    var state = new NameState('Nodejs', 'GET', '/')
+    expect(state.isEmpty()).to.be.true()
+
+    state.appendPath('path1')
+    state.markPath()
+    state.popPath()
+
+    expect(state.isEmpty()).to.be.false()
+  })
 })
