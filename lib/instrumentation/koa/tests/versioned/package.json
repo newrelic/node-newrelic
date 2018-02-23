@@ -1,0 +1,21 @@
+{
+  "name": "koa-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "koa": ">=2.0.0"
+      },
+      "files": [
+        "koa.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "koa": "^2.5.0"
+  }
+}
