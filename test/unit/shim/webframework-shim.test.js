@@ -1091,6 +1091,19 @@ describe('WebFrameworkShim', function() {
     })
   })
 
+  describe('#markName', function() {
+    it('should mark the path on the namestate', function() {
+      helper.runInTransaction(agent, function(tx) {
+        txInfo.transaction = tx
+        var ns = tx.nameState
+        ns.appendPath('asdf')
+        shim.markName(req)
+        ns.popPath()
+        expect(ns.getPath()).to.equal('/asdf')
+      })
+    })
+  })
+
   describe('#noticeError', function() {
     it('should cache errors in the transaction info', function() {
       var err = new Error('test error')
