@@ -1,0 +1,23 @@
+{
+  "name": "@newrelic/koa",
+  "version": "1.0.0",
+  "description": "Koa instrumentation for the New Relic Node agent",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "tap tests/**/*.tap.js",
+    "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
+    "lint": "eslint *.js lib tests"
+  },
+  "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
+  "license": "LicenseRef-LICENSE",
+  "devDependencies": {
+    "@newrelic/test-utilities": "^1.1.0",
+    "eslint": "^4.18.1",
+    "tap": "^10.7.3"
+  },
+  "dependencies": {}
+}
