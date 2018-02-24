@@ -180,19 +180,20 @@ test('built-in http instrumentation should not swallow errors', function(t) {
     helper.unloadAgent(agent)
   })
 
+  // Remove tap's uncaughtException handler for this test because we are
+  // testing an unhandled exception case.
+  helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
+  helper.temporarilyRemoveListeners(t, t.domain, 'error')
+
+  var pin = setTimeout(function() {}, 1000)
   helper.runOutOfContext(function() {
+    clearTimeout(pin)
+
     server = http.createServer(handleRequest)
+    server.listen(1337, makeRequest)
   })
 
-  setTimeout(function() {
-    server.listen(1337, makeRequest)
-  }, 100)
-
   function handleRequest(req, res) {
-    // Remove tap's uncaughtException handler for this test because we are
-    // testing an unhandled exception case.
-    helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
-    helper.temporarilyRemoveListeners(t, t.domain, 'error')
     process.once('uncaughtException', function(error) {
       t.ok(error, 'got error in uncaughtException handler.')
       res.statusCode = 501
