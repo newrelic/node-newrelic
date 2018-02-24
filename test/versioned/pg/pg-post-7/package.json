@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=4"
+        "node": ">=5"
       },
       "dependencies": {
         "pg": ">=7",
