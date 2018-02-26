@@ -114,22 +114,20 @@ test('reverse', function(t) {
   helper.runInTransaction(agent, function() {
     dns.reverse('127.0.0.1', function(err, names) {
       t.notOk(err, 'should not error')
+      var expected = []
       if (process.env.TRAVIS && names.length > 0) {
         if (process.env.DOCKERIZED) {
-          t.deepEqual(names, [
-            "127.0.0.1",
-            "localhost"
-          ])
+          if (names.length === 2) {
+            expected = ['127.0.0.1', 'localhost']
+          } else {
+            expected = ['localhost']
+          }
         } else {
-          t.deepEqual(names, [
-            "nettuno",
-            "travis",
-            "vagrant"
-          ])
+          expected = ['nettuno', 'travis', 'vagrant']
         }
-      } else {
-        t.deepEqual(names, [])
       }
+
+      t.deepEqual(names, expected, 'should have expected results')
       verifySegments(t, agent, 'dns.reverse')
     })
   })
