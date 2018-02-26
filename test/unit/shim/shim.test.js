@@ -408,6 +408,20 @@ describe('Shim', function() {
       expect(shim.isWrapped(wrappable, 'name')).to.be.false()
     })
 
+    it('should not blow up when wrapping a non-object prototype', function() {
+      function noProto(){}
+      noProto.prototype = undefined
+      var instance = shim.wrapReturn(noProto, function() {}).bind({})
+      expect(instance).to.not.throw()
+    })
+
+    it('should not blow up when wrapping a non-object prototype', function() {
+      function noProto(){}
+      noProto.prototype = undefined
+      var instance = shim.wrapReturn(noProto, function() {}).bind(null)
+      expect(instance).to.not.throw()
+    })
+
     describe('with no properties', function() {
       it('should wrap the first parameter if no properties are given', function() {
         var wrapped = shim.wrapReturn(wrappable.bar, function() {})
