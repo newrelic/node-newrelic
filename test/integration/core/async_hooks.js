@@ -310,7 +310,10 @@ test("the agent's async hook", function(t) {
 })
 
 function checkCallMetrics(t, testMetrics) {
-  t.equal(testMetrics.initCalled, 2, 'two promises were created')
+  // Tap also creates promises, so these counts don't quite match the tests.
+  const TAP_COUNT = 1
+
+  t.equal(testMetrics.initCalled - TAP_COUNT, 2, 'two promises were created')
   t.equal(testMetrics.beforeCalled, 1, 'before hook called for all async promises')
   t.equal(
     testMetrics.beforeCalled,
@@ -322,7 +325,7 @@ function checkCallMetrics(t, testMetrics) {
     global.gc()
     return setTimeout(function() {
       t.equal(
-        testMetrics.initCalled,
+        testMetrics.initCalled - TAP_COUNT,
         testMetrics.destroyCalled,
         'all promises created were destroyed'
       )

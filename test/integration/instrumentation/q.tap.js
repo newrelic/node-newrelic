@@ -79,6 +79,8 @@ test('q.then rejections', function testQNInvoke(t) {
   var firstTest = q.defer()
   var secondTest = q.defer()
 
+  helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
+
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     var thrownError = new Error('First unhandled error')
     process.on('unhandledRejection', function rejectionHandler(error) {

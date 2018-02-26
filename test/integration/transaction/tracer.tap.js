@@ -112,43 +112,40 @@ test('bind + capture error', function testThrows(t) {
   var tracer = agent.tracer
   var error = new Error('oh no!!')
   var name = 'some custom transaction name'
-  var listeners = []
-  t.plan(7)
+  t.plan(8)
 
-  t.tearDown(function() {
-    listeners.forEach(function(fn) {
-      process.on('uncaughtException', fn)
-    })
-    listeners = []
+  helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
+  helper.temporarilyRemoveListeners(t, t.domain, 'error')
+
+  // Need to break out of tap's domain so the error is truly uncaught.
+  var pin = setTimeout(function() {}, 5000)
+  helper.runOutOfContext(function() {
+    clearTimeout(pin)
+
+    helper.runInTransaction(agent, inTrans)
   })
 
-  helper.runInTransaction(agent, function inTrans(transaction) {
-    // Remove tap's uncaughtException handler for this test because we are
-    // testing an unhandled exception case.
-    listeners = process.listeners('uncaughtException')
-    process.removeAllListeners('uncaughtException')
-
+  function inTrans(transaction) {
     var other = tracer.createSegment('other')
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
-      listeners.forEach(function(fn) {
-        process.on('uncaughtException', fn)
-      })
-      listeners = []
-
       var logged = agent.errors.errors[0]
-      t.equal(tracer.getSegment(), null)
-      t.equal(err, error)
-      t.equal(Object.keys(error).length, 0, 'error should not have any extra properties')
+      t.notOk(tracer.getSegment(), 'should not leak transaction into handler')
+
+      t.equal(err, error, 'should have expected error')
+      t.equal(Object.keys(error).length, 0, 'error should not have extra properties')
       t.notOk(err.__NR_transaction, 'should not hold onto transaction')
+
       // global error is not tied to a transaction, so its name should not be
       // the transaction name
-      t.notEqual(name, logged[1])
-      t.equal(error.message, logged[2])
+      if (t.ok(logged, 'should have a logged error')) {
+        t.notEqual(name, logged[1], 'should not have a transaction with the error')
+        t.equal(error.message, logged[2], 'should have the error message')
+      }
       t.end()
     })
     dangerous(other)()
-  })
+  }
 
   function dangerous(segment) {
     return tracer.bindFunction(function bound() {

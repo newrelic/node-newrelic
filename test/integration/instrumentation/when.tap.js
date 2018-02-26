@@ -142,13 +142,12 @@ test('when.defer', function(t) {
 
 test('when debug API', function(t) {
   t.plan(2)
-  var agent = setupAgent(t)
+  setupAgent(t)
   var when = require('when')
-  t.tearDown(function tearDown() {
-    helper.unloadAgent(agent)
-  })
 
   t.test('should not break onFatalRejection', function(t) {
+    helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
+
     when.Promise.onFatalRejection = function testFatal(e) {
       t.equal(e.value, error)
       t.end()
@@ -162,13 +161,15 @@ test('when debug API', function(t) {
 
   t.test('should not break onPotentiallyUnhandledRejectionHandled', function(t) {
     t.plan(2)
+    helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
+
     when.Promise.onPotentiallyUnhandledRejectionHandled = function testOPURH(e) {
-      t.equal(e.value, error)
+      t.equal(e.value, error, 'should have passed error through')
       t.end()
     }
 
     when.Promise.onPotentiallyUnhandledRejection = function testOPUR(e) {
-      t.equal(e.value, error)
+      t.equal(e.value, error, 'should pass error though')
     }
 
     var error = {val: 'test'}
@@ -567,13 +568,8 @@ test('all', function(t) {
     when = require('when')
     Promise = when.Promise
 
-    p1 = new Promise(function(resolve, reject) {
-      resolve(1)
-    })
-
-    p2 = new Promise(function(resolve, reject) {
-      resolve(2)
-    })
+    p1 = new Promise(function(resolve) { resolve(1) })
+    p2 = new Promise(function(resolve) { resolve(2) })
     done()
   })
 
@@ -829,12 +825,9 @@ test('filter', function(t) {
 })
 
 test('fn.apply', function(t) {
-  var agent = setupAgent(t)
-  t.tearDown(function tearDown() {
-    helper.unloadAgent(agent)
-  })
+  setupAgent(t)
 
-  var when = require('when')
+  require('when')
   var fn = require('when/function')
 
   function noop() {}
@@ -847,12 +840,9 @@ test('fn.apply', function(t) {
 })
 
 test('node.apply', function(t) {
-  var agent = setupAgent(t)
-  t.tearDown(function tearDown() {
-    helper.unloadAgent(agent)
-  })
+  setupAgent(t)
 
-  var when = require('when')
+  require('when')
   var nodefn = require('when/node')
 
   function nodeStyleFunction(arg1, cb) {
@@ -882,7 +872,7 @@ function testPromiseInstanceMethod(t, plan, testFunc) {
   var Promise = require('when').Promise
 
   _testPromiseMethod(t, plan, agent, function(name) {
-    var p = new Promise(function(resolve, reject) {
+    var p = new Promise(function(resolve) {
       resolve([1, 2, 3, name])
     })
     return testFunc(p, name, agent)

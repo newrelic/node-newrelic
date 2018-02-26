@@ -156,11 +156,10 @@
     "sequelize": "*",
     "should": "*",
     "sinon": "^3.3.0",
-    "tap": "^9.0.3",
+    "tap": "^10.7.3",
     "temp": "^0.8.1",
     "through": "^2.3.6",
-    "when": "*",
-    "wrench": "*"
+    "when": "*"
   },
   "repository": {
     "type": "git",

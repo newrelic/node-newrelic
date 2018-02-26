@@ -76,9 +76,12 @@ function runTests(t, agent, Promise, library) {
 
         function test(transaction) {
           var p = resolve(Promise).then(end(transaction, cb), end(transaction, cb))
+          var d = p.domain
+          delete p.domain
           t.doesNotThrow(function() {
             JSON.stringify(p)
           }, 'should not cause stringification to crash')
+          p.domain = d
         }
       }, function(err) {
         t.error(err, 'should not error')
