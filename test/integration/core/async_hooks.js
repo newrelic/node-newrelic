@@ -111,6 +111,148 @@ test("the agent's async hook", function(t) {
     })
   })
 
+  t.test('parent promises persist perspective to problematic progeny', function(t) {
+    var agent = setupAgent(t)
+    var tasks = []
+    var intervalId = setInterval(() => {
+      while (tasks.length) {
+        tasks.pop()()
+      }
+    }, 10)
+
+    t.tearDown(() => {
+      clearInterval(intervalId)
+    })
+
+    helper.runInTransaction(agent, function(txn) {
+      t.ok(txn, 'transaction should not be null')
+
+      var p = Promise.resolve()
+
+      tasks.push(() => {
+        p.then(() => {
+          var tx = agent.getTransaction()
+          t.equal(tx ? tx.id : null, txn.id)
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test('maintains transaction context', function(t) {
+    var agent = setupAgent(t)
+    var tasks = []
+    var intervalId = setInterval(() => {
+      while (tasks.length) {
+        tasks.pop()()
+      }
+    }, 10)
+
+    t.tearDown(() => {
+      clearInterval(intervalId)
+    })
+
+    helper.runInTransaction(agent, function(txn) {
+      t.ok(txn, 'transaction should not be null')
+      var segment = txn.trace.root
+      agent.tracer.bindFunction(one, segment)()
+
+      var wrapperTwo = agent.tracer.bindFunction(function() {
+        return two()
+      }, segment)
+      var wrapperThree = agent.tracer.bindFunction(function() {
+        return three()
+      }, segment)
+
+      function one() {
+        return new Promise(executor)
+          .then(() => {
+            var tx = agent.getTransaction()
+            t.equal(tx ? tx.id : null, txn.id)
+            t.end()
+          })
+      }
+
+      function executor(resolve) {
+        tasks.push(() => {
+          next().then(() => {
+            var tx = agent.getTransaction()
+            t.equal(tx ? tx.id : null, txn.id)
+            resolve()
+          })
+        })
+      }
+
+      function next() {
+        return Promise.resolve(wrapperTwo())
+      }
+
+      function two() {
+        return nextTwo()
+      }
+
+      function nextTwo() {
+        return Promise.resolve(wrapperThree())
+      }
+
+      function three() {}
+    })
+  })
+
+  t.test('loses transaction context', function(t) {
+    var agent = setupAgent(t)
+    var tasks = []
+    var intervalId = setInterval(() => {
+      while (tasks.length) {
+        tasks.pop()()
+      }
+    }, 10)
+
+    t.tearDown(() => {
+      clearInterval(intervalId)
+    })
+
+    helper.runInTransaction(agent, function(txn) {
+      t.ok(txn, 'transaction should not be null')
+      var segment = txn.trace.root
+      agent.tracer.bindFunction(one, segment)()
+
+      var wrapperTwo = agent.tracer.bindFunction(function() {
+        return two()
+      }, segment)
+
+      function one() {
+        return new Promise(executor)
+          .then(() => {
+            var tx = agent.getTransaction()
+            t.equal(tx ? tx.id : null, txn.id)
+            t.end()
+          })
+      }
+
+      function executor(resolve) {
+        tasks.push(() => {
+          next().then(() => {
+            var tx = agent.getTransaction()
+            // We know tx will be null here because no promise was returned
+            // If this test fails, that's actually a good thing,
+            // so throw a party/update Koa.
+            t.equal(tx, null)
+            resolve()
+          })
+        })
+      }
+
+      function next() {
+        return Promise.resolve(wrapperTwo())
+      }
+
+      function two() {
+        // No promise is returned to reinstate transaction context
+      }
+    })
+  })
+
   t.test('handles multientry callbacks correctly', function(t) {
     var agent = setupAgent(t)
     var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
