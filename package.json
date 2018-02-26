@@ -122,7 +122,7 @@
     "@newrelic/native-metrics": "^2.1.0"
   },
   "devDependencies": {
-    "@newrelic/test-utilities": "git+https://github.com/newrelic/node-test-utilities.git",
+    "@newrelic/test-utilities": "^1.2.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
