@@ -1,3 +1,41 @@
+### 2.9.1 (2018-02-27):
+
+* Added the `WebFrameworkShim#savePossibleTransactionName` method.
+
+  This method may be used to mark the current running middleware as a potential
+  responder. `savePossibleTransactionName` should be used if a middleware can't
+  be determined to be a terminal middleware while it executes, but may be
+  responsible for responding after execution has finished.
+
+* Fixed `dns.resolve` results assertion.
+
+* Added check for `parentSegment` in `async_hooks` instrumentation, to help
+  ensure that transaction context is maintained.
+
+* Expanded `async_hooks` tests around maintain transaction context.
+
+* Added Koa to metric naming objects.
+
+* Added `callback` prop to `middlewareWithPromiseRecorder` return spec.
+
+  While we aren't actually wrapping any callback, this is a workaround that gives
+  us access to the active segment. This ensures that all segments inside Koa
+  transaction traces are named correctly, particularly in cases when transaction
+  context may be lost.
+
+* Updated `after` prop in `middlewareWithPromiseRecorder` return spec to set
+  `txInfo.errorHandled = true` in cases when there is no error.
+
+  Because Koa has no concept of errorware in the same sense as Express or Connect
+  (`(err, req, res, next)`), the agent now assumes if a middleware resolves, any
+  error that may have occurred can be marked as handled.
+
+* Upgraded `tap` dev dependency to v10.
+
+* Added a check for the function's prototype in `shim#wrapReturn`.
+
+  The agent used to throw if a function with no prototype was passed into
+  `wrapReturn`, then `bind` was called on the wrapper.
 
 ### 2.8.0 (2018-02-21):
 
