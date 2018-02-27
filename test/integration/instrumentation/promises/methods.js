@@ -150,7 +150,7 @@ module.exports = function(t, library, loadLibrary) {
   testTryBehavior('attempt')
 
   ptap.test('Promise.bind', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -164,6 +164,19 @@ module.exports = function(t, library, loadLibrary) {
         return Promise.bind(ctx, name).then(function(value) {
           t.equal(this, ctx, 'should have expected `this` value')
           t.equal(value, name, 'should not change passed value')
+        })
+      })
+    })
+
+    t.test('catch', function(t) {
+      var ctx = {}
+      var err = new Error('oh dear')
+      testPromiseClassMethod(t, 2, function(Promise, name) {
+        return new Promise(function(resolve, reject) {
+          reject(err)
+        }).bind(ctx, name).catch(function(reason) {
+          t.equal(this, ctx, 'should have expected `this` value')
+          t.equal(reason, err, 'should not change rejection reason')
         })
       })
     })
