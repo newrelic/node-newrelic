@@ -1,6 +1,6 @@
 'use strict'
 
-var INSTRUMENTATIONS = require('../../../lib/instrumentations')()
+var INSTRUMENTATIONS = Object.keys(require('../../../lib/instrumentations')())
 var Metrics = require('../../../lib/metrics')
 var MetricNormalizer = require('../../../lib/metrics/normalizer')
 var MetricMapper = require('../../../lib/metrics/mapper')
