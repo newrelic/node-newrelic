@@ -1,4 +1,4 @@
-### 2.9.1 (2018-02-27):
+### 2.9.0 (2018-02-27):
 
 * Added the `WebFrameworkShim#savePossibleTransactionName` method.
 
