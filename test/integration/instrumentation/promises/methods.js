@@ -1,12 +1,14 @@
 'use strict'
 
 var helper = require('../../../lib/agent_helper')
+var semver = require('semver')
 var testTransactionState = require('./transaction-state')
 
 
 var runMultiple = testTransactionState.runMultiple
 var tasks = []
 var interval = null
+var runBindCast = semver.satisfies(process.version, '>0.12')
 
 
 module.exports = function(t, library, loadLibrary) {
@@ -150,7 +152,7 @@ module.exports = function(t, library, loadLibrary) {
   testTryBehavior('attempt')
 
   ptap.test('Promise.bind', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -159,11 +161,26 @@ module.exports = function(t, library, loadLibrary) {
     })
 
     t.test('usage', function(t) {
-      var ctx = {}
       testPromiseClassMethod(t, 2, function(Promise, name) {
+        var ctx = {}
         return Promise.bind(ctx, name).then(function(value) {
           t.equal(this, ctx, 'should have expected `this` value')
           t.equal(value, name, 'should not change passed value')
+        })
+      })
+    })
+
+    t.test('casting', {skip: !runBindCast}, function(t) {
+      testPromiseClassCastMethod(t, 4, function(t, Promise, name, ctx) {
+        return Promise.bind(ctx, name).then(function(value) {
+          t.equal(this, ctx, 'should have expected `this` value')
+          t.equal(value, name, 'should not change passed value')
+
+          // Try with this context type in both positions.
+          return Promise.bind(name, ctx).then(function(val2) {
+            t.equal(this, name, 'should have expected `this` value')
+            t.equal(val2, ctx, 'should not change passed value')
+          })
         })
       })
     })
@@ -218,7 +235,7 @@ module.exports = function(t, library, loadLibrary) {
   ptap.skip('Promise.defer')
 
   ptap.test('Promise.delay', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -236,6 +253,14 @@ module.exports = function(t, library, loadLibrary) {
           t.ok(duration < DELAY + MARGIN, 'should not take more than expected time')
           t.ok(duration > DELAY - MARGIN, 'should not take less than expected time')
           t.equal(result, name, 'should pass through resolve value')
+        })
+      })
+    })
+
+    t.test('casting', function(t) {
+      testPromiseClassCastMethod(t, 1, function(t, Promise, name, value) {
+        return Promise.delay(5, value).then(function(val) {
+          t.equal(val, value, 'should have expected value')
         })
       })
     })
@@ -326,7 +351,7 @@ module.exports = function(t, library, loadLibrary) {
   })
 
   ptap.test('Promise.join', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -343,6 +368,14 @@ module.exports = function(t, library, loadLibrary) {
           Promise.resolve(name)
         ).then(function(res) {
           t.same(res, [1, 2, 3, name], name + 'should have all the values')
+        })
+      })
+    })
+
+    t.test('casting', function(t) {
+      testPromiseClassCastMethod(t, 1, function(t, Promise, name, value) {
+        return Promise.join(value, name).then(function(values) {
+          t.deepEqual(values, [value, name], 'should have expected values')
         })
       })
     })
@@ -674,7 +707,7 @@ module.exports = function(t, library, loadLibrary) {
   testAsCallbackBehavior('asCallback')
 
   ptap.test('Promise#bind', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -683,11 +716,27 @@ module.exports = function(t, library, loadLibrary) {
     })
 
     t.test('usage', function(t) {
-      testPromiseInstanceMethod(t, 2, function bindTest(Promise, p, name) {
+      testPromiseInstanceMethod(t, 4, function bindTest(Promise, p, name) {
         var foo = {what: 'test object'}
+        var ctx2 = {what: 'a different test object'}
+        var err = new Error('oh dear')
         return p.bind(foo).then(function(res) {
           t.equal(this, foo, name + 'should have correct this value')
           t.same(res, [1, 2, 3, name], name + 'parameters should be correct')
+
+          return Promise.reject(err)
+        }).bind(ctx2, name).catch(function(reason) {
+          t.equal(this, ctx2, 'should have expected `this` value')
+          t.equal(reason, err, 'should not change rejection reason')
+        })
+      })
+    })
+
+    t.test('casting', {skip: !runBindCast}, function(t) {
+      testPromiseInstanceCastMethod(t, 2, function(t, Promise, p, name, value) {
+        return p.bind(value).then(function(val) {
+          t.equal(this, value, 'should have correct context')
+          t.equal(val, name, 'should have expected value')
         })
       })
     })
@@ -729,7 +778,7 @@ module.exports = function(t, library, loadLibrary) {
   testCatchBehavior('catch')
 
   ptap.test('Promise#catchReturn', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -747,10 +796,20 @@ module.exports = function(t, library, loadLibrary) {
           })
       })
     })
+
+    t.test('casting', function(t) {
+      testPromiseInstanceCastMethod(t, 1, function(t, Promise, p, name, value) {
+        return p.then(function() {
+          throw new Error('woops')
+        }).catchReturn(value).then(function(val) {
+          t.equal(val, value, 'should have expected value')
+        })
+      })
+    })
   })
 
   ptap.test('Promise#catchThrow', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -767,6 +826,16 @@ module.exports = function(t, library, loadLibrary) {
             t.equal(err, foo, name + 'should pass throught the correct object')
           })
         })
+    })
+
+    t.test('casting', function(t) {
+      testPromiseInstanceCastMethod(t, 1, function(t, Promise, p, name, value) {
+        return p.then(function() {
+          throw new Error('woops')
+        }).catchThrow(value).catch(function(err) {
+          t.equal(err, value, 'should have expected error')
+        })
+      })
     })
   })
 
@@ -1132,7 +1201,7 @@ module.exports = function(t, library, loadLibrary) {
   })
 
   ptap.test('Promise#return', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -1145,6 +1214,14 @@ module.exports = function(t, library, loadLibrary) {
         var foo = {what: 'return test object'}
         return p.return(foo).then(function(res) {
           t.equal(res, foo, name + 'should pass throught the correct object')
+        })
+      })
+    })
+
+    t.test('casting', function(t) {
+      testPromiseInstanceCastMethod(t, 1, function(t, Promise, p, name, value) {
+        return p.return(value).then(function(val) {
+          t.equal(val, value, 'should have expected value')
         })
       })
     })
@@ -1298,7 +1375,7 @@ module.exports = function(t, library, loadLibrary) {
   })
 
   ptap.test('Promise#thenReturn', function(t) {
-    t.plan(2)
+    t.plan(3)
 
     t.test('context', function(t) {
       testPromiseContext(t, function(Promise, name) {
@@ -1319,6 +1396,14 @@ module.exports = function(t, library, loadLibrary) {
             err && err.message, 'Promise#then test error',
             name + 'should be correct error'
           )
+        })
+      })
+    })
+
+    t.test('casting', function(t) {
+      testPromiseInstanceCastMethod(t, 1, function(t, Promise, p, name, value) {
+        return p.thenReturn(value).then(function(val) {
+          t.equal(val, value, 'should have expected value')
         })
       })
     })
@@ -1533,7 +1618,7 @@ module.exports = function(t, library, loadLibrary) {
 
   function testRejectBehavior(method) {
     ptap.test('Promise.' + method, function(t) {
-      t.plan(2)
+      t.plan(3)
 
       t.test('context', function(t) {
         testPromiseContext(t, function(Promise, name) {
@@ -1554,12 +1639,22 @@ module.exports = function(t, library, loadLibrary) {
             })
         })
       })
+
+      t.test('casting', function(t) {
+        testPromiseClassCastMethod(t, 1, function(t, Promise, name, value) {
+          return Promise[method](value).then(function() {
+            t.fail(name + 'should not resolve after a rejection')
+          }, function(err) {
+            t.equal(err, value, name + 'should reject with correct error')
+          })
+        })
+      })
     })
   }
 
   function testResolveBehavior(method) {
     ptap.test('Promise.' + method, function(t) {
-      t.plan(2)
+      t.plan(3)
 
       t.test('context', function(t) {
         testPromiseContext(t, function(Promise, name) {
@@ -1575,12 +1670,20 @@ module.exports = function(t, library, loadLibrary) {
             })
         })
       })
+
+      t.test('casting', function(t) {
+        testPromiseClassCastMethod(t, 1, function(t, Promise, name, value) {
+          return Promise[method](value).then(function(val) {
+            t.deepEqual(val, value, 'should have expected value')
+          })
+        })
+      })
     })
   }
 
   function testThrowBehavior(methodName) {
     ptap.test('Promise#' + methodName, function(t) {
-      t.plan(2)
+      t.plan(3)
 
       t.test('context', function(t) {
         testPromiseContext(t, function(Promise, name) {
@@ -1596,6 +1699,14 @@ module.exports = function(t, library, loadLibrary) {
           })
           .catch(function(err) {
             t.equal(err, foo, name + 'should pass throught the correct object')
+          })
+        })
+      })
+
+      t.test('casting', function(t) {
+        testPromiseInstanceCastMethod(t, 1, function(t, Promise, p, name, value) {
+          return p.thenThrow(value).catch(function(err) {
+            t.equal(err, value, 'should have expected error')
           })
         })
       })
@@ -1653,12 +1764,30 @@ module.exports = function(t, library, loadLibrary) {
     })
   }
 
+  function testPromiseInstanceCastMethod(t, plan, testFunc) {
+    var agent = helper.loadTestAgent(t)
+    var Promise = loadLibrary()
+
+    _testAllCastTypes(t, plan, agent, function(t, name, value) {
+      return testFunc(t, Promise, Promise.resolve(name), name, value)
+    })
+  }
+
   function testPromiseClassMethod(t, plan, testFunc) {
     var agent = helper.loadTestAgent(t)
     var Promise = loadLibrary()
 
     _testPromiseMethod(t, plan, agent, function(name) {
       return testFunc(Promise, name)
+    })
+  }
+
+  function testPromiseClassCastMethod(t, plan, testFunc) {
+    var agent = helper.loadTestAgent(t)
+    var Promise = loadLibrary()
+
+    _testAllCastTypes(t, plan, agent, function(t, name, value) {
+      return testFunc(t, Promise, name, value)
     })
   }
 
@@ -1833,6 +1962,47 @@ function _testPromiseContext(t, agent, factory) {
       })
     })
   })
+}
+
+function _testAllCastTypes(t, plan, agent, testFunc) {
+  var values = [
+    42,
+    'foobar',
+    {},
+    [],
+    function() {}
+  ]
+
+  t.plan(2)
+  t.test('in context', function(t) {
+    t.plan(plan * values.length + 1)
+
+    helper.runInTransaction(agent, function(tx) {
+      _test(t, '[no-tx]', 0).then(function() {
+        var txB = agent.tracer.getTransaction()
+        t.equal(id(tx), id(txB), 'should maintain transaction state')
+      }).catch(function(err) {
+        t.error(err)
+      }).then(t.end)
+    })
+  })
+
+  t.test('out of context', function(t) {
+    t.plan(plan * values.length)
+    _test(t, '[no-tx]', 0).catch(function(err) {
+      t.error(err)
+    }).then(t.end)
+  })
+
+  function _test(t, name, i) {
+    var val = values[i]
+    t.comment(typeof val === 'function' ? val.toString() : JSON.stringify(val))
+    return testFunc(t, name, val).then(function() {
+      if (++i < values.length) {
+        return _test(t, name, i)
+      }
+    })
+  }
 }
 
 function PromiseTap(t, Promise) {
