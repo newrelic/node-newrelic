@@ -4,14 +4,12 @@ var chai = require('chai')
 var expect = chai.expect
 var should = chai.should()
 var helper = require('../../lib/agent_helper')
-var configurator = require('../../../lib/config')
-var configDefaults = require('../../../lib/config/default').config
 var ErrorAggregator = require('../../../lib/errors/aggregator')
 var Transaction = require('../../../lib/transaction')
-var API = require('../../../api.js')
-var NAMES = require('../../../lib/metrics/names')
 
-var config = configurator.initialize(configDefaults)
+var API = require('../../../api')
+var DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
+var NAMES = require('../../../lib/metrics/names')
 
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') isWeb = true
@@ -38,7 +36,7 @@ function createBackgroundTransaction(agent) {
 }
 
 describe('Errors', function() {
-  var agent
+  var agent = null
 
   beforeEach(function() {
     agent = helper.loadMockedAgent(null, {
@@ -54,8 +52,8 @@ describe('Errors', function() {
 
   describe('agent attribute format', function() {
     var PARAMS = 4
-
-    var trans, error
+    var trans = null
+    var error = null
 
     beforeEach(function() {
       trans = new Transaction(agent)
@@ -65,19 +63,16 @@ describe('Errors', function() {
     })
 
     it('record captured params', function() {
-      trans.trace.addAttribute('a', 'A')
+      trans.trace.addAttribute(DESTS.ALL, 'request.parameters.a', 'A')
       error.add(trans, new Error())
       agent.errors.onTransactionFinished(trans, agent.metrics)
 
       var params = error.errors[0][PARAMS]
-      expect(params.agentAttributes).deep.equals({
-        a: 'A'
-      })
-      // error events
+      expect(params.agentAttributes).deep.equals({'request.parameters.a': 'A'})
+
+      // Error events
       params = error.getEvents()[0][2]
-      expect(params).deep.equals({
-        a: 'A'
-      })
+      expect(params).deep.equals({'request.parameters.a': 'A'})
     })
 
     it('records custom parameters', function() {
@@ -87,16 +82,12 @@ describe('Errors', function() {
 
       var params = error.errors[0][PARAMS]
 
-      expect(params.userAttributes).deep.equals({
-        a: 'A'
-      })
+      expect(params.userAttributes).deep.equals({a: 'A'})
 
       // error events
       params = error.getEvents()[0][1]
 
-      expect(params).deep.equals({
-        a: 'A'
-      })
+      expect(params).deep.equals({a: 'A'})
     })
 
     it('merge custom parameters', function() {
@@ -202,24 +193,23 @@ describe('Errors', function() {
     var tracer
 
     beforeEach(function() {
-      tracer = new ErrorAggregator(config)
+      tracer = new ErrorAggregator(agent.config)
     })
 
     it('should preserve the name field on errors', function() {
-      var tracer = agent.errors
       var api = new API(agent)
 
       var testError = new Error("EVERYTHING IS BROKEN")
       testError.name = "GAMEBREAKER"
 
       api.noticeError(testError)
-      var error = tracer.errors[0]
+      var error = agent.errors.errors[0]
       expect(error[error.length - 2]).equal(testError.name)
     })
 
-    it('shouldn\'t gather errors if it\'s switched off by user config', function() {
+    it('should not gather errors if it is switched off by user config', function() {
       var error = new Error('this error will never be seen')
-      config.error_collector.enabled = false
+      agent.config.error_collector.enabled = false
 
       expect(tracer.errorCount).equal(0)
       expect(tracer.errors.length).equal(0)
@@ -229,12 +219,12 @@ describe('Errors', function() {
       expect(tracer.errorCount).equal(1)
       expect(tracer.errors.length).equal(0)
 
-      config.error_collector.enabled = true
+      agent.config.error_collector.enabled = true
     })
 
-    it('shouldn\'t gather errors if it\'s switched off by server config', function() {
+    it('should not gather errors if it is switched off by server config', function() {
       var error = new Error('this error will never be seen')
-      config.collect_errors = false
+      agent.config.collect_errors = false
 
       expect(tracer.errorCount).equal(0)
       expect(tracer.errors.length).equal(0)
@@ -244,29 +234,28 @@ describe('Errors', function() {
       expect(tracer.errorCount).equal(1)
       expect(tracer.errors.length).equal(0)
 
-      config.collect_errors = true
+      agent.config.collect_errors = true
     })
 
     it('should gather the same error in two transactions', function(done) {
       var error = new Error('this happened once')
-      var tracer = agent.errors
       var first = new Transaction(agent)
       var second = new Transaction(agent)
 
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
+      expect(agent.errors.errorCount).equal(0)
+      expect(agent.errors.errors.length).equal(0)
 
-      tracer.add(first, error)
+      agent.errors.add(first, error)
       expect(first.exceptions.length).equal(1)
 
-      tracer.add(second, error)
+      agent.errors.add(second, error)
       expect(second.exceptions.length).equal(1)
 
       first.end(function onEnd() {
-        expect(tracer.errorCount).equal(1)
+        expect(agent.errors.errorCount).equal(1)
 
         second.end(function secondEnd() {
-          expect(tracer.errorCount).equal(2)
+          expect(agent.errors.errorCount).equal(2)
 
           done()
         })
@@ -465,7 +454,6 @@ describe('Errors', function() {
 
       it('should collect exceptions added with noticeError() API even if the status ' +
           'code is in ignore_status_codes config', function() {
-
         var api = new API(agent)
         var tx = createTransaction(agent, 404)
 
@@ -499,15 +487,12 @@ describe('Errors', function() {
     })
 
     describe('with no error and a transaction with status code', function() {
-      var tracer
-
       beforeEach(function() {
-        tracer = agent.errors
-        tracer.add(new Transaction (agent), null)
+        agent.errors.add(new Transaction (agent), null)
       })
 
       it('should have no errors', function() {
-        expect(tracer.errors.length).equal(0)
+        expect(agent.errors.errors.length).equal(0)
       })
     })
 
@@ -530,7 +515,7 @@ describe('Errors', function() {
         expect(tracer.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -552,33 +537,30 @@ describe('Errors', function() {
       })
     })
 
-    describe('with no error and a transaction agent attributes and status code', function() {
-      var tracer
-      var errorJSON
-      var params
+    describe('with transaction agent attrs, status code, and no error', function() {
+      var errorJSON = null
+      var params = null
 
       beforeEach(function() {
-        tracer = agent.errors
-
         var transaction = new Transaction(agent)
         transaction.statusCode = 501
         transaction.url = '/'
-        transaction.trace.addAttributes({
+        transaction.trace.addAttributes(DESTS.ALL, {
           test_param: 'a value',
           thing: true
         })
 
-        tracer.add(transaction, null)
-        tracer.onTransactionFinished(transaction, agent.metrics)
-        errorJSON = tracer.errors[0]
+        agent.errors.add(transaction, null)
+        agent.errors.onTransactionFinished(transaction, agent.metrics)
+        errorJSON = agent.errors.errors[0]
         params = errorJSON[4]
       })
 
       it('should have one error', function() {
-        expect(tracer.errors.length).equal(1)
+        expect(agent.errors.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -612,17 +594,15 @@ describe('Errors', function() {
     })
 
     it('with attributes.enabled disabled', function() {
-      var tracer = agent.errors
-
       var transaction = new Transaction(agent)
       transaction.statusCode = 501
 
       transaction.url = '/test_action.json?test_param=a%20value&thing'
 
-      tracer.add(transaction, null)
+      agent.errors.add(transaction, null)
       agent.errors.onTransactionFinished(transaction, agent.metrics)
 
-      var errorJSON = tracer.errors[0]
+      var errorJSON = agent.errors.errors[0]
       var params = errorJSON[4]
 
       should.not.exist(params.request_params)
@@ -631,18 +611,17 @@ describe('Errors', function() {
     it('with attributes.enabled and attributes.exclude set', function() {
       agent.config.attributes.exclude = ['thing']
       agent.config.emit('attributes.exclude')
-      var tracer = agent.errors
 
       var transaction = new Transaction(agent)
       transaction.statusCode = 501
 
-      transaction.addAgentAttribute('test_param', 'a value')
-      transaction.addAgentAttribute('thing', 5)
+      transaction.trace.addAttribute(DESTS.ALL, 'test_param', 'a value')
+      transaction.trace.addAttribute(DESTS.ALL, 'thing', 5)
 
-      tracer.add(transaction, null)
+      agent.errors.add(transaction, null)
       agent._transactionFinished(transaction)
 
-      var errorJSON = tracer.errors[0]
+      var errorJSON = agent.errors.errors[0]
       var params = errorJSON[4]
 
       expect(params.agentAttributes).eql({test_param : 'a value'})
@@ -666,7 +645,7 @@ describe('Errors', function() {
         expect(tracer.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -709,7 +688,7 @@ describe('Errors', function() {
         expect(tracer.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -732,35 +711,31 @@ describe('Errors', function() {
       })
     })
 
-    describe('with a thrown TypeError object and a transaction with agent parameters', function() {
-      var tracer
-      var errorJSON
-      var params
-
+    describe('with a thrown `TypeError` and a transaction with agent attrs', function() {
+      var errorJSON = null
+      var params = null
 
       beforeEach(function() {
-        tracer = agent.errors
-
         var transaction = new Transaction(agent)
         var exception = new TypeError('wanted JSON, got XML')
 
-        transaction.trace.addAttributes({
+        transaction.trace.addAttributes(DESTS.ALL, {
           test_param: 'a value',
           thing: true
         })
         transaction.url = '/test_action.json'
 
-        tracer.add(transaction, exception)
-        tracer.onTransactionFinished(transaction, agent.metrics)
-        errorJSON = tracer.errors[0]
+        agent.errors.add(transaction, exception)
+        agent.errors.onTransactionFinished(transaction, agent.metrics)
+        errorJSON = agent.errors.errors[0]
         params = errorJSON[4]
       })
 
       it('should have one error', function() {
-        expect(tracer.errors.length).equal(1)
+        expect(agent.errors.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -814,7 +789,7 @@ describe('Errors', function() {
         expect(tracer.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -836,35 +811,31 @@ describe('Errors', function() {
     })
 
     describe('with a thrown string and a transaction with agent parameters', function() {
-      var tracer
-      var errorJSON
-      var params
-
+      var errorJSON = null
+      var params = null
 
       beforeEach(function() {
-        tracer = agent.errors
-
         var transaction = new Transaction(agent)
         var exception = 'wanted JSON, got XML'
 
-        transaction.trace.addAttributes({
+        transaction.trace.addAttributes(DESTS.ALL, {
           test_param: 'a value',
           thing: true
         })
 
         transaction.url = '/test_action.json'
 
-        tracer.add(transaction, exception)
-        tracer.onTransactionFinished(transaction, agent.metrics)
-        errorJSON = tracer.errors[0]
+        agent.errors.add(transaction, exception)
+        agent.errors.onTransactionFinished(transaction, agent.metrics)
+        errorJSON = agent.errors.errors[0]
         params = errorJSON[4]
       })
 
       it('should have one error', function() {
-        expect(tracer.errors.length).equal(1)
+        expect(agent.errors.errors.length).equal(1)
       })
 
-      it('shouldn\'t care what time it was traced', function() {
+      it('should not care what time it was traced', function() {
         expect(errorJSON[0]).equal(0)
       })
 
@@ -978,7 +949,7 @@ describe('Errors', function() {
     })
 
     describe('when merging from failed collector delivery', function() {
-      it('shouldn\'t crash on null errors', function() {
+      it('should not crash on null errors', function() {
         expect(function() { tracer.merge(null) }).not.throws()
       })
 
@@ -1379,20 +1350,6 @@ describe('Errors', function() {
         })
       })
     })
-
-    function getFirstErrorIntrinsicAttributes(aggregator) {
-      return getFirstError(aggregator)[4].intrinsics
-    }
-
-    function getFirstErrorCustomAttributes(aggregator) {
-      return getFirstError(aggregator)[4].userAttributes
-    }
-
-    function getFirstError(aggregator) {
-      var errors = aggregator.errors
-      expect(errors.length).equal(1)
-      return errors[0]
-    }
   })
 
   describe('error events', function() {
@@ -1752,11 +1709,10 @@ describe('Errors', function() {
             http.get({ port: port, host: 'localhost' })
           })
 
-          agent.on('transactionFinished', function(transaction) {
+          agent.on('transactionFinished', function(tx) {
             process.nextTick(function() {
-              var aggregator = agent.errors
-              var attributes = getFirstEventIntrinsicAttributes(aggregator)
-              expect(attributes.port).equal(transaction.port)
+              var attributes = getFirstEventIntrinsicAttributes(agent.errors)
+              expect(attributes.port).equal(tx.port)
               done()
             })
           })
@@ -1779,7 +1735,7 @@ describe('Errors', function() {
         })
       })
 
-      it('should merge new custom attributes with trace custom attributes', function(done) {
+      it('should merge new custom attrs with trace custom attrs', function(done) {
         var transaction = createTransaction(agent, 500)
         transaction.trace.addCustomAttribute('a', 'b')
         var error = new Error('some error')
@@ -1799,7 +1755,7 @@ describe('Errors', function() {
       it('should contain agent attributes', function() {
         agent.config.attributes.enabled = true
         var transaction = createTransaction(agent, 500)
-        transaction.trace.addAttribute('host.displayName', 'myHost')
+        transaction.trace.addAttribute(DESTS.ALL, 'host.displayName', 'myHost')
         var error = new Error('some error')
         aggregator.add(transaction, error, { a: 'a' })
 
@@ -1814,23 +1770,37 @@ describe('Errors', function() {
         })
       })
     })
-
-    function getFirstEventIntrinsicAttributes(aggregator) {
-      return getFirstEvent(aggregator)[0]
-    }
-
-    function getFirstEventCustomAttributes(aggregator) {
-      return getFirstEvent(aggregator)[1]
-    }
-
-    function getFirstEventAgentAttributes(aggregator) {
-      return getFirstEvent(aggregator)[2]
-    }
-
-    function getFirstEvent(aggregator) {
-      var events = aggregator.getEvents()
-      expect(events.length).equal(1)
-      return events[0]
-    }
   })
 })
+
+function getFirstErrorIntrinsicAttributes(aggregator) {
+  return getFirstError(aggregator)[4].intrinsics
+}
+
+function getFirstErrorCustomAttributes(aggregator) {
+  return getFirstError(aggregator)[4].userAttributes
+}
+
+function getFirstError(aggregator) {
+  var errors = aggregator.errors
+  expect(errors.length).equal(1)
+  return errors[0]
+}
+
+function getFirstEventIntrinsicAttributes(aggregator) {
+  return getFirstEvent(aggregator)[0]
+}
+
+function getFirstEventCustomAttributes(aggregator) {
+  return getFirstEvent(aggregator)[1]
+}
+
+function getFirstEventAgentAttributes(aggregator) {
+  return getFirstEvent(aggregator)[2]
+}
+
+function getFirstEvent(aggregator) {
+  var events = aggregator.getEvents()
+  expect(events.length).equal(1)
+  return events[0]
+}

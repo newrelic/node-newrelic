@@ -30,19 +30,19 @@ describe('Trace', function() {
     // succeed
     var transaction = new Transaction(agent)
     var tt = new Trace(transaction)
-    expect(tt.transaction).instanceof(Transaction)
+    expect(tt.transaction).to.be.an.instanceof(Transaction)
   })
 
   it('should have the root of a Segment tree', function() {
     var tt = new Trace(new Transaction(agent))
-    expect(tt.root).instanceof(Segment)
+    expect(tt.root).to.be.an.instanceof(Segment)
   })
 
   it('should be the primary interface for adding segments to a trace', function() {
     var transaction = new Transaction(agent)
     var trace = transaction.trace
 
-    expect(function() { trace.add('Custom/Test17/Child1') }).not.throws()
+    expect(function() { trace.add('Custom/Test17/Child1') }).to.not.throw()
   })
 
   it('should produce a transaction trace in the expected format', function(done) {
@@ -414,7 +414,7 @@ describe('Trace', function() {
         'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
         'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
       ].join(' ')
-      trace.addAttribute(tooLong, 'will fail')
+      trace.addAttribute(DESTINATIONS.ALL, tooLong, 'will fail')
       var attributes = Object.keys(trace.attributes.attributes)
       expect(attributes.length).to.equal(0)
     })
@@ -488,9 +488,11 @@ function makeTrace(agent, callback) {
   var DURATION = 33
   var URL = '/test?test=value'
   agent.config.attributes.enabled = true
+  agent.config.attributes.include = ['request.parameters.*']
+  agent.config.emit('attributes.include')
 
   var transaction = new Transaction(agent)
-  transaction.trace.addAttribute('request.uri', URL)
+  transaction.trace.addAttribute(DESTINATIONS.COMMON, 'request.uri', URL)
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -531,7 +533,7 @@ function makeTrace(agent, callback) {
         {
           'nr_exclusive_duration_millis': 8,
           'request.uri': '/test?test=value',
-          'test': 'value'
+          'request.parameters.test': 'value'
         },
         [
           // TODO: ensure that the ordering is correct WRT start time
@@ -552,7 +554,7 @@ function makeTrace(agent, callback) {
     {
       agentAttributes: {
         'request.uri': '/test?test=value',
-        'test': 'value'
+        'request.parameters.test': 'value'
       },
       userAttributes: {},
       intrinsics: {}

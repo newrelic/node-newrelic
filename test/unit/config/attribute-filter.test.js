@@ -5,6 +5,8 @@ var copy = require('../../../lib/util/copy')
 var EventEmitter = require('events').EventEmitter
 var expect = require('chai').expect
 
+var DESTS = AttributeFilter.DESTINATIONS
+
 
 describe('AttributeFilter', function() {
   describe('constructor', function() {
@@ -19,7 +21,7 @@ describe('AttributeFilter', function() {
     })
   })
 
-  describe('#test', function() {
+  describe('#filter', function() {
     it('should respect the rules', function() {
       var filter = new AttributeFilter(makeConfig({
         attributes: {
@@ -58,34 +60,55 @@ describe('AttributeFilter', function() {
       makeAssertions(filter)
     })
 
-    it('should filter `request.parameters` when HSM is enabled', function() {
-      var filter = new AttributeFilter(makeConfig({high_security: true}))
+    it('should match `*` to anything', function() {
+      var filter = new AttributeFilter(makeConfig({
+        attributes: {
+          enabled: true,
+          include: ['a*'],
+          exclude: ['*']
+        }
+      }))
 
-      var TRANS_EVENT = AttributeFilter.DESTINATIONS.TRANS_EVENT
-      expect(filter.test(TRANS_EVENT, 'request.headers.foobar')).to.be.true()
-      expect(filter.test(TRANS_EVENT, 'request.parameters.foobar')).to.be.false()
+      expect(filter.filter(DESTS.COMMON, 'a')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.COMMON, 'ab')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.COMMON, '')).to.equal(DESTS.NONE)
+      expect(filter.filter(DESTS.COMMON, 'b')).to.equal(DESTS.NONE)
+      expect(filter.filter(DESTS.COMMON, 'bc')).to.equal(DESTS.NONE)
+    })
+
+    it('should parse dot rules correctly', function() {
+      var filter = new AttributeFilter(makeConfig({
+        attributes: {
+          enabled: true,
+          include: ['a.c'],
+          exclude: ['ab*']
+        }
+      }))
+
+      expect(filter.filter(DESTS.COMMON, 'a.c')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.COMMON, 'abc')).to.equal(DESTS.NONE)
+
+      expect(filter.filter(DESTS.NONE, 'a.c')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.NONE, 'abc')).to.equal(DESTS.NONE)
     })
 
     function makeAssertions(filter) {
-      var TRANS_EVENT = AttributeFilter.DESTINATIONS.TRANS_EVENT
-      var TRANS_TRACE = AttributeFilter.DESTINATIONS.TRANS_TRACE
-      expect(filter.test(TRANS_EVENT, 'a'), 'a -> events').to.be.true()
-      expect(filter.test(TRANS_EVENT, 'ab'), 'ab -> events').to.be.true()
-      expect(filter.test(TRANS_EVENT, 'abc'), 'abc -> events').to.be.false()
+      // Filters down from global rules
+      expect(filter.filter(DESTS.ALL, 'a'), 'a -> common').to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.ALL, 'ab'), 'ab -> common')
+        .to.equal(DESTS.TRANS_EVENT)
+      expect(filter.filter(DESTS.ALL, 'abc'), 'abc -> common').to.equal(DESTS.NONE)
 
-      expect(filter.test(TRANS_EVENT, 'b'), 'b -> events').to.be.true()
-      expect(filter.test(TRANS_EVENT, 'bc'), 'bc -> events').to.be.false()
-      expect(filter.test(TRANS_EVENT, 'bcd'), 'bcd -> events').to.be.true()
-      expect(filter.test(TRANS_EVENT, 'bcde'), 'bcde -> events').to.be.true()
+      // Filters down from destination rules.
+      expect(filter.filter(DESTS.ALL, 'b'), 'b -> common').to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.ALL, 'bc'), 'bc -> common')
+        .to.equal(DESTS.COMMON & ~DESTS.TRANS_EVENT)
+      expect(filter.filter(DESTS.ALL, 'bcd'), 'bcd -> common').to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.ALL, 'bcde'), 'bcde -> common').to.equal(DESTS.COMMON)
 
-      expect(filter.test(TRANS_TRACE, 'a'), 'a -> tracer').to.be.true()
-      expect(filter.test(TRANS_TRACE, 'ab'), 'ab -> tracer').to.be.false()
-      expect(filter.test(TRANS_TRACE, 'abc'), 'abc -> tracer').to.be.false()
-
-      expect(filter.test(TRANS_TRACE, 'b'), 'b -> tracer').to.be.true()
-      expect(filter.test(TRANS_TRACE, 'bc'), 'bc -> tracer').to.be.true()
-      expect(filter.test(TRANS_TRACE, 'bcd'), 'bcd -> tracer').to.be.true()
-      expect(filter.test(TRANS_TRACE, 'bcde'), 'bcde -> tracer').to.be.true()
+      // Adds destinations on top of defaults.
+      expect(filter.filter(DESTS.NONE, 'a'), 'a -> none').to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.NONE, 'ab'), 'ab -> none').to.equal(DESTS.TRANS_EVENT)
     }
   })
 })
