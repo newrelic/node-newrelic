@@ -9,7 +9,7 @@ var restify = require('restify')
 var codec = require('../../lib/util/codec')
 var logger = require('../../lib/logger').child({component: 'fake_collector'})
 
-var DEFAULT_HOST = 'collector.lvh.me'
+var DEFAULT_HOST = 'ssl.lvh.me'
 var ACTUAL_HOST = 'collector-1.lvh.me'
 var PORT = 8089
 var PATHS = {
@@ -287,7 +287,15 @@ var methods = {
 }
 
 function bootstrap(options, callback) {
-  var server = restify.createServer()
+  var server = restify.createServer({
+    key: fs.readFileSync(path.join(__dirname, './test-key.key')),
+    certificate: fs.readFileSync(
+      path.join(
+        __dirname,
+        './self-signed-test-certificate.crt'
+      )
+    )
+  })
 
   server.use(restify.queryParser({mapParams: false}))
   server.use(restify.bodyParser({mapParams: false}))

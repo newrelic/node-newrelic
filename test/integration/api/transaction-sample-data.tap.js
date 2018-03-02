@@ -10,7 +10,6 @@ tap.test('Collector API should send errors to newrelic.com', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: 'ed2a0ac637297d08c5592c0200050fe234802223',
-    host: 'staging-collector.newrelic.com',
     port: 443,
     ssl: true,
     utilization: {

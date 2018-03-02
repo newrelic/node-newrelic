@@ -10,12 +10,16 @@ var RemoteMethod = require('../../lib/collector/remote-method')
 
 tap.test('DataSender (callback style) talking to fake collector', function(t) {
   var config = {
-    host: 'collector.lvh.me',
+    host: 'ssl.lvh.me',
     port: 8765,
     run_id: 1337,
+    ssl: true,
     license_key: 'whatever',
     version: '0'
   }
+  config.certificates = [
+    read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
+  ]
   var method = new RemoteMethod('preconnect', config)
 
   collector({port: 8765}, function(error, server) {
@@ -48,6 +52,7 @@ tap.test('DataSender (callback style) talking to fake collector', function(t) {
 })
 
 tap.test('remote method to get redirect host', function(t) {
+  t.plan(2)
   t.test('https with custom certificate', function(t) {
     t.plan(3)
     var method = createRemoteMethod(true)
@@ -86,11 +91,9 @@ tap.test('remote method to get redirect host', function(t) {
       ssl: true,
     }
 
-    if (useCertificate) {
-      config.certificates = [
-        read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
-      ]
-    }
+    config.certificates = [
+      read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
+    ]
 
     var method = new RemoteMethod('preconnect', config)
     return method

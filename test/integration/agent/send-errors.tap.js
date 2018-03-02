@@ -7,7 +7,7 @@ var DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 
 
 tap.test('Agent#_sendErrors', function(t) {
-  t.plan(2)
+  t.plan(1)
 
   var config = {
     app_name: 'node.js Tests',
