@@ -11,7 +11,12 @@ tap.test('Hapi vhost support', function(t) {
   t.autoend()
 
   t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent()
+    var agent = helper.instrumentMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     var server = utils.getServer()
     var port
 
@@ -19,17 +24,20 @@ tap.test('Hapi vhost support', function(t) {
       return server.stop()
     })
 
-    // disabled by default
-    agent.config.attributes.enabled = true
-
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
       var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
-      t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
-      t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.id'], '1337',
+        'Trace attributes include `id` route param'
+      )
+      t.equal(
+        attributes['request.parameters.name'], 'hapi',
+        'Trace attributes include `name` query param'
+      )
 
       helper.unloadAgent(agent)
     })

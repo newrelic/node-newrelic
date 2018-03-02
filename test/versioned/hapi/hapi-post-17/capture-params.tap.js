@@ -15,7 +15,12 @@ tap.test('Hapi capture params support', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
+    agent = helper.instrumentMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     server = utils.getServer()
 
     agent.config.attributes.enabled = true
@@ -55,7 +60,10 @@ tap.test('Hapi capture params support', function(t) {
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
       var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
+      t.equal(
+        attributes['request.parameters.id'], '1337',
+        'Trace attributes include `id` route param'
+      )
     })
 
     server.route({
@@ -77,7 +85,10 @@ tap.test('Hapi capture params support', function(t) {
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
       var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.name'], 'hapi',
+        'Trace attributes include `name` query param'
+      )
     })
 
     server.route({
@@ -99,8 +110,14 @@ tap.test('Hapi capture params support', function(t) {
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
       var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
-      t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.id'], '1337',
+        'Trace attributes include `id` route param'
+      )
+      t.equal(
+        attributes['request.parameters.name'], 'hapi',
+        'Trace attributes include `name` query param'
+      )
     })
 
     server.route({

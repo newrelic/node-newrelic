@@ -13,11 +13,13 @@ tap.test('Hapi router introspection', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     server = utils.getServer()
-
-    // disabled by default
-    agent.config.attributes.enabled = true
 
     done()
   })
@@ -33,7 +35,7 @@ tap.test('Hapi router introspection', function(t) {
     var route = {
       method: 'GET',
       path: '/test/{id}',
-      handler: function(request, reply) {
+      handler: function(req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
         reply({status: 'ok'})
       }
@@ -58,7 +60,7 @@ tap.test('Hapi router introspection', function(t) {
     agent.on('transactionFinished', utils.verifier(t))
 
     var hello = {
-      handler: function(request, reply) {
+      handler: function(req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
         reply({status: 'ok'})
       }
