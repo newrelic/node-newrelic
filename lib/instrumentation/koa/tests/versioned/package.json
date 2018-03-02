@@ -1,0 +1,33 @@
+{
+  "name": "koa-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=4 <6"
+      },
+      "dependencies": {
+        "koa": "2.0.0"
+      },
+      "files": [
+        "koa.tap.js"
+      ],
+      "notes": "Because Koa uses destructuring and the spread operator in later versions, Node v4 & 5 only work on one version."
+    },
+    {
+      "engines": {
+        "node": ">=6"
+      },
+      "dependencies": {
+        "koa": ">=2.0.0"
+      },
+      "files": [
+        "koa.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "koa": "^2.5.0"
+  }
+}
