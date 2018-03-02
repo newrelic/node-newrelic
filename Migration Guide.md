@@ -3,6 +3,30 @@
 This guide is intended to help with upgrading major versions of the Node Agent.
 This information can also be found on [our documentation website][upgrade-doc].
 
+## Upgrading to Agent v3
+
+### Breaking Changes
+
+**Removed SSL configuration**: The agent will always connect to New Relic
+servers using TLS to encrypt communications. The `ssl` configuration value and
+`NEW_RELIC_USE_SSL` environment value are ignored. If set to any value other
+than `true`, a warning is logged and the value is ignored.
+
+**Request parameters now prefixed with `request.parameters.`**: Any request
+parameters, such as route (`/user/:userId`) or query (`/user?userId=123`)
+parameters will now be prefixed with `request.parameters.` when collected. For
+example, the route parameter from `/user/:userId` would be collected as
+`request.parameters.userId`.
+
+Any Insights dashboards, Alerts, or other NRQL queries using these attributes
+must be updated to look for the new attributes instead.
+
+### Released Feature Flags
+
+* `send_request_uri_attribute`: This feature is no longer configurable.
+
+--------------------------------------------------------------------------------
+
 ## Upgrading to Agent v2
 
 ### Breaking Changes
