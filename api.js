@@ -309,6 +309,10 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     return logger.warn('Not setting ignored parameter name %s.', key)
   }
 
+  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+  }
+
   if (key in trace.custom) {
     logger.debug(
       'Changing custom parameter %s from %s to %s.',
