@@ -234,6 +234,8 @@ function addCustomParameter(key, value) {
     return false
   }
 
+  var ignored = this.agent.config.ignored_params || []
+
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn('No transaction found for custom attributes.')
@@ -247,11 +249,15 @@ function addCustomParameter(key, value) {
     )
   }
 
+  if (ignored.indexOf(key) !== -1) {
+    return logger.warn('Not setting ignored parameter name %s.', key)
+  }
+
   if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  trace.addCustomAttribute(key, value)
+  trace.custom[key] = value
 }
 
 
@@ -284,6 +290,8 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     return false
   }
 
+  var ignored = this.agent.config.ignored_params || []
+
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn('No transaction found for custom attributes.')
@@ -297,11 +305,24 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     )
   }
 
+  if (ignored.indexOf(key) !== -1) {
+    return logger.warn('Not setting ignored parameter name %s.', key)
+  }
+
   if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  trace.addCustomAttribute(key, value)
+  if (key in trace.custom) {
+    logger.debug(
+      'Changing custom parameter %s from %s to %s.',
+      key,
+      trace.custom[key],
+      value
+    )
+  }
+
+  trace.custom[key] = value
 }
 
 /**

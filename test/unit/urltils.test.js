@@ -194,9 +194,7 @@ describe('NR URL utilities', function() {
 
     beforeEach(function() {
       config = {
-        attributes: {
-          enabled: true
-        },
+        capture_params: true,
         ignored_params: []
       }
       source = {}
@@ -208,11 +206,11 @@ describe('NR URL utilities', function() {
     })
 
     it('should not throw on missing source', function() {
-      expect(function() { urltils.copyParameters(null, dest) }).not.throws()
+      expect(function() { urltils.copyParameters(config, null, dest) }).not.throws()
     })
 
     it('should not throw on missing destination', function() {
-      expect(function() { urltils.copyParameters(source, null) }).not.throws()
+      expect(function() { urltils.copyParameters(config, source, null) }).not.throws()
     })
 
     it('should copy parameters from source to destination', function() {
@@ -220,7 +218,7 @@ describe('NR URL utilities', function() {
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
 
-      expect(function() { urltils.copyParameters(source, dest) }).not.throws()
+      expect(function() { urltils.copyParameters(config, source, dest) }).not.throws()
 
       expect(dest).eql({
         existing  : 'here',
@@ -235,7 +233,7 @@ describe('NR URL utilities', function() {
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
 
-      urltils.copyParameters(source, dest)
+      urltils.copyParameters(config, source, dest)
 
       expect(dest).eql({
         existing  : 'here',
@@ -249,7 +247,7 @@ describe('NR URL utilities', function() {
       dest.firstNew = null
       source.firstNew = 'present'
 
-      urltils.copyParameters(source, dest)
+      urltils.copyParameters(config, source, dest)
 
       expect(dest).eql({
         existing  : 'here',
@@ -262,7 +260,7 @@ describe('NR URL utilities', function() {
       dest.firstNew = undefined
       source.firstNew = 'present'
 
-      urltils.copyParameters(source, dest)
+      urltils.copyParameters(config, source, dest)
 
       expect(dest).eql({
         existing  : 'here',

@@ -2,7 +2,6 @@
 
 var API = require('../../../api')
 var chai = require('chai')
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var expect = chai.expect
 var hashes = require('../../../lib/util/hashes')
 var helper = require('../../lib/agent_helper')
@@ -30,7 +29,7 @@ describe('MessageShim', function() {
   })
 
   beforeEach(function() {
-    agent = helper.instrumentMockedAgent(null, {attributes: { enabled: true }})
+    agent = helper.instrumentMockedAgent(null, {capture_params: true })
     shim = new MessageShim(agent, 'test-module')
     shim.setLibrary(shim.RABBITMQ)
     wrappable = {
@@ -860,7 +859,7 @@ describe('MessageShim', function() {
       it('should add agent attributes (e.g. routing key)', function(done) {
         wrapped('my.queue', function consumer() {
           var tx = shim.getSegment().transaction
-          var traceParams = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+          var traceParams = tx.trace.attributes
           expect(traceParams).to.have.property('message.routingKey', 'routing.key')
           expect(traceParams).to.have.property('message.queueName', 'my.queue')
           done()

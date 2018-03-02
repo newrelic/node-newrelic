@@ -80,10 +80,10 @@ describe('instrumentOutbound', function() {
     })
   })
 
-  it('should save query parameters from path if attributes.enabled is true', function() {
+  it('should save query parameters from path if capture_params is true', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      agent.config.attributes.enabled = true
+      agent.config.capture_params = true
       instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
       expect(transaction.trace.root.children[0].parameters).deep.equal({
         a: 'b',

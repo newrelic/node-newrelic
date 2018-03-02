@@ -28,7 +28,7 @@ test("Express router introspection", function(t) {
   })
 
   // need to capture attributes
-  agent.config.attributes.enabled = true
+  agent.config.capture_params = true
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(transaction.name, 'WebTransaction/Expressjs/GET//a/:param1/b/:param2',

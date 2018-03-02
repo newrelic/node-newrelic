@@ -29,9 +29,7 @@ tap.test('amqplib callback instrumentation', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent(null, {
-      attributes: {
-        enabled: true
-      }
+      capture_params: true
     })
 
     var params = {

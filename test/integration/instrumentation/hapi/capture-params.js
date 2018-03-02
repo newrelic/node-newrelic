@@ -1,6 +1,5 @@
 'use strict'
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var helper = require('../../../lib/agent_helper')
 var HTTP_ATTRS = require('../../../lib/fixtures').httpAttributes
 var request = require('request')
@@ -23,7 +22,7 @@ function runTests(createServer) {
       server = createServer()
 
       // disabled by default
-      agent.config.attributes.enabled = true
+      agent.config.capture_params = true
       agent.config.allow_all_headers = false
       done()
     })
@@ -36,7 +35,7 @@ function runTests(createServer) {
     t.test("simple case with no params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        var attributes = transaction.trace.attributes
         HTTP_ATTRS.forEach(function(key) {
           t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
         })
@@ -68,7 +67,7 @@ function runTests(createServer) {
     t.test("case with route params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        var attributes = transaction.trace.attributes
         t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
       })
 
@@ -91,7 +90,7 @@ function runTests(createServer) {
     t.test("case with query params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        var attributes = transaction.trace.attributes
         t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
       })
 
@@ -114,7 +113,7 @@ function runTests(createServer) {
     t.test("case with both route and query params", function(t) {
       agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
-        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        var attributes = transaction.trace.attributes
         t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
         t.equal(attributes.name, 'hapi', 'Trace attributes include `name` query param')
       })

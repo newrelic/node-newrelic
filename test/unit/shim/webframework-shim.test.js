@@ -526,6 +526,7 @@ describe('WebFrameworkShim', function() {
 
       describe('when high_security is off', function() {
         beforeEach(function() {
+          agent.config.capture_params = true
           agent.config.high_security = false
         })
 
@@ -1175,7 +1176,7 @@ describe('WebFrameworkShim', function() {
 
   describe('#captureUrlParams', function() {
     beforeEach(function() {
-      agent.config.attributes.enabled = true
+      agent.config.capture_params = true
     })
 
     it('should copy the provided params onto the segment parameters', function() {
@@ -1189,21 +1190,13 @@ describe('WebFrameworkShim', function() {
       })
     })
 
-    it('should not obey the attributes.enabled configuration', function() {
-      agent.config.attributes.enabled = false
+    it('should obey the capture_params configuration', function() {
+      agent.config.capture_params = false
       var segment = {parameters: {foo: 'other', bang: 'bam'}}
       shim.getSegment = function() { return segment }
       shim.captureUrlParams({foo: 'bar', biz: 'baz'})
       expect(segment).property('parameters')
-        .to.deep.equal({foo: 'other', biz: 'baz', bang: 'bam'})
-    })
-
-    it('should obey high_security mode', function() {
-      agent.config.high_security = true
-      var segment = {parameters: {foo: 'other'}}
-      shim.getSegment = function() { return segment }
-      shim.captureUrlParams({foo: 'bar', biz: 'baz'})
-      expect(segment).property('parameters').to.deep.equal({foo: 'other'})
+        .to.deep.equal({foo: 'other', bang: 'bam'})
     })
 
     it('should not throw when out of a transaction', function() {

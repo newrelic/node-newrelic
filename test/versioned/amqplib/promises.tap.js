@@ -40,9 +40,7 @@ tap.test('amqplib promise instrumentation', function(t) {
     })
 
     agent = helper.instrumentMockedAgent(null, {
-      attributes: {
-        enabled: true
-      }
+      capture_params: true
     })
 
     var params = {

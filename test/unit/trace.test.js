@@ -1,7 +1,6 @@
 'use strict'
 
 var chai = require('chai')
-var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
 var codec = require('../../lib/util/codec')
@@ -73,19 +72,19 @@ describe('Trace', function() {
   })
 
   it('should send host display name when set by user', function() {
-    agent.config.attributes.enabled = true
+    agent.config.capture_params = true
     agent.config.process_host.display_name = 'test-value'
 
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
+    expect(trace.attributes)
       .deep.equal({'host.displayName': 'test-value'})
   })
 
   it('should not send host display name when not set by user', function() {
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).deep.equal({})
+    expect(trace.attributes).deep.equal({})
   })
 
   describe('when inserting segments', function() {
@@ -399,27 +398,6 @@ describe('Trace', function() {
     })
   })
 
-  describe('#addAttribute', function() {
-    var trace = null
-
-    beforeEach(function() {
-      agent.config.attributes.enabled = true
-      trace = new Transaction(agent).trace
-    })
-
-    it('does not add attribute if key length limit is exceeded', function() {
-      var tooLong = [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
-      ].join(' ')
-      trace.addAttribute(tooLong, 'will fail')
-      var attributes = Object.keys(trace.attributes.attributes)
-      expect(attributes.length).to.equal(0)
-    })
-  })
-
   describe('#generateJSON', function() {
     var details
 
@@ -487,10 +465,10 @@ describe('Trace', function() {
 function makeTrace(agent, callback) {
   var DURATION = 33
   var URL = '/test?test=value'
-  agent.config.attributes.enabled = true
+  agent.config.capture_params = true
 
   var transaction = new Transaction(agent)
-  transaction.trace.addAttribute('request.uri', URL)
+  // transaction.trace.addAttribute('request.uri', URL)
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -502,8 +480,8 @@ function makeTrace(agent, callback) {
   trace.setDurationInMillis(DURATION, 0)
 
   var web = trace.root.add(URL)
-  transaction.baseSegment = web
   transaction.finalizeNameFromUri(URL, 200)
+  web.markAsWeb(URL)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
@@ -530,7 +508,6 @@ function makeTrace(agent, callback) {
         'WebTransaction/NormalizedUri/*',
         {
           'nr_exclusive_duration_millis': 8,
-          'request.uri': '/test?test=value',
           'test': 'value'
         },
         [
@@ -551,7 +528,6 @@ function makeTrace(agent, callback) {
     rootSegment,
     {
       agentAttributes: {
-        'request.uri': '/test?test=value',
         'test': 'value'
       },
       userAttributes: {},

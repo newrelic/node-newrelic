@@ -458,7 +458,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
         agent = helper.instrumentMockedAgent()
 
         // capture attributes
-        agent.config.attributes.enabled = true
+        agent.config.capture_params = true
 
         Memcached = require('memcached')
         memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
@@ -490,7 +490,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
     t.test('get() when disabled', function(t) {
       t.plan(2)
-      agent.config.attributes.enabled = false
+      agent.config.capture_params = false
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
         memcached.get('foo', function(err) {
@@ -499,8 +499,8 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
             t.equals(
-              segment.parameters.key, "\"foo\"",
-              'should still have the get key as a parameter'
+              segment.parameters.key, undefined,
+              'should not have the get key as a parameter'
             )
           })
         })

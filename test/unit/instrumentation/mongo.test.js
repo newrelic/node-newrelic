@@ -117,7 +117,7 @@ describe('agent instrumentation of MongoDB', function() {
 
       agent = helper.loadMockedAgent()
       shim = new DatastoreShim(agent, 'mongodb')
-      agent.config.attributes.enabled = true
+      agent.config.capture_params = true
       agent.config.attributes.exclude = ['other']
 
       initialize(agent, mockodb, 'mockodb', shim)

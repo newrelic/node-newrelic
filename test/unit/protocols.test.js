@@ -9,7 +9,7 @@ describe('errors', function() {
   var agent
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    agent.config.attributes.enabled = true
+    agent.config.capture_params = true
     agent.config.run_id = 1
   })
   afterEach(function() {
