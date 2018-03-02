@@ -3,6 +3,9 @@
 var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 
+var DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
+
+
 tap.test('Agent#_sendErrors', function(t) {
   t.plan(2)
 
@@ -83,19 +86,19 @@ tap.test('Agent#_sendErrors', function(t) {
 
       helper.runInTransaction(agent, function(tx) {
         tx.finalizeNameFromUri('/nonexistent', 501)
-        tx.addAgentAttribute('foo', 'bar')
-        tx.addAgentAttribute('request.uri', '/nonexistent')
+        tx.trace.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
+        tx.trace.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
         agent.errors.add(tx, new Error('test error'))
         tx.end()
       })
     })
   }
-
-  function setupAgent(t, config) {
-    var agent = helper.loadMockedAgent(null, config)
-    t.tearDown(function() {
-      helper.unloadAgent(agent)
-    })
-    return agent
-  }
 })
+
+function setupAgent(t, config) {
+  var agent = helper.loadMockedAgent(null, config)
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
+  return agent
+}

@@ -1,5 +1,7 @@
 'use strict'
 
+var _ = require('lodash')
+var Config = require('../../../lib/config')
 var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 var tests = require('../../lib/cross_agent_tests/attribute_configuration')
@@ -14,21 +16,31 @@ var DEST_TO_ID = {
 tap.test('Attribute include/exclude configurations', function(t) {
   t.plan(tests.length)
 
+  var agent = helper.loadMockedAgent()
+  t.tearDown(function() {
+    helper.unloadAgent(agent)
+  })
+
   tests.forEach(function(test) {
     runTest(t, test)
   })
 })
 
 function runTest(t, test) {
-  // Load the agent and set the test configuration as if from the server.
-  // We don't actually need the agent, so unload it immediately after.
-  var agent = helper.loadMockedAgent(null, {attributes: {enabled: true}})
-  agent.config.onConnect(test.config)
-  helper.unloadAgent(agent)
+  // The tests list the configurations in flat, dot notation (i.e.
+  // `transaction_tracer.attributes.enabled`). We need to expand that into a
+  // deep object in order for our config to load it as though it came from the
+  // `newrelic.js` file.
+  var config = Object.keys(test.config).reduce(function(conf, key) {
+    return _.set(conf, key, test.config[key])
+  }, {})
+  config = new Config(config)
+
 
   // Filter the destinations.
   var destinations = test.input_default_destinations.filter(function(dest) {
-    return agent.config.attributeFilter.test(DEST_TO_ID[dest], test.input_key)
+    var destId = DEST_TO_ID[dest]
+    return config.attributeFilter.filter(destId, test.input_key) & destId
   })
 
   // Did we pass?
@@ -40,11 +52,11 @@ function runTest(t, test) {
       input: test.config,
       key: test.input_key,
       ___: '___',
-      attrs: agent.config.attributes,
-      trace_attrs: agent.config.transaction_tracer.attributes,
-      tx_event_attrs: agent.config.transaction_events.attributes,
-      error_attrs: agent.config.error_collector.attributes,
-      browser_attrs: agent.config.browser_monitoring.attributes
+      attrs: config.attributes,
+      trace_attrs: config.transaction_tracer.attributes,
+      tx_event_attrs: config.transaction_events.attributes,
+      error_attrs: config.error_collector.attributes,
+      browser_attrs: config.browser_monitoring.attributes
     }, null, 2))
   }
 }

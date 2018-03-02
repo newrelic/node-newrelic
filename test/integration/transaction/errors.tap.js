@@ -13,6 +13,8 @@ test('errors in web transactions should gather the query params', function(t) {
   var http = require('http')
 
   agent.config.attributes.enabled = true
+  agent.config.attributes.include = ['request.parameters.*']
+  agent.config.emit('attributes.include')
 
   http.createServer(function(req, res) {
     req.resume()
@@ -64,12 +66,12 @@ test('errors in web transactions should gather the query params', function(t) {
       'should have collected the query, request, and response params'
     )
     t.equal(
-      attributes.agentAttributes.some,
+      attributes.agentAttributes['request.parameters.some'],
       'param',
       'should have collected a query param with a value'
     )
     t.equal(
-      attributes.agentAttributes.data,
+      attributes.agentAttributes['request.parameters.data'],
       true,
       'should have collected a query param without a value'
     )
@@ -88,6 +90,8 @@ test('multiple errors in web transactions should gather the query params', funct
   ]
 
   agent.config.attributes.enabled = true
+  agent.config.attributes.include = ['request.parameters.*']
+  agent.config.emit('attributes.include')
 
   http.createServer(function(req, res) {
     req.resume()
@@ -144,12 +148,12 @@ test('multiple errors in web transactions should gather the query params', funct
         'should have collected the query, request, and response params'
       )
       t.equal(
-        attributes.agentAttributes.some,
+        attributes.agentAttributes['request.parameters.some'],
         'param',
         'should have collected a query param with a value'
       )
       t.equal(
-        attributes.agentAttributes.data,
+        attributes.agentAttributes['request.parameters.data'],
         true,
         'should have collected a query param without a value'
       )
