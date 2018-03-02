@@ -5,7 +5,6 @@ var should = chai.should()
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
 var API = require('../../api')
-var AttributeFilter = require('../../lib/config/attribute-filter')
 var Metrics = require('../../lib/metrics')
 var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
@@ -18,7 +17,7 @@ describe('Transaction', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent(null, {
-      attributes: {enabled: true}
+      capture_params: true
     })
     trans = new Transaction(agent)
   })
@@ -212,12 +211,6 @@ describe('Transaction', function() {
             .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
         })
 
-        it('should copy parameters from the name stack', function() {
-          trans.finalizeNameFromUri('/some/random/path', 200)
-          var attrs = trans.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
-          expect(attrs).to.deep.equal({foo: 'bar', bar: 'bang'})
-        })
-
         describe('and high_security is on', function() {
           beforeEach(function() {
             agent.config.high_security = true
@@ -227,14 +220,6 @@ describe('Transaction', function() {
             trans.finalizeNameFromUri('/some/random/path', 200)
             expect(trans.name)
               .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
-          })
-
-          it('should not copy parameters from the name stack', function() {
-            trans.finalizeNameFromUri('/some/random/path', 200)
-            var attrs = trans.trace.attributes.get(
-              AttributeFilter.DESTINATIONS.TRANS_TRACE
-            )
-            expect(attrs).to.deep.equal({})
           })
         })
       })

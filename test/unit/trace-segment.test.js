@@ -1,7 +1,6 @@
 'use strict'
 
 var chai = require('chai')
-var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
@@ -160,7 +159,7 @@ describe('TraceSegment', function() {
     var webChild
 
     beforeEach(function() {
-      agent.config.attributes.enabled = true
+      agent.config.capture_params = true
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -169,8 +168,8 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
+      webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
@@ -219,7 +218,7 @@ describe('TraceSegment', function() {
     var webChild, trace
 
     beforeEach(function() {
-      agent.config.attributes.enabled = true
+      agent.config.capture_params = true
 
       var transaction = new Transaction(agent)
       trace = transaction.trace
@@ -235,9 +234,9 @@ describe('TraceSegment', function() {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      transaction.trace.addAttributes(params)
-      transaction.baseSegment = webChild
+      webChild.parameters = params
       transaction.finalizeNameFromUri(url, 200)
+      webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
@@ -248,18 +247,16 @@ describe('TraceSegment', function() {
     })
 
     it('should have attributes on the trace', function() {
-      expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).to.exist()
+      expect(trace.attributes).to.exist()
     })
 
     it('should have the positional parameters from the params array', function() {
-      var attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      expect(attributes[0]).equal('first')
-      expect(attributes[1]).equal('another')
+      expect(trace.attributes[0]).equal('first')
+      expect(trace.attributes[1]).equal('another')
     })
 
     it('should have the named parameter from the params array', function() {
-      expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
-        .to.have.property('test3', '50')
+      expect(trace.attributes).to.have.property('test3', '50')
     })
 
     it('should serialize the segment with the parameters', function() {
@@ -279,11 +276,11 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with attributes.enabled set to false', function() {
+  describe('with capture_params set to false', function() {
     var webChild
 
     beforeEach(function() {
-      agent.config.attributes.enabled = false
+      agent.config.capture_params = false
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -292,8 +289,8 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
+      webChild.markAsWeb(url)
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
@@ -319,13 +316,12 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('with attributes.enabled set', function() {
+  describe('with capture_params set', function() {
     var webChild
 
     beforeEach(function() {
-      agent.config.attributes.enabled = true
-      agent.config.attributes.exclude = ['test1', 'test4']
-      agent.config.emit('attributes.exclude')
+      agent.config.capture_params = true
+      agent.config.ignored_params = ['test1', 'test4']
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
@@ -334,7 +330,6 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
       webChild.markAsWeb(url)
 
@@ -359,6 +354,10 @@ describe('TraceSegment', function() {
 
     it('should set bare parameters to true (as in present)', function() {
       expect(webChild.parameters.test2).equal(true)
+    })
+
+    it('should not have filtered parameter', function() {
+      should.not.exist(webChild.parameters.test4)
     })
 
     it('should serialize the segment with the parameters', function() {

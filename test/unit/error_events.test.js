@@ -54,7 +54,7 @@ describe('Error events', function() {
       var payload = null
 
       beforeEach(function(done) {
-        agent.config.attributes.enabled = true
+        agent.config.capture_params = true
 
         agent.collector.isConnected = function() { return true }
         agent.collector.metricData = function(_payload, cb) { cb() }

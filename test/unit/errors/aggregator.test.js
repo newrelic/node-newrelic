@@ -42,9 +42,7 @@ describe('Errors', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent(null, {
-      attributes: {
-        enabled: true
-      }
+      capture_params: true
     })
   })
 
@@ -81,7 +79,7 @@ describe('Errors', function() {
     })
 
     it('records custom parameters', function() {
-      trans.trace.addCustomAttribute('a', 'A')
+      trans.trace.custom.a = 'A'
       error.add(trans, new Error())
       agent.errors.onTransactionFinished(trans, agent.metrics)
 
@@ -100,7 +98,7 @@ describe('Errors', function() {
     })
 
     it('merge custom parameters', function() {
-      trans.trace.addCustomAttribute('a', 'A')
+      trans.trace.custom.a = 'A'
       error.add(trans, new Error(), {b: 'B'})
       agent.errors.onTransactionFinished(trans, agent.metrics)
 
@@ -563,10 +561,8 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         transaction.statusCode = 501
         transaction.url = '/'
-        transaction.trace.addAttributes({
-          test_param: 'a value',
-          thing: true
-        })
+        transaction.trace.addAttribute('test_param', 'a value')
+        transaction.trace.addAttribute('thing', true)
 
         tracer.add(transaction, null)
         tracer.onTransactionFinished(transaction, agent.metrics)
@@ -611,7 +607,8 @@ describe('Errors', function() {
       })
     })
 
-    it('with attributes.enabled disabled', function() {
+    it('with capture_params disabled', function() {
+      agent.config.capture_params = false
       var tracer = agent.errors
 
       var transaction = new Transaction(agent)
@@ -628,9 +625,8 @@ describe('Errors', function() {
       should.not.exist(params.request_params)
     })
 
-    it('with attributes.enabled and attributes.exclude set', function() {
-      agent.config.attributes.exclude = ['thing']
-      agent.config.emit('attributes.exclude')
+    it('with capture_params and ignored_params set', function() {
+      agent.config.ignored_params = ['thing']
       var tracer = agent.errors
 
       var transaction = new Transaction(agent)
@@ -744,10 +740,8 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         var exception = new TypeError('wanted JSON, got XML')
 
-        transaction.trace.addAttributes({
-          test_param: 'a value',
-          thing: true
-        })
+        transaction.trace.addAttribute('test_param', 'a value')
+        transaction.trace.addAttribute('thing', true)
         transaction.url = '/test_action.json'
 
         tracer.add(transaction, exception)
@@ -847,10 +841,8 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         var exception = 'wanted JSON, got XML'
 
-        transaction.trace.addAttributes({
-          test_param: 'a value',
-          thing: true
-        })
+        transaction.trace.addAttribute('test_param', 'a value')
+        transaction.trace.addAttribute('thing', true)
 
         transaction.url = '/test_action.json'
 
@@ -1278,18 +1270,6 @@ describe('Errors', function() {
         var attributes = getFirstErrorIntrinsicAttributes(aggregator)
         expect(attributes).to.be.a('Object')
       })
-
-      it('should contain supplied custom attributes, with filter rules', function() {
-        agent.config.error_collector.attributes.exclude.push('c')
-        agent.config.emit('error_collector.attributes.exclude')
-        var error = new Error('some error')
-        var customAttributes = { a: 'b', c: 'ignored' }
-        aggregator.add(null, error, customAttributes)
-
-        var attributes = getFirstErrorCustomAttributes(aggregator)
-        expect(attributes.a).equal('b')
-        expect(attributes.c).to.be.undefined()
-      })
     })
 
     describe('on transaction finished', function() {
@@ -1363,9 +1343,9 @@ describe('Errors', function() {
       })
 
       it('should merge supplied custom parameters with custom parameters on the trace', function(done) {
-        agent.config.attributes.enabled = true
+        agent.config.capture_params = true
         var transaction = createTransaction(agent, 500)
-        transaction.trace.addCustomAttribute('a', 'b')
+        transaction.trace.custom.a = 'b'
         var error = new Error('some error')
 
         var customParameters = { c: 'd' }
@@ -1525,9 +1505,8 @@ describe('Errors', function() {
         })
 
         it('should contain supplied custom attributes, with filter rules', function() {
-          agent.config.attributes.enabled = true
-          agent.config.attributes.exclude.push('c')
-          agent.config.emit('attributes.exclude')
+          agent.config.capture_params = true
+          agent.config.ignored_params.push('c')
           var error = new Error('some error')
           var customAttributes = { a: 'b', c: 'ignored' }
           aggregator.add(null, error, customAttributes)
@@ -1539,7 +1518,7 @@ describe('Errors', function() {
         })
 
         it('should contain agent attributes', function() {
-          agent.config.attributes.enabled = true
+          agent.config.capture_params = true
           var error = new Error('some error')
           aggregator.add(null, error, { a: 'a' })
 
@@ -1583,9 +1562,8 @@ describe('Errors', function() {
         })
 
         it('should contain expected attributes, with filter rules', function() {
-          agent.config.attributes.enabled = true
-          agent.config.attributes.exclude = ['c']
-          agent.config.emit('attributes.exclude')
+          agent.config.capture_params = true
+          agent.config.ignored_params = ['c']
           var error = new Error('some error')
           var customAttributes = { a: 'b', c: 'ignored' }
           api.noticeError(error, customAttributes)
@@ -1764,8 +1742,7 @@ describe('Errors', function() {
       })
 
       it('should contain custom attributes, with filter rules', function(done) {
-        agent.config.attributes.exclude.push('c')
-        agent.config.emit('attributes.exclude')
+        agent.config.ignored_params.push('c')
         var transaction = createTransaction(agent, 500)
         var error = new Error('some error')
         var customAttributes = { a: 'b', c: 'ignored' }
@@ -1781,7 +1758,7 @@ describe('Errors', function() {
 
       it('should merge new custom attributes with trace custom attributes', function(done) {
         var transaction = createTransaction(agent, 500)
-        transaction.trace.addCustomAttribute('a', 'b')
+        transaction.trace.custom.a = 'b'
         var error = new Error('some error')
 
         var customAttributes = { c: 'd' }
@@ -1797,7 +1774,7 @@ describe('Errors', function() {
       })
 
       it('should contain agent attributes', function() {
-        agent.config.attributes.enabled = true
+        agent.config.capture_params = true
         var transaction = createTransaction(agent, 500)
         transaction.trace.addAttribute('host.displayName', 'myHost')
         var error = new Error('some error')

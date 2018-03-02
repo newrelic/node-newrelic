@@ -1,6 +1,5 @@
 'use strict'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var test = tap.test
 var http = require('http')
@@ -12,7 +11,7 @@ var HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
 test("built-in http instrumentation should handle internal & external requests",
      function(t) {
   var agent = helper.instrumentMockedAgent()
-  agent.config.attributes.enabled = true
+  agent.config.capture_params = true
 
   var TEST_INTERNAL_PORT = 8123
   var TEST_INTERNAL_PATH = '/path'
@@ -132,7 +131,7 @@ test("built-in http instrumentation should handle internal & external requests",
         'should associate outbound HTTP requests with the inbound transaction'
       )
 
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      var attributes = transaction.trace.attributes
 
       HTTP_ATTRS.forEach(function(key) {
         t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)

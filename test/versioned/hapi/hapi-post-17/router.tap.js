@@ -17,7 +17,7 @@ tap.test('Hapi router introspection', function(t) {
     server = utils.getServer()
 
     // disabled by default
-    agent.config.attributes.enabled = true
+    agent.config.capture_params = true
 
     done()
   })
