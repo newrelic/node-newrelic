@@ -6,50 +6,57 @@ var join = require('path').join
 var https = require('https')
 var url = require('url')
 var collector = require('../lib/fake-collector')
+var semver = require('semver')
 var RemoteMethod = require('../../lib/collector/remote-method')
 
-tap.test('DataSender (callback style) talking to fake collector', function(t) {
-  var config = {
-    host: 'ssl.lvh.me',
-    port: 8765,
-    run_id: 1337,
-    ssl: true,
-    license_key: 'whatever',
-    version: '0'
-  }
-  config.certificates = [
-    read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
-  ]
-  var method = new RemoteMethod('preconnect', config)
-
-  collector({port: 8765}, function(error, server) {
-    if (error) {
-      t.fail(error)
-      return t.end()
+// Specifying custom certs on 0.10 sends the process into a spin lock,
+// so we skip it.
+tap.test(
+  'DataSender (callback style) talking to fake collector',
+  {skip: semver.satisfies(process.version, '0.10.x')},
+  function(t) {
+    var config = {
+      host: 'ssl.lvh.me',
+      port: 8765,
+      run_id: 1337,
+      ssl: true,
+      license_key: 'whatever',
+      version: '0'
     }
+    config.certificates = [
+      read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
+    ]
+    var method = new RemoteMethod('preconnect', config)
 
-    t.tearDown(function() {
-      server.close()
-    })
-
-    method._post('[]', function(error, results, json) {
+    collector({port: 8765}, function(error, server) {
       if (error) {
         t.fail(error)
         return t.end()
       }
 
-      t.equal(results, 'collector-1.lvh.me:8089', 'parsed result should come through')
-      t.notOk(json.validations, 'fake collector should find no irregularities')
-      t.equal(
-        json.return_value,
-        'collector-1.lvh.me:8089',
-        'collector returns expected collector redirect'
-      )
+      t.tearDown(function() {
+        server.close()
+      })
 
-      t.end()
+      method._post('[]', function(error, results, json) {
+        if (error) {
+          t.fail(error)
+          return t.end()
+        }
+
+        t.equal(results, 'collector-1.lvh.me:8089', 'parsed result should come through')
+        t.notOk(json.validations, 'fake collector should find no irregularities')
+        t.equal(
+          json.return_value,
+          'collector-1.lvh.me:8089',
+          'collector returns expected collector redirect'
+        )
+
+        t.end()
+      })
     })
-  })
-})
+  }
+)
 
 tap.test('remote method to get redirect host', function(t) {
   t.plan(2)
