@@ -738,12 +738,6 @@ describe("the agent configuration", function() {
       expect(config.transaction_tracer.enabled).equal(false)
     })
 
-    it('should disable transaction tracer attributes when told to', function() {
-      expect(config.transaction_tracer.attributes.enabled).equal(true)
-      config.onConnect({'transaction_tracer.attributes.enabled': false})
-      expect(config.transaction_tracer.attributes.enabled).equal(false)
-    })
-
     it("should always respect collect_errors", function() {
       expect(config.collect_errors).equal(true)
       config.onConnect({'collect_errors': false})
@@ -754,12 +748,6 @@ describe("the agent configuration", function() {
       expect(config.error_collector.enabled).equal(true)
       config.onConnect({'error_collector.enabled': false})
       expect(config.error_collector.enabled).equal(false)
-    })
-
-    it('should disable the error attributes when told to', function() {
-      expect(config.error_collector.attributes.enabled).equal(true)
-      config.onConnect({'error_collector.attributes.enabled': false})
-      expect(config.error_collector.attributes.enabled).equal(false)
     })
 
     it("should set apdex_t", function() {
@@ -826,22 +814,10 @@ describe("the agent configuration", function() {
       expect(config.ignored_params).eql(['a', 'b'])
     })
 
-    it('should configure global excluded attributes', function() {
-      expect(config.attributes.exclude).eql([])
-      config.onConnect({'attributes.exclude': ['a', 'b']})
-      expect(config.attributes.exclude).eql(['a', 'b'])
-    })
-
     it("should configure ignored params without stomping local config", function() {
       config.ignored_params = ['b', 'c']
       config.onConnect({'ignored_params': ['a', 'b']})
       expect(config.ignored_params).eql(['b', 'c', 'a'])
-    })
-
-    it('should configure excluded attributes without stomping local config', function() {
-      config.attributes.exclude = ['b', 'c']
-      config.onConnect({'attributes.exclude': ['a', 'b']})
-      expect(config.attributes.exclude).eql(['b', 'c', 'a'])
     })
 
     it('should configure cross application tracing', function() {
@@ -1070,13 +1046,6 @@ describe("the agent configuration", function() {
         config.onConnect({'transaction_events.enabled': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
-    })
-
-    it("shouldn't blow up when transaction_events.attributes.enabled is set", function() {
-      expect(function() {
-        config.onConnect({'transaction_events.attributes.enabled': false})
-      }).not.throws()
-      expect(config.transaction_events.attributes.enabled).equals(false)
     })
 
     describe("when data_report_period is set", function() {

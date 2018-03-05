@@ -17,23 +17,32 @@ var TEST_URL = 'http://' + TEST_HOST + ':'
 tap.test('test attributes.enabled for express', function(t) {
   t.autoend()
 
+  var agent = null
+  t.beforeEach(function(done) {
+    agent = helper.instrumentMockedAgent(null, {
+      apdex_t: 1,
+      allow_all_headers: false,
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
+    done()
+  })
+
+  t.afterEach(function(done) {
+    helper.unloadAgent(agent)
+    done()
+  })
+
   t.test('no variables', function(t) {
-    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
 
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
-
-    // set apdexT so apdex stats will be recorded
-    agent.config.apdex_t = 1
-
-    // set attributes.enabled so we get the data we need.
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -74,22 +83,13 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('route variables', function(t) {
-    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
 
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
-
-    // set apdexT so apdex stats will be recorded
-    agent.config.apdex_t = 1
-
-    // set attributes.enabled so we get the data we need.
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -101,7 +101,10 @@ tap.test('test attributes.enabled for express', function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '5', 'Trace attributes include `id` route param')
+      t.equal(
+        attributes['request.parameters.id'], '5',
+        'Trace attributes include `id` route param'
+      )
     })
 
     helper.randomPort(function(_port) {
@@ -121,22 +124,13 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('query variables', {timeout : 1000}, function(t) {
-    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
 
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
-
-    // set apdexT so apdex stats will be recorded
-    agent.config.apdex_t = 1
-
-    // set attributes.enabled so we get the data we need.
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -148,7 +142,10 @@ tap.test('test attributes.enabled for express', function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.name, 'bob', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.name'], 'bob',
+        'Trace attributes include `name` query param'
+      )
     })
 
     helper.randomPort(function(_port) {
@@ -168,22 +165,13 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('route and query variables', function(t) {
-    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
 
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
-
-    // set apdexT so apdex stats will be recorded
-    agent.config.apdex_t = 1
-
-    // set attributes.enabled so we get the data we need.
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       t.ok(agent.getTransaction(), 'transaction is available')
@@ -195,8 +183,14 @@ tap.test('test attributes.enabled for express', function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '5', 'Trace attributes include `id` route param')
-      t.equal(attributes.name, 'bob', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.id'], '5',
+        'Trace attributes include `id` route param'
+      )
+      t.equal(
+        attributes['request.parameters.name'], 'bob',
+        'Trace attributes include `name` query param'
+      )
     })
 
     helper.randomPort(function(_port) {
@@ -216,22 +210,13 @@ tap.test('test attributes.enabled for express', function(t) {
   })
 
   t.test('query params mask route attributes', function(t) {
-    var agent = helper.instrumentMockedAgent()
     var app = require('express')()
     var server = require('http').createServer(app)
     var port = null
 
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
-
-    // set apdexT so apdex stats will be recorded
-    agent.config.apdex_t = 1
-
-    // set attributes.enabled so we get the data we need.
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
       res.end()
@@ -239,7 +224,10 @@ tap.test('test attributes.enabled for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '6', 'attributes should include query params')
+      t.equal(
+        attributes['request.parameters.id'], '6',
+        'attributes should include query params'
+      )
       t.end()
     })
 

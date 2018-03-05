@@ -169,6 +169,10 @@ describe('Transaction', function() {
 
   describe('when being named', function() {
     beforeEach(function() {
+      agent.config.attributes.enabled = true
+      agent.config.attributes.include = ['request.parameters.*']
+      agent.config.emit('attributes.include')
+
       trans = new Transaction(agent)
     })
 
@@ -202,7 +206,7 @@ describe('Transaction', function() {
           trans.nameState.setPrefix('Restify')
           trans.nameState.setVerb('COOL')
           trans.nameState.setDelimiter('/')
-          trans.nameState.appendPath('/foo/:foo', {foo: 'bar'})
+          trans.nameState.appendPath('/foo/:foo', {foo: 'biz'})
           trans.nameState.appendPath('/bar/:bar', {bar: 'bang'})
         })
 
@@ -215,12 +219,17 @@ describe('Transaction', function() {
         it('should copy parameters from the name stack', function() {
           trans.finalizeNameFromUri('/some/random/path', 200)
           var attrs = trans.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
-          expect(attrs).to.deep.equal({foo: 'bar', bar: 'bang'})
+          expect(attrs).to.deep.equal({
+            'request.parameters.foo': 'biz',
+            'request.parameters.bar': 'bang'
+          })
         })
 
         describe('and high_security is on', function() {
           beforeEach(function() {
             agent.config.high_security = true
+            agent.config._applyHighSecurity()
+            agent.config.emit('attributes.include')
           })
 
           it('should still name the transaction using the name stack', function() {

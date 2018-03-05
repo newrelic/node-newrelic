@@ -66,7 +66,7 @@ attributes.forEach(function(attr) {
     name: attr,
     fn: function(agent) {
       helper.runInTransaction(agent, function(tx) {
-        tx.trace.addAttribute(attr, 'value')
+        tx.trace.addAttribute(0xffff, attr, 'value')
       })
     }
   })

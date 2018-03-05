@@ -161,12 +161,13 @@ describe('TraceSegment', function() {
 
     beforeEach(function() {
       agent.config.attributes.enabled = true
+      agent.config.attributes.include.push('request.parameters.*')
+      agent.config.emit('attributes.include')
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
       var segment = new TraceSegment(transaction, 'UnitTest')
       var url = '/test?test1=value1&test2&test3=50&test4='
-
 
       webChild = segment.add(url)
       transaction.baseSegment = webChild
@@ -185,33 +186,31 @@ describe('TraceSegment', function() {
     })
 
     it('should have the parameters that were passed in the query string', function() {
-      expect(webChild.parameters.test1).equal('value1')
-      expect(webChild.parameters.test3).equal('50')
+      expect(webChild.parameters).to.have.property('request.parameters.test1', 'value1')
+      expect(webChild.parameters).to.have.property('request.parameters.test3', '50')
     })
 
     it('should set bare parameters to true (as in present)', function() {
-      expect(webChild.parameters.test2).equal(true)
+      expect(webChild.parameters).to.have.property('request.parameters.test2', true)
     })
 
     it('should set parameters with empty values to ""', function() {
-      expect(webChild.parameters.test4).equal('')
+      expect(webChild.parameters).to.have.property('request.parameters.test4', '')
     })
 
     it('should serialize the segment with the parameters', function() {
-      var expected = [
+      expect(webChild.toJSON()).to.deep.equal([
         0,
         1,
-        'WebTransaction/NormalizedUri/*',
-        {
-          nr_exclusive_duration_millis : 1,
-          test1 : 'value1',
-          test2 : true,
-          test3 : '50',
-          test4 : ''
+        'WebTransaction/NormalizedUri/*', {
+          'nr_exclusive_duration_millis': 1,
+          'request.parameters.test1': 'value1',
+          'request.parameters.test2': true,
+          'request.parameters.test3': '50',
+          'request.parameters.test4': ''
         },
         []
-      ]
-      expect(webChild.toJSON()).deep.equal(expected)
+      ])
     })
   })
 
@@ -235,7 +234,7 @@ describe('TraceSegment', function() {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      transaction.trace.addAttributes(params)
+      transaction.trace.addAttributes(DESTINATIONS.ALL, params)
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 
@@ -324,7 +323,11 @@ describe('TraceSegment', function() {
 
     beforeEach(function() {
       agent.config.attributes.enabled = true
-      agent.config.attributes.exclude = ['test1', 'test4']
+      agent.config.attributes.include = ['request.parameters.*']
+      agent.config.attributes.exclude = [
+        'request.parameters.test1',
+        'request.parameters.test4'
+      ]
       agent.config.emit('attributes.exclude')
 
       var transaction = new Transaction(agent)
@@ -350,30 +353,33 @@ describe('TraceSegment', function() {
       should.exist(webChild.parameters)
     })
 
-    it('should have filtered the parameters that were passed in the query string',
-       function() {
-      should.not.exist(webChild.parameters.test1)
-      expect(webChild.parameters.test3).equal('50')
-      should.not.exist(webChild.parameters.test4)
+    it('should filter the parameters that were passed in the query string', function() {
+      expect(webChild.parameters).to.not.have.property('test1')
+      expect(webChild.parameters).to.not.have.property('request.parameters.test1')
+
+      expect(webChild.parameters).to.not.have.property('test3')
+      expect(webChild.parameters).to.have.property('request.parameters.test3', '50')
+
+      expect(webChild.parameters).to.not.have.property('test4')
+      expect(webChild.parameters).to.not.have.property('request.parameters.test4')
     })
 
     it('should set bare parameters to true (as in present)', function() {
-      expect(webChild.parameters.test2).equal(true)
+      expect(webChild.parameters).to.not.have.property('test2')
+      expect(webChild.parameters).to.have.property('request.parameters.test2', true)
     })
 
     it('should serialize the segment with the parameters', function() {
-      var expected = [
+      expect(webChild.toJSON()).deep.equal([
         0,
         1,
-        'WebTransaction/NormalizedUri/*',
-        {
-          nr_exclusive_duration_millis : 1,
-          test2: true,
-          test3: '50'
+        'WebTransaction/NormalizedUri/*', {
+          'nr_exclusive_duration_millis': 1,
+          'request.parameters.test2': true,
+          'request.parameters.test3': '50'
         },
         []
-      ]
-      expect(webChild.toJSON()).deep.equal(expected)
+      ])
     })
   })
 

@@ -1,9 +1,11 @@
 'use strict'
 
-var helper = require('../lib/agent_helper')
 var chai = require('chai')
-var expect = chai.expect
+var helper = require('../lib/agent_helper')
 var Transaction = require('../../lib/transaction')
+
+var DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
+var expect = chai.expect
 
 
 describe('Analytics events', function() {
@@ -25,7 +27,7 @@ describe('Analytics events', function() {
     })
 
     it('event should contain those attributes', function() {
-      trans.trace.addAttribute('test', 'TEST')
+      trans.trace.addAttribute(DESTS.TRANS_EVENT, 'test', 'TEST')
       agent._addEventFromTransaction(trans)
 
       var first = 0

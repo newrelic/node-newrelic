@@ -2,6 +2,8 @@
 
 var helper = require('../lib/agent_helper')
 var chai = require('chai')
+
+var DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
 var expect  = chai.expect
 
 
@@ -69,8 +71,8 @@ describe('Error events', function() {
         })
 
         helper.runInTransaction(agent, function(tx) {
-          tx.addAgentAttribute('foo', 'bar')
-          tx.addAgentAttribute('request.uri', '/my/awesome/url')
+          tx.trace.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
+          tx.trace.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/my/awesome/url')
           agent.errors.add(tx, new Error('some error'))
           tx.statusCode = 500
           setTimeout(function() {

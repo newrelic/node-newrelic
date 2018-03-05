@@ -12,7 +12,12 @@ tap.test('Restify router', function(t) {
   var server = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     server = require('restify').createServer()
     done()
   })
@@ -49,7 +54,10 @@ tap.test('Restify router', function(t) {
         'Restify/GET//test/:id',
         'should have partial name for apdex'
       )
-      t.equal(web.parameters.id, '31337', 'namer gets parameters out of route')
+      t.equal(
+        web.parameters['request.parameters.id'], '31337',
+        'namer gets parameters out of route'
+      )
     })
 
     server.get('/test/:id', function(req, res, next) {

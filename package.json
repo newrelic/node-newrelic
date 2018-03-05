@@ -138,6 +138,7 @@
     "got": "^8.0.1",
     "ioredis": "*",
     "jsdoc": "^3.4.0",
+    "lodash": "^4.17.5",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mkdirp": "*",

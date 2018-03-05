@@ -10,18 +10,30 @@ var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
 test("Restify capture params introspection", function(t) {
   t.autoend()
 
+  var agent = null
+
+  t.beforeEach(function(done) {
+    agent = helper.instrumentMockedAgent(null, {
+      allow_all_headers: false,
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
+    done()
+  })
+
+  t.afterEach(function(done) {
+    helper.unloadAgent(agent)
+    done()
+  })
+
   t.test('simple case with no params', function(t) {
-    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
-
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
-
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
 
     agent.on('transactionFinished', function(transaction) {
@@ -58,24 +70,21 @@ test("Restify capture params introspection", function(t) {
   })
 
   t.test('case with route params', function(t) {
-    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
-
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
-
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
+      t.equal(
+        attributes['request.parameters.id'], '1337',
+        'Trace attributes include `id` route param'
+      )
     })
 
     server.get('/test/:id', function(req, res, next) {
@@ -96,24 +105,21 @@ test("Restify capture params introspection", function(t) {
   })
 
   t.test('case with query params', function(t) {
-    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
-
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
-
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.name, 'restify', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.name'], 'restify',
+        'Trace attributes include `name` query param'
+      )
     })
 
     server.get('/test', function(req, res, next) {
@@ -135,25 +141,25 @@ test("Restify capture params introspection", function(t) {
   })
 
   t.test('case with both route and query params', function(t) {
-    var agent  = helper.instrumentMockedAgent()
     var server = require('restify').createServer()
     var port = null
 
-
-    agent.config.attributes.enabled = true
-    agent.config.allow_all_headers = false
-
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
       var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
-      t.equal(attributes.name, 'restify', 'Trace attributes include `name` query param')
+      t.equal(
+        attributes['request.parameters.id'], '1337',
+        'Trace attributes include `id` route param'
+      )
+      t.equal(
+        attributes['request.parameters.name'], 'restify',
+        'Trace attributes include `name` query param'
+      )
     })
 
     server.get('/test/:id', function(req, res, next) {

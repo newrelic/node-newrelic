@@ -341,24 +341,25 @@ a number of important services are also using Restify. Both frameworks map
 routes to handlers, and both use a similar pattern to do so: they match one or
 more HTTP methods (e.g. `GET` or the ever-popular `OPTIONS` – let's hear it for
 CORS) along with a potentially parameterized path (e.g. `/user/:id`) or a
-regular expression (e.g.  `/^/user/([-0-9a-f]+)$/`). New Relic will capture
-both those pieces of information in the request name. If you have support for
-slow transaction traces and have enabled `capture_params`, the transaction
-trace will also have the request's parameters and their values attached to it.
-Likewise, request parameters and their values will be attached to any errors
-recorded by the agent.
+regular expression (e.g. `/^/user/([-0-9a-f]+)$/`). New Relic will capture both
+those pieces of information in the request name. If you have support for slow
+transaction traces and have included `request.parameters.*` attributes, the
+transaction trace will also have the request's parameters and their values
+attached to it. Likewise, request parameters and their values will be attached
+to any errors recorded by the agent.
 
 The only important thing to know about New Relic's support for Express, Restify,
 or Hapi is that if you're dissatisfied with the names it comes up with, you can
 use the API calls described below to come up with more descriptive names. Also,
 if you use a different web framework or router and would like to see support
-for it added, please let us know.
+for it added, please check out
+[custom intrumentation](https://newrelic.github.io/node-newrelic/docs/tutorial-Webframework-Simple.html).
 
 ### Request naming with the module API
 
 The API is what's handed back from `require('newrelic')`, so
 
-```javascript
+```js
 var newrelic = require('newrelic');
 ```
 

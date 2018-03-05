@@ -13,11 +13,13 @@ tap.test('Hapi router introspection', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     server = utils.getServer()
-
-    // disabled by default
-    agent.config.attributes.enabled = true
 
     done()
   })
@@ -117,9 +119,9 @@ tap.test('Hapi router introspection', function(t) {
             }
           ]
         ],
-        handler: function(request) {
+        handler: function(req) {
           t.ok(agent.getTransaction(), 'transaction is available in final handler')
-          return {status: request.pre.pre3}
+          return {status: req.pre.pre3}
         }
       }
     }
@@ -267,6 +269,9 @@ function verifier(t, verb) {
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
     t.equal(web.partialName, 'Hapi/' + verb + '//test/{id}',
             'should have partial name for apdex')
-    t.equal(web.parameters.id, '31337', 'namer gets attributes out of route')
+    t.equal(
+      web.parameters['request.parameters.id'], '31337',
+      'namer gets attributes out of route'
+    )
   }
 }
