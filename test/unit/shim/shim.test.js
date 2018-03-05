@@ -1829,17 +1829,18 @@ describe('Shim', function() {
           ignore_me: 'baz'
         }
 
-        agent.config.ignored_params = [
+        agent.config.attributes.exclude = [
           'ignore_me',
           'host',
           'port_path_or_id',
           'database_name'
         ]
+        agent.config.emit('attributes.exclude')
       })
 
-      describe('and capture_params is true', function() {
+      describe('and attributes.enabled is true', function() {
         beforeEach(function() {
-          agent.config.capture_params = true
+          agent.config.attributes.enabled = true
           helper.runInTransaction(agent, function() {
             segment = shim.createSegment({name: 'child', parameters: parameters})
           })
@@ -1851,12 +1852,12 @@ describe('Shim', function() {
           expect(segment.parameters).to.have.property('fiz', 'bang')
         })
 
-        it('should respect ignored_params', function() {
+        it('should not be affected by `attributes.exclude`', function() {
           expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.not.have.property('ignore_me')
+          expect(segment.parameters).to.have.property('ignore_me')
         })
 
-        it('allows datastore instance attrs despite `ignored_params`', function() {
+        it('allows datastore instance attrs despite `attributes.exclude`', function() {
           expect(segment).to.have.property('parameters')
           expect(segment.parameters).to.have.property('host', 'my awesome host')
           expect(segment.parameters).to.have.property('port_path_or_id', 1234)
@@ -1864,19 +1865,19 @@ describe('Shim', function() {
         })
       })
 
-      describe('and capture_params is false', function() {
+      describe('and attributes.enabled is false', function() {
         beforeEach(function() {
-          agent.config.capture_params = false
+          agent.config.attributes.enabled = false
           helper.runInTransaction(agent, function() {
             segment = shim.createSegment({name: 'child', parameters: parameters})
           })
         })
 
-        it('should not copy parameters provided into `segment.parameters`', function() {
+        it('should still copy parameters provided into `segment.parameters`', function() {
           expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.not.have.property('foo')
-          expect(segment.parameters).to.not.have.property('fiz')
-          expect(segment.parameters).to.not.have.property('ignore_me')
+          expect(segment.parameters).to.have.property('foo')
+          expect(segment.parameters).to.have.property('fiz')
+          expect(segment.parameters).to.have.property('ignore_me')
         })
 
         it('should still allow datastore instance attrs', function() {

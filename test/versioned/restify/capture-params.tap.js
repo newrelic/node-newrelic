@@ -1,5 +1,6 @@
 'use strict'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var test    = require('tap').test
 var request = require('request').defaults({json: true})
 var helper  = require('../../lib/agent_helper')
@@ -15,7 +16,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     t.tearDown(function() {
@@ -26,7 +27,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -62,7 +63,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     t.tearDown(function() {
@@ -73,7 +74,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
     })
 
@@ -100,7 +101,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     t.tearDown(function() {
@@ -111,7 +112,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.name, 'restify', 'Trace attributes include `name` query param')
     })
 
@@ -139,7 +140,7 @@ test("Restify capture params introspection", function(t) {
     var port = null
 
 
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     t.tearDown(function() {
@@ -150,7 +151,7 @@ test("Restify capture params introspection", function(t) {
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '1337', 'Trace attributes include `id` route param')
       t.equal(attributes.name, 'restify', 'Trace attributes include `name` query param')
     })

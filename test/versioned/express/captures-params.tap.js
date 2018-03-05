@@ -3,6 +3,7 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
 var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
@@ -13,7 +14,7 @@ var TEST_HOST = 'localhost'
 var TEST_URL = 'http://' + TEST_HOST + ':'
 
 
-tap.test('test capture_params for express', function(t) {
+tap.test('test attributes.enabled for express', function(t) {
   t.autoend()
 
   t.test('no variables', function(t) {
@@ -30,8 +31,8 @@ tap.test('test capture_params for express', function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
@@ -43,7 +44,7 @@ tap.test('test capture_params for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -86,8 +87,8 @@ tap.test('test capture_params for express', function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
@@ -99,7 +100,7 @@ tap.test('test capture_params for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '5', 'Trace attributes include `id` route param')
     })
 
@@ -133,8 +134,8 @@ tap.test('test capture_params for express', function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     app.get('/user/', function(req, res) {
@@ -146,7 +147,7 @@ tap.test('test capture_params for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.name, 'bob', 'Trace attributes include `name` query param')
     })
 
@@ -180,8 +181,8 @@ tap.test('test capture_params for express', function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
@@ -193,7 +194,7 @@ tap.test('test capture_params for express', function(t) {
 
     agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.id, '5', 'Trace attributes include `id` route param')
       t.equal(attributes.name, 'bob', 'Trace attributes include `name` query param')
     })
@@ -228,8 +229,8 @@ tap.test('test capture_params for express', function(t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
-    // set capture_params so we get the data we need.
-    agent.config.capture_params = true
+    // set attributes.enabled so we get the data we need.
+    agent.config.attributes.enabled = true
     agent.config.allow_all_headers = false
 
     app.get('/user/:id', function(req, res) {
@@ -237,8 +238,8 @@ tap.test('test capture_params for express', function(t) {
     })
 
     agent.on('transactionFinished', function(transaction) {
-      var attributes = transaction.trace.attributes
-      t.equal(attributes.id, '5', 'attributes should include query params')
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      t.equal(attributes.id, '6', 'attributes should include query params')
       t.end()
     })
 
