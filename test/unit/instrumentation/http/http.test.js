@@ -1,6 +1,7 @@
 'use strict'
 
 var chai = require('chai')
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var EventEmitter = require('events').EventEmitter
@@ -109,7 +110,7 @@ describe('built-in http module instrumentation', function() {
     beforeEach(function(done) {
       agent = helper.instrumentMockedAgent()
       http = require('http')
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
       hookCalled = false
 
       external = http.createServer(function(request, response) {
@@ -202,6 +203,61 @@ describe('built-in http module instrumentation', function() {
       req.end()
     }
 
+    describe('with allow_all_headers set to false', function() {
+      it('should only collect allowed agent-specified headers', function(done) {
+        agent.config.allow_all_headers = false
+        transaction = null
+        makeRequest({
+          port: 8123,
+          host: 'localhost',
+          path: '/path',
+          method: 'GET',
+          headers: {
+            'invalid': 'header',
+            'referer': 'valid-referer',
+            'content-type': 'valid-type'
+          }
+        }, finish)
+
+        function finish() {
+          var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+          expect(attributes).to.not.have.property('request.headers.invalid')
+          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
+          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+          done()
+        }
+      })
+    })
+
+    describe('with allow_all_headers set to true', function() {
+      it('should collect all headers not filtered by `exclude` rules', function(done) {
+        agent.config.allow_all_headers = true
+        transaction = null
+        makeRequest({
+          port: 8123,
+          host: 'localhost',
+          path: '/path',
+          method: 'GET',
+          headers: {
+            'valid': 'header',
+            'referer': 'valid-referer',
+            'content-type': 'valid-type',
+            'X-filtered-out': 'invalid'
+          }
+        }, finish)
+
+        function finish() {
+          var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+          expect(attributes).to.not.have.property('request.headers.x-filtered-out')
+          expect(attributes).to.not.have.property('request.headers.xFilteredOut')
+          expect(attributes).to.have.property('request.headers.valid', 'header')
+          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
+          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+          done()
+        }
+      })
+    })
+
     describe('that is successful', function() {
       var fetchedStatusCode = null
       var fetchedBody = null
@@ -235,12 +291,12 @@ describe('built-in http module instrumentation', function() {
       })
 
       it('should capture a scrubbed version of the referer header', function() {
-        var attributes = transaction.trace.attributes
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes['request.headers.referer']).to.equal('https://www.google.com/search/cats')
       })
 
       it('should include a stringified response status code', function() {
-        var attributes = transaction.trace.attributes
+        var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes['response.status']).to.equal('200')
       })
 

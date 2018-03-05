@@ -6,13 +6,13 @@ var API = require('../../../api')
 var util = require('util')
 
 test('errors in web transactions should gather the query params', function(t) {
-  t.plan(10)
+  t.plan(9)
 
   var agent = helper.loadTestAgent(t)
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   http.createServer(function(req, res) {
     req.resume()
@@ -36,11 +36,6 @@ test('errors in web transactions should gather the query params', function(t) {
 
     var attributes = error[4]
     // top level attributes
-    t.equal(
-      attributes.agentAttributes['request.uri'],
-      '/',
-      'should have stripped the params from the uri'
-    )
     t.ok(util.isArray(attributes.stack_trace), 'should be an array')
 
     // custom attributes
@@ -53,7 +48,7 @@ test('errors in web transactions should gather the query params', function(t) {
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 7
+    var expectedValue = 8
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -92,7 +87,7 @@ test('multiple errors in web transactions should gather the query params', funct
     'second errors in tx test'
   ]
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   http.createServer(function(req, res) {
     req.resume()
@@ -134,7 +129,7 @@ test('multiple errors in web transactions should gather the query params', funct
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 7
+      var expectedValue = 8
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
@@ -169,7 +164,7 @@ test('errors in web transactions should gather and merge custom params', functio
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   http.createServer(function(req, res) {
     req.resume()
@@ -223,7 +218,7 @@ test('errors in web transactions should gather and merge custom params', functio
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 5
+    var expectedValue = 6
     var keys = ['response.headers.contentLength', 'httpResponseMessage']
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i]
@@ -247,7 +242,7 @@ test('multiple errors in web tx should gather and merge custom params', function
   var api = new API(agent)
   var http = require('http')
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   var errorData = [{
     name: 'first error indexOf tx test',
@@ -329,7 +324,7 @@ test('multiple errors in web tx should gather and merge custom params', function
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 5
+      var expectedValue = 6
       var keys = ['response.headers.contentLength', 'httpResponseMessage']
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i]
@@ -351,7 +346,7 @@ test('errors in background transactions are collected with correct data', functi
   var agent = helper.loadTestAgent(t)
   var api = new API(agent)
 
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   // Create transaction generator
   api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {

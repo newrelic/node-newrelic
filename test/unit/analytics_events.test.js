@@ -12,7 +12,7 @@ describe('Analytics events', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
   })
 
   afterEach(function() {
@@ -129,7 +129,7 @@ describe('Analytics events', function() {
     })
 
     it('should contain custom attributes', function(done) {
-      trans.trace.custom.a = 'b'
+      trans.trace.addCustomAttribute('a', 'b')
       trans.end(function() {
         var event = agent.events.toArray()[0]
         expect(event[1].a).to.equal('b')

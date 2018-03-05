@@ -1,5 +1,6 @@
 'use strict'
 
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
@@ -19,11 +20,11 @@ tap.test('Hapi vhost support', function(t) {
     })
 
     // disabled by default
-    agent.config.capture_params = true
+    agent.config.attributes.enabled = true
 
     agent.on('transactionFinished', function(tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes
+      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function(key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })

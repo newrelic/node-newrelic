@@ -2,6 +2,7 @@
 
 var API = require('../../../api')
 var chai = require('chai')
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
@@ -168,14 +169,29 @@ describe('the New Relic agent API', function() {
 
   describe("when adding custom attributes", function() {
     beforeEach(function() {
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
     })
 
     it('should properly add custom attributes', function() {
       helper.runInTransaction(agent, function(transaction) {
         api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(1)
+        transaction.end()
+      })
+    })
+
+    it('should skip if attribute key length limit is exceeded', function() {
+      helper.runInTransaction(agent, function(transaction) {
+        var tooLong = [
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+          'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+          'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
+        ].join(' ')
+        api.addCustomAttribute(tooLong, 'will fail')
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes[tooLong]).to.be.undefined()
         transaction.end()
       })
     })
@@ -186,7 +202,7 @@ describe('the New Relic agent API', function() {
           one: 1,
           two: 2
         })
-        var attributes = transaction.trace.custom
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.one).to.equal(1)
         expect(attributes.two).to.equal(2)
         transaction.end()
@@ -197,7 +213,7 @@ describe('the New Relic agent API', function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.api.custom_attributes_enabled = false
         api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(undefined)
         agent.config.api.custom_attributes_enabled = true
         transaction.end()
@@ -211,7 +227,7 @@ describe('the New Relic agent API', function() {
           one: 1,
           two: 2
         })
-        var attributes = transaction.trace.custom
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.one).to.equal(undefined)
         expect(attributes.two).to.equal(undefined)
         agent.config.api.custom_attributes_enabled = true
@@ -223,7 +239,7 @@ describe('the New Relic agent API', function() {
       helper.runInTransaction(agent, function(transaction) {
         agent.config.high_security = true
         api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(undefined)
         agent.config.high_security = false
         transaction.end()
@@ -237,7 +253,7 @@ describe('the New Relic agent API', function() {
           one: 1,
           two: 2
         })
-        var attributes = transaction.trace.custom
+        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.one).to.equal(undefined)
         expect(attributes.two).to.equal(undefined)
         agent.config.high_security = false
@@ -646,13 +662,13 @@ describe('the New Relic agent API', function() {
 
   describe('when adding a custom attribute', function() {
     beforeEach(function() {
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
     })
 
     describe('inside a transaction', function() {
       it('should have set the value properly', function(done) {
         agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom
+          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes.TestName).equal('TestValue')
 
           done()
@@ -667,7 +683,7 @@ describe('the New Relic agent API', function() {
 
       it("should keep the most-recently seen value", function(done) {
         agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom
+          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes.TestName).equal('Third')
 
           done()
@@ -693,10 +709,11 @@ describe('the New Relic agent API', function() {
       })
 
       it('should not allow setting of excluded attributes', function(done) {
-        agent.config.ignored_params.push('ignore_me')
+        agent.config.attributes.exclude.push('ignore_me')
+        agent.config.emit('attributes.exclude')
 
         agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom
+          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('ignore_me')
 
           done()
@@ -899,7 +916,7 @@ describe('the New Relic agent API', function() {
 
   describe("when handed an error to trace", function() {
     beforeEach(function() {
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
     })
 
     it("should add the error even without a transaction", function() {
@@ -934,7 +951,8 @@ describe('the New Relic agent API', function() {
     })
 
     it('should respect attribute filter rules', function() {
-      agent.config.ignored_params.push('unwanted')
+      agent.config.attributes.exclude.push('unwanted')
+      agent.config.emit('attributes.exclude')
       expect(agent.errors.errors.length).equal(0)
       api.noticeError(
         new TypeError('this test is bogus, man'),
