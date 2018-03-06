@@ -11,13 +11,13 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
     host: 'staging-collector.newrelic.com',
-    port: 80,
-    ssl: false,
+    port: 443,
+    ssl: true,
     utilization: {
       detect_aws: false,
       detect_azure: false,
-      detect_gcp: false,
       detect_pcf: false,
+      detect_gcp: false,
       detect_docker: false
     },
     logging: {
@@ -28,8 +28,8 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
   var api = new CollectorAPI(agent)
 
 
-  api.connect(function cb_connect(error) {
-    t.notOk(error, "connected without error")
+  api.connect(function(error) {
+    t.notOk(error, 'connected without error')
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
     t.equal(agent.metrics.toJSON().length, 1, 'only one metric')
@@ -42,13 +42,13 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
     ]
 
     api.metricData(payload, function(error, response) {
-      t.notOk(error, "sent metrics without error")
-      t.ok(response, "got a response")
+      t.notOk(error, 'sent metrics without error')
+      t.ok(response, 'got a response')
 
-      t.equal(response.length, 0, "got back no mappings")
-      t.doesNotThrow(function cb_doesNotThrow() {
+      t.equal(response.length, 0, 'got back no mappings')
+      t.doesNotThrow(function() {
         agent.mapper.load(response)
-      }, "was able to load mapping")
+      }, 'was able to load mapping')
 
       t.end()
     })

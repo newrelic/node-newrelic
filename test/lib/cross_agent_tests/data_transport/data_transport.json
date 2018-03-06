@@ -15,7 +15,7 @@
         },
         {
           "expect_request": {
-            "command": "get_redirect_host",
+            "command": "preconnect",
             "host": "collector.newrelic.com",
             "port": 443,
             "license_key": "licenseKey1",
@@ -63,7 +63,7 @@
         },
         {
           "expect_request": {
-            "command": "get_redirect_host",
+            "command": "preconnect",
             "response_payload": {
               "exception": {
                 "error_type": "NewRelic::Agent::LicenseException"
@@ -482,7 +482,7 @@
           }
         },
         {
-          "composite_step": "get_redirect_host"
+          "composite_step": "preconnect"
         },
         {
           "expect_request": {
@@ -621,7 +621,7 @@
           }
         },
         {
-          "composite_step": "get_redirect_host"
+          "composite_step": "preconnect"
         },
         {
           "expect_request": {
@@ -767,7 +767,7 @@
           }
         },
         {
-          "composite_step": "get_redirect_host"
+          "composite_step": "preconnect"
         },
         {
           "expect_request": {
@@ -1303,7 +1303,7 @@
         },
         {
           "expect_request": {
-            "command": "get_redirect_host",
+            "command": "preconnect",
             "host": "collector.newrelic.com",
             "port": 443,
             "license_key": "licenseKey1",
@@ -1325,7 +1325,7 @@
           "event_retry_connect": {}
         },
         {
-          "composite_step": "get_redirect_host"
+          "composite_step": "preconnect"
         },
         {
           "expect_request": {
@@ -1385,13 +1385,13 @@
   ],
   "composite_steps": [
     {
-      "name": "get_redirect_host",
+      "name": "preconnect",
       "steps": [
         {
           "expect_request": {
             "host": "collector.newrelic.com",
             "port": 443,
-            "command": "get_redirect_host",
+            "command": "preconnect",
             "response_payload": {
               "return_value": "collector55.newrelic.com"
             }
@@ -1412,7 +1412,7 @@
           }
         },
         {
-          "composite_step": "get_redirect_host"
+          "composite_step": "preconnect"
         },
         {
           "expect_request": {
