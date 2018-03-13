@@ -724,12 +724,21 @@ describe('WebFrameworkShim', function() {
 
         beforeEach(function() {
           unwrappedTimeout = shim.unwrap(setTimeout)
-          middleware = function(_req, err) {
+          middleware = function(_req, err, next) {
             segment = shim.getSegment()
             return new Promise(function(resolve, reject) {
               unwrappedTimeout(function() {
                 try {
                   expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
+                  if (next) {
+                    return next().then(function() {
+                      expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
+                      resolve()
+                    }, function(e) {
+                      expect(txInfo.transaction.nameState.getPath()).to.equal('/')
+                      resolve()
+                    })
+                  }
                   if (err) {
                     throw err
                   } else {
@@ -744,6 +753,7 @@ describe('WebFrameworkShim', function() {
 
           wrapped = shim.recordMiddleware(middleware, {
             route: '/foo/bar',
+            next: shim.LAST,
             promise: true
           })
         })
@@ -782,6 +792,34 @@ describe('WebFrameworkShim', function() {
             return wrapped(req).then(function() {
               expect(tx.nameState.getPath()).to.equal('/')
               expect(segment.timer.getDurationInMillis()).to.be.above(18)
+            })
+          })
+        })
+
+        it('should pop the name of the handler off when next is called', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, null, function next() {
+              expect(tx.nameState.getPath()).to.equal('/')
+              return new Promise(function(resolve) {
+                expect(agent.tracer.getTransaction()).to.equal(tx)
+                resolve()
+              })
+            })
+          })
+        })
+
+        it('should have the right name when the next handler errors', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, null, function next() {
+              expect(tx.nameState.getPath()).to.equal('/')
+              return new Promise(function(resolve, reject) {
+                expect(agent.tracer.getTransaction()).to.equal(tx)
+                reject()
+              })
             })
           })
         })
