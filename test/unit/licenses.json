@@ -1,4 +1,5 @@
 {
+  "@newrelic/koa": "LicenseRef-LICENSE",
   "@newrelic/native-metrics": "LicenseRef-LICENSE",
 
   "async": "MIT",

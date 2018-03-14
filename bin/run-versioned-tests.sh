@@ -9,10 +9,13 @@ fi
 # fi
 
 set -f
-DIRECTORY="test/versioned/**/*.tap.js"
+directories=()
 if [[ "$1" != '' ]]; then
-  DIRECTORY="test/versioned/${1}/*.tap.js"
+  directories=(
+    "test/versioned/${1}"
+    "node_modules/@newrelic/${1}/tests/versioned"
+  )
 fi
 
-export NEW_RELIC_HOME=`pwd`/test/versioned
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 $DIRECTORY
+export AGENT_PATH=`pwd`
+time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}

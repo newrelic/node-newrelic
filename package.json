@@ -111,6 +111,7 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
+    "@newrelic/koa": "^1.0.0",
     "async": "^2.1.4",
     "concat-stream": "^1.5.0",
     "https-proxy-agent": "^0.3.6",
@@ -122,7 +123,7 @@
     "@newrelic/native-metrics": "^2.1.0"
   },
   "devDependencies": {
-    "@newrelic/test-utilities": "git+https://github.com/newrelic/node-test-utilities.git",
+    "@newrelic/test-utilities": "^1.2.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
