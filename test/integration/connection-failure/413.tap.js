@@ -19,7 +19,7 @@ tap.test('harvesting with a mocked collector that returns 413 on connect', funct
 
   function path(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=15&' +
+      'marshal_format=json&protocol_version=16&' +
       'license_key=license%20key%20here&method=' + method
 
     if (runID) fragment += '&run_id=' + runID
@@ -93,7 +93,7 @@ tap.test('discarding metrics and errors after a 413', function(t) {
 
   function path(method, runID) {
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=15&' +
+      'marshal_format=json&protocol_version=16&' +
       'license_key=license%20key%20here&method=' + method
 
     if (runID) fragment += '&run_id=' + runID

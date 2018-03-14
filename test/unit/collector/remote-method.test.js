@@ -11,7 +11,7 @@ var semver = require('semver')
 
 function generate(method, runID) {
   var fragment = '/agent_listener/invoke_raw_method?' +
-    'marshal_format=json&protocol_version=15&' +
+    'marshal_format=json&protocol_version=16&' +
     'license_key=license%20key%20here&method=' + method
 
   if (runID) fragment += '&run_id=' + runID
@@ -544,8 +544,8 @@ describe('RemoteMethod', function() {
       parsed = reconstitute(method._path())
     })
 
-    it('should say that it supports protocol 15', function() {
-      expect(parsed.query.protocol_version).equal('15')
+    it('should say that it supports protocol 16', function() {
+      expect(parsed.query.protocol_version).equal('16')
     })
 
     it('should tell the collector it is sending JSON', function() {
