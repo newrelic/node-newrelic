@@ -98,6 +98,13 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up exception message omission settings', function() {
+      idempotentEnv('NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED', 'please', function(tc) {
+        should.exist(tc.strip_exception_messages.enabled)
+        expect(tc.strip_exception_messages.enabled).equal(true)
+      })
+    })
+
     it('should pick up the proxy host', function() {
       idempotentEnv('NEW_RELIC_PROXY_HOST', 'proxyhost', function(tc) {
         should.exist(tc.proxy_host)
