@@ -214,6 +214,13 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up whether to add attribute include rules', function() {
+      idempotentEnv('NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED', 'yes', function(tc) {
+        should.exist(tc.attributes.include_enabled)
+        expect(tc.attributes.include_enabled).equal(true)
+      })
+    })
+
     it('should pick up ignored request parameters', function() {
       idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
         should.exist(tc.ignored_params)
@@ -528,6 +535,14 @@ describe('the agent configuration', function() {
 
     it('should have the default excluded request attributes', function() {
       expect(configuration.attributes.exclude).eql([])
+    })
+
+    it('should have the default attribute include setting', function() {
+      expect(configuration.attributes.include_enabled).eql(true)
+    })
+
+    it('should have the default error message redaction setting ', function() {
+      expect(configuration.strip_exception_messages.enabled).eql(true)
     })
 
     it('should enable transaction event attributes', function() {
