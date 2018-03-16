@@ -542,7 +542,7 @@ describe('the agent configuration', function() {
     })
 
     it('should have the default error message redaction setting ', function() {
-      expect(configuration.strip_exception_messages.enabled).eql(true)
+      expect(configuration.strip_exception_messages.enabled).eql(false)
     })
 
     it('should enable transaction event attributes', function() {
