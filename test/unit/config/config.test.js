@@ -82,6 +82,13 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up the security policies token', function() {
+      idempotentEnv( 'NEW_RELIC_SECURITY_POLICIES_TOKEN', 'super secure', function(tc) {
+        should.exist(tc.security_policies_token)
+        expect(tc.security_policies_token).equal('super secure')
+      })
+    })
+
     it('should take an explicit host over the license key parsed host', function() {
       idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
         idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
@@ -455,6 +462,17 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('with both high_security and security_policies_token defined', function() {
+    it('blows up', function() {
+      expect(function testInitialize() {
+        Config.initialize({
+          high_security: true,
+          security_policies_token: 'fffff'
+        })
+      }).throws()
+    })
+  })
+
   describe('with default properties', function() {
     var configuration
 
@@ -503,6 +521,10 @@ describe('the agent configuration', function() {
 
     it('should have SSL enabled', function() {
       expect(configuration.ssl).equal(true)
+    })
+
+    it('should have no security_policies_token', function() {
+      expect(configuration.security_policies_token).equal('')
     })
 
     it('should have no proxy host', function() {
