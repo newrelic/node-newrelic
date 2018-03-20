@@ -6,6 +6,7 @@ var should = chai.should()
 var expect = chai.expect
 var fs = require('fs')
 var Config = require('../../../lib/config')
+var securityPolicies = require('../../lib/fixtures').securityPolicies
 
 
 function idempotentEnv(name, value, callback) {
@@ -90,7 +91,7 @@ describe('the agent configuration', function() {
     })
 
     it('should take an explicit host over the license key parsed host', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
+      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function() {
         idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
           should.exist(tc.host)
           expect(tc.host).equal('localhost')
@@ -1394,17 +1395,7 @@ describe('the agent configuration', function() {
     beforeEach(function(done) {
       config = new Config()
       config.security_policies_token = 'TEST-TEST-TEST-TEST'
-      policies = {
-        record_sql: { enabled: false, required: false },
-        attributes_include: { enabled: false, required: false },
-        allow_raw_exception_messages: { enabled: false, required: false },
-        custom_events: { enabled: false, required: false },
-        custom_parameters: { enabled: false, required: false },
-        custom_instrumentation_editor: { enabled: false, required: false },
-        live_instrumentation: { enabled: false, required: false },
-        message_parameters: { enabled: false, required: false },
-        job_arguments: { enabled: false, required: false }
-      }
+      policies = securityPolicies()
       done()
     })
 

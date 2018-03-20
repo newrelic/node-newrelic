@@ -6,23 +6,13 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var should = chai.should()
 var API = require('../../../lib/collector/api')
+var securityPolicies = require('../../lib/fixtures').securityPolicies
 
 
 var HOST = 'collector.newrelic.com'
 var PORT = 443
 var URL = 'https://' + HOST
 var RUN_ID = 1337
-
-
-function generate(method, runID) {
-  var fragment = '/agent_listener/invoke_raw_method?' +
-    'marshal_format=json&protocol_version=16&' +
-    'license_key=license%20key%20here&method=' + method
-
-  if (runID) fragment += '&run_id=' + runID
-
-  return fragment
-}
 
 var timeout = global.setTimeout
 function fast() { global.setTimeout = function(cb) {return timeout(cb, 0)} }
@@ -31,6 +21,7 @@ function slow() { global.setTimeout = timeout }
 describe('CollectorAPI', function() {
   var api = null
   var agent = null
+  var policies = null
 
   beforeEach(function() {
     nock.disableNetConnect()
@@ -53,6 +44,7 @@ describe('CollectorAPI', function() {
     agent.reconfigure = function() {}
     agent.setState = function() {}
     api = new API(agent)
+    policies = securityPolicies()
   })
 
   afterEach(function() {
@@ -61,6 +53,57 @@ describe('CollectorAPI', function() {
   })
 
   describe('_login', function() {
+    describe('in a LASP-enabled agent', function() {
+      beforeEach(function(done) {
+        agent.config.port = 8080
+        agent.config.security_policies_token = 'TEST-TEST-TEST-TEST'
+        done()
+      })
+
+      afterEach(function(done) {
+        agent.config.security_policies_token = ''
+        done()
+      })
+
+      it('should fail if preconnect res is missing expected policies', function(done) {
+        var redirection = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST,
+              security_policies: {}
+            }
+          })
+
+        api._login(function test(err) {
+          expect(err.message).to.contain('did not receive one or more security policies')
+
+          redirection.done()
+          done()
+        })
+      })
+
+      it('should fail if agent is missing required policy', function(done) {
+        policies.test = { required: true }
+
+        var redirection = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST,
+              security_policies: policies
+            }
+          })
+
+        api._login(function test(err) {
+          expect(err.message).to.contain('received one or more required security')
+
+          redirection.done()
+          done()
+        })
+      })
+    })
+
     describe('on the happy path', function() {
       var bad
       var ssc
@@ -443,6 +486,48 @@ describe('CollectorAPI', function() {
   describe('connect', function() {
     it('requires a callback', function() {
       expect(function() { api.connect(null) }).to.throw('callback is required')
+    })
+
+    describe('in a LASP-enabled agent', function() {
+      beforeEach(function(done) {
+        agent.config.port = 8080
+        agent.config.security_policies_token = 'TEST-TEST-TEST-TEST'
+        done()
+      })
+
+      afterEach(function(done) {
+        agent.config.security_policies_token = ''
+        done()
+      })
+
+      it('should include security policies in connect response', function(done) {
+        var valid = {
+          capture_params: true,
+          agent_run_id: RUN_ID,
+          security_policies: policies
+        }
+        var response = {return_value: valid}
+
+        var redirection = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST,
+              security_policies: policies
+            }
+          })
+        var connection = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, response)
+
+        api.connect(function test(error, config, json) {
+          expect(json).to.deep.equal(response)
+
+          redirection.done()
+          connection.done()
+          done()
+        })
+      })
     })
 
     describe('on the happy path', function() {
