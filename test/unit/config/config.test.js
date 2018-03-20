@@ -1386,4 +1386,76 @@ describe('the agent configuration', function() {
       }).not.throws()
     })
   })
+
+  describe('#applyLasp', function() {
+    var config
+    var policies
+
+    beforeEach(function(done) {
+      config = new Config()
+      config.security_policies_token = 'TEST-TEST-TEST-TEST'
+      policies = {
+        record_sql: { enabled: false, required: false },
+        attributes_include: { enabled: false, required: false },
+        allow_raw_exception_messages: { enabled: false, required: false },
+        custom_events: { enabled: false, required: false },
+        custom_parameters: { enabled: false, required: false },
+        custom_instrumentation_editor: { enabled: false, required: false },
+        live_instrumentation: { enabled: false, required: false },
+        message_parameters: { enabled: false, required: false },
+        job_arguments: { enabled: false, required: false }
+      }
+      done()
+    })
+
+    it('returns null if LASP is not enabled', function(done) {
+      config.security_policies_token = ''
+
+      var cb = function(err, res) {
+        expect(err).to.be.null()
+        expect(res).to.be.null()
+        done()
+      }
+
+      config.applyLasp({}, cb)
+    })
+
+    it('returns error if required policy is not implemented', function(done) {
+      var cb = function(err) {
+        expect(err.message).to.contain('received one or more required security policies')
+        done()
+      }
+
+      policies.test = { enabled: true, required: true }
+
+      config.applyLasp(policies, cb)
+    })
+
+    it('returns error if expected policy is not sent from server', function(done) {
+      var cb = function(err) {
+        expect(err.message).to.contain('did not receive one or more security policies')
+        done()
+      }
+
+      delete policies.record_sql
+
+      config.applyLasp(policies, cb)
+    })
+
+    it('should return known policies', function(done) {
+      var cb = function(err, res) {
+        expect(err).to.be.null()
+        expect(res).to.deep.equal({
+          record_sql: { enabled: false, required: false },
+          attributes_include: { enabled: false, required: false },
+          allow_raw_exception_messages: { enabled: false, required: false },
+          custom_events: { enabled: false, required: false },
+          custom_parameters: { enabled: false, required: false }
+        })
+        done()
+      }
+
+      config.applyLasp(policies, cb)
+    })
+  })
 })
