@@ -76,10 +76,10 @@ describe('CollectorAPI', function() {
       beforeEach(function(done) {
         agent.config.port = 8080
         var redirection = nock(URL + ':8080')
-          .post(generate('preconnect'))
-          .reply(200, {return_value: HOST})
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {return_value: {redirect_host: HOST}})
         var connection = nock(URL)
-          .post(generate('connect'))
+          .post(helper.generateCollectorPath('connect'))
           .reply(200, response)
 
         api._login(function test(error, config, json) {
@@ -115,7 +115,9 @@ describe('CollectorAPI', function() {
         var captured
 
         before(function(done) {
-          var redirection = nock(URL).post(generate('preconnect')).reply(503)
+          var redirection = nock(URL)
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(503)
 
           api._login(function test(error) {
             captured = error
@@ -146,11 +148,11 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: ''})
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {return_value: {redirect_host: ''}})
           var connect = nock(URL)
-                          .post(generate('connect'))
-                          .reply(200, {return_value: {agent_run_id: RUN_ID}})
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
           api._login(function test(error, config) {
             captured = error
@@ -182,11 +184,13 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: HOST + ':chug:8089'})
+                .post(helper.generateCollectorPath('preconnect'))
+                .reply(200, {
+                  return_value: {redirect_host: HOST + ':chug:8089'}
+                })
           var connect = nock(URL)
-                          .post(generate('connect'))
-                          .reply(200, {return_value: {agent_run_id: RUN_ID}})
+                .post(helper.generateCollectorPath('connect'))
+                .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
           api._login(function test(error, config) {
             captured = error
@@ -222,11 +226,13 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: HOST})
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {redirect_host: HOST}
+            })
           var connect = nock(URL)
-                          .post(generate('connect'))
-                          .reply(200, {return_value: null})
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: null})
 
           api._login(function test(error, config) {
             captured = error
@@ -256,11 +262,13 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: HOST})
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {redirect_host: HOST}
+            })
           var connection = nock(URL)
-                              .post(generate('connect'))
-                              .reply(503)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(503)
 
           api._login(function test(error) {
             captured = error
@@ -292,7 +300,9 @@ describe('CollectorAPI', function() {
 
 
         before(function(done) {
-          var redirection = nock(URL).post(generate('preconnect')).reply(200)
+          var redirection = nock(URL)
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200)
 
           api._login(function test(error, response, json) {
             captured = error
@@ -334,9 +344,13 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: HOST})
-          var connection = nock(URL).post(generate('connect')).reply(200)
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {redirect_host: HOST}
+            })
+          var connection = nock(URL)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200)
 
           api._login(function test(error, response, json) {
             captured = error
@@ -385,8 +399,8 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, response)
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, response)
 
           api._login(function test(error, res, json) {
             captured = error
@@ -447,11 +461,13 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: HOST})
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {redirect_host: HOST}
+            })
           var connection = nock(URL)
-                              .post(generate('connect'))
-                              .reply(200, response)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, response)
 
           api.connect(function test(error, res, json) {
             bad = error
@@ -496,11 +512,13 @@ describe('CollectorAPI', function() {
 
         beforeEach(function(done) {
           var redirection = nock(URL)
-                              .post(generate('preconnect'))
-                              .reply(200, {return_value: HOST + ':8089'})
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {redirect_host: HOST + ':8089'}
+            })
           var connection = nock(URL + ':8089')
-                              .post(generate('connect'))
-                              .reply(200, response)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, response)
 
           api.connect(function test(error, res, json) {
             bad = error
@@ -559,10 +577,16 @@ describe('CollectorAPI', function() {
         beforeEach(function(done) {
           fast()
 
-          var redirectURL = generate('preconnect')
+          var redirectURL = helper.generateCollectorPath('preconnect')
           var failure = nock(URL).post(redirectURL).reply(503)
-          var success = nock(URL).post(redirectURL).reply(200, {return_value: HOST})
-          var connection = nock(URL).post(generate('connect')).reply(200, response)
+          var success = nock(URL)
+            .post(redirectURL)
+            .reply(200, {
+              return_value: {redirect_host: HOST}
+            })
+          var connection = nock(URL)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, response)
 
 
           api.connect(function test(error, res, json) {
@@ -614,10 +638,16 @@ describe('CollectorAPI', function() {
         before(function(done) {
           fast()
 
-          var redirectURL = generate('preconnect')
+          var redirectURL = helper.generateCollectorPath('preconnect')
           var failure = nock(URL).post(redirectURL).times(5).reply(503)
-          var success = nock(URL).post(redirectURL).reply(200, {return_value: HOST})
-          var connection = nock(URL).post(generate('connect')).reply(200, response)
+          var success = nock(URL)
+            .post(redirectURL)
+            .reply(200, {
+              return_value: {redirect_host: HOST}
+            })
+          var connection = nock(URL)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, response)
 
 
           api.connect(function test(error, res, json) {
@@ -675,7 +705,7 @@ describe('CollectorAPI', function() {
         var body = null
 
         before(function(done) {
-          var redirectURL = generate('preconnect')
+          var redirectURL = helper.generateCollectorPath('preconnect')
           var failure = nock(URL).post(redirectURL).times(1).reply(503, exception)
 
           api.connect(function test(error, response) {
@@ -710,7 +740,7 @@ describe('CollectorAPI', function() {
         var body = null
 
         before(function(done) {
-          var redirectURL = generate('preconnect')
+          var redirectURL = helper.generateCollectorPath('preconnect')
           var failure = nock(URL).post(redirectURL).times(500).reply(503)
           var disconnect = nock(URL).post(redirectURL).times(1).reply(503, exception)
           api.connect(function test(error, response) {
@@ -754,7 +784,7 @@ describe('CollectorAPI', function() {
         }
 
         before(function(done) {
-          var redirectURL = generate('preconnect')
+          var redirectURL = helper.generateCollectorPath('preconnect')
           failure = nock(URL).post(redirectURL).times(1).reply(200, error)
 
           api.connect(function test(error, response, json) {
@@ -811,7 +841,7 @@ describe('CollectorAPI', function() {
         }
 
         before(function(done) {
-          var redirectURL = generate('preconnect')
+          var redirectURL = helper.generateCollectorPath('preconnect')
           failure = nock(URL).post(redirectURL).reply(503)
           license = nock(URL).post(redirectURL).times(1).reply(200, error)
 
@@ -866,8 +896,8 @@ describe('CollectorAPI', function() {
       api._agent.config.run_id = RUN_ID
 
       var mock = nock(URL)
-                   .post(generate('agent_settings', RUN_ID))
-                   .reply(200, response)
+        .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+        .reply(200, response)
 
       api.reportSettings(function test(error, json) {
         bad = error
@@ -910,8 +940,8 @@ describe('CollectorAPI', function() {
       before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
-                         .post(generate('error_data', RUN_ID))
-                         .reply(200, response)
+          .post(helper.generateCollectorPath('error_data', RUN_ID))
+          .reply(200, response)
 
         var errors = [
           [
@@ -968,13 +998,13 @@ describe('CollectorAPI', function() {
       var raw
 
 
-      var response = {return_value : []}
+      var response = {return_value: []}
 
       before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
-                         .post(generate('sql_trace_data', RUN_ID))
-                         .reply(200, response)
+          .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
+          .reply(200, response)
 
         var queries = [
           [
@@ -1041,8 +1071,8 @@ describe('CollectorAPI', function() {
       before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
-                         .post(generate('analytic_event_data', RUN_ID))
-                         .reply(200, response)
+          .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
+          .reply(200, response)
 
         var errors = [
           RUN_ID,
@@ -1108,8 +1138,8 @@ describe('CollectorAPI', function() {
       before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
-                         .post(generate('metric_data', RUN_ID))
-                         .reply(200, response)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, response)
 
         // would like to keep this set of tests relatively self-contained
         var metrics = {
@@ -1172,8 +1202,8 @@ describe('CollectorAPI', function() {
       before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
-                         .post(generate('transaction_sample_data', RUN_ID))
-                         .reply(200, response)
+          .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
+          .reply(200, response)
 
         // imagine this is a serialized transaction trace
         var trace = []
@@ -1220,7 +1250,9 @@ describe('CollectorAPI', function() {
 
       before(function(done) {
         api._agent.config.run_id = RUN_ID
-        var shutdown = nock(URL).post(generate('shutdown', RUN_ID)).reply(200, response)
+        var shutdown = nock(URL)
+          .post(helper.generateCollectorPath('shutdown', RUN_ID))
+          .reply(200, response)
 
         api.shutdown(function test(error, res, json) {
           bad = error
@@ -1256,7 +1288,9 @@ describe('CollectorAPI', function() {
 
         beforeEach(function(done) {
           api._agent.config.run_id = RUN_ID
-          var failure = nock(URL).post(generate('shutdown', RUN_ID)).reply(503)
+          var failure = nock(URL)
+            .post(helper.generateCollectorPath('shutdown', RUN_ID))
+            .reply(503)
 
           api.shutdown(function test(error, response) {
             captured = error
@@ -1318,7 +1352,9 @@ describe('CollectorAPI', function() {
     })
 
     it('should discard HTTP 413 errors', function(done) {
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(413)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(413)
       function tested(error) {
         should.not.exist(error)
 
@@ -1330,7 +1366,9 @@ describe('CollectorAPI', function() {
     })
 
     it('should discard HTTP 415 errors', function(done) {
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(415)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(415)
       function tested(error) {
         should.not.exist(error)
 
@@ -1349,7 +1387,9 @@ describe('CollectorAPI', function() {
         }
       }
 
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(200, exception)
       function tested(error) {
         should.not.exist(error)
 
@@ -1361,7 +1401,9 @@ describe('CollectorAPI', function() {
     })
 
     it('should pass through HTTP 500 errors', function(done) {
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(500)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(500)
       function tested(error) {
         expect(error.message).equal('No body found in response to metric_data.')
 
@@ -1373,7 +1415,9 @@ describe('CollectorAPI', function() {
     })
 
     it('should pass through HTTP 503 errors', function(done) {
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(503)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(503)
       function tested(error) {
         expect(error.message).equal('No body found in response to metric_data.')
 
@@ -1392,7 +1436,9 @@ describe('CollectorAPI', function() {
         }
       }
 
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(200, exception)
       function tested(error) {
         expect(error.message)
           .equal('Your license key is invalid or the collector is busted.')
@@ -1420,19 +1466,19 @@ describe('CollectorAPI', function() {
         }
 
         restart = nock(URL)
-          .post(generate('metric_data', 31337))
+          .post(helper.generateCollectorPath('metric_data', 31337))
           .reply(200, exception)
         shutdown = nock(URL)
-          .post(generate('shutdown', 31337))
+          .post(helper.generateCollectorPath('shutdown', 31337))
           .reply(200, {return_value: null})
         redirect = nock(URL)
-          .post(generate('preconnect'))
-          .reply(200, {return_value: 'collector.newrelic.com'})
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {return_value: {redirect_host: HOST}})
         connect = nock(URL)
-          .post(generate('connect'))
+          .post(helper.generateCollectorPath('connect'))
           .reply(200, {return_value: {agent_run_id: 31338}})
         succeed = nock(URL)
-          .post(generate('metric_data', 31338))
+          .post(helper.generateCollectorPath('metric_data', 31338))
           .reply(200, {return_value: {}})
       })
 
@@ -1482,10 +1528,10 @@ describe('CollectorAPI', function() {
       }
 
       var restart = nock(URL)
-        .post(generate('metric_data', 31337))
+        .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(200, exception)
       var shutdown = nock(URL)
-        .post(generate('shutdown', 31337))
+        .post(helper.generateCollectorPath('shutdown', 31337))
         .reply(200, {return_value: null})
 
       function tested(error) {
@@ -1509,7 +1555,9 @@ describe('CollectorAPI', function() {
         }
       }
 
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(200, exception)
       function tested(error) {
         expect(error.message).equal('Out for a smoke beeearrrbeee')
         expect(error.class).equal('NewRelic::Agent::MaintenanceError')
@@ -1529,7 +1577,9 @@ describe('CollectorAPI', function() {
         }
       }
 
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(200, exception)
       function tested(error) {
         expect(error.message).equal('What does this button do?')
         expect(error.class).equal('RuntimeError')
@@ -1542,7 +1592,9 @@ describe('CollectorAPI', function() {
     })
 
     it('should pass through unexpected errors', function(done) {
-      var failure = nock(URL).post(generate('metric_data', 31337)).reply(501)
+      var failure = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', 31337))
+        .reply(501)
       function tested(error) {
         expect(error.message).equal('No body found in response to metric_data.')
 

@@ -173,7 +173,7 @@ describe('the New Relic agent', function() {
           var redirect =
             nock(URL)
               .post(helper.generateCollectorPath('preconnect'))
-              .reply(200, {return_value: 'collector.newrelic.com'})
+              .reply(200, {return_value: { redirect_host: 'collector.newrelic.com' } })
           var connect =
             nock(URL)
               .post(helper.generateCollectorPath('connect'))
