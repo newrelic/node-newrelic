@@ -1411,12 +1411,13 @@ describe('the agent configuration', function() {
       config.applyLasp({}, cb)
     })
 
-    it('returns error if required policy is not implemented', function(done) {
+    it('returns error if required policy is not implemented or unknown', function(done) {
       var cb = function(err) {
         expect(err.message).to.contain('received one or more required security policies')
         done()
       }
 
+      policies.job_arguments = { enabled: true, required: true }
       policies.test = { enabled: true, required: true }
 
       config.applyLasp(policies, cb)
