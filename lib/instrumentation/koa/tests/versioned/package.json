@@ -5,6 +5,17 @@
   "tests": [
     {
       "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "koa": "1.5"
+      },
+      "files": [
+        "koa-v1.tap.js"
+      ]
+    },
+    {
+      "engines": {
         "node": ">=4 <6"
       },
       "dependencies": {
