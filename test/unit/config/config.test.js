@@ -1388,6 +1388,31 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('#_getMostSecure', function() {
+    var config
+
+    beforeEach(function(done) {
+      config = new Config()
+      config.security_policies_token = 'TEST-TEST-TEST-TEST'
+      done()
+    })
+
+    it('returns the new value if the current one is undefined', function() {
+      var val = config._getMostSecure('transaction_tracer.record_sql', undefined, 'off')
+      expect(val).to.equal('off')
+    })
+
+    it('returns the most strict if it does not know either value', function() {
+      var val = config._getMostSecure('transaction_tracer.record_sql', undefined, 'dunno')
+      expect(val).to.equal('off')
+    })
+
+    it('should work as a pass through for unknown config options', function() {
+      var val = config._getMostSecure('transaction_tracer.enabled', undefined, 'dunno')
+      expect(val).to.equal('dunno')
+    })
+  })
+
   describe('#applyLasp', function() {
     var config
     var policies
@@ -1419,6 +1444,84 @@ describe('the agent configuration', function() {
 
       policies.job_arguments = { enabled: true, required: true }
       policies.test = { enabled: true, required: true }
+
+      config.applyLasp(policies, cb)
+    })
+
+    it('takes the most secure from local', function(done) {
+      var cb = function(err, res) {
+        expect(config.transaction_tracer.record_sql).to.equal('off')
+        expect(config.attributes.include_enabled).to.equal(false)
+        expect(config.strip_exception_messages.enabled).to.equal(true)
+        expect(config.api.custom_events_enabled).to.equal(false)
+        expect(config.api.custom_attributes_enabled).to.equal(false)
+        Object.keys(res).forEach(function checkPolicy(key) {
+          expect(res[key].enabled).to.be.false()
+        })
+        done()
+      }
+
+      config.transaction_tracer.record_sql = 'off'
+      config.attributes.include_enabled = false
+      config.strip_exception_messages.enabled = true
+      config.api.custom_events_enabled = false
+      config.api.custom_attributes_enabled = false
+
+      Object.keys(policies).forEach(function enablePolicy(key) {
+        policies[key].enabled = true
+      })
+
+      config.applyLasp(policies, cb)
+    })
+
+    it('takes the most secure from lasp', function(done) {
+      var cb = function(err, res) {
+        expect(config.transaction_tracer.record_sql).to.equal('off')
+        expect(config.attributes.include_enabled).to.equal(false)
+        expect(config.strip_exception_messages.enabled).to.equal(true)
+        expect(config.api.custom_events_enabled).to.equal(false)
+        expect(config.api.custom_attributes_enabled).to.equal(false)
+        Object.keys(res).forEach(function checkPolicy(key) {
+          expect(res[key].enabled).to.be.false()
+        })
+        done()
+      }
+
+      config.transaction_tracer.record_sql = 'obfuscated'
+      config.attributes.include_enabled = true
+      config.strip_exception_messages.enabled = false
+      config.api.custom_events_enabled = true
+      config.api.custom_attributes_enabled = true
+
+      Object.keys(policies).forEach(function enablePolicy(key) {
+        policies[key].enabled = false
+      })
+
+      config.applyLasp(policies, cb)
+    })
+
+    it('allow permissive settings', function(done) {
+      var cb = function(err, res) {
+        expect(config.transaction_tracer.record_sql).to.equal('obfuscated')
+        expect(config.attributes.include_enabled).to.equal(true)
+        expect(config.strip_exception_messages.enabled).to.equal(false)
+        expect(config.api.custom_events_enabled).to.equal(true)
+        expect(config.api.custom_attributes_enabled).to.equal(true)
+        Object.keys(res).forEach(function checkPolicy(key) {
+          expect(res[key].enabled).to.be.true()
+        })
+        done()
+      }
+
+      config.transaction_tracer.record_sql = 'obfuscated'
+      config.attributes.include_enabled = true
+      config.strip_exception_messages.enabled = false
+      config.api.custom_events_enabled = true
+      config.api.custom_attributes_enabled = true
+
+      Object.keys(policies).forEach(function enablePolicy(key) {
+        policies[key].enabled = true
+      })
 
       config.applyLasp(policies, cb)
     })
