@@ -120,7 +120,7 @@ describe('CollectorAPI', function() {
         agent.config.port = 8080
         var redirection = nock(URL + ':8080')
           .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {return_value: {redirect_host: HOST}})
+          .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
         var connection = nock(URL)
           .post(helper.generateCollectorPath('connect'))
           .reply(200, response)
@@ -192,7 +192,7 @@ describe('CollectorAPI', function() {
         before(function(done) {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
-            .reply(200, {return_value: {redirect_host: ''}})
+            .reply(200, {return_value: {redirect_host: '', security_policies: {}}})
           var connect = nock(URL)
             .post(helper.generateCollectorPath('connect'))
             .reply(200, {return_value: {agent_run_id: RUN_ID}})
@@ -229,7 +229,10 @@ describe('CollectorAPI', function() {
           var redirection = nock(URL)
                 .post(helper.generateCollectorPath('preconnect'))
                 .reply(200, {
-                  return_value: {redirect_host: HOST + ':chug:8089'}
+                  return_value: {
+                    redirect_host: HOST + ':chug:8089',
+                    security_policies: {}
+                  }
                 })
           var connect = nock(URL)
                 .post(helper.generateCollectorPath('connect'))
@@ -271,7 +274,7 @@ describe('CollectorAPI', function() {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
             .reply(200, {
-              return_value: {redirect_host: HOST}
+              return_value: {redirect_host: HOST, security_policies: {}}
             })
           var connect = nock(URL)
             .post(helper.generateCollectorPath('connect'))
@@ -307,7 +310,7 @@ describe('CollectorAPI', function() {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
             .reply(200, {
-              return_value: {redirect_host: HOST}
+              return_value: {redirect_host: HOST, security_policies: {}}
             })
           var connection = nock(URL)
             .post(helper.generateCollectorPath('connect'))
@@ -389,7 +392,7 @@ describe('CollectorAPI', function() {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
             .reply(200, {
-              return_value: {redirect_host: HOST}
+              return_value: {redirect_host: HOST, security_policies: {}}
             })
           var connection = nock(URL)
             .post(helper.generateCollectorPath('connect'))
@@ -548,7 +551,7 @@ describe('CollectorAPI', function() {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
             .reply(200, {
-              return_value: {redirect_host: HOST}
+              return_value: {redirect_host: HOST, security_policies: {}}
             })
           var connection = nock(URL)
             .post(helper.generateCollectorPath('connect'))
@@ -599,7 +602,10 @@ describe('CollectorAPI', function() {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
             .reply(200, {
-              return_value: {redirect_host: HOST + ':8089'}
+              return_value: {
+                redirect_host: HOST + ':8089',
+                security_policies: {}
+              }
             })
           var connection = nock(URL + ':8089')
             .post(helper.generateCollectorPath('connect'))
@@ -667,7 +673,7 @@ describe('CollectorAPI', function() {
           var success = nock(URL)
             .post(redirectURL)
             .reply(200, {
-              return_value: {redirect_host: HOST}
+              return_value: {redirect_host: HOST, security_policies: {}}
             })
           var connection = nock(URL)
             .post(helper.generateCollectorPath('connect'))
@@ -728,7 +734,7 @@ describe('CollectorAPI', function() {
           var success = nock(URL)
             .post(redirectURL)
             .reply(200, {
-              return_value: {redirect_host: HOST}
+              return_value: {redirect_host: HOST, security_policies: {}}
             })
           var connection = nock(URL)
             .post(helper.generateCollectorPath('connect'))
@@ -1558,7 +1564,7 @@ describe('CollectorAPI', function() {
           .reply(200, {return_value: null})
         redirect = nock(URL)
           .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {return_value: {redirect_host: HOST}})
+          .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
         connect = nock(URL)
           .post(helper.generateCollectorPath('connect'))
           .reply(200, {return_value: {agent_run_id: 31338}})

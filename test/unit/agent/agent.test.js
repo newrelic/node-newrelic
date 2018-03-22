@@ -170,26 +170,26 @@ describe('the New Relic agent', function() {
 
           expect(debugged.config.debug.supportability.apdexT).equal(0.1)
 
-          var redirect =
-            nock(URL)
-              .post(helper.generateCollectorPath('preconnect'))
-              .reply(200, {return_value: { redirect_host: 'collector.newrelic.com' } })
-          var connect =
-            nock(URL)
-              .post(helper.generateCollectorPath('connect'))
-              .reply(200, {return_value: {agent_run_id: RUN_ID, apdex_t: 0.5}})
-          var settings =
-            nock(URL)
-              .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-              .reply(200, {return_value: []})
-          var metrics =
-            nock(URL)
-              .post(helper.generateCollectorPath('metric_data', RUN_ID))
-              .reply(200, {return_value: []})
-          var shutdown =
-            nock(URL)
-              .post(helper.generateCollectorPath('shutdown', RUN_ID))
-              .reply(200, {return_value: null})
+          var redirect = nock(URL)
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {
+                redirect_host: 'collector.newrelic.com',
+                security_policies: {}
+              }
+            })
+          var connect = nock(URL)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: {agent_run_id: RUN_ID, apdex_t: 0.5}})
+          var settings = nock(URL)
+            .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+            .reply(200, {return_value: []})
+          var metrics = nock(URL)
+            .post(helper.generateCollectorPath('metric_data', RUN_ID))
+            .reply(200, {return_value: []})
+          var shutdown = nock(URL)
+            .post(helper.generateCollectorPath('shutdown', RUN_ID))
+            .reply(200, {return_value: null})
 
           debugged.start(function cb_start() {
             expect(debugged.config.debug.supportability.apdexT).equal(0.5)
@@ -415,10 +415,9 @@ describe('the New Relic agent', function() {
       })
 
       it('should harvest at connect when metrics are already there', function(done) {
-        var metrics =
-          nock(URL)
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value: []})
+        var metrics = nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value: []})
 
         agent.collector.connect = function(callback) {
           callback(null, {agent_run_id: RUN_ID})
@@ -445,18 +444,20 @@ describe('the New Relic agent', function() {
         // manually harvesting
         agent.config.no_immediate_harvest = true
 
-        var redirect =
-          nock(URL)
-            .post(helper.generateCollectorPath('preconnect'))
-            .reply(200, {return_value: 'collector.newrelic.com'})
-        var connect =
-          nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, {return_value: {agent_run_id: RUN_ID}})
-        var settings =
-          nock(URL)
-            .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-            .reply(200, {return_value: []})
+        var redirect = nock(URL)
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: 'collector.newrelic.com',
+              security_policies: {}
+            }
+          })
+        var connect = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: {agent_run_id: RUN_ID}})
+        var settings = nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value: []})
 
         agent.start(function cb_start() {
           setTimeout(function() {
@@ -477,23 +478,24 @@ describe('the New Relic agent', function() {
           return extend({unref: function() {}}, setImmediate(callback))
         }
 
-        var redirect =
-          nock(URL)
-            .post(helper.generateCollectorPath('preconnect'))
-            .reply(200, {return_value: 'collector.newrelic.com'})
-        var connect =
-          nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, {return_value: {agent_run_id: RUN_ID}})
-        var settings =
-          nock(URL)
-            .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-            .reply(200, {return_value: []})
-        var metrics =
-          nock(URL)
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .times(2)
-            .reply(503)
+        var redirect = nock(URL)
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: 'collector.newrelic.com',
+              security_policies: {}
+            }
+          })
+        var connect = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: {agent_run_id: RUN_ID}})
+        var settings = nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value: []})
+        var metrics = nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .times(2)
+          .reply(503)
 
         agent.start(function cb_start() {
           setTimeout(function() {
@@ -566,10 +568,9 @@ describe('the New Relic agent', function() {
       describe('if connected', function() {
         it('should call shutdown', function(done) {
           agent.config.run_id = RUN_ID
-          var shutdown =
-            nock(URL)
-              .post(helper.generateCollectorPath('shutdown', RUN_ID))
-              .reply(200, {return_value: null})
+          var shutdown = nock(URL)
+            .post(helper.generateCollectorPath('shutdown', RUN_ID))
+            .reply(200, {return_value: null})
 
           agent.stop(function cb_stop(error) {
             should.not.exist(error)
@@ -621,20 +622,25 @@ describe('the New Relic agent', function() {
         }
 
         var redirect = nock(URL)
-                         .post(helper.generateCollectorPath('preconnect'))
-                         .reply(200, {return_value: 'collector.newrelic.com'})
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: 'collector.newrelic.com',
+              security_policies: {}
+            }
+          })
         var handshake = nock(URL)
-                          .post(helper.generateCollectorPath('connect'))
-                          .reply(200, {return_value: config})
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: config})
         var settings = nock(URL)
-                          .post(helper.generateCollectorPath('agent_settings', 404))
-                          .reply(200, {return_value: config})
+            .post(helper.generateCollectorPath('agent_settings', 404))
+            .reply(200, {return_value: config})
         var metrics = nock(URL)
-                          .post(helper.generateCollectorPath('metric_data', 404))
-                          .reply(200, {return_value: []})
+            .post(helper.generateCollectorPath('metric_data', 404))
+            .reply(200, {return_value: []})
         var shutdown = nock(URL)
-                          .post(helper.generateCollectorPath('shutdown', 404))
-                          .reply(200, {return_value: null})
+            .post(helper.generateCollectorPath('shutdown', 404))
+            .reply(200, {return_value: null})
 
         agent.start(function cb_start(error) {
           should.not.exist(error)
@@ -711,8 +717,8 @@ describe('the New Relic agent', function() {
     })
 
     describe('when parsing metric mappings', function() {
-      var NAME     = 'Custom/Test/events'
-      var SCOPE    = 'TEST'
+      var NAME = 'Custom/Test/events'
+      var SCOPE = 'TEST'
       var METRICID = 17
 
 
@@ -721,15 +727,14 @@ describe('the New Relic agent', function() {
       })
 
       it('should not throw if no new rules are received', function(done) {
-        var metrics =
-          nock(URL)
+        var metrics = nock(URL)
             .post(helper.generateCollectorPath('metric_data', RUN_ID))
             .reply(200, {return_value: null})
 
         // need metrics or agent won't make a call against the collector
         agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
-        agent.harvest(function cb_harvest(error) {
+        agent.harvest(function(error) {
           should.not.exist(error)
 
           metrics.done()
@@ -741,15 +746,14 @@ describe('the New Relic agent', function() {
         var rules = [[{name: 'Test/RenameMe1'}, 1001],
                      [{name: 'Test/RenameMe2', scope: 'TEST'}, 1002]]
 
-        var metrics =
-          nock(URL)
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value: rules})
+        var metrics = nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value: rules})
 
         // need metrics or agent won't make a call against the collector
         agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
-        agent.harvest(function cb_harvest(error) {
+        agent.harvest(function(error) {
           should.not.exist(error)
 
           metrics.done()
@@ -760,16 +764,15 @@ describe('the New Relic agent', function() {
       it('should add them to the existing mappings', function(done) {
         var rules = [[{name: NAME, scope: SCOPE}, METRICID]]
 
-        var metrics =
-          nock(URL)
-            .post(helper.generateCollectorPath('metric_data', RUN_ID))
-            .reply(200, {return_value: rules})
+        var metrics = nock(URL)
+          .post(helper.generateCollectorPath('metric_data', RUN_ID))
+          .reply(200, {return_value: rules})
 
         // need metrics or agent won't make a call against the collector
         agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
         agent.config.run_id = RUN_ID
-        agent.harvest(function cb_harvest(error) {
+        agent.harvest(function(error) {
           should.not.exist(error)
           expect(agent.mapper.map(NAME, SCOPE)).equal(17)
 
@@ -908,15 +911,14 @@ describe('the New Relic agent', function() {
     it('sends transactions to the new error handler after harvest', function(done) {
       agent.metrics.started = 1337
 
-      var metricData =
-        nock(URL)
-          .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value: []})
+      var metricData = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', RUN_ID))
+        .reply(200, {return_value: []})
 
       // need metrics or agent won't make a call against the collector
       agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
-      agent.harvest(function cb_harvest() {
+      agent.harvest(function() {
         metricData.done()
 
         agent.errors = {
@@ -1016,14 +1018,14 @@ describe('the New Relic agent', function() {
         cb()
       }
 
-      var old_ed = agent.collector.errorData
+      var oldErrorData = agent.collector.errorData
       agent.collector.errorData = function(errors, cb) {
         cb()
       }
 
-      agent.harvest(function cb_harvest() {
+      agent.harvest(function() {
         expect(agent.errors.errorCount).equal(0)
-        agent.collector.errorData = old_ed
+        agent.collector.errorData = oldErrorData
         done()
       })
     })
@@ -1046,7 +1048,7 @@ describe('the New Relic agent', function() {
         cb()
       }
 
-      agent.harvest(function cb_harvest() {
+      agent.harvest(function() {
         expect(agent.errors.errorCount).equal(0)
         agent.config.error_collector.enabled = old_config
         done()
@@ -1054,14 +1056,13 @@ describe('the New Relic agent', function() {
     })
 
     it('bails out early when sending metrics fails', function(done) {
-      var metricData =
-        nock(URL)
-          .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(503)
+      var metricData = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', RUN_ID))
+        .reply(503)
 
       agent.errors.add(null, new Error('application code error'))
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.exist(error)
         expect(error.message).equal('No body found in response to metric_data.')
 
@@ -1071,18 +1072,16 @@ describe('the New Relic agent', function() {
     })
 
     it('bails out early when sending errors fails', function(done) {
-      var metricData =
-        nock(URL)
-          .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value: null})
-      var errorData =
-        nock(URL)
-          .post(helper.generateCollectorPath('error_data', RUN_ID))
-          .reply(503)
+      var metricData = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', RUN_ID))
+        .reply(200, {return_value: null})
+      var errorData = nock(URL)
+        .post(helper.generateCollectorPath('error_data', RUN_ID))
+        .reply(503)
 
       agent.errors.add(null, new Error('application code error'))
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.exist(error)
         expect(error.message).equal('No body found in response to error_data.')
 
@@ -1093,14 +1092,12 @@ describe('the New Relic agent', function() {
     })
 
     it('does not send errors when error tracer disabled', function(done) {
-      var settings =
-        nock(URL)
-          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value: []})
-      var metricData =
-        nock(URL)
-          .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value: []})
+      var settings = nock(URL)
+        .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+        .reply(200, {return_value: []})
+      var metricData = nock(URL)
+        .post(helper.generateCollectorPath('metric_data', RUN_ID))
+        .reply(200, {return_value: []})
 
       agent.errors.add(null, new TypeError('no method last on undefined'))
       agent.errors.add(null, new Error('application code error'))
@@ -1109,7 +1106,7 @@ describe('the New Relic agent', function() {
       // do this here so error traces get collected but not sent
       agent.config.onConnect({'error_collector.enabled': false})
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1142,7 +1139,7 @@ describe('the New Relic agent', function() {
       // do this here so error traces get collected but not sent
       agent.config.onConnect({collect_errors: false})
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1182,7 +1179,7 @@ describe('the New Relic agent', function() {
       agent.config.slow_sql.enabled = false
 
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1240,7 +1237,7 @@ describe('the New Relic agent', function() {
           .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
           .reply(200, {return_value: null})
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1298,7 +1295,7 @@ describe('the New Relic agent', function() {
         expect(Object.keys(agent.queries.samples).length).equal(0)
       }
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         expect(Object.keys(agent.queries.samples).length).equal(1)
         expect(error.statusCode).equal(500)
 
@@ -1339,7 +1336,7 @@ describe('the New Relic agent', function() {
       // do this here so slow trace gets collected but not sent
       agent.config.onConnect({'transaction_tracer.enabled': false})
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1382,7 +1379,7 @@ describe('the New Relic agent', function() {
       // set this here so slow trace gets collected but not sent
       agent.config.onConnect({collect_traces: false})
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1423,7 +1420,7 @@ describe('the New Relic agent', function() {
           .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
           .reply(200, {return_value: null})
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         should.not.exist(error)
 
         metricData.done()
@@ -1454,7 +1451,7 @@ describe('the New Relic agent', function() {
           .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
           .reply(503)
 
-      agent.harvest(function cb_harvest(error) {
+      agent.harvest(function(error) {
         expect(error.message)
           .equal('No body found in response to transaction_sample_data.')
 
