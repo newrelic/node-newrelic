@@ -90,6 +90,11 @@ tap.test('Hapi router introspection', function(t) {
   t.test('using `pre` config option', function(t) {
     agent.on('transactionFinished', utils.verifier(t))
 
+    server.method('test', function(arg, next) {
+      t.ok(agent.getTransaction(), 'transaction available in server method')
+      next()
+    })
+
     var route = {
       method: 'GET',
       path: '/test/{id}',
@@ -98,6 +103,9 @@ tap.test('Hapi router introspection', function(t) {
           function plain(req, reply) {
             t.ok(agent.getTransaction(), 'transaction available in plain `pre` function')
             reply()
+          },
+          {
+            method: 'test'
           },
           [
             {
