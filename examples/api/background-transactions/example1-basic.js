@@ -4,7 +4,7 @@ var newrelic = require('newrelic')
 
 var transactionName = 'myCustomTransaction'
 
-// startBackgroundTransaction() takes a name, group, and a handler function to
+// `startBackgroundTransaction()` takes a name, group, and a handler function to
 // execute. The group is optional. The last parameter is the function performing
 // the work inside the transaction. Once the transaction starts, there are
 // three ways to end it:
