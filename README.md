@@ -708,15 +708,17 @@ returned transaction is a custom one, started with either `startWebTransaction`
 or `startBackgroundTransaction`, then `transaction.end()` must be called to
 end the transaction.
 
-#### newrelic.createTracer(name, handle)
+#### newrelic.startSegment(name, record, handler, callback)
 
-`name` is the name of the tracer. It will show up as a segment in your
-transaction traces and create its own metric. `handle` is the function to be
-bound to the tracer.
+`name` is the name of the segment. `record` is a boolean value signalling
+whether or not to record the segment as a metric. `handler` is the function
+being recorded. `callback` is an optional function that is passed to the
+handler and fired after all other work is complete.
 
-Timing is from when `createTracer` is called until the `handle` done executing.
-This should be called inside of a transaction to get data. If it is called
-outside of a transaction it will just pass through.
+Timing is from when `startSegment` is called until the `handler` is done
+executing, or when the `callback` is fired, if it's supplied. This method
+should be called inside of a transaction to get data. If it is called outside
+of a transaction it will just pass through.
 
 #### newrelic.recordMetric(name, value)
 
