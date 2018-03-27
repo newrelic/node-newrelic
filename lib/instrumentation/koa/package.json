@@ -25,5 +25,8 @@
     "semver": "^5.5.0",
     "tap": "^10.7.3"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "peerDependencies": {
+    "newrelic": "^3.2.0"
+  }
 }
