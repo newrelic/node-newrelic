@@ -5,6 +5,7 @@ var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
 var fs = require('fs')
+var sinon = require('sinon')
 var Config = require('../../../lib/config')
 var securityPolicies = require('../../lib/fixtures').securityPolicies
 
@@ -1398,17 +1399,17 @@ describe('the agent configuration', function() {
     })
 
     it('returns the new value if the current one is undefined', function() {
-      var val = config._getMostSecure('transaction_tracer.record_sql', undefined, 'off')
+      var val = config._getMostSecure('record_sql', undefined, 'off')
       expect(val).to.equal('off')
     })
 
     it('returns the most strict if it does not know either value', function() {
-      var val = config._getMostSecure('transaction_tracer.record_sql', undefined, 'dunno')
+      var val = config._getMostSecure('record_sql', undefined, 'dunno')
       expect(val).to.equal('off')
     })
 
     it('should work as a pass through for unknown config options', function() {
-      var val = config._getMostSecure('transaction_tracer.enabled', undefined, 'dunno')
+      var val = config._getMostSecure('unknown.option', undefined, 'dunno')
       expect(val).to.equal('dunno')
     })
   })
@@ -1416,9 +1417,18 @@ describe('the agent configuration', function() {
   describe('#applyLasp', function() {
     var config
     var policies
+    var agent
 
     beforeEach(function(done) {
-      config = new Config()
+      agent = {
+        resetErrors: sinon.spy(),
+        resetCustomEvents: sinon.spy(),
+        resetQueries: sinon.spy(),
+        traces: {
+          syntheticsTraces: []
+        }
+      }
+      agent.config = config = new Config()
       config.security_policies_token = 'TEST-TEST-TEST-TEST'
       policies = securityPolicies()
       done()
@@ -1433,7 +1443,7 @@ describe('the agent configuration', function() {
         done()
       }
 
-      config.applyLasp({}, cb)
+      config.applyLasp(agent, {}, cb)
     })
 
     it('returns error if required policy is not implemented or unknown', function(done) {
@@ -1445,15 +1455,18 @@ describe('the agent configuration', function() {
       policies.job_arguments = { enabled: true, required: true }
       policies.test = { enabled: true, required: true }
 
-      config.applyLasp(policies, cb)
+      config.applyLasp(agent, policies, cb)
     })
 
     it('takes the most secure from local', function(done) {
       var cb = function(err, res) {
         expect(config.transaction_tracer.record_sql).to.equal('off')
+        expect(agent.resetQueries.callCount).to.equal(0)
         expect(config.attributes.include_enabled).to.equal(false)
         expect(config.strip_exception_messages.enabled).to.equal(true)
+        expect(agent.resetErrors.callCount).to.equal(0)
         expect(config.api.custom_events_enabled).to.equal(false)
+        expect(agent.resetCustomEvents.callCount).to.equal(0)
         expect(config.api.custom_attributes_enabled).to.equal(false)
         Object.keys(res).forEach(function checkPolicy(key) {
           expect(res[key].enabled).to.be.false()
@@ -1471,15 +1484,18 @@ describe('the agent configuration', function() {
         policies[key].enabled = true
       })
 
-      config.applyLasp(policies, cb)
+      config.applyLasp(agent, policies, cb)
     })
 
     it('takes the most secure from lasp', function(done) {
       var cb = function(err, res) {
         expect(config.transaction_tracer.record_sql).to.equal('off')
+        expect(agent.resetQueries.callCount).to.equal(1)
         expect(config.attributes.include_enabled).to.equal(false)
         expect(config.strip_exception_messages.enabled).to.equal(true)
+        expect(agent.resetErrors.callCount).to.equal(1)
         expect(config.api.custom_events_enabled).to.equal(false)
+        expect(agent.resetCustomEvents.callCount).to.equal(1)
         expect(config.api.custom_attributes_enabled).to.equal(false)
         Object.keys(res).forEach(function checkPolicy(key) {
           expect(res[key].enabled).to.be.false()
@@ -1497,7 +1513,7 @@ describe('the agent configuration', function() {
         policies[key].enabled = false
       })
 
-      config.applyLasp(policies, cb)
+      config.applyLasp(agent, policies, cb)
     })
 
     it('allow permissive settings', function(done) {
@@ -1523,7 +1539,7 @@ describe('the agent configuration', function() {
         policies[key].enabled = true
       })
 
-      config.applyLasp(policies, cb)
+      config.applyLasp(agent, policies, cb)
     })
 
     it('returns error if expected policy is not sent from server', function(done) {
@@ -1534,7 +1550,7 @@ describe('the agent configuration', function() {
 
       delete policies.record_sql
 
-      config.applyLasp(policies, cb)
+      config.applyLasp(agent, policies, cb)
     })
 
     it('should return known policies', function(done) {
@@ -1550,7 +1566,7 @@ describe('the agent configuration', function() {
         done()
       }
 
-      config.applyLasp(policies, cb)
+      config.applyLasp(agent, policies, cb)
     })
   })
 })
