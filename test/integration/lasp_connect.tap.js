@@ -1,10 +1,10 @@
 'use strict'
 
 var tap = require('tap')
-var proxySetup = require('proxy')
 var configurator = require('../../lib/config')
 var Agent = require('../../lib/agent')
 var CollectorAPI = require('../../lib/collector/api')
+
 tap.test('connecting with a LASP token should not error', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
@@ -24,6 +24,7 @@ tap.test('connecting with a LASP token should not error', function(t) {
   })
   var agent = new Agent(config)
   var api = new CollectorAPI(agent)
+
   api.connect(function(error, returned) {
     t.notOk(error, 'connected without error')
     t.ok(returned, 'got boot configuration')
