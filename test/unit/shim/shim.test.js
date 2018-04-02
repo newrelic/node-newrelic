@@ -713,6 +713,26 @@ describe('Shim', function() {
           wrapped(function() {})
         })
       })
+
+      it('should not throw when using an ended segment as parent', function() {
+        helper.runInTransaction(agent, function(tx) {
+          tx.end()
+          var wrapped = shim.record(function(cb) {
+            expect(shim.isWrapped(cb)).to.not.be.true()
+            expect(agent.getTransaction()).to.equal(null)
+          }, function() {
+            return {
+              name: 'test segment',
+              internal: true,
+              callback: shim.LAST,
+              parent: tx.trace.root
+            }
+          })
+          expect(function() {
+            wrapped(function(){})
+          }).to.not.throw()
+        })
+      })
     })
 
     describe('with a stream', function() {
