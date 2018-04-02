@@ -787,7 +787,7 @@ describe('Shim', function() {
           done()
         }, 5)
       })
-      
+
       it('should make the segment translucent when `error` is emitted', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', stream: true, opaque: true}
