@@ -561,6 +561,23 @@ describe('DatastoreShim', function() {
         })
       })
 
+      it('should allow after handlers to be specified', function() {
+        var executed = false
+        var toWrap = function() {}
+        var wrapped = shim.recordQuery(toWrap, {
+          query: function() {return 'test'},
+          after: function() {
+            executed = true
+          }
+        })
+
+        helper.runInTransaction(agent, function() {
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
+      })
+
       it('should bind the callback if there is one', function() {
         var cb = function() {}
         var toWrap = function(_query, wrappedCB) {
