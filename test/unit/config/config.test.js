@@ -1421,9 +1421,9 @@ describe('the agent configuration', function() {
 
     beforeEach(function(done) {
       agent = {
-        resetErrors: sinon.spy(),
-        resetCustomEvents: sinon.spy(),
-        resetQueries: sinon.spy(),
+        _resetErrors: sinon.spy(),
+        _resetCustomEvents: sinon.spy(),
+        _resetQueries: sinon.spy(),
         traces: {
           syntheticsTraces: []
         }
