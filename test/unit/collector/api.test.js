@@ -531,6 +531,43 @@ describe('CollectorAPI', function() {
           done()
         })
       })
+
+      it('drops data collected before connect when policies are updated', function(done) {
+        agent.config.transaction_tracer.record_sql = 'raw'
+        agent.config.api.custom_events_enabled = true
+
+        agent.queries = 'will be overwritten'
+        agent.customEvents = 'will be overwritten'
+
+        var valid = {
+          capture_params: true,
+          agent_run_id: RUN_ID,
+          security_policies: policies
+        }
+        var response = {return_value: valid}
+
+        var redirection = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST,
+              security_policies: policies
+            }
+          })
+        var connection = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, response)
+
+        api.connect(function test(error, config, json) {
+          expect(json).to.deep.equal(response)
+          expect(agent.queries).to.not.equal('will be overwritten')
+          expect(agent.customEvents).to.not.equal('will be overwritten')
+
+          redirection.done()
+          connection.done()
+          done()
+        })
+      })
     })
 
     describe('on the happy path', function() {

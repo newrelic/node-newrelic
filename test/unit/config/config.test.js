@@ -1461,12 +1461,12 @@ describe('the agent configuration', function() {
     it('takes the most secure from local', function(done) {
       var cb = function(err, res) {
         expect(config.transaction_tracer.record_sql).to.equal('off')
-        expect(agent.resetQueries.callCount).to.equal(0)
+        expect(agent._resetQueries.callCount).to.equal(0)
         expect(config.attributes.include_enabled).to.equal(false)
         expect(config.strip_exception_messages.enabled).to.equal(true)
-        expect(agent.resetErrors.callCount).to.equal(0)
+        expect(agent._resetErrors.callCount).to.equal(0)
         expect(config.api.custom_events_enabled).to.equal(false)
-        expect(agent.resetCustomEvents.callCount).to.equal(0)
+        expect(agent._resetCustomEvents.callCount).to.equal(0)
         expect(config.api.custom_attributes_enabled).to.equal(false)
         Object.keys(res).forEach(function checkPolicy(key) {
           expect(res[key].enabled).to.be.false()
@@ -1490,12 +1490,12 @@ describe('the agent configuration', function() {
     it('takes the most secure from lasp', function(done) {
       var cb = function(err, res) {
         expect(config.transaction_tracer.record_sql).to.equal('off')
-        expect(agent.resetQueries.callCount).to.equal(1)
+        expect(agent._resetQueries.callCount).to.equal(1)
         expect(config.attributes.include_enabled).to.equal(false)
         expect(config.strip_exception_messages.enabled).to.equal(true)
-        expect(agent.resetErrors.callCount).to.equal(1)
+        expect(agent._resetErrors.callCount).to.equal(1)
         expect(config.api.custom_events_enabled).to.equal(false)
-        expect(agent.resetCustomEvents.callCount).to.equal(1)
+        expect(agent._resetCustomEvents.callCount).to.equal(1)
         expect(config.api.custom_attributes_enabled).to.equal(false)
         Object.keys(res).forEach(function checkPolicy(key) {
           expect(res[key].enabled).to.be.false()
