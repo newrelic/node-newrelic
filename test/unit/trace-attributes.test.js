@@ -61,6 +61,46 @@ describe('TraceAttributes', function() {
       expect(res.third).to.be.undefined()
     })
 
+    it('only includes primitive attribute value types', function() {
+      inst = new TraceAttributes({ limit: 10 })
+      inst.attributes = {
+        first: {
+          destinations: 0x01,
+          value: 'first'
+        },
+        second: {
+          destinations: 0x01,
+          value: [ 'second' ]
+        },
+        third: {
+          destinations: 0x01,
+          value: { key: 'third' }
+        },
+        fourth: {
+          destinations: 0x01,
+          value: 4
+        },
+        fifth: {
+          destinations: 0x01,
+          value: true
+        },
+        sixth: {
+          destinations: 0x01,
+          value: undefined
+        },
+        seventh: {
+          destinations: 0x01,
+          value: null
+        }
+      }
+
+      var res = inst.get(0x01)
+      expect(Object.keys(res).length).to.equal(4)
+      expect(res.second).to.be.undefined()
+      expect(res.third).to.be.undefined()
+      expect(res.sixth).to.be.undefined()
+    })
+
     it('returns attributes up to specified limit, regardless of position', function() {
       inst = new TraceAttributes({ limit: 2 })
       inst.attributes = {
