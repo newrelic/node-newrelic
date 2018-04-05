@@ -10,6 +10,7 @@
     "generic-pool": "*",
     "hapi": "*",
     "ioredis": "*",
+    "koa": "*",
     "memcached": "*",
     "mongodb": "*",
     "mysql": "*",

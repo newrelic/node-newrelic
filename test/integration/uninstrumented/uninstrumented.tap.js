@@ -10,6 +10,29 @@ var uninstrumented = require('../../../lib/uninstrumented')
 // Include pg.js and mysql2 special case
 INSTRUMENTATIONS.push('pg.js', 'mysql2')
 
+tap.test('does not falsely mark files with module names as uninstrumented', function(t) {
+  var loaded = []
+
+  require('./mock-config/redis')
+  loaded.push('redis')
+
+  t.ok(loaded.length > 0, 'should have loaded at least one module')
+
+  var mapper = new MetricMapper()
+  var normalizer = new MetricNormalizer({}, 'metric name')
+  var metrics = new Metrics(0, mapper, normalizer)
+
+  uninstrumented.check()
+  uninstrumented.createMetrics(metrics)
+
+  var flagMetrics = metrics.toJSON().filter(function(metric) {
+    return metric[0].name === 'Supportability/Uninstrumented/redis'
+  })
+  t.equal(flagMetrics.length, 0, 'No uninstrumented flag metric present')
+
+  t.end()
+})
+
 // This doesn't test the core http and https modules because we can't detect if
 // core modules have already been loaded.
 tap.test('all instrumented modules should be detected when uninstrumented', function(t) {
