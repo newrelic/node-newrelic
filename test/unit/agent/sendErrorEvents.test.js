@@ -5,10 +5,10 @@ var expect = chai.expect
 var nock = require('nock')
 var sinon = require('sinon')
 
-var Reservoir = require('../../../lib/reservoir.js')
-var helper = require('../../lib/agent_helper.js')
+var PriorityQueue = require('../../../lib/priority-queue')
+var helper = require('../../lib/agent_helper')
 var Transaction = require('../../../lib/transaction')
-var TRANSACTION_ERROR = require('../../../lib/metrics/names.js').TRANSACTION_ERROR
+var TRANSACTION_ERROR = require('../../../lib/metrics/names').TRANSACTION_ERROR
 
 
 describe('the New Relic agent', function() {
@@ -83,7 +83,7 @@ describe('the New Relic agent', function() {
       var error = new Error('some error')
       agent.errors.add(null, error)
 
-      expect(agent.errors.events).to.be.an.instanceof(Reservoir)
+      expect(agent.errors.events).to.be.an.instanceof(PriorityQueue)
 
       agent._sendErrorEvents(function cb__sendErrorEvents() {
         var metrics = events[1]

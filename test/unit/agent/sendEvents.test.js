@@ -3,9 +3,9 @@
 var chai = require('chai')
 var expect = chai.expect
 var nock = require('nock')
-var Reservoir = require('../../../lib/reservoir.js')
-var helper = require('../../lib/agent_helper.js')
-var CUSTOM_EVENTS = require('../../../lib/metrics/names.js').CUSTOM_EVENTS
+var PriorityQueue = require('../../../lib/priority-queue')
+var helper = require('../../lib/agent_helper')
+var CUSTOM_EVENTS = require('../../../lib/metrics/names').CUSTOM_EVENTS
 
 
 /*
@@ -48,7 +48,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should report the reservoir size and number of events seen', function (done) {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
@@ -60,7 +60,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should pass events to server', function (done) {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
@@ -71,7 +71,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should send agent run id', function (done) {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
@@ -89,7 +89,7 @@ describe('the New Relic agent', function () {
           process.nextTick(callback)
         }
       }
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       agent.events = r
       agent._sendEvents(function cb__sendEvents() {
         done()
@@ -100,7 +100,7 @@ describe('the New Relic agent', function () {
       error = {
         statusCode: 500
       }
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
@@ -119,7 +119,7 @@ describe('the New Relic agent', function () {
       error = {
         statusCode: 413
       }
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       var e1 = {id: 1}
       var e2 = {id: 2}
       r.add(e1)
@@ -148,7 +148,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should create supportability metrics', function () {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       r.limit = 1
       r.add({id: 1})
       r.add({id: 2})
@@ -162,7 +162,7 @@ describe('the New Relic agent', function () {
     it('should create a new reservoir with the correct size', function () {
       agent.config.custom_insights_events.max_samples_stored = 1337
       // specifically create a reservoir with a different size
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       r.limit = 100
       // add events to force _processCustomEvents to replace the reservoir
       r.add({id: 1})
@@ -174,7 +174,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should create supportability metrics even when empty', function () {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       agent.customEvents = r
       agent._processCustomEvents()
       expect(agent.metrics.getMetric(CUSTOM_EVENTS.DROPPED).callCount).equal(0)
@@ -183,7 +183,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should create a customEventsPool on agent', function () {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       agent.customEvents = r
       expect(agent).not.property('customEventsPool')
       agent._processCustomEvents()
@@ -214,7 +214,7 @@ describe('the New Relic agent', function () {
     })
 
     it('should push events to the server', function (done) {
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       var e = {some: 'thing'}
       r.add(e)
       agent.customEventsPool = r.toArray()
@@ -232,7 +232,7 @@ describe('the New Relic agent', function () {
           process.nextTick(callback)
         }
       }
-      var r = new Reservoir()
+      var r = new PriorityQueue()
       agent.customEventsPool = r.toArray()
       agent._sendCustomEvents(function cb__sendCustomEvents() {
         done()
@@ -243,8 +243,8 @@ describe('the New Relic agent', function () {
       error = {
         statusCode: 500
       }
-      var previous = new Reservoir()
-      var actual = new Reservoir()
+      var previous = new PriorityQueue()
+      var actual = new PriorityQueue()
       var e = {id: 1}
       previous.add(e)
       agent.customEventsPool = previous.toArray()
@@ -263,8 +263,8 @@ describe('the New Relic agent', function () {
       error = {
         statusCode: 413
       }
-      var previous = new Reservoir()
-      var actual = new Reservoir()
+      var previous = new PriorityQueue()
+      var actual = new PriorityQueue()
       var e = {id: 1}
       previous.add(e)
       agent.customEventsPool = previous.toArray()
