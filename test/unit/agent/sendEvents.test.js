@@ -7,32 +7,25 @@ var PriorityQueue = require('../../../lib/priority-queue')
 var helper = require('../../lib/agent_helper')
 var CUSTOM_EVENTS = require('../../../lib/metrics/names').CUSTOM_EVENTS
 
-
-/*
- *
- * CONSTANTS
- *
- */
 var RUN_ID = 1337
 
-
-describe('the New Relic agent', function () {
-  before(function () {
+describe('the New Relic agent', function() {
+  before(function() {
     nock.disableNetConnect()
   })
 
-  after(function () {
+  after(function() {
     nock.enableNetConnect()
   })
 
-  describe('_sendEvents', function () {
+  describe('_sendEvents', function() {
     var agent, events, error
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
 
       agent.collector = {
-        analyticsEvents: function (_events, callback) {
+        analyticsEvents: function(_events, callback) {
           events = _events
           process.nextTick(function() {
             callback(error)
@@ -41,62 +34,62 @@ describe('the New Relic agent', function () {
       }
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
       events = undefined
       error = undefined
     })
 
-    it('should report the reservoir size and number of events seen', function (done) {
+    it('should report the reservoir size and number of events seen', function(done) {
       var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
-      agent._sendEvents(function cb__sendEvents() {
+      agent._sendEvents(function() {
         expect(events[1].reservoir_size).equals(r.limit)
         expect(events[1].events_seen).equals(1)
         done()
       })
     })
 
-    it('should pass events to server', function (done) {
+    it('should pass events to server', function(done) {
       var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
-      agent._sendEvents(function cb__sendEvents() {
+      agent._sendEvents(function() {
         expect(events[2][0]).equals(e)
         done()
       })
     })
 
-    it('should send agent run id', function (done) {
+    it('should send agent run id', function(done) {
       var r = new PriorityQueue()
       var e = {id: 1}
       r.add(e)
       agent.events = r
       agent.config.run_id = RUN_ID
-      agent._sendEvents(function cb__sendEvents() {
+      agent._sendEvents(function() {
         expect(events[0]).equals(RUN_ID)
         done()
       })
     })
 
-    it('should not try to send if there are no events', function (done) {
+    it('should not try to send if there are no events', function(done) {
       agent.collector = {
-        analyticsEvents: function (_events, callback) {
+        analyticsEvents: function(_events, callback) {
           throw new Error('What is this, how did you get here?')
           process.nextTick(callback)
         }
       }
       var r = new PriorityQueue()
       agent.events = r
-      agent._sendEvents(function cb__sendEvents() {
+      agent._sendEvents(function() {
         done()
       })
     })
 
-    it('should resample events if push failed with a 500', function (done) {
+    it('should resample events if push failed with a 500', function(done) {
       error = {
         statusCode: 500
       }
@@ -105,7 +98,7 @@ describe('the New Relic agent', function () {
       r.add(e)
       agent.events = r
 
-      agent._sendEvents(function cb__sendEvents(err) {
+      agent._sendEvents(function(err) {
         expect(err).equal(error)
         var myEvents = agent.events.toArray()
         expect(myEvents).length(1)
@@ -115,7 +108,7 @@ describe('the New Relic agent', function () {
       })
     })
 
-    it('should not resample events if push failed with a 413', function (done) {
+    it('should not resample events if push failed with a 413', function(done) {
       error = {
         statusCode: 413
       }
@@ -126,28 +119,27 @@ describe('the New Relic agent', function () {
       r.add(e2)
       agent.events = r
 
-      agent._sendEvents(function cb__sendEvents(err) {
+      agent._sendEvents(function(err) {
         expect(err).equal(error)
         var myEvents = agent.events.toArray()
         expect(myEvents).length(0)
         done()
       })
     })
-
   })
 
-  describe('_processCustomEvents', function () {
+  describe('_processCustomEvents', function() {
     var agent
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should create supportability metrics', function () {
+    it('should create supportability metrics', function() {
       var r = new PriorityQueue()
       r.limit = 1
       r.add({id: 1})
@@ -159,12 +151,12 @@ describe('the New Relic agent', function () {
       expect(agent.metrics.getMetric(CUSTOM_EVENTS.SENT).callCount).equal(1)
     })
 
-    it('should create a new reservoir with the correct size', function () {
+    it('should create a new reservoir with the correct size', function() {
       agent.config.custom_insights_events.max_samples_stored = 1337
-      // specifically create a reservoir with a different size
+      // specifically create a queue with a different size
       var r = new PriorityQueue()
       r.limit = 100
-      // add events to force _processCustomEvents to replace the reservoir
+      // add events to force _processCustomEvents to replace the queue
       r.add({id: 1})
       r.add({id: 2})
       agent.customEvents = r
@@ -173,7 +165,7 @@ describe('the New Relic agent', function () {
       expect(agent.customEvents.limit).equal(1337)
     })
 
-    it('should create supportability metrics even when empty', function () {
+    it('should create supportability metrics even when empty', function() {
       var r = new PriorityQueue()
       agent.customEvents = r
       agent._processCustomEvents()
@@ -182,7 +174,7 @@ describe('the New Relic agent', function () {
       expect(agent.metrics.getMetric(CUSTOM_EVENTS.SENT).callCount).equal(0)
     })
 
-    it('should create a customEventsPool on agent', function () {
+    it('should create a customEventsPool on agent', function() {
       var r = new PriorityQueue()
       agent.customEvents = r
       expect(agent).not.property('customEventsPool')
@@ -191,55 +183,55 @@ describe('the New Relic agent', function () {
     })
   })
 
-  describe('_sendCustomEvents', function () {
+  describe('_sendCustomEvents', function() {
     var agent, events, error
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
 
       agent.collector = {
-        customEvents: function (_events, callback) {
+        customEvents: function(_events, callback) {
           events = _events
-          process.nextTick(function () {
+          process.nextTick(function() {
             callback(error)
           })
         }
       }
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
       events = undefined
       error = undefined
     })
 
-    it('should push events to the server', function (done) {
+    it('should push events to the server', function(done) {
       var r = new PriorityQueue()
       var e = {some: 'thing'}
       r.add(e)
       agent.customEventsPool = r.toArray()
-      agent._sendCustomEvents(function cb__sendCustomEvents() {
+      agent._sendCustomEvents(function() {
         expect(events).length(2)
         expect(events[1][0]).equal(e)
         done()
       })
     })
 
-    it('should not try to send if there are no events', function (done) {
+    it('should not try to send if there are no events', function(done) {
       agent.collector = {
-        customEvents: function (_events, callback) {
+        customEvents: function(_events, callback) {
           throw new Error('What is this, how did you get here?')
           process.nextTick(callback)
         }
       }
       var r = new PriorityQueue()
       agent.customEventsPool = r.toArray()
-      agent._sendCustomEvents(function cb__sendCustomEvents() {
+      agent._sendCustomEvents(function() {
         done()
       })
     })
 
-    it('should resample events if push failed with a 500', function (done) {
+    it('should resample events if push failed with a 500', function(done) {
       error = {
         statusCode: 500
       }
@@ -250,7 +242,7 @@ describe('the New Relic agent', function () {
       agent.customEventsPool = previous.toArray()
       agent.customEvents = actual
 
-      agent._sendCustomEvents(function cb__sendCustomEvents(err) {
+      agent._sendCustomEvents(function(err) {
         expect(err).equal(error)
         var myEvents = actual.toArray()
         expect(myEvents).length(1)
@@ -259,7 +251,7 @@ describe('the New Relic agent', function () {
       })
     })
 
-    it('should not resample events if push failed with a 413', function (done) {
+    it('should not resample events if push failed with a 413', function(done) {
       error = {
         statusCode: 413
       }
@@ -270,7 +262,7 @@ describe('the New Relic agent', function () {
       agent.customEventsPool = previous.toArray()
       agent.customEvents = actual
 
-      agent._sendCustomEvents(function cb__sendCustomEvents(err) {
+      agent._sendCustomEvents(function(err) {
         expect(err).equal(error)
         var myEvents = actual.toArray()
         expect(myEvents).length(0)
