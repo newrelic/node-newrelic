@@ -54,11 +54,19 @@ test('background transactions should not blow up with CAT', function(t) {
       t.ok(intrinsic['nr.guid'], 'web should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'web should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'web should have an nr.pathHash on event')
-      t.ok(intrinsic['nr.referringPathHash'], 'web should have an nr.referringPathHash on event')
-      t.ok(intrinsic['nr.referringTransactionGuid'], 'web should have an nr.referringTransactionGuid on event')
+      t.ok(
+        intrinsic['nr.referringPathHash'],
+        'web should have an nr.referringPathHash on event'
+      )
+      t.ok(intrinsic[
+        'nr.referringTransactionGuid'],
+        'web should have an nr.referringTransactionGuid on event'
+      )
       t.ok(intrinsic['nr.apdexPerfZone'], 'web should have an nr.apdexPerfZone on event')
-      t.notOk(intrinsic['nr.alternatePathHashes'], 'web should not have an nr.alternatePathHashes on event')
-
+      t.notOk(
+        intrinsic['nr.alternatePathHashes'],
+        'web should not have an nr.alternatePathHashes on event'
+      )
     },
     function background(trans, slot) {
       t.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
@@ -67,14 +75,26 @@ test('background transactions should not blow up with CAT', function(t) {
       t.ok(intrinsic['nr.guid'], 'bg should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'bg should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'bg should have an nr.pathHash on event')
-      t.notOk(intrinsic['nr.referringPathHash'], 'bg should not have an nr.referringPathHash on event')
-      t.notOk(intrinsic['nr.referringTransactionGuid'], 'bg should not have an nr.referringTransactionGuid on event')
-      t.notOk(intrinsic['nr.apdexPerfZone'], 'bg should have an nr.apdexPerfZone on event')
-      t.notOk(intrinsic['nr.alternatePathHashes'], 'bg should have an nr.alternatePathHashes on event')
+      t.notOk(
+        intrinsic['nr.referringPathHash'],
+        'bg should not have an nr.referringPathHash on event'
+      )
+      t.notOk(
+        intrinsic['nr.referringTransactionGuid'],
+        'bg should not have an nr.referringTransactionGuid on event'
+      )
+      t.notOk(
+        intrinsic['nr.apdexPerfZone'],
+        'bg should have an nr.apdexPerfZone on event'
+      )
+      t.notOk(
+        intrinsic['nr.alternatePathHashes'],
+        'bg should have an nr.alternatePathHashes on event'
+      )
     }
   ]
   var count = 0
-  agent.on('transactionFinished', function (trans) {
+  agent.on('transactionFinished', function(trans) {
     finishedHandlers[count](trans, count)
     count += 1
   })
