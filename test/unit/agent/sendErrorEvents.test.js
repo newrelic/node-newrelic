@@ -74,9 +74,11 @@ describe('the New Relic agent', function() {
       agent.errors.add(null, error)
       agent.config.run_id = 1234
 
-      agent._sendErrorEvents(function() {
-        expect(events[0]).equals(1234)
-        done()
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
+          expect(events[0]).equals(1234)
+          done()
+        })
       })
     })
 
@@ -86,12 +88,14 @@ describe('the New Relic agent', function() {
 
       expect(agent.errors.events).to.be.an.instanceof(PriorityQueue)
 
-      agent._sendErrorEvents(function() {
-        var metrics = events[1]
-        expect(metrics).to.be.an('object')
-        expect(metrics).to.have.property('reservoir_size')
-        expect(metrics).to.have.property('events_seen')
-        done()
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
+          var metrics = events[1]
+          expect(metrics).to.be.an('object')
+          expect(metrics).to.have.property('reservoir_size')
+          expect(metrics).to.have.property('events_seen')
+          done()
+        })
       })
     })
 
@@ -113,17 +117,6 @@ describe('the New Relic agent', function() {
       var error = new Error('some error')
       agent.errors.add(null, error)
       var e = agent.errors.getEvents()[0]
-
-      agent.collector = {
-        isConnected: function() { return true },
-        metricData: function(payload, callback) {
-          process.nextTick(callback)
-        },
-        errorEvents: function(_events, callback) {
-          events = _events
-          process.nextTick(callback)
-        }
-      }
 
       // MK: this is not ideal that we need to make call to sendMetrics in order
       // to test sendErrorEvents(), but that's how custom events now work as as well
