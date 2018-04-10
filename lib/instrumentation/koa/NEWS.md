@@ -1,3 +1,10 @@
+### 1.0.3 (2018-04-10):
+
+* Added support for the `koa-route` routing module.
+
+  Transactions will now be correctly named when routing using the `koa-route`
+  module.  Huge thanks to @shumsky for the contribution!
+
 ### 1.0.2 (2018-03-22):
 
 * Added check against `Koa.prototype` before instrumenting.
