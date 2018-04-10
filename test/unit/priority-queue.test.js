@@ -20,7 +20,7 @@ describe('PriorityQueue', function() {
         'parent', 'left child', 'right child', 'left grandchild'
       ])
     })
-    it('replaces lowest priority item if limit is met and rebalances itself', function() {
+    it('replaces lowest priority item if limit is met', function() {
       queue = new PriorityQueue(4)
 
       queue.add('right child', 10)
@@ -35,7 +35,7 @@ describe('PriorityQueue', function() {
       queue.add('new parent', 2)
 
       expect(queue.toArray()).to.deep.equal([
-        'new parent', 'left grandchild', 'left child', 'right child'
+        'new parent', 'left child', 'right child', 'left grandchild'
       ])
     })
   })
@@ -47,9 +47,22 @@ describe('PriorityQueue', function() {
       expect(queue.limit).to.equal(5)
       queue.setLimit(10)
       expect(queue.limit).to.equal(10)
-      queue._data = [1, 2, 3, 4, 5, 6]
+      queue._data = [
+        {value: 0, priority: 0.5},
+        {value: 1, priority: 1},
+        {value: 2, priority: 2},
+        {value: 3, priority: 3},
+        {value: 4, priority: 4},
+        {value: 5, priority: 5}
+      ]
       queue.setLimit(5)
-      expect(queue._data).to.deep.equal([1, 2, 3, 4, 5])
+      expect(queue._data).to.deep.equal([
+        {value: 1, priority: 1},
+        {value: 3, priority: 3},
+        {value: 2, priority: 2},
+        {value: 5, priority: 5},
+        {value: 4, priority: 4}
+      ])
     })
   })
 })
