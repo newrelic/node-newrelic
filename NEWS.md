@@ -4,7 +4,7 @@
   (but not `undefined`).
 
   Previously the agent was only enforcing byte limits on string values, resulting
-  in overly large arrays to be collected. This brings the agent in line with other
+  in overly large arrays being collected. This brings the agent in line with other
   language agents.
 
 * The `DatastoreShim` will now respect specified `after` handlers.
@@ -17,7 +17,7 @@
   segment before running a method under instrumentation.
 
   Previously the agent would unconditionally run a method under a specified
-  parent. The shim expects the parent to exist and be active, and will threw
+  parent. The shim expects the parent to exist and be active, and will throw
   errors in the case where the parent belongs to an inactive transaction.
 
 ### 3.3.0 (2018-03-27):
