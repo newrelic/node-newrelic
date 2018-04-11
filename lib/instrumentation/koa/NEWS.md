@@ -1,3 +1,9 @@
+### 1.0.4 (2018-04-11):
+
+* Moved `methods` from `devDependencies` to `dependencies`.
+
+  This fixes an error caused by an oversight in the last release, which included `methods` used as a core dep.
+
 ### 1.0.3 (2018-04-10):
 
 * Added support for the `koa-route` routing module.
