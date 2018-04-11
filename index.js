@@ -42,10 +42,10 @@ function initialize() {
       preAgentTime
     )
 
-    // TODO: Update this check when Node v0.10 is deprecated.
-    if (psemver.satisfies('<0.10.0')) {
+    // TODO: Update this check when Node v4 is deprecated.
+    if (psemver.satisfies('<4.0.0')) {
       message = "New Relic for Node.js requires a version of Node equal to or\n" +
-                "greater than 0.10.0. Not starting!"
+                "greater than 4.0.0. Not starting!"
 
       logger.error(message)
       throw new Error(message)
