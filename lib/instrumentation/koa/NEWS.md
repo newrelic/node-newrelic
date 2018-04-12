@@ -1,3 +1,9 @@
+### 1.0.5 (2018-4-12):
+
+* Upgraded `newrelic` peerDep semver to allow newest major version.
+
+  Thanks @cesine for the PR!
+
 ### 1.0.4 (2018-04-11):
 
 * Moved `methods` from `devDependencies` to `dependencies`.
