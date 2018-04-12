@@ -12,7 +12,7 @@
   continue to use the agent on node versions 0.10 and 0.12 by pinning the agent
   to v3.
 
-  You can read more about the issue here: [link to security bulletin]
+  You can read more about the issue here: https://docs.newrelic.com/docs/using-new-relic/new-relic-security/security-bulletins/security-bulletin-nr18-08
 
 ### 3.3.1 (2018-04-10):
 
