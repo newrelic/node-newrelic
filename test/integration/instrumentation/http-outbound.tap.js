@@ -124,7 +124,7 @@ tap.test('external requests', function(t) {
 
       t.equal(
         segment.name,
-        'External/encrypted.google.com/',
+        'External/encrypted.google.com:443/',
         'should be named'
       )
       t.ok(segment.timer.start, 'should have started')
