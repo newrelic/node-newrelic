@@ -21,7 +21,7 @@
     "koa": "^2.5.0",
     "koa-route": "^3.2.0",
     "koa-router": "^7.4.0",
-    "newrelic": "^3.3.1",
+    "newrelic": "^4.0.0",
     "semver": "^5.5.0",
     "tap": "^10.7.3"
   },
@@ -29,6 +29,6 @@
     "methods": "^1.1.2"
   },
   "peerDependencies": {
-    "newrelic": "^3.3.1"
+    "newrelic": ">=3.3.1"
   }
 }
