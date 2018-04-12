@@ -112,7 +112,7 @@ tap.test('external requests', function(t) {
     var https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
-      https.get('https://encrypted.google.com/', function onResonse(res) {
+      https.get('https://encrypted.google.com:443/', function onResonse(res) {
         res.once('end', check)
         res.resume()
       })
