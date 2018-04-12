@@ -3,6 +3,18 @@
 This guide is intended to help with upgrading major versions of the Node Agent.
 This information can also be found on [our documentation website][upgrade-doc].
 
+## Upgrading to Agent v4
+
+### Breaking Changes
+
+**Upgraded https-proxy-agent from v0 to v2**: This dependency has been updated
+due to a security issue in the version of `https-proxy-agent` the New Relic Node.js
+agent used. `https-proxy` v2 is incompatible with node v0.10 and v0.12,
+requiring deprecation of those versions for the agent. There is no required
+action to migrate from v3 to v4 of New Relic's Node.js agent.
+
+--------------------------------------------------------------------------------
+
 ## Upgrading to Agent v3
 
 ### Breaking Changes
