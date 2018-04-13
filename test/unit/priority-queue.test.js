@@ -65,4 +65,28 @@ describe('PriorityQueue', function() {
       ])
     })
   })
+
+  describe('heapify', function() {
+    it('turns an array into a heap', function() {
+      queue = new PriorityQueue()
+
+      queue._data = [
+        {value: 5, priority: 5},
+        {value: 4, priority: 4},
+        {value: 3, priority: 3},
+        {value: 2, priority: 2},
+        {value: 1, priority: 1}
+      ]
+
+      queue.heapify()
+
+      var i = 0
+      var childIdx = queue._getChildIdx(i)
+      while (childIdx < queue._data.length) {
+        expect(queue._data[childIdx].priority)
+          .to.be.greaterThan(queue._data[i].priority)
+        childIdx = queue._getChildIdx(++i)
+      }
+    })
+  })
 })
