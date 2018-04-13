@@ -111,7 +111,7 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@newrelic/koa": "^1.0.0",
+    "@newrelic/koa": "^1.0.5",
     "async": "^2.1.4",
     "concat-stream": "^1.5.0",
     "https-proxy-agent": "^2.2.1",
