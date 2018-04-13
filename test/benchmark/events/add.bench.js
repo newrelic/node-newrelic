@@ -6,15 +6,13 @@ var PriorityQueue = require('../../../lib/priority-queue')
 var poolSize = 10000
 var queue = new PriorityQueue(poolSize)
 var suite = benchmark.createBenchmark({
-  name: 'PriorityQueue.add',
-  after: function() {
-    queue = new PriorityQueue(poolSize)
-  }
+  name: 'PriorityQueue.add'
 })
 
 suite.add({
   name: 'single event',
   fn: function() {
+    queue._data = []
     queue.add('test')
   }
 })
@@ -22,6 +20,7 @@ suite.add({
 suite.add({
   name: 'filled pool',
   fn: function() {
+    queue._data = []
     for (var i = 0; i < poolSize; ++i) {
       queue.add('test')
     }
@@ -30,13 +29,9 @@ suite.add({
 
 suite.add({
   name: 'overflowing pool',
-  before: function() {
-    for (var i = 0; i < poolSize; ++i) {
-      queue.add('test')
-    }
-  },
   fn: function() {
-    for (var i = 0; i < poolSize; ++i) {
+    queue._data = []
+    for (var i = 0; i < poolSize * 2; ++i) {
       queue.add('test')
     }
   }
