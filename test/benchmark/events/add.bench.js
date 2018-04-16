@@ -30,10 +30,7 @@ suite.add({
 suite.add({
   name: 'overflowing pool',
   fn: function() {
-    queue._data.clear()
-    for (var i = 0; i < poolSize * 2; ++i) {
-      queue.add('test')
-    }
+    queue.add('test')
   }
 })
 
