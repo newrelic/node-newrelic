@@ -211,7 +211,7 @@ describe('the New Relic agent', function() {
       var q = new PriorityQueue()
       var e = {some: 'thing'}
       q.add(e)
-      agent.customEventsPool = q._data
+      agent.customEventsPool = q
       agent._sendCustomEvents(function() {
         expect(events).length(2)
         expect(events[1][0]).equal(e)
@@ -227,7 +227,7 @@ describe('the New Relic agent', function() {
         }
       }
       var q = new PriorityQueue()
-      agent.customEventsPool = q._data
+      agent.customEventsPool = q
       agent._sendCustomEvents(function() {
         done()
       })
@@ -241,7 +241,7 @@ describe('the New Relic agent', function() {
       var actual = new PriorityQueue()
       var e = {id: 1}
       previous.add(e)
-      agent.customEventsPool = previous._data
+      agent.customEventsPool = previous
       agent.customEvents = actual
 
       agent._sendCustomEvents(function(err) {
@@ -261,7 +261,7 @@ describe('the New Relic agent', function() {
       var actual = new PriorityQueue()
       var e = {id: 1}
       previous.add(e)
-      agent.customEventsPool = previous._data
+    agent.customEventsPool = previous
       agent.customEvents = actual
 
       agent._sendCustomEvents(function(err) {
