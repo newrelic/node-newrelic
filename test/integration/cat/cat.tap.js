@@ -81,12 +81,15 @@ test('cross application tracing full integration', function(t) {
     var txCount = 0
 
     agent.on('transactionFinished', function(trans) {
-      transInspector[txCount](trans, txCount)
+      var event = agent.events.toArray().filter(function(evt) {
+        return evt[0]['nr.guid'] === trans.id
+      })[0]
+      transInspector[txCount](trans, event)
       txCount += 1
     })
   }
   var transInspector = [
-    function endTest(trans, slot) {
+    function endTest(trans, event) {
       // Check the unscoped metrics
       var unscoped = trans.metrics.unscoped
       var caMetric = format('ClientApplication/%s/all', CROSS_PROCESS_ID)
@@ -102,8 +105,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(trace.intrinsics['referring_transaction_guid'], 'end should have a referring_transaction_guid variable')
 
       // check the insights event.
-      var thisEvent = agent.events.toArray()[slot]
-      var intrinsic = thisEvent[0]
+      var intrinsic = event[0]
       t.equal(intrinsic.name, 'WebTransaction/Nodejs/GET//middle/end', 'end event has name')
       t.ok(intrinsic['nr.guid'], 'end should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'end should have an nr.tripId on event')
@@ -112,7 +114,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(intrinsic['nr.referringTransactionGuid'], 'end should have an nr.referringTransactionGuid on event')
       t.notOk(intrinsic['nr.alternatePathHashes'], 'end should not have an nr.alternatePathHashes on event')
     },
-    function middleTest(trans, slot) {
+    function middleTest(trans, event) {
       // check the unscoped metrics
       var unscoped = trans.metrics.unscoped
       var caMetric = format('ClientApplication/%s/all', CROSS_PROCESS_ID)
@@ -152,8 +154,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(externalSegment.parameters.transaction_guid, 'middle should have a transaction_guid on its external segment')
 
       // check the insights event
-      var thisEvent = agent.events.toArray()[slot]
-      var intrinsic = thisEvent[0]
+      var intrinsic = event[0]
       t.ok(intrinsic['nr.guid'], 'middle should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'middle should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'middle should have an nr.pathHash on event')
@@ -161,7 +162,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(intrinsic['nr.referringTransactionGuid'], 'middle should have an nr.referringTransactionGuid on event')
       t.ok(intrinsic['nr.alternatePathHashes'], 'middle should have an nr.alternatePathHashes on event')
     },
-    function startTest(trans, slot) {
+    function startTest(trans, event) {
       // check the unscoped metrics
       var unscoped = trans.metrics.unscoped
       var eaMetric = format('ExternalApp/localhost:%s/%s/all', MIDDLE_PORT, CROSS_PROCESS_ID)
@@ -199,8 +200,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(externalSegment.parameters.transaction_guid, 'start should have a transaction_guid on its external segment')
 
       // check the insights event
-      var thisEvent = agent.events.toArray()[slot]
-      var intrinsic = thisEvent[0]
+      var intrinsic = event[0]
       t.ok(intrinsic['nr.guid'], 'start should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'start should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'start should have an nr.pathHash on event')

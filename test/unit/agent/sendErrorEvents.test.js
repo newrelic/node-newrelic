@@ -5,18 +5,18 @@ var expect = chai.expect
 var nock = require('nock')
 var sinon = require('sinon')
 
-var Reservoir = require('../../../lib/reservoir.js')
-var helper = require('../../lib/agent_helper.js')
+var PriorityQueue = require('../../../lib/priority-queue')
+var helper = require('../../lib/agent_helper')
 var Transaction = require('../../../lib/transaction')
-var TRANSACTION_ERROR = require('../../../lib/metrics/names.js').TRANSACTION_ERROR
+var TRANSACTION_ERROR = require('../../../lib/metrics/names').TRANSACTION_ERROR
 
 
 describe('the New Relic agent', function() {
-  before(function () {
+  before(function() {
     nock.disableNetConnect()
   })
 
-  after(function () {
+  after(function() {
     nock.enableNetConnect()
   })
 
@@ -38,17 +38,18 @@ describe('the New Relic agent', function() {
       expect(agent.metrics.getMetric(TRANSACTION_ERROR.SENT).callCount).equal(1)
     })
 
-    it('should create supportability metrics even when empty', function () {
+    it('should create supportability metrics even when empty', function() {
       agent._processErrorEvents()
       expect(agent.metrics.getMetric(TRANSACTION_ERROR.SEEN).callCount).equal(0)
       expect(agent.metrics.getMetric(TRANSACTION_ERROR.SENT).callCount).equal(0)
     })
   })
 
-  describe('_sendErrorEvents', function () {
-    var agent, events
+  describe('_sendErrorEvents', function() {
+    var agent
+    var events
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
 
       agent.collector = {
@@ -56,41 +57,45 @@ describe('the New Relic agent', function() {
         metricData: function(payload, callback) {
           process.nextTick(callback)
         },
-        errorEvents: function (_events, callback) {
+        errorEvents: function(_events, callback) {
           events = _events
           process.nextTick(callback)
         }
       }
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
       events = null
     })
 
-    it('should send agent run id', function() {
+    it('should send agent run id', function(done) {
       var error = new Error('some error')
       agent.errors.add(null, error)
       agent.config.run_id = 1234
 
-      agent._sendErrorEvents(function cb__sendErrorEvents() {
-        expect(events[0]).equals(1234)
-        done()
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
+          expect(events[0]).equals(1234)
+          done()
+        })
       })
     })
 
-    it('should send metrics', function() {
+    it('should send metrics', function(done) {
       var error = new Error('some error')
       agent.errors.add(null, error)
 
-      expect(agent.errors.events).to.be.an.instanceof(Reservoir)
+      expect(agent.errors.events).to.be.an.instanceof(PriorityQueue)
 
-      agent._sendErrorEvents(function cb__sendErrorEvents() {
-        var metrics = events[1]
-        expect(metrics).to.be.an('object')
-        expect(metrics).to.have.property('reservoir_size')
-        expect(metrics).to.have.property('events_seen')
-        done()
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
+          var metrics = events[1]
+          expect(metrics).to.be.an('object')
+          expect(metrics).to.have.property('reservoir_size')
+          expect(metrics).to.have.property('events_seen')
+          done()
+        })
       })
     })
 
@@ -98,8 +103,8 @@ describe('the New Relic agent', function() {
       var error = new Error('some error')
       agent.errors.add(null, error)
 
-      agent._sendMetrics(function cb_sendMetrics() {
-        agent._sendErrorEvents(function cb__sendErrorEvents() {
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
           var metrics = events[1]
           expect(metrics.reservoir_size).equal(100)
           expect(metrics.events_seen).equal(1)
@@ -108,47 +113,36 @@ describe('the New Relic agent', function() {
       })
     })
 
-    it('should send events', function (done) {
+    it('should send events', function(done) {
       var error = new Error('some error')
       agent.errors.add(null, error)
       var e = agent.errors.getEvents()[0]
 
-      agent.collector = {
-        isConnected: function() { return true },
-        metricData: function(payload, callback) {
-          process.nextTick(callback)
-        },
-        errorEvents: function (_events, callback) {
-          events = _events
-          process.nextTick(callback)
-        }
-      }
-
       // MK: this is not ideal that we need to make call to sendMetrics in order
       // to test sendErrorEvents(), but that's how custom events now work as as well
-      agent._sendMetrics(function cb_sendMetrics() {
-        agent._sendErrorEvents(function cb_sendErrorEvents() {
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
           expect(events[2][0]).equals(e)
           done()
         })
       })
     })
 
-    it('should not try to send if there are no events', function (done) {
+    it('should not try to send if there are no events', function(done) {
       agent.collector = {
         isConnected: function() { return true },
         metricData: function(payload, callback) {
           process.nextTick(callback)
         },
-        errorEvents: function (_events, callback) {
+        errorEvents: function(_events, callback) {
           throw new Error('Should not have been called!')
           process.nextTick(callback)
         }
       }
 
       // sendMetrics() needs to be called before sendErrorEvents()
-      agent._sendMetrics(function cb_sendMetrics() {
-        agent._sendErrorEvents(function cb__sendErrorEvents() {
+      agent._sendMetrics(function() {
+        agent._sendErrorEvents(function() {
           done()
         })
       })

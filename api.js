@@ -1369,7 +1369,9 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
     timestamp: Date.now()
   }
 
-  this.agent.customEvents.add([instrinics, attributes])
+  var tx = this.agent.getTransaction()
+  var priority = tx && tx.priority || Math.random()
+  this.agent.customEvents.add([instrinics, attributes], priority)
 }
 
 /**
