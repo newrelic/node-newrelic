@@ -85,6 +85,33 @@ tap.test('Hapi router introspection', function(t) {
     })
   })
 
+  t.test('using route handler outside of config object', function(t) {
+    agent.on('transactionFinished', verifier(t))
+
+    server.route({
+      method: 'GET',
+      path: '/test/{id}',
+      config: {},
+      handler: function() {
+        t.ok(agent.getTransaction(), 'transaction is available')
+        return { status: 'ok' }
+      }
+    })
+
+    server.start().then(function() {
+      port = server.info.port
+      var params = {
+        uri: 'http://localhost:' + port + '/test/31337',
+        json: true
+      }
+      request.get(params, function(error, res, body) {
+        t.equal(res.statusCode, 200, 'nothing exploded')
+        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.end()
+      })
+    })
+  })
+
   t.test('using `pre` config option', function(t) {
     agent.on('transactionFinished', verifier(t))
 
