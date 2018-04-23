@@ -5,7 +5,9 @@ var chai = require('chai')
 var should = chai.should()
 var expect = chai.expect
 var fs = require('fs')
+var sinon = require('sinon')
 var Config = require('../../../lib/config')
+var securityPolicies = require('../../lib/fixtures').securityPolicies
 
 
 function idempotentEnv(name, value, callback) {
@@ -82,8 +84,15 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up the security policies token', function() {
+      idempotentEnv( 'NEW_RELIC_SECURITY_POLICIES_TOKEN', 'super secure', function(tc) {
+        should.exist(tc.security_policies_token)
+        expect(tc.security_policies_token).equal('super secure')
+      })
+    })
+
     it('should take an explicit host over the license key parsed host', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
+      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function() {
         idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
           should.exist(tc.host)
           expect(tc.host).equal('localhost')
@@ -95,6 +104,13 @@ describe('the agent configuration', function() {
       idempotentEnv('NEW_RELIC_PORT', 7777, function(tc) {
         should.exist(tc.port)
         expect(tc.port).equal('7777')
+      })
+    })
+
+    it('should pick up exception message omission settings', function() {
+      idempotentEnv('NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED', 'please', function(tc) {
+        should.exist(tc.strip_exception_messages.enabled)
+        expect(tc.strip_exception_messages.enabled).equal(true)
       })
     })
 
@@ -204,6 +220,13 @@ describe('the agent configuration', function() {
       idempotentEnv('NEW_RELIC_ATTRIBUTES_ENABLED', 'yes', function(tc) {
         should.exist(tc.attributes.enabled)
         expect(tc.attributes.enabled).equal(true)
+      })
+    })
+
+    it('should pick up whether to add attribute include rules', function() {
+      idempotentEnv('NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED', 'yes', function(tc) {
+        should.exist(tc.attributes.include_enabled)
+        expect(tc.attributes.include_enabled).equal(true)
       })
     })
 
@@ -441,6 +464,17 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('with both high_security and security_policies_token defined', function() {
+    it('blows up', function() {
+      expect(function testInitialize() {
+        Config.initialize({
+          high_security: true,
+          security_policies_token: 'fffff'
+        })
+      }).throws()
+    })
+  })
+
   describe('with default properties', function() {
     var configuration
 
@@ -491,6 +525,10 @@ describe('the agent configuration', function() {
       expect(configuration.ssl).equal(true)
     })
 
+    it('should have no security_policies_token', function() {
+      expect(configuration.security_policies_token).equal('')
+    })
+
     it('should have no proxy host', function() {
       expect(configuration.proxy_host).equal('')
     })
@@ -521,6 +559,14 @@ describe('the agent configuration', function() {
 
     it('should have the default excluded request attributes', function() {
       expect(configuration.attributes.exclude).eql([])
+    })
+
+    it('should have the default attribute include setting', function() {
+      expect(configuration.attributes.include_enabled).eql(true)
+    })
+
+    it('should have the default error message redaction setting ', function() {
+      expect(configuration.strip_exception_messages.enabled).eql(false)
     })
 
     it('should enable transaction event attributes', function() {
@@ -1340,6 +1386,189 @@ describe('the agent configuration', function() {
       expect(function() {
         config.onConnect({'rum.load_episodes_file': true})
       }).not.throws()
+    })
+  })
+
+  describe('#_getMostSecure', function() {
+    var config
+
+    beforeEach(function(done) {
+      config = new Config()
+      config.security_policies_token = 'TEST-TEST-TEST-TEST'
+      done()
+    })
+
+    it('returns the new value if the current one is undefined', function() {
+      var val = config._getMostSecure('record_sql', undefined, 'off')
+      expect(val).to.equal('off')
+    })
+
+    it('returns the most strict if it does not know either value', function() {
+      var val = config._getMostSecure('record_sql', undefined, 'dunno')
+      expect(val).to.equal('off')
+    })
+
+    it('should work as a pass through for unknown config options', function() {
+      var val = config._getMostSecure('unknown.option', undefined, 'dunno')
+      expect(val).to.equal('dunno')
+    })
+  })
+
+  describe('#applyLasp', function() {
+    var config
+    var policies
+    var agent
+
+    beforeEach(function(done) {
+      agent = {
+        _resetErrors: sinon.spy(),
+        _resetCustomEvents: sinon.spy(),
+        _resetQueries: sinon.spy(),
+        traces: {
+          _rawReset: sinon.spy()
+        }
+      }
+      agent.config = config = new Config()
+      config.security_policies_token = 'TEST-TEST-TEST-TEST'
+      policies = securityPolicies()
+      done()
+    })
+
+    it('returns null if LASP is not enabled', function(done) {
+      config.security_policies_token = ''
+
+      var cb = function(err, res) {
+        expect(err).to.be.null()
+        expect(res).to.be.null()
+        done()
+      }
+
+      config.applyLasp(agent, {}, cb)
+    })
+
+    it('returns error if required policy is not implemented or unknown', function(done) {
+      var cb = function(err) {
+        expect(err.message).to.contain('received one or more required security policies')
+        done()
+      }
+
+      policies.job_arguments = { enabled: true, required: true }
+      policies.test = { enabled: true, required: true }
+
+      config.applyLasp(agent, policies, cb)
+    })
+
+    it('takes the most secure from local', function(done) {
+      var cb = function(err, res) {
+        expect(config.transaction_tracer.record_sql).to.equal('off')
+        expect(agent._resetQueries.callCount).to.equal(0)
+        expect(config.attributes.include_enabled).to.equal(false)
+        expect(agent.traces._rawReset.callCount).to.equal(0)
+        expect(config.strip_exception_messages.enabled).to.equal(true)
+        expect(agent._resetErrors.callCount).to.equal(0)
+        expect(config.api.custom_events_enabled).to.equal(false)
+        expect(agent._resetCustomEvents.callCount).to.equal(0)
+        expect(config.api.custom_attributes_enabled).to.equal(false)
+        Object.keys(res).forEach(function checkPolicy(key) {
+          expect(res[key].enabled).to.be.false()
+        })
+        done()
+      }
+
+      config.transaction_tracer.record_sql = 'off'
+      config.attributes.include_enabled = false
+      config.strip_exception_messages.enabled = true
+      config.api.custom_events_enabled = false
+      config.api.custom_attributes_enabled = false
+
+      Object.keys(policies).forEach(function enablePolicy(key) {
+        policies[key].enabled = true
+      })
+
+      config.applyLasp(agent, policies, cb)
+    })
+
+    it('takes the most secure from lasp', function(done) {
+      var cb = function(err, res) {
+        expect(config.transaction_tracer.record_sql).to.equal('off')
+        expect(agent._resetQueries.callCount).to.equal(1)
+        expect(config.attributes.include_enabled).to.equal(false)
+        expect(config.strip_exception_messages.enabled).to.equal(true)
+        expect(agent._resetErrors.callCount).to.equal(1)
+        expect(config.api.custom_events_enabled).to.equal(false)
+        expect(agent._resetCustomEvents.callCount).to.equal(1)
+        expect(config.api.custom_attributes_enabled).to.equal(false)
+        expect(agent.traces._rawReset.callCount).to.equal(1)
+        Object.keys(res).forEach(function checkPolicy(key) {
+          expect(res[key].enabled).to.be.false()
+        })
+        done()
+      }
+
+      config.transaction_tracer.record_sql = 'obfuscated'
+      config.attributes.include_enabled = true
+      config.strip_exception_messages.enabled = false
+      config.api.custom_events_enabled = true
+      config.api.custom_attributes_enabled = true
+
+      Object.keys(policies).forEach(function enablePolicy(key) {
+        policies[key].enabled = false
+      })
+
+      config.applyLasp(agent, policies, cb)
+    })
+
+    it('allow permissive settings', function(done) {
+      var cb = function(err, res) {
+        expect(config.transaction_tracer.record_sql).to.equal('obfuscated')
+        expect(config.attributes.include_enabled).to.equal(true)
+        expect(config.strip_exception_messages.enabled).to.equal(false)
+        expect(config.api.custom_events_enabled).to.equal(true)
+        expect(config.api.custom_attributes_enabled).to.equal(true)
+        Object.keys(res).forEach(function checkPolicy(key) {
+          expect(res[key].enabled).to.be.true()
+        })
+        done()
+      }
+
+      config.transaction_tracer.record_sql = 'obfuscated'
+      config.attributes.include_enabled = true
+      config.strip_exception_messages.enabled = false
+      config.api.custom_events_enabled = true
+      config.api.custom_attributes_enabled = true
+
+      Object.keys(policies).forEach(function enablePolicy(key) {
+        policies[key].enabled = true
+      })
+
+      config.applyLasp(agent, policies, cb)
+    })
+
+    it('returns error if expected policy is not sent from server', function(done) {
+      var cb = function(err) {
+        expect(err.message).to.contain('did not receive one or more security policies')
+        done()
+      }
+
+      delete policies.record_sql
+
+      config.applyLasp(agent, policies, cb)
+    })
+
+    it('should return known policies', function(done) {
+      var cb = function(err, res) {
+        expect(err).to.be.null()
+        expect(res).to.deep.equal({
+          record_sql: { enabled: false, required: false },
+          attributes_include: { enabled: false, required: false },
+          allow_raw_exception_messages: { enabled: false, required: false },
+          custom_events: { enabled: false, required: false },
+          custom_parameters: { enabled: false, required: false }
+        })
+        done()
+      }
+
+      config.applyLasp(agent, policies, cb)
     })
   })
 })

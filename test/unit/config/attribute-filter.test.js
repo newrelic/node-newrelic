@@ -26,6 +26,7 @@ describe('AttributeFilter', function() {
       var filter = new AttributeFilter(makeConfig({
         attributes: {
           enabled: true,
+          include_enabled: true,
           include: ['a'],
           exclude: ['a*']
         },
@@ -41,10 +42,35 @@ describe('AttributeFilter', function() {
       makeAssertions(filter)
     })
 
+    it('should not add include rules when they are disabled', function() {
+      var filter = new AttributeFilter(makeConfig({
+        attributes: {
+          enabled: true,
+          include_enabled: false,
+          include: ['a'],
+          exclude: ['ab']
+        },
+        transaction_events: {
+          attributes: {
+            enabled: true,
+            include: ['ab', 'bcd*', 'b*'],
+            exclude: ['bc*']
+          }
+        }
+      }))
+
+      expect(filter.filter(DESTS.COMMON, 'a')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.COMMON, 'ab')).to.equal(DESTS.NONE)
+      expect(filter.filter(DESTS.COMMON, '')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.COMMON, 'b')).to.equal(DESTS.COMMON)
+      expect(filter.filter(DESTS.COMMON, 'bc')).to.equal(DESTS.COMMON ^ DESTS.TRANS_EVENT)
+    })
+
     it('should not matter the order of the rules', function() {
       var filter = new AttributeFilter(makeConfig({
         attributes: {
           enabled: true,
+          include_enabled: true,
           include: ['a'],
           exclude: ['a*']
         },
@@ -64,6 +90,7 @@ describe('AttributeFilter', function() {
       var filter = new AttributeFilter(makeConfig({
         attributes: {
           enabled: true,
+          include_enabled: true,
           include: ['a*'],
           exclude: ['*']
         }
@@ -80,6 +107,7 @@ describe('AttributeFilter', function() {
       var filter = new AttributeFilter(makeConfig({
         attributes: {
           enabled: true,
+          include_enabled: true,
           include: ['a.c'],
           exclude: ['ab*']
         }
@@ -122,6 +150,7 @@ function getDefault() {
   return {
     attributes: {
       enabled: true,
+      include_enabled: true,
       include: [],
       exclude: []
     },

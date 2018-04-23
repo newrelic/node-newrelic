@@ -153,6 +153,14 @@ describe('Errors', function() {
       expect(error.errors[0][2]).to.equal('')
       expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
     })
+    it('redacts the error message when strip_exception_messages.enabled', function() {
+      agent.config.strip_exception_messages.enabled = true
+      error.add(trans, new Error('this should not be here'), {a: 'AA'})
+      agent.errors.onTransactionFinished(trans, agent.metrics)
+
+      expect(error.errors[0][2]).to.equal('')
+      expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
+    })
   })
 
   describe('display name', function() {

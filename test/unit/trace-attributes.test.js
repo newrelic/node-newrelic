@@ -123,4 +123,30 @@ describe('TraceAttributes', function() {
       expect(res.first).to.be.undefined()
     })
   })
+
+  describe('#reset', function() {
+    it('resets instance attributes and count', function() {
+      inst = new TraceAttributes()
+      inst.attributes = {
+        first: {
+          destinations: 0x08,
+          value: 'first'
+        },
+        second: {
+          destinations: 0x01,
+          value: 'second'
+        },
+        third: {
+          destinations: 0x01,
+          value: 'third'
+        }
+      }
+      inst.count = 3
+
+      inst.reset()
+
+      expect(inst.attributes).to.deep.equal({})
+      expect(inst.count).to.equal(0)
+    })
+  })
 })
