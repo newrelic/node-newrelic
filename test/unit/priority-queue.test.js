@@ -40,6 +40,22 @@ describe('PriorityQueue', function() {
     })
   })
 
+  describe('#merge', function() {
+    it('merges two sources and maintains the limit', function() {
+      var queueLimit = 4
+      var queue1 = new PriorityQueue(queueLimit)
+      var queue2 = new PriorityQueue(queueLimit)
+
+      for (var pri = 0; pri < queueLimit; ++pri) {
+        queue1.add('test', pri)
+        queue2.add('test', pri)
+      }
+
+      queue1.merge(queue2)
+      expect(queue1.length).to.equal(queueLimit)
+    })
+  })
+
   describe('#setLimit', function() {
     it('resets the limit property and slices the data if necessary', function() {
       queue = new PriorityQueue(5)
