@@ -71,4 +71,40 @@ tap.test('Hapi Plugins', function(t) {
         })
       })
   })
+
+  t.test('includes route prefix in transaction name', function(t) {
+    t.plan(3)
+
+    var plugin = {
+      register: function(srvr) {
+        srvr.route({
+          method: 'GET',
+          path: '/test',
+          handler: function myHandler() {
+            t.ok(agent.getTransaction(), 'transaction is available')
+            return Promise.resolve('hello')
+          }
+        })
+      },
+      name: 'foobar'
+    }
+
+    agent.on('transactionFinished', function(tx) {
+      t.equal(
+        tx.getFullName(), 'WebTransaction/Hapi/GET//prefix/test',
+        'should name transaction correctly'
+      )
+    })
+
+    server.register(plugin, {routes: { prefix: '/prefix' }})
+      .then(function() {
+        return server.start()
+      })
+      .then(function() {
+        port = server.info.port
+        request.get('http://localhost:' + port + '/prefix/test', function(error, res, body) {
+          t.equal(body, 'hello', 'should not interfere with response')
+        })
+      })
+  })
 })
