@@ -14,6 +14,7 @@ var used = [
   'custom_events',
   'custom_instrumentation',
   'custom_metrics',
+  'distributed_tracing',
   'express4',
   'express5',
   'express_segments',
