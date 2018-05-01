@@ -4,9 +4,8 @@
     "node": true,
     "browser": false
   },
-  "globals": {
-    "Map": true,
-    "Promise": true
+  "parserOptions": {
+    "ecmaVersion": 6
   },
   "rules": {
     "brace-style": "error",
