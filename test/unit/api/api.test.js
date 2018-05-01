@@ -328,11 +328,6 @@ describe('the New Relic agent API', function() {
     })
 
     it('should time the segment from a returned promise', function() {
-      // TODO: Once Node <0.12 is deprecated, remove this check for Promise.
-      if (!global.Promise) {
-        return
-      }
-
       return helper.runInTransaction(agent, function() {
         return api.startSegment('foobar', false, function() {
           var segment = api.shim.getSegment()

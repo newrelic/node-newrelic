@@ -189,48 +189,46 @@ module.exports = function(t, library, loadLibrary) {
   testResolveBehavior('cast')
   ptap.skip('Promise.config')
 
-  // TODO: Enable this test after deprecating Node 0.10 and 0.12.
-  ptap.skip('Promise.coroutine')
-  // ptap.test('Promise.coroutine', function(t) {
-  //   t.plan(2)
-  //
-  //   t.test('context', function(t) {
-  //     testPromiseContext(t, function(Promise, name) {
-  //       return Promise.coroutine(function*(name) {
-  //         for (var i = 0; i < 10; ++i) {
-  //           yield Promise.delay(5)
-  //         }
-  //         return name
-  //       })(name)
-  //     })
-  //   })
-  //
-  //   t.test('usage', function(t) {
-  //     testPromiseClassMethod(t, 4, function(Promise, name) {
-  //       var count = 0
-  //
-  //       t.doesNotThrow(function() {
-  //         Promise.coroutine.addYieldHandler(function(value) {
-  //           if (value === name) {
-  //             t.pass('should call yield handler')
-  //             return Promise.resolve(value + ' yielded')
-  //           }
-  //         })
-  //       }, 'should be able to add yield handler')
-  //
-  //       return Promise.coroutine(function*(name) {
-  //         for (var i = 0; i < 10; ++i) {
-  //           yield Promise.delay(5)
-  //           ++count
-  //         }
-  //         return yield name
-  //       })(name).then(function(result) {
-  //         t.equal(count, 10, 'should step through whole coroutine')
-  //         t.equal(result, name + ' yielded', 'should pass through resolve value')
-  //       })
-  //     })
-  //   })
-  // })
+  ptap.test('Promise.coroutine', function(t) {
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.coroutine(function*(_name) {
+          for (var i = 0; i < 10; ++i) {
+            yield Promise.delay(5)
+          }
+          return _name
+        })(name)
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 4, function(Promise, name) {
+        var count = 0
+
+        t.doesNotThrow(function() {
+          Promise.coroutine.addYieldHandler(function(value) {
+            if (value === name) {
+              t.pass('should call yield handler')
+              return Promise.resolve(value + ' yielded')
+            }
+          })
+        }, 'should be able to add yield handler')
+
+        return Promise.coroutine(function*(_name) {
+          for (var i = 0; i < 10; ++i) {
+            yield Promise.delay(5)
+            ++count
+          }
+          return yield _name
+        })(name).then(function(result) {
+          t.equal(count, 10, 'should step through whole coroutine')
+          t.equal(result, name + ' yielded', 'should pass through resolve value')
+        })
+      })
+    })
+  })
 
   ptap.skip('Promise.defer')
 
