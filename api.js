@@ -206,7 +206,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 
 /**
  * Deprecated. Please use `addCustomAttribute` instead.
- * TODO: remove in v4
+ * TODO: remove in v5
  */
 API.prototype.addCustomParameter = util.deprecate(
   addCustomParameter, [
@@ -306,7 +306,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 
 /**
  * Deprecated. Please use `addCustomAttributes` instead.
- * TODO: remove in v4
+ * TODO: remove in v5
  */
 API.prototype.addCustomParameters = util.deprecate(
   addCustomParameters, [
@@ -1215,7 +1215,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  // TODO: In Agent v3 prefix custom metrics with `Custom/`.
+  // TODO: In Agent v5 prefix custom metrics with `Custom/`.
   var metric = this.agent.metrics.getOrCreateMetric(name)
 
   if (typeof value === 'number') {
