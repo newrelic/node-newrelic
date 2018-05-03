@@ -467,6 +467,24 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
+    it("should be namable with setTransactionName", function() {
+      var handle
+      api.startBackgroundTransaction('test', function() {
+        transaction = agent.tracer.getTransaction()
+        handle = api.getTransaction()
+        api.setTransactionName('custom name')
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal('OtherTransaction/Custom/custom name')
+        expect(transaction.isActive()).to.be.true
+      })
+      process.nextTick(function() {
+        handle.end()
+        expect(transaction.isActive()).to.be.false
+        expect(transaction.getFullName()).to.equal('OtherTransaction/Custom/custom name')
+      })
+    })
+
+
     it("should start a background transaction with the given name as the name and group", function() {
       api.startBackgroundTransaction('test', 'group', function() {
         transaction = agent.tracer.getTransaction()

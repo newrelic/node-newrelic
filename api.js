@@ -1026,7 +1026,7 @@ function startBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.finalizeName(txName)
+    tx._partialName = txName
     tx.baseSegment = tracer.createSegment(name, recordBackground)
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
@@ -1142,7 +1142,7 @@ function createBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.finalizeName(txName)
+    tx._partialName = txName
     tx.baseSegment = tracer.createSegment(name, recordBackground)
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
