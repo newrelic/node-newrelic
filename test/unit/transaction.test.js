@@ -808,6 +808,53 @@ describe('Transaction', function() {
     })
   })
 
+  describe('_getParsedPayload', function() {
+    var tx = null
+    var payload = null
+
+    beforeEach(function() {
+      agent.recordSupportability = sinon.spy()
+      tx = new Transaction(agent)
+      payload = JSON.stringify({
+        test: 'payload'
+      })
+    })
+
+    afterEach(function() {
+      agent.recordSupportability.restore && agent.recordSupportability.restore()
+    })
+
+    it('returns parsed JSON object', function() {
+      const res = tx._getParsedPayload(payload)
+      expect(res).to.deep.equal({ test: 'payload' })
+    })
+
+    it('returns parsed object from base64 string', function() {
+      tx.agent.config.encoding_key = 'test'
+
+      payload = hashes.obfuscateNameUsingKey(payload, tx.agent.config.encoding_key)
+
+      const res = tx._getParsedPayload(payload)
+      expect(res).to.deep.equal({ test: 'payload' })
+    })
+
+    it('returns null if string is invalid JSON', function() {
+      const res = tx._getParsedPayload('{invalid JSON string}')
+      expect(res).to.be.null()
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/ParseException'
+      )
+    })
+
+    it('returns null if decoding fails', function() {
+      tx.agent.config.encoding_key = 'test'
+      payload = hashes.obfuscateNameUsingKey(payload, 'some other key')
+
+      const res = tx._getParsedPayload(payload)
+      expect(res).to.be.null()
+    })
+  })
+
   describe('createDistributedTracePayload', function() {
     var tx = null
 
