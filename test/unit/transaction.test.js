@@ -10,6 +10,7 @@ var Metrics = require('../../lib/metrics')
 var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
 var hashes = require('../../lib/util/hashes')
+const sinon = require('sinon')
 
 
 describe('Transaction', function() {
@@ -683,6 +684,127 @@ describe('Transaction', function() {
           done()
         })
       })
+    })
+  })
+
+  describe.only('acceptDistributedTracePayload', function() {
+    var tx = null
+
+    beforeEach(function() {
+      agent.recordSupportability = sinon.spy()
+      tx = new Transaction(agent)
+    })
+
+    afterEach(function() {
+      agent.recordSupportability.restore && agent.recordSupportability.restore()
+    })
+
+    it('records supportability metric if no payload was passed', function() {
+      // tx.agent.recordSupportability = sinon.spy()
+      tx.acceptDistributedTracePayload(null)
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/Ignored/Null'
+      )
+    })
+
+    it('records supportability metrics if already marked distributed trace', function() {
+      // tx.agent.recordSupportability = sinon.spy()
+      tx.isDistributedTrace = true
+      tx.parentId = 'exists'
+
+      tx.acceptDistributedTracePayload({})
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/Multiple'
+      )
+
+      delete tx.parentId
+
+      tx.acceptDistributedTracePayload({})
+      expect(tx.agent.recordSupportability.args[1][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/CreateBeforeAccept'
+      )
+    })
+
+    it('short circuits if config is invalid', function() {
+      tx.agent.config.cross_application_tracer.enabled = false
+      tx.agent.config.feature_flag.distributed_tracing = false
+      tx.agent.config.trusted_account_ids = []
+
+      tx.acceptDistributedTracePayload({})
+      expect(tx.agent.recordSupportability.callCount).to.equal(0)
+      expect(tx.isDistributedTrace).to.not.be.true()
+    })
+
+    it('fails if payload version is above agent-supported version', function() {
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.trusted_account_ids = [ 1 ]
+
+      tx.acceptDistributedTracePayload({
+        v: [1, 0]
+      })
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/MajorVersion'
+      )
+      expect(tx.isDistributedTrace).to.not.be.true()
+    })
+
+    it('fails if payload account id is not in trusted ids', function() {
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.trusted_account_ids = [ 1 ]
+
+      tx.acceptDistributedTracePayload({
+        v: [0, 1],
+        d: {
+          ac: 2
+        }
+      })
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/UntrustedAccount'
+      )
+      expect(tx.isDistributedTrace).to.not.be.true()
+    })
+
+    it('fails if payload data is missing required keys', function() {
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.trusted_account_ids = [ 1 ]
+
+      tx.acceptDistributedTracePayload({
+        v: [0, 1],
+        d: {
+          ac: 1
+        }
+      })
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/ParseException'
+      )
+      expect(tx.isDistributedTrace).to.not.be.true()
+    })
+
+    it('stores payload props on transaction', function() {
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.trusted_account_ids = [ 1 ]
+
+      const data = {
+        ac: 1,
+        ty: 'App',
+        id: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now()
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/Success'
+      )
+      expect(tx.parentId).to.equal(data.id)
+      expect(tx.parentType).to.equal(data.ty)
+      expect(tx.traceId).to.equal(data.tr)
+      expect(tx.isDistributedTrace).to.be.true()
     })
   })
 })
