@@ -128,36 +128,25 @@ test('connect', function connectTest(t) {
         connectSegment = connectSegment.children[0]
       }
 
-      var timeoutSegment
-      // 0.12 has dns lookup, 0.10 and under does not
-      if (connectSegment.children.length > 1) {
-        t.equal(
-          connectSegment.children.length,
-          2,
-          'connect should have a two child segment'
-        )
-        var dnsSegment = connectSegment.children[0]
-        timeoutSegment = connectSegment.children[1]
+      t.equal(
+        connectSegment.children.length,
+        2,
+        'connect should have a two child segment'
+      )
+      var dnsSegment = connectSegment.children[0]
+      var timeoutSegment = connectSegment.children[1]
 
-        t.equal(
-          dnsSegment.name,
-          'dns.lookup',
-          'dns segment should have correct name'
-        )
-        t.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
-        t.equal(
-          dnsSegment.children.length,
-          0,
-          'dns should have no children'
-        )
-      } else {
-        t.equal(
-          connectSegment.children.length,
-          1,
-          'connect should have a single child segment'
-        )
-        timeoutSegment = connectSegment.children[0]
-      }
+      t.equal(
+        dnsSegment.name,
+        'dns.lookup',
+        'dns segment should have correct name'
+      )
+      t.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
+      t.equal(
+        dnsSegment.children.length,
+        0,
+        'dns should have no children'
+      )
       t.equal(
         timeoutSegment.name,
         'timers.setTimeout',
@@ -218,30 +207,22 @@ test('createServer and connect', function createServerTest(t) {
         clientSegment = clientSegment.children[0]
       }
 
-      // 0.12 gets a DNS segment, 0.10 or less doesn't, yay conditional tests.
-      if (clientSegment.children.length > 0) {
+      t.equal(
+        clientSegment.children.length,
+        1,
+        'clientSegment should only have one child'
+      )
+      var dnsSegment = clientSegment.children[0]
+      if (dnsSegment) {
         t.equal(
-          clientSegment.children.length,
-          1,
-          'clientSegment should only have one child'
+          dnsSegment.name,
+          'dns.lookup',
+          'dnsSegment is named properly'
         )
-        var dnsSegment = clientSegment.children[0]
-        if (dnsSegment) {
-          t.equal(
-            dnsSegment.name,
-            'dns.lookup',
-            'dnsSegment is named properly'
-          )
-        } else {
-          t.fail('did not have children, prevent undefined property lookup')
-        }
       } else {
-        t.equal(
-          clientSegment.children.length,
-          0,
-          'should not have any server segments'
-        )
+        t.fail('did not have children, prevent undefined property lookup')
       }
+
       var serverSegment = root.children[1]
       t.equal(
         serverSegment.name,

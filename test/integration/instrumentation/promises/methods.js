@@ -1,14 +1,12 @@
 'use strict'
 
 var helper = require('../../../lib/agent_helper')
-var semver = require('semver')
 var testTransactionState = require('./transaction-state')
 
 
 var runMultiple = testTransactionState.runMultiple
 var tasks = []
 var interval = null
-var runBindCast = semver.satisfies(process.version, '>0.12')
 
 
 module.exports = function(t, library, loadLibrary) {
@@ -170,7 +168,7 @@ module.exports = function(t, library, loadLibrary) {
       })
     })
 
-    t.test('casting', {skip: !runBindCast}, function(t) {
+    t.test('casting', function(t) {
       testPromiseClassCastMethod(t, 4, function(t, Promise, name, ctx) {
         return Promise.bind(ctx, name).then(function(value) {
           t.equal(this, ctx, 'should have expected `this` value')

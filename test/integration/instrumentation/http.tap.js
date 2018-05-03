@@ -206,12 +206,10 @@ test('built-in http instrumentation should not swallow errors', function(t) {
   }
 
   function makeRequest() {
-    // 0.10 agents don't time out
     var options = {
-      host  : 'localhost',
-      port  : 1337,
-      path  : '/',
-      agent : false
+      host: 'localhost',
+      port: 1337,
+      path: '/'
     }
 
     http.get(options, function(res) {
@@ -312,6 +310,7 @@ test("built-in http instrumentation making outbound requests", function(t) {
   })
 })
 
+// TODO: Remove this test once Node <7 is deprecated.
 test(
   "built-in http instrumentation making outbound requests obsoletely",
   {skip: !http.createClient},

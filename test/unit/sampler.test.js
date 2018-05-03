@@ -5,7 +5,6 @@ var expect = chai.expect
 var configurator = require('../../lib/config')
 var sampler = require('../../lib/sampler')
 var Agent = require('../../lib/agent')
-var semver = require('semver')
 
 
 var NAMES = require('../../lib/metrics/names')
@@ -16,7 +15,6 @@ describe("environmental sampler", function() {
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
   var oldUptime = process.uptime
-  var it_native = semver.satisfies(process.version, '<0.12') ? xit : it
 
   beforeEach(function() {
     agent = new Agent(configurator.initialize())
@@ -36,13 +34,13 @@ describe("environmental sampler", function() {
     process.uptime = oldUptime
   })
 
-  it_native("should have the native-metrics package available", function() {
+  it("should have the native-metrics package available", function() {
     expect(function() {
       require('@newrelic/native-metrics')
     }).to.not.throw()
   })
 
-  it_native("should still gather native metrics when bound and unbound", function(done) {
+  it("should still gather native metrics when bound and unbound", function(done) {
     sampler.start(agent)
     sampler.stop()
     sampler.start(agent)
@@ -76,7 +74,7 @@ describe("environmental sampler", function() {
     })
   })
 
-  it_native("should gather loop metrics", function(done) {
+  it("should gather loop metrics", function(done) {
     sampler.start(agent)
     sampler.nativeMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
@@ -137,7 +135,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it_native('should gather GC metrics', function() {
+  it('should gather GC metrics', function() {
     sampler.start(agent)
     sampler.nativeMetrics.emit('gc', {
       type: 'TestGC',
@@ -156,7 +154,7 @@ describe("environmental sampler", function() {
     expect(type).to.have.property('total', 50)
   })
 
-  it_native('should not gather GC metrics if the feature flag is off', function() {
+  it('should not gather GC metrics if the feature flag is off', function() {
     agent.config.feature_flag.native_metrics = false
     sampler.start(agent)
     expect(sampler.nativeMetrics).to.be.null
