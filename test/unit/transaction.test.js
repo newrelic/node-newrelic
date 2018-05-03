@@ -687,7 +687,7 @@ describe('Transaction', function() {
     })
   })
 
-  describe.only('acceptDistributedTracePayload', function() {
+  describe('acceptDistributedTracePayload', function() {
     var tx = null
 
     beforeEach(function() {
@@ -804,6 +804,45 @@ describe('Transaction', function() {
       expect(tx.parentId).to.equal(data.id)
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
+      expect(tx.isDistributedTrace).to.be.true()
+    })
+  })
+
+  describe('createDistributedTracePayload', function() {
+    var tx = null
+
+    beforeEach(function() {
+      agent.recordSupportability = sinon.spy()
+      tx = new Transaction(agent)
+    })
+
+    afterEach(function() {
+      agent.recordSupportability.restore && agent.recordSupportability.restore()
+    })
+
+    it('short circuits if config is invalid', function() {
+      tx.agent.config.account_id = null
+      tx.agent.config.application_id = null
+      tx.agent.config.cross_application_tracer.enabled = false
+      tx.agent.config.feature_flag.distributed_tracing = false
+
+      const payload = tx.createDistributedTracePayload()
+      expect(payload).to.be.undefined()
+      expect(tx.agent.recordSupportability.callCount).to.equal(0)
+      expect(tx.isDistributedTrace).to.not.be.true()
+    })
+
+    it('returns stringified payload object', function() {
+      tx.agent.config.account_id = 'accountId'
+      tx.agent.config.application_id = 'appId'
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+
+      const payload = tx.createDistributedTracePayload()
+      expect(typeof payload).to.equal('string')
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/CreatePayload/Success'
+      )
       expect(tx.isDistributedTrace).to.be.true()
     })
   })
