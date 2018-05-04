@@ -317,7 +317,7 @@ describe('The custom instrumentation API', function () {
       var bgHandler = api.createBackgroundTransaction('background:job', function() {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-        expect(tx.name).to.equal('OtherTransaction/Nodejs/background:job')
+        expect(tx.getFullName()).to.equal('OtherTransaction/Nodejs/background:job')
         expect(tx.type).to.equal('bg')
         expect(tx.baseSegment).to.exist()
         var webHandler = api.createWebTransaction('/custom/transaction', function() {
@@ -371,7 +371,7 @@ describe('The custom instrumentation API', function () {
       var txHandler = api.createBackgroundTransaction('background:job', function () {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist()
-        expect(tx.name).to.be.equal('OtherTransaction/Nodejs/background:job')
+        expect(tx.getFullName()).to.be.equal('OtherTransaction/Nodejs/background:job')
 
         // clean up tx so it doesn't cause other problems
         tx.end()
@@ -544,7 +544,7 @@ describe('The custom instrumentation API', function () {
         var bgHandler = api.createBackgroundTransaction('background:job', function() {
           var bgTx = agent.tracer.getTransaction()
           expect(bgTx).to.exist().and.not.equal(tx)
-          expect(bgTx.name).to.equal('OtherTransaction/Nodejs/background:job')
+          expect(bgTx.getFullName()).to.equal('OtherTransaction/Nodejs/background:job')
           expect(bgTx.type).to.equal('bg')
           expect(bgTx.baseSegment).to.exist()
           // clean up bgTx so it doesn't cause other problems
