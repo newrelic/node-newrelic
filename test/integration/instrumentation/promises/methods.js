@@ -728,7 +728,7 @@ module.exports = function(t, library, loadLibrary) {
       })
     })
 
-    t.test('casting', {skip: !runBindCast}, function(t) {
+    t.test('casting', function(t) {
       testPromiseInstanceCastMethod(t, 2, function(t, Promise, p, name, value) {
         return p.bind(value).then(function(val) {
           t.equal(this, value, 'should have correct context')
