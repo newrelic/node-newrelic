@@ -832,28 +832,11 @@ test('watch (file)', function(t) {
   setTimeout(function() {
     helper.runInTransaction(agent, function(trans) {
       var watcher = fs.watch(name, function(ev, file) {
-        t.equal(ev, 'change')
+        t.equal(ev, 'change', 'should be expected event')
 
-        // watch doesn't return the filename when watching files on OSX
-        // on versions <0.12...
-        // TODO: Remove this check when deprecating Node 0.10.
-        if (
-          process.platform !== 'darwin' ||
-          semver.satisfies(process.version, '>=0.12.x')
-        ) {
-          t.equal(file, 'watch-file')
-        } else {
-          t.pass('skip checking file name')
-        }
-        t.equal(
-          agent.getTransaction(),
-          trans,
-          'should preserve transaction')
-        t.equal(
-          trans.trace.root.children.length,
-          1,
-          'should not create any segments'
-        )
+        t.equal(file, 'watch-file', 'should have correct file name')
+        t.equal(agent.getTransaction(), trans, 'should preserve transaction')
+        t.equal(trans.trace.root.children.length, 1, 'should not create any segments')
         watcher.close()
       })
       fs.writeFile(name, content + 'more', function(err) {

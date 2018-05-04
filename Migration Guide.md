@@ -13,6 +13,17 @@ agent used. `https-proxy` v2 is incompatible with node v0.10 and v0.12,
 requiring deprecation of those versions for the agent. There is no required
 action to migrate from v3 to v4 of New Relic's Node.js agent.
 
+### Node Version Support
+The earliest version of Node supported by the v4 agent is 4. Node 0.10 and 0.12,
+which have not been updated since February of 2017, are not supported by v4.
+Customers running Node 0.10 or 0.12 will need to upgrade to a supported version
+of Node or remain on the v3 agent.
+
+[Node 4 is also no longer receiving updates][node-lts-schedule], but we will
+continue to support this version of Node for the time being. We highly recommend
+moving to a newer version of Node as soon as possible. The next major version of
+the New Relic Node Agent will likely remove support for it.
+
 --------------------------------------------------------------------------------
 
 ## Upgrading to Agent v3

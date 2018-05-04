@@ -57,13 +57,12 @@ tap.test("basic director test", function(t) {
       handler0.name, "Nodejs/Middleware/Director/fn0//hello",
       "route 0 segment has correct name"
     )
-    if (semver.satisfies(process.versions.node, '>=0.12')) {
-      var handler1 = web.children[1]
-      t.equal(
-        handler1.name, "Nodejs/Middleware/Director/fn1//hello/(\\w+)/",
-        "route 1 segment has correct name"
-      )
-    }
+
+    var handler1 = web.children[1]
+    t.equal(
+      handler1.name, "Nodejs/Middleware/Director/fn1//hello/(\\w+)/",
+      "route 1 segment has correct name"
+    )
   })
 
   var server = http.createServer(function(req, res) {

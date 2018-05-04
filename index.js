@@ -150,9 +150,8 @@ function createAgent(config) {
 }
 
 function addStartupSupportabilities(agent) {
-  // TODO: After deprecating Node 0.10 and 0.12, simplify this regex.
   // TODO: As new versions come out, make sure to update Angler metrics.
-  var nodeMajor = /^v?((?:0\.)?\d+)/.exec(process.version)
+  var nodeMajor = /^v?(\d+)/.exec(process.version)
   agent.recordSupportability(
     'Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
   )

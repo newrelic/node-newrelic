@@ -1,19 +1,9 @@
 'use strict'
 
-var semver = require('semver')
-var test = require('tap').test
+var tap = require('tap')
 
 
-// Some bug in early versions of node causes a bad process version to screw up
-// readable streams. Since this test is specifically about testing bad process
-// versions this renders the test incompatible with those versions of Node.
-// TODO: When deprecating Node 0.10 and 0.12, remove this check.
-if (semver.satisfies(process.version, '<4')) {
-  return
-}
-
-
-test('loading the agent with a bad version', {timeout: 5000}, function(t) {
+tap.test('loading the agent with a bad version', {timeout: 5000}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'

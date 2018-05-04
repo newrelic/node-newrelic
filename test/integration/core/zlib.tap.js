@@ -9,20 +9,10 @@ var concat = require('concat-stream')
 
 // Prepare our data values. Note that since the agent isn't loaded yet these
 // compressions are immune to agent fiddling.
-// TODO: Once Node v0.10 is deprecated, remove the check for gzipSync below.
 var CONTENT = 'some content'
-var DEFLATED_CONTENT = null
-var DEFLATED_RAW = null
-var GZIP_CONTENT = null
-if (zlib.gzipSync) {
-  DEFLATED_CONTENT = zlib.deflateSync(CONTENT).toString('base64')
-  DEFLATED_RAW = zlib.deflateRawSync(CONTENT).toString('base64')
-  GZIP_CONTENT = zlib.gzipSync(CONTENT).toString('base64')
-} else {
-  DEFLATED_CONTENT = 'eJwrzs9NVUjOzytJzSsBAB7IBNA='
-  DEFLATED_RAW = 'K87PTVVIzs8rSc0rAQA='
-  GZIP_CONTENT = 'H4sIAAAAAAAAAyvOz01VSM7PK0nNKwEAPzEfQwwAAAA='
-}
+var DEFLATED_CONTENT = zlib.deflateSync(CONTENT).toString('base64')
+var DEFLATED_RAW = zlib.deflateRawSync(CONTENT).toString('base64')
+var GZIP_CONTENT = zlib.gzipSync(CONTENT).toString('base64')
 
 
 test('deflate', function(t) {
@@ -155,14 +145,7 @@ function testStream(t, method, src, out) {
   helper.runInTransaction(agent, function(transaction) {
     var concatStream = concat(check)
 
-    // The check callback is called when the stream finishes.  In Node 0.10 this happens
-    // in a different async context, so wrapping the emitter to preserve current
-    // transaction in the event handlers.  This is an issue with the underlying stream
-    // that concat-stream uses, not zlib per se.
-    if (semver.satisfies(process.version, '0.10')) {
-      agent.tracer.bindEmitter(concatStream)
-    }
-
+    // The check callback is called when the stream finishes.
     var stream = zlib[method]()
     stream.pipe(concatStream)
     stream.end(src)

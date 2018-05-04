@@ -5,10 +5,9 @@ have taken effort to make this process easy for both contributors and our
 development team.
 
 When contributing, keep in mind that New Relic customers (that's you!) are
-running many different versions of Node, some of them pretty old (most of you
-have moved off 0.6, but there are more than a few 0.8 applications still out
-there). Changes that depend on the newest version of Node will probably be
-rejected, with prejudice if they replace something backwards compatible.
+running many different versions of Node, some of them pretty old. Changes that
+depend on the newest version of Node will probably be rejected, with prejudice
+if they replace something backwards compatible.
 
 Also be aware that the instrumentation needs to work with a wide range of
 versions of the instrumented modules, and that code that looks nonsensical or

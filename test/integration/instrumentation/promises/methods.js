@@ -1,14 +1,12 @@
 'use strict'
 
 var helper = require('../../../lib/agent_helper')
-var semver = require('semver')
 var testTransactionState = require('./transaction-state')
 
 
 var runMultiple = testTransactionState.runMultiple
 var tasks = []
 var interval = null
-var runBindCast = semver.satisfies(process.version, '>0.12')
 
 
 module.exports = function(t, library, loadLibrary) {
@@ -170,7 +168,7 @@ module.exports = function(t, library, loadLibrary) {
       })
     })
 
-    t.test('casting', {skip: !runBindCast}, function(t) {
+    t.test('casting', function(t) {
       testPromiseClassCastMethod(t, 4, function(t, Promise, name, ctx) {
         return Promise.bind(ctx, name).then(function(value) {
           t.equal(this, ctx, 'should have expected `this` value')
@@ -189,48 +187,46 @@ module.exports = function(t, library, loadLibrary) {
   testResolveBehavior('cast')
   ptap.skip('Promise.config')
 
-  // TODO: Enable this test after deprecating Node 0.10 and 0.12.
-  ptap.skip('Promise.coroutine')
-  // ptap.test('Promise.coroutine', function(t) {
-  //   t.plan(2)
-  //
-  //   t.test('context', function(t) {
-  //     testPromiseContext(t, function(Promise, name) {
-  //       return Promise.coroutine(function*(name) {
-  //         for (var i = 0; i < 10; ++i) {
-  //           yield Promise.delay(5)
-  //         }
-  //         return name
-  //       })(name)
-  //     })
-  //   })
-  //
-  //   t.test('usage', function(t) {
-  //     testPromiseClassMethod(t, 4, function(Promise, name) {
-  //       var count = 0
-  //
-  //       t.doesNotThrow(function() {
-  //         Promise.coroutine.addYieldHandler(function(value) {
-  //           if (value === name) {
-  //             t.pass('should call yield handler')
-  //             return Promise.resolve(value + ' yielded')
-  //           }
-  //         })
-  //       }, 'should be able to add yield handler')
-  //
-  //       return Promise.coroutine(function*(name) {
-  //         for (var i = 0; i < 10; ++i) {
-  //           yield Promise.delay(5)
-  //           ++count
-  //         }
-  //         return yield name
-  //       })(name).then(function(result) {
-  //         t.equal(count, 10, 'should step through whole coroutine')
-  //         t.equal(result, name + ' yielded', 'should pass through resolve value')
-  //       })
-  //     })
-  //   })
-  // })
+  ptap.test('Promise.coroutine', function(t) {
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.coroutine(function*(_name) {
+          for (var i = 0; i < 10; ++i) {
+            yield Promise.delay(5)
+          }
+          return _name
+        })(name)
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 4, function(Promise, name) {
+        var count = 0
+
+        t.doesNotThrow(function() {
+          Promise.coroutine.addYieldHandler(function(value) {
+            if (value === name) {
+              t.pass('should call yield handler')
+              return Promise.resolve(value + ' yielded')
+            }
+          })
+        }, 'should be able to add yield handler')
+
+        return Promise.coroutine(function*(_name) {
+          for (var i = 0; i < 10; ++i) {
+            yield Promise.delay(5)
+            ++count
+          }
+          return yield _name
+        })(name).then(function(result) {
+          t.equal(count, 10, 'should step through whole coroutine')
+          t.equal(result, name + ' yielded', 'should pass through resolve value')
+        })
+      })
+    })
+  })
 
   ptap.skip('Promise.defer')
 
@@ -732,7 +728,7 @@ module.exports = function(t, library, loadLibrary) {
       })
     })
 
-    t.test('casting', {skip: !runBindCast}, function(t) {
+    t.test('casting', function(t) {
       testPromiseInstanceCastMethod(t, 2, function(t, Promise, p, name, value) {
         return p.bind(value).then(function(val) {
           t.equal(this, value, 'should have correct context')

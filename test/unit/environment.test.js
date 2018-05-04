@@ -116,15 +116,6 @@ describe('the environment scraper', function() {
       expect(find(settings, 'npm installed?')).to.exist()
     })
 
-    it('should know whether WAF was installed with Node.js', function() {
-      // 0.10 drops node-waf support
-      // FIXME: break this out into a Node-version-specific test
-      var waf = process.config.variables.node_install_waf
-      if (waf === true || waf === false) {
-        should.exist(find(settings, 'WAF build system installed?'))
-      }
-    })
-
     it('should know whether OpenSSL support was compiled into Node.js', function() {
       should.exist(find(settings, 'OpenSSL support?'))
     })

@@ -768,17 +768,10 @@ function getDomainSocketPath(callback) {
       return callback(null)
     }
 
-    // TODO: Remove the fs.exists check when deprecating Node <0.12
     var sock = stdout.toString().trim()
-    if (fs.access) {
-      fs.access(sock, function(err) {
-        callback(err ? null : sock)
-      })
-    } else {
-      fs.exists(sock, function(exists) {
-        callback(exists ? sock : null)
-      })
-    }
+    fs.access(sock, function(err) {
+      callback(err ? null : sock)
+    })
   })
 }
 
