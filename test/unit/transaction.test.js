@@ -700,29 +700,31 @@ describe('Transaction', function() {
     })
 
     it('records supportability metric if no payload was passed', function() {
-      // tx.agent.recordSupportability = sinon.spy()
       tx.acceptDistributedTracePayload(null)
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'Supportability/DistributedTrace/AcceptPayload/Ignored/Null'
       )
     })
 
-    it('records supportability metrics if already marked distributed trace', function() {
-      // tx.agent.recordSupportability = sinon.spy()
-      tx.isDistributedTrace = true
-      tx.parentId = 'exists'
+    describe('when already marked as distributed trace', function() {
+      it('records `Multiple` supportability metric if parentId exists', function() {
+        tx.isDistributedTrace = true
+        tx.parentId = 'exists'
 
-      tx.acceptDistributedTracePayload({})
-      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/Multiple'
-      )
+        tx.acceptDistributedTracePayload({})
+        expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+          'Supportability/DistributedTrace/AcceptPayload/Ignored/Multiple'
+        )
+      })
 
-      delete tx.parentId
+      it('records `CreateBeforeAccept` metric if parentId does not exist', function() {
+        tx.isDistributedTrace = true
 
-      tx.acceptDistributedTracePayload({})
-      expect(tx.agent.recordSupportability.args[1][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/CreateBeforeAccept'
-      )
+        tx.acceptDistributedTracePayload({})
+        expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+          'Supportability/DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept'
+        )
+      })
     })
 
     it('short circuits if config is invalid', function() {
@@ -731,7 +733,9 @@ describe('Transaction', function() {
       tx.agent.config.trusted_account_ids = []
 
       tx.acceptDistributedTracePayload({})
-      expect(tx.agent.recordSupportability.callCount).to.equal(0)
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'Supportability/DistributedTrace/AcceptPayload/Exception'
+      )
       expect(tx.isDistributedTrace).to.not.be.true()
     })
 
@@ -744,7 +748,7 @@ describe('Transaction', function() {
         v: [1, 0]
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/MajorVersion'
+        'Supportability/DistributedTrace/AcceptPayload/Ignored/MajorVersion'
       )
       expect(tx.isDistributedTrace).to.not.be.true()
     })
@@ -754,11 +758,18 @@ describe('Transaction', function() {
       tx.agent.config.feature_flag.distributed_tracing = true
       tx.agent.config.trusted_account_ids = [ 1 ]
 
+      const data = {
+        ac: 2,
+        ty: 'App',
+        id: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now()
+      }
+
       tx.acceptDistributedTracePayload({
         v: [0, 1],
-        d: {
-          ac: 2
-        }
+        d: data
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'Supportability/DistributedTrace/AcceptPayload/UntrustedAccount'
