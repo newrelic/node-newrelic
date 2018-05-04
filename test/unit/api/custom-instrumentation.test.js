@@ -508,7 +508,6 @@ describe('The custom instrumentation API', function () {
         [{"name": "OtherTransactionTotalTime"}]
       ]
       agent.on('transactionFinished', function(tx) {
-        console.log(tx.metrics)
         assertMetrics(tx.metrics, expectedMetrics, true, false)
         done()
       })

@@ -369,13 +369,13 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
         expect(agent.tracer.segment.children[0].name).to.equal('nested')
       })
       function nested() {
         api.startWebTransaction('nested', function() {})
       }
-      expect(transaction.isActive()).to.be.false
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should end the transaction after the handle returns by default", function() {
@@ -383,9 +383,9 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
       })
-      expect(transaction.isActive()).to.be.false
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should end the transaction after a promise returned by the transaction function resolves", function() {
@@ -393,12 +393,12 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
-        expect(transaction.isActive()).to.be.true
-        expect(thenCalled).to.be.false
+        expect(transaction.isActive()).to.be.true()
+        expect(thenCalled).to.be.false()
         return FakePromise
       })
-      expect(thenCalled).to.be.true
-      expect(transaction.isActive()).to.be.false
+      expect(thenCalled).to.be.true()
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should not end the transaction if the transaction is being handled externally", function() {
@@ -406,10 +406,10 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal('WebTransaction/Custom//test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
         transaction.handledExternally = true
       })
-      expect(transaction.isActive()).to.be.true
+      expect(transaction.isActive()).to.be.true()
       transaction.end()
     })
 
@@ -448,13 +448,13 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
         expect(agent.tracer.segment.children[0].name).to.equal('Nodejs/nested')
       })
       function nested() {
         api.startBackgroundTransaction('nested', function() {})
       }
-      expect(transaction.isActive()).to.be.false
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should end the transaction after the handle returns by default", function() {
@@ -462,9 +462,9 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
       })
-      expect(transaction.isActive()).to.be.false
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should be namable with setTransactionName", function() {
@@ -475,11 +475,11 @@ describe('the New Relic agent API', function() {
         api.setTransactionName('custom name')
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/Custom/custom name')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
       })
       process.nextTick(function() {
         handle.end()
-        expect(transaction.isActive()).to.be.false
+        expect(transaction.isActive()).to.be.false()
         expect(transaction.getFullName()).to.equal('OtherTransaction/Custom/custom name')
       })
     })
@@ -490,9 +490,9 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/group/test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
       })
-      expect(transaction.isActive()).to.be.false
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should end the transaction after a promise returned by the transaction function resolves", function() {
@@ -500,12 +500,12 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
-        expect(transaction.isActive()).to.be.true
-        expect(thenCalled).to.be.false
+        expect(transaction.isActive()).to.be.true()
+        expect(thenCalled).to.be.false()
         return FakePromise
       })
-      expect(thenCalled).to.be.true
-      expect(transaction.isActive()).to.be.false
+      expect(thenCalled).to.be.true()
+      expect(transaction.isActive()).to.be.false()
     })
 
     it("should not end the transaction if the transaction is being handled externally", function() {
@@ -513,10 +513,10 @@ describe('the New Relic agent API', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/Nodejs/test')
-        expect(transaction.isActive()).to.be.true
+        expect(transaction.isActive()).to.be.true()
         transaction.handledExternally = true
       })
-      expect(transaction.isActive()).to.be.true
+      expect(transaction.isActive()).to.be.true()
       transaction.end()
     })
 
@@ -1426,7 +1426,7 @@ describe('the New Relic agent API', function() {
       }
       var callback = sinon.spy()
       api.shutdown({}, callback)
-      expect(callback.called).to.be.true
+      expect(callback.called).to.be.true()
     })
 
     it('accepts callback as first argument', function() {
@@ -1435,7 +1435,7 @@ describe('the New Relic agent API', function() {
       }
       var callback = sinon.spy()
       api.shutdown(callback)
-      expect(callback.called).to.be.true
+      expect(callback.called).to.be.true()
     })
 
     it('does not error when no callback is provided', function() {
@@ -1459,7 +1459,7 @@ describe('the New Relic agent API', function() {
       }
       api.instrument(opts)
 
-      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
+      expect(shimmer.registerInstrumentation.calledOnce).to.be.true()
       var args = shimmer.registerInstrumentation.getCall(0).args
       expect(args[0]).to.equal(opts)
     })
@@ -1492,7 +1492,7 @@ describe('the New Relic agent API', function() {
       }
       api.instrumentDatastore(opts)
 
-      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
+      expect(shimmer.registerInstrumentation.calledOnce).to.be.true()
       var args = shimmer.registerInstrumentation.getCall(0).args
       expect(args[0]).to.equal(opts)
         .and.have.property('type', 'datastore')
@@ -1526,7 +1526,7 @@ describe('the New Relic agent API', function() {
       }
       api.instrumentWebframework(opts)
 
-      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
+      expect(shimmer.registerInstrumentation.calledOnce).to.be.true()
       var args = shimmer.registerInstrumentation.getCall(0).args
       expect(args[0]).to.equal(opts)
         .and.have.property('type', 'web-framework')
