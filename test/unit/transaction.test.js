@@ -868,8 +868,8 @@ describe('Transaction', function() {
     })
 
     it('short circuits if config is invalid', function() {
-      tx.agent.config.account_id = null
-      tx.agent.config.application_id = null
+      tx.agent.config.cross_process_id = '5678#1234'
+      tx.agent.config.application_id = '1234'
       tx.agent.config.cross_application_tracer.enabled = false
       tx.agent.config.feature_flag.distributed_tracing = false
 
@@ -880,8 +880,8 @@ describe('Transaction', function() {
     })
 
     it('returns stringified payload object', function() {
-      tx.agent.config.account_id = 'accountId'
-      tx.agent.config.application_id = 'appId'
+      tx.agent.config.cross_process_id = '5678#1234'
+      tx.agent.config.application_id = '1234'
       tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.feature_flag.distributed_tracing = true
 
