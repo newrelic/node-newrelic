@@ -702,7 +702,7 @@ describe('Transaction', function() {
     it('records supportability metric if no payload was passed', function() {
       tx.acceptDistributedTracePayload(null)
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/Ignored/Null'
+        'DistributedTrace/AcceptPayload/Ignored/Null'
       )
     })
 
@@ -713,7 +713,7 @@ describe('Transaction', function() {
 
         tx.acceptDistributedTracePayload({})
         expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-          'Supportability/DistributedTrace/AcceptPayload/Ignored/Multiple'
+          'DistributedTrace/AcceptPayload/Ignored/Multiple'
         )
       })
 
@@ -722,7 +722,7 @@ describe('Transaction', function() {
 
         tx.acceptDistributedTracePayload({})
         expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-          'Supportability/DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept'
+          'DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept'
         )
       })
     })
@@ -734,7 +734,7 @@ describe('Transaction', function() {
 
       tx.acceptDistributedTracePayload({})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/Exception'
+        'DistributedTrace/AcceptPayload/Exception'
       )
       expect(tx.isDistributedTrace).to.not.be.true()
     })
@@ -748,7 +748,7 @@ describe('Transaction', function() {
         v: [1, 0]
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/Ignored/MajorVersion'
+        'DistributedTrace/AcceptPayload/Ignored/MajorVersion'
       )
       expect(tx.isDistributedTrace).to.not.be.true()
     })
@@ -772,7 +772,7 @@ describe('Transaction', function() {
         d: data
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/UntrustedAccount'
+        'DistributedTrace/AcceptPayload/UntrustedAccount'
       )
       expect(tx.isDistributedTrace).to.not.be.true()
     })
@@ -789,7 +789,7 @@ describe('Transaction', function() {
         }
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/ParseException'
+        'DistributedTrace/AcceptPayload/ParseException'
       )
       expect(tx.isDistributedTrace).to.not.be.true()
     })
@@ -810,7 +810,7 @@ describe('Transaction', function() {
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/Success'
+        'DistributedTrace/AcceptPayload/Success'
       )
       expect(tx.parentId).to.equal(data.id)
       expect(tx.parentType).to.equal(data.ty)
@@ -853,7 +853,7 @@ describe('Transaction', function() {
       const res = tx._getParsedPayload('{invalid JSON string}')
       expect(res).to.be.null()
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/AcceptPayload/ParseException'
+        'DistributedTrace/AcceptPayload/ParseException'
       )
     })
 
@@ -899,7 +899,7 @@ describe('Transaction', function() {
       const payload = tx.createDistributedTracePayload()
       expect(typeof payload).to.equal('string')
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'Supportability/DistributedTrace/CreatePayload/Success'
+        'DistributedTrace/CreatePayload/Success'
       )
       expect(tx.isDistributedTrace).to.be.true()
     })
