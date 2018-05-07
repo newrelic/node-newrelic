@@ -51,6 +51,27 @@ describe('Logger', function() {
       runTestFile('disabled-log/disabled.js', done)
     })
   })
+
+  describe('when logging', function() {
+    it('should not throw for huge messages', function(done) {
+      process.once('warning', (warning) => {
+        expect(warning).to.have.property('name', 'NewRelicWarning')
+        expect(warning).to.have.property('message')
+        done()
+      })
+
+      let huge = 'a'
+      while (huge.length < (Logger.MAX_LOG_BUFFER) / 2) {
+        huge += huge
+      }
+
+      expect(() => {
+        logger.fatal('some message to start the buffer off')
+        logger.fatal(huge)
+        logger.fatal(huge)
+      }).to.not.throw()
+    })
+  })
 })
 
 function runTestFile(file, cb) {
