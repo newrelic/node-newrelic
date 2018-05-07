@@ -1,12 +1,13 @@
 'use strict'
 
-var chai = require('chai')
-var cp = require('child_process')
-var expect = chai.expect
-var Logger = require('../../lib/util/logger')
-var path = require('path')
+const chai = require('chai')
+const cp = require('child_process')
+const expect = chai.expect
+const Logger = require('../../lib/util/logger')
+const path = require('path')
 
-describe("Logger", function() {
+
+describe('Logger', function() {
   var logger = null
 
   beforeEach(function() {
@@ -21,27 +22,27 @@ describe("Logger", function() {
     logger = null
   })
 
-  describe("when setting values", function() {
-    it("shouldn't throw when passed-in log level is 0", function() {
+  describe('when setting values', function() {
+    it('should not throw when passed-in log level is 0', function() {
       expect(function() {
         logger.level(0)
       }).to.not.throw()
     })
 
-    it("shouldn't throw when passed-in log level is ONE MILLION", function() {
+    it('should not throw when passed-in log level is ONE MILLION', function() {
       expect(function() {
         logger.level(1000000)
       }).to.not.throw()
     })
 
-    it("shouldn't throw when passed-in log level is 'verbose'", function() {
+    it('should not throw when passed-in log level is "verbose"', function() {
       expect(function() {
         logger.level('verbose')
       }).to.not.throw()
     })
   })
 
-  describe("log file", function() {
+  describe('log file', function() {
     it('should not cause crash if unwritable', function(done) {
       runTestFile('unwritable-log/unwritable.js', done)
     })
