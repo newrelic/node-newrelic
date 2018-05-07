@@ -904,4 +904,49 @@ describe('Transaction', function() {
       expect(tx.isDistributedTrace).to.be.true()
     })
   })
+
+  describe('_addDistributedTraceIntrinsics', function() {
+    var tx = null
+
+    beforeEach(function() {
+      tx = new Transaction(agent)
+    })
+
+    it('adds expected attributes if no payload was received', function() {
+      tx.isDistributedTrace = false
+
+      const attributes = {}
+
+      tx._addDistributedTraceIntrinsics(attributes)
+
+      expect(attributes).to.have.property('nr.guid', tx.id)
+      expect(attributes).to.have.property('nr.tripId', tx.id)
+      expect(attributes).to.have.property('traceId', tx.id)
+      expect(attributes).to.have.property('priority', tx.priority)
+      expect(attributes).to.have.property('sampled', false)
+    })
+
+    it('adds DT attributes if payload was accepted', function() {
+      tx.agent.config.cross_process_id = '5678#1234'
+      tx.agent.config.application_id = '1234'
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.trusted_account_ids = [ '5678' ]
+
+      const payload = tx.createDistributedTracePayload()
+      tx.isDistributedTrace = false
+      tx.acceptDistributedTracePayload(payload)
+
+      const attributes = {}
+
+      tx._addDistributedTraceIntrinsics(attributes)
+
+      expect(attributes).to.have.property('parent.type', 'App')
+      expect(attributes).to.have.property('parent.app', '1234')
+      expect(attributes).to.have.property('parent.account', '5678')
+      expect(attributes).to.have.property('parent.transportType', 'http')
+      expect(attributes).to.have.property('parent.transportDuration')
+      expect(attributes).to.have.property('parentId', tx.id)
+    })
+  })
 })
