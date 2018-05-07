@@ -31,7 +31,7 @@ test('await', function(t) {
       'should resume in the same transaction after await'
     )
 
-    var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
+    var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
     txn.end(function afterTransactionEnd() {
       // Segments won't be cleared till a gc cycle clears the promises
       // they are related with.
@@ -80,7 +80,7 @@ test("the agent's async hook", function(t) {
     var res = new TestResource(1)
     helper.runInTransaction(agent, function(txn) {
       var root = agent.tracer.segment
-      var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
+      var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       res.doStuff(function() {
         t.ok(agent.tracer.segment, 'should be in a transaction')
@@ -255,7 +255,7 @@ test("the agent's async hook", function(t) {
 
   t.test('handles multientry callbacks correctly', function(t) {
     var agent = setupAgent(t)
-    var segmentMap = require('../../../lib/instrumentation/core/async_hooks')._segmentMap
+    var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
     helper.runInTransaction(agent, function(txn) {
       var root = agent.tracer.segment
 
