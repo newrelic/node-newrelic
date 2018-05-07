@@ -2,7 +2,6 @@
 
 var path = require('path')
 var fs = require('fs')
-var extend = require('util')._extend
 var architect = require('architect')
 var async = require('async')
 var shimmer = require('../../lib/shimmer')
@@ -68,8 +67,8 @@ var helper = module.exports = {
     _agent.recordSupportability = function() {} // Stub supportabilities.
 
     if (flags) {
-      var newFlags = extend({}, _agent.config.feature_flag)
-      newFlags = extend(newFlags, flags)
+      var newFlags = Object.assign({}, _agent.config.feature_flag)
+      newFlags = Object.assign(newFlags, flags)
       _agent.config.feature_flag = newFlags
     }
 

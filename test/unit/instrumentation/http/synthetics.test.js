@@ -1,10 +1,11 @@
-var util = require('util')
+'use strict'
+
 var expect = require('chai').expect
 var hashes = require('../../../../lib/util/hashes')
 var helper = require('../../../lib/agent_helper')
 
 
-describe('synthetics outbound header', function () {
+describe('synthetics outbound header', function() {
   var http
   var server
   var agent
@@ -55,11 +56,11 @@ describe('synthetics outbound header', function () {
     })
   })
 
-  it('should be propegated if on tx', function (done) {
-    helper.runInTransaction(agent, function (transaction) {
+  it('should be propegated if on tx', function(done) {
+    helper.runInTransaction(agent, function(transaction) {
       transaction.syntheticsData = SYNTHETICS_DATA
       transaction.syntheticsHeader = SYNTHETICS_HEADER
-      var req = http.request(CONNECT_PARAMS, function (res) {
+      var req = http.request(CONNECT_PARAMS, function(res) {
         res.resume()
         transaction.end()
         expect(res.headers['x-newrelic-synthetics']).equal(SYNTHETICS_HEADER)
@@ -69,9 +70,9 @@ describe('synthetics outbound header', function () {
     })
   })
 
-  it('should not be propegated if not on tx', function (done) {
-    helper.runInTransaction(agent, function (transaction) {
-      var req = http.get(CONNECT_PARAMS, function (res) {
+  it('should not be propegated if not on tx', function(done) {
+    helper.runInTransaction(agent, function(transaction) {
+      http.get(CONNECT_PARAMS, function(res) {
         res.resume()
         transaction.end()
         expect(res.headers['x-newrelic-synthetics']).not.exist()
@@ -81,7 +82,7 @@ describe('synthetics outbound header', function () {
   })
 })
 
-describe('synthetics inbound header', function () {
+describe('synthetics inbound header', function() {
   var http
   var server
   var agent
@@ -127,22 +128,22 @@ describe('synthetics inbound header', function () {
     server.close(done)
   })
 
-  it('should exist if account id and version are ok', function (done) {
+  it('should exist if account id and version are ok', function(done) {
     var synthHeader = hashes.obfuscateNameUsingKey(
       JSON.stringify(synthData),
       ENCODING_KEY
     )
-    var options = util._extend({}, CONNECT_PARAMS)
+    var options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
       'X-NewRelic-Synthetics': synthHeader
     }
     server = createServer(
       function onListen() {
-        http.get(options, function (res) {
+        http.get(options, function(res) {
           res.resume()
         })
       },
-      function onRequest(req, res) {
+      function onRequest() {
         var transaction = agent.getTransaction()
         expect(transaction).exist()
         expect(transaction.syntheticsHeader).equal(synthHeader)
@@ -157,18 +158,18 @@ describe('synthetics inbound header', function () {
     )
   })
 
-  it('should propegate inbound synthetics header on response', function (done) {
+  it('should propegate inbound synthetics header on response', function(done) {
     var synthHeader = hashes.obfuscateNameUsingKey(
       JSON.stringify(synthData),
       ENCODING_KEY
     )
-    var options = util._extend({}, CONNECT_PARAMS)
+    var options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
       'X-NewRelic-Synthetics': synthHeader
     }
     server = createServer(
       function onListen() {
-        http.get(options, function (res) {
+        http.get(options, function(res) {
           res.resume()
         })
       },
