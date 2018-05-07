@@ -636,6 +636,18 @@ describe('Transaction', function() {
         transaction.getIntrinsicAttributes()
       )
     })
+
+    it('includes distributed trace attributes if flag is enabled', function() {
+      transaction.agent.config.feature_flag.distributed_tracing = true
+
+      var attributes = transaction.getIntrinsicAttributes()
+
+      expect(attributes).to.have.property('guid', transaction.id)
+      expect(attributes).to.have.property('nr.tripId', transaction.id)
+      expect(attributes).to.have.property('traceId', transaction.id)
+      expect(attributes).to.have.property('priority', transaction.priority)
+      expect(attributes).to.have.property('sampled', false)
+    })
   })
 
   describe('getResponseDurationInMillis', function() {
