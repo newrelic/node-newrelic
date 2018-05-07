@@ -907,19 +907,19 @@ describe('Transaction', function() {
 
   describe('_addDistributedTraceIntrinsics', function() {
     var tx = null
+    var attributes = null
 
     beforeEach(function() {
+      attributes = {}
       tx = new Transaction(agent)
     })
 
     it('adds expected attributes if no payload was received', function() {
       tx.isDistributedTrace = false
 
-      const attributes = {}
-
       tx._addDistributedTraceIntrinsics(attributes)
 
-      expect(attributes).to.have.property('nr.guid', tx.id)
+      expect(attributes).to.have.property('guid', tx.id)
       expect(attributes).to.have.property('nr.tripId', tx.id)
       expect(attributes).to.have.property('traceId', tx.id)
       expect(attributes).to.have.property('priority', tx.priority)
@@ -936,8 +936,6 @@ describe('Transaction', function() {
       const payload = tx.createDistributedTracePayload()
       tx.isDistributedTrace = false
       tx.acceptDistributedTracePayload(payload)
-
-      const attributes = {}
 
       tx._addDistributedTraceIntrinsics(attributes)
 
