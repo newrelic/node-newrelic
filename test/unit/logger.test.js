@@ -1,12 +1,14 @@
 'use strict'
 
-var chai = require('chai')
-var cp = require('child_process')
-var expect = chai.expect
-var Logger = require('../../lib/util/logger')
-var path = require('path')
+const chai = require('chai')
+const cp = require('child_process')
+const expect = chai.expect
+const Logger = require('../../lib/util/logger')
+const path = require('path')
+const semver = require('semver')
 
-describe("Logger", function() {
+
+describe('Logger', function() {
   var logger = null
 
   beforeEach(function() {
@@ -21,33 +23,62 @@ describe("Logger", function() {
     logger = null
   })
 
-  describe("when setting values", function() {
-    it("shouldn't throw when passed-in log level is 0", function() {
+  describe('when setting values', function() {
+    it('should not throw when passed-in log level is 0', function() {
       expect(function() {
         logger.level(0)
       }).to.not.throw()
     })
 
-    it("shouldn't throw when passed-in log level is ONE MILLION", function() {
+    it('should not throw when passed-in log level is ONE MILLION', function() {
       expect(function() {
         logger.level(1000000)
       }).to.not.throw()
     })
 
-    it("shouldn't throw when passed-in log level is 'verbose'", function() {
+    it('should not throw when passed-in log level is "verbose"', function() {
       expect(function() {
         logger.level('verbose')
       }).to.not.throw()
     })
   })
 
-  describe("log file", function() {
+  describe('log file', function() {
     it('should not cause crash if unwritable', function(done) {
       runTestFile('unwritable-log/unwritable.js', done)
     })
 
     it('should not be created if logger is disabled', function(done) {
       runTestFile('disabled-log/disabled.js', done)
+    })
+  })
+
+  describe('when logging', function() {
+    it('should not throw for huge messages', function(done) {
+      // In Node 7 there is a bug around the relation of the heap size to the rss. If
+      // this test runs then the sampler will fail when checking `Memory/NonHeap/Used`
+      // because the `max` value will be negative.
+      // TODO: Remove this skip check when Node 7 is deprecated.
+      if (semver.satisfies(process.version, '7')) {
+        return this.skip()
+      }
+
+      process.once('warning', (warning) => {
+        expect(warning).to.have.property('name', 'NewRelicWarning')
+        expect(warning).to.have.property('message')
+        done()
+      })
+
+      let huge = 'a'
+      while (huge.length < (Logger.MAX_LOG_BUFFER) / 2) {
+        huge += huge
+      }
+
+      expect(() => {
+        logger.fatal('some message to start the buffer off')
+        logger.fatal(huge)
+        logger.fatal(huge)
+      }).to.not.throw()
     })
   })
 })
