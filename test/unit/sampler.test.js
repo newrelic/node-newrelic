@@ -11,7 +11,7 @@ var NAMES = require('../../lib/metrics/names')
 
 
 describe("environmental sampler", function() {
-  var agent
+  var agent = null
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
   var oldUptime = process.uptime
@@ -176,8 +176,8 @@ describe("environmental sampler", function() {
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
       var metricName = NAMES.MEMORY[memoryStat]
       var stats = agent.metrics.getOrCreateMetric(metricName)
-      expect(stats.callCount).equal(1)
-      expect(stats.max).above(1) // maybe someday this test will fail
+      expect(stats.callCount, `${metricName} callCount`).to.equal(1)
+      expect(stats.max, `${metricName} max`).to.be.above(1)
     })
   })
 
