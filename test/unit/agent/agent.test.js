@@ -240,6 +240,52 @@ describe('the New Relic agent', function() {
       })
     })
 
+    describe('when sampling distributed traces', function() {
+      var fakeTransaction
+      beforeEach(function() {
+        fakeTransaction = {
+          priority: 0,
+          sampled: null
+        }
+      })
+      it('should count the number of traces sampled', function() {
+        expect(agent.transactionsSampled).to.equal(0)
+        expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.true()
+        expect(agent.transactionsSampled).to.equal(1)
+      })
+
+      it('should not sample more than its max', function() {
+        expect(agent.transactionsSampled).to.equal(0)
+        for (var i = 0; i < agent.maxSampled; ++i) {
+          expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.true()
+        }
+        expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.false()
+        expect(agent.transactionsSampled).to.equal(agent.maxSampled)
+      })
+
+      it('should not sample transactions with priorities lower than the min', function() {
+        expect(agent.transactionsSampled).to.equal(0)
+        agent.minSampledPriority = 0.5
+        expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.false()
+        expect(agent.transactionsSampled).to.equal(0)
+        expect(agent.sampleDistributedTrace({priority: 1})).to.be.true()
+        expect(agent.transactionsSampled).to.equal(1)
+      })
+
+      it('should adjust the min priority when throughput increases', function() {
+        agent.transactionCreatedInHarvest = 2 * agent.sampledTarget
+        agent.adjustDistributedTraceStats()
+        expect(agent.minSampledPriority).to.equal(0.5)
+      })
+
+      it('should adjust the max to be 2 * the target', function() {
+        // numbers start off the same
+        expect(agent.maxSampled).to.equal(agent.sampledTarget)
+        agent.adjustDistributedTraceStats()
+        expect(agent.maxSampled).to.equal(2*agent.sampledTarget)
+      })
+    })
+
     describe('with naming rules configured', function() {
       var configured
       beforeEach(function() {
