@@ -39,7 +39,7 @@ fi
 
 if [ "$SUITE" = "security" ]; then
   echo " --- installing nsp  --- "
-  npm install nsp
+  npm install --no-save nsp
 fi
 
 # Always install time.
