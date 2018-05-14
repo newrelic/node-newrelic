@@ -1,3 +1,38 @@
+### 4.1.1 (2018-05-14):
+
+* Logger no longer tries to create very large log messages.
+
+  When a message is created that would be too large to log, a process warning is
+  emitted.
+
+* Optimized `unhandledRejection` reporting when using `async_hooks`.
+
+* The agent no longer resizes the metric timeslice start time to be the earliest
+  start time of the transactions that finish during the timeslice.
+
+* Replaced all uses of `util._extend` with `Object.assign`.
+
+* Background transactions created may now be named through `API#setTransactionName`.
+
+  Previously, the agent didn't respect the transaction naming precedence for
+  background transactions. Background transaction naming behavior is now in line
+  with web transaction behavior.
+
+* Completed TODOs regarding the Node 0.10 and 0.12 deprecation.
+
+* Added PriorityQueue serialization benchmarks.
+
+* Added check for a route prefix when wrapping Hapi route handlers.
+
+  Previously, route prefixes specified via plugin options weren't being included
+  in transaction names. Now, if the agent finds a route prefix associated with a
+  given realm, it is prepended to the route path in the transaction name.
+
+* The agent will now respect event count limits when merging data from a failed send.
+
+  Previously, when merging data into an event pool the agent wouldn't maintain the
+  size limit of the reservoir.
+
 ### 4.1.0 (2018-04-23):
 
 * Updated logic around wrapping route handlers when `config` object is present.
