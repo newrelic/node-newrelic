@@ -1,7 +1,5 @@
 'use strict'
 
-const chai = require('chai')
-const expect = chai.expect
 const helper = require('../../lib/agent_helper')
 const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const recordDistributedTrace = require('../../../lib/metrics/recorders/distributed-trace')
