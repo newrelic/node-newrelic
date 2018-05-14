@@ -970,9 +970,7 @@ describe('Transaction', function() {
 
     it('should bump the priority of the transaction by 1', function() {
       var oldAgentSample = agent.sampledDistributedTrace
-      agent.sampledDistributedTrace = function() {
-        return true;
-      }
+      agent.sampledDistributedTrace = () => true
       var priority = tx.priority
       tx.computeSampled()
       expect(tx.priority).to.equal(priority + 1)
