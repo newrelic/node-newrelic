@@ -250,25 +250,25 @@ describe('the New Relic agent', function() {
       })
       it('should count the number of traces sampled', function() {
         expect(agent.transactionsSampled).to.equal(0)
-        expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.true()
+        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.true()
         expect(agent.transactionsSampled).to.equal(1)
       })
 
       it('should not sample more than its max', function() {
         expect(agent.transactionsSampled).to.equal(0)
         for (var i = 0; i < agent.maxSampled; ++i) {
-          expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.true()
+          expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.true()
         }
-        expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.false()
+        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.false()
         expect(agent.transactionsSampled).to.equal(agent.maxSampled)
       })
 
       it('should not sample transactions with priorities lower than the min', function() {
         expect(agent.transactionsSampled).to.equal(0)
         agent.minSampledPriority = 0.5
-        expect(agent.sampleDistributedTrace(fakeTransaction)).to.be.false()
+        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.false()
         expect(agent.transactionsSampled).to.equal(0)
-        expect(agent.sampleDistributedTrace({priority: 1})).to.be.true()
+        expect(agent.shouldSampleDistributedTrace({priority: 1})).to.be.true()
         expect(agent.transactionsSampled).to.equal(1)
       })
 
