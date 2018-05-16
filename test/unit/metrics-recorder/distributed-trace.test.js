@@ -17,16 +17,13 @@ const record = (opts) => {
   const segment = makeSegment(opts)
   const tx = opts.tx
 
-  // tx.finalizeNameFromUri(opts.url, opts.code)
-  // segment.markAsWeb(opts.url)
-
   const duration = segment.getDurationInMillis()
   const exclusive = segment.getExclusiveDurationInMillis()
 
   recordDistributedTrace(tx, opts.type, duration, exclusive)
 }
 
-describe.only('recordDistributedTrace', () => {
+describe('recordDistributedTrace', () => {
   let agent
   let tx
 
