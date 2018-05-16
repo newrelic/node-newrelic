@@ -25,6 +25,6 @@ try {
 // Wait a bit then clean up and exit.
 setTimeout(function() {
   fs.chmodSync(testLogPath, 0x180) // => 0600 => rw - -
-  fs.unlink(testLogPath)
+  fs.unlinkSync(testLogPath)
   process.exit(0)
 }, 100)
