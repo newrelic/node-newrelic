@@ -493,11 +493,12 @@ module.exports = function(t, library, loadLibrary) {
     })
 
     t.test('usage', function(t) {
-      testPromiseClassMethod(t, 3, function methodTest(Promise, name) {
+      testPromiseClassMethod(t, 4, function methodTest(Promise, name) {
         var fn = Promise.promisify(function(cb) {
           cb(new Error('Promise.promisify test error'))
         })
 
+        // Test error handling.
         return fn().then(function() {
           t.fail(name + 'should not go into resolve after throwing')
         }, function(err) {
@@ -509,6 +510,7 @@ module.exports = function(t, library, loadLibrary) {
             )
           }
         }).then(function() {
+          // Test success handling.
           var foo = {what: 'Promise.promisify test object'}
           var fn2 = Promise.promisify(function(cb) {
             cb(null, foo)
@@ -517,6 +519,14 @@ module.exports = function(t, library, loadLibrary) {
           return fn2().then(function(obj) {
             t.equal(obj, foo, name + 'should also work on success')
           })
+        }).then(() => {
+          // Test property copying.
+          const unwrapped = (cb) => cb()
+          const property = {name}
+          unwrapped.property = property
+
+          const wrapped = Promise.promisify(unwrapped)
+          t.equal(wrapped.property, property, 'should have copied properties')
         })
       })
     })
@@ -524,10 +534,10 @@ module.exports = function(t, library, loadLibrary) {
 
   // XXX: Promise.promisifyAll _does_ cause state loss due to the construction
   //      of an internal promise that doesn't use the normal executor. However,
-  //      instrumenting this method is treacherous as we will have to walk mimic
-  //      the library's own property-finding techniques. In bluebird's case
-  //      this involves walking the prototype chain and collecting the name of
-  //      every property on every prototype.
+  //      instrumenting this method is treacherous as we will have to mimic the
+  //      library's own property-finding techniques. In bluebird's case this
+  //      involves walking the prototype chain and collecting the name of every
+  //      property on every prototype.
   ptap.skip('Promise.promisifyAll')
 
   ptap.test('Promise.props', function(t) {
