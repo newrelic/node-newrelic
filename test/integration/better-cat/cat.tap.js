@@ -14,9 +14,10 @@ const APP_ID = '7331'
 const EXPECTED_DT_METRICS = ['DurationByCaller', 'TransportDuration']
 const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
 
+let compareSampled = null
 
 tap.test('cross application tracing full integration', (t) => {
-  t.plan(89)
+  t.plan(91)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
@@ -114,6 +115,12 @@ tap.test('cross application tracing full integration', (t) => {
 
       // check the insights event
       const intrinsic = event[0]
+
+      compareSampled = currySampled(t, {
+        sampled: intrinsic.sampled,
+        priority: intrinsic.priority
+      })
+
       validateIntrinsics(t, intrinsic, 'end', 'event')
     },
     function middleTest(trans, event) {
@@ -163,6 +170,12 @@ tap.test('cross application tracing full integration', (t) => {
 
       // check the insights event
       const intrinsic = event[0]
+
+      compareSampled({
+        sampled: intrinsic.sampled,
+        priority: intrinsic.priority
+      })
+
       validateIntrinsics(t, intrinsic, 'middle', 'event')
     },
     function startTest(trans, event) {
@@ -208,6 +221,12 @@ tap.test('cross application tracing full integration', (t) => {
 
       // check the insights event
       const intrinsic = event[0]
+
+      compareSampled({
+        sampled: intrinsic.sampled,
+        priority: intrinsic.priority
+      })
+
       validateIntrinsics(t, intrinsic, 'start', 'event')
 
       t.end()
@@ -228,6 +247,18 @@ function generateServer(http, api, port, started, responseHandler) {
 
 function generateUrl(port, endpoint) {
   return 'http://localhost:' + port + '/' + endpoint
+}
+
+function currySampled(t, a) {
+  return (b) => {
+    b = b || a
+    t.ok(
+      a.sampled === b.sampled && a.priority === b.priority,
+      'sampled values and priority persist across transactions'
+    )
+    a = b
+    return b
+  }
 }
 
 function validateIntrinsics(t, intrinsic, reqName, type) {
