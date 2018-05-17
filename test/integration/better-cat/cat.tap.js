@@ -16,7 +16,7 @@ const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
 
 
 tap.test('cross application tracing full integration', (t) => {
-  t.plan(87)
+  t.plan(89)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
@@ -234,9 +234,9 @@ function validateIntrinsics(t, intrinsic, reqName, type) {
   reqName = reqName || 'start'
   type = type || 'event'
 
-  t.ok(intrinsic['nr.tripId'], `${reqName} should an nr.tripId on ${type}`)
-  t.ok(intrinsic.guid, `${reqName} should a guid on ${type}`)
-  t.ok(intrinsic.traceId, `${reqName} should a traceId on ${type}`)
+  t.ok(intrinsic['nr.tripId'], `${reqName} should have an nr.tripId on ${type}`)
+  t.ok(intrinsic.guid, `${reqName} should have a guid on ${type}`)
+  t.ok(intrinsic.traceId, `${reqName} should have a traceId on ${type}`)
   t.ok(intrinsic.sampled != null, `${reqName} should have a sampled boolean on ${type}`)
   t.ok(intrinsic.priority, `${reqName} should have a priority on ${type}`)
 
@@ -249,6 +249,8 @@ function validateIntrinsics(t, intrinsic, reqName, type) {
       t.notOk(intrinsic.parentId, `${reqName} should not have a parentId on ${type}`)
       return
     }
+  } else {
+    t.ok(intrinsic.grandparentId, `${reqName} should have a grandparentId on ${type}`)
   }
 
   t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
