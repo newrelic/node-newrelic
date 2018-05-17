@@ -9,8 +9,10 @@ const API = require('../../../api')
 const CROSS_PROCESS_ID = '1337#7331'
 const PORT = 1337
 
+let compareSampled = null
+
 tap.test('background transactions should not blow up with CAT', (t) => {
-  t.plan(25)
+  t.plan(26)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
@@ -73,6 +75,11 @@ tap.test('background transactions should not blow up with CAT', (t) => {
         intrinsic['nr.alternatePathHashes'],
         'web should not have an nr.alternatePathHashes on event'
       )
+
+      compareSampled = currySampled(t, {
+        sampled: intrinsic.sampled,
+        priority: intrinsic.priority
+      })
     },
     function background(trans, event) {
       t.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
@@ -99,6 +106,11 @@ tap.test('background transactions should not blow up with CAT', (t) => {
         intrinsic['nr.alternatePathHashes'],
         'bg should have an nr.alternatePathHashes on event'
       )
+
+      compareSampled({
+        sampled: intrinsic.sampled,
+        priority: intrinsic.priority
+      })
     }
   ]
   let count = 0
@@ -110,3 +122,15 @@ tap.test('background transactions should not blow up with CAT', (t) => {
     count += 1
   })
 })
+
+function currySampled(t, a) {
+  return (b) => {
+    b = b || a
+    t.ok(
+      a.sampled === b.sampled && a.priority === b.priority,
+      'sampled values and priority persist across transactions'
+    )
+    a = b
+    return b
+  }
+}
