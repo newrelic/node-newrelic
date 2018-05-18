@@ -10,7 +10,7 @@ var uninstrumented = require('../../../lib/uninstrumented')
 // Include pg.js and mysql2 special case
 INSTRUMENTATIONS.push('pg.js', 'mysql2')
 
-tap.test('does not falsely mark files with module names as uninstrumented', function(t) {
+tap.test('does not mark files with known module names as uninstrumented', function(t) {
   var loaded = []
 
   require('./mock-config/redis')
