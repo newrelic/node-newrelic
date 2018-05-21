@@ -44,7 +44,7 @@ tap.test('connecting with a LASP token should not error', function(t) {
 tap.test('missing required policies should error', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: '5b3ca1e9fb083436ca49a444981e0e5a632907c9',
+    license_key: '20a5bbc045930ae7e15b530c8a9c6b7c5a918c4f',
     security_policies_token: 'ffff-ffff-ffff-ffff',
     host: 'staging-collector.newrelic.com',
     utilization: {
