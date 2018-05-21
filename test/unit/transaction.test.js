@@ -996,8 +996,8 @@ describe('Transaction', function() {
       tx.agent.config.cross_application_tracer.enabled = false
       tx.agent.config.feature_flag.distributed_tracing = false
 
-      const payload = tx.createDistributedTracePayload()
-      expect(payload).to.be.undefined()
+      const payload = tx.createDistributedTracePayload().text()
+      expect(payload).to.equal('')
       expect(tx.agent.recordSupportability.callCount).to.equal(0)
       expect(tx.isDistributedTrace).to.not.be.true()
     })
@@ -1021,7 +1021,7 @@ describe('Transaction', function() {
       tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.feature_flag.distributed_tracing = true
 
-      const payload = tx.createDistributedTracePayload()
+      const payload = tx.createDistributedTracePayload().text()
       expect(typeof payload).to.equal('string')
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/CreatePayload/Success'
@@ -1059,7 +1059,7 @@ describe('Transaction', function() {
       tx.agent.config.feature_flag.distributed_tracing = true
       tx.agent.config.trusted_account_ids = [ '5678' ]
 
-      const payload = tx.createDistributedTracePayload()
+      const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = false
       tx.acceptDistributedTracePayload(payload)
 

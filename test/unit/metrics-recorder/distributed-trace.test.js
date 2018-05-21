@@ -43,7 +43,7 @@ describe('recordDistributedTrace', () => {
 
   describe('when a trace payload was received', () => {
     it('records metrics with payload information', () => {
-      const payload = tx.createDistributedTracePayload()
+      const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx.acceptDistributedTracePayload(payload)
 
@@ -78,7 +78,7 @@ describe('recordDistributedTrace', () => {
 
     describe('and transaction errors exist', () => {
       it('includes error-related metrics', () => {
-        const payload = tx.createDistributedTracePayload()
+        const payload = tx.createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx.acceptDistributedTracePayload(payload)
 

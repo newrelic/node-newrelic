@@ -70,7 +70,7 @@ describe("recordWeb", function() {
         agent.config.cross_process_id = '1234#5677'
         agent.config.trusted_account_ids = [ '1234' ]
 
-        const payload = trans.createDistributedTracePayload()
+        const payload = trans.createDistributedTracePayload().text()
         trans.isDistributedTrace = null
         trans.acceptDistributedTracePayload(payload)
 
