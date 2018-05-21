@@ -83,8 +83,6 @@ Here's the list of the most important variables and their values:
   will be available via environment variables, and some log messages assume
   that a config file exists.
 * `NEW_RELIC_HOME`: path to the directory in which you've placed `newrelic.js`.
-* `NEW_RELIC_USE_SSL`: Use SSL for communication with New Relic's servers.
-  Enabled by default.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including the
   filename. The agent will shut down the process if it can't create this file,
   and it creates the log file with the same umask of the process. Setting this
