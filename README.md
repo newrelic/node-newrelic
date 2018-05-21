@@ -95,66 +95,8 @@ Here's the list of the most important variables and their values:
   pretty chatty; unless you're helping New Relic figure out irregularities with
   the module, you're probably best off using `info` or higher.
 
-For completeness, here's the rest of the list:
-
-* `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
-  temporarily disabling the agent while debugging other issues with your code.
-  It doesn't prevent the module from bootstrapping its instrumentation or
-  setting up all its pieces, it just prevents it from starting up or connecting
-  to New Relic's servers. Defaults to true.
-* `NEW_RELIC_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within
-  your application. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES`: Comma-delimited list of HTTP
-  status codes to ignore. Maybe you don't care if payment is required? Ignoring
-  a status code means that the transaction is not renamed to match the code,
-  and the request is not treated as an error by the error collector. Defaults
-  to ignoring 404.
-* `NEW_RELIC_IGNORE_SERVER_CONFIGURATION`: Whether to ignore server-side
-  configuration for this application. Defaults to false.
-* `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow transaction
-  traces to New Relic. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in
-  seconds) at which a transaction trace will count as slow and be sent to New
-  Relic. Can also be set to `apdex_f`, at which point it will set the trace
-  threshold to 4 times the current ApdexT. Defaults to `apdex_f`.
-* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value in
-  seconds. This is more often than not set from the server. Defaults to 0.100.
-* `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on slow
-  transaction or error traces. Defaults to false.
-* `NEW_RELIC_IGNORED_PARAMS`: Some parameters may contain sensitive values you
-  don't want being sent out of your application. This setting is a
-  comma-delimited list of names of parameters to ignore. Defaults to empty.
-* `NEW_RELIC_NAMING_RULES`: A list of comma-delimited JSON object literals:
-  `NEW_RELIC_NAMING_RULES='{"pattern":"^t","name":"u"},{"pattern":"^u","name":"t"}'`
-  See the section on request and transaction naming for details. Defaults to
-  empty.
-* `NEW_RELIC_IGNORING_RULES`: A list of comma-delimited patterns:
-  `NEW_RELIC_IGNORING_RULES='^/socket\.io/.*/xhr-polling,ignore_me'` Note that
-  currently there is no way to escape commas in patterns. Defaults to empty.
-* `NEW_RELIC_TRACER_TOP_N`: Increase this number to increase the diversity of
-  slow transaction traces sent to New Relic. Defaults to 1. See the description
-  in `lib/config/default.js`, as this feature is exceedingly hard to summarize.
-* `NEW_RELIC_HOST`: Hostname for the New Relic collector. You shouldn't
-  need to change this.
-* `NEW_RELIC_PORT`: Port number on which the New Relic collector will be
-  listening. You shouldn't need to change this either.
-* `NEW_RELIC_PROXY_URL`: A fully-qualified URL to an http/https proxy.
-  The proxy URL may include basic authentication.
-  The use of `NEW_RELIC_PROXY_URL` overrides other proxy settings.
-* `NEW_RELIC_PROXY_HOST`: Proxy hostname
-* `NEW_RELIC_PROXY_PORT`: Proxy port.
-* `NEW_RELIC_PROXY_USER`: Proxy user name (basic auth only).
-* `NEW_RELIC_PROXY_PASS`: Proxy password.
-* `NEW_RELIC_DEBUG_METRICS`: Whether to collect internal supportability metrics
-  for the agent. Don't mess with this unless New Relic asks you to.
-* `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
-  internal operation. It's unlikely to be informative unless you're a New Relic
-  Node.js engineer and it has a significant performance cost, so use with care.
-* `NEW_RELIC_BROWSER_MONITOR_ENABLE`: Whether to generate browser timing (RUM)
-  headers or not.
-* `NEW_RELIC_LABELS`: Sets the label names and values to associate with the
-  application. The list is a semi-colon delimited list of colon-separated name
-  and value pairs
+For a complete list of environment variables and other configuration options see
+[Node.js agent configuration][7] on our documentation site.
 
 ## Browser timings (RUM / Real User Monitoring)
 
@@ -187,7 +129,7 @@ within the template.
 
 *app.js:*
 
-```javascript
+```js
 var newrelic = require('newrelic');
 var app = require('express')();
 
@@ -217,7 +159,7 @@ By defaults calls to `newrelic.getBrowserTimingHeader()` should return valid
 headers. You can disable header generation *without* removing your template
 code. In your `newrelic.js` file, add the following to disable header generation.
 
-```javascript
+```js
 exports.config = {
   // ... other config
   browser_monitoring : {
@@ -398,7 +340,7 @@ ignored by New Relic.
 If you're using socket.io, you will have a use case for ignoring rules right
 out of the box. You'll probably want to add a rule like the following:
 
-```javascript
+```js
 // newrelic.js
 exports.config = {
   // other configuration
@@ -592,7 +534,7 @@ so it has a place to set the custom parameters.
 
 Example of setting multiple custom parameters at once:
 
-```javascript
+```js
 newrelic.addCustomParameters({test: 'value', test2: 'value2'});
 ```
 
@@ -626,7 +568,7 @@ captured by New Relic.
 
 Example of collecting pending data before shutting down the process:
 
-```javascript
+```js
 newrelic.shutdown({ collectPendingData: true }, function(error) {
   process.exit()
 })
@@ -799,3 +741,4 @@ license and the licenses of its dependencies.
 [4]: https://newrelic.com
 [5]: https://newrelic.com/application-monitoring/features
 [6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config/default.js
+[7]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration
