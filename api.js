@@ -14,18 +14,18 @@ var shimmer = require('./lib/shimmer')
 var Shim = require('./lib/shim/shim')
 var TransactionHandle = require('./lib/transaction/handle')
 
-var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
+const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
  *
  * CONSTANTS
  *
  */
-var RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
+const RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
                 "NREUM.info = %s; %s</script>"
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
-var RUM_ISSUES = [
+const RUM_ISSUES = [
   'NREUM: no browser monitoring headers generated; disabled',
   'NREUM: transaction missing or ignored while generating browser monitoring headers',
   'NREUM: config.browser_monitoring missing, something is probably wrong',
@@ -36,12 +36,12 @@ var RUM_ISSUES = [
   'NREUM: browser_monitoring disabled by browser_monitoring.loader config'
 ]
 
-// can't overwrite internal parameters or all heck will break loose
-var CUSTOM_BLACKLIST = [
+// Can't overwrite internal parameters or all heck will break loose.
+const CUSTOM_BLACKLIST = new Set([
   'nr_flatten_leading'
-]
+])
 
-var CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
+const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
 /**
  * The exported New Relic API. This contains all of the functions meant to be
@@ -103,8 +103,8 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  * - ignore: set the transaction that was active when
  *   `API#getTransaction` was called to be ignored.
  *
- * @returns {TransactionHandle} transaction The transaction object with the `end`
- *                               and `ignore` methods on it.
+ * @returns {TransactionHandle} The transaction object with the `end` and
+ *  `ignore` methods on it.
  */
 API.prototype.getTransaction = function getTransaction() {
   var metric = this.agent.metrics.getOrCreateMetric(
@@ -247,7 +247,7 @@ function addCustomParameter(key, value) {
     )
   }
 
-  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+  if (CUSTOM_BLACKLIST.has(key)) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
@@ -297,7 +297,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     )
   }
 
-  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+  if (CUSTOM_BLACKLIST.has(key)) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
@@ -1570,10 +1570,9 @@ API.prototype.shutdown = function shutdown(options, cb) {
 
   if (options && options.collectPendingData && agent._state !== 'started') {
     if (typeof options.timeout === 'number') {
-      var shutdownTimeout = setTimeout(function shutdownTimeout() {
+      setTimeout(function shutdownTimeout() {
         agent.stop(callback)
-      }, options.timeout)
-      shutdownTimeout.unref()
+      }, options.timeout).unref()
     } else if (options.timeout) {
       logger.warn(
         'options.timeout should be of type "number". Got %s',
