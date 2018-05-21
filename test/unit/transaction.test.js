@@ -644,13 +644,14 @@ describe('Transaction', function() {
     it('includes distributed trace attributes if flag is enabled', function() {
       transaction.agent.config.feature_flag.distributed_tracing = true
 
+      transaction.computeSampled()
       var attributes = transaction.getIntrinsicAttributes()
 
       expect(attributes).to.have.property('guid', transaction.id)
       expect(attributes).to.have.property('nr.tripId', transaction.id)
       expect(attributes).to.have.property('traceId', transaction.id)
       expect(attributes).to.have.property('priority', transaction.priority)
-      expect(attributes).to.have.property('sampled', false)
+      expect(attributes).to.have.property('sampled', true)
     })
   })
 
@@ -818,7 +819,7 @@ describe('Transaction', function() {
       expect(tx.sampled).to.equal(null)
       expect(tx.priority).to.be.lessThan(1)
       const data = {
-        ac: 1,
+        ac: '1',
         ty: 'App',
         id: tx.id,
         tr: tx.id,
@@ -869,7 +870,7 @@ describe('Transaction', function() {
       expect(tx.priority).to.equal(priorPriority + 1)
 
       const data = {
-        ac: 1,
+        ac: '1',
         ty: 'App',
         id: tx.id,
         tr: tx.id,
@@ -890,7 +891,7 @@ describe('Transaction', function() {
       tx.agent.config.trusted_account_ids = [ 1 ]
 
       const data = {
-        ac: 1,
+        ac: '1',
         ty: 'App',
         id: tx.id,
         tr: tx.id,
@@ -933,9 +934,7 @@ describe('Transaction', function() {
     it('returns parsed object from base64 string', function() {
       tx.agent.config.encoding_key = 'test'
 
-      payload = hashes.obfuscateNameUsingKey(payload, tx.agent.config.encoding_key)
-
-      const res = tx._getParsedPayload(payload)
+      const res = tx._getParsedPayload(payload.toString('base64'))
       expect(res).to.deep.equal({ test: 'payload' })
     })
 
@@ -1043,13 +1042,14 @@ describe('Transaction', function() {
     it('adds expected attributes if no payload was received', function() {
       tx.isDistributedTrace = false
 
+      tx.computeSampled()
       tx._addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('guid', tx.id)
       expect(attributes).to.have.property('nr.tripId', tx.id)
       expect(attributes).to.have.property('traceId', tx.id)
       expect(attributes).to.have.property('priority', tx.priority)
-      expect(attributes).to.have.property('sampled', false)
+      expect(attributes).to.have.property('sampled', true)
     })
 
     it('adds DT attributes if payload was accepted', function() {
