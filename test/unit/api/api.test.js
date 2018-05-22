@@ -134,6 +134,7 @@ describe('the New Relic agent API', function() {
       helper.runInTransaction(agent, function(txn) {
         var handle = api.getTransaction()
         expect(handle.createDistributedTracePayload).to.be.a('function')
+        agent.config.cross_process_id = '1234#5678'
         var distributedTracePayload = handle.createDistributedTracePayload()
         expect(distributedTracePayload.text).to.be.a('function')
         expect(distributedTracePayload.httpSafe).to.be.a('function')
