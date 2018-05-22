@@ -29,11 +29,11 @@ As with any instrumentation tool, please test before using in production.
   release of Node.
 2. Install this module via `npm install newrelic` for the application you want
   to monitor.
-4. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
+3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
   your application.
-5. Edit `newrelic.js` and replace `license_key`'s value with the license key
+4. Edit `newrelic.js` and replace `license_key`'s value with the license key
   for your account.
-6. Add `require('newrelic')` as the first line of the app's main module.
+5. Add `require('newrelic')` as the first line of the app's main module.
 
 If you wish to keep the configuration for the module separate from your
 application, the module will look for `newrelic.js` in the directory referenced
