@@ -1,3 +1,15 @@
+### 4.1.2 (2018-05-22):
+
+* Fixed access to properties on promisified methods.
+
+  Thanks to John Morrison (@jrgm) for pointing this out and providing a
+  reproduction.
+  
+* Updated use of `fs.unlink` without a callback to `fs.unlinkSync`.
+
+  As of Node v10, the callback is [no longer optional](https://nodejs.org/dist/latest-v10.x/docs/api/fs.html#fs_fs_unlink_path_callback), which was causing a false
+  test failure.
+  
 ### 4.1.1 (2018-05-14):
 
 * Logger no longer tries to create very large log messages.
