@@ -142,7 +142,7 @@ describe('the New Relic agent API', function() {
       })
     })
 
-    it("should have a method to accepting a distributed trace payload", function(done) {
+    it("should have a method for accepting a distributed trace payload", function(done) {
       helper.runInTransaction(agent, function(txn) {
         var handle = api.getTransaction()
         expect(handle.acceptDistributedTracePayload).to.be.a('function')
