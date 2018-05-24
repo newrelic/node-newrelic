@@ -1,31 +1,38 @@
 'use strict'
 
-var INSTRUMENTATIONS = Object.keys(require('../../../lib/instrumentations')())
-var Metrics = require('../../../lib/metrics')
-var MetricNormalizer = require('../../../lib/metrics/normalizer')
-var MetricMapper = require('../../../lib/metrics/mapper')
-var tap = require('tap')
-var uninstrumented = require('../../../lib/uninstrumented')
+const INSTRUMENTATIONS = Object.keys(require('../../../lib/instrumentations')())
+const Metrics = require('../../../lib/metrics')
+const MetricNormalizer = require('../../../lib/metrics/normalizer')
+const MetricMapper = require('../../../lib/metrics/mapper')
+const tap = require('tap')
+const uninstrumented = require('../../../lib/uninstrumented')
+const helper = require('../../lib/agent_helper')
 
 // Include pg.js and mysql2 special case
 INSTRUMENTATIONS.push('pg.js', 'mysql2')
 
 tap.test('does not mark files with known module names as uninstrumented', function(t) {
-  var loaded = []
+  const loaded = []
 
   require('./mock-config/redis')
   loaded.push('redis')
 
   t.ok(loaded.length > 0, 'should have loaded at least one module')
 
-  var mapper = new MetricMapper()
-  var normalizer = new MetricNormalizer({}, 'metric name')
-  var metrics = new Metrics(0, mapper, normalizer)
+  const agent = helper.instrumentMockedAgent()
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const mapper = new MetricMapper()
+  const normalizer = new MetricNormalizer({}, 'metric name')
+  const metrics = new Metrics(0, mapper, normalizer)
 
   uninstrumented.check()
   uninstrumented.createMetrics(metrics)
 
-  var flagMetrics = metrics.toJSON().filter(function(metric) {
+  const flagMetrics = metrics.toJSON().filter(function(metric) {
     return metric[0].name === 'Supportability/Uninstrumented/redis'
   })
   t.equal(flagMetrics.length, 0, 'No uninstrumented flag metric present')
@@ -36,7 +43,7 @@ tap.test('does not mark files with known module names as uninstrumented', functi
 // This doesn't test the core http and https modules because we can't detect if
 // core modules have already been loaded.
 tap.test('all instrumented modules should be detected when uninstrumented', function(t) {
-  var loaded = []
+  const loaded = []
 
   INSTRUMENTATIONS.forEach(function(module) {
     try {
@@ -49,16 +56,22 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
 
   t.ok(loaded.length > 0, 'should have loaded at least one module')
 
-  var mapper = new MetricMapper()
-  var normalizer = new MetricNormalizer({}, 'metric name')
-  var metrics = new Metrics(0, mapper, normalizer)
+  const agent = helper.instrumentMockedAgent()
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const mapper = new MetricMapper()
+  const normalizer = new MetricNormalizer({}, 'metric name')
+  const metrics = new Metrics(0, mapper, normalizer)
 
   uninstrumented.check()
   uninstrumented.createMetrics(metrics)
 
-  var metricsJSON = metrics.toJSON()
+  const metricsJSON = metrics.toJSON()
 
-  var flagMetrics = metricsJSON.filter(function(metric) {
+  const flagMetrics = metricsJSON.filter(function(metric) {
     return metric[0].name === 'Supportability/Uninstrumented'
   })
   t.equal(flagMetrics.length, 1, 'Uninstrumented flag metric present')
