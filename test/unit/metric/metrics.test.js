@@ -270,7 +270,7 @@ describe('Metrics', function() {
   })
 
   describe('when merging two metrics collections', function() {
-    var other
+    var other = null
 
     beforeEach(function() {
       metrics.started = 31337
@@ -305,8 +305,13 @@ describe('Metrics', function() {
       expect(metrics.getMetric('Test/Scoped', 'MERGE').callCount).equal(2)
     })
 
-    it('kept the earliest creation time', function() {
-      expect(metrics.started).equal(1337)
+    it('does not keep the earliest creation time', function() {
+      expect(metrics.started).to.equal(31337)
+    })
+
+    it('does keep the earliest creation time if told to', function() {
+      metrics.merge(other, true)
+      expect(metrics.started).to.equal(1337)
     })
   })
 
