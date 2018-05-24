@@ -2,19 +2,17 @@
 
 var chai             = require('chai')
 var expect           = chai.expect
-var should           = chai.should()
-var helper           = require('../../lib/agent_helper.js')
+var helper           = require('../../lib/agent_helper')
 var Metrics          = require('../../../lib/metrics')
 var MetricMapper     = require('../../../lib/metrics/mapper')
 var MetricNormalizer = require('../../../lib/metrics/normalizer')
 
 
-describe("Metrics", function () {
+describe('Metrics', function() {
   var metrics
   var agent
 
-
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     metrics = new Metrics(
       agent.config.apdex_t,
@@ -23,13 +21,13 @@ describe("Metrics", function () {
     )
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  describe("when creating", function () {
-    it("should throw if apdexT isn't set", function () {
-      expect(function () {
+  describe('when creating', function() {
+    it('should throw if apdexT is not set', function() {
+      expect(function() {
         metrics = new Metrics(
           undefined,
           agent.mapper,
@@ -38,8 +36,8 @@ describe("Metrics", function () {
       }).throws()
     })
 
-    it("should throw if no name -> ID mapper is provided", function () {
-      expect(function () {
+    it('should throw if no name -> ID mapper is provided', function() {
+      expect(function() {
         metrics = new Metrics(
           agent.config.apdex_t,
           undefined,
@@ -48,8 +46,8 @@ describe("Metrics", function () {
       }).throws()
     })
 
-    it("should throw if no metric name normalizer is provided", function () {
-      expect(function () {
+    it('should throw if no metric name normalizer is provided', function() {
+      expect(function() {
         metrics = new Metrics(
           agent.config.apdex_t,
           agent.mapper,
@@ -58,28 +56,28 @@ describe("Metrics", function () {
       }).throws()
     })
 
-    it("should return apdex summaries with an apdexT same as config's", function () {
+    it('should return apdex summaries with an apdexT same as config', function() {
       var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest')
       expect(metric.apdexT).equal(agent.config.apdex_t)
     })
 
-    it("should allow overriding apdex summaries with a custom apdexT", function () {
+    it('should allow overriding apdex summaries with a custom apdexT', function() {
       var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 1)
       expect(metric.apdexT).equal(0.001)
     })
 
-    it("should require the overriding apdex to be greater than 0", function () {
+    it('should require the overriding apdex to be greater than 0', function() {
       var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 0)
       expect(metric.apdexT).equal(agent.config.apdex_t)
     })
 
-    it("should require the overriding apdex to not be negative", function () {
+    it('should require the overriding apdex to not be negative', function() {
       var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, -5000)
       expect(metric.apdexT).equal(agent.config.apdex_t)
     })
   })
 
-  describe("when creating with parameters", function() {
+  describe('when creating with parameters', function() {
     var TEST_APDEX = 0.4
     var TEST_MAPPER = new MetricMapper([[{name : 'Renamed/333'}, 1337]])
     var TEST_NORMALIZER = new MetricNormalizer({enforce_backstop : true}, 'metric name')
@@ -89,190 +87,192 @@ describe("Metrics", function () {
       metrics = new Metrics(TEST_APDEX, TEST_MAPPER, TEST_NORMALIZER)
     })
 
-    it("should pass apdex through to ApdexStats", function() {
+    it('should pass apdex through to ApdexStats', function() {
       var apdex = metrics.getOrCreateApdexMetric('Test/RenameMe333')
       expect(apdex.apdexT).equal(TEST_APDEX)
     })
 
-    it("should pass metric mappings through for serialization", function() {
+    it('should pass metric mappings through for serialization', function() {
       metrics.measureMilliseconds('Test/RenameMe333', null, 400, 300)
       var summary = JSON.stringify(metrics.toJSON())
       expect(summary).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]')
     })
   })
 
-  describe("when creating individual metrics", function() {
-    it("should create a metric when a nonexistent name is requested", function() {
+  describe('when creating individual metrics', function() {
+    it('should create a metric when a nonexistent name is requested', function() {
       var metric = metrics.getOrCreateMetric('Test/Nonexistent', 'TEST')
-      should.exist(metric.callCount)
+      expect(metric).to.have.property('callCount')
     })
 
-    it("should have statistics available", function() {
+    it('should have statistics available', function() {
       var metric = metrics.getOrCreateMetric('Agent/Test')
-      should.exist(metric.callCount)
+      expect(metric).to.have.property('callCount')
     })
 
-    it("should have have regular functions", function() {
+    it('should have have regular functions', function() {
       var metric = metrics.getOrCreateMetric('Agent/StatsTest')
-      should.exist(metric.incrementCallCount)
+      expect(metric).to.have.property('incrementCallCount')
     })
   })
 
-  describe("when creating individual apdex metrics", function () {
-    it("should have apdex functions", function () {
+  describe('when creating individual apdex metrics', function() {
+    it('should have apdex functions', function() {
       var metric = metrics.getOrCreateApdexMetric('Agent/ApdexTest')
-      should.exist(metric.incrementFrustrating)
+      expect(metric).to.have.property('incrementFrustrating')
     })
   })
 
-  it("should measure an unscoped metric", function () {
+  it('should measure an unscoped metric', function() {
     metrics.measureMilliseconds('Test/Metric', null, 400, 200)
     expect(JSON.stringify(metrics.toJSON()))
       .equal('[[{"name":"Test/Metric"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]')
   })
 
-  it("should measure a scoped metric", function () {
+  it('should measure a scoped metric', function() {
     metrics.measureMilliseconds('T/M', 'T', 400, 200)
     expect(JSON.stringify(metrics.toJSON()))
       .equal('[[{"name":"T/M","scope":"T"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]')
   })
 
-  it("should resolve the correctly scoped set of metrics when scope passed", function () {
+  it('should resolve the correctly scoped set of metrics when scope passed', function() {
     metrics.measureMilliseconds('Apdex/ScopedMetricsTest', 'TEST')
     var scoped = metrics._resolve('TEST')
 
     expect(scoped['Apdex/ScopedMetricsTest']).an('object')
   })
 
-  it("should implicitly create a blank set of metrics when resolving new scope",
-     function () {
+  it('should implicitly create a blank set of metrics when resolving new scope',
+     function() {
     var scoped = metrics._resolve('NOEXISTBRO')
 
     expect(scoped).an('object')
     expect(Object.keys(scoped).length).equal(0)
   })
 
-  it("should return a preëxisting unscoped metric when it's requested", function () {
+  it('should return a preëxisting unscoped metric when it is requested', function() {
     metrics.measureMilliseconds('Test/UnscopedMetric', null, 400, 200)
     expect(metrics.getOrCreateMetric('Test/UnscopedMetric').callCount).equal(1)
   })
 
-  it("should return a preëxisting scoped metric when it's requested", function () {
+  it('should return a preëxisting scoped metric when it is requested', function() {
     metrics.measureMilliseconds('Test/Metric', 'TEST', 400, 200)
     expect(metrics.getOrCreateMetric('Test/Metric', 'TEST').callCount).equal(1)
   })
 
-  it("should return the unscoped metrics when scope not set", function () {
+  it('should return the unscoped metrics when scope not set', function() {
     metrics.measureMilliseconds('Test/UnscopedMetric', null, 400, 200)
     expect(Object.keys(metrics._resolve()).length).equal(1)
     expect(Object.keys(metrics.scoped).length).equal(0)
   })
 
-  describe("when serializing", function () {
-    describe("unscoped metrics", function () {
-      it("should get the basics right", function () {
+  describe('when serializing', function() {
+    describe('unscoped metrics', function() {
+      it('should get the basics right', function() {
         metrics.measureMilliseconds('Test/Metric', null, 400, 200)
         metrics.measureMilliseconds('RenameMe333', null, 400, 300)
         metrics.measureMilliseconds('Test/ScopedMetric', 'TEST', 400, 200)
 
-        expect(JSON.stringify(metrics._toUnscopedData()))
-          .equal('[[{"name":"Test/Metric"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]],' +
-                  '[{"name":"RenameMe333"},[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]')
+        expect(JSON.stringify(metrics._toUnscopedData())).to.equal(
+          '[[{"name":"Test/Metric"},[1,0.4,0.2,0.4,0.4,0.16000000000000003]],' +
+          '[{"name":"RenameMe333"},[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]'
+        )
       })
 
-      describe("with ordinary statistics", function () {
+      describe('with ordinary statistics', function() {
         var NAME = 'Agent/Test384'
         var metric
         var mapper
 
 
-        beforeEach(function () {
+        beforeEach(function() {
           metric = metrics.getOrCreateMetric(NAME)
           mapper = new MetricMapper([[{name : NAME}, 1234]])
         })
 
-        it("should get the bare stats right", function () {
+        it('should get the bare stats right', function() {
           var summary = JSON.stringify(metrics._getUnscopedData(NAME))
-          expect(summary).equal('[{"name":"Agent/Test384"},[0,0,0,0,0,0]]')
+          expect(summary).to.equal('[{"name":"Agent/Test384"},[0,0,0,0,0,0]]')
         })
 
-        it("should correctly map metrics to IDs given a mapping", function () {
+        it('should correctly map metrics to IDs given a mapping', function() {
           metrics.mapper = mapper
           var summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).equal('[1234,[0,0,0,0,0,0]]')
         })
 
-        it("should correctly serialize statistics", function () {
+        it('should correctly serialize statistics', function() {
           metric.recordValue(0.3, 0.1)
           var summary = JSON.stringify(metrics._getUnscopedData(NAME))
-          expect(summary).equal('[{"name":"Agent/Test384"},[1,0.3,0.1,0.3,0.3,0.09]]')
+          expect(summary).to.equal('[{"name":"Agent/Test384"},[1,0.3,0.1,0.3,0.3,0.09]]')
         })
       })
 
-      describe("with apdex statistics", function () {
+      describe('with apdex statistics', function() {
         var NAME = 'Agent/Test385'
         var metric
         var mapper
 
-
-        beforeEach(function () {
+        beforeEach(function() {
           metrics = new Metrics(0.8, new MetricMapper(), agent.metricNameNormalizer)
           metric  = metrics.getOrCreateApdexMetric(NAME)
           mapper  = new MetricMapper([[{name : NAME}, 1234]])
         })
 
-        it("should get the bare stats right", function () {
+        it('should get the bare stats right', function() {
           var summary = JSON.stringify(metrics._getUnscopedData(NAME))
-          expect(summary).equal('[{"name":"Agent/Test385"},[0,0,0,0.8,0.8,0]]')
+          expect(summary).to.equal('[{"name":"Agent/Test385"},[0,0,0,0.8,0.8,0]]')
         })
 
-        it("should correctly map metrics to IDs given a mapping", function () {
+        it('should correctly map metrics to IDs given a mapping', function() {
           metrics.mapper = mapper
           var summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).equal('[1234,[0,0,0,0.8,0.8,0]]')
         })
 
-        it("should correctly serialize statistics", function () {
+        it('should correctly serialize statistics', function() {
           metric.recordValueInMillis(3220)
           var summary = JSON.stringify(metrics._getUnscopedData(NAME))
-          expect(summary).equal('[{"name":"Agent/Test385"},[0,0,1,0.8,0.8,0]]')
+          expect(summary).to.equal('[{"name":"Agent/Test385"},[0,0,1,0.8,0.8,0]]')
         })
       })
     })
 
-    describe("scoped metrics", function () {
-      it("should get the basics right", function () {
+    describe('scoped metrics', function() {
+      it('should get the basics right', function() {
         metrics.measureMilliseconds('Test/UnscopedMetric',    null, 400, 200)
         metrics.measureMilliseconds('Test/RenameMe333',     'TEST', 400, 300)
         metrics.measureMilliseconds('Test/ScopedMetric', 'ANOTHER', 400, 200)
 
-        expect(JSON.stringify(metrics._toScopedData()))
-          .equal('[[{"name":"Test/RenameMe333","scope":"TEST"},' +
-                   '[1,0.4,0.3,0.4,0.4,0.16000000000000003]],' +
-                  '[{"name":"Test/ScopedMetric","scope":"ANOTHER"},' +
-                   '[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]')
+        expect(JSON.stringify(metrics._toScopedData())).to.equal(
+          '[[{"name":"Test/RenameMe333","scope":"TEST"},' +
+          '[1,0.4,0.3,0.4,0.4,0.16000000000000003]],' +
+          '[{"name":"Test/ScopedMetric","scope":"ANOTHER"},' +
+          '[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]'
+        )
       })
     })
 
-    it("should serialize correctly", function () {
+    it('should serialize correctly', function() {
       metrics.measureMilliseconds('Test/UnscopedMetric', null, 400, 200)
       metrics.measureMilliseconds('Test/RenameMe333',    null, 400, 300)
       metrics.measureMilliseconds('Test/ScopedMetric', 'TEST', 400, 200)
 
-      expect(JSON.stringify(metrics.toJSON()))
-        .equal('[[{"name":"Test/UnscopedMetric"},' +
-                 '[1,0.4,0.2,0.4,0.4,0.16000000000000003]],' +
-                '[{"name":"Test/RenameMe333"},' +
-                 '[1,0.4,0.3,0.4,0.4,0.16000000000000003]],' +
-                '[{"name":"Test/ScopedMetric","scope":"TEST"},' +
-                 '[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]')
+      expect(JSON.stringify(metrics.toJSON())).to.equal(
+        '[[{"name":"Test/UnscopedMetric"},' +
+        '[1,0.4,0.2,0.4,0.4,0.16000000000000003]],' +
+        '[{"name":"Test/RenameMe333"},' +
+        '[1,0.4,0.3,0.4,0.4,0.16000000000000003]],' +
+        '[{"name":"Test/ScopedMetric","scope":"TEST"},' +
+        '[1,0.4,0.2,0.4,0.4,0.16000000000000003]]]'
+      )
     })
   })
 
-  describe("when merging two metrics collections", function () {
-    var other
+  describe('when merging two metrics collections', function() {
+    var other = null
 
-    beforeEach(function () {
+    beforeEach(function() {
       metrics.started = 31337
       metrics.measureMilliseconds('Test/Metrics/Unscoped', null, 400)
       metrics.measureMilliseconds('Test/Unscoped',         null, 300)
@@ -293,22 +293,27 @@ describe("Metrics", function () {
       metrics.merge(other)
     })
 
-    it("has all the metrics that were only in one", function () {
+    it('has all the metrics that were only in one', function() {
       expect(metrics.getMetric('Test/Metrics/Unscoped').callCount).equal(1)
       expect(metrics.getMetric('Test/Other/Unscoped').callCount).equal(1)
       expect(metrics.getMetric('Test/Scoped', 'METRICS').callCount).equal(1)
       expect(metrics.getMetric('Test/Scoped', 'OTHER').callCount).equal(1)
     })
 
-    it("merged metrics that were in both", function () {
+    it('merged metrics that were in both', function() {
       expect(metrics.getMetric('Test/Unscoped').callCount).equal(2)
       expect(metrics.getMetric('Test/Scoped', 'MERGE').callCount).equal(2)
     })
 
-    it("kept the earliest creation time", function () {
-      expect(metrics.started).equal(1337)
+    it('does not keep the earliest creation time', function() {
+      expect(metrics.started).to.equal(31337)
+    })
+
+    it('does keep the earliest creation time if told to', function() {
+      metrics.merge(other, true)
+      expect(metrics.started).to.equal(1337)
     })
   })
 
-  it("should not let exclusive duration exceed total duration")
+  it('should not let exclusive duration exceed total duration')
 })
