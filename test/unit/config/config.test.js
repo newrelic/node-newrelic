@@ -354,14 +354,6 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up whether tracing of the transaction tracer is enabled',
-       function() {
-      idempotentEnv('NEW_RELIC_DEBUG_TRACER', 'yup', function(tc) {
-        should.exist(tc.debug.tracer_tracing)
-        expect(tc.debug.tracer_tracing).equal(true)
-      })
-    })
-
     it('should pick up renaming rules', function() {
       idempotentEnv(
         'NEW_RELIC_NAMING_RULES',
@@ -628,10 +620,6 @@ describe('the agent configuration', function() {
 
     it('should not debug internal metrics', function() {
       expect(configuration.debug.internal_metrics).equal(false)
-    })
-
-    it('REALLY should not trace the transaction tracer', function() {
-      expect(configuration.debug.tracer_tracing).equal(false)
     })
 
     it('should have no naming rules', function() {
