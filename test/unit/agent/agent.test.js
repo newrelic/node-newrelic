@@ -281,7 +281,7 @@ describe('the New Relic agent', function() {
         ]
 
         // Change this to maxSampled if we change the way the back off works.
-        for (var i = 0; i < 2 *  agent.sampledTarget; ++i) {
+        for (var i = 0; i < 2 * agent.sampledTarget; ++i) {
           var diff = agent.minSampledPriority - expectedMSP[i]
           expect(diff).to.be.lessThan(0.001)
           agent.incrementTransactionsSampled()
