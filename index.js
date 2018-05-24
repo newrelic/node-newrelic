@@ -132,6 +132,12 @@ function createAgent(config) {
   shimmer.patchModule(agent)
   shimmer.bootstrapInstrumentation(agent)
 
+  // Check for already loaded modules and warn about them. This must be executed
+  // only once, at the first require of this file, or else we have problems in
+  // unit tests.
+  var uninstrumented = require('./lib/uninstrumented')
+  uninstrumented.check(shimmer.registeredInstrumentations)
+
   agent.start(function cb_start(error) {
     if (!error) {
       return logger.debug("New Relic for Node.js is connected to New Relic.")
