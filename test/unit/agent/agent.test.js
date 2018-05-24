@@ -254,14 +254,6 @@ describe('the New Relic agent', function() {
         expect(agent.transactionsSampled).to.equal(1)
       })
 
-      it('should not sample more than its max', function() {
-        expect(agent.transactionsSampled).to.equal(0)
-        for (var i = 0; i < agent.maxSampled; ++i) {
-          expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.true()
-        }
-        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.false()
-        expect(agent.transactionsSampled).to.equal(agent.maxSampled)
-      })
 
       it('should not sample transactions with priorities lower than the min', function() {
         expect(agent.transactionsSampled).to.equal(0)
@@ -278,11 +270,22 @@ describe('the New Relic agent', function() {
         expect(agent.minSampledPriority).to.equal(0.5)
       })
 
-      it('should adjust the max to be 2 * the target', function() {
-        // numbers start off the same
-        expect(agent.maxSampled).to.equal(agent.sampledTarget)
+      it('should backoff on sampling after reaching the sampled target', function() {
+        agent.transactionCreatedInHarvest = 10 * agent.sampledTarget
         agent.adjustDistributedTraceStats()
-        expect(agent.maxSampled).to.equal(2*agent.sampledTarget)
+        var expectedMSP = [
+            0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,
+            0.9512462826139941, 0.9642301587871667, 0.9735792049702137,
+            0.9805646189006507, 0.9859434773568351, 0.9901897153501046,
+            0.9936126144884015, 0.9964212290549166, 0.998761182830125
+        ]
+
+        // Change this to maxSampled if we change the way the back off works.
+        for (var i = 0; i < 2 * agent.sampledTarget; ++i) {
+          var diff = agent.minSampledPriority - expectedMSP[i]
+          expect(diff).to.be.lessThan(0.001)
+          agent.incrementTransactionsSampled()
+        }
       })
     })
 
