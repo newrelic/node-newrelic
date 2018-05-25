@@ -132,9 +132,7 @@ function createAgent(config) {
   shimmer.patchModule(agent)
   shimmer.bootstrapInstrumentation(agent)
 
-  // Check for already loaded modules and warn about them. This must be executed
-  // only once, at the first require of this file, or else we have problems in
-  // unit tests.
+  // Check for already loaded modules and warn about them.
   var uninstrumented = require('./lib/uninstrumented')
   uninstrumented.check(shimmer.registeredInstrumentations)
 
