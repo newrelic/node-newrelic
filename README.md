@@ -24,19 +24,16 @@ As with any instrumentation tool, please test before using in production.
 
 ## Getting started
 
-1. [Install node](https://nodejs.org/#download). The agent runs on v0.10 and
-   higher. Development work on this module is done with the latest
-   non-development release of Node.
-2. Verify your version of node came with a new enough version of npm using
-   `npm -v`. We require version 1.4.28 or newer, and recommend using
-   the latest release. Read more about [upgrading npm here](#upgrading-npm).
-3. Install this module via `npm install newrelic` for the
-   application you want to monitor.
-4. Copy `newrelic.js` from `node_modules/newrelic` into the root
-   directory of your application.
-5. Edit `newrelic.js` and replace `license_key`'s value with the license key
-   for your account.
-6. Add `require('newrelic');` as the first line of the app's main module.
+1. [Install node](https://nodejs.org/#download). The agent runs on v4 and
+  higher. Development work on this module is done with the latest stable
+  release of Node.
+2. Install this module via `npm install newrelic` for the application you want
+  to monitor.
+3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
+  your application.
+4. Edit `newrelic.js` and replace `license_key`'s value with the license key
+  for your account.
+5. Add `require('newrelic')` as the first line of the app's main module.
 
 If you wish to keep the configuration for the module separate from your
 application, the module will look for `newrelic.js` in the directory referenced
@@ -51,20 +48,6 @@ New Relic. The module will write its log to a file named `newrelic_agent.log`
 in the application directory. If New Relic doesn't send data or crashes your
 app, the log can help New Relic determine what went wrong, so be sure to send
 it along with any bug reports or support requests.
-
-### Upgrading npm
-
-If you're running on a version of npm before 1.4.28, or are interested in moving
-up to latest follow these steps:
-
-1. Run `npm -v` to make sure you have npm installed and working.
-2. If you are on linux/smartos/osx/\*nix run `ls -l $(which npm)` and check to
-   see if the file is owned by "root" or "admin". If so, prefix the next command
-   with `sudo`.
-3. Run `npm install -g npm@latest` to upgrade npm itself.
-
-**Warning**: An existing installation of npm can break if it is used to upgrade
-itself without root privileges while the npm executable is owned by root.
 
 ## Security
 
@@ -100,8 +83,6 @@ Here's the list of the most important variables and their values:
   will be available via environment variables, and some log messages assume
   that a config file exists.
 * `NEW_RELIC_HOME`: path to the directory in which you've placed `newrelic.js`.
-* `NEW_RELIC_USE_SSL`: Use SSL for communication with New Relic's servers.
-  Enabled by default.
 * `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including the
   filename. The agent will shut down the process if it can't create this file,
   and it creates the log file with the same umask of the process. Setting this
@@ -112,73 +93,14 @@ Here's the list of the most important variables and their values:
   pretty chatty; unless you're helping New Relic figure out irregularities with
   the module, you're probably best off using `info` or higher.
 
-For completeness, here's the rest of the list:
-
-* `NEW_RELIC_ENABLED`: Whether or not the agent should run. Good for
-  temporarily disabling the agent while debugging other issues with your code.
-  It doesn't prevent the module from bootstrapping its instrumentation or
-  setting up all its pieces, it just prevents it from starting up or connecting
-  to New Relic's servers. Defaults to true.
-* `NEW_RELIC_ERROR_COLLECTOR_ENABLED`: Whether or not to trace errors within
-  your application. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES`: Comma-delimited list of HTTP
-  status codes to ignore. Maybe you don't care if payment is required? Ignoring
-  a status code means that the transaction is not renamed to match the code,
-  and the request is not treated as an error by the error collector. Defaults
-  to ignoring 404.
-* `NEW_RELIC_IGNORE_SERVER_CONFIGURATION`: Whether to ignore server-side
-  configuration for this application. Defaults to false.
-* `NEW_RELIC_TRACER_ENABLED`: Whether to collect and submit slow transaction
-  traces to New Relic. Values are `true` or `false`. Defaults to true.
-* `NEW_RELIC_TRACER_THRESHOLD`: Threshold of web transaction response time (in
-  seconds) at which a transaction trace will count as slow and be sent to New
-  Relic. Can also be set to `apdex_f`, at which point it will set the trace
-  threshold to 4 times the current ApdexT. Defaults to `apdex_f`.
-* `NEW_RELIC_APDEX`: Set the initial Apdex tolerating / threshold value in
-  seconds.  This is more often than not set from the server. Defaults to 0.100.
-* `NEW_RELIC_CAPTURE_PARAMS`: Whether to capture request parameters on slow
-  transaction or error traces. Defaults to false.
-* `NEW_RELIC_IGNORED_PARAMS`: Some parameters may contain sensitive values you
-  don't want being sent out of your application. This setting is a
-  comma-delimited list of names of parameters to ignore. Defaults to empty.
-* `NEW_RELIC_NAMING_RULES`: A list of comma-delimited JSON object literals:
-  `NEW_RELIC_NAMING_RULES='{"pattern":"^t","name":"u"},{"pattern":"^u","name":"t"}'`
-  See the section on request and transaction naming for details. Defaults to
-  empty.
-* `NEW_RELIC_IGNORING_RULES`: A list of comma-delimited patterns:
-  `NEW_RELIC_IGNORING_RULES='^/socket\.io/.*/xhr-polling,ignore_me'` Note that
-  currently there is no way to escape commas in patterns. Defaults to empty.
-* `NEW_RELIC_TRACER_TOP_N`: Increase this number to increase the diversity of
-  slow transaction traces sent to New Relic. Defaults to 1. See the description
-  in `lib/config/default.js`, as this feature is exceedingly hard to summarize.
-* `NEW_RELIC_HOST`: Hostname for the New Relic collector. You shouldn't
-  need to change this.
-* `NEW_RELIC_PORT`: Port number on which the New Relic collector will be
-  listening. You shouldn't need to change this either.
-* `NEW_RELIC_PROXY_URL`: A fully-qualified URL to an http/https proxy.
-  The proxy URL may include basic authentication.
-  The use of `NEW_RELIC_PROXY_URL` overrides other proxy settings.
-* `NEW_RELIC_PROXY_HOST`: Proxy hostname
-* `NEW_RELIC_PROXY_PORT`: Proxy port.
-* `NEW_RELIC_PROXY_USER`: Proxy user name (basic auth only).
-* `NEW_RELIC_PROXY_PASS`: Proxy password.
-* `NEW_RELIC_DEBUG_METRICS`: Whether to collect internal supportability metrics
-  for the agent. Don't mess with this unless New Relic asks you to.
-* `NEW_RELIC_DEBUG_TRACER`: Whether to dump traces of the transaction tracer's
-  internal operation. It's unlikely to be informative unless you're a New Relic
-  Node.js engineer and it has a significant performance cost, so use with care.
-* `NEW_RELIC_BROWSER_MONITOR_ENABLE`: Whether to generate browser timing (RUM)
-  headers or not.
-* `NEW_RELIC_LABELS`: Sets the label names and values to associate with the
-  application. The list is a semi-colon delimited list of colon-separated name
-  and value pairs
+For a complete list of environment variables and other configuration options see
+[Node.js agent configuration][7] on our documentation site.
 
 ## Browser timings (RUM / Real User Monitoring)
 
-New Relic's instrumentation can extend beyond your application into the
-client's browser.  The `newrelic` module can generate `<script>` headers which,
-when inserted into your HTML templates, will capture client-side page load
-times.
+New Relic's instrumentation can extend beyond your application into the client's
+browser. The `newrelic` module can generate `<script>` headers which, when
+inserted into your HTML templates, will capture client-side page load times.
 
 Headers must be manually injected, but no extra configuration is necessary to
 enable browser timings.
@@ -195,7 +117,7 @@ enable browser timings.
 ### Example
 
 Below is an example using `express` and `jade`; Express is a popular web
-application framework, and `jade` is a popular template module.  Although the
+application framework, and `jade` is a popular template module. Although the
 specifics are different for other frameworks, the general approach described
 below should work in most cases.
 
@@ -205,7 +127,7 @@ within the template.
 
 *app.js:*
 
-```javascript
+```js
 var newrelic = require('newrelic');
 var app = require('express')();
 
@@ -232,11 +154,10 @@ html
 ```
 
 By defaults calls to `newrelic.getBrowserTimingHeader()` should return valid
-headers.  You can disable header generation *without* removing your template
-code.  In your `newrelic.js` file, add the following to disable header
-generation.
+headers. You can disable header generation *without* removing your template
+code. In your `newrelic.js` file, add the following to disable header generation.
 
-```javascript
+```js
 exports.config = {
   // ... other config
   browser_monitoring : {
@@ -248,10 +169,10 @@ exports.config = {
 You can also set the environment variable `NEW_RELIC_BROWSER_MONITOR_ENABLE=false`.
 
 It is safe to leave the header generation code in place even when you're not
-using it.  If browser timings are disabled, or there is an error such that
+using it. If browser timings are disabled, or there is an error such that
 working headers cannot be generated, the `newrelic` module will generate an
-innocuous HTML comment.  If the `newrelic` module is disabled entirely no
-content will be generated.
+innocuous HTML comment. If the `newrelic` module is disabled entirely no content
+will be generated.
 
 ## Transactions and request naming
 
@@ -417,7 +338,7 @@ ignored by New Relic.
 If you're using socket.io, you will have a use case for ignoring rules right
 out of the box. You'll probably want to add a rule like the following:
 
-```javascript
+```js
 // newrelic.js
 exports.config = {
   // other configuration
@@ -458,44 +379,47 @@ Each rule is defined using the following format:
 
 Additional attributes are ignored.
 
-Note: these rules take precedence over automatic naming from router instrumentations and
-are applied to the URL path, not the name returned by the router instrumentation.
+Note: these rules take precedence over automatic naming from router
+instrumentations and are applied to the URL path, not the name returned by the
+router instrumentation.
 
 ##### pattern (required)
 
-The pattern used to match the URL.  It can be set as either a string or a JavaScript
-regular expression literal.  For example, `"^/abc/123$"` is equivalent to `/^\/abc\/123$/`.
+The pattern used to match the URL. It can be set as either a string or a
+JavaScript regular expression literal. For example, `"^/abc/123$"` is equivalent
+to `/^\/abc\/123$/`.
 
 The pattern can be written to match the complete URL, or just a part of it.
 
 ##### name (required)
 
 The value that is used to replace the URL (or part of it) that matches the pattern.
-It is also possible to use regular expression group references.  See examples below.
+It is also possible to use regular expression group references. See examples below.
 
 ##### rules.precedence (optional)
 
-By default the rules are evaluated in reverse order (from last to first).  If you find
-this behavior counterintuitive, the execution order can be reversed by setting the feature
-flag `reverse_naming_rules` to false.  Furthermore, if you prefer to have complete
-control over the order, each rule can be given a `precedence` attribute.  The precedence
-is an integer number, and rules are evaluated in ascending order.  If precedence is not
-explicitly defined, it will be set to 500 by default.
+By default the rules are evaluated in reverse order (from last to first). If you
+find this behavior counterintuitive, the execution order can be reversed by
+setting the feature flag `reverse_naming_rules` to false. Furthermore, if you
+prefer to have complete control over the order, each rule can be given a
+`precedence` attribute. The precedence is an integer number, and rules are
+evaluated in ascending order. If precedence is not explicitly defined, it will
+be set to 500 by default.
 
 ##### rules.terminate_chain (optional)
 
-When set to true, no further rules will be evaluated if this rule is a match.  The default
-is true.
+When set to true, no further rules will be evaluated if this rule is a match.
+The default is true.
 
-Setting this to false is useful when multiple rules should be used together.  For example,
-one rule could be replacing a common pattern in many different URLs, while subsequent
-rule(s) would be more specific.
+Setting this to false is useful when multiple rules should be used together. For
+example, one rule could be replacing a common pattern in many different URLs,
+while subsequent rule(s) would be more specific.
 
 ##### rules.replace_all (optional)
 
-When set to true, all matches of the pattern will be replaced.  Otherwise, only the first
-match will be replaced.  The default is false.  Using the `g` flag with regular expression
-literal will have the same effect.  For example:
+When set to true, all matches of the pattern will be replaced. Otherwise, only
+the first match will be replaced. The default is false. Using the `g` flag with
+regular expression literal will have the same effect. For example:
 
 ```
   pattern: '[0-9]+',
@@ -510,8 +434,9 @@ will have the same effect as
 
 ##### Testing
 
-The agent comes with a command-line tool for testing naming rules.  For more information
-run the following command in terminal window in a directory where your app is installed.
+The agent comes with a command-line tool for testing naming rules. For more
+information run the following command in terminal window in a directory where
+your app is installed.
 
 `node node_modules/.bin/newrelic-naming-rules`
 
@@ -569,8 +494,8 @@ will result in:
 
 A list of patterns for matching incoming request URLs to be ignored. When using
 ignoring rules with instrumented routers, the matches are still made against
-the URL paths, not the name returned by the router instrumentation. Patterns may be
-strings or regular expressions.
+the URL paths, not the name returned by the router instrumentation. Patterns may
+be strings or regular expressions.
 
 Can also be set via the environment variable `NEW_RELIC_IGNORING_RULES`, with
 multiple rules passed in as a list of comma-delimited patterns:
@@ -607,7 +532,7 @@ so it has a place to set the custom parameters.
 
 Example of setting multiple custom parameters at once:
 
-```javascript
+```js
 newrelic.addCustomParameters({test: 'value', test2: 'value2'});
 ```
 
@@ -633,15 +558,15 @@ display.
 
 #### newrelic.shutdown([options], callback)
 
-Use this method to gracefully shut down the agent.  When called with
+Use this method to gracefully shut down the agent. When called with
 `options.collectPendingData` set to true, the agent will send any pending data
-to the New Relic servers before shutting down.  This is useful when you want to
+to the New Relic servers before shutting down. This is useful when you want to
 shut down the Node process and make sure that all transactions and/or errors are
 captured by New Relic.
 
 Example of collecting pending data before shutting down the process:
 
-```javascript
+```js
 newrelic.shutdown({ collectPendingData: true }, function(error) {
   process.exit()
 })
@@ -724,7 +649,8 @@ of a transaction it will just pass through.
 
 `name` is the metric name to record, it must be a string that begins with
 `Custom/` typically followed by segments for `category` and `label`.
-(eg.`Custom/my_category/my_label`).
+(eg. `Custom/my_category/my_label`).
+
 `value` is either a numerical value to associate with the metric sample,
 or an object representing multiple samples for the metric. If `value` is
 an object, it must include keys for `count`, `total`, `min`, `max`, and
@@ -734,8 +660,9 @@ an object, it must include keys for `count`, `total`, `min`, `max`, and
 
 `name` is the metric name to record, it must be a string that beings with
 `Custom/` typically followed by segments for `category` and `label`.
-(eg.`Custom/my_category/my_label`).
-`amount` is optional, but must be an integer if provided.  `amount` is
+(eg. `Custom/my_category/my_label`).
+
+`amount` is optional, but must be an integer if provided. `amount` is
 the number of times to increment the metrics `count`, it defaults to 1.
 
 ### The fine print
@@ -776,9 +703,8 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 * New Relic for Node is only supported on Node.js 4 and newer. Some features
   may behave differently between the supported versions of Node. The agent is
   optimized for newer versions of Node.
-* There are irregularities around transaction trace capture and display.  If
-  you notice missing or incorrect information from transaction traces, let us
-  know.
+* There are irregularities around transaction trace capture and display. If you
+  notice missing or incorrect information from transaction traces, let us know.
 * There are <del>over 20,000</del> <del>30,000</del> <del>40,000</del> <ins>*A
   LOT* of</ins> modules on npm. We can only instrument a tiny number of them.
   Even for the modules we support, there are a very large number of ways to use
@@ -796,9 +722,7 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 
 ### New Relic features available for other platforms not yet in Node.js
 
-* custom metrics
 * explain plans
-* garbage collector instrumentation
 * thread profiling
 * X-ray transactions (depends on thread profiling)
 * capacity planning
@@ -806,9 +730,8 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 ## LICENSE
 
 New Relic for Node is free-to-use, proprietary software. Please see the full
-license (found in [LICENSE](LICENSE) in this distribution) for details on its license and
-the licenses of its dependencies.
-
+license (found in [LICENSE](LICENSE) in this distribution) for details on its
+license and the licenses of its dependencies.
 
 [1]: https://nodei.co/npm/newrelic.png
 [2]: https://nodei.co/npm/newrelic
@@ -816,3 +739,4 @@ the licenses of its dependencies.
 [4]: https://newrelic.com
 [5]: https://newrelic.com/application-monitoring/features
 [6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config/default.js
+[7]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration

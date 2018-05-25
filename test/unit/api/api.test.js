@@ -130,6 +130,26 @@ describe('the New Relic agent API', function() {
       })
     })
 
+    it("should have a method to create a distributed trace payload", function(done) {
+      helper.runInTransaction(agent, function(txn) {
+        var handle = api.getTransaction()
+        expect(handle.createDistributedTracePayload).to.be.a('function')
+        agent.config.cross_process_id = '1234#5678'
+        var distributedTracePayload = handle.createDistributedTracePayload()
+        expect(distributedTracePayload.text).to.be.a('function')
+        expect(distributedTracePayload.httpSafe).to.be.a('function')
+        done()
+      })
+    })
+
+    it("should have a method for accepting a distributed trace payload", function(done) {
+      helper.runInTransaction(agent, function(txn) {
+        var handle = api.getTransaction()
+        expect(handle.acceptDistributedTracePayload).to.be.a('function')
+        done()
+      })
+    })
+
     it("should return a handle with a method to end the transaction", function(done) {
       var transaction
       agent.on('transactionFinished', function(t) {

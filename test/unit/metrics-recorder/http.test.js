@@ -63,6 +63,104 @@ describe("recordWeb", function() {
   })
 
   describe("when recording web transactions", function() {
+    describe('with distributed tracing enabled', function() {
+      it('should record metrics from accepted payload information', function() {
+        agent.config.feature_flag.distributed_tracing = true
+        agent.config.cross_application_tracer.enabled = true
+        agent.config.cross_process_id = '1234#5677'
+        agent.config.trusted_account_ids = [ '1234' ]
+
+        const payload = trans.createDistributedTracePayload().text()
+        trans.isDistributedTrace = null
+        trans.acceptDistributedTracePayload(payload)
+
+        record({
+          transaction: trans,
+          apdexT: 0.06,
+          url: '/test',
+          code: 200,
+          duration: 55,
+          exclusive: 55
+        })
+
+        var result = [
+          [{name: 'WebTransaction'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name: 'WebTransactionTotalTime'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name: 'HttpDispatcher'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [
+            {name: 'WebTransaction/NormalizedUri/*'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'WebTransactionTotalTime/NormalizedUri/*'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'DurationByCaller/App/1234/5677/http/all'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'TransportDuration/App/1234/5677/http/all'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'DurationByCaller/App/1234/5677/http/allWeb'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'TransportDuration/App/1234/5677/http/allWeb'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [{name: 'Apdex/NormalizedUri/*'}, [1, 0, 0, 0.06, 0.06, 0]],
+          [{name: 'Apdex'}, [1, 0, 0, 0.06, 0.06, 0]],
+        ]
+
+        assertMetrics(trans.metrics, result, true, true)
+      })
+
+      it('should tag metrics with Unknown if no DT payload was received', function() {
+        agent.config.feature_flag.distributed_tracing = true
+        agent.config.cross_application_tracer.enabled = true
+        agent.config.cross_process_id = '1234#5677'
+        agent.config.trusted_account_ids = [ '1234' ]
+
+        record({
+          transaction: trans,
+          apdexT: 0.06,
+          url: '/test',
+          code: 200,
+          duration: 55,
+          exclusive: 55
+        })
+
+        var result = [
+          [{name: 'WebTransaction'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name: 'WebTransactionTotalTime'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [{name: 'HttpDispatcher'}, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
+          [
+            {name: 'WebTransaction/NormalizedUri/*'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'WebTransactionTotalTime/NormalizedUri/*'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [
+            {name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb'},
+            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+          ],
+          [{name: 'Apdex/NormalizedUri/*'}, [1, 0, 0, 0.06, 0.06, 0]],
+          [{name: 'Apdex'}, [1, 0, 0, 0.06, 0.06, 0]],
+        ]
+
+        assertMetrics(trans.metrics, result, true, true)
+      })
+    })
+
     describe("with normal requests", function() {
       it("should infer a satisfying end-user experience", function() {
         record({

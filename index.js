@@ -90,11 +90,11 @@ function initialize() {
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
   if (agent) {
     var initDuration = (Date.now() - agentStart) / 1000
-    agent.recordSupportability('Application/Opening/Duration', preAgentTime)
-    agent.recordSupportability('Application/Initialization/Duration', initDuration)
+    agent.recordSupportability('Nodejs/Application/Opening/Duration', preAgentTime)
+    agent.recordSupportability('Nodejs/Application/Initialization/Duration', initDuration)
     agent.once('started', function timeAgentStart() {
       agent.recordSupportability(
-        'Application/Registration/Duration',
+        'Nodejs/Application/Registration/Duration',
         (Date.now() - agentStart) / 1000
       )
     })
@@ -153,7 +153,7 @@ function addStartupSupportabilities(agent) {
   // TODO: As new versions come out, make sure to update Angler metrics.
   var nodeMajor = /^v?(\d+)/.exec(process.version)
   agent.recordSupportability(
-    'Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
+    'Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
   )
 
   var configFlags = Object.keys(agent.config.feature_flag)
@@ -163,7 +163,7 @@ function addStartupSupportabilities(agent) {
 
     if (enabled !== featureFlags[flag]) {
       agent.recordSupportability(
-        'FeatureFlag/' + flag + '/' + (enabled ? 'enabled' : 'disabled')
+        'Nodejs/FeatureFlag/' + flag + '/' + (enabled ? 'enabled' : 'disabled')
       )
     }
   }
