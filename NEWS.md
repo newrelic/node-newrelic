@@ -1,3 +1,13 @@
+### 4.1.3 (2018-05-29):
+
+* Fixed metric merging when using `debug.internal_metrics`.
+
+  The debug metrics cache would cause timestamps for harvested metrics to get stuck
+  at agent startup. This will no longer happen, and the debug cache is reset each
+  harvest.
+
+* Modularlized configuration constants to improve readability.
+
 ### 4.1.2 (2018-05-22):
 
 * Fixed access to properties on promisified methods.
