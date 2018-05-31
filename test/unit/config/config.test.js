@@ -347,13 +347,6 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up whether internal metrics are enabled', function() {
-      idempotentEnv('NEW_RELIC_DEBUG_METRICS', true, function(tc) {
-        should.exist(tc.debug.internal_metrics)
-        expect(tc.debug.internal_metrics).equal(true)
-      })
-    })
-
     it('should pick up renaming rules', function() {
       idempotentEnv(
         'NEW_RELIC_NAMING_RULES',
@@ -616,10 +609,6 @@ describe('the agent configuration', function() {
 
     it('should capture a maximum of 10 slow-queries per harvest', function() {
       expect(configuration.slow_sql.max_samples).equal(10)
-    })
-
-    it('should not debug internal metrics', function() {
-      expect(configuration.debug.internal_metrics).equal(false)
     })
 
     it('should have no naming rules', function() {
