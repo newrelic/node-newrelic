@@ -45,7 +45,7 @@ suite.add({
 })
 
 suite.add({
-  name: 'two full queues',
+  name: 'two full queues (toArray)',
   before: function() {
     for (var i = 0; i < poolSize; ++i) {
       queue1.add('test')
@@ -53,7 +53,23 @@ suite.add({
     }
   },
   fn: function() {
+    queue2.toArray()
     queue1.merge(queue2)
+  }
+})
+
+suite.add({
+  name: 'two full queues (getRawEvents)',
+  before: function() {
+    for (var i = 0; i < poolSize; ++i) {
+      queue1.add('test')
+      queue2.add('test')
+    }
+  },
+  fn: function() {
+    const ev = queue2.getRawEvents()
+    const mapped = ev.map((e) => e.value) // eslint-disable-line no-unused-vars
+    queue1.merge(ev)
   }
 })
 
