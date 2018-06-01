@@ -162,7 +162,7 @@ describe('built-in http module instrumentation', function() {
         server.listen(8123, 'localhost', function() {
           // The transaction doesn't get created until after the instrumented
           // server handler fires.
-          expect(agent.getTransaction()).to.not.exist()
+          expect(agent.getTransaction()).to.not.exist
           done()
         })
       })
@@ -333,7 +333,7 @@ describe('built-in http module instrumentation', function() {
       })
 
       it('should call the shim hook', function() {
-        expect(hookCalled).to.be.true()
+        expect(hookCalled).to.be.true
       })
     })
 

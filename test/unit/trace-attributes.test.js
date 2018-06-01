@@ -58,7 +58,7 @@ describe('TraceAttributes', function() {
 
       var res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
-      expect(res.third).to.be.undefined()
+      expect(res.third).to.be.undefined
     })
 
     it('only includes primitive attribute value types', function() {
@@ -96,9 +96,9 @@ describe('TraceAttributes', function() {
 
       var res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(4)
-      expect(res.second).to.be.undefined()
-      expect(res.third).to.be.undefined()
-      expect(res.sixth).to.be.undefined()
+      expect(res.second).to.be.undefined
+      expect(res.third).to.be.undefined
+      expect(res.sixth).to.be.undefined
     })
 
     it('returns attributes up to specified limit, regardless of position', function() {
@@ -120,7 +120,7 @@ describe('TraceAttributes', function() {
 
       var res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
-      expect(res.first).to.be.undefined()
+      expect(res.first).to.be.undefined
     })
   })
 

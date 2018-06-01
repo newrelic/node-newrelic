@@ -436,7 +436,7 @@ describe('Trace', function() {
       }
 
       details.trace.generateJSON(function(err, json, trace) {
-        expect(err).to.not.exist()
+        expect(err).to.not.exist
         expect(json[1]).to.equal(1234)
         expect(trace).to.equal(details.trace)
         done()

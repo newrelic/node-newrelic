@@ -1267,7 +1267,7 @@ describe('Errors', function() {
 
         var attributes = getFirstErrorCustomAttributes(aggregator)
         expect(attributes.a).equal('b')
-        expect(attributes.c).to.be.undefined()
+        expect(attributes.c).to.be.undefined
       })
     })
 
@@ -1421,7 +1421,7 @@ describe('Errors', function() {
 
       agent._sendMetrics(function() {
         agent._sendErrorEvents(function(err) {
-          expect(err).exist()
+          expect(err).exist
           expect(agent.errors.getEvents()).length(20)
           done()
         })
@@ -1456,7 +1456,7 @@ describe('Errors', function() {
 
       agent._sendMetrics(function() {
         agent._sendErrorEvents(function(err) {
-          expect(err).exist()
+          expect(err).exist
           expect(agent.errors.getEvents()).length(0)
           done()
         })
@@ -1500,7 +1500,7 @@ describe('Errors', function() {
           var attributes = getFirstEventCustomAttributes(aggregator)
           expect(Object.keys(attributes)).length(1)
           expect(attributes.a).equal('b')
-          expect(attributes.c).to.be.undefined()
+          expect(attributes.c).to.be.undefined
         })
 
         it('should contain agent attributes', function() {
@@ -1559,7 +1559,7 @@ describe('Errors', function() {
           var customAttributes = getFirstEventCustomAttributes(aggregator)
 
           expect(Object.keys(customAttributes)).length(1)
-          expect(customAttributes.c).to.be.undefined()
+          expect(customAttributes.c).to.be.undefined
           expect(Object.keys(agentAttributes)).length(0)
         })
       })
@@ -1738,7 +1738,7 @@ describe('Errors', function() {
         transaction.end(function() {
           var attributes = getFirstEventCustomAttributes(aggregator)
           expect(attributes.a).equal('b')
-          expect(attributes.c).to.be.undefined()
+          expect(attributes.c).to.be.undefined
           done()
         })
       })

@@ -846,7 +846,7 @@ describe('CollectorAPI', function() {
         })
 
         it('should have gotten an error', function() {
-          expect(captured).to.exist()
+          expect(captured).to.exist
         })
 
         it('should have passed on the status code', function() {
@@ -859,7 +859,7 @@ describe('CollectorAPI', function() {
         })
 
         it('should not have a response body', function() {
-          expect(body).to.not.exist()
+          expect(body).to.not.exist
         })
       })
 
@@ -882,7 +882,7 @@ describe('CollectorAPI', function() {
         })
 
         it('should have gotten an error', function() {
-          expect(captured).to.exist()
+          expect(captured).to.exist
         })
 
         it('should have passed on the status code', function() {
@@ -895,7 +895,7 @@ describe('CollectorAPI', function() {
         })
 
         it('should not have a response body', function() {
-          expect(body).to.not.exist()
+          expect(body).to.not.exist
         })
       })
 
@@ -1623,7 +1623,7 @@ describe('CollectorAPI', function() {
           if (error) {
             console.error(error.stack) // eslint-disable-line no-console
           }
-          expect(error).to.not.exist()
+          expect(error).to.not.exist
           expect(api._agent.config.run_id).equal(31338) // has new run ID
           nockDone()
           done()

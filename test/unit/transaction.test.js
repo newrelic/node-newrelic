@@ -129,13 +129,13 @@ describe('Transaction', function() {
   it('should know when it is not a web transaction', function() {
     var tx = new Transaction(agent)
     tx.type = Transaction.TYPES.BG
-    expect(tx.isWeb()).to.be.false()
+    expect(tx.isWeb()).to.be.false
   })
 
   it('should know when it is a web transaction', function() {
     var tx = new Transaction(agent)
     tx.type = Transaction.TYPES.WEB
-    expect(tx.isWeb()).to.be.true()
+    expect(tx.isWeb()).to.be.true
   })
 
   describe('when dealing with individual metrics', function() {
@@ -190,13 +190,13 @@ describe('Transaction', function() {
         var api = new API(agent)
         api.addIgnoringRule('^/test/')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).to.be.true()
+        expect(trans.isIgnored()).to.be.true
       })
 
       it('should ignore a transaction when told to by a rule', function() {
         agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).to.be.true()
+        expect(trans.isIgnored()).to.be.true
       })
 
       it('should pass through a name when told to by a rule', function() {
@@ -261,13 +261,13 @@ describe('Transaction', function() {
         trans.type = 'web'
         trans.url = '/foo/bar'
         trans.finalizeName()
-        expect(called).to.be.true()
+        expect(called).to.be.true
       })
 
       it('should apply ignore rules', function() {
         agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
         trans.finalizeName('foo')
-        expect(trans.isIgnored()).to.be.true()
+        expect(trans.isIgnored()).to.be.true
       })
 
       it('should not apply user naming rules', function() {
@@ -279,14 +279,14 @@ describe('Transaction', function() {
 
     describe('getName', function() {
       it('should return `null` if there is no name, partialName, or url', function() {
-        expect(trans.getName()).to.be.null()
+        expect(trans.getName()).to.be.null
       })
 
       it('partial name should remain unset if it was not set before', function() {
         trans.url = '/some/pathname'
-        expect(trans.nameState.getName()).to.be.null()
+        expect(trans.nameState.getName()).to.be.null
         expect(trans.getName()).to.equal('NormalizedUri/*')
-        expect(trans.nameState.getName()).to.be.null()
+        expect(trans.nameState.getName()).to.be.null
       })
 
       it('should return the right name if partialName and url are set', function() {
@@ -310,7 +310,7 @@ describe('Transaction', function() {
         var api = new API(agent)
         helper.runInTransaction(agent, function(txn) {
           api.setIgnoreTransaction(true)
-          expect(txn.isIgnored()).to.be.true()
+          expect(txn.isIgnored()).to.be.true
         })
       })
       it ('should return true if a transaction is ignored by a rule', function() {
@@ -753,7 +753,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Exception'
       )
-      expect(tx.isDistributedTrace).to.not.be.true()
+      expect(tx.isDistributedTrace).to.not.be.true
     })
 
     it('fails if payload version is above agent-supported version', function() {
@@ -767,7 +767,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Ignored/MajorVersion'
       )
-      expect(tx.isDistributedTrace).to.not.be.true()
+      expect(tx.isDistributedTrace).to.not.be.true
     })
 
     it('fails if payload account id is not in trusted ids', function() {
@@ -791,7 +791,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/UntrustedAccount'
       )
-      expect(tx.isDistributedTrace).to.not.be.true()
+      expect(tx.isDistributedTrace).to.not.be.true
     })
 
     it('fails if payload data is missing required keys', function() {
@@ -808,7 +808,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/ParseException'
       )
-      expect(tx.isDistributedTrace).to.not.be.true()
+      expect(tx.isDistributedTrace).to.not.be.true
     })
 
     it('takes the priority and sampled state from the incoming payload', function() {
@@ -866,7 +866,7 @@ describe('Transaction', function() {
 
       tx.computeSampled()
 
-      expect(tx.sampled).to.be.true()
+      expect(tx.sampled).to.be.true
       expect(tx.priority).to.equal(priorPriority + 1)
 
       const data = {
@@ -881,7 +881,7 @@ describe('Transaction', function() {
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.sampled).to.be.false()
+      expect(tx.sampled).to.be.false
       expect(tx.priority).to.equal(0.1)
     })
 
@@ -906,7 +906,7 @@ describe('Transaction', function() {
       expect(tx.parentId).to.equal(data.id)
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
-      expect(tx.isDistributedTrace).to.be.true()
+      expect(tx.isDistributedTrace).to.be.true
     })
   })
 
@@ -940,7 +940,7 @@ describe('Transaction', function() {
 
     it('returns null if string is invalid JSON', function() {
       const res = tx._getParsedPayload('{invalid JSON string}')
-      expect(res).to.be.null()
+      expect(res).to.be.null
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/ParseException'
       )
@@ -951,7 +951,7 @@ describe('Transaction', function() {
       payload = hashes.obfuscateNameUsingKey(payload, 'some other key')
 
       const res = tx._getParsedPayload(payload)
-      expect(res).to.be.null()
+      expect(res).to.be.null
     })
   })
 
@@ -999,7 +999,7 @@ describe('Transaction', function() {
       const payload = tx.createDistributedTracePayload().text()
       expect(payload).to.equal('')
       expect(tx.agent.recordSupportability.callCount).to.equal(0)
-      expect(tx.isDistributedTrace).to.not.be.true()
+      expect(tx.isDistributedTrace).to.not.be.true
     })
 
     it('sets the transaction as sampled if the trace is chosen', function() {
@@ -1011,7 +1011,7 @@ describe('Transaction', function() {
       const priorPriority = tx.priority
       expect(tx.sampled).to.equal(null)
       const payload = tx.createDistributedTracePayload()
-      expect(tx.sampled).to.be.true()
+      expect(tx.sampled).to.be.true
       expect(tx.priority).to.equal(priorPriority + 1)
     })
 
@@ -1026,7 +1026,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/CreatePayload/Success'
       )
-      expect(tx.isDistributedTrace).to.be.true()
+      expect(tx.isDistributedTrace).to.be.true
     })
   })
 

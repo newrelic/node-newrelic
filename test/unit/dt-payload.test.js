@@ -1,5 +1,5 @@
 'use strict'
-var should = require('chai').should()
+
 var expect = require('chai').expect
 
 var makeBuffer = require('../../lib/util/hashes').makeBuffer
@@ -14,9 +14,8 @@ describe('DistributedTracePayload', function() {
     }
     var dt = new DistributedTracePayload(payload)
     var output = JSON.parse(dt.text())
-    should.exist(output.v)
-    expect(Array.isArray(output.v)).to.be.true()
-    expect(output.d).to.be.an.object
+    expect(output).to.have.property('v').that.is.an('array')
+    expect(output).to.have.property('d').that.is.an('object')
     var keys = Object.keys(output.d)
     expect(keys.length).to.equal(2)
     for (var i = 0; i < keys.length; ++i) {
@@ -32,9 +31,8 @@ describe('DistributedTracePayload', function() {
     }
     var dt = new DistributedTracePayload(payload)
     var output = JSON.parse(makeBuffer(dt.httpSafe(), 'base64').toString('utf-8'))
-    should.exist(output.v)
-    expect(Array.isArray(output.v)).to.be.true()
-    expect(output.d).to.be.an.object
+    expect(output).to.have.property('v').that.is.an('array')
+    expect(output).to.have.property('d').that.is.an('object')
     var keys = Object.keys(output.d)
     expect(keys.length).to.equal(2)
     for (var i = 0; i < keys.length; ++i) {

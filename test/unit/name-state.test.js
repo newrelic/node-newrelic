@@ -76,12 +76,12 @@ describe('NameState', function() {
 
   it('should not report as empty if a path has been marked', function() {
     var state = new NameState('Nodejs', 'GET', '/')
-    expect(state.isEmpty()).to.be.true()
+    expect(state.isEmpty()).to.be.true
 
     state.appendPath('path1')
     state.markPath()
     state.popPath()
 
-    expect(state.isEmpty()).to.be.false()
+    expect(state.isEmpty()).to.be.false
   })
 })

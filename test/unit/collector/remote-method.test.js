@@ -43,7 +43,7 @@ describe('RemoteMethod', function() {
 
     it('should JSON-encode the given payload', function(done) {
       method.serialize({foo: 'bar'}, function(err, encoded) {
-        expect(err).to.not.exist()
+        expect(err).to.not.exist
         expect(encoded).to.equal('{"foo":"bar"}')
         done()
       })
@@ -53,7 +53,7 @@ describe('RemoteMethod', function() {
       var obj = {foo: 'bar'}
       obj.obj = obj
       method.serialize(obj, function(err, encoded) {
-        expect(err).to.not.exist()
+        expect(err).to.not.exist
         expect(encoded).to.equal('{"foo":"bar","obj":"[Circular ~]"}')
         done()
       })
@@ -65,9 +65,9 @@ describe('RemoteMethod', function() {
           throw new Error('fake serialization error')
         }}, function(err, encoded) {
           expect(err)
-            .to.exist()
+            .to.exist
             .and.have.property('message', 'fake serialization error')
-          expect(encoded).to.not.exist()
+          expect(encoded).to.not.exist
           done()
         })
       })

@@ -82,12 +82,12 @@ describe('high security mode', function() {
 
       it('should shut down the agent if high_security is false', function() {
         config.onConnect({high_security: false})
-        expect(config.agent_enabled).to.be.false()
+        expect(config.agent_enabled).to.be.false
       })
 
       it('should shut down the agent if high_security is missing', function() {
         config.onConnect({})
-        expect(config.agent_enabled).to.be.false()
+        expect(config.agent_enabled).to.be.false
       })
 
       function check(key, expected, server) {

@@ -123,18 +123,12 @@ describe('TransactionShim', function() {
       it('should create a transaction with the correct type', function() {
         shim.bindCreateTransaction(wrappable, 'getActiveSegment', {type: shim.WEB})
         var segment = wrappable.getActiveSegment()
-        expect(segment)
-          .to.exist()
-          .and.have.property('transaction')
-          .that.has.property('type', shim.WEB)
+        expect(segment).to.exist.and.have.nested.property('transaction.type', shim.WEB)
 
         shim.unwrap(wrappable, 'getActiveSegment')
         shim.bindCreateTransaction(wrappable, 'getActiveSegment', {type: shim.BG})
         var segment = wrappable.getActiveSegment()
-        expect(segment)
-          .to.exist()
-          .and.have.property('transaction')
-          .that.has.property('type', shim.BG)
+        expect(segment).to.exist.and.have.nested.property('transaction.type', shim.BG)
       })
 
       describe('when `spec.nest` is false', function() {
@@ -157,7 +151,7 @@ describe('TransactionShim', function() {
           web()
           expect(webCalled).to.be.true
           expect(bgCalled).to.be.true
-          expect(webTx).to.exist().and.equal(bgTx)
+          expect(webTx).to.equal(bgTx)
         })
       })
 
@@ -289,19 +283,19 @@ describe('TransactionShim', function() {
         var segment = shim.getSegment()
         agent.config.cross_application_tracer.enabled = false
 
-        expect(tx.incomingCatId).to.not.exist()
-        expect(tx.referringTransactionGuid).to.not.exist()
-        expect(segment.catId).to.not.exist()
-        expect(segment.catTransaction).to.not.exist()
-        expect(segment.parameters.transaction_guid).to.not.exist()
+        expect(tx.incomingCatId).to.not.exist
+        expect(tx.referringTransactionGuid).to.not.exist
+        expect(segment.catId).to.not.exist
+        expect(segment.catTransaction).to.not.exist
+        expect(segment.parameters.transaction_guid).to.not.exist
 
         shim.handleCATHeaders(headers, segment)
 
-        expect(tx.incomingCatId).to.not.exist()
-        expect(tx.referringTransactionGuid).to.not.exist()
-        expect(segment.catId).to.not.exist()
-        expect(segment.catTransaction).to.not.exist()
-        expect(segment.parameters.transaction_guid).to.not.exist()
+        expect(tx.incomingCatId).to.not.exist
+        expect(tx.referringTransactionGuid).to.not.exist
+        expect(segment.catId).to.not.exist
+        expect(segment.catTransaction).to.not.exist
+        expect(segment.parameters.transaction_guid).to.not.exist
       })
     })
 
@@ -311,19 +305,19 @@ describe('TransactionShim', function() {
         var segment = shim.getSegment()
         delete agent.config.encoding_key
 
-        expect(tx.incomingCatId).to.not.exist()
-        expect(tx.referringTransactionGuid).to.not.exist()
-        expect(segment.catId).to.not.exist()
-        expect(segment.catTransaction).to.not.exist()
-        expect(segment.parameters.transaction_guid).to.not.exist()
+        expect(tx.incomingCatId).to.not.exist
+        expect(tx.referringTransactionGuid).to.not.exist
+        expect(segment.catId).to.not.exist
+        expect(segment.catTransaction).to.not.exist
+        expect(segment.parameters.transaction_guid).to.not.exist
 
         shim.handleCATHeaders(headers, segment)
 
-        expect(tx.incomingCatId).to.not.exist()
-        expect(tx.referringTransactionGuid).to.not.exist()
-        expect(segment.catId).to.not.exist()
-        expect(segment.catTransaction).to.not.exist()
-        expect(segment.parameters.transaction_guid).to.not.exist()
+        expect(tx.incomingCatId).to.not.exist
+        expect(tx.referringTransactionGuid).to.not.exist
+        expect(segment.catId).to.not.exist
+        expect(segment.catTransaction).to.not.exist
+        expect(segment.parameters.transaction_guid).to.not.exist
       })
     })
 
@@ -331,21 +325,21 @@ describe('TransactionShim', function() {
       helper.runInTransaction(agent, function(tx) {
         var segment = shim.getSegment()
 
-        expect(tx.incomingCatId).to.not.exist()
-        expect(tx.referringTransactionGuid).to.not.exist()
-        expect(segment.catId).to.not.exist()
-        expect(segment.catTransaction).to.not.exist()
-        expect(segment.parameters.transaction_guid).to.not.exist()
+        expect(tx.incomingCatId).to.not.exist
+        expect(tx.referringTransactionGuid).to.not.exist
+        expect(segment.catId).to.not.exist
+        expect(segment.catTransaction).to.not.exist
+        expect(segment.parameters.transaction_guid).to.not.exist
 
         expect(function() {
           shim.handleCATHeaders(null, segment)
         }).to.not.throw()
 
-        expect(tx.incomingCatId).to.not.exist()
-        expect(tx.referringTransactionGuid).to.not.exist()
-        expect(segment.catId).to.not.exist()
-        expect(segment.catTransaction).to.not.exist()
-        expect(segment.parameters.transaction_guid).to.not.exist()
+        expect(tx.incomingCatId).to.not.exist
+        expect(tx.referringTransactionGuid).to.not.exist
+        expect(segment.catId).to.not.exist
+        expect(segment.catTransaction).to.not.exist
+        expect(segment.parameters.transaction_guid).to.not.exist
       })
     })
 
@@ -356,10 +350,10 @@ describe('TransactionShim', function() {
           var segment = shim.getSegment()
           delete headers['X-NewRelic-App-Data']
 
-          expect(tx.incomingCatId).to.not.exist()
-          expect(tx.referringTransactionGuid).to.not.exist()
-          expect(tx.tripId).to.not.exist()
-          expect(tx.referringPathHash).to.not.exist()
+          expect(tx.incomingCatId).to.not.exist
+          expect(tx.referringTransactionGuid).to.not.exist
+          expect(tx.tripId).to.not.exist
+          expect(tx.referringPathHash).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -378,10 +372,10 @@ describe('TransactionShim', function() {
           var headers = createCATHeaders()
           delete headers['X-NewRelic-App-Data']
 
-          expect(tx.incomingCatId).to.not.exist()
-          expect(tx.referringTransactionGuid).to.not.exist()
-          expect(tx.tripId).to.not.exist()
-          expect(tx.referringPathHash).to.not.exist()
+          expect(tx.incomingCatId).to.not.exist
+          expect(tx.referringTransactionGuid).to.not.exist
+          expect(tx.tripId).to.not.exist
+          expect(tx.referringPathHash).to.not.exist
 
           shim.handleCATHeaders(headers)
 
@@ -398,10 +392,10 @@ describe('TransactionShim', function() {
           var segment = shim.getSegment()
           delete headers.NewRelicAppData
 
-          expect(tx.incomingCatId).to.not.exist()
-          expect(tx.referringTransactionGuid).to.not.exist()
-          expect(tx.tripId).to.not.exist()
-          expect(tx.referringPathHash).to.not.exist()
+          expect(tx.incomingCatId).to.not.exist
+          expect(tx.referringTransactionGuid).to.not.exist
+          expect(tx.tripId).to.not.exist
+          expect(tx.referringPathHash).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -424,9 +418,9 @@ describe('TransactionShim', function() {
           delete headers['X-NewRelic-Id']
           delete headers['X-NewRelic-Transaction']
 
-          expect(segment.catId).to.not.exist()
-          expect(segment.catTransaction).to.not.exist()
-          expect(segment.parameters.transaction_guid).to.not.exist()
+          expect(segment.catId).to.not.exist
+          expect(segment.catTransaction).to.not.exist
+          expect(segment.parameters.transaction_guid).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -446,9 +440,9 @@ describe('TransactionShim', function() {
           delete headers['X-NewRelic-Id']
           delete headers['X-NewRelic-Transaction']
 
-          expect(segment.catId).to.not.exist()
-          expect(segment.catTransaction).to.not.exist()
-          expect(segment.parameters.transaction_guid).to.not.exist()
+          expect(segment.catId).to.not.exist
+          expect(segment.catTransaction).to.not.exist
+          expect(segment.parameters.transaction_guid).to.not.exist
 
           shim.handleCATHeaders(headers)
 
@@ -465,9 +459,9 @@ describe('TransactionShim', function() {
           delete headers.NewRelicID
           delete headers.NewRelicTransaction
 
-          expect(segment.catId).to.not.exist()
-          expect(segment.catTransaction).to.not.exist()
-          expect(segment.parameters.transaction_guid).to.not.exist()
+          expect(segment.catId).to.not.exist
+          expect(segment.catTransaction).to.not.exist
+          expect(segment.parameters.transaction_guid).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -489,22 +483,22 @@ describe('TransactionShim', function() {
             delete headers['X-NewRelic-Transaction']
             agent.config.trusted_account_ids = []
 
-            expect(segment.catId).to.not.exist()
-            expect(segment.catTransaction).to.not.exist()
-            expect(segment.parameters.transaction_guid).to.not.exist()
+            expect(segment.catId).to.not.exist
+            expect(segment.catTransaction).to.not.exist
+            expect(segment.parameters.transaction_guid).to.not.exist
 
             shim.handleCATHeaders(headers)
 
-            expect(segment.catId).to.not.exist()
-            expect(segment.catTransaction).to.not.exist()
-            expect(segment.parameters.transaction_guid).to.not.exist()
+            expect(segment.catId).to.not.exist
+            expect(segment.catTransaction).to.not.exist
+            expect(segment.parameters.transaction_guid).to.not.exist
           })
         })
       })
     })
 
     function createCATHeaders(altNames) {
-      expect(agent.config.encoding_key).to.exist()
+      expect(agent.config.encoding_key).to.exist
       expect(agent.config.applications()).to.have.length.above(0)
 
       var idHeader = hashes.obfuscateNameUsingKey('9876#id', agent.config.encoding_key)

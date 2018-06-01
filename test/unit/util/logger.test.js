@@ -219,8 +219,8 @@ describe('logger', function() {
 
   it('should support child loggers with prepended extras from Error objects', function(done) {
     var error = new Error('error1')
-    expect(error.message).to.not.be.undefined()
-    expect(error.stack).to.not.be.undefined()
+    expect(error.message).to.not.be.undefined
+    expect(error.stack).to.not.be.undefined
 
     var child = logger.child({a: 1})
     child.info(error, 'log message')
@@ -317,30 +317,30 @@ describe('logger', function() {
   describe('should have enabled methods', function() {
     it('that respect log levels', function() {
       logger.level('info')
-      expect(logger.traceEnabled()).to.be.false()
-      expect(logger.debugEnabled()).to.be.false()
-      expect(logger.infoEnabled()).to.be.true()
-      expect(logger.warnEnabled()).to.be.true()
-      expect(logger.errorEnabled()).to.be.true()
-      expect(logger.fatalEnabled()).to.be.true()
+      expect(logger.traceEnabled()).to.be.false
+      expect(logger.debugEnabled()).to.be.false
+      expect(logger.infoEnabled()).to.be.true
+      expect(logger.warnEnabled()).to.be.true
+      expect(logger.errorEnabled()).to.be.true
+      expect(logger.fatalEnabled()).to.be.true
     })
 
     it('that change with the log level', function() {
       logger.level('fatal')
-      expect(logger.traceEnabled()).to.be.false()
-      expect(logger.debugEnabled()).to.be.false()
-      expect(logger.infoEnabled()).to.be.false()
-      expect(logger.warnEnabled()).to.be.false()
-      expect(logger.errorEnabled()).to.be.false()
-      expect(logger.fatalEnabled()).to.be.true()
+      expect(logger.traceEnabled()).to.be.false
+      expect(logger.debugEnabled()).to.be.false
+      expect(logger.infoEnabled()).to.be.false
+      expect(logger.warnEnabled()).to.be.false
+      expect(logger.errorEnabled()).to.be.false
+      expect(logger.fatalEnabled()).to.be.true
 
       logger.level('trace')
-      expect(logger.traceEnabled()).to.be.true()
-      expect(logger.debugEnabled()).to.be.true()
-      expect(logger.infoEnabled()).to.be.true()
-      expect(logger.warnEnabled()).to.be.true()
-      expect(logger.errorEnabled()).to.be.true()
-      expect(logger.fatalEnabled()).to.be.true()
+      expect(logger.traceEnabled()).to.be.true
+      expect(logger.debugEnabled()).to.be.true
+      expect(logger.infoEnabled()).to.be.true
+      expect(logger.warnEnabled()).to.be.true
+      expect(logger.errorEnabled()).to.be.true
+      expect(logger.fatalEnabled()).to.be.true
     })
   })
 

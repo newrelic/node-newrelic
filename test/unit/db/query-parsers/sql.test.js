@@ -49,7 +49,7 @@ describe('database query parser', function() {
         'LIMIT 1'
       ].join('\n')
       var ps = parseSql(sql)
-      expect(ps).to.exist()
+      expect(ps).to.exist
       expect(ps).to.have.property('operation', 'select')
       expect(ps).to.have.property('collection', 'postcodes')
       expect(ps).to.have.property('query', sql)

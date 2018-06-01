@@ -10,7 +10,7 @@ describe('codec', function() {
   describe('.encode', function() {
     it('should zip and base-64 encode the data', function(done) {
       codec.encode(DATA, function(err, encoded) {
-        expect(err).to.not.exist()
+        expect(err).to.not.exist
         expect(encoded).to.equal(ENCODED)
         done()
       })
@@ -22,7 +22,7 @@ describe('codec', function() {
       obj.obj = obj
 
       codec.encode(obj, function(err, encoded) {
-        expect(err).to.not.exist()
+        expect(err).to.not.exist
         expect(encoded).to.equal(val)
         done()
       })
@@ -32,7 +32,7 @@ describe('codec', function() {
   describe('.decode', function() {
     it('should parse the encoded payload', function(done) {
       codec.decode(ENCODED, function(err, data) {
-        expect(err).to.not.exist()
+        expect(err).to.not.exist
         expect(data).to.eql(DATA)
         done()
       })
