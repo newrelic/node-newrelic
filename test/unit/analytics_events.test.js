@@ -179,7 +179,7 @@ describe('Analytics events', function() {
       }
 
       agent._sendEvents(function(err) {
-        expect(err).exist()
+        expect(err).exist
         expect(agent.events.toArray().length).equals(20)
         done()
       })
@@ -196,7 +196,7 @@ describe('Analytics events', function() {
       }
 
       agent._sendEvents(function(err) {
-        expect(err).not.exist()
+        expect(err).not.exist
         expect(agent.events.toArray().length).equals(0)
         done()
       })
@@ -213,7 +213,7 @@ describe('Analytics events', function() {
       }
 
       agent._sendEvents(function(err) {
-        expect(err).exist()
+        expect(err).exist
         expect(agent.events.toArray().length).equals(0)
         done()
       })

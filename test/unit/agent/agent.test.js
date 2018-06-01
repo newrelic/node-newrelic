@@ -250,7 +250,7 @@ describe('the New Relic agent', function() {
       })
       it('should count the number of traces sampled', function() {
         expect(agent.transactionsSampled).to.equal(0)
-        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.true()
+        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.true
         expect(agent.transactionsSampled).to.equal(1)
       })
 
@@ -258,9 +258,9 @@ describe('the New Relic agent', function() {
       it('should not sample transactions with priorities lower than the min', function() {
         expect(agent.transactionsSampled).to.equal(0)
         agent.minSampledPriority = 0.5
-        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.false()
+        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.false
         expect(agent.transactionsSampled).to.equal(0)
-        expect(agent.shouldSampleDistributedTrace({priority: 1})).to.be.true()
+        expect(agent.shouldSampleDistributedTrace({priority: 1})).to.be.true
         expect(agent.transactionsSampled).to.equal(1)
       })
 
@@ -740,7 +740,7 @@ describe('the New Relic agent', function() {
         }
 
         agent.once('transactionFinished', function() {
-          expect(agent.traces.trace).not.exist()
+          expect(agent.traces.trace).not.exist
           expect(agent.traces.syntheticsTraces).length(1)
           var trace = agent.traces.syntheticsTraces[0]
           expect(trace.getDurationInMillis(), 'same trace just passed in').equal(2100)
@@ -1030,7 +1030,7 @@ describe('the New Relic agent', function() {
     it('reports background transactions error count', function(done) {
       var transaction = new Transaction(agent)
       transaction.type = Transaction.TYPES.BG
-      expect(transaction.isWeb()).to.be.false()
+      expect(transaction.isWeb()).to.be.false
 
       agent.errors.add(transaction, new TypeError('no method last on undefined'))
       agent.errors.add(transaction, new Error('application code error'))
@@ -1040,7 +1040,7 @@ describe('the New Relic agent', function() {
         var metrics = payload[3]
         var metric  = metrics.getMetric('Errors/allOther')
 
-        expect(metric).to.exist().and.have.property('callCount', 3)
+        expect(metric).to.exist.and.have.property('callCount', 3)
 
         done()
       }

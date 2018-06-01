@@ -451,7 +451,7 @@ describe('the agent configuration', function() {
 
     it('should reject disabling ssl', function() {
       idempotentEnv('NEW_RELIC_USE_SSL', false, function(tc) {
-        expect(tc.ssl).to.be.true()
+        expect(tc.ssl).to.be.true
       })
     })
   })
@@ -645,15 +645,15 @@ describe('the agent configuration', function() {
     })
 
     it('should enable cross application tracer', function() {
-      expect(configuration.cross_application_tracer.enabled).to.be.true()
+      expect(configuration.cross_application_tracer.enabled).to.be.true
     })
 
     it('should enable message tracer segment parameters', function() {
-      expect(configuration.message_tracer.segment_parameters.enabled).to.be.true()
+      expect(configuration.message_tracer.segment_parameters.enabled).to.be.true
     })
 
     it('should not enable browser monitoring attributes', function() {
-      expect(configuration.browser_monitoring.attributes.enabled).to.be.false()
+      expect(configuration.browser_monitoring.attributes.enabled).to.be.false
     })
 
     it('should enable browser monitoring attributes', function() {
@@ -863,9 +863,9 @@ describe('the agent configuration', function() {
     })
 
     it('should configure cross application tracing', function() {
-      expect(config.cross_application_tracer.enabled).to.be.true()
+      expect(config.cross_application_tracer.enabled).to.be.true
       config.onConnect({'cross_application_tracer.enabled': false})
-      expect(config.cross_application_tracer.enabled).to.be.false()
+      expect(config.cross_application_tracer.enabled).to.be.false
     })
 
     describe('when handling embedded agent_config', function() {
@@ -1002,7 +1002,7 @@ describe('the agent configuration', function() {
       expect(function() {
         config.onConnect({'ssl': false})
       }).not.throws()
-      expect(config.ssl).to.be.true()
+      expect(config.ssl).to.be.true
     })
 
     it('should not blow up when transaction_tracer.record_sql is received', function() {
@@ -1279,9 +1279,9 @@ describe('the agent configuration', function() {
     })
 
     it('should not configure attributes.enabled', function() {
-      expect(config.attributes.enabled).to.be.true()
+      expect(config.attributes.enabled).to.be.true
       config.onConnect({'attributes.enabled': false})
-      expect(config.attributes.enabled).to.be.true()
+      expect(config.attributes.enabled).to.be.true
     })
 
     it('should not configure ignored_params', function() {
@@ -1426,8 +1426,8 @@ describe('the agent configuration', function() {
       config.security_policies_token = ''
 
       var cb = function(err, res) {
-        expect(err).to.be.null()
-        expect(res).to.be.null()
+        expect(err).to.be.null
+        expect(res).to.be.null
         done()
       }
 
@@ -1458,7 +1458,7 @@ describe('the agent configuration', function() {
         expect(agent._resetCustomEvents.callCount).to.equal(0)
         expect(config.api.custom_attributes_enabled).to.equal(false)
         Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.false()
+          expect(res[key].enabled).to.be.false
         })
         done()
       }
@@ -1488,7 +1488,7 @@ describe('the agent configuration', function() {
         expect(config.api.custom_attributes_enabled).to.equal(false)
         expect(agent.traces._rawReset.callCount).to.equal(1)
         Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.false()
+          expect(res[key].enabled).to.be.false
         })
         done()
       }
@@ -1514,7 +1514,7 @@ describe('the agent configuration', function() {
         expect(config.api.custom_events_enabled).to.equal(true)
         expect(config.api.custom_attributes_enabled).to.equal(true)
         Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.true()
+          expect(res[key].enabled).to.be.true
         })
         done()
       }
@@ -1545,7 +1545,7 @@ describe('the agent configuration', function() {
 
     it('should return known policies', function(done) {
       var cb = function(err, res) {
-        expect(err).to.be.null()
+        expect(err).to.be.null
         expect(res).to.deep.equal({
           record_sql: { enabled: false, required: false },
           attributes_include: { enabled: false, required: false },

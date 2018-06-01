@@ -1,9 +1,8 @@
 'use strict'
 
-var chai = require('chai')
-var expect = chai.expect
-var TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment.js')
-var txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms.json')
+var expect = require('chai').expect
+var TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment')
+var txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms')
 
 describe('The TxSegmentNormalizer', function() {
   // iterate over the cross_agent_tests
@@ -15,19 +14,17 @@ describe('The TxSegmentNormalizer', function() {
   it('should reject non array to load', function() {
     var normalizer = new TxSegmentNormalizer()
     normalizer.load(1)
-    expect(normalizer.terms).be.Array
+    expect(normalizer.terms).to.be.an('array')
   })
 
   it('should accept arrays to load', function() {
-    var input = [
-      {
-        "prefix": "WebTrans/foo",
-        "terms": ["one", "two"]
-      }
-    ]
+    var input = [{
+      prefix: 'WebTrans/foo',
+      terms: ['one', 'two']
+    }]
     var normalizer = new TxSegmentNormalizer()
     normalizer.load(input)
-    expect(normalizer.terms).deep.equal(input)
+    expect(normalizer.terms).to.deep.equal(input)
   })
 })
 

@@ -452,7 +452,7 @@ describe('TraceAggregator', function () {
       }
 
       aggregator.add(synthTransaction)
-      expect(aggregator.trace).not.exist()
+      expect(aggregator.trace).not.exist
       expect(aggregator.syntheticsTraces).length(1)
       aggregator.harvest(function cb_harves(error, encoded, trace) {
         expect(aggregator.syntheticsTraces).length(1)

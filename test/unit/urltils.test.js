@@ -1,7 +1,6 @@
 'use strict'
 
-var chai = require('chai')
-var expect = chai.expect
+var expect = require('chai').expect
 var urltils = require('../../lib/util/urltils.js')
 var url = require('url')
 
@@ -143,18 +142,22 @@ describe('NR URL utilities', function() {
     })
 
     it('should work with strings', function() {
-      var config = {error_collector : {ignore_status_codes : [403]}}
-      expect(urltils.isError(config, '200')).false()
-      expect(urltils.isError(config, '403')).false()
-      return expect(urltils.isError(config, '404')).true()
+      config = {error_collector : {ignore_status_codes : [403]}}
+      expect(urltils.isError(config, '200')).to.be.false
+      expect(urltils.isError(config, '403')).to.be.false
+      expect(urltils.isError(config, '404')).to.be.true
     })
   })
 
   describe('isIgnoredError', function() {
     var config = {error_collector : {ignore_status_codes : []}}
 
-    it('returns true if the status code is an HTTP error and is in the ignored list', function() {
-      var errorCodes = [400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 500, 503]
+    it('returns true if the status code is an HTTP error in the ignored list', () => {
+      var errorCodes = [
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409,
+        410, 411, 412, 413, 414, 415, 416, 417, 418, 419,
+        420, 500, 503
+      ]
       var statusCode
 
       for (var i = 0; i < errorCodes.length; i++) {
@@ -187,18 +190,11 @@ describe('NR URL utilities', function() {
   })
 
   describe('copying parameters from a query hash', function() {
-    var config
     var source
     var dest
 
 
     beforeEach(function() {
-      config = {
-        attributes: {
-          enabled: true
-        },
-        ignored_params: []
-      }
       source = {}
       dest = {}
     })

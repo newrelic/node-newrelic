@@ -75,7 +75,7 @@ describe('when CAT is disabled', function() {
         chai.expect(attrs.timestamp).to.be.within(start, start + 10)
         chai.expect(attrs.name).to.equal(test.transactionName)
         chai.expect(attrs.type).to.equal('Transaction')
-        chai.expect(attrs.error).to.be.false()
+        chai.expect(attrs.error).to.be.false
 
         done()
       })
@@ -199,7 +199,7 @@ describe('when CAT is enabled', function() {
         chai.expect(attrs.timestamp).to.be.within(start, start + 10)
         chai.expect(attrs.name).to.equal(test.transactionName)
         chai.expect(attrs.type).to.equal('Transaction')
-        chai.expect(attrs.error).to.be.false()
+        chai.expect(attrs.error).to.be.false
         chai.expect(attrs['nr.guid'])
           .to.equal(test.expectedIntrinsicFields['nr.guid'])
         chai.expect(attrs['nr.pathHash'])

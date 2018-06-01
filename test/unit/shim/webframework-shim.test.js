@@ -154,7 +154,7 @@ describe('WebFrameworkShim', function() {
       })
 
       wrappable.bar('/foo/bar', function() {})
-      expect(called).to.be.true()
+      expect(called).to.be.true
     })
   })
 
@@ -208,7 +208,7 @@ describe('WebFrameworkShim', function() {
     it('should not wrap non-function objects', function() {
       var wrapped = shim.wrapMiddlewareMounter(wrappable, {})
       expect(wrapped).to.equal(wrappable)
-      expect(shim.isWrapped(wrapped)).to.be.false()
+      expect(shim.isWrapped(wrapped)).to.be.false
     })
 
     describe('with no properties', function() {
@@ -411,9 +411,9 @@ describe('WebFrameworkShim', function() {
 
         helper.runInTransaction(agent, function(tx) {
           txInfo.transaction = tx
-          expect(called).to.be.false()
+          expect(called).to.be.false
           wrapped(req, 'a', 'b', 'c')
-          expect(called).to.be.true()
+          expect(called).to.be.true
         })
       })
 
@@ -431,9 +431,9 @@ describe('WebFrameworkShim', function() {
             sinon.spy(tx.nameState, 'popPath')
             var segment = wrapped(req)
 
-            expect(tx.nameState.appendPath.called).to.be.false()
-            expect(tx.nameState.popPath.called).to.be.false()
-            expect(segment).to.exist().and.have.property('name', expectedName)
+            expect(tx.nameState.appendPath.called).to.be.false
+            expect(tx.nameState.popPath.called).to.be.false
+            expect(segment).to.exist.and.have.property('name', expectedName)
           })
         }
       })
@@ -455,7 +455,7 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist().and.have.property('name', expectedName)
+            expect(segment).to.exist.and.have.property('name', expectedName)
           })
         }
       })
@@ -477,7 +477,7 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist().and.have.property('name', expectedName)
+            expect(segment).to.exist.and.have.property('name', expectedName)
           })
         }
       })
@@ -499,7 +499,7 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist().and.have.property('name', expectedName)
+            expect(segment).to.exist.and.have.property('name', expectedName)
           })
         }
       })
@@ -520,7 +520,7 @@ describe('WebFrameworkShim', function() {
 
           var segment = wrapped(req)
 
-          expect(segment).to.exist().and.have.property('name', expectedName)
+          expect(segment).to.exist.and.have.property('name', expectedName)
         }
       })
 
@@ -538,7 +538,7 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist()
+            expect(segment).to.exist
               .and.property('parameters').to.deep.equal({
                 nr_exclusive_duration_millis: null,
                 foo: 'bar',
@@ -563,7 +563,7 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist()
+            expect(segment).to.exist
               .and.property('parameters').to.deep.equal({
                 nr_exclusive_duration_millis: null
               })
@@ -842,11 +842,11 @@ describe('WebFrameworkShim', function() {
               wrapped(req)
             } catch (err) {
               expect(txInfo).to.have.property('error', err)
-              expect(txInfo).to.have.property('errorHandled').that.is.not.ok()
+              expect(txInfo).to.have.property('errorHandled').that.is.not.ok
 
               errorware(err, req)
               expect(txInfo).to.have.property('error', err)
-              expect(txInfo).to.have.property('errorHandled').that.is.ok()
+              expect(txInfo).to.have.property('errorHandled').that.is.ok
             }
           })
         })
@@ -932,9 +932,9 @@ describe('WebFrameworkShim', function() {
 
         helper.runInTransaction(agent, function(tx) {
           txInfo.transaction = tx
-          expect(called).to.be.false()
+          expect(called).to.be.false
           wrapped(req, 'a', 'b', 'c')
-          expect(called).to.be.true()
+          expect(called).to.be.true
         })
       })
 
@@ -953,7 +953,7 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist().and.have.property('name', expectedName)
+            expect(segment).to.exist.and.have.property('name', expectedName)
           })
         }
       })
@@ -1114,7 +1114,7 @@ describe('WebFrameworkShim', function() {
         })
 
         wrapped()
-        expect(called).to.be.true()
+        expect(called).to.be.true
       })
 
       it('should create a segment', function() {
@@ -1122,7 +1122,7 @@ describe('WebFrameworkShim', function() {
         helper.runInTransaction(agent, function() {
           var segment = wrappable.getActiveSegment('viewToRender')
           expect(segment)
-            .to.exist()
+            .to.exist
             .and.have.property('name', 'View/viewToRender/Rendering')
         })
       })
@@ -1159,13 +1159,13 @@ describe('WebFrameworkShim', function() {
       txInfo.errorHandled = true
       shim.noticeError(req, err)
 
-      expect(txInfo.errorHandled).to.be.false()
+      expect(txInfo.errorHandled).to.be.false
     })
 
     it('should not change the error state for non-errors', function() {
       shim.noticeError(req, null)
       expect(txInfo.error).to.equal(null)
-      expect(txInfo.errorHandled).to.be.false()
+      expect(txInfo.errorHandled).to.be.false
 
       var err = new Error('test error')
       txInfo.error = err
@@ -1173,7 +1173,7 @@ describe('WebFrameworkShim', function() {
 
       shim.noticeError(req, null)
       expect(txInfo.error).to.equal(err)
-      expect(txInfo.errorHandled).to.be.true()
+      expect(txInfo.errorHandled).to.be.true
     })
   })
 
@@ -1184,7 +1184,7 @@ describe('WebFrameworkShim', function() {
 
       shim.errorHandled(req, txInfo.error)
 
-      expect(txInfo.errorHandled).to.be.true()
+      expect(txInfo.errorHandled).to.be.true
     })
 
     it('should not mark as handled if the error is not the cached one', function() {
@@ -1193,7 +1193,7 @@ describe('WebFrameworkShim', function() {
 
       shim.errorHandled(req, new Error('err2'))
 
-      expect(txInfo.errorHandled).to.be.false()
+      expect(txInfo.errorHandled).to.be.false
     })
   })
 
@@ -1207,7 +1207,7 @@ describe('WebFrameworkShim', function() {
 
       shim.noticeError(req, new Error('test error'))
 
-      expect(called).to.be.true()
+      expect(called).to.be.true
     })
   })
 

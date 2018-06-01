@@ -129,7 +129,7 @@
     "architect": "*",
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
-    "chai": "^1.10.0",
+    "chai": "^4.1.2",
     "connect": "*",
     "cover": "*",
     "ejs": "0.8.5",

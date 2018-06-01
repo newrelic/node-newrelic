@@ -40,7 +40,7 @@ describe('Domains', function() {
 
     var checkedTransaction
     d.once('error', function(err) {
-      expect(err).to.exist()
+      expect(err).to.exist
       expect(err.message).to.equal('whole new error!')
       expect(agent.getTransaction()).to.equal(checkedTransaction)
       tasks.push(done)

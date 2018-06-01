@@ -34,7 +34,7 @@ describe('Agent licenses', function() {
         }
       ], cb)
     }, function(err, depLicensesArray) {
-      expect(err).to.not.exist()
+      expect(err).to.not.exist
       var depLicenses = depLicensesArray.reduce(function(obj, dep) {
         obj[dep[0]] = dep[1]
         return obj

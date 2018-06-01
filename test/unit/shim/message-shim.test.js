@@ -588,9 +588,9 @@ describe('MessageShim', function() {
         })
 
         helper.runInTransaction(agent, function() {
-          expect(called).to.be.false()
+          expect(called).to.be.false
           wrappable.getActiveSegment('foobar')
-          expect(called).to.be.true()
+          expect(called).to.be.true
         })
       })
 
@@ -786,23 +786,22 @@ describe('MessageShim', function() {
         var parent = wrapped('my.queue', function consumer() {
           var segment = shim.getSegment()
           expect(segment)
-            .to.exist()
+            .to.exist
             .and.have.property('name')
               .not.equal('Callback: consumer')
 
-          expect(segment).property('transaction')
-            .to.have.property('type', 'message')
+          expect(segment).to.have.nested.property('transaction.type', 'message')
           done()
         })
-        expect(parent).to.not.exist()
+        expect(parent).to.not.exist
       })
 
       it('should end the transaction immediately if not handled', function(done) {
         wrapped('my.queue', function consumer() {
           var tx = shim.getSegment().transaction
-          expect(tx.isActive()).to.be.true()
+          expect(tx.isActive()).to.be.true
           setTimeout(function() {
-            expect(tx.isActive()).to.be.false()
+            expect(tx.isActive()).to.be.false
             done()
           }, 5)
         })
@@ -815,15 +814,15 @@ describe('MessageShim', function() {
 
         wrapped('my.queue', function consumer() {
           var tx = shim.getSegment().transaction
-          expect(tx.isActive()).to.be.true()
+          expect(tx.isActive()).to.be.true
 
           return new Promise(function(resolve) {
-            expect(tx.isActive()).to.be.true()
+            expect(tx.isActive()).to.be.true
             setImmediate(resolve)
           }).then(function() {
-            expect(tx.isActive()).to.be.true()
+            expect(tx.isActive()).to.be.true
             setTimeout(function() {
-              expect(tx.isActive()).to.be.false()
+              expect(tx.isActive()).to.be.false
               done()
             }, 5)
           })
@@ -837,12 +836,12 @@ describe('MessageShim', function() {
           var tx = shim.getSegment().transaction
           var handle = api.getTransaction()
 
-          expect(tx.isActive()).to.be.true()
+          expect(tx.isActive()).to.be.true
           setTimeout(function() {
-            expect(tx.isActive()).to.be.true()
+            expect(tx.isActive()).to.be.true
             handle.end()
             setTimeout(function() {
-              expect(tx.isActive()).to.be.false()
+              expect(tx.isActive()).to.be.false
               done()
             }, 5)
           }, 5)
@@ -851,10 +850,10 @@ describe('MessageShim', function() {
 
       it('should call spec.messageHandler before consumer is invoked', function(done) {
         wrapped('my.queue', function consumer() {
-          expect(handlerCalled).to.be.true()
+          expect(handlerCalled).to.be.true
           done()
         })
-        expect(handlerCalled).to.be.false()
+        expect(handlerCalled).to.be.false
       })
 
       it('should add agent attributes (e.g. routing key)', function(done) {
@@ -986,9 +985,9 @@ describe('MessageShim', function() {
       describe('when invoked in a transaction', function() {
         it('should create a subscribe segment', function() {
           helper.runInTransaction(agent, function() {
-            expect(subscriberCalled).to.be.false()
+            expect(subscriberCalled).to.be.false
             var segment = wrapped('my.queue')
-            expect(subscriberCalled).to.be.true()
+            expect(subscriberCalled).to.be.true
             expect(segment).to.have.property('name', 'Channel#subscribe')
           })
         })
@@ -1002,7 +1001,7 @@ describe('MessageShim', function() {
                 .to.deep.equal([segment])
               done()
             })
-            expect(parent).to.exist()
+            expect(parent).to.exist
           })
         })
 
@@ -1016,7 +1015,7 @@ describe('MessageShim', function() {
                 .to.not.equal(parent.transaction.id)
               done()
             })
-            expect(parent).to.exist()
+            expect(parent).to.exist
           })
         })
       })

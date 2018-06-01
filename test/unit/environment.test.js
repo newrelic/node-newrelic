@@ -113,7 +113,7 @@ describe('the environment scraper', function() {
 
   describe('with process.config', function() {
     it('should know whether npm was installed with Node.js', function() {
-      expect(find(settings, 'npm installed?')).to.exist()
+      expect(find(settings, 'npm installed?')).to.exist
     })
 
     it('should know whether OpenSSL support was compiled into Node.js', function() {
@@ -160,35 +160,35 @@ describe('the environment scraper', function() {
     })
 
     it('should not know whether npm was installed with Node.js', function() {
-      expect(find(settings, 'npm installed?')).to.not.exist()
+      expect(find(settings, 'npm installed?')).to.not.exist
     })
 
     it('should not know whether WAF was installed with Node.js', function() {
-      expect(find(settings, 'WAF build system installed?')).to.not.exist()
+      expect(find(settings, 'WAF build system installed?')).to.not.exist
     })
 
     it('should not know whether OpenSSL support was compiled into Node.js', function() {
-      expect(find(settings, 'OpenSSL support?')).to.not.exist()
+      expect(find(settings, 'OpenSSL support?')).to.not.exist
     })
 
     it('should not know whether OpenSSL was dynamically linked in', function() {
-      expect(find(settings, 'Dynamically linked to OpenSSL?')).to.not.exist()
+      expect(find(settings, 'Dynamically linked to OpenSSL?')).to.not.exist
     })
 
     it('should not know whether V8 was dynamically linked in', function() {
-      expect(find(settings, 'Dynamically linked to V8?')).to.not.exist()
+      expect(find(settings, 'Dynamically linked to V8?')).to.not.exist
     })
 
     it('should not know whether Zlib was dynamically linked in', function() {
-      expect(find(settings, 'Dynamically linked to Zlib?')).to.not.exist()
+      expect(find(settings, 'Dynamically linked to Zlib?')).to.not.exist
     })
 
     it('should not know whether DTrace support was configured', function() {
-      expect(find(settings, 'DTrace support?')).to.not.exist()
+      expect(find(settings, 'DTrace support?')).to.not.exist
     })
 
     it('should not know whether Event Tracing for Windows was configured', function() {
-      expect(find(settings, 'Event Tracing for Windows (ETW) support?')).to.not.exist()
+      expect(find(settings, 'Event Tracing for Windows (ETW) support?')).to.not.exist
     })
   })
 
