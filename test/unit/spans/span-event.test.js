@@ -12,7 +12,7 @@ describe('SpanEvent', () => {
       const span = new SpanEvent()
       expect(span).to.be.an.instanceOf(SpanEvent)
       expect(span).to.have.property('type', 'Span')
-      expect(span).to.have.property('category', SpanEvent.CATEGORIES.GENERAL)
+      expect(span).to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
 
       const emptyProps = [
         'traceId',
@@ -52,7 +52,7 @@ describe('SpanEvent', () => {
           // Should have all the normal properties.
           expect(span).to.be.an.instanceOf(SpanEvent)
           expect(span).to.have.property('type', 'Span')
-          expect(span).to.have.property('category', SpanEvent.CATEGORIES.GENERAL)
+          expect(span).to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
           expect(span).to.have.property('traceId', tx.id)
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
