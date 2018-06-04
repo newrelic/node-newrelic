@@ -67,7 +67,7 @@ function getBrowserTimingHeader() {
 }
 
 function getTransaction() {
-  return TransactionHandle.stub
+  return new TransactionHandle.stub()
 }
 
 // Normally the following 3 calls return a wrapped callback, instead we
