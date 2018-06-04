@@ -163,12 +163,12 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('timestamp', seg.timer.start)
           expect(span).to.have.property('duration').within(0.03, 0.7)
 
-          // Should have (most) externals properties.
+          // Should have no externals properties.
           expect(span).to.not.have.property('externalLibrary')
           expect(span).to.not.have.property('externalUri')
           expect(span).to.not.have.property('externalProcedure')
 
-          // Should have no datastore properties.
+          // Should have (some) datastore properties.
           expect(span).to.not.have.property('datastoreProduct')
           expect(span).to.not.have.property('datastoreCollection')
           expect(span).to.not.have.property('datastoreOperation')
