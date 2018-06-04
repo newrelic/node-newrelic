@@ -1,3 +1,16 @@
+### 4.1.4 (2018-06-04):
+
+* Transaction stubs are now created properly in `api#getTransaction`
+
+  During a refactor to use classes for the `TransactionHandle` class, the
+  `TransactionHandleStub` was converted into a class. This change in interface
+  wasn't reflected in the use around the agent and would pass back the class
+  instead of an instance.
+
+  Big shoutout to Roy Miloh (@roymiloh) for submitting the fix to this!
+
+* Upgraded dev dependency `chai` to version 4.
+
 ### 4.1.3 (2018-05-29):
 
 * Fixed metric merging when using `debug.internal_metrics`.
