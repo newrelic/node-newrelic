@@ -115,7 +115,7 @@ API.prototype.getTransaction = function getTransaction() {
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     logger.debug("No transaction found when calling API#getTransaction")
-    return TransactionHandle.stub
+    return new TransactionHandle.Stub()
   }
 
   transaction.handledExternally = true

@@ -4,7 +4,7 @@ var expect = require('chai').expect
 
 var makeBuffer = require('../../lib/util/hashes').makeBuffer
 var DistributedTracePayload = require('../../lib/transaction/dt-payload')
-var DistributedTracePayloadStub = DistributedTracePayload.stub
+var DistributedTracePayloadStub = DistributedTracePayload.Stub
 
 describe('DistributedTracePayload', function() {
   it('has a text method that returns the stringified payload', function() {
