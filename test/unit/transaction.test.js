@@ -106,8 +106,8 @@ describe('Transaction', function() {
       return expect(trans.ignore).false
     })
 
-    it('should be in an unsampled state', function() {
-      expect(trans.sampled).to.equal(null)
+    it('should have a sampled state set', function() {
+      expect(trans.sampled).to.not.equal(null)
     })
   })
 
@@ -816,22 +816,22 @@ describe('Transaction', function() {
       tx.agent.config.feature_flag.distributed_tracing = true
       tx.agent.config.trusted_account_ids = [ 1 ]
 
-      expect(tx.sampled).to.equal(null)
-      expect(tx.priority).to.be.lessThan(1)
+      tx.sampled = false
+
       const data = {
         ac: '1',
         ty: 'App',
         id: tx.id,
         tr: tx.id,
         ap: 'test',
-        pr: 1.5,
+        pr: 1.99,
         sa: true,
         ti: Date.now()
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.sampled).to.equal(true)
-      expect(tx.priority).to.be.greaterThan(1)
+      expect(tx.priority).to.equal(data.pr)
     })
 
     it('does not take the distributed tracing data if priority is missing', function() {
@@ -839,7 +839,8 @@ describe('Transaction', function() {
       tx.agent.config.feature_flag.distributed_tracing = true
       tx.agent.config.trusted_account_ids = [ 1 ]
 
-      expect(tx.sampled).to.equal(null)
+      tx.sampled = false
+
       var priorPriority = tx.priority
       const data = {
         ac: 1,
@@ -852,7 +853,6 @@ describe('Transaction', function() {
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.sampled).to.equal(null)
       expect(tx.priority).to.equal(priorPriority)
     })
 
@@ -861,7 +861,7 @@ describe('Transaction', function() {
       tx.agent.config.feature_flag.distributed_tracing = true
       tx.agent.config.trusted_account_ids = [ 1 ]
 
-      expect(tx.sampled).to.equal(null)
+      tx.sampled = false
       var priorPriority = tx.priority
 
       tx.computeSampled()
@@ -1008,11 +1008,9 @@ describe('Transaction', function() {
       tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.feature_flag.distributed_tracing = true
 
-      const priorPriority = tx.priority
-      expect(tx.sampled).to.equal(null)
-      const payload = tx.createDistributedTracePayload()
-      expect(tx.sampled).to.be.true
-      expect(tx.priority).to.equal(priorPriority + 1)
+      const payload = JSON.parse(tx.createDistributedTracePayload().plainTextPayload)
+      expect(payload.d.sa).to.equal(tx.sampled)
+      expect(payload.d.pr).to.equal(tx.priority)
     })
 
     it('returns stringified payload object', function() {
