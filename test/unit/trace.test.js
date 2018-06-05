@@ -86,13 +86,13 @@ describe('Trace', function() {
     child2.start()
     child1.end()
     child2.end()
+    trace.root.end()
     trace.end()
 
     var events = agent.spans.getEvents()
     var nested = events[0]
     var root = events[1]
     var testSpan = events[2]
-    console.log(nested)
 
     expect(nested.parentId).to.equal(testSpan.guid)
     expect(nested.grandparentId).to.equal(root.guid)
