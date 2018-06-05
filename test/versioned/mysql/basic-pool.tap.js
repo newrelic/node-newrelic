@@ -81,8 +81,6 @@ tap.test('bad config', function(t) {
 // TODO: test notice errors
 // TODO: test sql capture
 tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
-  t.autoend()
-
   var agent = null
   var mysql = null
   var pool = null
@@ -261,51 +259,6 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
     })
   })
 
-  // The domain socket tests should only be run if there is a domain socket
-  // to connect to, which only happens if there is a MySQL instance running on
-  // the same box as these tests. This should always be the case on Travis,
-  // but just to be sure they're running there check for the environment flag.
-  getDomainSocketPath(function(socketPath) {
-    var shouldTestDomain = socketPath || process.env.TRAVIS
-    t.test(
-      'ensure host and port are set on segment when using a domain socket',
-      {skip: !shouldTestDomain},
-      function(t) {
-        var socketConfig = getConfig({
-          socketPath: socketPath
-        })
-        var socketPool = mysql.createPool(socketConfig)
-        helper.runInTransaction(agent, function transactionInScope(txn) {
-          socketPool.query('SELECT 1 + 1 AS solution', function(err) {
-            t.error(err, 'should not error making query')
-
-            var seg = getDatastoreSegment(agent.tracer.getSegment())
-
-            // In the case where you don't have a server running on localhost
-            // the data will still be correctly associated with the query.
-            t.ok(seg, 'there is a segment')
-            t.equal(
-              seg.parameters.host,
-              agent.config.getHostnameSafe(),
-              'set host'
-            )
-            t.equal(
-              seg.parameters.port_path_or_id,
-              socketPath,
-              'set path'
-            )
-            t.equal(
-              seg.parameters.database_name,
-              DBNAME,
-              'set database name'
-            )
-            txn.end(socketPool.end.bind(socketPool, t.end))
-          })
-        })
-      }
-    )
-  })
-
   t.test('query with error', function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('BLARG', function(err) {
@@ -405,6 +358,53 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         })
       })
     })
+  })
+
+  // The domain socket tests should only be run if there is a domain socket
+  // to connect to, which only happens if there is a MySQL instance running on
+  // the same box as these tests. This should always be the case on Travis,
+  // but just to be sure they're running there check for the environment flag.
+  getDomainSocketPath(function(socketPath) {
+    var shouldTestDomain = socketPath || process.env.TRAVIS
+    t.test(
+      'ensure host and port are set on segment when using a domain socket',
+      {skip: !shouldTestDomain},
+      function(t) {
+        var socketConfig = getConfig({
+          socketPath: socketPath
+        })
+        var socketPool = mysql.createPool(socketConfig)
+        helper.runInTransaction(agent, function transactionInScope(txn) {
+          socketPool.query('SELECT 1 + 1 AS solution', function(err) {
+            t.error(err, 'should not error making query')
+
+            var seg = getDatastoreSegment(agent.tracer.getSegment())
+
+            // In the case where you don't have a server running on localhost
+            // the data will still be correctly associated with the query.
+            t.ok(seg, 'there is a segment')
+            t.equal(
+              seg.parameters.host,
+              agent.config.getHostnameSafe(),
+              'set host'
+            )
+            t.equal(
+              seg.parameters.port_path_or_id,
+              socketPath,
+              'set path'
+            )
+            t.equal(
+              seg.parameters.database_name,
+              DBNAME,
+              'set database name'
+            )
+            txn.end(socketPool.end.bind(socketPool, t.end))
+          })
+        })
+      }
+    )
+
+    t.end()
   })
 })
 
