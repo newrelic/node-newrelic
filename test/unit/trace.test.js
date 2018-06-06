@@ -125,6 +125,48 @@ describe('Trace', function() {
     expect(root.timestamp).to.equal(transaction.trace.root.timer.start)
   })
 
+  it('should not generate span events on end if span_events is disabled', function() {
+    agent.config.span_events.enabled = false
+    agent.config.feature_flag.distributed_tracing = true
+
+    var transaction = new Transaction(agent)
+    var parentId = transaction.parentId = 'testParentId'
+
+    var trace = transaction.trace
+    var child1 = trace.add('test')
+    child1.start()
+    var child2 = child1.add('nested')
+    child2.start()
+    child1.end()
+    child2.end()
+    trace.root.end()
+    trace.end()
+
+    var events = agent.spans.getEvents()
+    expect(events.length).to.equal(0)
+  })
+
+  it('should not generate span events on end if distributed_tracing is off', function() {
+    agent.config.span_events.enabled = true
+    agent.config.feature_flag.distributed_tracing = false
+
+    var transaction = new Transaction(agent)
+    var parentId = transaction.parentId = 'testParentId'
+
+    var trace = transaction.trace
+    var child1 = trace.add('test')
+    child1.start()
+    var child2 = child1.add('nested')
+    child2.start()
+    child1.end()
+    child2.end()
+    trace.root.end()
+    trace.end()
+
+    var events = agent.spans.getEvents()
+    expect(events.length).to.equal(0)
+  })
+
   it('should send host display name when set by user', function() {
     agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
