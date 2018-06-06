@@ -15,7 +15,7 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
   var url = 'https://collector.newrelic.com'
   var agent = new Agent(configurator.initialize())
   var transaction = new Transaction(agent)
-  agent.recordSupportability = function() {}
+  agent.recordSupportability = () => {}
 
 
   function path(method, runID) {
@@ -173,28 +173,6 @@ tap.test('merging metrics and errors after a 503', function(t) {
               max: 0,
               sumOfSquares: 0,
               callCount: 0
-            }
-          ],[
-            // Bluebird is a dependency of tap, and since tap is loaded before
-            // the agent, it will be caught in the 'Uninstrumented' metrics.
-            {name: 'Supportability/Uninstrumented'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
-            }
-          ],[
-            {name: 'Supportability/Uninstrumented/bluebird'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
             }
           ],[
             {

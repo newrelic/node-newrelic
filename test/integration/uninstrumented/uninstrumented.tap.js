@@ -1,41 +1,82 @@
 'use strict'
 
-var INSTRUMENTATIONS = Object.keys(require('../../../lib/instrumentations')())
-var Metrics = require('../../../lib/metrics')
-var MetricNormalizer = require('../../../lib/metrics/normalizer')
-var MetricMapper = require('../../../lib/metrics/mapper')
-var tap = require('tap')
-var uninstrumented = require('../../../lib/uninstrumented')
+const Metrics = require('../../../lib/metrics')
+const MetricNormalizer = require('../../../lib/metrics/normalizer')
+const MetricMapper = require('../../../lib/metrics/mapper')
+const tap = require('tap')
+const uninstrumented = require('../../../lib/uninstrumented')
+const helper = require('../../lib/agent_helper')
+const shimmer = require('../../../lib/shimmer')
 
-// Include pg.js and mysql2 special case
-INSTRUMENTATIONS.push('pg.js', 'mysql2')
+tap.test('does not mark files with known module names as uninstrumented', function(t) {
+  const loaded = []
+
+  require('./mock-config/redis')
+  loaded.push('redis')
+
+  t.ok(loaded.length > 0, 'should have loaded at least one module')
+
+  const agent = helper.instrumentMockedAgent()
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const mapper = new MetricMapper()
+  const normalizer = new MetricNormalizer({}, 'metric name')
+  const metrics = new Metrics(0, mapper, normalizer)
+
+  uninstrumented.check()
+  uninstrumented.createMetrics(metrics)
+
+  const flagMetrics = metrics.toJSON().filter(function(metric) {
+    return metric[0].name === 'Supportability/Uninstrumented/redis'
+  })
+  t.equal(flagMetrics.length, 0, 'No uninstrumented flag metric present')
+
+  t.end()
+})
 
 // This doesn't test the core http and https modules because we can't detect if
 // core modules have already been loaded.
 tap.test('all instrumented modules should be detected when uninstrumented', function(t) {
-  var loaded = []
+  const loaded = []
 
-  INSTRUMENTATIONS.forEach(function(module) {
-    try {
-      require(module)
-      loaded.push(module)
-    } catch (err) {
-      t.comment('failed to load ' + module)
+  const instrumentations = Object.keys(shimmer.registeredInstrumentations)
+  // Include pg.js and mysql2 special case
+  instrumentations.push('pg.js', 'mysql2')
+
+  instrumentations.forEach(function(module) {
+     // core module--will always be instrumented,
+     // but still added to registeredInstrumentations
+    if (module !== 'domain') {
+      try {
+        require(module)
+        loaded.push(module)
+      } catch (err) {
+        t.comment('failed to load ' + module)
+      }
     }
   })
 
   t.ok(loaded.length > 0, 'should have loaded at least one module')
 
-  var mapper = new MetricMapper()
-  var normalizer = new MetricNormalizer({}, 'metric name')
-  var metrics = new Metrics(0, mapper, normalizer)
+  const agent = helper.instrumentMockedAgent()
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const mapper = new MetricMapper()
+  const normalizer = new MetricNormalizer({}, 'metric name')
+  const metrics = new Metrics(0, mapper, normalizer)
 
   uninstrumented.check()
   uninstrumented.createMetrics(metrics)
 
-  var metricsJSON = metrics.toJSON()
+  const metricsJSON = metrics.toJSON()
 
-  var flagMetrics = metricsJSON.filter(function(metric) {
+  const flagMetrics = metricsJSON.filter(function(metric) {
     return metric[0].name === 'Supportability/Uninstrumented'
   })
   t.equal(flagMetrics.length, 1, 'Uninstrumented flag metric present')
