@@ -242,7 +242,7 @@ describe('environmental sampler', function() {
 
 function spinLoop(cb) {
   const DELAY = 5
-  const COUNT = 5
+  const COUNT = 20
   let spins = 0
 
   timeout()
