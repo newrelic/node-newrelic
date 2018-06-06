@@ -1,15 +1,12 @@
 'use strict'
 
-const INSTRUMENTATIONS = Object.keys(require('../../../lib/instrumentations')())
 const Metrics = require('../../../lib/metrics')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const tap = require('tap')
 const uninstrumented = require('../../../lib/uninstrumented')
 const helper = require('../../lib/agent_helper')
-
-// Include pg.js and mysql2 special case
-INSTRUMENTATIONS.push('pg.js', 'mysql2')
+const shimmer = require('../../../lib/shimmer')
 
 tap.test('does not mark files with known module names as uninstrumented', function(t) {
   const loaded = []
@@ -45,12 +42,20 @@ tap.test('does not mark files with known module names as uninstrumented', functi
 tap.test('all instrumented modules should be detected when uninstrumented', function(t) {
   const loaded = []
 
-  INSTRUMENTATIONS.forEach(function(module) {
-    try {
-      require(module)
-      loaded.push(module)
-    } catch (err) {
-      t.comment('failed to load ' + module)
+  const instrumentations = Object.keys(shimmer.registeredInstrumentations)
+  // Include pg.js and mysql2 special case
+  instrumentations.push('pg.js', 'mysql2')
+
+  instrumentations.forEach(function(module) {
+     // core module--will always be instrumented,
+     // but still added to registeredInstrumentations
+    if (module !== 'domain') {
+      try {
+        require(module)
+        loaded.push(module)
+      } catch (err) {
+        t.comment('failed to load ' + module)
+      }
     }
   })
 
