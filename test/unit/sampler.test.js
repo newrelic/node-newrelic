@@ -1,16 +1,15 @@
 'use strict'
 
-var chai = require('chai')
-var expect = chai.expect
-var configurator = require('../../lib/config')
-var sampler = require('../../lib/sampler')
 var Agent = require('../../lib/agent')
+var configurator = require('../../lib/config')
+var expect = require('chai').expect
+var sampler = require('../../lib/sampler')
 
 
 var NAMES = require('../../lib/metrics/names')
 
 
-describe("environmental sampler", function() {
+describe('environmental sampler', function() {
   var agent = null
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
@@ -34,13 +33,13 @@ describe("environmental sampler", function() {
     process.uptime = oldUptime
   })
 
-  it("should have the native-metrics package available", function() {
+  it('should have the native-metrics package available', function() {
     expect(function() {
       require('@newrelic/native-metrics')
     }).to.not.throw()
   })
 
-  it("should still gather native metrics when bound and unbound", function(done) {
+  it('should still gather native metrics when bound and unbound', function(done) {
     sampler.start(agent)
     sampler.stop()
     sampler.start(agent)
@@ -74,7 +73,7 @@ describe("environmental sampler", function() {
     })
   })
 
-  it("should gather loop metrics", function(done) {
+  it('should gather loop metrics', function(done) {
     sampler.start(agent)
     sampler.nativeMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
@@ -89,21 +88,21 @@ describe("environmental sampler", function() {
     })
   })
 
-  it("should depend on Agent to provide the current metrics summary", function() {
+  it('should depend on Agent to provide the current metrics summary', function() {
     expect(function() { sampler.start(agent) }).to.not.throw()
     expect(function() { sampler.stop(agent) }).to.not.throw()
   })
 
-  it("should default to a state of stopped", function() {
+  it('should default to a state of stopped', function() {
     expect(sampler.state).equal('stopped')
   })
 
-  it("should say it's running after start", function() {
+  it('should say it is running after start', function() {
     sampler.start(agent)
     expect(sampler.state).equal('running')
   })
 
-  it("should gather CPU user utilization metric", function() {
+  it('should gather CPU user utilization metric', function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
@@ -111,7 +110,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(1)
   })
 
-  it("should gather CPU system utilization metric", function() {
+  it('should gather CPU system utilization metric', function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
@@ -119,7 +118,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(1)
   })
 
-  it("should gather CPU user time metric", function() {
+  it('should gather CPU user time metric', function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
@@ -127,7 +126,7 @@ describe("environmental sampler", function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it("should gather CPU sytem time metric", function() {
+  it('should gather CPU sytem time metric', function() {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
@@ -160,7 +159,7 @@ describe("environmental sampler", function() {
     expect(sampler.nativeMetrics).to.be.null
   })
 
-  it("should catch if process.cpuUsage throws an error", function() {
+  it('should catch if process.cpuUsage throws an error', function() {
     process.cpuUsage = function() {
       throw new Error('ohhhhhh boyyyyyy')
     }
@@ -170,7 +169,7 @@ describe("environmental sampler", function() {
     expect(stats.callCount).equal(0)
   })
 
-  it("should collect all specified memory statistics", function() {
+  it('should collect all specified memory statistics', function() {
     sampler.sampleMemory(agent)()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
@@ -181,7 +180,7 @@ describe("environmental sampler", function() {
     })
   })
 
-  it("should catch if process.memoryUsage throws an error", function() {
+  it('should catch if process.memoryUsage throws an error', function() {
     var oldProcessMem = process.memoryUsage
     process.memoryUsage = function() {
       throw new Error('your computer is on fire')
@@ -193,7 +192,7 @@ describe("environmental sampler", function() {
     process.memoryUsage = oldProcessMem
   })
 
-  it("should have some rough idea of how deep the event queue is", function(done) {
+  it('should have some rough idea of how deep the event queue is', function(done) {
     sampler.checkEvents(agent)()
 
     /* sampler.checkEvents works by creating a timer and using
