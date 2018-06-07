@@ -33,7 +33,7 @@ tap.test('Agent should send metrics to staging-collector.newrelic.com', function
 
     agent._sendMetrics(function(error) {
       if (!t.notOk(error, 'sent metrics without error')) {
-        console.error(error)
+        t.comment(error)
       }
 
       agent.stop(function(error) {

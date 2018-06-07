@@ -35,8 +35,10 @@ test('client_cross_process_id in called service', function(t) {
       })
     } else if (msg.message === 'transactionFinished') {
       var intrinsics = msg.intrinsicAttributes
-      t.equal(intrinsics.client_cross_process_id, config.cross_process_id,
-        'client_cross_process_id attribute in called service should equal cross_process_id of caller')
+      t.equal(
+        intrinsics.client_cross_process_id, config.cross_process_id,
+        'client_cross_process_id attribute should equal cross_process_id of caller'
+      )
 
       child.kill()
     }

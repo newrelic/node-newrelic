@@ -9,8 +9,10 @@ var config = {
   cross_process_id: '2448#8442',
   encoding_key: 'some key',
 }
-config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
-                                                   config.encoding_key)
+config.obfuscatedId = hashes.obfuscateNameUsingKey(
+  config.cross_process_id,
+  config.encoding_key
+)
 
 var agent = helper.instrumentMockedAgent(null, config)
 // require http after creating the agent
