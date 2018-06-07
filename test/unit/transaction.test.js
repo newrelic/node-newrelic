@@ -644,7 +644,6 @@ describe('Transaction', function() {
     it('includes distributed trace attributes if flag is enabled', function() {
       transaction.agent.config.feature_flag.distributed_tracing = true
 
-      transaction.computeSampled()
       var attributes = transaction.getIntrinsicAttributes()
 
       expect(attributes).to.have.property('guid', transaction.id)
@@ -861,13 +860,7 @@ describe('Transaction', function() {
       tx.agent.config.feature_flag.distributed_tracing = true
       tx.agent.config.trusted_account_ids = [ 1 ]
 
-      tx.sampled = false
-      var priorPriority = tx.priority
-
-      tx.computeSampled()
-
-      expect(tx.sampled).to.be.true
-      expect(tx.priority).to.equal(priorPriority + 1)
+      const sampled = tx.sampled
 
       const data = {
         ac: '1',
@@ -876,12 +869,12 @@ describe('Transaction', function() {
         tr: tx.id,
         ap: 'test',
         pr: 0.1,
-        sa: false,
+        sa: !sampled,
         ti: Date.now()
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.sampled).to.be.false
+      expect(tx.sampled).to.not.equal(sampled)
       expect(tx.priority).to.equal(0.1)
     })
 
@@ -955,29 +948,6 @@ describe('Transaction', function() {
     })
   })
 
-  describe('computeSampled', function() {
-    var tx = null
-
-    beforeEach(function() {
-      tx = new Transaction(agent)
-    })
-
-    it('should cache the result', function() {
-      var sampled = tx.computeSampled()
-      expect(tx.sampled).to.equal(sampled)
-    })
-
-    it('should bump the priority of the transaction by 1', function() {
-      var oldAgentSample = agent.sampledDistributedTrace
-      agent.sampledDistributedTrace = () => true
-      var priority = tx.priority
-      tx.computeSampled()
-      expect(tx.priority).to.equal(priority + 1)
-      agent.sampledDistrubtedTrace = oldAgentSample
-
-    })
-  })
-
   describe('createDistributedTracePayload', function() {
     var tx = null
 
@@ -1040,7 +1010,6 @@ describe('Transaction', function() {
     it('adds expected attributes if no payload was received', function() {
       tx.isDistributedTrace = false
 
-      tx.computeSampled()
       tx._addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('guid', tx.id)
