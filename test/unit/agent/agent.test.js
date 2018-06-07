@@ -138,31 +138,31 @@ describe('the New Relic agent', function() {
           sampled: null
         }
       })
+
       it('should count the number of traces sampled', function() {
         expect(agent.transactionsSampled).to.equal(0)
-        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.true
+        expect(agent.shouldSampleTransaction(fakeTransaction)).to.be.true
         expect(agent.transactionsSampled).to.equal(1)
       })
-
 
       it('should not sample transactions with priorities lower than the min', function() {
         expect(agent.transactionsSampled).to.equal(0)
         agent.minSampledPriority = 0.5
-        expect(agent.shouldSampleDistributedTrace(fakeTransaction)).to.be.false
+        expect(agent.shouldSampleTransaction(fakeTransaction)).to.be.false
         expect(agent.transactionsSampled).to.equal(0)
-        expect(agent.shouldSampleDistributedTrace({priority: 1})).to.be.true
+        expect(agent.shouldSampleTransaction({priority: 1})).to.be.true
         expect(agent.transactionsSampled).to.equal(1)
       })
 
       it('should adjust the min priority when throughput increases', function() {
         agent.transactionCreatedInHarvest = 2 * agent.sampledTarget
-        agent.adjustDistributedTraceStats()
+        agent.adjustTransactionStats()
         expect(agent.minSampledPriority).to.equal(0.5)
       })
 
       it('should backoff on sampling after reaching the sampled target', function() {
         agent.transactionCreatedInHarvest = 10 * agent.sampledTarget
-        agent.adjustDistributedTraceStats()
+        agent.adjustTransactionStats()
         var expectedMSP = [
             0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,
             0.9512462826139941, 0.9642301587871667, 0.9735792049702137,
