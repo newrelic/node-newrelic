@@ -3,7 +3,7 @@
 var common = require('./collection-common')
 var concat = require('concat-stream')
 var helper = require('../../lib/agent_helper')
-var mongoPackage = require('mongodb/package')
+var mongoPackage = require('mongodb/package.json')
 var semver = require('semver')
 var tap = require('tap')
 
