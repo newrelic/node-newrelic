@@ -2,6 +2,7 @@
 
 var assert = require('chai').assert
 var Config = require('../../lib/config')
+var expect = require('chai').expect
 var QueryTracer = require('../../lib/db/tracer')
 var codec = require('../../lib/util/codec')
 
@@ -22,7 +23,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
     }
 
@@ -33,7 +34,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
     }
 
@@ -44,7 +45,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {
         backtrace: 'fake stack',
         sql_obfuscated: 'select * from foo where a=?'
@@ -58,7 +59,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {
         backtrace: 'fake stack',
         sql: 'select * from foo where a=2'
@@ -72,7 +73,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 100)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
     }
   })
@@ -91,7 +92,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
     }
 
@@ -102,7 +103,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
     }
 
@@ -118,11 +119,10 @@ describe('Query Tracer', function testQueryTracer() {
         sql_obfuscated: 'select * from foo where a=?'
       }, 'should not record sql in trace')
 
-      var keys = Object.keys(queries.samples)
+      expect(queries.samples).to.have.property('size', 1)
+      expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
 
-      assert.deepEqual(keys, ['select*fromfoowherea=?'])
-
-      var sample = queries.samples[keys[0]]
+      var sample = queries.samples.get('select*fromfoowherea=?')
       verifySample(sample, 1, segment)
     }
 
@@ -138,11 +138,10 @@ describe('Query Tracer', function testQueryTracer() {
         sql: 'select * from foo where a=2'
       }, 'should not record sql in trace')
 
-      var keys = Object.keys(queries.samples)
+      expect(queries.samples).to.have.property('size', 1)
+      expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
 
-      assert.deepEqual(keys, ['select*fromfoowherea=?'])
-
-      var sample = queries.samples[keys[0]]
+      var sample = queries.samples.get('select*fromfoowherea=?')
       verifySample(sample, 1, segment)
     }
 
@@ -153,7 +152,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 100)
-      assert.deepEqual(queries.samples, {}, 'should not collect sample')
+      expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
     }
   })
@@ -259,7 +258,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -294,7 +293,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 2 sample queries')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -345,7 +344,7 @@ describe('Query Tracer', function testQueryTracer() {
       })
     })
 
-    describe('webTransaction when record_sql is "obfuscated"', function testWebTransaction() {
+    describe('webTransaction when record_sql is "obfuscated"', function() {
       it('should record work when empty', function testRaw(done) {
         var queries = new QueryTracer(new Config({
           slow_sql: {enabled: true},
@@ -407,7 +406,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -447,7 +446,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -560,7 +559,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -600,7 +599,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -713,7 +712,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -753,7 +752,7 @@ describe('Query Tracer', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 2, 'should be 1 sample query')
 
-          data.sort(function (lhs, rhs) {
+          data.sort(function(lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
@@ -815,17 +814,15 @@ describe('Query Tracer', function testQueryTracer() {
       addQuery(queries, 600, null)
       addQuery(queries, 550, null, 'create table users')
 
-      assert.deepEqual(
-        Object.keys(queries.samples),
-        ['select*fromfoowherea=?', 'createtableusers']
-      )
+      expect(queries.samples).to.have.property('size', 2)
+      expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
+      expect(queries.samples.has('createtableusers')).to.be.true
 
       addQuery(queries, 650, null, 'drop table users')
 
-      assert.deepEqual(
-        Object.keys(queries.samples),
-        ['select*fromfoowherea=?', 'droptableusers']
-      )
+      expect(queries.samples).to.have.property('size', 2)
+      expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
+      expect(queries.samples.has('droptableusers')).to.be.true
     })
   })
 
@@ -848,11 +845,11 @@ describe('Query Tracer', function testQueryTracer() {
 
       queries.merge(queries2)
 
-      var keys = Object.keys(queries.samples)
+      expect(queries.samples).to.have.property('size', 2)
+      expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
+      expect(queries.samples.has('createtableusers')).to.be.true
 
-      assert.deepEqual(keys, ['select*fromfoowherea=?', 'createtableusers'])
-
-      var select = queries.samples['select*fromfoowherea=?']
+      var select = queries.samples.get('select*fromfoowherea=?')
 
       assert.equal(select.callCount, 2, 'should have correct callCount')
       assert.equal(select.max, 800, 'max should be set')
@@ -860,7 +857,7 @@ describe('Query Tracer', function testQueryTracer() {
       assert.equal(select.total, 1400, 'total should be set')
       assert.equal(select.trace.duration, 800, 'trace should be set')
 
-      var create = queries.samples.createtableusers
+      var create = queries.samples.get('createtableusers')
 
       assert.equal(create.callCount, 2, 'should have correct callCount')
       assert.equal(create.max, 650, 'max should be set')

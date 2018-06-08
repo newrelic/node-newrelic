@@ -268,10 +268,9 @@ describe('recording slow queries', function() {
     })
 
     it('should capture queries', function() {
-      var keys = Object.keys(agent.queries.samples)
-      expect(keys.length).equal(1)
+      expect(agent.queries.samples).to.have.property('size', 1)
 
-      var sample = agent.queries.samples[keys[0]]
+      var sample = agent.queries.samples.values().next().value
       var trace = sample.trace
 
       expect(sample.total).equal(1004)
@@ -338,10 +337,9 @@ describe('recording slow queries', function() {
     })
 
     it('should capture queries', function() {
-      var keys = Object.keys(agent.queries.samples)
-      expect(keys.length).equal(1)
+      expect(agent.queries.samples).to.have.property('size', 1)
 
-      var sample = agent.queries.samples[keys[0]]
+      var sample = agent.queries.samples.values().next().value
       var trace = sample.trace
 
       expect(sample.total).equal(1004)
