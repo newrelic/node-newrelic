@@ -12,7 +12,7 @@ var logger = require('./lib/logger')
 var psemver = require('./lib/util/process-version')
 
 
-var agentVersion = require('./package').version
+var agentVersion = require('./package.json').version
 logger.info(
   "Using New Relic for Node.js. Agent version: %s; Node version: %s.",
   agentVersion, process.version
