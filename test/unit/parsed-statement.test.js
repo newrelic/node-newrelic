@@ -7,7 +7,7 @@ var Transaction = require('../../lib/transaction')
 var ParsedStatement = require('../../lib/db/parsed-statement')
 
 
-function checkDatMetric(metrics, name, scope) {
+function checkMetric(metrics, name, scope) {
   expect(metrics.getMetric(name, scope)).to.have.property('total', 0.333)
 }
 
@@ -47,32 +47,32 @@ describe('recording database metrics', function() {
         expect(metrics._toUnscopedData().length).to.equal(6)
       })
 
-      it('should find a scoped metric on the table and operation', function () {
-        checkDatMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST')
+      it('should find a scoped metric on the table and operation', function() {
+        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST')
       })
 
-      it('should find an unscoped metric on the table and operation', function () {
-        checkDatMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
+      it('should find an unscoped metric on the table and operation', function() {
+        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
       })
 
-      it('should find an unscoped rollup metric on the operation', function () {
-        checkDatMetric(metrics, 'Datastore/operation/NoSQL/select')
+      it('should find an unscoped rollup metric on the operation', function() {
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      it('should find a database rollup metric', function () {
-        checkDatMetric(metrics, 'Datastore/all')
+      it('should find a database rollup metric', function() {
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      it('should find a database rollup metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/allOther')
+      it('should find a database rollup metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      it('should find a database type rollup metric of type `All`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/all')
+      it('should find a database type rollup metric of type `All`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      it('should find a database type rollup metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/allOther')
+      it('should find a database type rollup metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
       })
     })
 
@@ -98,28 +98,28 @@ describe('recording database metrics', function() {
         expect(metrics._toUnscopedData().length).to.equal(5)
       })
 
-      it('should find a scoped metric on the operation', function () {
-        checkDatMetric(metrics, 'Datastore/operation/NoSQL/select', 'TEST')
+      it('should find a scoped metric on the operation', function() {
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select', 'TEST')
       })
 
-      it('should find an unscoped metric on the operation', function () {
-        checkDatMetric(metrics, 'Datastore/operation/NoSQL/select')
+      it('should find an unscoped metric on the operation', function() {
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      it('should find a database rollup metric', function () {
-        checkDatMetric(metrics, 'Datastore/all')
+      it('should find a database rollup metric', function() {
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      it('should find a database rollup metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/allOther')
+      it('should find a database rollup metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      it('should find a database type rollup metric of type `All`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/all')
+      it('should find a database type rollup metric of type `All`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      it('should find a database type rollup metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/allOther')
+      it('should find a database type rollup metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
       })
     })
   })
@@ -147,28 +147,28 @@ describe('recording database metrics', function() {
         expect(metrics._toUnscopedData().length).to.equal(6)
       })
 
-      it('should find an unscoped metric on the table and operation', function () {
-        checkDatMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
+      it('should find an unscoped metric on the table and operation', function() {
+        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
       })
 
-      it('should find an unscoped rollup metric on the operation', function () {
-        checkDatMetric(metrics, 'Datastore/operation/NoSQL/select')
+      it('should find an unscoped rollup metric on the operation', function() {
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      it('should find an unscoped rollup DB metric', function () {
-        checkDatMetric(metrics, 'Datastore/all')
+      it('should find an unscoped rollup DB metric', function() {
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      it('should find an unscoped rollup DB metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/allOther')
+      it('should find an unscoped rollup DB metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      it('should find a database type rollup metric of type `All`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/all')
+      it('should find a database type rollup metric of type `All`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      it('should find a database type rollup metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/allOther')
+      it('should find a database type rollup metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
       })
     })
 
@@ -194,24 +194,24 @@ describe('recording database metrics', function() {
         expect(metrics._toUnscopedData().length).to.equal(5)
       })
 
-      it('should find an unscoped metric on the operation', function () {
-        checkDatMetric(metrics, 'Datastore/operation/NoSQL/select')
+      it('should find an unscoped metric on the operation', function() {
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      it('should find an unscoped rollup DB metric', function () {
-        checkDatMetric(metrics, 'Datastore/all')
+      it('should find an unscoped rollup DB metric', function() {
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      it('should find an unscoped rollup DB metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/allOther')
+      it('should find an unscoped rollup DB metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      it('should find a database type rollup metric of type `All`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/all')
+      it('should find a database type rollup metric of type `All`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      it('should find a database type rollup metric of type `Other`', function () {
-        checkDatMetric(metrics, 'Datastore/NoSQL/allOther')
+      it('should find a database type rollup metric of type `Other`', function() {
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
       })
     })
   })
@@ -294,7 +294,7 @@ describe('recording slow queries', function() {
     var segment
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent(null, {
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -329,7 +329,7 @@ describe('recording slow queries', function() {
       transaction.end()
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
@@ -364,7 +364,7 @@ describe('recording slow queries', function() {
     var segment
     var agent
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent(null, {
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -389,7 +389,7 @@ describe('recording slow queries', function() {
       transaction.end()
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
