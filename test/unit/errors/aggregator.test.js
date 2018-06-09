@@ -1332,26 +1332,6 @@ describe('Errors', function() {
       aggregator = agent.errors
     })
 
-    it('should not gather error events if switched off by user config', function(done) {
-      agent.collector.errorEvents = function() {
-        throw new Error()
-      }
-      agent.config.error_collector.capture_events = false
-      agent._sendErrorEvents(function() {
-        done()
-      })
-    })
-
-    it('should not gather error events if switched off by server config', function(done) {
-      agent.config.error_collector.capture_events = true
-      agent.collector.errorEvents = function() {
-        throw new Error()
-      }
-      agent._sendErrorEvents(function() {
-        done()
-      })
-    })
-
     it('should omit the error message when in high security mode', function() {
       agent.config.high_security = true
       agent.errors.add(null, new Error('some error'))
@@ -1371,61 +1351,6 @@ describe('Errors', function() {
 
       var events = agent.errors.getEvents()
       expect(events).length(10)
-    })
-
-    it('re-aggregate on failure', function(done) {
-      agent.collector.isConnected = function() { return true }
-      agent.collector.metricData = function(payload, cb) { cb() }
-      agent.collector.errorEvents = function(payload, cb) { cb(true) }
-
-      for (var i = 0; i < 20; i++) {
-        agent.errors.add(null, new Error('some error'))
-      }
-
-      agent._sendErrorEvents(function() {})
-
-      agent._sendMetrics(function() {
-        agent._sendErrorEvents(function(err) {
-          expect(err).exist
-          expect(agent.errors.getEvents()).length(20)
-          done()
-        })
-      })
-    })
-
-    it('empty on success', function(done) {
-      agent.collector.isConnected = function() { return true }
-      agent.collector.metricData = function(payload, cb) { cb() }
-      agent.collector.errorEvents = function(payload, cb) { cb() }
-
-      for (var i = 0; i < 20; i++) {
-        agent.errors.add(null, new Error('some error'))
-      }
-
-      agent._sendMetrics(function() {
-        agent._sendErrorEvents(function() {
-          expect(agent.errors.getEvents()).length(0)
-          done()
-        })
-      })
-    })
-
-    it('empty on 413', function(done) {
-      agent.collector.isConnected = function() { return true }
-      agent.collector.metricData = function(payload, cb) { cb() }
-      agent.collector.errorEvents = function(payload, cb) { cb({ statusCode: 413 }) }
-
-      for (var i = 0; i < 20; i++) {
-        agent.errors.add(null, new Error('some error'))
-      }
-
-      agent._sendMetrics(function() {
-        agent._sendErrorEvents(function(err) {
-          expect(err).exist
-          expect(agent.errors.getEvents()).length(0)
-          done()
-        })
-      })
     })
 
     describe('without transaction', function() {
