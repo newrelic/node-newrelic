@@ -55,13 +55,13 @@ tap.test('LASP-enabled agent', function(t) {
       t.ok(agent.traces.trace, 'should have a trace before connect')
 
       agent.start(function(error) {
-        t.notOk(error, 'connected without error')
+        t.error(error, 'connected without error')
         t.notOk(agent.traces.trace, 'should no longer have a trace')
-        agent._sendTrace(function(error) {
-          t.notOk(error, 'trace sent correctly')
+        agent.harvest(function(error) {
+          t.error(error, 'trace sent correctly')
 
           agent.stop(function(error) {
-            t.notOk(error, 'stopped without error')
+            t.error(error, 'stopped without error')
 
             t.end()
           })
@@ -94,13 +94,13 @@ tap.test('LASP-enabled agent', function(t) {
       t.ok(agent.traces.trace, 'should have a trace before connect')
 
       agent.start(function(error) {
-        t.notOk(error, 'connected without error')
+        t.error(error, 'connected without error')
         t.notOk(agent.traces.trace, 'should no longer have a trace')
-        agent._sendTrace(function(error) {
-          t.notOk(error, 'trace sent correctly')
+        agent.harvest(function(error) {
+          t.error(error, 'trace sent correctly')
 
           agent.stop(function(error) {
-            t.notOk(error, 'stopped without error')
+            t.error(error, 'stopped without error')
 
             t.end()
           })
