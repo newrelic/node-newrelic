@@ -1,7 +1,7 @@
 'use strict'
 
 var common = require('./collection-common')
-var mongoPackage = require('mongodb/package')
+var mongoPackage = require('mongodb/package.json')
 var semver = require('semver')
 
 

@@ -1,7 +1,7 @@
 'use strict'
 
 var fs = require('fs')
-var mongoPackage = require('mongodb/package')
+var mongoPackage = require('mongodb/package.json')
 var params = require('../../lib/params')
 var semver = require('semver')
 var urltils = require('../../../lib/util/urltils')

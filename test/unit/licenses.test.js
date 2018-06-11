@@ -5,7 +5,7 @@ var expect = require('chai').expect
 var fs = require('fs')
 var licenses = require('./licenses')
 var path = require('path')
-var pkg = require('../../package')
+var pkg = require('../../package.json')
 
 
 var MODULE_DIR = path.resolve(__dirname, '../../node_modules')

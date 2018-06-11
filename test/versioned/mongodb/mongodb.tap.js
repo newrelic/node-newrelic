@@ -1154,7 +1154,7 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
     t.test('aggregate', function(t) {
       t.autoend()
 
-      var mongoVersion = require('mongodb/package').version
+      var mongoVersion = require('mongodb/package.json').version
       var skip = semver.satisfies(mongoVersion, '<2')
 
       t.test('inside transaction', {skip: skip}, function(t) {

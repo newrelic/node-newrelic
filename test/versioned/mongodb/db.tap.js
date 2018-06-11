@@ -2,7 +2,7 @@
 
 var common = require('./common')
 var helper = require('../../lib/agent_helper')
-var mongoPackage = require('mongodb/package')
+var mongoPackage = require('mongodb/package.json')
 var params = require('../../lib/params')
 var semver = require('semver')
 var tap = require('tap')
