@@ -1402,7 +1402,7 @@ describe('the agent configuration', function() {
         _resetCustomEvents: sinon.spy(),
         _resetQueries: sinon.spy(),
         traces: {
-          _rawReset: sinon.spy()
+          reset: sinon.spy()
         }
       }
       agent.config = config = new Config()
@@ -1440,7 +1440,7 @@ describe('the agent configuration', function() {
         expect(config.transaction_tracer.record_sql).to.equal('off')
         expect(agent._resetQueries.callCount).to.equal(0)
         expect(config.attributes.include_enabled).to.equal(false)
-        expect(agent.traces._rawReset.callCount).to.equal(0)
+        expect(agent.traces.reset.callCount).to.equal(0)
         expect(config.strip_exception_messages.enabled).to.equal(true)
         expect(agent._resetErrors.callCount).to.equal(0)
         expect(config.api.custom_events_enabled).to.equal(false)
@@ -1475,7 +1475,7 @@ describe('the agent configuration', function() {
         expect(config.api.custom_events_enabled).to.equal(false)
         expect(agent._resetCustomEvents.callCount).to.equal(1)
         expect(config.api.custom_attributes_enabled).to.equal(false)
-        expect(agent.traces._rawReset.callCount).to.equal(1)
+        expect(agent.traces.reset.callCount).to.equal(1)
         Object.keys(res).forEach(function checkPolicy(key) {
           expect(res[key].enabled).to.be.false
         })
