@@ -323,6 +323,30 @@ describe('Agent harvests', () => {
       expect(agent.errors).to.have.length(0) // <-- Events length
       expect(agent.errors.errors).to.have.length(0)
     })
+
+    it('should not put error event data back on 413', (done) => {
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.ERRORS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.ERROR_EVENTS).reply(413, EMPTY_RESPONSE)
+
+      expect(agent.errors).to.have.length(3) // <-- Events length
+      expect(agent.errors.errors).to.have.length(3)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+
+        expect(agent.errors).to.have.length(0) // <-- Events length
+        expect(agent.errors.errors).to.have.length(0)
+
+        done()
+      })
+
+      // Reset error aggregation immediately on harvest.
+      expect(agent.errors).to.have.length(0) // <-- Events length
+      expect(agent.errors.errors).to.have.length(0)
+    })
   })
 
   describe('sending to transaction_sample_data endpoint', () => {
@@ -495,6 +519,24 @@ describe('Agent harvests', () => {
 
       expect(agent.events).to.have.length(0)
     })
+
+    it('should not put data back on 413', (done) => {
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(413, EMPTY_RESPONSE)
+
+      expect(agent.events).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+        expect(agent.events).to.have.length(0)
+
+        done()
+      })
+
+      expect(agent.events).to.have.length(0)
+    })
   })
 
   describe('sending to custom_event_data endpoint', () => {
@@ -556,7 +598,8 @@ describe('Agent harvests', () => {
 
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.CUSTOM_EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.customEvents).to.have.length(1)
 
@@ -564,6 +607,24 @@ describe('Agent harvests', () => {
         expect(err).to.exist
         harvest.done()
         expect(agent.customEvents).to.have.length(1)
+
+        done()
+      })
+
+      expect(agent.customEvents).to.have.length(0)
+    })
+
+    it('should not put data back on 413', (done) => {
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.CUSTOM_EVENTS).reply(413, EMPTY_RESPONSE)
+
+      expect(agent.customEvents).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+        expect(agent.customEvents).to.have.length(0)
 
         done()
       })
