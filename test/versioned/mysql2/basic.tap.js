@@ -76,12 +76,10 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           withRetry.release(client)
 
           agent.getTransaction().end(function checkQueries() {
-            var queryKeys = Object.keys(agent.queries.samples)
-            t.ok(queryKeys.length > 0, 'there should be a query sample')
-            queryKeys.forEach(function testSample(key) {
-              var query = agent.queries.samples[key]
-              t.ok(query.total > 0, 'the samples should have positive duration')
-            })
+            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+            for (let sample of agent.queries.samples.values()) {
+              t.ok(sample.total > 0, 'the samples should have positive duration')
+            }
             t.end()
           })
         })
@@ -104,12 +102,10 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
           agent.getTransaction().end(function checkQueries() {
-            var queryKeys = Object.keys(agent.queries.samples)
-            t.ok(queryKeys.length > 0, 'there should be a query sample')
-            queryKeys.forEach(function(key) {
-              var query = agent.queries.samples[key]
-              t.ok(query.total > 0, 'the samples should have positive duration')
-            })
+            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+            for (let sample of agent.queries.samples.values()) {
+              t.ok(sample.total > 0, 'the samples should have positive duration')
+            }
             t.end()
           })
         })
@@ -142,12 +138,10 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           withRetry.release(client)
           t.ok(results, 'results should be received')
           agent.getTransaction().end(function checkQueries() {
-            var queryKeys = Object.keys(agent.queries.samples)
-            t.ok(queryKeys.length > 0, 'there should be a query sample')
-            queryKeys.forEach(function(key) {
-              var querySample = agent.queries.samples[key]
-              t.ok(querySample.total > 0, 'the samples should have positive duration')
-            })
+            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+            for (let sample of agent.queries.samples.values()) {
+              t.ok(sample.total > 0, 'the samples should have positive duration')
+            }
             t.end()
           })
         })
@@ -191,12 +185,10 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
               )
               withRetry.release(client)
               agent.getTransaction().end(function checkQueries() {
-                var queryKeys = Object.keys(agent.queries.samples)
-                t.ok(queryKeys.length > 0, 'there should be a query sample')
-                queryKeys.forEach(function(key) {
-                  var query = agent.queries.samples[key]
-                  t.ok(query.total > 0, 'the samples should have positive duration')
-                })
+                t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+                for (let sample of agent.queries.samples.values()) {
+                  t.ok(sample.total > 0, 'the samples should have positive duration')
+                }
                 t.end()
               })
             })
@@ -321,12 +313,10 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
           agent.getTransaction().end(function checkQueries() {
-            var queryKeys = Object.keys(agent.queries.samples)
-            t.ok(queryKeys.length > 0, 'there should be a query sample')
-            queryKeys.forEach(function(key) {
-              var query = agent.queries.samples[key]
-              t.ok(query.total > 0, 'the samples should have positive duration')
-            })
+            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+            for (let sample of agent.queries.samples.values()) {
+              t.ok(sample.total > 0, 'the samples should have positive duration')
+            }
             t.end()
           })
         })
@@ -349,12 +339,10 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
           agent.getTransaction().end(function checkQueries() {
-            var queryKeys = Object.keys(agent.queries.samples)
-            t.ok(queryKeys.length > 0, 'there should be a query sample')
-            queryKeys.forEach(function(key) {
-              var query = agent.queries.samples[key]
-              t.ok(query.total > 0, 'the samples should have positive duration')
-            })
+            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+            for (let sample of agent.queries.samples.values()) {
+              t.ok(sample.total > 0, 'the samples should have positive duration')
+            }
             t.end()
           })
         })

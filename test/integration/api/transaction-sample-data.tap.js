@@ -3,7 +3,6 @@
 var tap = require('tap')
 var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
-var CollectorAPI = require('../../../lib/collector/api')
 
 
 tap.test('Collector API should send errors to newrelic.com', function(t) {
@@ -23,11 +22,11 @@ tap.test('Collector API should send errors to newrelic.com', function(t) {
     }
   })
   var agent = new Agent(config)
-  var api = new CollectorAPI(agent)
+  var api = agent.collector
 
 
   api.connect(function(error) {
-    t.notOk(error, 'connected without error')
+    t.error(error, 'connected without error')
 
     var transaction
     var proxy = agent.tracer.transactionProxy(function() {
@@ -35,26 +34,30 @@ tap.test('Collector API should send errors to newrelic.com', function(t) {
       transaction.finalizeNameFromUri('/nonexistent', 200)
     })
     proxy()
+
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
     transaction.end(function() {
       t.ok(agent.traces.trace, 'have a slow trace to send')
 
-      agent.traces.harvest(function(error, encoded) {
-        t.notOk(error, 'trace encoded properly')
+      agent.traces.trace.generateJSON((err, encoded) => {
+        t.error(err, 'should encode trace without error')
         t.ok(encoded, 'have the encoded trace')
 
         var payload = [
           agent.config.run_id,
-          encoded
+          [encoded]
         ]
 
         api.transactionSampleData(payload, function(error, response, json) {
-          t.notOk(error, 'sent transaction trace without error')
+          t.error(error, 'sent transaction trace without error')
           t.notOk(response, 'return value is null')
           t.deepEqual(json, {return_value: null}, 'got raw return value')
 
-          t.end()
+          agent.stop((err) => {
+            t.error(err, 'should not fail to stop')
+            t.end()
+          })
         })
       })
     })
