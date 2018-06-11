@@ -167,10 +167,9 @@ module.exports = function runTests(name, clientFactory) {
   function verifySlowQueries(t, agent) {
     var metricHostName = getMetricHostName(agent, params.postgres_host)
 
-    var slowQuerySamples = agent.queries.samples
-    t.equals(Object.keys(agent.queries.samples).length, 1, 'should have one slow query')
-    for (var key in slowQuerySamples) { // eslint-disable-line guard-for-in
-      var queryParams = slowQuerySamples[key].getParams()
+    t.equals(agent.queries.samples.size, 1, 'should have one slow query')
+    for (let sample of agent.queries.samples.values()) {
+      const queryParams = sample.getParams()
 
       t.equal(
         queryParams.host,
@@ -487,9 +486,7 @@ module.exports = function runTests(name, clientFactory) {
             }
 
             transaction.end(function() {
-              var slowQuerySamples = agent.queries.samples
-              var key = Object.keys(agent.queries.samples)[0]
-              var queryParams = slowQuerySamples[key].getParams()
+              const queryParams = agent.queries.samples.values().next().value
 
               t.equal(
                 queryParams.host,
