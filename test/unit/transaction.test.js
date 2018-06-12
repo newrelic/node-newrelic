@@ -889,7 +889,7 @@ describe('Transaction', function() {
         id: tx.id,
         tr: tx.id,
         ap: 'test',
-        ti: Date.now()
+        ti: Date.now() - 1
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
@@ -900,6 +900,32 @@ describe('Transaction', function() {
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
       expect(tx.isDistributedTrace).to.be.true
+      expect(tx.parentTransportDuration).to.be.greaterThan(0)
+    })
+
+    it('should 0 transport duration when receiving payloads from the future', function() {
+      tx.agent.config.cross_application_tracer.enabled = true
+      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.trusted_account_ids = [ 1 ]
+
+      const data = {
+        ac: '1',
+        ty: 'App',
+        id: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() + 1000
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'DistributedTrace/AcceptPayload/Success'
+      )
+      expect(tx.parentId).to.equal(data.id)
+      expect(tx.parentType).to.equal(data.ty)
+      expect(tx.traceId).to.equal(data.tr)
+      expect(tx.isDistributedTrace).to.be.true
+      expect(tx.parentTransportDuration).to.equal(0)
     })
   })
 
