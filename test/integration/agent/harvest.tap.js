@@ -12,7 +12,7 @@ tap.test('Agent#harvest', (t) => {
   let agent = null
 
   t.beforeEach((done) => {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.instrumentMockedAgent(null, {
       ssl: true,
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
@@ -153,6 +153,41 @@ tap.test('Agent#harvest', (t) => {
         t.end()
       })
     })
+  })
+
+  t.test('sending span events', (t) => {
+    t.plan(6)
+
+    agent.config.feature_flag.distributed_tracing = true
+    agent.config.span_events.enabled = true
+
+    const spy = sinon.spy(agent.collector, 'spanEvents')
+    t.tearDown(() => spy.restore())
+
+    helper.runInTransaction(agent, (tx) => {
+      setTimeout(() => {
+        // Just to create an extra span.
+        tx.finalizeNameFromUri('/some/path', 200)
+        tx.end(doHarvest)
+      }, 10)
+    })
+
+    function doHarvest() {
+      t.equal(agent.spans.length, 3, 'have spans to send')
+
+      agent.harvest((error) => {
+        t.error(error, 'trace sent correctly')
+
+        t.ok(spy.called, 'should send span event data')
+
+        const payload = spy.args[0][0]
+        t.ok(payload, 'should have trace payload')
+        t.type(payload[2], 'Array', 'should have spans')
+        t.equal(payload[2].length, 3, 'should have all spans')
+
+        t.end()
+      })
+    }
   })
 })
 
