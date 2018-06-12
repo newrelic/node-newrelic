@@ -158,7 +158,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0,
               callCount: 1
             }
-          ],[
+          ], [
             {name: 'Errors/allOther'},
             {
               total: 0,
@@ -168,7 +168,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0,
               callCount: 0
             }
-          ],[
+          ], [
             {name: 'Errors/allWeb'},
             {
               total: 0,
@@ -178,7 +178,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0,
               callCount: 1
             }
-          ],[
+          ], [
             {name: 'Errors/trans1'},
             {
               total: 0,
@@ -188,10 +188,9 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0,
               callCount: 1
             }
-          ],[
+          ], [
+            {name: 'Supportability/Events/Customer/Dropped'},
             {
-              name: 'Supportability/Events/Customer/Dropped' // != undefined
-            },{
               total: 0, // != undefined
               totalExclusive: 0, // != undefined
               min: 0, // != undefined
@@ -199,10 +198,9 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0, // != undefined
               callCount: 0 // != undefined
             }
-          ],[
+          ], [
+            {name: 'Supportability/Events/Customer/Seen'},
             {
-              name: 'Supportability/Events/Customer/Seen' // != undefined
-            },{
               total: 0, // != undefined
               totalExclusive: 0, // != undefined
               min: 0, // != undefined
@@ -210,10 +208,9 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0, // != undefined
               callCount: 0 // != undefined
             }
-          ],[
+          ], [
+            {name: 'Supportability/Events/Customer/Sent'},
             {
-              name: 'Supportability/Events/Customer/Sent' // != undefined
-            },{
               total: 0, // != undefined
               totalExclusive: 0, // != undefined
               min: 0, // != undefined
@@ -221,10 +218,9 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0, // != undefined
               callCount: 0 // != undefined
             }
-          ],[
+          ], [
+            {name: 'Supportability/Events/TransactionError/Seen'},
             {
-              name: 'Supportability/Events/TransactionError/Seen' // != undefined
-            },{
               total: 0, // != undefined
               totalExclusive: 0, // != undefined
               min: 0, // != undefined
@@ -232,18 +228,47 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0, // != undefined
               callCount: 1 // != undefined
             }
-          ],[
+          ], [
+            {name: 'Supportability/Events/TransactionError/Sent'},
             {
-              name: 'Supportability/Events/TransactionError/Sent' // != undefined
-            },{
               total: 0, // != undefined
               totalExclusive: 0, // != undefined
               min: 0, // != undefined
               max: 0, // != undefined
               sumOfSquares: 0, // != undefined
               callCount: 1 // != undefined
-            }]
-          ],
+            }
+          ], [
+            {name: 'Supportability/SpanEvent/Discarded'},
+            {
+              total: 0,
+              totalExclusive: 0,
+              min: 0,
+              max: 0,
+              sumOfSquares: 0,
+              callCount: 0
+            }
+          ], [
+            {name: 'Supportability/SpanEvent/TotalEventsSeen'},
+            {
+              total: 0,
+              totalExclusive: 0,
+              min: 0,
+              max: 0,
+              sumOfSquares: 0,
+              callCount: 0
+            }
+          ], [
+            {name: 'Supportability/SpanEvent/TotalEventsSent'},
+            {
+              total: 0,
+              totalExclusive: 0,
+              min: 0,
+              max: 0,
+              sumOfSquares: 0,
+              callCount: 0
+            }
+          ]],
           'metrics were merged'
         )
 
