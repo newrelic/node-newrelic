@@ -13,6 +13,7 @@ const ENDPOINTS = {
   EVENTS: helper.generateCollectorPath('analytic_event_data', RUN_ID),
   METRICS: helper.generateCollectorPath('metric_data', RUN_ID),
   QUERIES: helper.generateCollectorPath('sql_trace_data', RUN_ID),
+  SPAN_EVENTS: helper.generateCollectorPath('span_event_data', RUN_ID),
   TRACES: helper.generateCollectorPath('transaction_sample_data', RUN_ID)
 }
 const EMPTY_RESPONSE = {return_value: null}
@@ -721,6 +722,122 @@ describe('Agent harvests', () => {
       })
 
       expect(agent.queries.samples).to.have.property('size', 0)
+    })
+  })
+
+  describe('sending to span_event_data endpoint', () => {
+    beforeEach(() => {
+      agent.config.feature_flag.distributed_tracing = true
+      agent.config.span_events.enabled = true
+      helper.runInTransaction(agent, (tx) => {
+        tx.trace.root.end()
+        agent.spans.addSegment(tx.trace.root)
+      })
+    })
+
+    it('should send when there is a span', (done) => {
+      let spansBody = null
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest
+        .post(ENDPOINTS.SPAN_EVENTS, (b) => spansBody = b)
+        .reply(200, EMPTY_RESPONSE)
+
+      expect(agent.spans).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+
+        expect(spansBody).to.be.an.instanceOf(Array).of.length(3)
+        expect(spansBody[0]).to.equal(RUN_ID)
+        expect(spansBody[1]).to.have.property('reservoir_size', agent.spans.limit)
+        expect(spansBody[1]).to.have.property('events_seen', 1)
+        expect(spansBody[2]).to.be.an.instanceOf(Array).of.length(1)
+
+        const span = spansBody[2][0]
+        expect(span).to.be.an.instanceOf(Array).of.length(3)
+        expect(span[0]).to.have.property('name', 'ROOT')
+        expect(span[0]).to.have.property('type', 'Span')
+        expect(span[0]).to.have.property('category', 'generic')
+
+        done()
+      })
+
+      expect(agent.spans).to.have.length(0)
+    })
+
+    it('should not send if `span_events.enabled` is false', (done) => {
+      agent.config.span_events.enabled = false
+
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+
+      expect(agent.spans).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+        expect(agent.spans).to.have.length(0)
+
+        done()
+      })
+
+      expect(agent.spans).to.have.length(0)
+    })
+
+    it('should not send if `distributed_tracing` is false', (done) => {
+      agent.config.feature_flag.distributed_tracing = false
+
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+
+      expect(agent.spans).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+        expect(agent.spans).to.have.length(0)
+
+        done()
+      })
+
+      expect(agent.spans).to.have.length(0)
+    })
+
+    it('should put data back on failure', (done) => {
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+
+      expect(agent.spans).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.exist
+        harvest.done()
+        expect(agent.spans).to.have.length(1)
+
+        done()
+      })
+
+      expect(agent.spans).to.have.length(0)
+    })
+
+    it('should not put data back on 413', (done) => {
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.SPAN_EVENTS).reply(413, EMPTY_RESPONSE)
+
+      expect(agent.spans).to.have.length(1)
+
+      agent.harvest((err) => {
+        expect(err).to.not.exist
+        harvest.done()
+        expect(agent.spans).to.have.length(0)
+
+        done()
+      })
+
+      expect(agent.spans).to.have.length(0)
     })
   })
 })
