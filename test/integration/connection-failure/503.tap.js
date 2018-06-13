@@ -140,11 +140,12 @@ tap.test('merging metrics and errors after a 503', function(t) {
         t.deepEqual(merged[1], 'trans1', 'found scope in merged error')
         t.deepEqual(merged[2], 'test error', 'found message in merged error')
 
+        // Sort the metrics by name and filter out supportabilities.
         const metrics = agent.metrics.toJSON().sort((a, b) => {
           const aName = a[0].name
           const bName = b[0].name
           return aName > bName ? 1 : aName < bName ? -1 : 0
-        })
+        }).filter((m) => !/^Supportability\//.test(m[0].name))
 
         t.deepEqual(
           metrics,
@@ -187,86 +188,6 @@ tap.test('merging metrics and errors after a 503', function(t) {
               max: 0,
               sumOfSquares: 0,
               callCount: 1
-            }
-          ], [
-            {name: 'Supportability/Events/Customer/Dropped'},
-            {
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 0 // != undefined
-            }
-          ], [
-            {name: 'Supportability/Events/Customer/Seen'},
-            {
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 0 // != undefined
-            }
-          ], [
-            {name: 'Supportability/Events/Customer/Sent'},
-            {
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 0 // != undefined
-            }
-          ], [
-            {name: 'Supportability/Events/TransactionError/Seen'},
-            {
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 1 // != undefined
-            }
-          ], [
-            {name: 'Supportability/Events/TransactionError/Sent'},
-            {
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 1 // != undefined
-            }
-          ], [
-            {name: 'Supportability/SpanEvent/Discarded'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 0
-            }
-          ], [
-            {name: 'Supportability/SpanEvent/TotalEventsSeen'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 0
-            }
-          ], [
-            {name: 'Supportability/SpanEvent/TotalEventsSent'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 0
             }
           ]],
           'metrics were merged'
