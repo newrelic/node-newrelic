@@ -746,7 +746,7 @@ describe('WebFrameworkShim', function() {
                     return next().then(function() {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
                       resolve()
-                    }, function(e) {
+                    }, function() {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/')
                       resolve()
                     })
