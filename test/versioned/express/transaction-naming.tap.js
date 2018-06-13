@@ -103,7 +103,17 @@ function runTests(flags) {
       res.end()
     })
 
-    runTest(t, '/path1', '/path1,/path2/path1')
+    runTest(t, '/path1', '/path1')
+  })
+
+  test('transaction name when ending in shared middleware', function(t) {
+    setup(t)
+
+    app.use(['/path1', '/path2'], function(req, res) {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1,/path2')
   })
 
   test("transaction name with subapp middleware", function(t) {
