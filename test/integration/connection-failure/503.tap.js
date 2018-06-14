@@ -32,21 +32,26 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 
   var returned = {return_value: {}}
 
-  var redirect = nock(url).post(path('preconnect'))
-                   .reply(200, {return_value: 'collector.newrelic.com'})
+  const connect = nock(url)
+  connect
+    .post(path('preconnect'))
+    .reply(200, {return_value: 'collector.newrelic.com'})
+  connect
+    .post(path('connect'))
+    .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
-  var handshake = nock(url).post(path('connect'))
-                    .reply(200, {return_value: {agent_run_id: RUN_ID}})
-  var settings = nock(url).post(path('agent_settings', RUN_ID))
-                   .reply(200, {return_value: []})
+  // Want to individually confirm each of these endpoints.
+  const sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
+  const sendErrors = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
+  const sendTrace = nock(url)
+    .post(path('transaction_sample_data', RUN_ID))
+    .reply(503, returned)
 
-  var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
-  var sendErrors = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
-  var sendTrace = nock(url).post(path('transaction_sample_data', RUN_ID))
-                      .reply(503, returned)
+  const settings = nock(url)
+  settings.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
 
-
-  var sendShutdown = nock(url).post(path('shutdown', RUN_ID)).reply(200)
+  const sendShutdown = nock(url)
+  sendShutdown.post(path('shutdown', RUN_ID)).reply(200)
 
   // setup nock for AWS
   mockAWSInfo()
@@ -54,8 +59,7 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
   agent.start(function(error, config) {
     t.notOk(error, 'got no error on connection')
     t.deepEqual(config, {agent_run_id: RUN_ID}, 'got configuration')
-    t.ok(redirect.isDone(), 'requested redirect')
-    t.ok(handshake.isDone(), 'got handshake')
+    t.ok(connect.isDone(), 'should perform connection stat startup')
 
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
@@ -63,8 +67,12 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 
     agent.harvest(function(error) {
       t.ok(error, 'error received on 503')
-      t.equal(error.message, 'Got HTTP 503 in response to metric_data.',
-              'got expected error message')
+      t.equal(
+        error.message,
+        'Got HTTP 503 in response to metric_data.',
+        'got expected error message'
+      )
+
       t.ok(sendMetrics.isDone(), 'initial sent metrics...')
       t.notOk(sendErrors.isDone(), '...but did not send error data...')
       t.notOk(sendTrace.isDone(), '...and also did not send trace, because of 503')
@@ -79,7 +87,7 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 })
 
 tap.test('merging metrics and errors after a 503', function(t) {
-  t.plan(6)
+  t.plan(8)
 
   var RUN_ID = 1338
   var url = 'https://collector.newrelic.com'
@@ -108,14 +116,14 @@ tap.test('merging metrics and errors after a 503', function(t) {
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
-  nock(url).post(path('preconnect')).reply(200, {return_value: 'collector.newrelic.com'})
-  nock(url).post(path('connect')).reply(200, {return_value: {agent_run_id: RUN_ID}})
-  nock(url).post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
-  nock(url).post(path('metric_data', RUN_ID)).reply(503)
-  nock(url).post(path('error_data', RUN_ID)).reply(503)
-  nock(url).post(path('transaction_sample_data', RUN_ID)).reply(503)
-
-  nock(url).post(path('shutdown', RUN_ID)).reply(200)
+  const collector = nock(url)
+  collector.post(path('preconnect')).reply(200, {return_value: 'collector.newrelic.com'})
+  collector.post(path('connect')).reply(200, {return_value: {agent_run_id: RUN_ID}})
+  collector.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
+  collector.post(path('metric_data', RUN_ID)).reply(503)
+  collector.post(path('error_data', RUN_ID)).reply(503)
+  collector.post(path('transaction_sample_data', RUN_ID)).reply(503)
+  collector.post(path('shutdown', RUN_ID)).reply(200)
 
   agent.start(function() {
     agent.errors.add(transaction, new Error('test error'))
@@ -132,19 +140,16 @@ tap.test('merging metrics and errors after a 503', function(t) {
         t.deepEqual(merged[1], 'trans1', 'found scope in merged error')
         t.deepEqual(merged[2], 'test error', 'found message in merged error')
 
+        // Sort the metrics by name and filter out supportabilities.
+        const metrics = agent.metrics.toJSON().sort((a, b) => {
+          const aName = a[0].name
+          const bName = b[0].name
+          return aName > bName ? 1 : aName < bName ? -1 : 0
+        }).filter((m) => !/^Supportability\//.test(m[0].name))
+
         t.deepEqual(
-          agent.metrics.toJSON(),
+          metrics,
           [[
-            {name: 'Errors/trans1'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
-            }
-          ],[
             {name: 'Errors/all'},
             {
               total: 0,
@@ -154,17 +159,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0,
               callCount: 1
             }
-          ],[
-            {name: 'Errors/allWeb'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
-            }
-          ],[
+          ], [
             {name: 'Errors/allOther'},
             {
               total: 0,
@@ -174,67 +169,35 @@ tap.test('merging metrics and errors after a 503', function(t) {
               sumOfSquares: 0,
               callCount: 0
             }
-          ],[
+          ], [
+            {name: 'Errors/allWeb'},
             {
-              name: 'Supportability/Events/Customer/Dropped' // != undefined
-            },{
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 0 // != undefined
+              total: 0,
+              totalExclusive: 0,
+              min: 0,
+              max: 0,
+              sumOfSquares: 0,
+              callCount: 1
             }
-          ],[
+          ], [
+            {name: 'Errors/trans1'},
             {
-              name: 'Supportability/Events/Customer/Seen' // != undefined
-            },{
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 0 // != undefined
+              total: 0,
+              totalExclusive: 0,
+              min: 0,
+              max: 0,
+              sumOfSquares: 0,
+              callCount: 1
             }
-          ],[
-            {
-              name: 'Supportability/Events/Customer/Sent' // != undefined
-            },{
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 0 // != undefined
-            }
-          ],[
-            {
-              name: 'Supportability/Events/TransactionError/Seen' // != undefined
-            },{
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 1 // != undefined
-            }
-          ],[
-            {
-              name: 'Supportability/Events/TransactionError/Sent' // != undefined
-            },{
-              total: 0, // != undefined
-              totalExclusive: 0, // != undefined
-              min: 0, // != undefined
-              max: 0, // != undefined
-              sumOfSquares: 0, // != undefined
-              callCount: 1 // != undefined
-            }]
-          ],
+          ]],
           'metrics were merged'
         )
 
         agent.stop(function() {})
       })
+
+      t.ok(agent.metrics.empty, 'should have cleared metrics on harvest')
+      t.equal(agent.metrics.toJSON().length, 0, 'should have no metrics')
     })
   })
 })

@@ -54,16 +54,6 @@ describe('Analytics events', function() {
   })
 
   describe('when analytics events are disabled', function() {
-    it('should not send events to server', function(done) {
-      agent.collector.analyticsEvents = function() {
-        throw new Error() // FAIL
-      }
-      agent.config.transaction_events.enabled = false
-      agent._sendEvents(function cb__sendEvents() {
-        done()
-      })
-    })
-
     it('collector cannot enable remotely', function() {
       agent.config.transaction_events.enabled = false
       expect(function() {
@@ -166,57 +156,6 @@ describe('Analytics events', function() {
       }
 
       expect(agent.events.toArray().length).equals(10)
-    })
-
-    it('re-aggregate on failure', function(done) {
-      agent.collector.analyticsEvents = function(payload, cb) {
-        cb(true)
-      }
-      trans = new Transaction(agent)
-
-      for (var i = 0; i < 20; i++) {
-        agent._addEventFromTransaction(trans)
-      }
-
-      agent._sendEvents(function(err) {
-        expect(err).exist
-        expect(agent.events.toArray().length).equals(20)
-        done()
-      })
-    })
-
-    it('empty on success', function(done) {
-      agent.collector.analyticsEvents = function(payload, cb) {
-        cb()
-      }
-      trans = new Transaction(agent)
-
-      for (var i = 0; i < 20; i++) {
-        agent._addEventFromTransaction(trans)
-      }
-
-      agent._sendEvents(function(err) {
-        expect(err).not.exist
-        expect(agent.events.toArray().length).equals(0)
-        done()
-      })
-    })
-
-    it('empty on 413', function(done) {
-      agent.collector.analyticsEvents = function(payload, cb) {
-        cb({statusCode: 413})
-      }
-      trans = new Transaction(agent)
-
-      for (var i = 0; i < 20; i++) {
-        agent._addEventFromTransaction(trans)
-      }
-
-      agent._sendEvents(function(err) {
-        expect(err).exist
-        expect(agent.events.toArray().length).equals(0)
-        done()
-      })
     })
   })
 })

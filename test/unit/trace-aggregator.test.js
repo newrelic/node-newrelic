@@ -1,65 +1,85 @@
 'use strict'
 
-var path            = require('path')
-  , chai            = require('chai')
-  , expect          = chai.expect
-  , should          = chai.should()
-  , helper          = require('../lib/agent_helper')
-  , configurator    = require('../../lib/config')
-  , TraceAggregator = require('../../lib/transaction/trace/aggregator')
-  , Transaction     = require('../../lib/transaction')
+var a               = require('async')
+var chai            = require('chai')
+var expect          = chai.expect
+var should          = chai.should()
+var helper          = require('../lib/agent_helper')
+var configurator    = require('../../lib/config')
+var TraceAggregator = require('../../lib/transaction/trace/aggregator')
+var Transaction     = require('../../lib/transaction')
 
 
-describe('TraceAggregator', function () {
-  var agent
+describe('TraceAggregator', function() {
+  var agent = null
 
-  function createTransaction(name, duration) {
+  function createTransaction(name, duration, synth, cb) {
+    if (typeof synth === 'function') {
+      cb = synth
+      synth = false
+    }
+
     var transaction = new Transaction(agent)
     // gotta create the trace
     transaction.trace.setDurationInMillis(duration)
     transaction.url = name
     transaction.name = 'WebTransaction/Uri' + name
     transaction.statusCode = 200
-    transaction.end()
 
-    return transaction
+    if (synth) {
+      transaction.syntheticsData = {
+        version: 1,
+        accountId: 357,
+        resourceId: 'resId',
+        jobId: 'jobId',
+        monitorId: 'monId'
+      }
+    }
+
+    transaction.end(() => cb(transaction))
   }
 
-  beforeEach(function () {
-    agent = helper.loadMockedAgent()
+  beforeEach(function() {
+    agent = helper.loadMockedAgent(null, {run_id: 1337})
+    agent.collector._runLifecycle = (remote, payload, cb) => {
+      setImmediate(cb, null, [], {return_value: []})
+    }
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  it("should require a configuration at startup time", function () {
-    var aggregator
-    expect(function () { aggregator = new TraceAggregator(); }).throws()
+  it("should require a configuration at startup time", function() {
+    expect(() => new TraceAggregator()).to.throw()
     var config = configurator.initialize({
       transaction_tracer : {
         enabled : true
       }
     })
 
-    expect(function () { aggregator = new TraceAggregator(config); }).not.throws()
+    expect(() => new TraceAggregator(config)).to.not.throw()
   })
 
-  it("shouldn't collect a trace if the tracer is disabled", function () {
+  it("shouldn't collect a trace if the tracer is disabled", function(done) {
     agent.config.transaction_tracer.enabled = false
-    agent.traces.add(createTransaction('/test', 3000))
-
-    should.not.exist(agent.traces.trace)
+    createTransaction('/test', 3000, (tx) => {
+      agent.traces.add(tx)
+      expect(agent.traces.trace).to.not.exist
+      done()
+    })
   })
 
-  it("shouldn't collect a trace if collect_traces is false", function () {
+  it("shouldn't collect a trace if collect_traces is false", function(done) {
     agent.config.collect_traces = false
-    agent.traces.add(createTransaction('/test', 3000))
-
-    should.not.exist(agent.traces.trace)
+    createTransaction('/test', 3000, (tx) => {
+      agent.traces.add(tx)
+      expect(agent.traces.trace).to.not.exist
+      done()
+    })
   })
 
-  it("should let the agent decide whether to ignore a transaction", function () {
+  it("should let the agent decide whether to ignore a transaction", function() {
     var transaction = new Transaction(agent)
     transaction.trace.setDurationInMillis(3000)
     transaction.ignore = true
@@ -68,10 +88,10 @@ describe('TraceAggregator', function () {
     should.exist(agent.traces.trace)
   })
 
-  describe("with top n support", function () {
+  describe("with top n support", function() {
     var config
 
-    beforeEach(function () {
+    beforeEach(function() {
       config = configurator.initialize({
         transaction_tracer : {
           enabled : true
@@ -79,7 +99,7 @@ describe('TraceAggregator', function () {
       })
     })
 
-    it("should set n from its configuration", function () {
+    it("should set n from its configuration", function() {
       var TOP_N = 21
       config.transaction_tracer.top_n = TOP_N
       var aggregator = new TraceAggregator(config)
@@ -88,93 +108,85 @@ describe('TraceAggregator', function () {
     })
 
     it("should track the top 20 slowest transactions if top_n is unconfigured",
-       function () {
+       function() {
       var aggregator = new TraceAggregator(config)
 
       expect(aggregator.capacity).equal(20)
     })
 
     it("should track the slowest transaction in a harvest period if top_n is 0",
-       function () {
+       function() {
       config.transaction_tracer.top_n = 0
       var aggregator = new TraceAggregator(config)
 
       expect(aggregator.capacity).equal(1)
     })
 
-    it("should only save a trace for an existing name if new one is slower",
-       function () {
+    it("should only save a trace for an existing name if new one is slower", (done) => {
       var URI = '/simple'
       var aggregator  = new TraceAggregator(config)
-      aggregator.reported = 10; // needed to override "first 5"
+      aggregator.reported = 10 // needed to override "first 5"
 
-      aggregator.add(createTransaction(URI, 3000))
-
-      aggregator.add(createTransaction(URI, 2100))
-      expect(aggregator.requestTimes['WebTransaction/Uri/simple'],
-             'lower value').equal(3000)
-
-      aggregator.add(createTransaction(URI, 4000))
-      expect(aggregator.requestTimes['WebTransaction/Uri/simple'],
-             'higher value').equal(4000)
+      a.series([
+        (cb) => {
+          createTransaction(URI, 3000, (tx) => {
+            aggregator.add(tx)
+            cb()
+          })
+        },
+        (cb) => {
+          createTransaction(URI, 2100, (tx) => {
+            aggregator.add(tx)
+            expect(aggregator.requestTimes)
+              .to.have.property('WebTransaction/Uri/simple', 3000)
+            cb()
+          })
+        },
+        (cb) => {
+          createTransaction(URI, 4000, (tx) => {
+            aggregator.add(tx)
+            expect(aggregator.requestTimes)
+              .to.have.property('WebTransaction/Uri/simple', 4000)
+            cb()
+          })
+        }
+      ], done)
     })
 
-    it("should only track transactions for the top N names", function (done) {
-      config.transaction_tracer.top_n = 5
-      var aggregator = new TraceAggregator(config)
-      aggregator.reported = 10; // needed to override "first 5"
+    it("should only track transactions for the top N names", function(done) {
+      agent.config.transaction_tracer.top_n = 5
+      agent.traces.capacity = 5
+      agent.traces.reported = 10 // needed to override "first 5"
 
-      // 1st trace
-      var first = createTransaction('/testOne', 8000)
-      aggregator.add(first)
-      aggregator.harvest(function cb_harvest() {
-        // 2nd trace
-        aggregator.reset(first.trace)
-        var second = createTransaction('/testTwo', 8000)
-        aggregator.add(second)
-        aggregator.harvest(function cb_harvest() {
-          // 3rd trace
-          aggregator.reset(second.trace)
-          var third = createTransaction('/testThr', 8000)
-          aggregator.add(third)
-          aggregator.harvest(function cb_harvest() {
-            // 4th trace
-            aggregator.reset(third.trace)
-            var fourth = createTransaction('/testFor', 8000)
-            aggregator.add(fourth)
-            aggregator.harvest(function cb_harvest() {
-              // 5th trace
-              aggregator.reset(fourth.trace)
-              var fifth = createTransaction('/testF5v', 8000)
-              aggregator.add(fifth)
-              aggregator.harvest(function cb_harvest() {
-                // n = 5, so this sixth transaction is gonna lose
-                aggregator.reset(fifth.trace)
-                var sixth = createTransaction('/testSix', 8000)
-                aggregator.add(sixth)
-                aggregator.harvest(function cb_harvest(error, encoded) {
-                  should.not.exist(error)
-                  should.not.exist(encoded, '6th harvest')
-                  var times = aggregator.requestTimes
-                  expect(times['WebTransaction/Uri/testOne'], "1 of top 5").equal(8000)
-                  expect(times['WebTransaction/Uri/testTwo'], "2 of top 5").equal(8000)
-                  expect(times['WebTransaction/Uri/testThr'], "3 of top 5").equal(8000)
-                  expect(times['WebTransaction/Uri/testFor'], "4 of top 5").equal(8000)
-                  expect(times['WebTransaction/Uri/testF5v'], "5 of top 5").equal(8000)
-                  should.not.exist(times['WebTransaction/Uri/testSix'],
-                                   "6 of top 5 -- OOPS")
-
-                  done()
-                })
-              })
-            })
-          })
+      // Add 6 traces. The 6th one should not get added to cached times.
+      a.timesSeries(6, (n, cb) => {
+        expect(agent.traces.trace, 'trace before creation').to.not.exist
+        createTransaction(`/test-${n}`, 8000, () => {
+          if (n !== 5) {
+            expect(agent.traces.trace, `trace ${n} to be collected`).to.exist
+          } else {
+            expect(agent.traces.trace, 'trace 5 collected').to.not.exist
+          }
+          agent.harvest(cb)
+          expect(agent.traces.trace, 'trace after harvest').to.not.exist
         })
+      }, (err) => {
+        expect(err).to.not.exist
+
+        const times = agent.traces.requestTimes
+        expect(times).to.have.property('WebTransaction/Uri/test-0', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-1', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-2', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-3', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-4', 8000)
+        expect(times).to.not.have.property('WebTransaction/Uri/test-5')
+
+        done()
       })
     })
   })
 
-  it("should collect traces for transactions that exceed apdex_f", function () {
+  it("should collect traces for transactions that exceed apdex_f", function() {
     var ABOVE_THRESHOLD = 29
     var APDEXT = 0.007
 
@@ -186,10 +198,10 @@ describe('TraceAggregator', function () {
     })
 
     var aggregator  = new TraceAggregator(config)
-      , transaction = new Transaction(agent)
+    var transaction = new Transaction(agent)
 
 
-    aggregator.reported = 10; // needed to override "first 5"
+    aggregator.reported = 10 // needed to override "first 5"
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT
@@ -202,7 +214,7 @@ describe('TraceAggregator', function () {
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD)
   })
 
-  it("should not collect traces for transactions that don't exceed apdex_f", function () {
+  it("should not collect traces for transactions that don't exceed apdex_f", function() {
     var BELOW_THRESHOLD = 27
     var APDEXT = 0.007
 
@@ -214,10 +226,10 @@ describe('TraceAggregator', function () {
     })
 
     var aggregator  = new TraceAggregator(config)
-      , transaction = new Transaction(agent)
+    var transaction = new Transaction(agent)
 
 
-    aggregator.reported = 10; // needed to override "first 5"
+    aggregator.reported = 10 // needed to override "first 5"
 
     // let's violating Law of Demeter!
     transaction.metrics.apdexT = APDEXT
@@ -230,8 +242,7 @@ describe('TraceAggregator', function () {
     expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined)
   })
 
-  it("should collect traces for transactions that exceed explicit trace threshold",
-     function () {
+  it('should collect traces that exceed explicit trace threshold', (done) => {
     var ABOVE_THRESHOLD = 29
     var THRESHOLD = 0.028
 
@@ -243,14 +254,17 @@ describe('TraceAggregator', function () {
     })
 
     var aggregator = new TraceAggregator(config)
-    aggregator.reported = 10; // needed to override "first 5"
-    aggregator.add(createTransaction('/test', ABOVE_THRESHOLD))
+    aggregator.reported = 10 // needed to override "first 5"
+    createTransaction('/test', ABOVE_THRESHOLD, (tx) => {
+      aggregator.add(tx)
 
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD)
+      expect(aggregator.requestTimes)
+        .to.have.property('WebTransaction/Uri/test', ABOVE_THRESHOLD)
+      done()
+    })
   })
 
-  it("should not collect traces for transactions that don't exceed trace threshold",
-     function () {
+  it('should not collect traces that do not exceed trace threshold', (done) => {
     var BELOW_THRESHOLD = 29
     var THRESHOLD = 30
 
@@ -262,45 +276,15 @@ describe('TraceAggregator', function () {
     })
 
     var aggregator = new TraceAggregator(config)
-    aggregator.reported = 10; // needed to override "first 5"
-    aggregator.add(createTransaction('/test', BELOW_THRESHOLD))
-
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined)
-  })
-
-  it("should have its own logical notion of a harvest cycle", function (done) {
-    var config = configurator.initialize({
-      transaction_tracer : {
-        enabled : true,
-        top_n   : 10
-      }
+    aggregator.reported = 10 // needed to override "first 5"
+    createTransaction('/test', BELOW_THRESHOLD, (tx) => {
+      aggregator.add(tx)
+      expect(aggregator.requestTimes).to.not.have.property('WebTransaction/Uri/test')
+      done()
     })
-
-    var aggregator = new TraceAggregator(config)
-    expect(function harvestExists() {
-      aggregator.harvest(function cb_harvest(error, empty) {
-        should.not.exist(error)
-        should.not.exist(empty)
-
-        expect(function addExists() {
-          aggregator.add(createTransaction('/test', 4180))
-        }).not.throws()
-
-        aggregator.harvest(function cb_harvest(error, traceData) {
-          expect(traceData).an('array')
-          expect(traceData.length).equal(1)
-          var trace = traceData[0]
-          expect(trace.length).equal(10)
-          expect(trace[2]).equal('WebTransaction/Uri/test')
-
-          done()
-        })
-      })
-    }).not.throws()
   })
 
-  it("should group transactions by the metric name associated with the transaction",
-     function () {
+  it('should group transactions by the metric name associated with them', (done) => {
     var config = configurator.initialize({
       transaction_tracer : {
         enabled : true,
@@ -310,154 +294,95 @@ describe('TraceAggregator', function () {
 
     var aggregator  = new TraceAggregator(config)
 
-    aggregator.add(createTransaction('/test', 2100))
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(2100)
+    createTransaction('/test', 2100, (tx) => {
+      aggregator.add(tx)
+      expect(aggregator.requestTimes).to.have.property('WebTransaction/Uri/test', 2100)
+      done()
+    })
   })
 
-  it("should always report slow traces until 5 have been sent", function (done) {
+  it("should always report slow traces until 5 have been sent", function(done) {
     agent.config.apdex_t = 0
-    var config = configurator.initialize({
-      apdex_t : 0,
-      transaction_tracer : {
-        enabled : true
-      }
+    agent.config.run_id = 1337
+    agent.config.transaction_tracer.enabled = true
+
+    // Go through 5 transactions. Note that the names of the transactions must
+    // repeat!
+    a.timesSeries(5, (n, cb) => {
+      expect(agent.traces.trace, 'trace waiting to be collected').to.not.exist
+      createTransaction(`/test-${n % 3}`, 500, () => {
+        expect(agent.traces.trace, `${n}th trace to collect`).to.exist
+        agent.harvest(cb)
+      })
+    }, (err) => {
+      expect(err).to.not.exist
+
+      // This 6th transaction should not be collected.
+      expect(agent.traces.trace).to.not.exist
+      createTransaction(`/test-0`, 500, () => {
+        expect(agent.traces.trace, '6th trace to collect').to.not.exist
+        done()
+      })
     })
+  })
 
-    var aggregator = new TraceAggregator(config)
+  describe("when request timings are tracked over time", function() {
+    it("should reset timings after 5 harvest cycles with no slow traces", (done) => {
+      agent.config.run_id = 1337
+      agent.config.transaction_tracer.enabled = true
 
-    var verifier = function (encoded, shouldExist) {
-      if (shouldExist) {
-        should.exist(encoded)
-      }
-      else {
-        should.not.exist(encoded)
-      }
-    }
+      var aggregator = agent.traces
+      createTransaction('/test', 5030, (tx) => {
+        aggregator.add(tx)
 
-    aggregator.add(createTransaction('/testOne', 503))
-    aggregator.harvest(function cb_harvest(error, encoded, trace) {
-      verifier(encoded, true)
-      aggregator.reset(trace)
+        var remaining = 4
+        // 2nd-5th harvests: no serialized trace, timing still set
+        var looper = function() {
+          expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
+          aggregator.reset(tx.trace)
 
-      aggregator.add(createTransaction('/testTwo', 406))
-      aggregator.harvest(function cb_harvest(error, encoded, trace) {
-        verifier(encoded, true)
-        aggregator.reset(trace)
+          remaining--
+          if (remaining < 1) {
+            // 6th harvest: no serialized trace, timings reset
+            agent.harvest(function() {
+              expect(aggregator.requestTimes)
+                .to.not.have.property('WebTransaction/Uri/test')
 
-        aggregator.add(createTransaction('/testThree', 720))
-        aggregator.harvest(function cb_harvest(error, encoded, trace) {
-          verifier(encoded, true)
-          aggregator.reset(trace)
-
-          aggregator.add(createTransaction('/testOne', 415))
-          aggregator.harvest(function cb_harvest(error, encoded, trace) {
-            verifier(encoded, true)
-            aggregator.reset(trace)
-
-            aggregator.add(createTransaction('/testTwo', 510))
-            aggregator.harvest(function cb_harvest(error, encoded, trace) {
-              verifier(encoded, true)
-              aggregator.reset(trace)
-
-              aggregator.add(createTransaction('/testOne', 502))
-              aggregator.harvest(function cb_harvest(error, encoded) {
-                verifier(encoded, false)
-
-                done()
-              })
+              done()
             })
-          })
+          } else {
+            agent.harvest(looper)
+          }
+        }
+
+        aggregator.add(tx)
+
+        // 1st harvest: serialized trace, timing is set
+        agent.harvest(function() {
+          expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
+          aggregator.reset(tx.trace)
+
+          agent.harvest(looper)
         })
       })
     })
   })
 
-  describe("when request timings are tracked over time", function () {
-    it("should reset timings after 5 harvest cycles with no slow traces",
-       function (done) {
-      var config = configurator.initialize({
-        transaction_tracer : {
-          enabled : true
-        }
-      })
+  it("should reset the syntheticsTraces when resetting trace", function(done) {
+    agent.config.transaction_tracer.enabled = true
 
-      var aggregator = new TraceAggregator(config)
-      var transaction = createTransaction('/test', 5030)
-      aggregator.add(transaction)
+    var aggregator = agent.traces
+    createTransaction('/testOne', 503, () => {
+      expect(aggregator.trace).to.exist
+      aggregator.reset()
 
-      var remaining = 4
-      // 2nd-5th harvests: no serialized trace, timing still set
-      var looper = function () {
-        expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
-        aggregator.reset(transaction.trace)
+      createTransaction('/testTwo', 406, true, () => {
+        expect(aggregator.trace).to.not.exist
+        expect(aggregator.syntheticsTraces).to.have.length(1)
 
-        remaining--
-        if (remaining < 1) {
-          // 6th harvest: no serialized trace, timings reset
-          aggregator.harvest(function cb_harvest() {
-            should.not.exist(aggregator.requestTimes['WebTransaction/Uri/test'])
+        aggregator.reset()
+        expect(aggregator.syntheticsTraces).to.have.length(0)
 
-            done()
-          })
-        }
-        else {
-          aggregator.harvest(looper)
-        }
-      }
-
-      aggregator.add(transaction)
-
-      // 1st harvest: serialized trace, timing is set
-      aggregator.harvest(function cb_harvest() {
-        expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
-        aggregator.reset(transaction.trace)
-
-        aggregator.harvest(looper)
-      })
-    })
-  })
-
-  it("should reset the syntheticsTraces when resetting trace", function (done) {
-    agent.config.apdex_t = 0
-    var config = configurator.initialize({
-      apdex_t : 0,
-      transaction_tracer : {
-        enabled : true
-      }
-    })
-
-    var aggregator = new TraceAggregator(config)
-
-    var verifier = function (encoded, shouldExist) {
-      if (shouldExist) {
-        should.exist(encoded)
-      }
-      else {
-        should.not.exist(encoded)
-      }
-    }
-
-    aggregator.add(createTransaction('/testOne', 503))
-    aggregator.harvest(function cb_harvest(error, encoded, trace) {
-      verifier(encoded, true)
-      aggregator.reset(trace)
-
-      var synthTransaction = createTransaction('/testTwo', 406)
-      synthTransaction.syntheticsData = {
-        version: 1,
-        accountId: 357,
-        resourceId: 'resId',
-        jobId: 'jobId',
-        monitorId: 'monId'
-      }
-
-      aggregator.add(synthTransaction)
-      expect(aggregator.trace).not.exist
-      expect(aggregator.syntheticsTraces).length(1)
-      aggregator.harvest(function cb_harves(error, encoded, trace) {
-        expect(aggregator.syntheticsTraces).length(1)
-        aggregator.reset(trace)
-        expect(aggregator.syntheticsTraces).length(0)
         done()
       })
     })

@@ -2,8 +2,7 @@
 
 var http = require('http')
 var events = require('events')
-var chai = require('chai')
-var expect = chai.expect
+var expect = require('chai').expect
 var helper = require('../../../lib/agent_helper')
 var NAMES = require('../../../../lib/metrics/names')
 var instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
@@ -70,7 +69,7 @@ describe('instrumentOutbound', function() {
       var path = '/asdf'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
 
       function makeFakeRequest() {
@@ -84,13 +83,14 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
-      expect(transaction.trace.root.children[0].parameters).deep.equal({
-        a: 'b',
-        nr_exclusive_duration_millis: null,
-        another: 'yourself',
-        thing: true,
-        grownup: 'true'
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      expect(transaction.trace.root.children[0].parameters).to.deep.equal({
+        'nr_exclusive_duration_millis': null,
+        'url': `http://${HOSTNAME}:${PORT}/asdf`,
+        'request.parameters.a': 'b',
+        'request.parameters.another': 'yourself',
+        'request.parameters.thing': true,
+        'request.parameters.grownup': 'true'
       })
 
       function makeFakeRequest() {
@@ -104,7 +104,7 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function() {
       expect(function() {
-        instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
+        instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       }).to.throw(Error)
     })
 
@@ -119,7 +119,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -135,7 +135,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, HOSTNAME, PORT, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -145,14 +145,16 @@ describe('instrumentOutbound', function() {
     }
   })
 
-  it('should throw if hostname is undefined', function() {
+  it('should not throw if hostname is undefined', function() {
     var req = new events.EventEmitter()
-    var undef
 
     helper.runInTransaction(agent, function() {
-      expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, undef, PORT, makeFakeRequest)
-      }).to.throw(Error)
+      let req2 = null
+      expect(() => {
+        req2 = instrumentOutbound(agent, {port: PORT}, makeFakeRequest)
+      }).to.not.throw()
+
+      expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
     })
 
     function makeFakeRequest() {
@@ -161,13 +163,16 @@ describe('instrumentOutbound', function() {
     }
   })
 
-  it('should throw if hostname is null', function() {
+  it('should not throw if hostname is null', function() {
     var req = new events.EventEmitter()
 
     helper.runInTransaction(agent, function() {
-      expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, null, PORT, makeFakeRequest)
-      }).to.throw(Error)
+      let req2 = null
+      expect(() => {
+        req2 = instrumentOutbound(agent, {host: null, port: PORT}, makeFakeRequest)
+      }).to.not.throw()
+
+      expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
     })
 
     function makeFakeRequest() {
@@ -176,12 +181,15 @@ describe('instrumentOutbound', function() {
     }
   })
 
-  it('should throw if hostname is an empty string', function() {
+  it('should not throw if hostname is an empty string', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function() {
-      expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, '', PORT, makeFakeRequest)
-      }).to.throw(Error)
+      let req2 = null
+      expect(() => {
+        req2 = instrumentOutbound(agent, {host: '', port: PORT}, makeFakeRequest)
+      }).to.not.throw()
+
+      expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
     })
 
     function makeFakeRequest() {
@@ -190,14 +198,16 @@ describe('instrumentOutbound', function() {
     }
   })
 
-  it('should throw if port is undefined', function() {
+  it('should not throw if port is undefined', function() {
     var req = new events.EventEmitter()
-    var undef
 
     helper.runInTransaction(agent, function() {
-      expect(function TestUndefinedHostname() {
-        instrumentOutbound(agent, 'hostname', undef, makeFakeRequest)
-      }).to.throw(Error)
+      let req2 = null
+      expect(() => {
+        req2 = instrumentOutbound(agent, {host: 'hostname'}, makeFakeRequest)
+      }).to.not.throw()
+
+      expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
     })
 
     function makeFakeRequest() {

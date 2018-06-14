@@ -1,15 +1,13 @@
 'use strict'
 
-var chai = require('chai')
-var expect = chai.expect
-var should = chai.should()
-var helper = require('../../lib/agent_helper')
-var ErrorAggregator = require('../../../lib/errors/aggregator')
-var Transaction = require('../../../lib/transaction')
+const expect = require('chai').expect
+const helper = require('../../lib/agent_helper')
+const ErrorAggregator = require('../../../lib/errors/aggregator')
+const Transaction = require('../../../lib/transaction')
 
-var API = require('../../../api')
-var DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
-var NAMES = require('../../../lib/metrics/names')
+const API = require('../../../api')
+const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const NAMES = require('../../../lib/metrics/names')
 
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') isWeb = true
@@ -340,21 +338,6 @@ describe('Errors', function() {
       })
     })
 
-    describe('getEventsLimit', function() {
-      it('returns the error events reservoir limit', function() {
-        expect(agent.errors.getEventsLimit()).equal(agent.errors.events.limit)
-      })
-    })
-
-    describe('getEventsSeen', function() {
-      it('returns the number of error events that have been seen', function() {
-        for (var i = 0; i < 200; i++) {
-          agent.errors.add(null, new Error('error ' + i))
-        }
-        expect(agent.errors.getEventsSeen()).equal(200)
-      })
-    })
-
     describe('when finalizing transactions', function() {
       var tracer = null
 
@@ -442,7 +425,7 @@ describe('Errors', function() {
         expect(metric.callCount).equal(1)
       })
 
-      it('should ignore 404 errors for transactions with exceptions attached', function() {
+      it('should ignore 404 errors for transactions with exceptions attached', () => {
         var notIgnored = createTransaction(agent, 400)
         notIgnored.addException(new Error('bad request'))
         tracer.onTransactionFinished(notIgnored, agent.metrics)
@@ -541,7 +524,7 @@ describe('Errors', function() {
 
       it('should not have a stack trace in the params', function() {
         var params = errorJSON[4]
-        should.not.exist(params.stack_trace)
+        expect(params).to.not.have.property('stack_trace')
       })
     })
 
@@ -585,7 +568,7 @@ describe('Errors', function() {
       })
 
       it('should not have a stack trace in the params', function() {
-        should.not.exist(params.stack_trace)
+        expect(params).to.not.have.property('stack_trace')
       })
 
       it('should have a request URL', function() {
@@ -613,7 +596,7 @@ describe('Errors', function() {
       var errorJSON = agent.errors.errors[0]
       var params = errorJSON[4]
 
-      should.not.exist(params.request_params)
+      expect(params).to.not.have.property('request_params')
     })
 
     it('with attributes.enabled and attributes.exclude set', function() {
@@ -671,12 +654,12 @@ describe('Errors', function() {
 
       it('should have a stack trace in the params', function() {
         var params = errorJSON[4]
-        should.exist(params.stack_trace)
+        expect(params).to.have.property('stack_trace')
         expect(params.stack_trace[0]).equal('Error: Dare to be the same!')
       })
     })
 
-    describe('with a thrown TypeError object and a transaction with no parameters', function() {
+    describe('with a thrown TypeError and a transaction with no params', () => {
       var tracer
       var errorJSON
 
@@ -714,7 +697,7 @@ describe('Errors', function() {
 
       it('should have a stack trace in the params', function() {
         var params = errorJSON[4]
-        should.exist(params.stack_trace)
+        expect(params).to.have.property('stack_trace')
         expect(params.stack_trace[0]).equal('TypeError: Dare to be different!')
       })
     })
@@ -760,7 +743,7 @@ describe('Errors', function() {
       })
 
       it('should have a stack trace in the params', function() {
-        should.exist(params.stack_trace)
+        expect(params).to.have.property('stack_trace')
         expect(params.stack_trace[0]).equal('TypeError: wanted JSON, got XML')
       })
 
@@ -814,7 +797,7 @@ describe('Errors', function() {
       })
 
       it('should have no stack trace', function() {
-        should.not.exist(errorJSON[4].stack_trace)
+        expect(errorJSON[4]).to.not.have.property('stack_trace')
       })
     })
 
@@ -860,7 +843,7 @@ describe('Errors', function() {
       })
 
       it('should not have a stack trace in the params', function() {
-        should.not.exist(params.stack_trace)
+        expect(params).to.not.have.property('stack_trace')
       })
 
       it('should have a request URL', function() {
@@ -918,8 +901,7 @@ describe('Errors', function() {
       it('should associate errors with parameters', function() {
         var params = error[4]
 
-        should.exist(params)
-        should.exist(params.stack_trace)
+        expect(params).to.exist.and.have.property('stack_trace')
         expect(params.stack_trace[0]).equal('Error: 500 test error')
       })
     })
@@ -953,22 +935,6 @@ describe('Errors', function() {
       it('should associate errors with an error type', function() {
         var messageClass = error[3]
         expect(messageClass).equal('Error')
-      })
-    })
-
-    describe('when merging from failed collector delivery', function() {
-      it('should not crash on null errors', function() {
-        expect(function() { tracer.merge(null) }).not.throws()
-      })
-
-      it('should never merge more than 20 errors', function() {
-        var sample = [0, 'Unknown', 'something bad happened', 'Error', {}]
-        var errors = []
-        for (var i = 0; i < 30; i++) errors.push(sample)
-
-        tracer.merge(errors)
-
-        expect(tracer.errors.length).equal(20)
       })
     })
 
@@ -1017,7 +983,7 @@ describe('Errors', function() {
       })
 
       it('should not have a domain active', function() {
-        should.not.exist(active)
+        expect(active).to.not.exist
       })
 
       it('should find a single error', function() {
@@ -1026,7 +992,7 @@ describe('Errors', function() {
 
       describe('and an error is traced', function() {
         it('should find the error', function() {
-          should.exist(json)
+          expect(json).to.exist
         })
 
         it('should have 5 elements in the trace', function() {
@@ -1048,8 +1014,7 @@ describe('Errors', function() {
         it('should default to passing the stack trace as a parameter', function() {
           var params = json[4]
 
-          should.exist(params)
-          should.exist(params.stack_trace)
+          expect(params).to.exist.and.have.property('stack_trace')
           expect(params.stack_trace[0]).equal('Error: sample error')
         })
       })
@@ -1156,7 +1121,7 @@ describe('Errors', function() {
       })
     })
 
-    describe('getBackgroundTransactionsErrorCount()', function() {
+    describe('getOtherTransactionsErrorCount()', function() {
       var aggregator
 
       beforeEach(function() {
@@ -1166,7 +1131,7 @@ describe('Errors', function() {
       describe('returns total of background transactions errors', function() {
         it('without transaction', function() {
           aggregator.add(null, new Error('error1'))
-          expect(aggregator.getBackgroundTransactionsErrorCount()).equal(0)
+          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
         })
 
         it('with web transaction', function(done) {
@@ -1175,7 +1140,7 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end(function() {
-            expect(aggregator.getBackgroundTransactionsErrorCount()).equal(0)
+            expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
             done()
           })
         })
@@ -1186,7 +1151,7 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end(function() {
-            expect(aggregator.getBackgroundTransactionsErrorCount()).equal(1)
+            expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
             done()
           })
         })
@@ -1231,9 +1196,9 @@ describe('Errors', function() {
         aggregator.add(transaction, new Error('error1'))
 
         transaction.end(function() {
-          expect(aggregator.getBackgroundTransactionsErrorCount()).equal(1)
+          expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
           aggregator.clearErrors()
-          expect(aggregator.getBackgroundTransactionsErrorCount()).equal(0)
+          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
           done()
         })
       })
@@ -1278,7 +1243,7 @@ describe('Errors', function() {
 
         transaction.end(function() {
           var collectedError = aggregator.errors[0]
-          should.exist(collectedError)
+          expect(collectedError).to.exist
           done()
         })
       })
@@ -1341,7 +1306,7 @@ describe('Errors', function() {
         })
       })
 
-      it('should merge supplied custom parameters with custom parameters on the trace', function(done) {
+      it('should merge supplied custom params with those on the trace', (done) => {
         agent.config.attributes.enabled = true
         var transaction = createTransaction(agent, 500)
         transaction.trace.addCustomAttribute('a', 'b')
@@ -1367,26 +1332,6 @@ describe('Errors', function() {
       aggregator = agent.errors
     })
 
-    it('should not gather error events if switched off by user config', function(done) {
-      agent.collector.errorEvents = function() {
-        throw new Error()
-      }
-      agent.config.error_collector.capture_events = false
-      agent._sendErrorEvents(function() {
-        done()
-      })
-    })
-
-    it('should not gather error events if switched off by server config', function(done) {
-      agent.config.error_collector.capture_events = true
-      agent.collector.errorEvents = function() {
-        throw new Error()
-      }
-      agent._sendErrorEvents(function() {
-        done()
-      })
-    })
-
     it('should omit the error message when in high security mode', function() {
       agent.config.high_security = true
       agent.errors.add(null, new Error('some error'))
@@ -1406,61 +1351,6 @@ describe('Errors', function() {
 
       var events = agent.errors.getEvents()
       expect(events).length(10)
-    })
-
-    it('re-aggregate on failure', function(done) {
-      agent.collector.isConnected = function() { return true }
-      agent.collector.metricData = function(payload, cb) { cb() }
-      agent.collector.errorEvents = function(payload, cb) { cb(true) }
-
-      for (var i = 0; i < 20; i++) {
-        agent.errors.add(null, new Error('some error'))
-      }
-
-      agent._sendErrorEvents(function() {})
-
-      agent._sendMetrics(function() {
-        agent._sendErrorEvents(function(err) {
-          expect(err).exist
-          expect(agent.errors.getEvents()).length(20)
-          done()
-        })
-      })
-    })
-
-    it('empty on success', function(done) {
-      agent.collector.isConnected = function() { return true }
-      agent.collector.metricData = function(payload, cb) { cb() }
-      agent.collector.errorEvents = function(payload, cb) { cb() }
-
-      for (var i = 0; i < 20; i++) {
-        agent.errors.add(null, new Error('some error'))
-      }
-
-      agent._sendMetrics(function() {
-        agent._sendErrorEvents(function() {
-          expect(agent.errors.getEvents()).length(0)
-          done()
-        })
-      })
-    })
-
-    it('empty on 413', function(done) {
-      agent.collector.isConnected = function() { return true }
-      agent.collector.metricData = function(payload, cb) { cb() }
-      agent.collector.errorEvents = function(payload, cb) { cb({ statusCode: 413 }) }
-
-      for (var i = 0; i < 20; i++) {
-        agent.errors.add(null, new Error('some error'))
-      }
-
-      agent._sendMetrics(function() {
-        agent._sendErrorEvents(function(err) {
-          expect(err).exist
-          expect(agent.errors.getEvents()).length(0)
-          done()
-        })
-      })
     })
 
     describe('without transaction', function() {
@@ -1572,7 +1462,7 @@ describe('Errors', function() {
 
         transaction.end(function() {
           var collectedError = aggregator.errors[0]
-          should.exist(collectedError)
+          expect(collectedError).to.exist
           done()
         })
       })
@@ -1597,7 +1487,7 @@ describe('Errors', function() {
         })
       })
 
-      describe('transaction-specific intrinsic attributes if part of transaction', function() {
+      describe('transaction-specific intrinsic attributes on a transaction', () => {
         var transaction
         var error
 
@@ -1705,7 +1595,7 @@ describe('Errors', function() {
           agent = helper.instrumentMockedAgent()
 
           var server = http.createServer(function cb_createServer(req, res) {
-            should.exist(agent.getTransaction())
+            expect(agent.getTransaction()).to.exist
             // Return HTTP error, so that when the transaction ends, an error
             // event is generated.
             res.statusCode = 500
