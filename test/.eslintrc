@@ -1,6 +1,10 @@
 {
   "env": {
+    "es6": true,
     "mocha": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6
   },
   "rules": {
     "max-nested-callbacks": "off",

@@ -291,6 +291,18 @@ describe('WebFrameworkShim', function() {
           wrappable.bar(realRoute, function() {})
         })
 
+        it('should pass an array of routes to the middleware wrapper', () => {
+          const routes = ['/my/great/route', '/another/great/route']
+          shim.wrapMiddlewareMounter(wrappable, 'bar', {
+            route: shim.FIRST,
+            wrapper: (shim, fn, name, route) => {
+              expect(route).to.deep.equal(routes)
+            }
+          })
+
+          wrappable.bar(routes, () => {})
+        })
+
         it('should pass null if the route parameter is a middleware', function() {
           var callCount = 0
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
@@ -734,7 +746,7 @@ describe('WebFrameworkShim', function() {
                     return next().then(function() {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
                       resolve()
-                    }, function(e) {
+                    }, function() {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/')
                       resolve()
                     })
