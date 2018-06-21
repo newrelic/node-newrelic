@@ -462,12 +462,11 @@ function runTests(flags) {
 
   function makeMultiRunner(t, endpoint, expectedName, numTests) {
     var done = 0
-    var seen = []
+    var seen = new Set()
     if (!expectedName) expectedName = endpoint
     agent.on('transactionFinished', function(transaction) {
-      t.ok(seen.indexOf(transaction) === -1,
-          'should never see the finishing transaction twice')
-      seen.push(transaction)
+      t.notOk(seen.has(transaction), 'should never see the finishing transaction twice')
+      seen.add(transaction)
       t.equal(transaction.name, 'WebTransaction/Expressjs/GET/' + expectedName,
         "transaction has expected name")
       transaction.end()
