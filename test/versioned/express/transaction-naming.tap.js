@@ -96,10 +96,12 @@ function runTests(flags) {
     setup(t)
 
     function mid1(req, res, next) {
+      t.pass('mid1 is executed')
       next()
     }
 
     function mid2(req, res, next) {
+      t.pass('mid2 is executed')
       next()
     }
 
@@ -110,6 +112,26 @@ function runTests(flags) {
     })
 
     runTest(t, '/path1', '/path1')
+  })
+
+  test('transaction name when ending in array of unmounted middleware', (t) => {
+    setup(t)
+
+    function mid1(req, res, next) {
+      t.pass('mid1 is executed')
+      next()
+    }
+
+    function mid2(req, res) {
+      t.pass('mid2 is executed')
+      res.end()
+    }
+
+    app.use([mid1, mid2])
+
+    app.use(mid1)
+
+    runTest(t, '/path1', '/')
   })
 
   test('transaction name with shared middleware function', function(t) {
