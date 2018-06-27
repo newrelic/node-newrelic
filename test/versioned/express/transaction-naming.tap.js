@@ -92,6 +92,26 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
+  test('transaction name with array of middleware with unspecified mount path', (t) => {
+    setup(t)
+
+    function mid1(req, res, next) {
+      next()
+    }
+
+    function mid2(req, res, next) {
+      next()
+    }
+
+    app.use([mid1, mid2])
+
+    app.get('/path1', (req, res) => {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1')
+  })
+
   test('transaction name with shared middleware function', function(t) {
     setup(t)
 
