@@ -160,8 +160,25 @@ describe('the New Relic agent', function() {
         expect(agent.minSampledPriority).to.equal(0.5)
       })
 
+      it('should only take the first 10 on the first harvest', function() {
+        // Flag the agent as not in the first harvest
+        agent.transactionCreatedInHarvest = 10 * agent.sampledTarget
+        agent._lastHarvest = null
+
+        expect(agent.minSampledPriority).to.equal(0)
+
+        // Change this to maxSampled if we change the way the back off works.
+        for (var i = 0; i < agent.sampledTarget + 1; ++i) {
+          agent.incrementTransactionsSampled()
+        }
+
+        expect(agent.minSampledPriority).to.equal(1)
+      })
+
       it('should backoff on sampling after reaching the sampled target', function() {
         agent.transactionCreatedInHarvest = 10 * agent.sampledTarget
+        // Flag the agent as not in the first harvest
+        agent._lastHarvest = true
         agent.adjustTransactionStats()
         var expectedMSP = [
             0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,
@@ -173,7 +190,7 @@ describe('the New Relic agent', function() {
         // Change this to maxSampled if we change the way the back off works.
         for (var i = 0; i < 2 * agent.sampledTarget; ++i) {
           var diff = agent.minSampledPriority - expectedMSP[i]
-          expect(diff).to.be.lessThan(0.001)
+          expect(Math.abs(diff)).to.be.lessThan(0.000001)
           agent.incrementTransactionsSampled()
         }
       })
