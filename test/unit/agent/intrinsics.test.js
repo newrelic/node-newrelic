@@ -65,6 +65,7 @@ describe('when CAT is disabled', function() {
           'duration',
           'name',
           'timestamp',
+          'totalTime',
           'type',
           'webDuration',
           'error'
@@ -173,6 +174,7 @@ describe('when CAT is enabled', function() {
           'name',
           'timestamp',
           'type',
+          'totalTime',
           'webDuration',
           'error',
           'nr.guid',
