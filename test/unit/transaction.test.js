@@ -645,6 +645,7 @@ describe('Transaction', function() {
       transaction.agent.config.feature_flag.distributed_tracing = true
 
       var attributes = transaction.getIntrinsicAttributes()
+      expect(transaction.priority.toString().length).to.be.at.most(8)
 
       expect(attributes).to.have.property('guid', transaction.id)
       expect(attributes).to.have.property('nr.tripId', transaction.id)
@@ -823,7 +824,7 @@ describe('Transaction', function() {
         id: tx.id,
         tr: tx.id,
         ap: 'test',
-        pr: 1.99,
+        pr: 1.9999999,
         sa: true,
         ti: Date.now()
       }
@@ -831,6 +832,8 @@ describe('Transaction', function() {
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.sampled).to.equal(true)
       expect(tx.priority).to.equal(data.pr)
+      // Should not truncate accepted priority
+      expect(tx.priority.toString().length).to.equal(9)
     })
 
     it('does not take the distributed tracing data if priority is missing', function() {
@@ -853,6 +856,7 @@ describe('Transaction', function() {
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.priority).to.equal(priorPriority)
+      expect(tx.priority.toString().length).to.be.at.most(8)
     })
 
     it('accepting a distributed trace overwrites the sampled and priority', function() {
