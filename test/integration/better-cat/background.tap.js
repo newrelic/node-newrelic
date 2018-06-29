@@ -51,7 +51,6 @@ tap.test('background transactions should not blow up with CAT', (t) => {
       const intrinsic = event[0]
 
       t.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
-      t.ok(intrinsic['nr.tripId'], 'web should have an nr.tripId on event')
       t.ok(intrinsic.guid, 'web should have a guid on event')
       t.ok(intrinsic.traceId, 'web should have a traceId on event')
       t.ok(intrinsic.priority, 'web should have a priority on event')
@@ -82,7 +81,6 @@ tap.test('background transactions should not blow up with CAT', (t) => {
       t.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
       const intrinsic = event[0]
 
-      t.ok(intrinsic['nr.tripId'], 'bg should have an nr.tripId on event')
       t.ok(intrinsic.traceId, 'bg should have a traceId on event')
       t.ok(intrinsic.priority, 'bg should have a priority on event')
       t.ok(intrinsic.guid, 'bg should have a guid on event')

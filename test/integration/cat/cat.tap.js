@@ -15,7 +15,7 @@ const TX_NAME = 'WebTransaction/Nodejs/GET//middle/end'
 
 
 test('cross application tracing full integration', function(t) {
-  t.plan(57)
+  t.plan(54)
   var config = {
     cross_application_tracer: {enabled: true},
     trusted_account_ids: [1337],
@@ -129,7 +129,6 @@ test('cross application tracing full integration', function(t) {
       var intrinsic = event[0]
       t.equal(intrinsic.name, TX_NAME, 'end event has name')
       t.ok(intrinsic['nr.guid'], 'end should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'end should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'end should have an nr.pathHash on event')
       t.ok(
         intrinsic['nr.referringPathHash'],
@@ -206,7 +205,6 @@ test('cross application tracing full integration', function(t) {
       // check the insights event
       var intrinsic = event[0]
       t.ok(intrinsic['nr.guid'], 'middle should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'middle should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'middle should have an nr.pathHash on event')
       t.ok(
         intrinsic['nr.referringPathHash'],
@@ -284,7 +282,6 @@ test('cross application tracing full integration', function(t) {
       // check the insights event
       var intrinsic = event[0]
       t.ok(intrinsic['nr.guid'], 'start should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'start should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'start should have an nr.pathHash on event')
       t.notOk(
         intrinsic['nr.referringPathHash'],

@@ -10,7 +10,7 @@ var CROSS_PROCESS_ID = '1337#7331'
 var PORT = 1337
 
 test('background transactions should not blow up with CAT', function(t) {
-  t.plan(19)
+  t.plan(17)
   var config = {
     cross_application_tracer: {enabled: true},
     trusted_account_ids: [1337],
@@ -51,7 +51,6 @@ test('background transactions should not blow up with CAT', function(t) {
 
       t.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
       t.ok(intrinsic['nr.guid'], 'web should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'web should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'web should have an nr.pathHash on event')
       t.ok(
         intrinsic['nr.referringPathHash'],
@@ -72,7 +71,6 @@ test('background transactions should not blow up with CAT', function(t) {
       var intrinsic = event[0]
 
       t.ok(intrinsic['nr.guid'], 'bg should have an nr.guid on event')
-      t.ok(intrinsic['nr.tripId'], 'bg should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'bg should have an nr.pathHash on event')
       t.notOk(
         intrinsic['nr.referringPathHash'],
