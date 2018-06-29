@@ -7,7 +7,7 @@ const API = require('../../../api')
 let compareSampled = null
 
 tap.test('background transactions should not blow up with CAT', (t) => {
-  t.plan(26)
+  t.plan(25)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},

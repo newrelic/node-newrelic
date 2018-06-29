@@ -180,6 +180,7 @@ describe('when CAT is enabled', function() {
           'nr.guid',
           'nr.pathHash',
           'nr.referringPathHash',
+          'nr.tripId',
           'nr.referringTransactionGuid',
           'nr.alternatePathHashes',
           'nr.apdexPerfZone'
@@ -207,6 +208,8 @@ describe('when CAT is enabled', function() {
           .to.equal(test.expectedIntrinsicFields['nr.pathHash'])
         chai.expect(attrs['nr.referringPathHash'])
           .to.equal(test.expectedIntrinsicFields['nr.referringPathHash'])
+        chai.expect(attrs['nr.tripId'])
+          .to.equal(test.expectedIntrinsicFields['nr.tripId'])
         chai.expect(attrs['nr.referringTransactionGuid'])
           .to.equal(test.expectedIntrinsicFields['nr.referringTransactionGuid'])
         chai.expect(attrs['nr.alternatePathHashes'])
