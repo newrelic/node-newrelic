@@ -27,7 +27,7 @@ tap.test('background transactions should not blow up with CAT', (t) => {
   const api = new API(agent)
 
   const server = http.createServer(function(req, res) {
-    t.ok(req.headers['x-newrelic-trace'], 'got incoming x-newrelic-trace')
+    t.ok(req.headers.newrelic, 'got incoming newrelic header')
 
     req.resume()
     res.end()

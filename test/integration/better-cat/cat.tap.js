@@ -55,7 +55,7 @@ tap.test('cross application tracing full integration', (t) => {
   })
 
   const middle = generateServer(http, api, MIDDLE_PORT, started, (req, res) => {
-    t.ok(req.headers['x-newrelic-trace'], 'middle received x-newrelic-trace from start')
+    t.ok(req.headers.newrelic, 'middle received newrelic from start')
 
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
@@ -69,7 +69,7 @@ tap.test('cross application tracing full integration', (t) => {
   })
 
   const end = generateServer(http, api, END_PORT, started, (req, res) => {
-    t.ok(req.headers['x-newrelic-trace'], 'end received x-newrelic-trace from middle')
+    t.ok(req.headers.newrelic, 'end received newrelic from middle')
     res.end()
   })
 
