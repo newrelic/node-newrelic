@@ -2,12 +2,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const hashes = require('../../../lib/util/hashes')
 const API = require('../../../api')
-
-// Constants
-const CROSS_PROCESS_ID = '1337#7331'
-const PORT = 1337
 
 let compareSampled = null
 
@@ -16,12 +11,12 @@ tap.test('background transactions should not blow up with CAT', (t) => {
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
-    trusted_account_ids: ['1337'],
-    cross_process_id: CROSS_PROCESS_ID,
+    account_id: '1337',
+    application_id: '7331',
+    trusted_account_key: '1337',
     encoding_key: 'some key',
   }
-  config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
-                                                     config.encoding_key)
+
   const agent = helper.instrumentMockedAgent(null, config)
   const http = require('http')
   const api = new API(agent)
@@ -33,20 +28,22 @@ tap.test('background transactions should not blow up with CAT', (t) => {
     res.end()
   })
 
-  server.listen(PORT, api.startBackgroundTransaction('myTx', function() {
-    const tx = api.getTransaction()
-    const connOptions = {
-      hostname: 'localhost',
-      port: PORT,
-      path: '/thing'
-    }
+  server.listen(() => {
+    api.startBackgroundTransaction('myTx', function() {
+      const tx = api.getTransaction()
+      const connOptions = {
+        hostname: 'localhost',
+        port: server.address().port,
+        path: '/thing'
+      }
 
-    http.get(connOptions, function(res) {
-      res.resume()
-      server.close()
-      tx.end()
+      http.get(connOptions, function(res) {
+        res.resume()
+        server.close()
+        tx.end()
+      })
     })
-  }))
+  })
 
   const finishedHandlers = [
     function web(trans, event) {

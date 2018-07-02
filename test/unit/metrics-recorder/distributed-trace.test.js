@@ -31,8 +31,9 @@ describe('recordDistributedTrace', () => {
     agent = helper.loadMockedAgent(null, {
       feature_flag: { distributed_tracing: true },
       cross_application_tracer: { enabled: true },
-      cross_process_id: '1234#5678',
-      trusted_account_ids: [ '1234' ]
+      account_id: '1234',
+      application_id: '5678',
+      trusted_account_key: '1234'
     })
     tx = new Transaction(agent)
   })
