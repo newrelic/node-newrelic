@@ -427,13 +427,14 @@ function runTests(flags) {
 
   test('Express transaction names are unaffected by errorware', function(t) {
     t.plan(1)
+    setup(t)
 
     agent.on('transactionFinished', function(tx) {
       var expected = 'WebTransaction/Expressjs/GET//test'
       t.equal(tx.trace.root.children[0].name, expected)
     })
 
-    app.get('/test', function() {
+    app.use('/test', function() {
       throw new Error('endpoint error')
     })
 
@@ -441,13 +442,12 @@ function runTests(flags) {
       res.send(err.message)
     })
 
-    var server = app.listen(3000, function() {
-      http.request({ port: 3000, path: '/test' }).end()
+    var server = app.listen(function() {
+      http.request({ port: server.address().port, path: '/test' }).end()
     })
 
     t.tearDown(function() {
       server.close()
-      helper.unloadAgent(agent)
     })
   })
 
