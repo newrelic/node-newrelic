@@ -19,6 +19,7 @@ test('createServer', function createServerTest(t) {
       agent.tracer.segment = null
       var socket = net.connect({port: 4123})
       socket.write('test123')
+      socket.end()
     })
 
     function handler(socket) {
@@ -105,6 +106,7 @@ test('connect', function connectTest(t) {
     socket.on('connect', function onConnet() {
       t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.write('some data')
+      socket.end()
     })
 
     function verify() {
@@ -171,6 +173,7 @@ test('createServer and connect', function createServerTest(t) {
     server.listen(4123, function listening() {
       var socket = net.connect({port: 4123})
       socket.write('test123')
+      socket.end()
     })
 
     function handler(socket) {
