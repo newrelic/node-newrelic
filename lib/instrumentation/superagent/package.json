@@ -4,9 +4,10 @@
   "description": "New Relic instrumentation for the `superagent` package.",
   "main": "index.js",
   "scripts": {
-    "test": "tap tests/**/*.tap.js",
+    "unit": "tap tests/unit/**/*.tap.js",
     "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
-    "lint": "eslint *.js lib tests"
+    "lint": "eslint *.js lib tests",
+    "test": "npm run lint && npm run unit && npm run versioned"
   },
   "author": "New Relic Node.js Agent Team <nodejs@newrelic.com>",
   "license": "SEE LICENSE IN LICENSE",
