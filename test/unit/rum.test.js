@@ -118,7 +118,7 @@ describe("the RUM API", function() {
     var nonce = "12345";
     helper.runInTransaction(agent, function (t) {
       t.finalizeNameFromUri('hello')
-      api.getBrowserTimingHeader({ nonce })
+      api.getBrowserTimingHeader({ nonce: nonce })
         .indexOf('nonce="' + nonce + '">').should.not.equal(-1)
     })
   })
