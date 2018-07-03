@@ -174,4 +174,19 @@ tap.test('external requests', function(t) {
       })
     })
   })
+
+  t.test('should expose the external segment on the http request', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      let reqSegment = null
+      const req = http.get('http://example.com', (res) => {
+        res.resume()
+        res.on('end', () => {
+          const segment = tx.trace.root.children[0]
+          t.equal(reqSegment, segment, 'should expose external')
+          t.end()
+        })
+      })
+      reqSegment = req.__NR_segment
+    })
+  })
 })
