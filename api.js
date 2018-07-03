@@ -21,7 +21,7 @@ const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
  * CONSTANTS
  *
  */
-const RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
+const RUM_STUB = "<script type='text/javascript' %s>window.NREUM||(NREUM={});" +
                 "NREUM.info = %s; %s</script>"
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
@@ -499,15 +499,18 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
+ * @param {{nonce: string}} options Options used to generate `<script>` header.
  * @returns {string} The `<script>` header to be injected.
  */
-API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
+API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/getBrowserTimingHeader'
   )
   metric.incrementCallCount()
 
   var config = this.agent.config
+
+  options = options || {}
 
   /**
    * Gracefully fail.
@@ -616,10 +619,13 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   var tabs = config.browser_monitoring.debug ? 2 : 0
   var json = JSON.stringify(rum_hash, null, tabs)
 
+  // set nonce attribute if passed in options
+  var nonce = options.nonce ? 'nonce="' + options.nonce + '"' : ''
 
   // the complete header to be written to the browser
   var out = util.format(
     RUM_STUB,
+    nonce,
     json,
     js_agent_loader
   )

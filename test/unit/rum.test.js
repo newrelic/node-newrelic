@@ -114,4 +114,13 @@ describe("the RUM API", function() {
     })
   })
 
+  it('should add nonce attribute to script if passed in options', function () {
+    var nonce = "12345";
+    helper.runInTransaction(agent, function (t) {
+      t.finalizeNameFromUri('hello')
+      api.getBrowserTimingHeader({ nonce })
+        .indexOf('nonce="' + nonce + '">').should.not.equal(-1)
+    })
+  })
+
 })
