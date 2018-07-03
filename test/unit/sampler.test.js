@@ -250,7 +250,7 @@ function spinLoop(cb) {
     setTimeout(function() {
       let trash = []
       for (let i = 0; i < 100000; ++i) {
-        trash.push({i: i})
+        trash.push([{i: i}])
       }
       trash = null
 
