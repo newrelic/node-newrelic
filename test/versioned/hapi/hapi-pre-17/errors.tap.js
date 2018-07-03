@@ -93,6 +93,95 @@ tap.test('Hapi v16 error handling', function(t) {
       t.end()
     })
   })
+
+  t.test('reports error when error handler replies with transformed error', (t) => {
+    server.ext('onPreResponse', (req, reply) => {
+      t.ok(req.response instanceof Error, 'preResponse has error')
+      req.response.output.statusCode = 400
+      reply(req.response)
+    })
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: (req, reply) =>  {
+        reply(new Error('route handler error'))
+      }
+    })
+
+    runTest(t, (errors, statusCode) => {
+      t.equals(errors.length, 1, 'has 1 reported error')
+      t.equals(errors[0][2], 'route handler error', 'has correct error message')
+      t.equals(statusCode, 400, 'has expected 400 status code')
+      t.end()
+    })
+  })
+
+  t.test('reports error when error handler continues with transformed response', (t) => {
+    server.ext('onPreResponse', (req, reply) => {
+      t.ok(req.response instanceof Error, 'preResponse has error')
+      req.response.output.statusCode = 400
+      reply.continue()
+    })
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: (req, reply) =>  {
+        reply(new Error('route handler error'))
+      }
+    })
+
+    runTest(t, (errors, statusCode) => {
+      t.equals(errors.length, 1, 'has 1 reported error')
+      t.equals(errors[0][2], 'route handler error', 'has correct error message')
+      t.equals(statusCode, 400, 'has expected 400 status code')
+      t.end()
+    })
+  })
+
+  t.test('reports error when error handler continues with original response', (t) => {
+    server.ext('onPreResponse', (req, reply) => {
+      t.ok(req.response instanceof Error, 'preResponse has error')
+      reply.continue()
+    })
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: (req, reply) =>  {
+        reply(new Error('route handler error'))
+      }
+    })
+
+    runTest(t, (errors, statusCode) => {
+      t.equals(errors.length, 1, 'has 1 reported error')
+      t.equals(errors[0][2], 'route handler error', 'has correct error message')
+      t.equals(statusCode, 500, 'has expected 500 status code')
+      t.end()
+    })
+  })
+
+  t.test('should not report error when error handler responds', (t) => {
+    server.ext('onPreResponse', (req, reply) => {
+      t.ok(req.response.isBoom, 'preResponse has error')
+      return reply()
+    })
+
+    server.route({
+      method: 'GET',
+      path: '/test',
+      handler: (req, reply) => {
+        reply(new Error('route handler error'))
+      }
+    })
+
+    runTest(t, (errors, statusCode) => {
+      t.equals(errors.length, 0, 'has no reported errors')
+      t.equals(statusCode, 200, 'has expected 200 status')
+      t.end()
+    })
+  })
 })
 
 function runTest(t, callback) {
