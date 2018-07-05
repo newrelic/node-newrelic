@@ -1,0 +1,434 @@
+[
+    {
+        "test_name": "sanity_check",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "id": "7d3efb1b173fecfa",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 1.234567,
+                    "sa": true,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction", "Span"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 1.234567,
+                    "sampled": true
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentId": "e8b91a159289ff74",
+                    "parentSpanId": "7d3efb1b173fecfa"
+                }
+            },
+            "Span": {
+                "exact": {
+                    "parentId": "7d3efb1b173fecfa"
+                },
+                "expected": ["transactionId"]
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+            ["TransportDuration/App/33/2827902/HTTP/all", 1],
+            ["TransportDuration/App/33/2827902/HTTP/allWeb", 1],
+            ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+        ]
+    },
+    {
+        "test_name": "sampled_false",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 0.123456,
+                    "sa": false,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 0.123456,
+                    "sampled": false
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentId": "e8b91a159289ff74"
+                }
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+            ["TransportDuration/App/33/2827902/HTTP/all", 1],
+            ["TransportDuration/App/33/2827902/HTTP/allWeb", 1],
+            ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+        ]
+    },
+    {
+        "test_name": "spans_disabled_parent",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 1.234567,
+                    "sa": true,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction", "Span"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 1.234567,
+                    "sampled": true
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentId": "e8b91a159289ff74"
+                },
+                "unexpected": ["parentSpanId"]
+            },
+            "Span": {
+                "expected": ["transactionId"],
+                "unexpected": ["parentId"]
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+            ["TransportDuration/App/33/2827902/HTTP/all", 1],
+            ["TransportDuration/App/33/2827902/HTTP/allWeb", 1],
+            ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+        ]
+    },
+    {
+        "test_name": "spans_disabled_child",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "id": "7d3efb1b173fecfa",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 1.234567,
+                    "sa": true,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": false,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 1.234567,
+                    "sampled": true
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentId": "e8b91a159289ff74",
+                    "parentSpanId": "7d3efb1b173fecfa"
+                }
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+            ["TransportDuration/App/33/2827902/HTTP/all", 1],
+            ["TransportDuration/App/33/2827902/HTTP/allWeb", 1]
+        ]
+    },
+    {
+        "test_name": "exception",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "id": "7d3efb1b173fecfa",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 1.001,
+                    "sa": true,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "raises_exception": true,
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction", "TransactionError", "Span"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 1.001,
+                    "sampled": true
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "error": true,
+                    "parentId": "e8b91a159289ff74",
+                    "parentSpanId": "7d3efb1b173fecfa"
+                }
+            },
+            "Span": {
+                "exact": {
+                    "parentId": "7d3efb1b173fecfa"
+                },
+                "expected": ["transactionId"]
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+            ["ErrorsByCaller/App/33/2827902/HTTP/all", 1],
+            ["ErrorsByCaller/App/33/2827902/HTTP/allWeb", 1],
+            ["TransportDuration/App/33/2827902/HTTP/all", 1],
+            ["TransportDuration/App/33/2827902/HTTP/allWeb", 1],
+            ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+        ]
+    },
+    {
+        "test_name": "background_transaction",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "id": "7d3efb1b173fecfa",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 0.234567,
+                    "sa": false,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 0.234567,
+                    "sampled": false
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentId": "e8b91a159289ff74",
+                    "parentSpanId": "7d3efb1b173fecfa"
+                }
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/App/33/2827902/HTTP/allOther", 1],
+            ["TransportDuration/App/33/2827902/HTTP/all", 1],
+            ["TransportDuration/App/33/2827902/HTTP/allOther", 1],
+            ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+        ]
+    },
+    {
+        "test_name": "mobile_caller",
+        "comment": "the transaction must be marked sampled so a Span event is created",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "Mobile"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "HTTP",
+        "intrinsics": {
+            "target_events": ["Transaction", "Span"],
+            "all":{
+                "exact": {
+                    "parent.type": "Mobile",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "sampled": true
+                },
+                "expected": ["parent.transportDuration", "guid", "priority"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentSpanId": "7d3efb1b173fecfa"
+                },
+                "unexpected": ["parentId"]
+            },
+            "Span": {
+                "exact": {
+                    "parentId": "7d3efb1b173fecfa"
+                },
+                "expected": ["transactionId"]
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/Mobile/33/2827902/HTTP/all", 1],
+            ["DurationByCaller/Mobile/33/2827902/HTTP/allWeb", 1],
+            ["TransportDuration/Mobile/33/2827902/HTTP/all", 1],
+            ["TransportDuration/Mobile/33/2827902/HTTP/allWeb", 1]
+        ]
+    },
+    {
+        "test_name": "unknown_transport",
+        "comment": "beware the casing!",
+        "inbound_payload(s)": [
+            {
+                "v": [0, 1],
+                "d": {
+                    "ac": "33",
+                    "ap": "2827902",
+                    "tx": "e8b91a159289ff74",
+                    "pr": 0.123456,
+                    "sa": false,
+                    "ti": 1518469636035,
+                    "tr": "d6b4ba0c3a712ca",
+                    "tk": "33",
+                    "ty": "App"
+                }
+            }
+        ],
+        "trusted_account_key": "33",
+        "span_events_enabled": true,
+        "transport_type": "kafka",
+        "intrinsics": {
+            "target_events": ["Transaction"],
+            "all":{
+                "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "Unknown",
+                    "traceId": "d6b4ba0c3a712ca",
+                    "priority": 0.123456,
+                    "sampled": false
+                },
+                "expected": ["parent.transportDuration", "guid"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
+            },
+            "Transaction": {
+                "exact": {
+                    "parentId": "e8b91a159289ff74"
+                }
+            }
+        },
+        "expected_metrics": [
+            ["DurationByCaller/App/33/2827902/Unknown/all", 1],
+            ["DurationByCaller/App/33/2827902/Unknown/allWeb", 1],
+            ["TransportDuration/App/33/2827902/Unknown/all", 1],
+            ["TransportDuration/App/33/2827902/Unknown/allWeb", 1],
+            ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+        ]
+    }
+]
