@@ -59,7 +59,6 @@ describe('distributed tracing', function() {
               const arbitrary = (specific.expected || []).concat(common.expected || [])
 
               const unexpected = (specific.unexpected || []).concat(common.unexpected || [])
-              console.log(`${type}: ${toCheck.length}`)
               toCheck.forEach((event) => {
                 const attributes = event[0]
                 arbitrary.forEach((key) => {
@@ -82,4 +81,5 @@ describe('distributed tracing', function() {
 })
 
 function checkMetrics(agent, metrics) {
+  // TODO: check metrics are valid.
 }
