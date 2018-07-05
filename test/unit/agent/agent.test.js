@@ -707,5 +707,19 @@ describe('the New Relic agent', function() {
         })
       })
     })
+
+    describe('when sampling_target changes', function() {
+      it('should adjust the current sampling target', () => {
+        expect(agent.transactionSampler.samplingTarget).to.not.equal(5)
+        agent.config.onConnect({sampling_target: 5})
+        expect(agent.transactionSampler.samplingTarget).to.equal(5)
+      })
+
+      it('should adjust the sampling period', () => {
+        expect(agent.transactionSampler.samplingPeriod).to.not.equal(100)
+        agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
+        expect(agent.transactionSampler.samplingPeriod).to.equal(100)
+      })
+    })
   })
 })
