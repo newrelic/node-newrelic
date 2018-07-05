@@ -57,19 +57,19 @@ describe('recordDistributedTrace', () => {
 
       const result = [
         [
-          { name: 'DurationByCaller/App/1234/5678/http/all' },
+          { name: 'DurationByCaller/App/1234/5678/HTTP/all' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ],
         [
-          { name: 'TransportDuration/App/1234/5678/http/all' },
+          { name: 'TransportDuration/App/1234/5678/HTTP/all' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ],
         [
-          { name: 'DurationByCaller/App/1234/5678/http/allWeb' },
+          { name: 'DurationByCaller/App/1234/5678/HTTP/allWeb' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ],
         [
-          { name: 'TransportDuration/App/1234/5678/http/allWeb' },
+          { name: 'TransportDuration/App/1234/5678/HTTP/allWeb' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ]
       ]
@@ -94,27 +94,27 @@ describe('recordDistributedTrace', () => {
 
         const result = [
           [
-            { name: 'DurationByCaller/App/1234/5678/http/all' },
+            { name: 'DurationByCaller/App/1234/5678/HTTP/all' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'ErrorsByCaller/App/1234/5678/http/all' },
+            { name: 'ErrorsByCaller/App/1234/5678/HTTP/all' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'TransportDuration/App/1234/5678/http/all' },
+            { name: 'TransportDuration/App/1234/5678/HTTP/all' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'DurationByCaller/App/1234/5678/http/allWeb' },
+            { name: 'DurationByCaller/App/1234/5678/HTTP/allWeb' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'ErrorsByCaller/App/1234/5678/http/allWeb' },
+            { name: 'ErrorsByCaller/App/1234/5678/HTTP/allWeb' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'TransportDuration/App/1234/5678/http/allWeb' },
+            { name: 'TransportDuration/App/1234/5678/HTTP/allWeb' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ]
         ]

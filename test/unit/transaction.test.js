@@ -843,7 +843,7 @@ describe('Transaction', function() {
       const data = {
         ac: '1',
         ty: 'App',
-        id: tx.id,
+        tx: tx.id,
         tr: tx.id,
         ap: 'test',
         ti: Date.now() - 1
@@ -853,7 +853,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Success'
       )
-      expect(tx.parentId).to.equal(data.id)
+      expect(tx.parentId).to.equal(data.tx)
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
       expect(tx.isDistributedTrace).to.be.true
@@ -864,7 +864,8 @@ describe('Transaction', function() {
       const data = {
         ac: '1',
         ty: 'App',
-        id: tx.id,
+        tx: tx.id,
+        id: tx.trace.root.id,
         tr: tx.id,
         ap: 'test',
         ti: Date.now() + 1000
@@ -874,7 +875,8 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Success'
       )
-      expect(tx.parentId).to.equal(data.id)
+      expect(tx.parentId).to.equal(data.tx)
+      expect(tx.parentSpanId).to.equal(tx.trace.root.id)
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
       expect(tx.isDistributedTrace).to.be.true
@@ -1046,12 +1048,12 @@ describe('Transaction', function() {
       tx.isDistributedTrace = false
       tx.acceptDistributedTracePayload(payload)
 
-      tx._addDistributedTraceIntrinsics(attributes)
+      tx._addDistributedTraceIntrinsics(attributes, true)
 
       expect(attributes).to.have.property('parent.type', 'App')
       expect(attributes).to.have.property('parent.app', '1234')
       expect(attributes).to.have.property('parent.account', '5678')
-      expect(attributes).to.have.property('parent.transportType', 'http')
+      expect(attributes).to.have.property('parent.transportType', 'HTTP')
       expect(attributes).to.have.property('parent.transportDuration')
       expect(attributes).to.have.property('parentId', tx.id)
     })

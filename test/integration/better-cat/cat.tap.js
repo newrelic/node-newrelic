@@ -15,7 +15,7 @@ const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
 let compareSampled = null
 
 tap.test('cross application tracing full integration', (t) => {
-  t.plan(85)
+  t.plan(77)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
@@ -94,7 +94,7 @@ tap.test('cross application tracing full integration', (t) => {
       const unscoped = trans.metrics.unscoped
 
       EXPECTED_DT_METRICS.forEach((name) => {
-        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/http/all`
+        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
         t.ok(unscoped[metric], `end generated a ${name} metric`)
         t.ok(unscoped[`${metric}Web`], `end generated a ${name} (Web) metric`)
       })
@@ -125,7 +125,7 @@ tap.test('cross application tracing full integration', (t) => {
       var unscoped = trans.metrics.unscoped
 
       EXPECTED_DT_METRICS.forEach((name) => {
-        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/http/all`
+        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
         t.ok(unscoped[metric], `middle generated a ${name} metric`)
         t.ok(unscoped[`${metric}Web`], `middle generated a ${name} (Web) metric`)
       })
@@ -267,20 +267,14 @@ function validateIntrinsics(t, intrinsic, reqName, type) {
   t.ok(intrinsic.sampled != null, `${reqName} should have a sampled boolean on ${type}`)
   t.ok(intrinsic.priority, `${reqName} should have a priority on ${type}`)
 
-  if (reqName !== 'end') {
-    t.notOk(
-      intrinsic.grandparentId,
-      `${reqName} should not have a grandparentId on ${type}`
-    )
-    if (reqName === 'start') {
-      t.notOk(intrinsic.parentId, `${reqName} should not have a parentId on ${type}`)
-      return
-    }
-  } else {
-    t.ok(intrinsic.grandparentId, `${reqName} should have a grandparentId on ${type}`)
+  if (reqName === 'start') {
+    t.notOk(intrinsic.parentId, `${reqName} should not have a parentId on ${type}`)
+    return
   }
 
-  t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
+  if (type !== 'trace') {
+    t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
+  }
   t.ok(intrinsic['parent.app'], `${reqName} should have a parent app on ${type}`)
   t.ok(intrinsic['parent.type'], `${reqName} should have a parent type on ${type}`)
   t.ok(intrinsic['parent.account'], `${reqName} should have a parent account on ${type}`)

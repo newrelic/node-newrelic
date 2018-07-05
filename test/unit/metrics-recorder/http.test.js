@@ -97,19 +97,19 @@ describe("recordWeb", function() {
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'DurationByCaller/App/1234/5677/http/all'},
+            {name: 'DurationByCaller/App/1234/5677/HTTP/all'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'TransportDuration/App/1234/5677/http/all'},
+            {name: 'TransportDuration/App/1234/5677/HTTP/all'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'DurationByCaller/App/1234/5677/http/allWeb'},
+            {name: 'DurationByCaller/App/1234/5677/HTTP/allWeb'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'TransportDuration/App/1234/5677/http/allWeb'},
+            {name: 'TransportDuration/App/1234/5677/HTTP/allWeb'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [{name: 'Apdex/NormalizedUri/*'}, [1, 0, 0, 0.06, 0.06, 0]],
