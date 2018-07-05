@@ -30,6 +30,10 @@ describe('distributed tracing', function() {
           tx.end(() => {
             const intrinsics = testCase.intrinsics
             intrinsics.target_events.forEach((type) => {
+              if (type === 'Span') {
+                // TODO: Delete this block when implementing spans v2
+                return
+              }
               const common = intrinsics.all
               const specific = intrinsics[type] || {}
               var toCheck
