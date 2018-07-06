@@ -997,7 +997,7 @@ describe('Transaction', function() {
     })
   })
 
-  describe('_addDistributedTraceIntrinsics', function() {
+  describe('addDistributedTraceIntrinsics', function() {
     var tx = null
     var attributes = null
 
@@ -1010,7 +1010,7 @@ describe('Transaction', function() {
       expect(tx.priority).to.equal(null)
       expect(tx.sampled).to.equal(null)
 
-      tx._addDistributedTraceIntrinsics(attributes)
+      tx.addDistributedTraceIntrinsics(attributes)
 
       expect(tx.priority).to.be.a('number')
       expect(tx.sampled).to.be.a('boolean')
@@ -1020,7 +1020,7 @@ describe('Transaction', function() {
       tx.priority = 999
       tx.sampled = false
 
-      tx._addDistributedTraceIntrinsics(attributes)
+      tx.addDistributedTraceIntrinsics(attributes)
 
       expect(tx.priority).to.equal(999)
       expect(tx.sampled).to.be.false
@@ -1029,7 +1029,7 @@ describe('Transaction', function() {
     it('adds expected attributes if no payload was received', function() {
       tx.isDistributedTrace = false
 
-      tx._addDistributedTraceIntrinsics(attributes)
+      tx.addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('guid', tx.id)
       expect(attributes).to.have.property('traceId', tx.id)
@@ -1048,14 +1048,13 @@ describe('Transaction', function() {
       tx.isDistributedTrace = false
       tx.acceptDistributedTracePayload(payload)
 
-      tx._addDistributedTraceIntrinsics(attributes, true)
+      tx.addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('parent.type', 'App')
       expect(attributes).to.have.property('parent.app', '1234')
       expect(attributes).to.have.property('parent.account', '5678')
       expect(attributes).to.have.property('parent.transportType', 'HTTP')
       expect(attributes).to.have.property('parent.transportDuration')
-      expect(attributes).to.have.property('parentId', tx.id)
     })
   })
 })

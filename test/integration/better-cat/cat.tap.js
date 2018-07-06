@@ -15,7 +15,7 @@ const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
 let compareSampled = null
 
 tap.test('cross application tracing full integration', (t) => {
-  t.plan(77)
+  t.plan(79)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
@@ -274,6 +274,7 @@ function validateIntrinsics(t, intrinsic, reqName, type) {
 
   if (type !== 'trace') {
     t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
+    t.ok(intrinsic.parentSpanId, `${reqName} should have a parentSpanId on ${type}`)
   }
   t.ok(intrinsic['parent.app'], `${reqName} should have a parent app on ${type}`)
   t.ok(intrinsic['parent.type'], `${reqName} should have a parent type on ${type}`)
