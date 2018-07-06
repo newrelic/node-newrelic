@@ -1,10 +1,9 @@
 'use strict'
 
-var helper = require('../lib/agent_helper')
-var chai = require('chai')
+const helper = require('../lib/agent_helper')
+const chai = require('chai')
 
-var DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
-var expect  = chai.expect
+const expect  = chai.expect
 
 
 describe('Error events', function() {
@@ -29,15 +28,15 @@ describe('Error events', function() {
   })
 
   describe('attributes', function() {
-      var agent
+    var agent
 
-      beforeEach(function() {
-        agent = helper.loadMockedAgent()
-      })
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+    })
 
-      afterEach(function() {
-        helper.unloadAgent(agent)
-      })
+    afterEach(function() {
+      helper.unloadAgent(agent)
+    })
     it('should include DT intrinsics', function(done) {
       agent.config.feature_flag.distributed_tracing = true
       agent.config.application_id = 'test'
