@@ -2,77 +2,77 @@
 
 var chai   = require('chai')
 var assert = require('assert')
-var helper = require('../lib/agent_helper.js')
-var API    = require('../../api.js')
+var helper = require('../lib/agent_helper')
+var API    = require('../../api')
 
 
 chai.should()
 
-describe("the RUM API", function() {
+describe('the RUM API', function() {
   var agent
   var api
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     agent.config.browser_monitoring.enable          = true
     agent.config.browser_monitoring.debug           = false
     agent.config.application_id                     = 12345
     agent.config.browser_monitoring.browser_key     = 1234
-    agent.config.browser_monitoring.js_agent_loader = "function () {}"
+    agent.config.browser_monitoring.js_agent_loader = 'function() {}'
     api = new API(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  it('should not generate header when disabled', function () {
+  it('should not generate header when disabled', function() {
     agent.config.browser_monitoring.enable = false
     api.getBrowserTimingHeader()
       .should.equal('<!-- NREUM: (0) -->')
   })
 
-  it('should issue a warning outside a transaction', function () {
+  it('should issue a warning outside a transaction', function() {
     api.getBrowserTimingHeader()
       .should.equal('<!-- NREUM: (1) -->')
   })
 
-  it('should issue a warning if the transaction was ignored', function () {
-    helper.runInTransaction(agent, function (txn) {
+  it('should issue a warning if the transaction was ignored', function() {
+    helper.runInTransaction(agent, function() {
       api.setIgnoreTransaction(true)
       api.getBrowserTimingHeader()
         .should.equal('<!-- NREUM: (1) -->')
     })
   })
 
-  it('should issue a warning if transaction has no name', function () {
-    helper.runInTransaction(agent, function () {
+  it('should issue a warning if transaction has no name', function() {
+    helper.runInTransaction(agent, function() {
       api.getBrowserTimingHeader()
         .should.equal('<!-- NREUM: (3) -->')
     })
   })
 
-  it('should issue a warning without an application_id', function () {
+  it('should issue a warning without an application_id', function() {
     agent.config.application_id = undefined
-    helper.runInTransaction(agent, function (t) {
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader()
         .should.equal('<!-- NREUM: (4) -->')
     })
   })
 
-  it('should return the rum headers when in a named transaction', function () {
-    helper.runInTransaction(agent, function (t) {
+  it('should return the rum headers when in a named transaction', function() {
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader()
         .indexOf('<script').should.equal(0)
     })
   })
 
-  it('should return pretty print when debugging', function () {
+  it('should return pretty print when debugging', function() {
     agent.config.browser_monitoring.debug = true
-    helper.runInTransaction(agent, function (t) {
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       var l = api.getBrowserTimingHeader().split('\n').length
 
@@ -82,36 +82,44 @@ describe("the RUM API", function() {
     })
   })
 
-  it('should be compact when not debugging', function () {
-    helper.runInTransaction(agent, function (t) {
+  it('should be compact when not debugging', function() {
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       var l = api.getBrowserTimingHeader().split('\n').length
       assert.equal(l, 1)
     })
   })
 
-  it('should return empty headers when missing browser_key', function () {
+  it('should return empty headers when missing browser_key', function() {
     agent.config.browser_monitoring.browser_key = undefined
-    helper.runInTransaction(agent, function (t) {
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (5) -->')
     })
   })
 
-  it('should return empty headers when missing js_agent_loader', function () {
-    agent.config.browser_monitoring.js_agent_loader = ""
-    helper.runInTransaction(agent, function (t) {
+  it('should return empty headers when missing js_agent_loader', function() {
+    agent.config.browser_monitoring.js_agent_loader = ''
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (6) -->')
     })
   })
 
-  it('should be empty headers when loader is none', function () {
-    agent.config.browser_monitoring.loader = "none"
-    helper.runInTransaction(agent, function (t) {
+  it('should be empty headers when loader is none', function() {
+    agent.config.browser_monitoring.loader = 'none'
+    helper.runInTransaction(agent, function(t) {
       t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (7) -->')
     })
   })
 
+  it('should add nonce attribute to script if passed in options', function() {
+    var nonce = '12345'
+    helper.runInTransaction(agent, function(t) {
+      t.finalizeNameFromUri('hello')
+      api.getBrowserTimingHeader({ nonce: nonce })
+        .indexOf('nonce="' + nonce + '">').should.not.equal(-1)
+    })
+  })
 })
