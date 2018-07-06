@@ -106,8 +106,8 @@ describe('Transaction', function() {
       return expect(trans.ignore).false
     })
 
-    it('should have a sampled state set', function() {
-      expect(trans.sampled).to.not.equal(null)
+    it('should not have a sampled state set', function() {
+      expect(trans.sampled).to.equal(null)
     })
   })
 
@@ -805,8 +805,6 @@ describe('Transaction', function() {
     })
 
     it('takes the priority and sampled state from the incoming payload', function() {
-      tx.sampled = false
-
       const data = {
         ac: '1',
         ty: 'App',
@@ -826,9 +824,6 @@ describe('Transaction', function() {
     })
 
     it('does not take the distributed tracing data if priority is missing', function() {
-      tx.sampled = false
-
-      var priorPriority = tx.priority
       const data = {
         ac: 1,
         ty: 'App',
@@ -840,27 +835,8 @@ describe('Transaction', function() {
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.priority).to.equal(priorPriority)
-      expect(tx.priority.toString().length).to.be.at.most(8)
-    })
-
-    it('accepting a distributed trace overwrites the sampled and priority', function() {
-      const sampled = tx.sampled
-
-      const data = {
-        ac: '1',
-        ty: 'App',
-        id: tx.id,
-        tr: tx.id,
-        ap: 'test',
-        pr: 0.1,
-        sa: !sampled,
-        ti: Date.now()
-      }
-
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.sampled).to.not.equal(sampled)
-      expect(tx.priority).to.equal(0.1)
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
     })
 
     it('stores payload props on transaction', function() {
@@ -983,6 +959,26 @@ describe('Transaction', function() {
       expect(tx.isDistributedTrace).to.not.be.true
     })
 
+    it('generates a priority for entry-point transactions', () => {
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
+
+      tx.createDistributedTracePayload()
+
+      expect(tx.priority).to.be.a('number')
+      expect(tx.sampled).to.be.a('boolean')
+    })
+
+    it('does not change existing priority', () => {
+      tx.priority = 999
+      tx.sampled = false
+
+      tx.createDistributedTracePayload()
+
+      expect(tx.priority).to.equal(999)
+      expect(tx.sampled).to.be.false
+    })
+
     it('sets the transaction as sampled if the trace is chosen', function() {
       const payload = JSON.parse(tx.createDistributedTracePayload().text())
       expect(payload.d.sa).to.equal(tx.sampled)
@@ -1006,6 +1002,26 @@ describe('Transaction', function() {
     beforeEach(function() {
       attributes = {}
       tx = new Transaction(agent)
+    })
+
+    it('generates a priority for entry-point transactions', () => {
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
+
+      tx._addDistributedTraceIntrinsics(attributes)
+
+      expect(tx.priority).to.be.a('number')
+      expect(tx.sampled).to.be.a('boolean')
+    })
+
+    it('does not change existing priority', () => {
+      tx.priority = 999
+      tx.sampled = false
+
+      tx._addDistributedTraceIntrinsics(attributes)
+
+      expect(tx.priority).to.equal(999)
+      expect(tx.sampled).to.be.false
     })
 
     it('adds expected attributes if no payload was received', function() {

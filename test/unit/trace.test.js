@@ -87,7 +87,7 @@ describe('Trace', function() {
     child1.end()
     child2.end()
     trace.root.end()
-    trace.end()
+    transaction.end()
 
     var events = agent.spans.getEvents()
     var nested = events[0]
@@ -130,7 +130,6 @@ describe('Trace', function() {
     agent.config.feature_flag.distributed_tracing = true
 
     var transaction = new Transaction(agent)
-    var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
     var child1 = trace.add('test')
@@ -151,7 +150,6 @@ describe('Trace', function() {
     agent.config.feature_flag.distributed_tracing = false
 
     var transaction = new Transaction(agent)
-    var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
     var child1 = trace.add('test')
