@@ -499,7 +499,8 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
- * @param {{nonce: string}} options Options used to generate `<script>` header.
+ * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
+ *
  * @returns {string} The `<script>` header to be injected.
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
@@ -509,8 +510,6 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   metric.incrementCallCount()
 
   var config = this.agent.config
-
-  options = options || {}
 
   /**
    * Gracefully fail.
@@ -620,7 +619,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   var json = JSON.stringify(rum_hash, null, tabs)
 
   // set nonce attribute if passed in options
-  var nonce = options.nonce ? 'nonce="' + options.nonce + '"' : ''
+  var nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
 
   // the complete header to be written to the browser
   var out = util.format(
