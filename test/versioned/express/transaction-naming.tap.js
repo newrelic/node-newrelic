@@ -425,6 +425,32 @@ function runTests(flags) {
     })
   })
 
+  test('Express transaction names are unaffected by errorware', function(t) {
+    t.plan(1)
+    setup(t)
+
+    agent.on('transactionFinished', function(tx) {
+      var expected = 'WebTransaction/Expressjs/GET//test'
+      t.equal(tx.trace.root.children[0].name, expected)
+    })
+
+    app.use('/test', function() {
+      throw new Error('endpoint error')
+    })
+
+    app.use('/test', function(err, req, res, next) { // eslint-disable-line no-unused-vars
+      res.send(err.message)
+    })
+
+    var server = app.listen(function() {
+      http.request({ port: server.address().port, path: '/test' }).end()
+    })
+
+    t.tearDown(function() {
+      server.close()
+    })
+  })
+
   test('when next is called after transaction state loss', function(t) {
     // Uninstrumented work queue. This must be set up before the agent is loaded
     // so that no transaction state is maintained.
