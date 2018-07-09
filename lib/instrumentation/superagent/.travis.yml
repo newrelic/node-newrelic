@@ -21,4 +21,8 @@ matrix:
       env: SUITE=lint
     - node_js: "7"
       env: SUITE=lint
+    - node_js: "8"
+      env: SUITE=lint
+    - node_js: "9"
+      env: SUITE=lint
 script: npm run $SUITE
