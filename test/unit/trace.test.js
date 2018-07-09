@@ -72,6 +72,52 @@ describe('Trace', function() {
     })
   })
 
+  it('should have DT attributes on transaction end', function(done) {
+    agent.config.feature_flag.distributed_tracing = true
+    agent.config.application_id = 'test'
+    agent.config.account_id = 1
+    helper.runInTransaction(agent, function(tx) {
+      tx.end(() => {
+        const attributes = tx.trace.intrinsics
+        expect(attributes.traceId).to.equal(tx.id)
+        expect(attributes.guid).to.equal(tx.id)
+        expect(attributes.priority).to.equal(tx.priority)
+        expect(attributes.sampled).to.equal(tx.sampled)
+        expect(attributes.parentId).to.be.undefined
+        expect(attributes.parentSpanId).to.be.undefined
+        expect(tx.sampled).to.equal(true)
+        expect(tx.priority).to.be.greaterThan(1)
+        done()
+      })
+    })
+  })
+
+  it('should have DT parent attributes on payload accept', function(done) {
+    agent.config.feature_flag.distributed_tracing = true
+    agent.config.application_id = 'test'
+    agent.config.account_id = 1
+    helper.runInTransaction(agent, function(tx) {
+      const payload = tx.createDistributedTracePayload().text()
+      tx.isDistributedTrace = null
+      tx.acceptDistributedTracePayload(payload)
+      tx.end(() => {
+        const attributes = tx.trace.intrinsics
+        expect(attributes.traceId).to.equal(tx.id)
+        expect(attributes.guid).to.equal(tx.id)
+        expect(attributes.priority).to.equal(tx.priority)
+        expect(attributes.sampled).to.equal(tx.sampled)
+        expect(attributes['parent.type']).to.equal('App')
+        expect(attributes['parent.app']).to.equal(agent.config.application_id)
+        expect(attributes['parent.account']).to.equal(agent.config.account_id)
+        expect(attributes.parentId).to.be.undefined
+        expect(attributes.parentSpanId).to.be.undefined
+        expect(tx.sampled).to.equal(true)
+        expect(tx.priority).to.be.greaterThan(1)
+        done()
+      })
+    })
+  })
+
   it('should generate span events on end', function() {
     agent.config.span_events.enabled = true
     agent.config.feature_flag.distributed_tracing = true
@@ -87,7 +133,7 @@ describe('Trace', function() {
     child1.end()
     child2.end()
     trace.root.end()
-    trace.end()
+    transaction.end()
 
     var events = agent.spans.getEvents()
     var nested = events[0]
@@ -130,7 +176,6 @@ describe('Trace', function() {
     agent.config.feature_flag.distributed_tracing = true
 
     var transaction = new Transaction(agent)
-    var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
     var child1 = trace.add('test')
@@ -151,7 +196,6 @@ describe('Trace', function() {
     agent.config.feature_flag.distributed_tracing = false
 
     var transaction = new Transaction(agent)
-    var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
     var child1 = trace.add('test')

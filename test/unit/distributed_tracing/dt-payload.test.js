@@ -2,8 +2,8 @@
 
 var expect = require('chai').expect
 
-var makeBuffer = require('../../lib/util/hashes').makeBuffer
-var DistributedTracePayload = require('../../lib/transaction/dt-payload')
+var makeBuffer = require('../../../lib/util/hashes').makeBuffer
+var DistributedTracePayload = require('../../../lib/transaction/dt-payload')
 var DistributedTracePayloadStub = DistributedTracePayload.Stub
 
 describe('DistributedTracePayload', function() {

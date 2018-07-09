@@ -107,6 +107,52 @@ describe('Analytics events', function() {
       })
     })
 
+    it('should add DT parent attributes with an accepted payload', function(done) {
+      agent.config.feature_flag.distributed_tracing = true
+      agent.config.application_id = 'test'
+      agent.config.account_id = 1
+      trans = new Transaction(agent)
+      const payload = trans.createDistributedTracePayload().text()
+      trans.isDistributedTrace = null
+      trans.acceptDistributedTracePayload(payload)
+      trans.end(function() {
+        expect(agent.events.toArray().length).to.equal(1)
+
+        var attributes = agent.events.toArray()[0][0]
+        expect(attributes.traceId).to.equal(trans.id)
+        expect(attributes.guid).to.equal(trans.id)
+        expect(attributes.priority).to.equal(trans.priority)
+        expect(attributes.sampled).to.equal(trans.sampled)
+        expect(attributes.parentId).to.equal(trans.id)
+        expect(attributes['parent.type']).to.equal('App')
+        expect(attributes['parent.app']).to.equal(agent.config.application_id)
+        expect(attributes['parent.account']).to.equal(agent.config.account_id)
+        expect(trans.sampled).to.equal(true)
+        expect(trans.priority).to.be.greaterThan(1)
+
+        done()
+      })
+    })
+
+    it('should add DT attributes', function(done) {
+      agent.config.feature_flag.distributed_tracing = true
+      trans = new Transaction(agent)
+      trans.end(function() {
+        expect(agent.events.toArray().length).to.equal(1)
+
+        var attributes = agent.events.toArray()[0][0]
+        expect(attributes.traceId).to.equal(trans.id)
+        expect(attributes.guid).to.equal(trans.id)
+        expect(attributes.priority).to.equal(trans.priority)
+        expect(attributes.sampled).to.equal(trans.sampled)
+        expect(trans.sampled).to.equal(true)
+        expect(trans.priority).to.be.greaterThan(1)
+
+        done()
+      })
+    })
+
+
     it('should contain user and agent attributes', function(done ) {
       trans.end(function() {
         expect(agent.events.toArray().length).to.equal(1)

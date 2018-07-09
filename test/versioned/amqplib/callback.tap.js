@@ -237,10 +237,9 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.test('consume in a transaction', function(t) {
+  t.test('consume in a transaction with old CAT', function(t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
-
 
     channel.assertExchange(exchange, 'direct', null, function(err) {
       t.error(err, 'should not error asserting exchange')
@@ -274,6 +273,67 @@ tap.test('amqplib callback instrumentation', function(t) {
                     'consume-tx-key'
                   )
                   amqpUtils.verifyCAT(t, tx, consumeTxn)
+                  t.end()
+                })
+              })
+            }, null, function(err) {
+              t.error(err, 'should not error subscribing consumer')
+              amqpUtils.verifyTransaction(t, tx, 'consume')
+
+              channel.publish(
+                exchange,
+                'consume-tx-key',
+                new Buffer('hello')
+              )
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('consume in a transaction with distributed tracing', function(t) {
+    agent.config.feature_flag.distributed_tracing = true
+    agent.config.account_id = 1234
+    agent.config.application_id = 4321
+
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+    var queue = null
+
+    channel.assertExchange(exchange, 'direct', null, function(err) {
+      t.error(err, 'should not error asserting exchange')
+
+      channel.assertQueue('', {exclusive: true}, function(err, res) {
+        t.error(err, 'should not error asserting queue')
+        queue = res.queue
+
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
+          t.error(err, 'should not error binding queue')
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.traceId = 'this-is-a-trace-id' // Checked in verifyDistributedTrace
+
+            channel.consume(queue, function(msg) {
+              var consumeTxnHandle = api.getTransaction()
+              var consumeTxn = consumeTxnHandle._transaction
+              t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+              t.ok(msg, 'should receive a message')
+
+              var body = msg.content.toString('utf8')
+              t.equal(body, 'hello', 'should receive expected body')
+
+              channel.ack(msg)
+              tx.end(function() {
+                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+                consumeTxnHandle.end(function() {
+                  amqpUtils.verifyConsumeTransaction(
+                    t,
+                    consumeTxn,
+                    exchange,
+                    queue,
+                    'consume-tx-key'
+                  )
+                  amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
                   t.end()
                 })
               })

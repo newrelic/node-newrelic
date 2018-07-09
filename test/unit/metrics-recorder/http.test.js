@@ -62,17 +62,18 @@ describe("recordWeb", function() {
     })
   })
 
-  describe("when recording web transactions", function() {
+  describe('when recording web transactions', function() {
     describe('with distributed tracing enabled', function() {
       it('should record metrics from accepted payload information', function() {
         agent.config.feature_flag.distributed_tracing = true
         agent.config.cross_application_tracer.enabled = true
-        agent.config.cross_process_id = '1234#5677'
-        agent.config.trusted_account_ids = [ '1234' ]
+        agent.config.account_id = '1234'
+        agent.config.application_id = '5677',
+        agent.config.trusted_account_key = '1234'
 
         const payload = trans.createDistributedTracePayload().text()
         trans.isDistributedTrace = null
-        trans.acceptDistributedTracePayload(payload)
+        trans.acceptDistributedTracePayload(payload, 'HTTP')
 
         record({
           transaction: trans,
@@ -96,19 +97,19 @@ describe("recordWeb", function() {
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'DurationByCaller/App/1234/5677/http/all'},
+            {name: 'DurationByCaller/App/1234/5677/HTTP/all'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'TransportDuration/App/1234/5677/http/all'},
+            {name: 'TransportDuration/App/1234/5677/HTTP/all'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'DurationByCaller/App/1234/5677/http/allWeb'},
+            {name: 'DurationByCaller/App/1234/5677/HTTP/allWeb'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            {name: 'TransportDuration/App/1234/5677/http/allWeb'},
+            {name: 'TransportDuration/App/1234/5677/HTTP/allWeb'},
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [{name: 'Apdex/NormalizedUri/*'}, [1, 0, 0, 0.06, 0.06, 0]],
@@ -121,8 +122,9 @@ describe("recordWeb", function() {
       it('should tag metrics with Unknown if no DT payload was received', function() {
         agent.config.feature_flag.distributed_tracing = true
         agent.config.cross_application_tracer.enabled = true
-        agent.config.cross_process_id = '1234#5677'
-        agent.config.trusted_account_ids = [ '1234' ]
+        agent.config.account_id = '1234'
+        agent.config.application_id = '5677',
+        agent.config.trusted_account_key = '1234'
 
         record({
           transaction: trans,

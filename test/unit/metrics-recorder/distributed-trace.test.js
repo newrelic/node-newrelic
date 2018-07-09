@@ -31,8 +31,9 @@ describe('recordDistributedTrace', () => {
     agent = helper.loadMockedAgent(null, {
       feature_flag: { distributed_tracing: true },
       cross_application_tracer: { enabled: true },
-      cross_process_id: '1234#5678',
-      trusted_account_ids: [ '1234' ]
+      account_id: '1234',
+      application_id: '5678',
+      trusted_account_key: '1234'
     })
     tx = new Transaction(agent)
   })
@@ -45,7 +46,7 @@ describe('recordDistributedTrace', () => {
     it('records metrics with payload information', () => {
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = null
-      tx.acceptDistributedTracePayload(payload)
+      tx.acceptDistributedTracePayload(payload, 'HTTP')
 
       record({
         tx,
@@ -56,19 +57,19 @@ describe('recordDistributedTrace', () => {
 
       const result = [
         [
-          { name: 'DurationByCaller/App/1234/5678/http/all' },
+          { name: 'DurationByCaller/App/1234/5678/HTTP/all' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ],
         [
-          { name: 'TransportDuration/App/1234/5678/http/all' },
+          { name: 'TransportDuration/App/1234/5678/HTTP/all' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ],
         [
-          { name: 'DurationByCaller/App/1234/5678/http/allWeb' },
+          { name: 'DurationByCaller/App/1234/5678/HTTP/allWeb' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ],
         [
-          { name: 'TransportDuration/App/1234/5678/http/allWeb' },
+          { name: 'TransportDuration/App/1234/5678/HTTP/allWeb' },
           [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
         ]
       ]
@@ -80,7 +81,7 @@ describe('recordDistributedTrace', () => {
       it('includes error-related metrics', () => {
         const payload = tx.createDistributedTracePayload().text()
         tx.isDistributedTrace = null
-        tx.acceptDistributedTracePayload(payload)
+        tx.acceptDistributedTracePayload(payload, 'HTTP')
 
         tx.exceptions.push('some error')
 
@@ -93,27 +94,27 @@ describe('recordDistributedTrace', () => {
 
         const result = [
           [
-            { name: 'DurationByCaller/App/1234/5678/http/all' },
+            { name: 'DurationByCaller/App/1234/5678/HTTP/all' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'ErrorsByCaller/App/1234/5678/http/all' },
+            { name: 'ErrorsByCaller/App/1234/5678/HTTP/all' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'TransportDuration/App/1234/5678/http/all' },
+            { name: 'TransportDuration/App/1234/5678/HTTP/all' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'DurationByCaller/App/1234/5678/http/allWeb' },
+            { name: 'DurationByCaller/App/1234/5678/HTTP/allWeb' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'ErrorsByCaller/App/1234/5678/http/allWeb' },
+            { name: 'ErrorsByCaller/App/1234/5678/HTTP/allWeb' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ],
           [
-            { name: 'TransportDuration/App/1234/5678/http/allWeb' },
+            { name: 'TransportDuration/App/1234/5678/HTTP/allWeb' },
             [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
           ]
         ]

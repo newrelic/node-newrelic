@@ -2,13 +2,11 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const hashes = require('../../../lib/util/hashes')
 const API = require('../../../api')
 
 const START_PORT = 10000
 const MIDDLE_PORT = 10001
 const END_PORT = 10002
-const CROSS_PROCESS_ID = '1337#7331'
 const ACCOUNT_ID = '1337'
 const APP_ID = '7331'
 const EXPECTED_DT_METRICS = ['DurationByCaller', 'TransportDuration']
@@ -17,16 +15,15 @@ const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
 let compareSampled = null
 
 tap.test('cross application tracing full integration', (t) => {
-  t.plan(91)
+  t.plan(79)
   const config = {
     feature_flag: {distributed_tracing: true},
     cross_application_tracer: {enabled: true},
-    trusted_account_ids: ['1337'],
-    cross_process_id: CROSS_PROCESS_ID,
+    account_id: ACCOUNT_ID,
+    application_id: APP_ID,
+    trusted_account_key: ACCOUNT_ID,
     encoding_key: 'some key',
   }
-  config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
-                                                     config.encoding_key)
   const agent = helper.instrumentMockedAgent(null, config)
   // require http after creating the agent
   const http = require('http')
@@ -55,7 +52,7 @@ tap.test('cross application tracing full integration', (t) => {
   })
 
   const middle = generateServer(http, api, MIDDLE_PORT, started, (req, res) => {
-    t.ok(req.headers['x-newrelic-trace'], 'middle received x-newrelic-trace from start')
+    t.ok(req.headers.newrelic, 'middle received newrelic from start')
 
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
@@ -69,7 +66,7 @@ tap.test('cross application tracing full integration', (t) => {
   })
 
   const end = generateServer(http, api, END_PORT, started, (req, res) => {
-    t.ok(req.headers['x-newrelic-trace'], 'end received x-newrelic-trace from middle')
+    t.ok(req.headers.newrelic, 'end received newrelic from middle')
     res.end()
   })
 
@@ -97,7 +94,7 @@ tap.test('cross application tracing full integration', (t) => {
       const unscoped = trans.metrics.unscoped
 
       EXPECTED_DT_METRICS.forEach((name) => {
-        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/http/all`
+        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
         t.ok(unscoped[metric], `end generated a ${name} metric`)
         t.ok(unscoped[`${metric}Web`], `end generated a ${name} (Web) metric`)
       })
@@ -128,7 +125,7 @@ tap.test('cross application tracing full integration', (t) => {
       var unscoped = trans.metrics.unscoped
 
       EXPECTED_DT_METRICS.forEach((name) => {
-        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/http/all`
+        const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
         t.ok(unscoped[metric], `middle generated a ${name} metric`)
         t.ok(unscoped[`${metric}Web`], `middle generated a ${name} (Web) metric`)
       })
@@ -265,26 +262,20 @@ function validateIntrinsics(t, intrinsic, reqName, type) {
   reqName = reqName || 'start'
   type = type || 'event'
 
-  t.ok(intrinsic['nr.tripId'], `${reqName} should have an nr.tripId on ${type}`)
   t.ok(intrinsic.guid, `${reqName} should have a guid on ${type}`)
   t.ok(intrinsic.traceId, `${reqName} should have a traceId on ${type}`)
   t.ok(intrinsic.sampled != null, `${reqName} should have a sampled boolean on ${type}`)
   t.ok(intrinsic.priority, `${reqName} should have a priority on ${type}`)
 
-  if (reqName !== 'end') {
-    t.notOk(
-      intrinsic.grandparentId,
-      `${reqName} should not have a grandparentId on ${type}`
-    )
-    if (reqName === 'start') {
-      t.notOk(intrinsic.parentId, `${reqName} should not have a parentId on ${type}`)
-      return
-    }
-  } else {
-    t.ok(intrinsic.grandparentId, `${reqName} should have a grandparentId on ${type}`)
+  if (reqName === 'start') {
+    t.notOk(intrinsic.parentId, `${reqName} should not have a parentId on ${type}`)
+    return
   }
 
-  t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
+  if (type !== 'trace') {
+    t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
+    t.ok(intrinsic.parentSpanId, `${reqName} should have a parentSpanId on ${type}`)
+  }
   t.ok(intrinsic['parent.app'], `${reqName} should have a parent app on ${type}`)
   t.ok(intrinsic['parent.type'], `${reqName} should have a parent type on ${type}`)
   t.ok(intrinsic['parent.account'], `${reqName} should have a parent account on ${type}`)

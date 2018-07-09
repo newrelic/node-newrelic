@@ -752,9 +752,14 @@ describe('the agent configuration', function() {
       expect(config.run_id).equal(1234)
     })
 
+    it('should set the account ID', function() {
+      config.onConnect({'account_id': 76543})
+      expect(config).to.have.property('account_id', 76543)
+    })
+
     it('should set the application ID', function() {
       config.onConnect({'application_id': 76543})
-      expect(config.application_id).equal(76543)
+      expect(config).to.have.property('application_id', 76543)
     })
 
     it('should always respect collect_traces', function() {
@@ -972,7 +977,13 @@ describe('the agent configuration', function() {
     it('should not blow up when trusted_account_ids is received', function() {
       expect(function() {
         config.onConnect({'trusted_account_ids': [1, 2, 3]})
-      }).not.throws()
+      }).to.not.throw()
+    })
+
+    it('should not blow up when trusted_account_key is received', function() {
+      expect(function() {
+        config.onConnect({'trusted_account_key': 123})
+      }).to.not.throw()
     })
 
     it('should not blow up when high_security is received', function() {
@@ -1342,9 +1353,19 @@ describe('the agent configuration', function() {
     })
 
     it('should ignore trusted_account_ids', function() {
+      expect(config).to.have.property('trusted_account_ids', null)
       expect(function() {
         config.onConnect({'trusted_account_ids': [1, 2, 3]})
-      }).not.throws()
+      }).to.not.throw()
+      expect(config).to.have.property('trusted_account_ids').deep.equal([1, 2, 3])
+    })
+
+    it('should ignore trusted_account_key', function() {
+      expect(config).to.have.property('trusted_account_key', null)
+      expect(function() {
+        config.onConnect({'trusted_account_key': 123})
+      }).to.not.throw()
+      expect(config).to.have.property('trusted_account_key', 123)
     })
 
     it('should ignore transaction_tracer.record_sql', function() {

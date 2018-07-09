@@ -6,15 +6,11 @@ var join = require('path').join
 var https = require('https')
 var url = require('url')
 var collector = require('../lib/fake-collector')
-var semver = require('semver')
 var RemoteMethod = require('../../lib/collector/remote-method')
 
 // Specifying custom certs on 0.10 sends the process into a spin lock,
 // so we skip it.
-tap.test(
-  'DataSender (callback style) talking to fake collector',
-  {skip: semver.satisfies(process.version, '0.10.x')},
-  function(t) {
+tap.test('DataSender (callback style) talking to fake collector', function(t) {
     var config = {
       host: 'ssl.lvh.me',
       port: 8765,
@@ -58,24 +54,12 @@ tap.test(
   }
 )
 
-tap.test('remote method to get redirect host', function(t) {
-  t.plan(2)
+tap.test('remote method to preconnect', function(t) {
+  t.plan(1)
+
   t.test('https with custom certificate', function(t) {
     t.plan(3)
-    var method = createRemoteMethod(true)
-
-    // create mock collector
-    startMockCollector(t, function() {
-      method.invoke([], function(error, returnValue) {
-        validateResponse(t, error, returnValue)
-        t.end()
-      })
-    })
-  })
-
-  t.test('https without custom certificate', function(t) {
-    t.plan(3)
-    var method = createRemoteMethod(false)
+    var method = createRemoteMethod()
 
     // create mock collector
     startMockCollector(t, function() {
@@ -87,11 +71,11 @@ tap.test('remote method to get redirect host', function(t) {
   })
 
   function validateResponse(t, error, returnValue) {
-    t.notOk(error, 'should not have an error')
+    t.error(error, 'should not have an error')
     t.equal(returnValue, 'some-collector-url', 'should get expected response')
   }
 
-  function createRemoteMethod(useCertificate) {
+  function createRemoteMethod() {
     var config = {
       host: 'ssl.lvh.me',
       port: 8765,

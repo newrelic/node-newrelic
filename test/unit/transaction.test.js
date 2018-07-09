@@ -106,8 +106,8 @@ describe('Transaction', function() {
       return expect(trans.ignore).false
     })
 
-    it('should have a sampled state set', function() {
-      expect(trans.sampled).to.not.equal(null)
+    it('should not have a sampled state set', function() {
+      expect(trans.sampled).to.equal(null)
     })
   })
 
@@ -590,14 +590,14 @@ describe('Transaction', function() {
     })
 
     it('should return true if exceptions property is not empty', function() {
-      expect(transaction.hasErrors()).equal(false)
+      expect(transaction.hasErrors()).to.be.false
       transaction.exceptions.push(new Error())
-      expect(transaction.hasErrors()).equal(true)
+      expect(transaction.hasErrors()).to.be.true
     })
 
     it('should return true if statusCode is an error', function() {
       transaction.statusCode = 500
-      expect(transaction.hasErrors()).equal(true)
+      expect(transaction.hasErrors()).to.be.true
     })
   })
 
@@ -645,9 +645,9 @@ describe('Transaction', function() {
       transaction.agent.config.feature_flag.distributed_tracing = true
 
       var attributes = transaction.getIntrinsicAttributes()
+      expect(transaction.priority.toString().length).to.be.at.most(8)
 
       expect(attributes).to.have.property('guid', transaction.id)
-      expect(attributes).to.have.property('nr.tripId', transaction.id)
       expect(attributes).to.have.property('traceId', transaction.id)
       expect(attributes).to.have.property('priority', transaction.priority)
       expect(attributes).to.have.property('sampled', true)
@@ -708,6 +708,14 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
+      agent.config.cross_application_tracer.enabled = true
+      agent.config.feature_flag.distributed_tracing = true
+      agent.config.trusted_account_key = '1'
+
+      // Clear deprecated values just to be extra sure.
+      agent.config.cross_process_id = null
+      agent.config.trusted_account_ids = null
+
       tx = new Transaction(agent)
     })
 
@@ -746,7 +754,7 @@ describe('Transaction', function() {
     it('short circuits if config is invalid', function() {
       tx.agent.config.cross_application_tracer.enabled = false
       tx.agent.config.feature_flag.distributed_tracing = false
-      tx.agent.config.trusted_account_ids = []
+      tx.agent.config.trusted_account_key = null
 
       tx.acceptDistributedTracePayload({})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
@@ -756,13 +764,7 @@ describe('Transaction', function() {
     })
 
     it('fails if payload version is above agent-supported version', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
-      tx.acceptDistributedTracePayload({
-        v: [1, 0]
-      })
+      tx.acceptDistributedTracePayload({v: [1, 0]})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Ignored/MajorVersion'
       )
@@ -770,10 +772,6 @@ describe('Transaction', function() {
     })
 
     it('fails if payload account id is not in trusted ids', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
       const data = {
         ac: 2,
         ty: 'App',
@@ -788,16 +786,12 @@ describe('Transaction', function() {
         d: data
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'DistributedTrace/AcceptPayload/UntrustedAccount'
+        'DistributedTrace/AcceptPayload/UntrustedAccount/2'
       )
       expect(tx.isDistributedTrace).to.not.be.true
     })
 
     it('fails if payload data is missing required keys', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
       tx.acceptDistributedTracePayload({
         v: [0, 1],
         d: {
@@ -811,36 +805,25 @@ describe('Transaction', function() {
     })
 
     it('takes the priority and sampled state from the incoming payload', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
-      tx.sampled = false
-
       const data = {
         ac: '1',
         ty: 'App',
         id: tx.id,
         tr: tx.id,
         ap: 'test',
-        pr: 1.99,
+        pr: 1.9999999,
         sa: true,
         ti: Date.now()
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.sampled).to.equal(true)
+      expect(tx.sampled).to.be.true
       expect(tx.priority).to.equal(data.pr)
+      // Should not truncate accepted priority
+      expect(tx.priority.toString().length).to.equal(9)
     })
 
     it('does not take the distributed tracing data if priority is missing', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
-      tx.sampled = false
-
-      var priorPriority = tx.priority
       const data = {
         ac: 1,
         ty: 'App',
@@ -852,41 +835,15 @@ describe('Transaction', function() {
       }
 
       tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.priority).to.equal(priorPriority)
-    })
-
-    it('accepting a distributed trace overwrites the sampled and priority', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
-      const sampled = tx.sampled
-
-      const data = {
-        ac: '1',
-        ty: 'App',
-        id: tx.id,
-        tr: tx.id,
-        ap: 'test',
-        pr: 0.1,
-        sa: !sampled,
-        ti: Date.now()
-      }
-
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
-      expect(tx.sampled).to.not.equal(sampled)
-      expect(tx.priority).to.equal(0.1)
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
     })
 
     it('stores payload props on transaction', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
       const data = {
         ac: '1',
         ty: 'App',
-        id: tx.id,
+        tx: tx.id,
         tr: tx.id,
         ap: 'test',
         ti: Date.now() - 1
@@ -896,7 +853,7 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Success'
       )
-      expect(tx.parentId).to.equal(data.id)
+      expect(tx.parentId).to.equal(data.tx)
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
       expect(tx.isDistributedTrace).to.be.true
@@ -904,14 +861,11 @@ describe('Transaction', function() {
     })
 
     it('should 0 transport duration when receiving payloads from the future', function() {
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ 1 ]
-
       const data = {
         ac: '1',
         ty: 'App',
-        id: tx.id,
+        tx: tx.id,
+        id: tx.trace.root.id,
         tr: tx.id,
         ap: 'test',
         ti: Date.now() + 1000
@@ -921,7 +875,8 @@ describe('Transaction', function() {
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Success'
       )
-      expect(tx.parentId).to.equal(data.id)
+      expect(tx.parentId).to.equal(data.tx)
+      expect(tx.parentSpanId).to.equal(tx.trace.root.id)
       expect(tx.parentType).to.equal(data.ty)
       expect(tx.traceId).to.equal(data.tr)
       expect(tx.isDistributedTrace).to.be.true
@@ -979,6 +934,16 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
+      agent.config.cross_application_tracer.enabled = true
+      agent.config.feature_flag.distributed_tracing = true
+      agent.config.account_id = '5678'
+      agent.config.application_id = '1234'
+      agent.config.trusted_account_key = '5678'
+
+      // Clear deprecated values just to be extra sure.
+      agent.config.cross_process_id = null
+      agent.config.trusted_account_ids = null
+
       tx = new Transaction(agent)
     })
 
@@ -987,8 +952,6 @@ describe('Transaction', function() {
     })
 
     it('short circuits if config is invalid', function() {
-      tx.agent.config.cross_process_id = '5678#1234'
-      tx.agent.config.application_id = '1234'
       tx.agent.config.cross_application_tracer.enabled = false
       tx.agent.config.feature_flag.distributed_tracing = false
 
@@ -998,23 +961,33 @@ describe('Transaction', function() {
       expect(tx.isDistributedTrace).to.not.be.true
     })
 
-    it('sets the transaction as sampled if the trace is chosen', function() {
-      tx.agent.config.cross_process_id = '5678#1234'
-      tx.agent.config.application_id = '1234'
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
+    it('generates a priority for entry-point transactions', () => {
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
 
-      const payload = JSON.parse(tx.createDistributedTracePayload().plainTextPayload)
+      tx.createDistributedTracePayload()
+
+      expect(tx.priority).to.be.a('number')
+      expect(tx.sampled).to.be.a('boolean')
+    })
+
+    it('does not change existing priority', () => {
+      tx.priority = 999
+      tx.sampled = false
+
+      tx.createDistributedTracePayload()
+
+      expect(tx.priority).to.equal(999)
+      expect(tx.sampled).to.be.false
+    })
+
+    it('sets the transaction as sampled if the trace is chosen', function() {
+      const payload = JSON.parse(tx.createDistributedTracePayload().text())
       expect(payload.d.sa).to.equal(tx.sampled)
       expect(payload.d.pr).to.equal(tx.priority)
     })
 
     it('returns stringified payload object', function() {
-      tx.agent.config.cross_process_id = '5678#1234'
-      tx.agent.config.application_id = '1234'
-      tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
-
       const payload = tx.createDistributedTracePayload().text()
       expect(typeof payload).to.equal('string')
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
@@ -1024,7 +997,7 @@ describe('Transaction', function() {
     })
   })
 
-  describe('_addDistributedTraceIntrinsics', function() {
+  describe('addDistributedTraceIntrinsics', function() {
     var tx = null
     var attributes = null
 
@@ -1033,37 +1006,55 @@ describe('Transaction', function() {
       tx = new Transaction(agent)
     })
 
+    it('generates a priority for entry-point transactions', () => {
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
+
+      tx.addDistributedTraceIntrinsics(attributes)
+
+      expect(tx.priority).to.be.a('number')
+      expect(tx.sampled).to.be.a('boolean')
+    })
+
+    it('does not change existing priority', () => {
+      tx.priority = 999
+      tx.sampled = false
+
+      tx.addDistributedTraceIntrinsics(attributes)
+
+      expect(tx.priority).to.equal(999)
+      expect(tx.sampled).to.be.false
+    })
+
     it('adds expected attributes if no payload was received', function() {
       tx.isDistributedTrace = false
 
-      tx._addDistributedTraceIntrinsics(attributes)
+      tx.addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('guid', tx.id)
-      expect(attributes).to.have.property('nr.tripId', tx.id)
       expect(attributes).to.have.property('traceId', tx.id)
       expect(attributes).to.have.property('priority', tx.priority)
       expect(attributes).to.have.property('sampled', true)
     })
 
     it('adds DT attributes if payload was accepted', function() {
-      tx.agent.config.cross_process_id = '5678#1234'
+      tx.agent.config.account_id = '5678'
       tx.agent.config.application_id = '1234'
+      tx.agent.config.trusted_account_key = '5678'
       tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.feature_flag.distributed_tracing = true
-      tx.agent.config.trusted_account_ids = [ '5678' ]
 
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = false
-      tx.acceptDistributedTracePayload(payload)
+      tx.acceptDistributedTracePayload(payload, 'AMQP')
 
-      tx._addDistributedTraceIntrinsics(attributes)
+      tx.addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('parent.type', 'App')
       expect(attributes).to.have.property('parent.app', '1234')
       expect(attributes).to.have.property('parent.account', '5678')
-      expect(attributes).to.have.property('parent.transportType', 'http')
+      expect(attributes).to.have.property('parent.transportType', 'AMQP')
       expect(attributes).to.have.property('parent.transportDuration')
-      expect(attributes).to.have.property('parentId', tx.id)
     })
   })
 })
