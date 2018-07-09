@@ -62,7 +62,7 @@ describe("recordWeb", function() {
     })
   })
 
-  describe("when recording web transactions", function() {
+  describe('when recording web transactions', function() {
     describe('with distributed tracing enabled', function() {
       it('should record metrics from accepted payload information', function() {
         agent.config.feature_flag.distributed_tracing = true
@@ -73,7 +73,7 @@ describe("recordWeb", function() {
 
         const payload = trans.createDistributedTracePayload().text()
         trans.isDistributedTrace = null
-        trans.acceptDistributedTracePayload(payload)
+        trans.acceptDistributedTracePayload(payload, 'HTTP')
 
         record({
           transaction: trans,

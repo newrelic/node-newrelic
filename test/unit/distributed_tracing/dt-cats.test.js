@@ -3,7 +3,9 @@
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 
-const testCases = require('../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json')
+const testCases = require(
+  '../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json'
+)
 
 describe('distributed tracing', function() {
   var agent
@@ -18,12 +20,12 @@ describe('distributed tracing', function() {
 
   testCases.forEach((testCase) => {
     // TODO: implement message queue cat test
-    (testCase.transport_type === 'HTTP' ? it : xit)(testCase.test_name, (done) => {
+    it(testCase.test_name, (done) => {
       agent.config.trusted_account_key = testCase.trusted_account_key
       agent.config.span_events.enabled = testCase.span_events_enabled
       helper.runInTransaction(agent, (tx) => {
         testCase['inbound_payload(s)'].forEach((payload) => {
-          tx.acceptDistributedTracePayload(payload)
+          tx.acceptDistributedTracePayload(payload, testCase.transport_type)
           if (testCase.raises_exception) {
             tx.addException(new Error('uh oh'))
           }
@@ -34,10 +36,16 @@ describe('distributed tracing', function() {
                 // TODO: Delete this block when implementing spans v2
                 return
               }
+              expect(type).to.be.oneOf([
+                'Transaction',
+                'TransactionError',
+                'Span'
+              ])
+
               const common = intrinsics.all
               const specific = intrinsics[type] || {}
               var toCheck
-              switch(type) {
+              switch (type) {
                 case 'Transaction':
                   toCheck = agent.events.toArray()
                   break
@@ -47,9 +55,6 @@ describe('distributed tracing', function() {
                 case 'Span':
                   toCheck = agent.spans.getEvents()
                   break
-                default:
-                  console.log(`unknown event type ${type}`)
-                  return
               }
               const exact = Object.assign(
                 specific.exact || {},
@@ -57,18 +62,21 @@ describe('distributed tracing', function() {
               )
 
               const arbitrary = (specific.expected || []).concat(common.expected || [])
+              const unexpected =
+                (specific.unexpected || []).concat(common.unexpected || [])
 
-              const unexpected = (specific.unexpected || []).concat(common.unexpected || [])
               toCheck.forEach((event) => {
                 const attributes = event[0]
                 arbitrary.forEach((key) => {
                   expect(attributes, `${type} should have ${key}`).to.have.property(key)
                 })
                 unexpected.forEach((key) => {
-                  expect(attributes, `${type} should have no ${key}`).to.not.have.property(key)
+                  expect(attributes, `${type} should not have ${key}`)
+                    .to.not.have.property(key)
                 })
                 Object.keys(exact).forEach((key) => {
-                  expect(attributes[key], `${type} should have equal ${key}`).to.equal(exact[key])
+                  expect(attributes[key], `${type} should have equal ${key}`)
+                    .to.equal(exact[key])
                 })
               })
             })

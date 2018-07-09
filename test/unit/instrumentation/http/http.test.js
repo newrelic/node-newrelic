@@ -315,12 +315,11 @@ describe('built-in http module instrumentation', function() {
         expect(stats.callCount).equal(2)
       })
 
-      it('should associate outbound HTTP requests with the inbound transaction',
-         function() {
-        var stats = transaction
-                      .metrics
-                      .getOrCreateMetric('External/localhost:8321/http',
-                                         'WebTransaction/NormalizedUri/*')
+      it('should associate outbound HTTP requests with the inbound transaction', () => {
+        var stats = transaction.metrics.getOrCreateMetric(
+          'External/localhost:8321/http',
+          'WebTransaction/NormalizedUri/*'
+        )
         expect(stats.callCount).equal(1)
       })
 

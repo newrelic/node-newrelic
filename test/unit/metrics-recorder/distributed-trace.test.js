@@ -46,7 +46,7 @@ describe('recordDistributedTrace', () => {
     it('records metrics with payload information', () => {
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = null
-      tx.acceptDistributedTracePayload(payload)
+      tx.acceptDistributedTracePayload(payload, 'HTTP')
 
       record({
         tx,
@@ -81,7 +81,7 @@ describe('recordDistributedTrace', () => {
       it('includes error-related metrics', () => {
         const payload = tx.createDistributedTracePayload().text()
         tx.isDistributedTrace = null
-        tx.acceptDistributedTracePayload(payload)
+        tx.acceptDistributedTracePayload(payload, 'HTTP')
 
         tx.exceptions.push('some error')
 

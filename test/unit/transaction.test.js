@@ -1046,14 +1046,14 @@ describe('Transaction', function() {
 
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = false
-      tx.acceptDistributedTracePayload(payload)
+      tx.acceptDistributedTracePayload(payload, 'AMQP')
 
       tx.addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('parent.type', 'App')
       expect(attributes).to.have.property('parent.app', '1234')
       expect(attributes).to.have.property('parent.account', '5678')
-      expect(attributes).to.have.property('parent.transportType', 'HTTP')
+      expect(attributes).to.have.property('parent.transportType', 'AMQP')
       expect(attributes).to.have.property('parent.transportDuration')
     })
   })

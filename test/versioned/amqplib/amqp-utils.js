@@ -15,6 +15,7 @@ exports.verifySubscribe = verifySubscribe
 exports.verifyConsumeTransaction = verifyConsumeTransaction
 exports.verifyProduce = verifyProduce
 exports.verifyCAT = verifyCAT
+exports.verifyDistributedTrace = verifyDistributedTrace
 exports.verifyGet = verifyGet
 exports.verifyPurge = verifyPurge
 exports.verifySendToQueue = verifySendToQueue
@@ -83,6 +84,33 @@ function verifyCAT(t, produceTransaction, consumeTransaction) {
   t.notOk(
     consumeTransaction.invalidIncomingExternalTransaction,
     'invalid incoming external transaction should be false'
+  )
+}
+
+function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
+  t.ok(produceTransaction.isDistributedTrace, 'should mark producer as distributed')
+  t.ok(consumeTransaction.isDistributedTrace, 'should mark consumer as distributed')
+
+  t.equals(
+    consumeTransaction.incomingCatId,
+    null,
+    'should not set old CAT properties'
+  )
+
+  t.equals(
+    produceTransaction.id,
+    consumeTransaction.parentId,
+    'should have proper parent id'
+  )
+  t.equals(
+    produceTransaction.traceId,
+    consumeTransaction.traceId,
+    'should have proper trace id'
+  )
+  t.equals(
+    consumeTransaction.parentTransportType,
+    'AMQP',
+    'should have correct transport type'
   )
 }
 
