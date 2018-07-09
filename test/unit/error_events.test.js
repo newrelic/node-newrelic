@@ -64,6 +64,28 @@ describe('Error events', function() {
         })
       })
     })
+
+    it('should have the expected priority', function(done) {
+      agent.config.feature_flag.distributed_tracing = true
+      agent.config.application_id = 'test'
+      agent.config.account_id = 1
+      helper.runInTransaction(agent, function(tx) {
+        var error = new Error('some error')
+        tx.addException(error, {}, 0)
+        tx.end(function() {
+          const attributes = agent.errors.getEvents()[0][0]
+          expect(attributes.type).to.equal('TransactionError')
+          expect(attributes.traceId).to.equal(tx.id)
+          expect(attributes.guid).to.equal(tx.id)
+          expect(attributes.priority).to.equal(tx.priority)
+          expect(attributes.sampled).to.equal(tx.sampled)
+          expect(attributes['nr.transactionGuid']).to.equal(tx.id)
+          expect(tx.sampled).to.equal(true)
+          expect(tx.priority).to.be.greaterThan(1)
+          done()
+        })
+      })
+    })
   })
 
   describe('when error events are enabled', function() {

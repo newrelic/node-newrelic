@@ -1273,6 +1273,31 @@ describe('Errors', function() {
         agent.config.application_id = 'test'
         agent.config.account_id = 1
         var transaction = createTransaction(agent, 200)
+
+        var error = new Error('some error')
+        aggregator.add(transaction, error)
+
+        transaction.end(function() {
+          var attributes = getFirstErrorIntrinsicAttributes(aggregator)
+
+          expect(attributes).to.be.a('Object')
+          expect(attributes.traceId).to.equal(transaction.id)
+          expect(attributes.guid).to.equal(transaction.id)
+          expect(attributes.priority).to.equal(transaction.priority)
+          expect(attributes.sampled).to.equal(transaction.sampled)
+          expect(attributes.parentId).to.be.undefined
+          expect(attributes.parentSpanId).to.be.undefined
+          expect(transaction.sampled).to.equal(true)
+          expect(transaction.priority).to.be.greaterThan(1)
+          done()
+        })
+      })
+
+      it('should contain DT intrinsic parameters', function(done) {
+        agent.config.feature_flag.distributed_tracing = true
+        agent.config.application_id = 'test'
+        agent.config.account_id = 1
+        var transaction = createTransaction(agent, 200)
         var payload = transaction.createDistributedTracePayload().text()
         transaction.isDistributedTrace = null
         transaction.acceptDistributedTracePayload(payload)
