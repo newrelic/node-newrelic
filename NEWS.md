@@ -1,3 +1,20 @@
+### 4.3.0 (2018-07-09):
+
+* Added `nonce` option for `newrelic.getBrowserTimingHeader()`
+
+  This allows people to pass in a string to be injected as the `nonce` property of
+  the generated script tag. Special thanks to João Vieira (@joaovieira) for
+  contributing this feature!
+
+* Added check to mark Hapi `'onPreResponse'` extensions as error handlers.
+
+  Previously, the agent was unable to mark any Hapi errors as handled, even if they
+  were, resulting in inaccurate reporting. This change assumes that `'onPreResponse'`
+  extensions act as error handlers, so errors are only reported if they persist to
+  the final response.
+
+* Expose the External segment on the `http` request instance for outbound calls.
+
 ### 4.2.1 (2018-07-02):
 
 * Fixed issue with tracking external requests to default ports.
