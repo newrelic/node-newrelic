@@ -200,11 +200,14 @@ test('lchown', {skip: fs.lchown === undefined}, function(t) {
   helper.runInNamedTransaction(agent, function(trans) {
     fs.lchown(name, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
-      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', [NAMES.FS.PREFIX + 'open'])
+      const useOpen = semver.satisfies(process.version, '<10.6')
+      const extra = useOpen ? [NAMES.FS.PREFIX + 'open'] : null
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', extra)
 
       trans.end(function checkMetrics() {
+        const names = useOpen ? ['lchown', 'open'] : ['lchown']
         t.ok(
-          checkMetric(['lchown', 'open'], agent, trans.name),
+          checkMetric(names, agent, trans.name),
           'metric should exist after transaction end'
         )
       })
