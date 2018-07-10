@@ -70,12 +70,12 @@ describe('SpanEvent', () => {
           expect(span).to.not.have.property('externalProcedure')
 
           // Should have no datastore properties.
-          expect(span).to.not.have.property('datastoreProduct')
-          expect(span).to.not.have.property('datastoreCollection')
-          expect(span).to.not.have.property('datastoreOperation')
-          expect(span).to.not.have.property('datastoreHost')
-          expect(span).to.not.have.property('datastorePortPathOrId')
-          expect(span).to.not.have.property('datastoreName')
+          expect(span).to.not.have.property('component')
+          expect(span).to.not.have.property('db.statement')
+          expect(span).to.not.have.property('db.instance')
+          expect(span).to.not.have.property('peer.hostname')
+          expect(span).to.not.have.property('peer.address')
+          expect(span).to.not.have.property('span.kind')
 
           done()
         }, 50)
@@ -115,12 +115,12 @@ describe('SpanEvent', () => {
             expect(span).to.not.have.property('externalProcedure')
 
             // Should have no datastore properties.
-            expect(span).to.not.have.property('datastoreProduct')
-            expect(span).to.not.have.property('datastoreCollection')
-            expect(span).to.not.have.property('datastoreOperation')
-            expect(span).to.not.have.property('datastoreHost')
-            expect(span).to.not.have.property('datastorePortPathOrId')
-            expect(span).to.not.have.property('datastoreName')
+            expect(span).to.not.have.property('component')
+            expect(span).to.not.have.property('db.statement')
+            expect(span).to.not.have.property('db.instance')
+            expect(span).to.not.have.property('peer.hostname')
+            expect(span).to.not.have.property('peer.address')
+            expect(span).to.not.have.property('span.kind')
 
             done()
           })
@@ -169,12 +169,12 @@ describe('SpanEvent', () => {
           expect(span).to.not.have.property('externalProcedure')
 
           // Should have (some) datastore properties.
-          expect(span).to.not.have.property('datastoreProduct')
-          expect(span).to.not.have.property('datastoreCollection')
-          expect(span).to.not.have.property('datastoreOperation')
-          expect(span).to.have.property('datastoreHost', 'my-db-host')
-          expect(span).to.have.property('datastorePortPathOrId', '/path/to/db.sock')
-          expect(span).to.have.property('datastoreName', 'my-database')
+          expect(span).to.not.have.property('component')
+          expect(span).to.not.have.property('db.statement')
+          expect(span).to.not.have.property('db.instance')
+          expect(span).to.have.property('peer.hostname', 'my-db-host')
+          expect(span).to.have.property('peer.address', '{my-db-host: /path/to/db.sock}')
+          expect(span).to.have.property('span.kind', 'my-database')
 
           done()
         })
