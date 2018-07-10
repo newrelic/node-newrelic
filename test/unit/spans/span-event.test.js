@@ -19,7 +19,7 @@ describe('SpanEvent', () => {
         'guid',
         'parentId',
         'grandparentId',
-        'appLocalRootId',
+        'transactionId',
         'sampled',
         'priority',
         'name',
@@ -57,7 +57,7 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
           expect(span).to.have.property('grandparentId', 'grandparent')
-          expect(span).to.have.property('appLocalRootId', tx.id)
+          expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)
           expect(span).to.have.property('name', 'timers.setTimeout')
@@ -102,7 +102,7 @@ describe('SpanEvent', () => {
             expect(span).to.have.property('guid', seg.id)
             expect(span).to.have.property('parentId', 'parent')
             expect(span).to.have.property('grandparentId', 'grandparent')
-            expect(span).to.have.property('appLocalRootId', tx.id)
+            expect(span).to.have.property('transactionId', tx.id)
             expect(span).to.have.property('sampled', true)
             expect(span).to.have.property('priority', 42)
             expect(span).to.have.property('name', 'External/example.com:443/')
@@ -156,7 +156,7 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
           expect(span).to.have.property('grandparentId', 'grandparent')
-          expect(span).to.have.property('appLocalRootId', tx.id)
+          expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)
           expect(span).to.have.property('name', 'Datastore/operation/TestStore/myDbOp')
