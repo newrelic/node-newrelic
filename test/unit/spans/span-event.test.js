@@ -173,7 +173,7 @@ describe('SpanEvent', () => {
           expect(span).to.not.have.property('db.statement')
           expect(span).to.not.have.property('db.instance')
           expect(span).to.have.property('peer.hostname', 'my-db-host')
-          expect(span).to.have.property('peer.address', '{my-db-host: /path/to/db.sock}')
+          expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
           expect(span).to.have.property('span.kind', 'my-database')
 
           done()

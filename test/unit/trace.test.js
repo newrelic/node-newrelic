@@ -161,6 +161,7 @@ describe('Trace', function() {
     expect(testSpan.timestamp).to.equal(child2.timer.start)
 
     expect(root.parentId).to.equal(transaction.id)
+    expect(root['nr.entryPoint']).to.be.true
     expect(root.grandparentId).to.equal(parentId)
     expect(root.category).to.equal('generic')
     expect(root.priority).to.equal(transaction.priority)
