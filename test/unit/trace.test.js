@@ -187,7 +187,7 @@ describe('Trace', function() {
     child1.end()
     child2.end()
     trace.root.end()
-    trace.end()
+    transaction.end()
 
     var events = agent.spans.getEvents()
     expect(events.length).to.equal(0)
@@ -207,7 +207,30 @@ describe('Trace', function() {
     child1.end()
     child2.end()
     trace.root.end()
-    trace.end()
+    transaction.end()
+
+    var events = agent.spans.getEvents()
+    expect(events.length).to.equal(0)
+  })
+
+  it('should not generate span events on end if transaction is not sampled', function() {
+    agent.config.span_events.enabled = true
+    agent.config.feature_flag.distributed_tracing = false
+
+    var transaction = new Transaction(agent)
+
+    var trace = transaction.trace
+    var child1 = trace.add('test')
+    child1.start()
+    var child2 = child1.add('nested')
+    child2.start()
+    child1.end()
+    child2.end()
+    trace.root.end()
+
+    transaction.priority = 0
+    transaction.sampled = false
+    transaction.end()
 
     var events = agent.spans.getEvents()
     expect(events.length).to.equal(0)
