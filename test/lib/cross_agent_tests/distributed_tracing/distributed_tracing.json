@@ -4,6 +4,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -65,6 +67,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -133,6 +137,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -186,6 +192,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -244,6 +252,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": false,
         "major_version": 0,
         "minor_version": 1,
@@ -298,6 +308,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": true,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -362,6 +374,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": false,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -418,6 +432,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": true,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -475,6 +491,8 @@
         "trusted_account_key": "33",
         "account_id": "33",
         "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -527,6 +545,9 @@
         "test_name": "create_payload",
         "trusted_account_key": "33",
         "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -602,6 +623,9 @@
         "test_name": "multiple_create_calls",
         "trusted_account_key": "33",
         "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -690,6 +714,9 @@
         "test_name": "payload_from_trusted_partnership_account",
         "trusted_account_key": "44",
         "account_id": "11",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -758,6 +785,9 @@
         "test_name": "payload_has_larger_minor_version",
         "trusted_account_key": "33",
         "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -811,6 +841,9 @@
         "test_name": "payload_with_untrusted_key",
         "trusted_account_key": "33",
         "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -834,7 +867,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -845,6 +879,9 @@
         "test_name": "payload_from_untrusted_account",
         "trusted_account_key": "33",
         "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -867,7 +904,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -877,6 +915,10 @@
     {
         "test_name": "payload_has_larger_major_version",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -899,7 +941,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -909,15 +952,20 @@
     {
         "test_name": "null_payload",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
         "transport_type": "HTTP",
-        "inbound_payloads": [null],
+        "inbound_payloads": null,
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -927,6 +975,10 @@
     {
         "test_name": "payload_missing_version",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -948,7 +1000,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -958,6 +1011,10 @@
     {
         "test_name": "payload_missing_data",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -970,7 +1027,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -980,6 +1038,10 @@
     {
         "test_name": "payload_missing_account",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -1001,7 +1063,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -1011,6 +1074,10 @@
     {
         "test_name": "payload_missing_application",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -1032,7 +1099,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -1042,6 +1110,10 @@
     {
         "test_name": "payload_missing_type",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -1063,7 +1135,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -1073,6 +1146,10 @@
     {
         "test_name": "payload_missing_transactionId_or_guid",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -1094,7 +1171,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -1104,6 +1182,10 @@
     {
         "test_name": "payload_missing_traceId",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -1125,7 +1207,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [
@@ -1135,6 +1218,10 @@
     {
         "test_name": "payload_missing_timestamp",
         "trusted_account_key": "33",
+        "account_id": "33",
+        "web_transaction": true,
+        "raises_exception": false,
+        "force_sampled_true": false,
         "span_events_enabled": true,
         "major_version": 0,
         "minor_version": 1,
@@ -1156,7 +1243,8 @@
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
-                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "guid", "parent.type", "parent.app", "parent.account", "parent.transportType", "traceId", "priority", "sampled", "parentId"]
+                "expected": ["guid", "traceId", "priority", "sampled"],
+                "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "parentId"]
             }
         },
         "expected_metrics": [

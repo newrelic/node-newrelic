@@ -39,6 +39,9 @@ describe('distributed tracing', function() {
             baseSegment.getExclusiveDurationInMillis()
           )
         })
+        if (!Array.isArray(testCase.inbound_payloads)) {
+          testCase.inbound_payloads = [testCase.inbound_payloads]
+        }
         testCase.inbound_payloads.forEach((payload) => {
           tx.acceptDistributedTracePayload(payload, testCase.transport_type)
           if (testCase.intrinsics.target_events.indexOf('TransactionError') > -1) {
