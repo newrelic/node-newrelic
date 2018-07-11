@@ -23,7 +23,7 @@ describe('byte-limit', () => {
   describe('#truncate', () => {
     it('truncates string value to given limit', (done) => {
       let str = '123456789'
-      str = byteUtils.truncate(str, 6)
+      str = byteUtils.truncate(str, 5)
       expect(str).to.equal('12345')
       done()
     })

@@ -129,12 +129,17 @@ describe('SpanEvent', () => {
 
     it('should create an datastore span with an datastore segment', (done) => {
       const dsConn = {myDbOp: (cb) => setTimeout(cb, 50)}
+      let longQuery = ''
+      while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
+        longQuery += 'a'
+      }
       shim.recordOperation(dsConn, 'myDbOp', {
         callback: shim.FIRST,
         parameters: {
           host: 'my-db-host',
           port_path_or_id: '/path/to/db.sock',
-          database_name: 'my-database'
+          database_name: 'my-database',
+          sql: longQuery
         }
       })
 
@@ -166,13 +171,17 @@ describe('SpanEvent', () => {
           expect(span).to.not.have.property('http.url')
           expect(span).to.not.have.property('http.method')
 
-          // Should have (some) datastore properties.
+          // Should have (most) datastore properties.
           expect(span).to.not.have.property('component')
-          expect(span).to.not.have.property('db.statement')
           expect(span).to.have.property('db.instance')
           expect(span).to.have.property('peer.hostname', 'my-db-host')
           expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
           expect(span).to.have.property('span.kind', 'client')
+          expect(span).to.have.property('db.statement')
+          // Testing query truncation
+          const statement = span['db.statement']
+          expect(statement.endsWith('.')).to.be.true
+          expect(Buffer.byteLength(statement, 'utf8')).to.equal(2000)
 
           done()
         })
