@@ -123,7 +123,6 @@ describe('Trace', function() {
     agent.config.feature_flag.distributed_tracing = true
 
     var transaction = new Transaction(agent)
-    var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
     transaction.baseSegment = trace.root
@@ -142,7 +141,6 @@ describe('Trace', function() {
     var testSpan = events[2]
 
     expect(nested.parentId).to.equal(testSpan.guid)
-    expect(nested.grandparentId).to.equal(root.guid)
     expect(nested.category).to.equal('generic')
     expect(nested.priority).to.equal(transaction.priority)
     expect(nested.transactionId).to.equal(transaction.id)
@@ -152,7 +150,6 @@ describe('Trace', function() {
     expect(nested.timestamp).to.equal(child1.timer.start)
 
     expect(testSpan.parentId).to.equal(root.guid)
-    expect(testSpan.grandparentId).to.equal(transaction.id)
     expect(testSpan.category).to.equal('generic')
     expect(testSpan.priority).to.equal(transaction.priority)
     expect(testSpan.transactionId).to.equal(transaction.id)
@@ -163,7 +160,6 @@ describe('Trace', function() {
 
     expect(root.parentId).to.equal(transaction.id)
     expect(root['nr.entryPoint']).to.be.true
-    expect(root.grandparentId).to.equal(parentId)
     expect(root.category).to.equal('generic')
     expect(root.priority).to.equal(transaction.priority)
     expect(root.transactionId).to.equal(transaction.id)

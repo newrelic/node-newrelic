@@ -18,7 +18,6 @@ describe('SpanEvent', () => {
         'traceId',
         'guid',
         'parentId',
-        'grandparentId',
         'transactionId',
         'sampled',
         'priority',
@@ -47,7 +46,7 @@ describe('SpanEvent', () => {
 
         setTimeout(() => {
           const seg = agent.tracer.getTransaction().trace.root.children[0]
-          const span = SpanEvent.fromSegment(seg, 'parent', 'grandparent')
+          const span = SpanEvent.fromSegment(seg, 'parent')
 
           // Should have all the normal properties.
           expect(span).to.be.an.instanceOf(SpanEvent)
@@ -56,7 +55,6 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('traceId', tx.id)
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
-          expect(span).to.have.property('grandparentId', 'grandparent')
           expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)
@@ -91,7 +89,7 @@ describe('SpanEvent', () => {
           res.resume()
           res.on('end', () => {
             const seg = agent.tracer.getTransaction().trace.root.children[0]
-            const span = SpanEvent.fromSegment(seg, 'parent', 'grandparent')
+            const span = SpanEvent.fromSegment(seg, 'parent')
 
             // Should have all the normal properties.
             expect(span).to.be.an.instanceOf(SpanEvent)
@@ -101,7 +99,6 @@ describe('SpanEvent', () => {
             expect(span).to.have.property('traceId', tx.id)
             expect(span).to.have.property('guid', seg.id)
             expect(span).to.have.property('parentId', 'parent')
-            expect(span).to.have.property('grandparentId', 'grandparent')
             expect(span).to.have.property('transactionId', tx.id)
             expect(span).to.have.property('sampled', true)
             expect(span).to.have.property('priority', 42)
@@ -149,7 +146,7 @@ describe('SpanEvent', () => {
 
         dsConn.myDbOp(() => {
           const seg = agent.tracer.getTransaction().trace.root.children[0]
-          const span = SpanEvent.fromSegment(seg, 'parent', 'grandparent')
+          const span = SpanEvent.fromSegment(seg, 'parent')
 
           // Should have all the normal properties.
           expect(span).to.be.an.instanceOf(SpanEvent)
@@ -159,7 +156,6 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('traceId', tx.id)
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
-          expect(span).to.have.property('grandparentId', 'grandparent')
           expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)

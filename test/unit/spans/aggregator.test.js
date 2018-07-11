@@ -30,21 +30,20 @@ describe('SpanAggregator', () => {
         setTimeout(() => {
           const segment = agent.tracer.getSegment()
           expect(aggr).to.have.length(0)
-          aggr.addSegment(segment, 'p', 'g')
+          aggr.addSegment(segment, 'p')
           expect(aggr).to.have.length(1)
 
           const event = aggr.getEvents()[0]
 
           expect(event).to.have.property('name', segment.name)
           expect(event).to.have.property('parentId', 'p')
-          expect(event).to.have.property('grandparentId', 'g')
 
           done()
         }, 10)
       })
     })
 
-    it('should default the parent and grandparent ids', (done) => {
+    it('should default the parent id', (done) => {
       helper.runInTransaction(agent, (tx) => {
         tx.priority = 42
         tx.sample = true
@@ -59,7 +58,7 @@ describe('SpanAggregator', () => {
 
           expect(event).to.have.property('name', segment.name)
           expect(event).to.have.property('parentId', null)
-          expect(event).to.have.property('grandparentId', null)
+          expect(event).to.not.have.property('grandparentId')
 
           done()
         }, 10)
