@@ -126,6 +126,7 @@ describe('Trace', function() {
     var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
+    transaction.baseSegment = trace.root
     var child1 = trace.add('test')
     child1.start()
     var child2 = child1.add('nested')
@@ -144,7 +145,7 @@ describe('Trace', function() {
     expect(nested.grandparentId).to.equal(root.guid)
     expect(nested.category).to.equal('generic')
     expect(nested.priority).to.equal(transaction.priority)
-    expect(nested.appLocalRootId).to.equal(transaction.id)
+    expect(nested.transactionId).to.equal(transaction.id)
     expect(nested.sampled).to.equal(transaction.sampled)
     expect(nested.name).to.equal('nested')
     expect(nested.traceId).to.equal(transaction.id)
@@ -154,17 +155,18 @@ describe('Trace', function() {
     expect(testSpan.grandparentId).to.equal(transaction.id)
     expect(testSpan.category).to.equal('generic')
     expect(testSpan.priority).to.equal(transaction.priority)
-    expect(testSpan.appLocalRootId).to.equal(transaction.id)
+    expect(testSpan.transactionId).to.equal(transaction.id)
     expect(testSpan.sampled).to.equal(transaction.sampled)
     expect(testSpan.name).to.equal('test')
     expect(testSpan.traceId).to.equal(transaction.id)
     expect(testSpan.timestamp).to.equal(child2.timer.start)
 
     expect(root.parentId).to.equal(transaction.id)
+    expect(root['nr.entryPoint']).to.be.true
     expect(root.grandparentId).to.equal(parentId)
     expect(root.category).to.equal('generic')
     expect(root.priority).to.equal(transaction.priority)
-    expect(root.appLocalRootId).to.equal(transaction.id)
+    expect(root.transactionId).to.equal(transaction.id)
     expect(root.sampled).to.equal(transaction.sampled)
     expect(root.name).to.equal('ROOT')
     expect(root.traceId).to.equal(transaction.id)
