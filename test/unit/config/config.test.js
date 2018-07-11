@@ -442,6 +442,12 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up disabled utilization detection', function() {
+      idempotentEnv('NEW_RELIC_UTILIZATION_DETECT_AWS', false, function(tc) {
+        expect(tc.utilization.detect_aws).to.be.false
+      })
+    })
+
     it('should reject disabling ssl', function() {
       idempotentEnv('NEW_RELIC_USE_SSL', false, function(tc) {
         expect(tc.ssl).to.be.true
