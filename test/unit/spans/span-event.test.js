@@ -110,17 +110,16 @@ describe('SpanEvent', () => {
             expect(span).to.have.property('duration').within(0.01, 2)
 
             // Should have (most) externals properties.
-            expect(span).to.have.property('externalLibrary', 'http')
-            expect(span).to.have.property('externalUri', 'https://example.com:443/')
-            expect(span).to.not.have.property('externalProcedure')
+            expect(span).to.have.property('component', 'http')
+            expect(span).to.have.property('http.url', 'https://example.com:443/')
+            expect(span).to.not.have.property('http.method')
+            expect(span).to.have.property('span.kind', 'client')
 
             // Should have no datastore properties.
-            expect(span).to.not.have.property('component')
             expect(span).to.not.have.property('db.statement')
             expect(span).to.not.have.property('db.instance')
             expect(span).to.not.have.property('peer.hostname')
             expect(span).to.not.have.property('peer.address')
-            expect(span).to.not.have.property('span.kind')
 
             done()
           })
@@ -164,17 +163,16 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('duration').within(0.03, 0.7)
 
           // Should have no externals properties.
-          expect(span).to.not.have.property('externalLibrary')
-          expect(span).to.not.have.property('externalUri')
-          expect(span).to.not.have.property('externalProcedure')
+          expect(span).to.not.have.property('http.url')
+          expect(span).to.not.have.property('http.method')
 
           // Should have (some) datastore properties.
           expect(span).to.not.have.property('component')
           expect(span).to.not.have.property('db.statement')
-          expect(span).to.not.have.property('db.instance')
+          expect(span).to.have.property('db.instance')
           expect(span).to.have.property('peer.hostname', 'my-db-host')
           expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
-          expect(span).to.have.property('span.kind', 'my-database')
+          expect(span).to.have.property('span.kind', 'client')
 
           done()
         })
