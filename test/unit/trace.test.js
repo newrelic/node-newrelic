@@ -126,6 +126,7 @@ describe('Trace', function() {
     var parentId = transaction.parentId = 'testParentId'
 
     var trace = transaction.trace
+    transaction.baseSegment = trace.root
     var child1 = trace.add('test')
     child1.start()
     var child2 = child1.add('nested')
