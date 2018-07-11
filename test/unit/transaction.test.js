@@ -766,7 +766,7 @@ describe('Transaction', function() {
     it('fails if payload version is above agent-supported version', function() {
       tx.acceptDistributedTracePayload({v: [1, 0]})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'DistributedTrace/AcceptPayload/Ignored/MajorVersion'
+        'DistributedTrace/AcceptPayload/ParseException'
       )
       expect(tx.isDistributedTrace).to.not.be.true
     })
@@ -786,7 +786,7 @@ describe('Transaction', function() {
         d: data
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'DistributedTrace/AcceptPayload/UntrustedAccount/2'
+        'DistributedTrace/AcceptPayload/Ignored/UntrustedAccount/2'
       )
       expect(tx.isDistributedTrace).to.not.be.true
     })
