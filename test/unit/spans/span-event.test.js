@@ -64,7 +64,7 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('timestamp', seg.timer.start)
           expect(span).to.have.property('duration').within(0.03, 0.07)
 
-          // Should have no externals properties.
+          // Should have no http properties.
           expect(span).to.not.have.property('externalLibrary')
           expect(span).to.not.have.property('externalUri')
           expect(span).to.not.have.property('externalProcedure')
@@ -82,7 +82,7 @@ describe('SpanEvent', () => {
       })
     })
 
-    it('should create a external span with a external segment', (done) => {
+    it('should create an http span with a external segment', (done) => {
       helper.runInTransaction(agent, (tx) => {
         tx.sampled = true
         tx.priority = 42
@@ -95,9 +95,9 @@ describe('SpanEvent', () => {
 
             // Should have all the normal properties.
             expect(span).to.be.an.instanceOf(SpanEvent)
-            expect(span).to.be.an.instanceOf(SpanEvent.ExternalSpanEvent)
+            expect(span).to.be.an.instanceOf(SpanEvent.HttpSpanEvent)
             expect(span).to.have.property('type', 'Span')
-            expect(span).to.have.property('category', SpanEvent.CATEGORIES.EXTERNAL)
+            expect(span).to.have.property('category', SpanEvent.CATEGORIES.HTTP)
             expect(span).to.have.property('traceId', tx.id)
             expect(span).to.have.property('guid', seg.id)
             expect(span).to.have.property('parentId', 'parent')
@@ -109,7 +109,7 @@ describe('SpanEvent', () => {
             expect(span).to.have.property('timestamp', seg.timer.start)
             expect(span).to.have.property('duration').within(0.01, 2)
 
-            // Should have (most) externals properties.
+            // Should have (most) http properties.
             expect(span).to.have.property('component', 'http')
             expect(span).to.have.property('http.url', 'https://example.com:443/')
             expect(span).to.not.have.property('http.method')
@@ -162,7 +162,7 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('timestamp', seg.timer.start)
           expect(span).to.have.property('duration').within(0.03, 0.7)
 
-          // Should have no externals properties.
+          // Should have no http properties.
           expect(span).to.not.have.property('http.url')
           expect(span).to.not.have.property('http.method')
 
