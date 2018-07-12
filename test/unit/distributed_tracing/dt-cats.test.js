@@ -77,10 +77,6 @@ describe('distributed tracing', function() {
           tx.end(() => {
             const intrinsics = testCase.intrinsics
             intrinsics.target_events.forEach((type) => {
-              if (type === 'Span') {
-                // TODO: Delete this block when implementing spans v2
-                return
-              }
               expect(type).to.be.oneOf([
                 'Transaction',
                 'TransactionError',
@@ -111,6 +107,12 @@ describe('distributed tracing', function() {
                 (specific.unexpected || []).concat(common.unexpected || [])
 
               toCheck.forEach((event) => {
+                // Span events are not payload-formatted straight out of the
+                // aggregator.
+                if (typeof event.toJSON === 'function') {
+                  event = event.toJSON()
+                }
+
                 const attributes = event[0]
                 arbitrary.forEach((key) => {
                   expect(attributes, `${type} should have ${key}`).to.have.property(key)
