@@ -872,7 +872,7 @@
             }
         },
         "expected_metrics": [
-            ["Supportability/DistributedTrace/AcceptPayload/Ignored/UntrustedAccount/11", 1]
+            ["Supportability/DistributedTrace/AcceptPayload/Ignored/UntrustedAccount", 1]
         ]
     },
     {
@@ -909,7 +909,7 @@
             }
         },
         "expected_metrics": [
-            ["Supportability/DistributedTrace/AcceptPayload/Ignored/UntrustedAccount/44", 1]
+            ["Supportability/DistributedTrace/AcceptPayload/Ignored/UntrustedAccount", 1]
         ]
     },
     {
