@@ -25,7 +25,7 @@ setInterval(function() {
   while (tasks.length) {
     tasks.pop()()
   }
-}, 50).unref()
+}, 25).unref()
 
 var helper = module.exports = {
   getAgent: function getAgent() {
