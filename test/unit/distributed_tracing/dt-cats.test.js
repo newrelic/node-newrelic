@@ -30,15 +30,15 @@ describe('distributed tracing', function() {
       agent.config.application_id = 'test app'
       agent.config.span_events.enabled = testCase.span_events_enabled
       helper.runInTransaction(agent, (tx) => {
-        const baseSegment = tx.trace.root
-        tx.addRecorder(function() {
+        tx.baseSegment = tx.trace.root.add('MyBaseSegment', (segment) => {
           recorder(
             tx,
             testCase.web_transaction === false ? 'Other' : 'Web',
-            baseSegment.getDurationInMillis(),
-            baseSegment.getExclusiveDurationInMillis()
+            segment.getDurationInMillis(),
+            segment.getExclusiveDurationInMillis()
           )
         })
+
         if (!Array.isArray(testCase.inbound_payloads)) {
           testCase.inbound_payloads = [testCase.inbound_payloads]
         }
