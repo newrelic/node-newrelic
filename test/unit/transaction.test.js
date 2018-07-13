@@ -786,7 +786,7 @@ describe('Transaction', function() {
         d: data
       })
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
-        'DistributedTrace/AcceptPayload/Ignored/UntrustedAccount/2'
+        'DistributedTrace/AcceptPayload/Ignored/UntrustedAccount'
       )
       expect(tx.isDistributedTrace).to.not.be.true
     })
