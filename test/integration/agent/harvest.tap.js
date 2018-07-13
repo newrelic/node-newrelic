@@ -174,7 +174,8 @@ tap.test('Agent#harvest', (t) => {
     })
 
     function doHarvest() {
-      t.equal(agent.spans.length, 3, 'have spans to send')
+      // Timeout + callback spans. Root segment does not become a span.
+      t.equal(agent.spans.length, 2, 'have spans to send')
 
       agent.harvest((error) => {
         t.error(error, 'trace sent correctly')
@@ -184,7 +185,7 @@ tap.test('Agent#harvest', (t) => {
         const payload = spy.args[0][0]
         t.ok(payload, 'should have trace payload')
         t.type(payload[2], 'Array', 'should have spans')
-        t.equal(payload[2].length, 3, 'should have all spans')
+        t.equal(payload[2].length, 2, 'should have all spans')
 
         t.end()
       })
