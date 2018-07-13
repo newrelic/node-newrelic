@@ -74,6 +74,7 @@ describe('distributed tracing', function() {
               }
             })
           }
+          tx.trace.root.touch()
           tx.end(() => {
             const intrinsics = testCase.intrinsics
             intrinsics.target_events.forEach((type) => {
