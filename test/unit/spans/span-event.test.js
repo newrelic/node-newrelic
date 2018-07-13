@@ -18,8 +18,7 @@ describe('SpanEvent', () => {
         'traceId',
         'guid',
         'parentId',
-        'grandparentId',
-        'appLocalRootId',
+        'transactionId',
         'sampled',
         'priority',
         'name',
@@ -47,7 +46,7 @@ describe('SpanEvent', () => {
 
         setTimeout(() => {
           const seg = agent.tracer.getTransaction().trace.root.children[0]
-          const span = SpanEvent.fromSegment(seg, 'parent', 'grandparent')
+          const span = SpanEvent.fromSegment(seg, 'parent')
 
           // Should have all the normal properties.
           expect(span).to.be.an.instanceOf(SpanEvent)
@@ -56,33 +55,32 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('traceId', tx.id)
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
-          expect(span).to.have.property('grandparentId', 'grandparent')
-          expect(span).to.have.property('appLocalRootId', tx.id)
+          expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)
           expect(span).to.have.property('name', 'timers.setTimeout')
           expect(span).to.have.property('timestamp', seg.timer.start)
           expect(span).to.have.property('duration').within(0.03, 0.07)
 
-          // Should have no externals properties.
+          // Should have no http properties.
           expect(span).to.not.have.property('externalLibrary')
           expect(span).to.not.have.property('externalUri')
           expect(span).to.not.have.property('externalProcedure')
 
           // Should have no datastore properties.
-          expect(span).to.not.have.property('datastoreProduct')
-          expect(span).to.not.have.property('datastoreCollection')
-          expect(span).to.not.have.property('datastoreOperation')
-          expect(span).to.not.have.property('datastoreHost')
-          expect(span).to.not.have.property('datastorePortPathOrId')
-          expect(span).to.not.have.property('datastoreName')
+          expect(span).to.not.have.property('component')
+          expect(span).to.not.have.property('db.statement')
+          expect(span).to.not.have.property('db.instance')
+          expect(span).to.not.have.property('peer.hostname')
+          expect(span).to.not.have.property('peer.address')
+          expect(span).to.not.have.property('span.kind')
 
           done()
         }, 50)
       })
     })
 
-    it('should create a external span with a external segment', (done) => {
+    it('should create an http span with a external segment', (done) => {
       helper.runInTransaction(agent, (tx) => {
         tx.sampled = true
         tx.priority = 42
@@ -91,36 +89,34 @@ describe('SpanEvent', () => {
           res.resume()
           res.on('end', () => {
             const seg = agent.tracer.getTransaction().trace.root.children[0]
-            const span = SpanEvent.fromSegment(seg, 'parent', 'grandparent')
+            const span = SpanEvent.fromSegment(seg, 'parent')
 
             // Should have all the normal properties.
             expect(span).to.be.an.instanceOf(SpanEvent)
-            expect(span).to.be.an.instanceOf(SpanEvent.ExternalSpanEvent)
+            expect(span).to.be.an.instanceOf(SpanEvent.HttpSpanEvent)
             expect(span).to.have.property('type', 'Span')
-            expect(span).to.have.property('category', SpanEvent.CATEGORIES.EXTERNAL)
+            expect(span).to.have.property('category', SpanEvent.CATEGORIES.HTTP)
             expect(span).to.have.property('traceId', tx.id)
             expect(span).to.have.property('guid', seg.id)
             expect(span).to.have.property('parentId', 'parent')
-            expect(span).to.have.property('grandparentId', 'grandparent')
-            expect(span).to.have.property('appLocalRootId', tx.id)
+            expect(span).to.have.property('transactionId', tx.id)
             expect(span).to.have.property('sampled', true)
             expect(span).to.have.property('priority', 42)
             expect(span).to.have.property('name', 'External/example.com:443/')
             expect(span).to.have.property('timestamp', seg.timer.start)
             expect(span).to.have.property('duration').within(0.01, 2)
 
-            // Should have (most) externals properties.
-            expect(span).to.have.property('externalLibrary', 'http')
-            expect(span).to.have.property('externalUri', 'https://example.com:443/')
-            expect(span).to.not.have.property('externalProcedure')
+            // Should have (most) http properties.
+            expect(span).to.have.property('component', 'http')
+            expect(span).to.have.property('http.url', 'https://example.com:443/')
+            expect(span).to.not.have.property('http.method')
+            expect(span).to.have.property('span.kind', 'client')
 
             // Should have no datastore properties.
-            expect(span).to.not.have.property('datastoreProduct')
-            expect(span).to.not.have.property('datastoreCollection')
-            expect(span).to.not.have.property('datastoreOperation')
-            expect(span).to.not.have.property('datastoreHost')
-            expect(span).to.not.have.property('datastorePortPathOrId')
-            expect(span).to.not.have.property('datastoreName')
+            expect(span).to.not.have.property('db.statement')
+            expect(span).to.not.have.property('db.instance')
+            expect(span).to.not.have.property('peer.hostname')
+            expect(span).to.not.have.property('peer.address')
 
             done()
           })
@@ -130,12 +126,17 @@ describe('SpanEvent', () => {
 
     it('should create an datastore span with an datastore segment', (done) => {
       const dsConn = {myDbOp: (cb) => setTimeout(cb, 50)}
+      let longQuery = ''
+      while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
+        longQuery += 'a'
+      }
       shim.recordOperation(dsConn, 'myDbOp', {
         callback: shim.FIRST,
         parameters: {
           host: 'my-db-host',
           port_path_or_id: '/path/to/db.sock',
-          database_name: 'my-database'
+          database_name: 'my-database',
+          sql: longQuery
         }
       })
 
@@ -145,7 +146,7 @@ describe('SpanEvent', () => {
 
         dsConn.myDbOp(() => {
           const seg = agent.tracer.getTransaction().trace.root.children[0]
-          const span = SpanEvent.fromSegment(seg, 'parent', 'grandparent')
+          const span = SpanEvent.fromSegment(seg, 'parent')
 
           // Should have all the normal properties.
           expect(span).to.be.an.instanceOf(SpanEvent)
@@ -155,26 +156,28 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('traceId', tx.id)
           expect(span).to.have.property('guid', seg.id)
           expect(span).to.have.property('parentId', 'parent')
-          expect(span).to.have.property('grandparentId', 'grandparent')
-          expect(span).to.have.property('appLocalRootId', tx.id)
+          expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)
           expect(span).to.have.property('name', 'Datastore/operation/TestStore/myDbOp')
           expect(span).to.have.property('timestamp', seg.timer.start)
           expect(span).to.have.property('duration').within(0.03, 0.7)
 
-          // Should have no externals properties.
-          expect(span).to.not.have.property('externalLibrary')
-          expect(span).to.not.have.property('externalUri')
-          expect(span).to.not.have.property('externalProcedure')
+          // Should have no http properties.
+          expect(span).to.not.have.property('http.url')
+          expect(span).to.not.have.property('http.method')
 
-          // Should have (some) datastore properties.
-          expect(span).to.not.have.property('datastoreProduct')
-          expect(span).to.not.have.property('datastoreCollection')
-          expect(span).to.not.have.property('datastoreOperation')
-          expect(span).to.have.property('datastoreHost', 'my-db-host')
-          expect(span).to.have.property('datastorePortPathOrId', '/path/to/db.sock')
-          expect(span).to.have.property('datastoreName', 'my-database')
+          // Should have (most) datastore properties.
+          expect(span).to.not.have.property('component')
+          expect(span).to.have.property('db.instance')
+          expect(span).to.have.property('peer.hostname', 'my-db-host')
+          expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
+          expect(span).to.have.property('span.kind', 'client')
+          expect(span).to.have.property('db.statement')
+          // Testing query truncation
+          const statement = span['db.statement']
+          expect(statement.endsWith('.')).to.be.true
+          expect(Buffer.byteLength(statement, 'utf8')).to.equal(2000)
 
           done()
         })

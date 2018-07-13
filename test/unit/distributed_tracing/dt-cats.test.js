@@ -2,6 +2,10 @@
 
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
+const recorder = require('../../../lib/metrics/recorders/distributed-trace')
+// recordSupportability is stubbed out on the test agent. Since
+// supportability metrics are expected in the tests we unstub it.
+const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
 const testCases = require(
   '../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json'
@@ -12,6 +16,7 @@ describe('distributed tracing', function() {
 
   beforeEach(() => {
     agent = helper.loadMockedAgent({distributed_tracing: true})
+    agent.recordSupportability = recordSupportability
   })
 
   afterEach(() => {
@@ -19,30 +24,67 @@ describe('distributed tracing', function() {
   })
 
   testCases.forEach((testCase) => {
-    // TODO: implement message queue cat test
     it(testCase.test_name, (done) => {
       agent.config.trusted_account_key = testCase.trusted_account_key
+      agent.config.account_id = testCase.account_id
+      agent.config.application_id = 'test app'
       agent.config.span_events.enabled = testCase.span_events_enabled
       helper.runInTransaction(agent, (tx) => {
-        testCase['inbound_payload(s)'].forEach((payload) => {
+        const baseSegment = tx.trace.root
+        tx.addRecorder(function() {
+          recorder(
+            tx,
+            testCase.web_transaction === false ? 'Other' : 'Web',
+            baseSegment.getDurationInMillis(),
+            baseSegment.getExclusiveDurationInMillis()
+          )
+        })
+        if (!Array.isArray(testCase.inbound_payloads)) {
+          testCase.inbound_payloads = [testCase.inbound_payloads]
+        }
+        testCase.inbound_payloads.forEach((payload) => {
           tx.acceptDistributedTracePayload(payload, testCase.transport_type)
-          if (testCase.raises_exception) {
+          if (testCase.intrinsics.target_events.indexOf('TransactionError') > -1) {
             tx.addException(new Error('uh oh'))
           }
+          if (testCase.outbound_payloads) {
+            testCase.outbound_payloads.forEach((outbound) => {
+              const created = JSON.parse(tx.createDistributedTracePayload().text())
+              const exact = outbound.exact
+              const keyRegex = /^d\.(.{2})$/
+              Object.keys(exact).forEach((key) => {
+                const match = keyRegex.exec(key)
+                if (match) {
+                  expect(created.d[match[1]]).to.equal(exact[key])
+                } else {
+                  expect(created.v).to.have.ordered.members(exact.v)
+                }
+              })
+
+              if (outbound.expected) {
+                outbound.expected.forEach((key) => {
+                  expect(created.d).to.have.property(keyRegex.exec(key)[1])
+                })
+              }
+
+              if (outbound.unexpected) {
+                outbound.unexpected.forEach((key) => {
+                  expect(created.d).to.not.have.property(keyRegex.exec(key)[1])
+                })
+              }
+            })
+          }
+          tx.trace.root.touch()
           tx.end(() => {
             const intrinsics = testCase.intrinsics
             intrinsics.target_events.forEach((type) => {
-              if (type === 'Span') {
-                // TODO: Delete this block when implementing spans v2
-                return
-              }
               expect(type).to.be.oneOf([
                 'Transaction',
                 'TransactionError',
                 'Span'
               ])
 
-              const common = intrinsics.all
+              const common = intrinsics.common
               const specific = intrinsics[type] || {}
               var toCheck
               switch (type) {
@@ -66,6 +108,12 @@ describe('distributed tracing', function() {
                 (specific.unexpected || []).concat(common.unexpected || [])
 
               toCheck.forEach((event) => {
+                // Span events are not payload-formatted straight out of the
+                // aggregator.
+                if (typeof event.toJSON === 'function') {
+                  event = event.toJSON()
+                }
+
                 const attributes = event[0]
                 arbitrary.forEach((key) => {
                   expect(attributes, `${type} should have ${key}`).to.have.property(key)
@@ -80,6 +128,17 @@ describe('distributed tracing', function() {
                 })
               })
             })
+
+            const metrics = agent.metrics
+            testCase.expected_metrics.forEach((metricPair) => {
+              const metricName = metricPair[0]
+              const callCount = metrics.getOrCreateMetric(metricName).callCount
+              const metricCount = metricPair[1]
+              expect(
+                callCount,
+                `${metricName} should have ${metricCount} samples`
+              ).to.equal(metricCount)
+            })
             done()
           })
         })
@@ -87,7 +146,3 @@ describe('distributed tracing', function() {
     })
   })
 })
-
-function checkMetrics(agent, metrics) {
-  // TODO: check metrics are valid.
-}
