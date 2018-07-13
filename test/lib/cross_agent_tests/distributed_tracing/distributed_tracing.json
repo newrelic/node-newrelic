@@ -30,28 +30,30 @@
             "target_events": ["Transaction", "Span"],
             "common":{
                 "exact": {
-                    "parent.type": "App",
-                    "parent.app": "2827902",
-                    "parent.account": "33",
-                    "parent.transportType": "HTTP",
                     "traceId": "d6b4ba0c3a712ca",
                     "priority": 1.234567,
                     "sampled": true
                 },
-                "expected": ["parent.transportDuration", "guid"],
+                "expected": ["guid"],
                 "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
             },
             "Transaction": {
                 "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
                     "parentId": "e8b91a159289ff74",
                     "parentSpanId": "7d3efb1b173fecfa"
-                }
+                },
+                "expected": ["parent.transportDuration"]
             },
             "Span": {
                 "exact": {
                     "parentId": "7d3efb1b173fecfa"
                 },
-                "expected": ["transactionId"]
+                "expected": ["transactionId"],
+                "unexpected": ["parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType"]
             }
         },
         "expected_metrics": [
@@ -217,26 +219,28 @@
             "target_events": ["Transaction", "Span"],
             "common":{
                 "exact": {
-                    "parent.type": "App",
-                    "parent.app": "2827902",
-                    "parent.account": "33",
-                    "parent.transportType": "HTTP",
                     "traceId": "d6b4ba0c3a712ca",
                     "priority": 1.234567,
                     "sampled": true
                 },
-                "expected": ["parent.transportDuration", "guid"],
+                "expected": ["guid"],
                 "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
             },
             "Transaction": {
                 "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
                     "parentId": "e8b91a159289ff74"
                 },
+                "expected": ["parent.transportDuration"],
                 "unexpected": ["parentSpanId"]
             },
             "Span": {
                 "expected": ["transactionId"],
-                "unexpected": ["parentId"]
+                "unexpected": ["parentId", "parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType"]
+
             }
         },
         "expected_metrics": [
@@ -334,29 +338,31 @@
             "target_events": ["Transaction", "TransactionError", "Span"],
             "common":{
                 "exact": {
-                    "parent.type": "App",
-                    "parent.app": "2827902",
-                    "parent.account": "33",
-                    "parent.transportType": "HTTP",
                     "traceId": "d6b4ba0c3a712ca",
                     "priority": 1.001,
                     "sampled": true
                 },
-                "expected": ["parent.transportDuration", "guid"],
+                "expected": ["guid"],
                 "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
             },
             "Transaction": {
                 "exact": {
                     "error": true,
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
                     "parentId": "e8b91a159289ff74",
                     "parentSpanId": "7d3efb1b173fecfa"
-                }
+                },
+                "expected": ["parent.transportDuration"]
             },
             "Span": {
                 "exact": {
                     "parentId": "7d3efb1b173fecfa"
                 },
-                "expected": ["transactionId"]
+                "expected": ["transactionId"],
+                "unexpected": ["parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType"]
             }
         },
         "expected_metrics": [
@@ -455,27 +461,29 @@
             "target_events": ["Transaction", "Span"],
             "common":{
                 "exact": {
-                    "parent.type": "Mobile",
-                    "parent.app": "2827902",
-                    "parent.account": "33",
-                    "parent.transportType": "HTTP",
                     "traceId": "d6b4ba0c3a712ca",
                     "sampled": true
                 },
-                "expected": ["parent.transportDuration", "guid", "priority"],
+                "expected": ["guid", "priority"],
                 "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
             },
             "Transaction": {
                 "exact": {
+                    "parent.type": "Mobile",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
                     "parentSpanId": "7d3efb1b173fecfa"
                 },
+                "expected": ["parent.transportDuration"],
                 "unexpected": ["parentId"]
             },
             "Span": {
                 "exact": {
                     "parentId": "7d3efb1b173fecfa"
                 },
-                "expected": ["transactionId"]
+                "expected": ["transactionId"],
+                "unexpected": ["parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType"]
             }
         },
         "expected_metrics": [
@@ -586,28 +594,30 @@
             "target_events": ["Transaction", "Span"],
             "common":{
                 "exact": {
-                    "parent.type": "App",
-                    "parent.app": "2827902",
-                    "parent.account": "33",
-                    "parent.transportType": "HTTP",
                     "traceId": "d6b4ba0c3a712ca",
                     "priority": 1.234567,
                     "sampled": true
                 },
-                "expected": ["parent.transportDuration", "guid"],
+                "expected": ["guid"],
                 "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
             },
             "Transaction": {
                 "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
                     "parentId": "e8b91a159289ff74",
                     "parentSpanId": "7d3efb1b173fecfa"
-                }
+                },
+                "expected": ["parent.transportDuration"]
             },
             "Span": {
                 "exact": {
                     "parentId": "7d3efb1b173fecfa"
                 },
-                "expected": ["transactionId"]
+                "expected": ["transactionId"],
+                "unexpected": ["parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType"]
             }
         },
         "expected_metrics": [
@@ -677,28 +687,30 @@
             "target_events": ["Transaction", "Span"],
             "common":{
                 "exact": {
-                    "parent.type": "App",
-                    "parent.app": "2827902",
-                    "parent.account": "33",
-                    "parent.transportType": "HTTP",
                     "traceId": "d6b4ba0c3a712ca",
                     "priority": 1.234567,
                     "sampled": true
                 },
-                "expected": ["parent.transportDuration", "guid"],
+                "expected": ["guid"],
                 "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.apdexPerfZone", "nr.alternatePathHashes"]
             },
             "Transaction": {
                 "exact": {
+                    "parent.type": "App",
+                    "parent.app": "2827902",
+                    "parent.account": "33",
+                    "parent.transportType": "HTTP",
                     "parentId": "e8b91a159289ff74",
                     "parentSpanId": "7d3efb1b173fecfa"
-                }
+                },
+                "expected": ["parent.transportDuration"]
             },
             "Span": {
                 "exact": {
                     "parentId": "7d3efb1b173fecfa"
                 },
-                "expected": ["transactionId"]
+                "expected": ["transactionId"],
+                "unexpected": ["parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType"]
             }
         },
         "expected_metrics": [
