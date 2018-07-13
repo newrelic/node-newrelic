@@ -107,6 +107,7 @@ describe('distributed tracing', function() {
               const unexpected =
                 (specific.unexpected || []).concat(common.unexpected || [])
 
+              expect(toCheck).to.have.length.above(0)
               toCheck.forEach((event) => {
                 // Span events are not payload-formatted straight out of the
                 // aggregator.
