@@ -100,6 +100,13 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up on feature flags set via environment variables', function() {
+      const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
+      idempotentEnv(ffNamePrefix + 'DISTRIBUTED_TRACING', 'true', function(tc) {
+        expect(tc.feature_flag.distributed_tracing).equal(true)
+      })
+    })
+
     it('should pick up the collector port', function() {
       idempotentEnv('NEW_RELIC_PORT', 7777, function(tc) {
         should.exist(tc.port)
