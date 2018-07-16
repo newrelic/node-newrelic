@@ -1,3 +1,18 @@
+### 4.5.0 (2018-07-16):
+
+* Feature flags may now be set from environment variables.
+
+  Using the naming convention `NEW_RELIC_FEATURE_FLAG_<feature flag name in upper
+  case>`.
+
+* Transaction events may be harvested in two payloads now.
+
+  This change reduces the occurrence of harvests being rejected due to large
+  payloads. Payloads will only be split when they are large (greater than 1/3 the
+  maximum).
+
+* Updated Hapi v17 instrumentation to wrap `server` export, in addition to `Server`.
+
 ### 4.4.0 (2018-07-12):
 
 * Added config `utilization` env vars to the `BOOLEAN_VARS` set.
