@@ -5,7 +5,7 @@ var path = require('path')
 var temp = require('temp')
 var fs = require('fs')
 var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify.js')
+var verifySegments = require('./verify')
 var semver = require('semver')
 
 var NAMES = require('../../../lib/metrics/names')
@@ -456,6 +456,38 @@ test('realpath', function(t) {
           if (semver.satisfies(process.versions.node, '>=6.0.0')) {
             expectedMetrics = ['realpath']
           }
+          t.ok(
+            checkMetric(expectedMetrics, agent, trans.name),
+            'metric should exist after transaction end'
+          )
+          t.end()
+        })
+      }
+    })
+  })
+})
+
+test('realpath.native', (t) => {
+  if (!fs.realpath.native) {
+    return t.end()
+  }
+  const name = path.join(tempDir, 'realpath-native')
+  const link = path.join(tempDir, 'link-to-realpath-native')
+  const content = 'some-content'
+  fs.writeFileSync(name, content)
+  fs.symlinkSync(name, link)
+  const real = fs.realpathSync(name)
+  const agent = setupAgent(t)
+  helper.runInNamedTransaction(agent, (trans) => {
+    fs.realpath.native(link, (err, target) => {
+      t.equal(err, null, 'should not error')
+      t.equal(target, real, 'should point to the same file')
+
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath.native', afterVerify)
+
+      function afterVerify() {
+        trans.end(function checkMetrics() {
+          const expectedMetrics = ['realpath.native']
           t.ok(
             checkMetric(expectedMetrics, agent, trans.name),
             'metric should exist after transaction end'
