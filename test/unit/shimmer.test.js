@@ -129,6 +129,9 @@ describe('shimmer', function() {
       tripler: function(y, cb) {
         cb(this.c + y * 3)
       },
+      quadrupler: function(z, cb) {
+        cb(this.c + z * 4)
+      },
       hammer: function(h, cb) {
         cb(this.ham + h)
       }
@@ -152,6 +155,31 @@ describe('shimmer', function() {
       nodule.doubler(7, function(z) { doubled = z })
 
       expect(doubled).equal(16)
+      expect(before).equal(true)
+      expect(after).equal(true)
+    })
+
+    it('should preserve properties on wrapped methods', () => {
+      var quadrupled = 0
+      var before = false
+      var after = false
+
+      nodule.quadrupler.test = () => {}
+
+      shimmer.wrapMethod(nodule, 'nodule', 'quadrupler', function(original) {
+        return function() {
+          before = true
+          original.apply(this, arguments)
+          after = true
+        }
+      })
+
+      expect(nodule.quadrupler.__NR_unwrap).a('function')
+      expect(nodule.quadrupler.test).to.be.a('function')
+
+      nodule.quadrupler(7, function(z) { quadrupled = z })
+
+      expect(quadrupled).equal(30)
       expect(before).equal(true)
       expect(after).equal(true)
     })
