@@ -542,6 +542,41 @@ describe('Agent harvests', () => {
       ], done)
     })
 
+    it('should replace split bodies on failure', (done) => {
+      // Reduce the event limit to avoid `RemoteMethod` compressing the payload.
+      const limit = 100
+      agent.config.onConnect({
+        'transaction_events.max_samples_per_minute': limit
+      })
+
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+
+      var expectedEvents
+      a.series([
+        (cb) => {
+          a.timesSeries(limit - 1, (i, cb) => {
+            helper.runInTransaction(agent, (transaction) => {
+              tx = transaction
+              tx.finalizeNameFromUri(`/some/test/url/${i}`, 200)
+              tx.end(() => cb())
+            })
+          }, cb)
+        },
+
+        (cb) => {
+          expect(agent.events).to.have.length(limit)
+          expectedEvents = agent.events.toArray()
+          agent.harvest(cb)
+          expect(agent.events).to.have.length(0)
+        }
+      ], function handleError(err) {
+        expect(err).to.exist
+        expect(agent.events.toArray()).to.have.members(expectedEvents)
+        done()
+      })
+    })
+
     it('should not send if `transaction_events.enabled` is false', (done) => {
       agent.config.transaction_events.enabled = false
 
@@ -566,11 +601,13 @@ describe('Agent harvests', () => {
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.events).to.have.length(1)
+      const event = agent.events.toArray()[0]
 
       agent.harvest((err) => {
         expect(err).to.exist
         harvest.done()
         expect(agent.events).to.have.length(1)
+        expect(agent.events.toArray()[0]).to.equal(event)
 
         done()
       })
