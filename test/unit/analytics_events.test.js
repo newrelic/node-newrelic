@@ -93,15 +93,38 @@ describe('Analytics events', function() {
 
         var event = agent.events.toArray()[0]
         expect(event).to.be.a('Array')
-        expect(event[0]).to.be.a('object')
-        expect(event[0].webDuration).to.be.a('number').and.not.NaN
-        expect(event[0].webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
-        expect(event[0].timestamp).to.be.a('number').and.not.NaN
-        expect(event[0].timestamp).to.equal(trans.timer.start)
-        expect(event[0].name).to.equal(trans.name)
-        expect(event[0].duration).to.equal(trans.timer.getDurationInMillis() / 1000)
-        expect(event[0].type).to.equal('Transaction')
-        expect(event[0].error).to.equal(false)
+        var eventValues = event[0]
+        expect(eventValues).to.be.a('object')
+        expect(eventValues.webDuration).to.be.a('number').and.not.NaN
+        expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
+        expect(eventValues.timestamp).to.be.a('number').and.not.NaN
+        expect(eventValues.timestamp).to.equal(trans.timer.start)
+        expect(eventValues.name).to.equal(trans.name)
+        expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
+        expect(eventValues.type).to.equal('Transaction')
+        expect(eventValues.error).to.equal(false)
+
+        done()
+      })
+    })
+
+    it('should flag errored transactions', function(done) {
+      trans.addException(new Error('wuh oh'))
+      trans.end(function() {
+        expect(agent.events.toArray().length).to.equal(1)
+
+        var event = agent.events.toArray()[0]
+        expect(event).to.be.a('Array')
+        var eventValues = event[0]
+        expect(eventValues).to.be.a('object')
+        expect(eventValues.webDuration).to.be.a('number').and.not.NaN
+        expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
+        expect(eventValues.timestamp).to.be.a('number').and.not.NaN
+        expect(eventValues.timestamp).to.equal(trans.timer.start)
+        expect(eventValues.name).to.equal(trans.name)
+        expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
+        expect(eventValues.type).to.equal('Transaction')
+        expect(eventValues.error).to.equal(true)
 
         done()
       })
@@ -127,6 +150,7 @@ describe('Analytics events', function() {
         expect(attributes['parent.type']).to.equal('App')
         expect(attributes['parent.app']).to.equal(agent.config.application_id)
         expect(attributes['parent.account']).to.equal(agent.config.account_id)
+        expect(attributes.error).to.equal(false)
         expect(trans.sampled).to.equal(true)
         expect(trans.priority).to.be.greaterThan(1)
 
