@@ -8,7 +8,7 @@
         "node": ">=0.10.0"
       },
       "dependencies": {
-        "mysql": ">=2.2.0",
+        "mysql": ">=2.2.0 <2.16",
         "generic-pool": "2.4"
       },
       "files": [

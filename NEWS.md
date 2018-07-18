@@ -1,3 +1,10 @@
+### 4.5.1 (2018-07-18):
+
+- The agent will now properly remerge event data on collection failure.
+
+  Previously, the agent wouldn't observe the correct format for remerging, causing
+  undefined events to be pushed into the reservoir.
+
 ### 4.5.0 (2018-07-16):
 
 * Feature flags may now be set from environment variables.
