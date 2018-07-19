@@ -54,9 +54,13 @@ test("the agent's async hook", function(t) {
 
     doStuff(callback) {
       process.nextTick(() => {
-        this.emitBefore()
-        callback()
-        this.emitAfter()
+        if (this.runInAsyncScope) {
+          this.runInAsyncScope(callback)
+        } else {
+          this.emitBefore()
+          callback()
+          this.emitAfter()
+        }
       })
     }
   }
@@ -275,14 +279,14 @@ test("the agent's async hook", function(t) {
         t.equal(
           agent.tracer.segment.name,
           aSeg.name,
-          'calling emitBefore should restore the segment active when a resource was made'
+          'runInAsyncScope should restore the segment active when a resource was made'
         )
 
         resB.doStuff(() => {
           t.equal(
             agent.tracer.segment.name,
             bSeg.name,
-            'calling emitBefore should restore the segment active when a resource was made'
+            'runInAsyncScope should restore the segment active when a resource was made'
           )
 
           t.end()
@@ -290,7 +294,7 @@ test("the agent's async hook", function(t) {
         t.equal(
           agent.tracer.segment.name,
           aSeg.name,
-          'calling emitAfter should restore the segment active when a callback was called'
+          'runInAsyncScope should restore the segment active when a callback was called'
         )
       })
       t.equal(
@@ -302,7 +306,7 @@ test("the agent's async hook", function(t) {
         t.equal(
           agent.tracer.segment.name,
           aSeg.name,
-          'calling emitBefore should restore the segment active when a resource was made'
+          'runInAsyncScope should restore the segment active when a resource was made'
         )
       })
     })
