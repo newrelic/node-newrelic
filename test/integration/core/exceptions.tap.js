@@ -83,6 +83,26 @@ test("Don't report domained exceptions", function(t) {
   proc.send({name: 'domainUncaughtException', args: message})
 })
 
+test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  t.plan(3)
+  const proc = startProc()
+  let messageReceived = false
+
+  proc.on('message', (errors) => {
+    messageReceived = true
+    t.equal(errors.count, 1, 'should have collected an error')
+    t.same(errors.messages, ['nothing can keep me down'], 'should have correct message')
+    proc.kill()
+  })
+
+  proc.on('exit', () => {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
+  })
+
+  proc.send({ name: 'setUncaughtExceptionCallback' })
+})
+
 function startProc() {
   var testDir = path.resolve(__dirname, '../../')
   return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {silent: true})

@@ -39,6 +39,14 @@ var commands = {
     process.nextTick(function() {
       throw new Error(err)
     })
+  },
+
+  setUncaughtExceptionCallback: () => {
+    process.setUncaughtExceptionCaptureCallback(() => {
+      setTimeout(sendErrors, 15)
+    })
+
+    commands.uncaughtException()
   }
 }
 
