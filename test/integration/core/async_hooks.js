@@ -54,7 +54,13 @@ test("the agent's async hook", function(t) {
 
     doStuff(callback) {
       process.nextTick(() => {
-        this.runInAsyncScope(callback)
+        if (this.runInAsyncScope) {
+          this.runInAsyncScope(callback)
+        } else {
+          this.emitBefore()
+          callback()
+          this.emitAfter()
+        }
       })
     }
   }
