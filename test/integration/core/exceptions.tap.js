@@ -92,8 +92,8 @@ if (process.setUncaughtExceptionCaptureCallback) {
 
     proc.on('message', (errors) => {
       messageReceived = true
-      t.equal(errors.count, 1, 'should have collected an error')
-      t.same(errors.messages, ['nothing can keep me down'], 'should have correct message')
+      t.equal(errors.count, 0, 'should not have collected an error')
+      t.same(errors.messages, [], 'should have no error messages')
       proc.kill()
     })
 
@@ -103,6 +103,26 @@ if (process.setUncaughtExceptionCaptureCallback) {
     })
 
     proc.send({ name: 'setUncaughtExceptionCallback' })
+  })
+
+  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+    t.plan(3)
+    const proc = startProc()
+    let messageReceived = false
+
+    proc.on('message', (errors) => {
+      messageReceived = true
+      t.equal(errors.count, 1, 'should have collected an error')
+      t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
+      proc.kill()
+    })
+
+    proc.on('exit', () => {
+      t.ok(messageReceived, 'should receive message')
+      t.end()
+    })
+
+    proc.send({ name: 'unsetUncaughtExceptionCallback' })
   })
 }
 

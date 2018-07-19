@@ -47,6 +47,18 @@ var commands = {
     })
 
     commands.uncaughtException()
+  },
+
+  unsetUncaughtExceptionCallback: () => {
+    process.setUncaughtExceptionCaptureCallback(() => {
+      setTimeout(sendErrors, 15)
+    })
+    process.once('uncaughtException', function() {
+      setTimeout(sendErrors, 15)
+    })
+    process.setUncaughtExceptionCaptureCallback(null)
+
+    commands.uncaughtException()
   }
 }
 
