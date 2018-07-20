@@ -131,7 +131,7 @@ describe('Analytics events', function() {
     })
 
     it('should add DT parent attributes with an accepted payload', function(done) {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.application_id = 'test'
       agent.config.account_id = 1
       trans = new Transaction(agent)
@@ -159,7 +159,7 @@ describe('Analytics events', function() {
     })
 
     it('should add DT attributes', function(done) {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       trans = new Transaction(agent)
       trans.end(function() {
         expect(agent.events.toArray().length).to.equal(1)

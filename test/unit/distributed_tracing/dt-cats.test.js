@@ -15,7 +15,7 @@ describe('distributed tracing', function() {
   var agent
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent({distributed_tracing: true})
+    agent = helper.loadMockedAgent(null, {distributed_tracing: {enabled: true}})
     agent.recordSupportability = recordSupportability
   })
 

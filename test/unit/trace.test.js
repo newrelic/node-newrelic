@@ -73,7 +73,7 @@ describe('Trace', function() {
   })
 
   it('should have DT attributes on transaction end', function(done) {
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
     agent.config.application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
@@ -93,7 +93,7 @@ describe('Trace', function() {
   })
 
   it('should have DT parent attributes on payload accept', function(done) {
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
     agent.config.application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
@@ -120,7 +120,7 @@ describe('Trace', function() {
 
   it('should generate span events on end', function() {
     agent.config.span_events.enabled = true
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
 
     var transaction = new Transaction(agent)
 
@@ -160,7 +160,7 @@ describe('Trace', function() {
 
   it('should not generate span events on end if span_events is disabled', function() {
     agent.config.span_events.enabled = false
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
 
     var transaction = new Transaction(agent)
 
@@ -180,7 +180,7 @@ describe('Trace', function() {
 
   it('should not generate span events on end if distributed_tracing is off', function() {
     agent.config.span_events.enabled = true
-    agent.config.feature_flag.distributed_tracing = false
+    agent.config.distributed_tracing.enabled = false
 
     var transaction = new Transaction(agent)
 
@@ -200,7 +200,7 @@ describe('Trace', function() {
 
   it('should not generate span events on end if transaction is not sampled', function() {
     agent.config.span_events.enabled = true
-    agent.config.feature_flag.distributed_tracing = false
+    agent.config.distributed_tracing.enabled = false
 
     var transaction = new Transaction(agent)
 
