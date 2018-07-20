@@ -5,7 +5,7 @@ var path = require('path')
 var temp = require('temp')
 var fs = require('fs')
 var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify.js')
+var verifySegments = require('./verify')
 var semver = require('semver')
 
 var NAMES = require('../../../lib/metrics/names')
@@ -60,7 +60,7 @@ test('rename', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.rename(name, newName, function(err) {
       t.notOk(err, 'should not error')
       helper.unloadAgent(agent)
@@ -89,7 +89,7 @@ test('truncate', function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
   var expectedSegments
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     // if fs.ftruncate isn't around, it means that fs.truncate uses a file descriptor
     // rather than a path, and won't trigger an 'open' segment due to implementation
     // differences. This is mostly just a version check for v0.8.
@@ -122,7 +122,7 @@ test('ftruncate', {skip: fs.ftruncate === undefined}, function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.ftruncate(fd, 4, function(err) {
       t.notOk(err, 'should not error')
       helper.unloadAgent(agent)
@@ -150,7 +150,7 @@ test('chown', function(t) {
   var agent = setupAgent(t)
   var uid = 0
   var gid = 0
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.chown(name, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'chown')
@@ -173,7 +173,7 @@ test('fchown', function(t) {
   var agent = setupAgent(t)
   var uid = 0
   var gid = 0
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.fchown(fd, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fchown')
@@ -197,7 +197,7 @@ test('lchown', {skip: fs.lchown === undefined}, function(t) {
   var agent = setupAgent(t)
   var uid = 0
   var gid = 0
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.lchown(name, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
       const useOpen = semver.satisfies(process.version, '<10.6')
@@ -221,7 +221,7 @@ test('chmod', function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
   t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '666')
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.chmod(name, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
@@ -246,7 +246,7 @@ test('lchmod', {skip: fs.lchmod === undefined}, function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
   t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '666')
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.lchmod(name, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
@@ -270,7 +270,7 @@ test('fchmod', function(t) {
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
   t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '666')
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.fchmod(fd, '0777', function(err) {
       t.equal(err, null, 'should not error')
       helper.unloadAgent(agent)
@@ -292,7 +292,7 @@ test('stat', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.stat(name, function(err, stat) {
       t.equal(err, null, 'should not error')
       t.equal((stat.mode & 0x1FF).toString(8), '666')
@@ -313,7 +313,7 @@ test('lstat', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.lstat(name, function(err, stat) {
       t.equal(err, null, 'should not error')
       t.equal((stat.mode & 0x1FF).toString(8), '666')
@@ -335,7 +335,7 @@ test('fstat', function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.fstat(fd, function(err, stat) {
       t.equal(err, null, 'should not error')
       t.equal((stat.mode & 0x1FF).toString(8), '666')
@@ -357,7 +357,7 @@ test('link', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.link(name, link, function(err) {
       t.equal(err, null, 'should not error')
       t.equal(
@@ -384,7 +384,7 @@ test('symlink', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.symlink(name, link, function(err) {
       t.equal(err, null, 'should not error')
       t.equal(
@@ -412,7 +412,7 @@ test('readlink', function(t) {
   fs.writeFileSync(name, content)
   fs.symlinkSync(name, link)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.readlink(link, function(err, target) {
       t.equal(err, null, 'should not error')
       t.equal(target, name, 'should point to the same file')
@@ -437,7 +437,7 @@ test('realpath', function(t) {
   fs.symlinkSync(name, link)
   var real = fs.realpathSync(name)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.realpath(link, function(err, target) {
       t.equal(err, null, 'should not error')
       t.equal(target, real, 'should point to the same file')
@@ -467,6 +467,38 @@ test('realpath', function(t) {
   })
 })
 
+test('realpath.native', (t) => {
+  if (!fs.realpath.native) {
+    return t.end()
+  }
+  const name = path.join(tempDir, 'realpath-native')
+  const link = path.join(tempDir, 'link-to-realpath-native')
+  const content = 'some-content'
+  fs.writeFileSync(name, content)
+  fs.symlinkSync(name, link)
+  const real = fs.realpathSync(name)
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, (trans) => {
+    fs.realpath.native(link, (err, target) => {
+      t.equal(err, null, 'should not error')
+      t.equal(target, real, 'should point to the same file')
+
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath.native', afterVerify)
+
+      function afterVerify() {
+        trans.end(function checkMetrics() {
+          const expectedMetrics = ['realpath.native']
+          t.ok(
+            checkMetric(expectedMetrics, agent, trans.name),
+            'metric should exist after transaction end'
+          )
+          t.end()
+        })
+      }
+    })
+  })
+})
+
 test('unlink', function(t) {
   var name = path.join(tempDir, 'unlink-from-me')
   var link = path.join(tempDir, 'unlink-me')
@@ -474,7 +506,7 @@ test('unlink', function(t) {
   fs.writeFileSync(name, content)
   fs.symlinkSync(name, link)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.unlink(link, function(err) {
       t.equal(err, null, 'should not error')
       t.notOk(fs.existsSync(link), 'link should not exist')
@@ -493,7 +525,7 @@ test('unlink', function(t) {
 test('mkdir', function(t) {
   var name = path.join(tempDir, 'mkdir')
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.mkdir(name, function(err) {
       t.equal(err, null, 'should not error')
       t.ok(fs.existsSync(name), 'dir should exist')
@@ -514,7 +546,7 @@ test('rmdir', function(t) {
   var name = path.join(tempDir, 'rmdir')
   var agent = setupAgent(t)
   fs.mkdirSync(name)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.rmdir(name, function(err) {
       t.equal(err, null, 'should not error')
       t.notOk(fs.existsSync(name), 'dir should not exist')
@@ -534,7 +566,7 @@ test('readdir', function(t) {
   var name = path.join(tempDir, 'readdir')
   var agent = setupAgent(t)
   fs.mkdirSync(name)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.readdir(name, function(err, data) {
       t.equal(err, null, 'should not error')
       t.deepEqual(data, [], 'should get list of contents')
@@ -556,7 +588,7 @@ test('close', function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.close(fd, function(err) {
       t.equal(err, null, 'should not error')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'close')
@@ -576,7 +608,7 @@ test('open', function(t) {
   var content = 'some-content'
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.open(name, 'r+', function(err, fd) {
       t.equal(err, null, 'should not error')
       t.ok(fd, 'should get a file descriptor')
@@ -600,7 +632,7 @@ test('utimes', function(t) {
   var accessed = 5
   var modified = 15
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.utimes(name, accessed, modified, function(err) {
       t.notOk(err, 'should not error')
       var stats = fs.statSync(name)
@@ -627,7 +659,7 @@ test('futimes', function(t) {
   var accessed = 5
   var modified = 15
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.futimes(fd, accessed, modified, function(err) {
       t.notOk(err, 'should not error')
       var stats = fs.statSync(name)
@@ -652,7 +684,7 @@ test('fsync', function(t) {
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.fsync(fd, function(err) {
       t.notOk(err, 'should not error')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fsync')
@@ -673,7 +705,7 @@ test('readFile', function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.readFile(name, function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString('utf8'), content)
@@ -707,7 +739,7 @@ test('writeFile', function(t) {
   var content = 'some-content'
   var agent = setupAgent(t)
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.writeFile(name, content, function(err) {
       t.notOk(err, 'should not error')
       t.equal(fs.readFileSync(name).toString('utf8'), content)
@@ -732,7 +764,7 @@ test('appendFile', function(t) {
 
   expectedSegments = ['appendFile', 'writeFile']
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.appendFile(name, '123', function(err) {
       t.notOk(err, 'should not error')
       t.equal(fs.readFileSync(name).toString('utf-8'), content + '123')
@@ -755,7 +787,7 @@ test('exists', function(t) {
   fs.writeFileSync(name, content)
   var agent = setupAgent(t)
 
-  helper.runInNamedTransaction(agent, function(trans) {
+  helper.runInTransaction(agent, function(trans) {
     fs.exists(name, function(exists) {
       t.ok(exists, 'should exist')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'exists')
