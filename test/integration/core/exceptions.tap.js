@@ -83,6 +83,49 @@ test("Don't report domained exceptions", function(t) {
   proc.send({name: 'domainUncaughtException', args: message})
 })
 
+// only available on Node >=9.3
+if (process.setUncaughtExceptionCaptureCallback) {
+  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+    t.plan(3)
+    const proc = startProc()
+    let messageReceived = false
+
+    proc.on('message', (errors) => {
+      messageReceived = true
+      t.equal(errors.count, 0, 'should not have collected an error')
+      t.same(errors.messages, [], 'should have no error messages')
+      proc.kill()
+    })
+
+    proc.on('exit', () => {
+      t.ok(messageReceived, 'should receive message')
+      t.end()
+    })
+
+    proc.send({ name: 'setUncaughtExceptionCallback' })
+  })
+
+  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+    t.plan(3)
+    const proc = startProc()
+    let messageReceived = false
+
+    proc.on('message', (errors) => {
+      messageReceived = true
+      t.equal(errors.count, 1, 'should have collected an error')
+      t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
+      proc.kill()
+    })
+
+    proc.on('exit', () => {
+      t.ok(messageReceived, 'should receive message')
+      t.end()
+    })
+
+    proc.send({ name: 'unsetUncaughtExceptionCallback' })
+  })
+}
+
 function startProc() {
   var testDir = path.resolve(__dirname, '../../')
   return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {silent: true})

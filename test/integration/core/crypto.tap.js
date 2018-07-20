@@ -90,6 +90,34 @@ test('sync randomFill', function(t) {
   })
 })
 
+test('scrypt', (t) => {
+  if (!crypto.scrypt) {
+    return t.end()
+  }
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, () => {
+    crypto.scrypt('secret', 'salt', 10, (err, buf) => {
+      t.notOk(err, 'should not error')
+      t.ok(buf.length, 10)
+      verifySegments(t, agent, 'crypto.scrypt')
+    })
+  })
+})
+
+test('scryptSync', (t) => {
+  if (!crypto.scryptSync) {
+    return t.end()
+  }
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, (transaction) => {
+    const buf = crypto.scryptSync('secret', 'salt', 10)
+    t.ok(buf instanceof Buffer)
+    t.equal(buf.length, 10)
+    t.equal(transaction.trace.root.children.length, 0)
+    t.end()
+  })
+})
+
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
