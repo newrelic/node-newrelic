@@ -1269,7 +1269,7 @@ describe('Errors', function() {
       })
 
       it('should contain DT intrinsic parameters', function(done) {
-        agent.config.feature_flag.distributed_tracing = true
+        agent.config.distributed_tracing.enabled = true
         agent.config.application_id = 'test'
         agent.config.account_id = 1
         var transaction = createTransaction(agent, 200)
@@ -1294,7 +1294,7 @@ describe('Errors', function() {
       })
 
       it('should contain DT intrinsic parameters', function(done) {
-        agent.config.feature_flag.distributed_tracing = true
+        agent.config.distributed_tracing.enabled = true
         agent.config.application_id = 'test'
         agent.config.account_id = 1
         var transaction = createTransaction(agent, 200)

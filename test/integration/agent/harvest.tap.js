@@ -159,7 +159,7 @@ tap.test('Agent#harvest', (t) => {
   t.test('sending span events', (t) => {
     t.plan(6)
 
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
 
     const spy = sinon.spy(agent.collector, 'spanEvents')

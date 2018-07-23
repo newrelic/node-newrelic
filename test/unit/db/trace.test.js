@@ -25,7 +25,7 @@ describe('SQL trace', function() {
       helper.unloadAgent(agent)
     })
     it('should include all DT intrinsics sans parentId and parentSpanId', function(done) {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.application_id = 'test'
       agent.config.account_id = 1
       agent.config.simple_compression = true
@@ -56,7 +56,7 @@ describe('SQL trace', function() {
       })
     })
     it('should include the proper priority on transaction end', function(done) {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.application_id = 'test'
       agent.config.account_id = 1
       agent.config.simple_compression = true

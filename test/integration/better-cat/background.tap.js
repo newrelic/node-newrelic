@@ -9,7 +9,9 @@ let compareSampled = null
 tap.test('background transactions should not blow up with CAT', (t) => {
   t.plan(24)
   const config = {
-    feature_flag: {distributed_tracing: true},
+    distributed_tracing: {
+      enabled: true
+    },
     cross_application_tracer: {enabled: true},
     account_id: '1337',
     application_id: '7331',

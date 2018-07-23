@@ -102,8 +102,8 @@ describe('the agent configuration', function() {
 
     it('should pick up on feature flags set via environment variables', function() {
       const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
-      idempotentEnv(ffNamePrefix + 'DISTRIBUTED_TRACING', 'true', function(tc) {
-        expect(tc.feature_flag.distributed_tracing).equal(true)
+      idempotentEnv(ffNamePrefix + 'AWAIT_SUPPORT', 'false', function(tc) {
+        expect(tc.feature_flag.await_support).equal(false)
       })
     })
 
@@ -125,6 +125,18 @@ describe('the agent configuration', function() {
       idempotentEnv('NEW_RELIC_PROXY_HOST', 'proxyhost', function(tc) {
         should.exist(tc.proxy_host)
         expect(tc.proxy_host).equal('proxyhost')
+      })
+    })
+
+    it('should pick up on the DT env var', function() {
+      idempotentEnv('NEW_RELIC_DISTRIBUTED_TRACING_ENABLED', 'true', function(tc) {
+        expect(tc.distributed_tracing.enabled).equal(true)
+      })
+    })
+
+    it('should pick up on the spans env var', function() {
+      idempotentEnv('NEW_RELIC_SPAN_EVENTS_ENABLED', 'true', function(tc) {
+        expect(tc.span_events.enabled).equal(true)
       })
     })
 

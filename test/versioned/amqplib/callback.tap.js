@@ -293,7 +293,7 @@ tap.test('amqplib callback instrumentation', function(t) {
   })
 
   t.test('consume in a transaction with distributed tracing', function(t) {
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
     agent.config.account_id = 1234
     agent.config.application_id = 4321
 

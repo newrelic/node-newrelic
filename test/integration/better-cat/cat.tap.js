@@ -17,7 +17,9 @@ let compareSampled = null
 tap.test('cross application tracing full integration', (t) => {
   t.plan(79)
   const config = {
-    feature_flag: {distributed_tracing: true},
+    distributed_tracing: {
+      enabled: true
+    },
     cross_application_tracer: {enabled: true},
     account_id: ACCOUNT_ID,
     application_id: APP_ID,

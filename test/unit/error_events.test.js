@@ -38,7 +38,7 @@ describe('Error events', function() {
       helper.unloadAgent(agent)
     })
     it('should include DT intrinsics', function(done) {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.application_id = 'test'
       agent.config.account_id = 1
       helper.runInTransaction(agent, function(tx) {
@@ -66,7 +66,7 @@ describe('Error events', function() {
     })
 
     it('should have the expected priority', function(done) {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.application_id = 'test'
       agent.config.account_id = 1
       helper.runInTransaction(agent, function(tx) {

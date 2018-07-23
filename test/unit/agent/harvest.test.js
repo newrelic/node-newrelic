@@ -821,7 +821,7 @@ describe('Agent harvests', () => {
 
   describe('sending to span_event_data endpoint', () => {
     beforeEach(() => {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
       helper.runInTransaction(agent, (tx) => {
         tx.trace.root.end()
@@ -881,7 +881,7 @@ describe('Agent harvests', () => {
     })
 
     it('should not send if `distributed_tracing` is false', (done) => {
-      agent.config.feature_flag.distributed_tracing = false
+      agent.config.distributed_tracing.enabled = false
 
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)

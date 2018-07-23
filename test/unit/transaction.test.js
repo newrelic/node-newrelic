@@ -642,7 +642,7 @@ describe('Transaction', function() {
     })
 
     it('includes distributed trace attributes if flag is enabled', function() {
-      transaction.agent.config.feature_flag.distributed_tracing = true
+      transaction.agent.config.distributed_tracing.enabled = true
 
       var attributes = transaction.getIntrinsicAttributes()
       expect(transaction.priority.toString().length).to.be.at.most(8)
@@ -709,7 +709,7 @@ describe('Transaction', function() {
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
       agent.config.cross_application_tracer.enabled = true
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
 
       // Clear deprecated values just to be extra sure.
@@ -753,7 +753,7 @@ describe('Transaction', function() {
 
     it('short circuits if config is invalid', function() {
       tx.agent.config.cross_application_tracer.enabled = false
-      tx.agent.config.feature_flag.distributed_tracing = false
+      tx.agent.config.distributed_tracing.enabled = false
       tx.agent.config.trusted_account_key = null
 
       tx.acceptDistributedTracePayload({})
@@ -935,7 +935,7 @@ describe('Transaction', function() {
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
       agent.config.cross_application_tracer.enabled = true
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.account_id = '5678'
       agent.config.application_id = '1234'
       agent.config.trusted_account_key = '5678'
@@ -953,7 +953,7 @@ describe('Transaction', function() {
 
     it('short circuits if config is invalid', function() {
       tx.agent.config.cross_application_tracer.enabled = false
-      tx.agent.config.feature_flag.distributed_tracing = false
+      tx.agent.config.distributed_tracing.enabled = false
 
       const payload = tx.createDistributedTracePayload().text()
       expect(payload).to.equal('')
@@ -1042,7 +1042,7 @@ describe('Transaction', function() {
       tx.agent.config.application_id = '1234'
       tx.agent.config.trusted_account_key = '5678'
       tx.agent.config.cross_application_tracer.enabled = true
-      tx.agent.config.feature_flag.distributed_tracing = true
+      tx.agent.config.distributed_tracing.enabled = true
 
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = false

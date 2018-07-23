@@ -29,7 +29,9 @@ describe('recordDistributedTrace', () => {
 
   beforeEach(() => {
     agent = helper.loadMockedAgent(null, {
-      feature_flag: { distributed_tracing: true },
+      distributed_tracing: {
+        enabled: true
+      },
       cross_application_tracer: { enabled: true },
       account_id: '1234',
       application_id: '5678',
