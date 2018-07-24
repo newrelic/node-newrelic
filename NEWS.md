@@ -1,3 +1,16 @@
+### 4.6.0 (2018-07-24):
+
+* Added full support for Node v10.
+
+* Added instrumentation for `crypto.scrypt`.
+
+* Added instrumentation for `fs.realpath.native`.
+
+* Added instrumentation for `process.setUncaughtExceptionCaptureCallback`.
+
+* Updated tests to use `asyncResource.runInAsyncScope` instead of `emitBefore` and
+  `emitAfter`
+
 ### 4.5.1 (2018-07-18):
 
 - The agent will now properly remerge event data on collection failure.
