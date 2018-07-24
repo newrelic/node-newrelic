@@ -11,16 +11,20 @@ var suite = benchmark.createBenchmark({
 
 suite.add({
   name: 'single event',
-  fn: function() {
+  before: function() {
     queue._data.clear()
+  },
+  fn: function() {
     queue.add('test')
   }
 })
 
 suite.add({
   name: 'filled pool',
-  fn: function() {
+  before: function() {
     queue._data.clear()
+  },
+  fn: function() {
     for (var i = 0; i < poolSize; ++i) {
       queue.add('test')
     }
@@ -29,6 +33,11 @@ suite.add({
 
 suite.add({
   name: 'overflowing pool',
+  initialize: function() {
+    for (var i = 0; i < queue.limit; ++i) {
+      queue.add('init')
+    }
+  },
   fn: function() {
     queue.add('test')
   }

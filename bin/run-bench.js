@@ -64,7 +64,7 @@ a.series([
       var test = path.relative(benchpath, file)
 
       console.log(test)
-      var args = ['--expose-gc', file]
+      var args = [file]
       if (opts.inspect) {
         args.unshift('--inspect-brk')
       }
