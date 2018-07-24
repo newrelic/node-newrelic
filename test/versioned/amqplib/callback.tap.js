@@ -294,6 +294,7 @@ tap.test('amqplib callback instrumentation', function(t) {
 
   t.test('consume in a transaction with distributed tracing', function(t) {
     agent.config.distributed_tracing.enabled = true
+    agent.config.span_events.enabled = true
     agent.config.account_id = 1234
     agent.config.application_id = 4321
 
