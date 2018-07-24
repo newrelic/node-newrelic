@@ -987,6 +987,26 @@ describe('Transaction', function() {
       expect(payload.d.pr).to.equal(tx.priority)
     })
 
+    it('adds the current span id as the parent span id', function() {
+      agent.config.span_events.enabled = true
+      agent.tracer.segment = tx.trace.root
+      const payload = JSON.parse(tx.createDistributedTracePayload().text())
+      expect(payload.d.id).to.equal(tx.trace.root.id)
+      agent.tracer.segment = null
+      agent.config.span_events.enabled = false
+    })
+
+    it('does not add the span id if the transaction is not sampled', function() {
+      agent.config.span_events.enabled = true
+      tx._calculatePriority()
+      tx.sampled = false
+      agent.tracer.segment = tx.trace.root
+      const payload = JSON.parse(tx.createDistributedTracePayload().text())
+      expect(payload.d.id).to.be.undefined
+      agent.tracer.segment = null
+      agent.config.span_events.enabled = false
+    })
+
     it('returns stringified payload object', function() {
       const payload = tx.createDistributedTracePayload().text()
       expect(typeof payload).to.equal('string')
