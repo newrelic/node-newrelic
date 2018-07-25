@@ -38,6 +38,12 @@ describe('PriorityQueue', function() {
         'new parent', 'right child', 'left grandchild', 'left child'
       ])
     })
+
+    it('does not insert events in the case the limit is 0', function() {
+      queue = new PriorityQueue(0)
+      expect(queue.add('test', 1)).to.be.false
+      expect(queue.length).to.equal(0)
+    })
   })
 
   describe('#merge', function() {
