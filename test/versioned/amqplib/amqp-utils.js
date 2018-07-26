@@ -107,7 +107,8 @@ function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
     consumeTransaction.traceId,
     'should have proper trace id'
   )
-  var produceSegment = produceTransaction.trace.root.children[0].children[0].children[0]
+  var produceSegment = produceTransaction.trace.root.children[0].children[0]
+  produceSegment = produceSegment.children[0] || produceSegment
   t.equals(
     produceSegment.id,
     consumeTransaction.parentSpanId,
