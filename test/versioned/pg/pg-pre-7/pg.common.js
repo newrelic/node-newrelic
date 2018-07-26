@@ -164,6 +164,20 @@ module.exports = function runTests(name, clientFactory) {
     )
   }
 
+  function verifySpanEvents(t, agent) {
+    var dbSpan = agent.spans.getEvents().find(span => span.name.startsWith('Datastore'))
+    t.equal(
+      dbSpan['db.instance'],
+      'postgres',
+      'shuld have the correct instace'
+    )
+    t.ok(dbSpan['peer.hostname'])
+    t.ok(dbSpan['peer.address'])
+    t.ok(dbSpan['db.statement'])
+    t.ok(dbSpan['span.kind'])
+    t.ok(dbSpan.category)
+  }
+
   function verifySlowQueries(t, agent) {
     var metricHostName = getMetricHostName(agent, params.postgres_host)
 
@@ -565,6 +579,41 @@ module.exports = function runTests(name, clientFactory) {
 
             transaction.end(function() {
               verifySlowQueries(t, agent)
+              t.end()
+            })
+          })
+        })
+      })
+    })
+
+    t.test("should add datastore instance parameters to db spans", function(t) {
+      t.plan(13)
+      // enable slow queries
+      agent.config.transaction_tracer.record_sql = 'raw'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.slow_sql.enabled = true
+
+      var client = new pg.Client(CON_OBJ)
+
+      t.tearDown(function() {
+        client.end()
+      })
+
+      helper.runInTransaction(agent, function() {
+        var transaction = agent.getTransaction()
+        client.connect(function(error) {
+          if (!t.error(error)) {
+            return t.end()
+          }
+
+          client.query('SELECT * FROM pg_sleep(1);', function slowQueryCB(error) {
+            if (!t.error(error)) {
+              return t.end()
+            }
+
+            transaction.end(function() {
+              verifySlowQueries(t, agent)
+              verifySpanEvents(t, agent)
               t.end()
             })
           })
