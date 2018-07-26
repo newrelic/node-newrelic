@@ -118,7 +118,7 @@ describe('Trace', function() {
     })
   })
 
-  it('should generate span events on end', function() {
+  it('should generate span events', function() {
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = true
 
@@ -133,6 +133,7 @@ describe('Trace', function() {
     child2.end()
     trace.root.end()
     transaction.end()
+    trace.generateSpanEvents()
 
     var events = agent.spans.getEvents()
     var nested = events[0]
