@@ -1722,7 +1722,7 @@ describe('Shim', function() {
       expect(ret).to.equal(value)
     })
 
-    it('should execute the beforeCall callback under the produced segment', function() {
+    it('should execute the inContext callback under the produced segment', function() {
       shim.applySegment(function() {}, segment, false, {}, [], function checkSegment() {
         expect(agent.tracer.segment).to.equal(segment)
       })
