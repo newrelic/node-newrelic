@@ -19,4 +19,4 @@ function runTest() {
       backgroundHandle.end(transactionHandle.end)
     })
   })
-})
+}

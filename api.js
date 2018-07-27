@@ -703,6 +703,13 @@ function createTracer(name, callback) {
 }
 
 /**
+ * @callback startSegmentCallback
+ * @param {function} cb
+ *   The function to time with the created segment.
+ * @return {Promise=} Returns a promise if cb returns a promise.
+ */
+
+/**
  * Wraps the given handler in a segment which may optionally be turned into a
  * metric.
  *
@@ -720,7 +727,7 @@ function createTracer(name, callback) {
  *  up on the transaction breakdown table and server breakdown graph. Segments
  *  just show up in transaction traces.
  *
- * @param {function(cb) -> ?Promise} handler
+ * @param {startSegmentCallback} handler
  *  The function to track as a segment.
  *
  * @param {function} [callback]
