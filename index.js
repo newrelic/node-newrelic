@@ -1,21 +1,22 @@
 'use strict'
 
 // Record opening times before loading any other files.
-var preAgentTime = process.uptime()
-var agentStart = Date.now()
+const preAgentTime = process.uptime()
+const agentStart = Date.now()
 
 // Load unwrapped core now to ensure it gets the freshest properties.
 require('./lib/util/unwrapped-core')
 
-var featureFlags = require('./lib/feature_flags').prerelease
-var logger = require('./lib/logger')
-var psemver = require('./lib/util/process-version')
+const featureFlags = require('./lib/feature_flags').prerelease
+const psemver = require('./lib/util/process-version')
+let logger = require('./lib/logger') // Gets re-loaded after initialization.
 
 
-var agentVersion = require('./package.json').version
+const pkgJSON = require('./package.json')
 logger.info(
-  "Using New Relic for Node.js. Agent version: %s; Node version: %s.",
-  agentVersion, process.version
+  'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
+  pkgJSON.version,
+  process.version
 )
 
 if (require.cache.__NR_cache) {
@@ -49,6 +50,13 @@ function initialize() {
 
       logger.error(message)
       throw new Error(message)
+    } else if (!psemver.satisfies(pkgJSON.engines.node)) {
+      logger.warn(
+        'New Relic for Node.js %s has not been tested on Node.js %s. Please ' +
+        'update the agent or downgrade your version of Node.js',
+        pkgJSON.version,
+        process.version
+      )
     }
 
     logger.debug("Current working directory at module load is %s.", process.cwd())
