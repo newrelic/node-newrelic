@@ -49,7 +49,7 @@ describe('Query Tracer', function testQueryTracer() {
       assert.deepEqual(segment.parameters, {
         backtrace: 'fake stack',
         sql_obfuscated: 'select * from foo where a=?'
-      }, 'should not record sql in trace')
+      }, 'should record sql in trace')
     }
 
     function testRaw() {
@@ -63,7 +63,7 @@ describe('Query Tracer', function testQueryTracer() {
       assert.deepEqual(segment.parameters, {
         backtrace: 'fake stack',
         sql: 'select * from foo where a=2'
-      }, 'should not record sql in trace')
+      }, 'should record sql in trace')
     }
 
     function testThreshold() {
@@ -74,7 +74,9 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
+      assert.deepEqual(segment.parameters, {
+        sql: 'select * from foo where a=2'
+      }, 'should record sql in trace')
     }
   })
 
@@ -153,7 +155,9 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
+      assert.deepEqual(segment.parameters, {
+        sql: 'select * from foo where a=2'
+      }, 'should record sql in trace')
     }
   })
 
