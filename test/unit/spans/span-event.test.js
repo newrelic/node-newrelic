@@ -187,7 +187,7 @@ describe('SpanEvent', () => {
             expect(span).to.have.property('db.statement')
             // Testing query truncation
             const statement = span['db.statement']
-            expect(statement.endsWith('.')).to.be.true
+            expect(statement.endsWith('...')).to.be.true
             expect(Buffer.byteLength(statement, 'utf8')).to.equal(2000)
 
             done()
