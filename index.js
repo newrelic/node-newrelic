@@ -8,8 +8,8 @@ const agentStart = Date.now()
 require('./lib/util/unwrapped-core')
 
 const featureFlags = require('./lib/feature_flags').prerelease
-const logger = require('./lib/logger')
 const psemver = require('./lib/util/process-version')
+let logger = require('./lib/logger') // Gets re-loaded after initialization.
 
 
 const pkgJSON = require('./package.json')
