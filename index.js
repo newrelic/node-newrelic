@@ -49,6 +49,14 @@ function initialize() {
 
       logger.error(message)
       throw new Error(message)
+    } else if (psemver.satisfies('>10')) {
+      // TODO: Update this check when Node v11 is supported.
+      logger.warn(
+        'New Relic for Node.js %s has not been tested on Node.js %s. Please ' +
+        'update the agent or downgrade your version of Node.js',
+        agentVersion,
+        process.version
+      )
     }
 
     logger.debug("Current working directory at module load is %s.", process.cwd())
