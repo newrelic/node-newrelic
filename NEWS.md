@@ -11,6 +11,8 @@
 * Updated tests to use `asyncResource.runInAsyncScope` instead of `emitBefore` and
   `emitAfter`
 
+* Pulled `distributed_tracing` config value from behind `feature_flag`.
+
 ### 4.5.1 (2018-07-18):
 
 - The agent will now properly remerge event data on collection failure.
@@ -33,6 +35,12 @@
 
 * Updated Hapi v17 instrumentation to wrap `server` export, in addition to `Server`.
 
+* `ROOT` segment no longer turns into a span event.
+
+* Fixed span collection when transactions are `sampled=false`.
+
+* Removed `grandparentId` from spans.
+
 ### 4.4.0 (2018-07-12):
 
 * Added config `utilization` env vars to the `BOOLEAN_VARS` set.
@@ -43,6 +51,29 @@
 * Replaced `trusted_account_ids` array with `trusted_account_key`.
 
 * Added node v10 to the test matrix.
+
+* Converted distributed trace `x-newrelic-trace` header name to `newrelic`.
+
+* Added support for different transport types in distributed tracing.
+
+* Added more tests around priority/sampled attributes on traces and events.
+
+* Lazily calculate transaction priority only when needed.
+
+* Transaction priority is now truncated to 6 decimal places on generation.
+
+* Adaptive sampling now uses the `sampling_target` and
+  `sampling_target_period_in_seconds` configuration values.
+
+  With these configurations, the adaptive sampling window is separated from the
+  harvest window.
+
+* Removed `nr.tripId` attribute from distributed trace intrinsics.
+
+* Default span events to enabled.
+
+  These are still protected behind `feature_flag.distributed_tracing` which defaults
+  to `false`.
 
 ### 4.3.0 (2018-07-09):
 
@@ -65,7 +96,7 @@
 
 * Fixed issue with tracking external requests to default ports.
 
- Special thanks to Ryan King for pinpointing the cause of this issue.
+  Special thanks to Ryan King for pinpointing the cause of this issue.
 
 * Added extra check for handling arrays of functions when wrapping middleware
   mounters.
@@ -102,6 +133,25 @@
   which caused infinite recursion in the agent's promise instrumentation.
 
 * No longer download gcc on test suites that do not require it.
+
+* Added `url` parameter to `http` external segments.
+
+* Renamed request parameters on external segments.
+
+  Previously these were named just the parameter name (e.g. `/foo?bar=baz` would
+  become the parameter `"bar": "baz"`). Now they are prefixed with
+  `request.parameter`. (e.g. `"request.parameter.bar": "baz"`).
+
+* Added `EventAggregator` base class.
+
+  The `ErrorAggregator` class was refactored and most generic event aggregation
+  logic was moved to the new `EventAggregator` class.
+
+* Added `SpanEvent` and `SpanAggregator` classes.
+
+* Added Span event generation to the trace `end` method.
+
+* Added Span events to harvest cycle steps.
 
 ### 4.1.5 (2018-06-11):
 
@@ -145,6 +195,11 @@
   result in a false `uninstrumented` status, because the agent would interpret
   `redis.js` as the module itself.
 
+* Moved `computeSampled` call to `Transaction` constructor.
+
+  Previously it was only called in `createDistributedTracePayload`, but this
+  gives all transactions a `sampled` value, and potentially a boosted priority.
+
 ### 4.1.4 (2018-06-04):
 
 * Transaction stubs are now created properly in `api#getTransaction`
@@ -167,6 +222,25 @@
   harvest.
 
 * Modularlized configuration constants to improve readability.
+
+* Added `distributed_tracing` feature flag.
+
+* Added `acceptDistributedTracePayload` method to `Transaction`.
+
+* Added `createDistributedTracePayload` method to `Transaction`.
+
+* Updated `Agent#recordSupportability` to not include `Nodejs/` in the default metric name.
+
+* Added distributed tracing methods to `TransactionHandle`.
+
+* Added distributed tracing cases for `http` and `other` metric recorders.
+
+* Implemented `_addDistributedTraceInstrinsics` on `Transaction`.
+
+  If the `distributed_tracing` feature flag is enabled, the agent will ignore old
+  CAT attributes in favor of distributed trace–related ones.
+
+* Added integration tests around better CAT functionality.
 
 ### 4.1.2 (2018-05-22):
 
