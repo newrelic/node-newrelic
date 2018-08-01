@@ -115,7 +115,11 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
   t.test('ensure host and port are set on segment', function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SELECT 1 + 1 AS solution', function(err) {
-        var seg = txn.trace.root.children[0].children[1]
+        let seg = txn.trace.root.children[0].children[1]
+        // 2.16 introduced an extra segment
+        if (seg && seg.name === 'timers.setTimeout') {
+          seg = txn.trace.root.children[0].children[2]
+        }
         t.error(err, 'should not error')
         t.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
         t.equal(
