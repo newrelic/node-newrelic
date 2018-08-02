@@ -134,7 +134,6 @@ describe('RemoteMethod', function() {
 
     it('requires a request body within the maximum payload size limit', function() {
       options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
-      console.log('BODY:', options.body)
       expect(function() { method._safeRequest(options) })
         .throws('Maximum payload size exceeded')
     })
