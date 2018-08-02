@@ -17,7 +17,8 @@ tap.test('DataSender (callback style) talking to fake collector', function(t) {
       run_id: 1337,
       ssl: true,
       license_key: 'whatever',
-      version: '0'
+      version: '0',
+      max_payload_size_in_bytes: 1000000
     }
     config.certificates = [
       read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
@@ -80,6 +81,7 @@ tap.test('remote method to preconnect', function(t) {
       host: 'ssl.lvh.me',
       port: 8765,
       ssl: true,
+      max_payload_size_in_bytes: 1000000
     }
 
     config.certificates = [
