@@ -80,7 +80,7 @@ describe('RemoteMethod', function() {
 
 
     beforeEach(function() {
-      method = new RemoteMethod('test')
+      method = new RemoteMethod('test', {max_payload_size_in_bytes: 100})
       options = {
         host: 'collector.newrelic.com',
         port: 80,
@@ -131,6 +131,12 @@ describe('RemoteMethod', function() {
       expect(function() { method._safeRequest(options) })
         .throws('Must include URL to request!')
     })
+
+    it('requires a request body within the maximum payload size limit', function() {
+      options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
+      expect(function() { method._safeRequest(options) })
+        .throws('Maximum payload size exceeded')
+    })
   })
 
   describe('when calling a method on the collector', function() {
@@ -161,7 +167,11 @@ describe('RemoteMethod', function() {
 
   describe('when the connection fails', function() {
     it('should return the connection failure', function(done) {
-      var method = new RemoteMethod('TEST', {host: 'localhost', port: 8765})
+      var method = new RemoteMethod('TEST', {
+        host: 'localhost',
+        port: 8765,
+        max_payload_size_in_bytes: 100000
+      })
       method.invoke({message: 'none'}, function(error) {
         should.exist(error)
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
@@ -175,7 +185,11 @@ describe('RemoteMethod', function() {
     })
 
     it('should correctly handle a DNS lookup failure', function(done) {
-      var method = new RemoteMethod('TEST', {host: 'failed.domain.cxlrg', port: 80})
+      var method = new RemoteMethod('TEST', {
+        host: 'failed.domain.cxlrg',
+        port: 80,
+        max_payload_size_in_bytes: 100000
+      })
       method.invoke([], function(error) {
         should.exist(error)
 

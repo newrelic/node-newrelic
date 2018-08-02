@@ -673,6 +673,10 @@ describe('the agent configuration', function() {
     it('should enable browser monitoring attributes', function() {
       expect(configuration.browser_monitoring.attributes.enabled).equal(false)
     })
+
+    it('should set max_payload_size_in_bytes', function() {
+      expect(configuration.max_payload_size_in_bytes).to.equal(1000000)
+    })
   })
 
   describe('when overriding the config file location via NR_HOME', function() {
@@ -1120,6 +1124,13 @@ describe('the agent configuration', function() {
         config.onConnect({'transaction_events.enabled': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
+    })
+
+    it('should override default max_payload_size_in_bytes', function() {
+      expect(function() {
+        config.onConnect({max_payload_size_in_bytes: 100})
+      }).not.throws()
+      expect(config.max_payload_size_in_bytes).equals(100)
     })
 
     describe('when data_report_period is set', function() {
