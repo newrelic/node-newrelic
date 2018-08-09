@@ -7,9 +7,7 @@ const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const TestDatastore = require('./test-datastore')
 
 function makeSuite(name) {
-  var agent = helper.loadMockedAgent()
-  var suite = benchmark.createBenchmark({name: name, runs: 10000})
-  return {agent: agent, suite: suite}
+  return benchmark.createBenchmark({name: name, runs: 10000})
 }
 
 function getTestDatastore(agent, instrumented) {

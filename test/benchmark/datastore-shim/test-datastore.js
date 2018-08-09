@@ -1,15 +1,17 @@
 'use strict'
 
-function TestDatastore() {}
+class TestDatastore {
+  testOp(cb) {
+    setImmediate(cb)
+  }
 
-TestDatastore.prototype.testOp = function testOp(cb) {
-  setImmediate(cb)
-}
-TestDatastore.prototype.testQuery = function testQuery(query, cb) {
-  setImmediate(cb)
-}
-TestDatastore.prototype.testBatch  = function testBatch(query, cb) {
-  setImmediate(cb)
+  testQuery(query, cb) {
+    setImmediate(cb)
+  }
+
+  testBatch(query, cb) {
+    setImmediate(cb)
+  }
 }
 
 module.exports = TestDatastore
