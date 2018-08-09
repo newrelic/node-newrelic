@@ -100,6 +100,10 @@ Benchmark.prototype.run = function run(cb) {
         helper.unloadAgent(agent)
       }
 
+      if (typeof test.teardown === 'function') {
+        test.teardown()
+      }
+
       suite.samples[testName] = samples
       callback()
     })

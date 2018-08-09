@@ -3,29 +3,28 @@
 const benchmark = require('../../lib/benchmark')
 const http = require('http')
 
-const suite = benchmark.createBenchmark({name: 'http'})
+const suite = benchmark.createBenchmark({name: 'http', runs: 5000})
 
 let server = null
 const PORT = 3000
 
 suite.add({
   name: 'uninstrumented http.Server',
-  defer: true,
-  before: createServer,
-  fn: (agent, cb) => makeRequest(cb),
-  after: closeServer
+  async: true,
+  initialize: createServer,
+  fn: (agent, done) => makeRequest(done),
+  teardown: closeServer
 })
 
 suite.add({
   name: 'instrumented http.Server',
   agent: true,
-  defer: true,
-  before: createServer,
-  fn: (agent, cb) => makeRequest(cb),
-  after: closeServer
+  async: true,
+  initialize: createServer,
+  fn: (agent, done) => makeRequest(done),
+  teardown: closeServer
 })
 
-global.gc && global.gc()
 suite.run()
 
 function createServer() {
