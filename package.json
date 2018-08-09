@@ -105,6 +105,7 @@
   "scripts": {
     "bench": "node ./bin/run-bench.js",
     "versioned-tests": "./bin/run-versioned-tests.sh",
+    "versioned": "./bin/run-versioned-tests.sh",
     "test": "make test"
   },
   "bin": {
