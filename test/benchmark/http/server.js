@@ -1,46 +1,45 @@
 'use strict'
 
 const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
 const http = require('http')
-let agent = null
 
 const suite = benchmark.createBenchmark({name: 'http'})
 
+let server = null
+const PORT = 3000
+
 suite.add({
   name: 'uninstrumented http.Server',
-  fn: runTest
+  defer: true,
+  before: createServer,
+  fn: (agent, cb) => makeRequest(cb),
+  after: closeServer
 })
 
 suite.add({
   name: 'instrumented http.Server',
-  before: () => {
-    agent = helper.instrumentMockedAgent()
-  },
-  fn: runTest,
-  after: () => {
-    helper.unloadAgent(agent)
-  }
+  agent: true,
+  defer: true,
+  before: createServer,
+  fn: (agent, cb) => makeRequest(cb),
+  after: closeServer
 })
 
 global.gc && global.gc()
-setTimeout(function() {
-  suite.run()
-}, 500)
+suite.run()
 
-function runTest() {
-  const server = http.createServer((req, res) => {
+function createServer() {
+  server = http.createServer((req, res) => {
     res.end()
   })
+  server.listen(PORT)
+}
 
-  server.listen(3000, () => {
-    const req = http.request({
-      host: 'localhost',
-      port: 3000,
-      method: 'GET'
-    })
-    req.end()
-  })
+function closeServer() {
+  server && server.close()
+  server = null
+}
 
-  server.close()
+function makeRequest(cb) {
+  http.request({port: PORT}, cb).end()
 }
