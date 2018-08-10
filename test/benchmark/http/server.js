@@ -18,7 +18,7 @@ suite.add({
 
 suite.add({
   name: 'instrumented http.Server',
-  agent: true,
+  agent: {},
   async: true,
   initialize: createServer,
   fn: (agent, done) => makeRequest(done),
