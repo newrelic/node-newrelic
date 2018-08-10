@@ -18,7 +18,6 @@ addTests('implicit spec', implicitSpec)
 addTests('explicit spec', explicitSpec)
 addTests('   mixed spec', randomSpec)
 
-global.gc && global.gc()
 setTimeout(function() {
   suite.run()
 }, 500)
@@ -135,7 +134,7 @@ function randomRecord(spec) {
 function noop() {}
 
 function preOptRecordMiddleware() {
-  for (var i = 0; i < 100000; ++i) {
+  for (var i = 0; i < 1000; ++i) {
     var m = randomRecord(randomSpec)
     m = typeof m === 'function' ? m : m.func
     for (var j = 0; j < 100; ++j) {

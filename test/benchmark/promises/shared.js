@@ -100,9 +100,7 @@ var tests = [
 
   function promiseConstructorThrow(Promise) {
     return function runTest(agent, cb) {
-      for (var i = 0; i < NUM_PROMISES; ++i) {
-        new Promise(function(res, rej) {throw new Error('Whoops!')})
-      }
+      (new Promise(function(res, rej) {throw new Error('Whoops!')})).catch((e) => {})
       cb()
     }
   }
