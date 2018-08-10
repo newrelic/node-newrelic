@@ -36,54 +36,97 @@ if (tests.length === 0 && globs.length === 0) {
   )
 }
 
-a.series([
-  function resolveGlobs(cb) {
-    if (!globs.length) {
-      return cb()
-    }
+class ConsolePrinter {
+  /* eslint-disable no-console */
+  addTest(name, child) {
+    console.log(name)
+    child.stdout.on('data', (d) => process.stdout.write(d))
+    child.stderr.on('data', (d) => process.stderr.write(d))
+    child.once('exit', () => console.log(''))
+  }
 
-    a.map(globs, glob, function afterGlobbing(err, resolved) {
-      if (err) {
-        console.error('Failed to glob:', err)
-        process.exitCode = -1
-        return cb(err)
+  finish() {
+    console.log('')
+  }
+  /* eslint-enable no-console */
+}
+
+class JSONPrinter {
+  constructor() {
+    this._tests = Object.create(null)
+  }
+
+  addTest(name, child) {
+    let output = ''
+    this._tests[name] = null
+    child.stdout.on('data', (d) => output += d.toString())
+    child.stdout.on('end', () => this._tests[name] = JSON.parse(output))
+    child.stderr.on('data', (d) => process.stderr.write(d))
+  }
+
+  finish() {
+    /* eslint-disable no-console */
+    console.log(JSON.stringify(this._tests, null, 2))
+    /* eslint-enable no-console */
+  }
+}
+
+run()
+
+function run() {
+  const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
+
+  a.series([
+    function resolveGlobs(cb) {
+      if (!globs.length) {
+        return cb()
       }
-      resolved.forEach(function mergeResolved(files) {
-        files.forEach(function mergeFile(file) {
-          if (tests.indexOf(file) === -1) {
-            tests.push(file)
-          }
+
+      a.map(globs, glob, function afterGlobbing(err, resolved) {
+        if (err) {
+          console.error('Failed to glob:', err)
+          process.exitCode = -1
+          return cb(err)
+        }
+        resolved.forEach(function mergeResolved(files) {
+          files.forEach(function mergeFile(file) {
+            if (tests.indexOf(file) === -1) {
+              tests.push(file)
+            }
+          })
         })
+        cb()
       })
-      cb()
-    })
-  },
-  function runBenchmarks(cb) {
-    tests.sort()
-    a.eachSeries(tests, function spawnEachFile(file, cb) {
-      var test = path.relative(benchpath, file)
+    },
+    function runBenchmarks(cb) {
+      tests.sort()
+      a.eachSeries(tests, function spawnEachFile(file, cb) {
+        var test = path.relative(benchpath, file)
 
-      console.log(test)
-      var args = [file]
-      if (opts.inspect) {
-        args.unshift('--inspect-brk')
-      }
-      var child = cp.spawn('node', args, {cwd: cwd, stdio: 'inherit'})
-      child.on('error', cb)
-      child.on('exit', function onChildExit(code) {
-        console.log('')
-        if (code) {
-          return cb(new Error('Benchmark exited with code ' + code))
+        var args = [file]
+        if (opts.inspect) {
+          args.unshift('--inspect-brk')
+        }
+        var child = cp.spawn('node', args, {cwd: cwd, stdio: 'pipe'})
+        printer.addTest(test, child)
+
+        child.on('error', cb)
+        child.on('exit', function onChildExit(code) {
+          if (code) {
+            return cb(new Error('Benchmark exited with code ' + code))
+          }
+          cb()
+        })
+      }, function afterSpawnEachFile(err) {
+        if (err) {
+          console.error('Spawning failed:', err)
+          process.exitCode = -2
+          return cb(err)
         }
         cb()
       })
-    }, function afterSpawnEachFile(err) {
-      if (err) {
-        console.error('Spawning failed:', err)
-        process.exitCode = -2
-        return cb(err)
-      }
-      cb()
-    })
-  }
-])
+    }
+  ], () => {
+    printer.finish()
+  })
+}
