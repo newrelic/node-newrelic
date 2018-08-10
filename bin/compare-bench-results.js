@@ -48,7 +48,6 @@ async.map(process.argv.slice(2), (file, cb) => {
   diffArrays(downstreamFiles, baselineFiles).forEach((file) => {
     warnings.push(`- **NOTE**: File "${file}" in branch but not base.`)
   })
-  console.log('')
 
   let allPassing = true
   const details = baselineFiles.sort().map((testFile) => {
@@ -121,7 +120,8 @@ function diffArrays(a, b) {
 
 function compareResults(base, down) {
   const delta = base.mean - down.mean
-  return delta < base.stdDev
+  const deltaPercent = delta / base.mean
+  return delta < 1 || deltaPercent < 2
 }
 
 function passMark(passes) {
