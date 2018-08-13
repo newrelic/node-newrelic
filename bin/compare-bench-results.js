@@ -94,9 +94,11 @@ async.map(process.argv.slice(2), (file, cb) => {
       `<summary>${testFile}: ${passMark(filePassing)}</summary>`,
       '',
       results,
+      '',
+      '-----------------------------------------------------------------------',
       '</details>'
     ].join('\n')
-  }).join('\n\n-----------------------------------------------------------\n\n')
+  }).join('\n\n')
 
   if (warnings.length) {
     console.log('### WARNINGS')
@@ -107,6 +109,7 @@ async.map(process.argv.slice(2), (file, cb) => {
   console.log(`### Benchmark Results: ${passMark(allPassing)}`)
   console.log('')
   console.log('### Details')
+  console.log('_Lower is better._')
   console.log(details)
 
   if (!allPassing) {
@@ -119,9 +122,12 @@ function diffArrays(a, b) {
 }
 
 function compareResults(base, down) {
-  const delta = base.mean - down.mean
+  const delta = down.mean - base.mean
   const deltaPercent = delta / base.mean
-  return delta < 1 || deltaPercent < 2
+  if (Math.abs(delta) < 0.1) {
+    return deltaPercent < 100
+  }
+  return deltaPercent < 2
 }
 
 function passMark(passes) {
@@ -130,30 +136,32 @@ function passMark(passes) {
 
 function formatResults(base, down) {
   return [
-    `- ${formatField('numSamples', base, down)}`,
-    `- ${formatField('mean', base, down)}`,
-    `- ${formatField('stdDev', base, down)}`,
-    `- ${formatField('max', base, down)}`,
-    `- ${formatField('min', base, down)}`,
-    `- ${formatField('5thPercentile', base, down)}`,
-    `- ${formatField('95thPercentile', base, down)}`,
-    `- ${formatField('median', base, down)}`,
+    'Field | Upstream (ms) | Downstream (ms) | Delta (ms) | Delta (%)',
+    '----- | ------------: | --------------: | ---------: | --------:',
+    formatField('numSamples'),
+    formatField('mean'),
+    formatField('stdDev'),
+    formatField('max'),
+    formatField('min'),
+    formatField('5thPercentile'),
+    formatField('95thPercentile'),
+    formatField('median')
   ].join('\n')
-}
 
-function formatField(field, base, down) {
-  const baseValue = base[field]
-  const downValue = down[field]
-  const diffValue = baseValue - downValue
-  const diffPercent = (100 * diffValue / baseValue).toFixed(2)
-  const prefix = diffValue >= 0 ? '+' : ''
+  function formatField(field) {
+    const baseValue = base[field]
+    const downValue = down[field]
+    const diffValue = downValue - baseValue
+    const diffPercent = (100 * diffValue / baseValue).toFixed(2)
+    const prefix = diffValue >= 0 ? '+' : ''
 
-  return (
-    `${field}: ${fixValue(baseValue)} - ${fixValue(downValue)} =` +
-    ` ${fixValue(diffValue)} (${prefix}${diffPercent}%)`
-  )
-}
+    return (
+      `${field} | ${fixValue(baseValue)} | ${fixValue(downValue)} |` +
+      ` ${fixValue(diffValue)} | ${prefix}${diffPercent}%`
+    )
+  }
 
-function fixValue(value) {
-  return value % 1 ? value.toFixed(5) : value
+  function fixValue(value) {
+    return value % 1 ? value.toFixed(5) : value
+  }
 }
