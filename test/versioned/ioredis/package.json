@@ -13,6 +13,17 @@
       "files": [
         "ioredis-3.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=4"
+      },
+      "dependencies": {
+        "ioredis": ">=4"
+      },
+      "files": [
+        "ioredis.tap.js"
+      ]
     }
   ]
 }
