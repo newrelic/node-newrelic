@@ -1,7 +1,6 @@
 'use strict'
 
 var tap = require('tap')
-var test = tap.test
 var helper = require('../../lib/agent_helper')
 var assertMetrics = require('../../lib/metrics_helper').assertMetrics
 var params = require('../../lib/params')
@@ -11,8 +10,7 @@ var params = require('../../lib/params')
 var DB_INDEX = 2
 
 
-test('ioredis instrumentation', function(t) {
-
+tap.test('ioredis instrumentation', function(t) {
   var agent, redisClient
 
   t.beforeEach(function(done) {
@@ -43,17 +41,14 @@ test('ioredis instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
-      redisClient.set('testkey', 'testvalue').then(function (ok) {
+      redisClient.set('testkey', 'testvalue').then(function() {
         transaction.end()
       }, onError).catch(onError)
     })
   })
 
-  t.test('creates expected segments',
-       {timeout : 5000}, function (t) {
-
-    var self = this
-    var onError = function(error){return t.fail(error)}
+  t.test('creates expected segments', {timeout : 5000}, function(t) {
+    var onError = function(error) { return t.fail(error) }
 
     agent.on('transactionFinished', function(tx) {
       var root = tx.trace.root
@@ -102,8 +97,8 @@ test('ioredis instrumentation', function(t) {
 
 
 function setup(t, callback) {
-  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, app) {
-    if (error) return t.fail(error)
+  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
+    t.error(error)
     var agent = helper.instrumentMockedAgent()
 
     // remove from cache, so that the bluebird library that ioredis uses gets

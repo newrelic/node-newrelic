@@ -1,0 +1,29 @@
+{
+  "name": "ioredis-test",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10.16"
+      },
+      "dependencies": {
+        "ioredis": "3.x"
+      },
+      "files": [
+        "ioredis-3.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=6"
+      },
+      "dependencies": {
+        "ioredis": ">=4"
+      },
+      "files": [
+        "ioredis.tap.js"
+      ]
+    }
+  ]
+}
