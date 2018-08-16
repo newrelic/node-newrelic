@@ -153,7 +153,7 @@ tap.test('external requests', function(t) {
     // resolved in agent 2.5.1.
     var got = require('got')
     helper.runInTransaction(agent, function() {
-      var req = got('https://www.google.com/')
+      var req = got('https://example.com/')
       t.tearDown(function() { req.cancel() })
       req.then(
         function() { t.end() },

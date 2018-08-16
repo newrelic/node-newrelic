@@ -83,6 +83,11 @@
       "name": "Peter Svetlichny",
       "email": "psvetlichny@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Michael Goin",
+      "email": "mgoin@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
