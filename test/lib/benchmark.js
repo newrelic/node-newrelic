@@ -86,9 +86,15 @@ class Benchmark {
           function after() {
             // The cpu delta is reported in microseconds, so we turn them into milliseconds
             var delta = process.cpuUsage(prevCpu).user / 1000
+
+            if (typeof test.after === 'function') {
+              test.after()
+            }
+
             if (typeof callback === 'function') {
               return callback(afterCallback)
             }
+
             afterCallback()
             function afterCallback() {
               next(null, delta)
