@@ -1188,6 +1188,55 @@ describe('Shim', function() {
             wrapped(cb)
           })
         })
+
+        describe('when callback required', function() {
+          it('should create segment if method has callback', function() {
+            var cb = function() {}
+            var toWrap = function(wrappedCB) {
+              expect(wrappedCB).to.not.equal(cb)
+              expect(shim.isWrapped(wrappedCB)).to.be.true
+              expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+              expect(function() {
+                wrappedCB()
+              }).to.not.throw()
+
+              return shim.getSegment()
+            }
+
+            var wrapped = shim.record(toWrap, function() {
+              return {name: 'test segment', callback: shim.LAST, callbackRequired: true}
+            })
+
+            helper.runInTransaction(agent, function() {
+              var parentSegment = shim.getSegment()
+              var resultingSegment = wrapped(cb)
+
+              expect(resultingSegment === parentSegment).to.be.false
+              expect(parentSegment.children).to.include(resultingSegment)
+            })
+          })
+
+          it('should not create segment if method missing callback', function() {
+            var toWrap = function(wrappedCB) {
+              expect(wrappedCB).to.not.exist
+
+              return shim.getSegment()
+            }
+
+            var wrapped = shim.record(toWrap, function() {
+              return {name: 'test segment', callback: shim.LAST, callbackRequired: true}
+            })
+
+            helper.runInTransaction(agent, function() {
+              var parentSegment = shim.getSegment()
+              var resultingSegment = wrapped()
+
+              expect(resultingSegment === parentSegment).to.be.true
+              expect(parentSegment.children).to.not.include(resultingSegment)
+            })
+          })
+        })
       })
 
       describe('when called with an inactive transaction', function() {
