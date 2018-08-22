@@ -6,7 +6,7 @@ const helper = require('../../lib/agent_helper')
 
 test('promisify', function(t) {
   t.plan(1)
-  t.test('should work on setTimeout', function(t) {
+  t.test('should work on setTimeout', {skip: !util.promisify}, function(t) {
     t.plan(1)
     var agent = helper.instrumentMockedAgent()
     t.tearDown(function() {
