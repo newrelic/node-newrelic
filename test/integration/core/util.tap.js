@@ -4,9 +4,9 @@ const test = require('tap').test
 const util = require('util')
 const helper = require('../../lib/agent_helper')
 
-test('promisify', function(t) {
-  t.plan(1)
-  t.test('should work on setTimeout', {skip: !util.promisify}, function(t) {
+test('promisify', {skip: !util.promisify}, function(t) {
+  t.plan(4)
+  t.test('should work on setTimeout', function(t) {
     t.plan(1)
     var agent = helper.instrumentMockedAgent()
     t.tearDown(function() {
@@ -15,7 +15,55 @@ test('promisify', function(t) {
     let asyncTimeout = util.promisify(setTimeout)
     asyncTimeout(10)
       .then(() => {
-        t.ok('should evaluate properly')
+        t.ok(true, 'should evaluate properly')
+        t.end()
+      })
+      .catch(ex => {
+        t.error(ex)
+      })
+  })
+  t.test('should work on setImmediate', function(t) {
+    t.plan(1)
+    var agent = helper.instrumentMockedAgent()
+    t.tearDown(function() {
+      helper.unloadAgent(agent)
+    })
+    let asyncImmediate = util.promisify(setImmediate)
+    asyncImmediate()
+      .then(() => {
+        t.ok(true, 'should evaluate properly')
+        t.end()
+      })
+      .catch(ex => {
+        t.error(ex)
+      })
+  })
+  t.test('should work on child_process.exec', function(t) {
+    t.plan(1)
+    var agent = helper.instrumentMockedAgent()
+    t.tearDown(function() {
+      helper.unloadAgent(agent)
+    })
+    let asyncExec = util.promisify(require('child_process').exec)
+    asyncExec('ls')
+      .then(() => {
+        t.ok(true, 'should evaluate properly')
+        t.end()
+      })
+      .catch(ex => {
+        t.error(ex)
+      })
+  })
+  t.test('should work on child_process.execFile', function(t) {
+    t.plan(1)
+    var agent = helper.instrumentMockedAgent()
+    t.tearDown(function() {
+      helper.unloadAgent(agent)
+    })
+    let asyncExec = util.promisify(require('child_process').execFile)
+    asyncExec('ls')
+      .then(() => {
+        t.ok(true, 'should evaluate properly')
         t.end()
       })
       .catch(ex => {
