@@ -4,7 +4,7 @@ var test = require('tap').test
 var dns = require('dns')
 var helper = require('../../lib/agent_helper')
 var semver = require('semver')
-
+var verifySegments = require('./verify.js')
 
 test('lookup', function(t) {
   var agent = setupAgent(t)
@@ -28,6 +28,7 @@ test('resolve', function(t) {
 
       var children =
         semver.satisfies(process.version, '>=7.7.2') ? [] : ['dns.resolve4']
+
       verifySegments(t, agent, 'dns.resolve', children)
     })
   })
@@ -140,32 +141,4 @@ function setupAgent(t) {
   })
 
   return agent
-}
-
-function verifySegments(t, agent, name, extras) {
-  extras = extras || []
-  var tx = agent.getTransaction()
-  var root = agent.getTransaction().trace.root
-
-  agent.once('transactionFinished', function() {
-    t.equal(root.children.length, 1, 'should have a single child')
-
-    var child = root.children[0]
-    t.equal(child.name, name, 'child segment should have correct name')
-    t.ok(child.timer.touched, 'child should started and ended')
-    t.equal(
-      child.children.length, extras.length,
-      'child should have only expected children'
-    )
-
-    for (var i = 0; i < child.children.length; ++i) {
-      t.equal(child.children[i].name, extras[i], 'grandchild should be as expected')
-    }
-
-    t.end()
-  })
-
-  process.nextTick(function() {
-    tx.end()
-  })
 }
