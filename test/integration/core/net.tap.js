@@ -146,8 +146,8 @@ test('connect', function connectTest(t) {
       t.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
       t.equal(
         dnsSegment.children.length,
-        0,
-        'dns should have no children'
+        1,
+        'dns should have a single callback segment'
       )
       t.equal(
         timeoutSegment.name,

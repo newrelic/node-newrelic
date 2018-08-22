@@ -20,9 +20,11 @@ function verifySegments(t, agent, name, extras, done) {
   }
 
   var callback = child.children[child.children.length - 1]
-  t.equal(
-    callback.name,
-    'Callback: anonymous',
+  t.ok(
+    (
+      (callback.name === 'Callback: anonymous') ||
+      (callback.name === 'Callback: <anonymous>')
+    ),
     'callback segment should have correct name'
   )
 
