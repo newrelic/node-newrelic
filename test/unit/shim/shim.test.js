@@ -253,21 +253,6 @@ describe('Shim', function() {
         expect(specCalled).to.equal(2)
       })
 
-      it('should copy over all symbol properties off the original', function() {
-        const expectedSymbol = Symbol('testSymbol')
-        wrappable.fiz[expectedSymbol] = 'i am here!'
-        const originalFiz = wrappable.fiz
-        function wrapped() {}
-        shim.wrap(wrappable, 'fiz', function() {
-          return wrapped
-        })
-
-        expect(wrappable.fiz).to.not.equal(originalFiz)
-        expect(wrappable.fiz).to.equal(wrapped)
-        expect(wrapped[expectedSymbol]).to.equal(originalFiz[expectedSymbol])
-        expect(wrapped[expectedSymbol]).to.equal('i am here!')
-      })
-
       it('should replace wrapped properties on the original object', function() {
         expect(wrappable.bar).to.not.equal(originalBar)
       })
