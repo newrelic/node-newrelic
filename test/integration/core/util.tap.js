@@ -2,6 +2,7 @@
 
 const test = require('tap').test
 const util = require('util')
+const path = require('path')
 const helper = require('../../lib/agent_helper')
 
 test('promisify', {skip: !util.promisify}, function(t) {
@@ -61,7 +62,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
       helper.unloadAgent(agent)
     })
     let asyncExec = util.promisify(require('child_process').execFile)
-    asyncExec('ls')
+    asyncExec(path.join(__dirname, 'exec-me.js'))
       .then(() => {
         t.ok(true, 'should evaluate properly')
         t.end()
