@@ -6,7 +6,7 @@ const path = require('path')
 const helper = require('../../lib/agent_helper')
 
 test('promisify', {skip: !util.promisify}, function(t) {
-  t.plan(4)
+  t.autoend()
   t.test('should work on setTimeout', function(t) {
     t.plan(1)
     var agent = helper.instrumentMockedAgent()
@@ -65,6 +65,26 @@ test('promisify', {skip: !util.promisify}, function(t) {
     asyncExec(path.join(__dirname, 'exec-me.js'))
       .then(() => {
         t.ok(true, 'should evaluate properly')
+        t.end()
+      })
+      .catch(ex => {
+        t.error(ex)
+      })
+  })
+
+  t.test('should work on fs.exists', function(t) {
+    t.plan(1)
+
+    var agent = helper.instrumentMockedAgent()
+    t.tearDown(function() {
+      helper.unloadAgent(agent)
+    })
+
+    let asyncExec = util.promisify(require('fs').exists)
+
+    asyncExec(path.join(__dirname, 'exec-me.js'))
+      .then(() => {
+        t.ok(true, 'should find file')
         t.end()
       })
       .catch(ex => {
