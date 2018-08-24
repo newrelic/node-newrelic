@@ -80,9 +80,9 @@ test('promisify', {skip: !util.promisify}, function(t) {
       helper.unloadAgent(agent)
     })
 
-    let asyncExec = util.promisify(require('fs').exists)
+    let asyncExists = util.promisify(require('fs').exists)
 
-    asyncExec(path.join(__dirname, 'exec-me.js'))
+    asyncExists(path.join(__dirname, 'exec-me.js'))
       .then(() => {
         t.ok(true, 'should find file')
         t.end()
