@@ -186,6 +186,27 @@ describe('TraceAggregator', function() {
     })
   })
 
+  it("should collect traces when the threshold is 0", function() {
+    var config = configurator.initialize({
+      transaction_tracer : {
+        transaction_threshold : 0,
+        enabled : true,
+        top_n : 10
+      }
+    })
+
+    var aggregator  = new TraceAggregator(config)
+    var transaction = new Transaction(agent)
+
+    transaction.trace.setDurationInMillis(0)
+    transaction.url = '/test'
+    transaction.name = 'WebTransaction/Uri/test'
+    transaction.statusCode = 200
+
+    aggregator.add(transaction)
+    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(0)
+  })
+
   it("should collect traces for transactions that exceed apdex_f", function() {
     var ABOVE_THRESHOLD = 29
     var APDEXT = 0.007
