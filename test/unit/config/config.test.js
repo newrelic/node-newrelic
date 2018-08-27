@@ -355,7 +355,7 @@ describe('the agent configuration', function() {
     it('should pick up the transaction trace threshold', function() {
       idempotentEnv('NEW_RELIC_TRACER_THRESHOLD', 0.02, function(tc) {
         should.exist(tc.transaction_tracer.transaction_threshold)
-        expect(tc.transaction_tracer.transaction_threshold).equal('0.02')
+        expect(tc.transaction_tracer.transaction_threshold).equal(0.02)
       })
     })
 
