@@ -186,12 +186,12 @@ describe('TraceAggregator', function() {
     })
   })
 
-  it("should collect traces when the threshold is 0", function() {
+  it('should collect traces when the threshold is 0', function() {
     var config = configurator.initialize({
-      transaction_tracer : {
-        transaction_threshold : 0,
-        enabled : true,
-        top_n : 10
+      transaction_tracer: {
+        transaction_threshold: 0,
+        enabled: true,
+        top_n: 10
       }
     })
 
