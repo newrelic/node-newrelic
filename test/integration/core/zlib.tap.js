@@ -1,10 +1,9 @@
 'use strict'
 
 var test = require('tap').test
-var semver = require('semver')
 var zlib = require('zlib')
 var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify.js')
+var verifySegments = require('./verify')
 var concat = require('concat-stream')
 
 // Prepare our data values. Note that since the agent isn't loaded yet these
