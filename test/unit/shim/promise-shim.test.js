@@ -12,85 +12,84 @@ describe('PromiseShim', () => {
   let TestPromise = null
 
   beforeEach(() => {
-    TestPromise = class {
-      constructor(executor) {
-        this.executorCaller(executor)
-      }
+    // TODO: Convert this test to use ES6 class after deprecating Node <5.
+    TestPromise = function(executor) {
+      this.executorCaller(executor)
+    }
 
-      static resolve(val) {
+    TestPromise.resolve = function(val) {
+      const p = Object.create(TestPromise.prototype)
+      p.resolver(val)
+      return p
+    }
+
+    TestPromise.reject = function(val) {
+      const p = Object.create(TestPromise.prototype)
+      p.rejector(val)
+      return p
+    }
+
+    TestPromise.promisify = function(func) {
+      return function() {
+        const args = shim.argsToArray.apply(shim, arguments)
         const p = Object.create(TestPromise.prototype)
-        p.resolver(val)
-        return p
-      }
-
-      static reject(val) {
-        const p = Object.create(TestPromise.prototype)
-        p.rejector(val)
-        return p
-      }
-
-      static promisify(func) {
-        return function() {
-          const args = shim.argsToArray.apply(shim, arguments)
-          const p = Object.create(TestPromise.prototype)
-          args.push((err, res) => {
-            if (err) {
-              p.rejector(err)
-            } else {
-              p.resolver(res)
-            }
-          })
-          func.apply(this, args)
-          return p
-        }
-      }
-
-      executorCaller(executor) {
-        try {
-          executor(this.resolver.bind(this), this.rejector.bind(this))
-        } catch (err) {
-          this.rejector(err)
-        }
-      }
-
-      resolver(resolution) {
-        this.resolution = resolution
-        helper.runOutOfContext(() => {
-          if (this._next._thenned) {
-            this._next._thenned(resolution)
+        args.push((err, res) => {
+          if (err) {
+            p.rejector(err)
+          } else {
+            p.resolver(res)
           }
         })
+        func.apply(this, args)
+        return p
       }
+    }
 
-      rejector(rejection) {
-        this.rejection = rejection
-        helper.runOutOfContext(() => {
-          if (this._next._caught) {
-            this._next._caught(rejection)
-          }
-        })
+    TestPromise.prototype.executorCaller = function(executor) {
+      try {
+        executor(this.resolver.bind(this), this.rejector.bind(this))
+      } catch (err) {
+        this.rejector(err)
       }
+    }
 
-      then(res, rej) {
-        this.res = res
-        this.rej = rej
+    TestPromise.prototype.resolver = function(resolution) {
+      this.resolution = resolution
+      helper.runOutOfContext(() => {
+        if (this._next._thenned) {
+          this._next._thenned(resolution)
+        }
+      })
+    }
 
-        this._next = Object.create(TestPromise.prototype)
-        this._next._thenned = res
-        this._next._caught = rej
+    TestPromise.prototype.rejector = function(rejection) {
+      this.rejection = rejection
+      helper.runOutOfContext(() => {
+        if (this._next._caught) {
+          this._next._caught(rejection)
+        }
+      })
+    }
 
-        return this._next
-      }
+    TestPromise.prototype.then = function(res, rej) {
+      this.res = res
+      this.rej = rej
 
-      catch(ErrorClass, rej) {
-        this.ErrorClass = ErrorClass
-        this.rej = rej
+      this._next = Object.create(TestPromise.prototype)
+      this._next._thenned = res
+      this._next._caught = rej
 
-        this._next = Object.create(TestPromise.prototype)
-        this._next._caught = rej || ErrorClass
+      return this._next
+    }
 
-        return this._next
-      }
+    TestPromise.prototype.catch = function(ErrorClass, rej) {
+      this.ErrorClass = ErrorClass
+      this.rej = rej
+
+      this._next = Object.create(TestPromise.prototype)
+      this._next._caught = rej || ErrorClass
+
+      return this._next
     }
 
     TestPromise.Promise = TestPromise
