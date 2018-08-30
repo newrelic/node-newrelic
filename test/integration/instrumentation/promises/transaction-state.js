@@ -11,13 +11,13 @@ runTests.runMultiple = runMultiple
 function runTests(t, agent, Promise, library) {
   /* eslint-disable no-shadow, brace-style */
   if (library) {
-    performTests('Fullfillment Factories',
+    performTests('Library Fullfillment Factories',
       function(Promise, val) { return library.resolve(val) },
       function(Promise, err) { return library.reject(err) }
     )
   }
 
-  performTests('Fullfillment Factories',
+  performTests('Promise Fullfillment Factories',
     function(Promise, val) { return Promise.resolve(val) },
     function(Promise, err) { return Promise.reject(err) }
   )
