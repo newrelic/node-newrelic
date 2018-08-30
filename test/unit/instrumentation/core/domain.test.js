@@ -40,9 +40,19 @@ describe('Domains', function() {
 
     var checkedTransaction
     d.once('error', function(err) {
-      expect(err).to.exist
-      expect(err.message).to.equal('whole new error!')
-      expect(agent.getTransaction()).to.equal(checkedTransaction)
+      // Asserting in a try catch because Domain will
+      // handle the errors resulting in an infinite loop
+      try {
+        expect(err).to.exist
+        expect(err.message).to.equal('whole new error!')
+
+        var transaction = agent.getTransaction()
+        expect(transaction && transaction.id)
+          .to.equal(checkedTransaction && checkedTransaction.id)
+      } catch (err) {
+        done(err) // Bailing out with the error
+        return
+      }
       tasks.push(done)
     })
 
