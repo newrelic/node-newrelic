@@ -12,7 +12,6 @@
       },
       "files": [
         "regressions.tap.js",
-        "segments.tap.js",
         "transaction-state.tap.js"
       ]
     },

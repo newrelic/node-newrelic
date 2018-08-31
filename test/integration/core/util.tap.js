@@ -8,14 +8,15 @@ const helper = require('../../lib/agent_helper')
 test('promisify', {skip: !util.promisify}, function(t) {
   t.autoend()
   t.test('should work on setTimeout', function(t) {
-    t.plan(1)
+    t.plan(2)
     var agent = helper.instrumentMockedAgent()
     t.tearDown(function() {
       helper.unloadAgent(agent)
     })
     let asyncTimeout = util.promisify(setTimeout)
-    asyncTimeout(10)
-      .then(() => {
+    asyncTimeout(10, 'foobar')
+      .then((val) => {
+        t.equal(val, 'foobar', 'setTimeout parameter should flow')
         t.ok(true, 'should evaluate properly')
         t.end()
       })
@@ -24,15 +25,16 @@ test('promisify', {skip: !util.promisify}, function(t) {
       })
   })
   t.test('should work on setImmediate', function(t) {
-    t.plan(1)
+    t.plan(2)
     var agent = helper.instrumentMockedAgent()
     t.tearDown(function() {
       helper.unloadAgent(agent)
     })
     let asyncImmediate = util.promisify(setImmediate)
-    asyncImmediate()
-      .then(() => {
-        t.ok(true, 'should evaluate properly')
+    asyncImmediate('foobar')
+      .then((val) => {
+        t.equal(val, 'foobar', 'setImmediate parameter should flow')
+        t.pass('should evaluate properly')
         t.end()
       })
       .catch(ex => {
