@@ -1857,6 +1857,17 @@ describe('Shim', function() {
       })
     })
 
+    it('should allow `recorder` to be null', function() {
+      helper.runInTransaction(agent, function() {
+        var parent = shim.createSegment('parent')
+        var child = shim.createSegment('child', null, parent)
+        expect(child).to.have.property('name', 'child')
+        expect(parent)
+          .to.have.property('children')
+          .that.deep.equals([child])
+      })
+    })
+
     it('should not create children for opaque segments', function() {
       helper.runInTransaction(agent, function() {
         var parent = shim.createSegment('parent')
@@ -2064,6 +2075,21 @@ describe('Shim', function() {
       expect(shim.isArray(1234)).to.be.false
       expect(shim.isArray(null)).to.be.false
       expect(shim.isArray(undefined)).to.be.false
+    })
+  })
+
+  describe('#isNull', function() {
+    it('should detect if an item is null', function() {
+      expect(shim.isNull(null)).to.be.true
+      expect(shim.isNull({})).to.be.false
+      expect(shim.isNull([])).to.be.false
+      expect(shim.isNull(arguments)).to.be.false
+      expect(shim.isNull(function() {})).to.be.false
+      expect(shim.isNull(true)).to.be.false
+      expect(shim.isNull(false)).to.be.false
+      expect(shim.isNull('foobar')).to.be.false
+      expect(shim.isNull(1234)).to.be.false
+      expect(shim.isNull(undefined)).to.be.false
     })
   })
 
