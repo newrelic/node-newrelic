@@ -478,6 +478,24 @@ describe('the agent configuration', function() {
         expect(tc.lambda_mode).to.be.true
       })
     })
+
+    it('should pick up trusted_account_key', () => {
+      idempotentEnv('NEW_RELIC_TRUSTED_ACCOUNT_KEY', '1234', (tc) => {
+        expect(tc.trusted_account_key).to.equal('1234')
+      })
+    })
+
+    it('should pick up application_id', () => {
+      idempotentEnv('NEW_RELIC_APPLICATION_ID', '5678', (tc) => {
+        expect(tc.application_id).to.equal('5678')
+      })
+    })
+
+    it('should pick up account_id', () => {
+      idempotentEnv('NEW_RELIC_ACCOUNT_ID', '91011', (tc) => {
+        expect(tc.account_id).to.equal('91011')
+      })
+    })
   })
 
   describe('with both high_security and security_policies_token defined', function() {
