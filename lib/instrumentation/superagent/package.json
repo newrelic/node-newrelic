@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/superagent",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "New Relic instrumentation for the `superagent` package.",
   "main": "index.js",
   "scripts": {
