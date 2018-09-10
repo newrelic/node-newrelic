@@ -479,6 +479,12 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should set lambda_mode from lambda-specific env var if not set by user', () => {
+      idempotentEnv('AWS_LAMBDA_FUNCTION_NAME', 'someFunc', (tc) => {
+        expect(tc.lambda_mode).to.be.true
+      })
+    })
+
     it('should pick up trusted_account_key', () => {
       idempotentEnv('NEW_RELIC_TRUSTED_ACCOUNT_KEY', '1234', (tc) => {
         expect(tc.trusted_account_key).to.equal('1234')
