@@ -472,6 +472,12 @@ describe('the agent configuration', function() {
         expect(tc.ssl).to.be.true
       })
     })
+
+    it('should pick up lambda_mode', () => {
+      idempotentEnv('NEW_RELIC_LAMBDA_MODE', true, (tc) => {
+        expect(tc.lambda_mode).to.be.true
+      })
+    })
   })
 
   describe('with both high_security and security_policies_token defined', function() {
@@ -676,6 +682,10 @@ describe('the agent configuration', function() {
 
     it('should set max_payload_size_in_bytes', function() {
       expect(configuration.max_payload_size_in_bytes).to.equal(1000000)
+    })
+
+    it('should not enable lambda_mode', () => {
+      expect(configuration.lambda_mode).to.be.false
     })
   })
 
@@ -1131,6 +1141,13 @@ describe('the agent configuration', function() {
         config.onConnect({max_payload_size_in_bytes: 100})
       }).not.throws()
       expect(config.max_payload_size_in_bytes).equals(100)
+    })
+
+    it('should not accept lambda_mode', () => {
+      expect(() => {
+        config.onConnect({lambda_mode: true})
+      }).not.throws()
+      expect(config.lambda_mode).to.be.false
     })
 
     describe('when data_report_period is set', function() {
