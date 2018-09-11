@@ -1,12 +1,16 @@
-[![Coverage Status](https://coveralls.io/repos/github/newrelic/node-newrelic-koa/badge.svg?branch=psvet%2Fcoveralls)](https://coveralls.io/github/newrelic/node-newrelic-koa?branch=psvet%2Fcoveralls)
+[![Coverage Status][1]][2]
 
-New Relic's official Koa framework instrumentation for use with the [Node agent](https://github.com/newrelic/node-newrelic). This module is a dependency of the agent and is installed with it by running:
+New Relic's official Koa framework instrumentation for use with the
+[Node agent](https://github.com/newrelic/node-newrelic). This module is a
+dependency of the agent and is installed with it by running:
 
 ```
 npm install newrelic
 ```
 
-Alternatively, it can be installed and loaded independently based on specific versioning needs:
+Alternatively, it can be installed and loaded independently based on specific
+versioning needs:
+
 ```
 npm install @newrelic/koa
 ```
@@ -20,4 +24,10 @@ require('@newrelic/koa')
 - `koa-router`
 - `koa-route`
 
-For more information, please see the agent [installation guide](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent), and [compatibility and requirements](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent).
+For more information, please see the agent [installation guide][3], and
+[compatibility and requirements][4].
+
+[1]: https://coveralls.io/repos/github/newrelic/node-newrelic-koa/badge.svg?branch=master
+[2]: https://coveralls.io/github/newrelic/node-newrelic-koa?branch=master
+[3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
+[4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
