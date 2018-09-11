@@ -5,10 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=4"
+        "node": "4 || >5"
       },
       "dependencies": {
-        "koa": "1.5"
+        "koa": "^1.5.0"
       },
       "files": [
         "koa-v1.tap.js"
@@ -16,7 +16,7 @@
     },
     {
       "engines": {
-        "node": ">=4 <6"
+        "node": "4"
       },
       "dependencies": {
         "koa": "2.0.0",
