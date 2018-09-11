@@ -56,9 +56,14 @@ tap.test('Agent should not connect to collector in lambda mode', (t) => {
   })
   const agent = new Agent(config)
 
+  // Immediately fail if connect is called
+  agent.collector.connect = () => t.fail('Agent should not attempt to connect')
+
   agent.start((error, returned) => {
     t.notOk(error, 'started without error')
     t.ok(returned, 'got boot configuration')
+    t.notOk(returned.agent_run_id, 'should not have a run ID')
+    t.notOk(agent.config.run_id, 'should not have run ID set in configuration')
     t.ok(agent._env, 'got agent environment details')
 
     agent.stop((error) => {
