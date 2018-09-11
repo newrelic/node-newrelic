@@ -1,12 +1,12 @@
 'use strict'
 
-var tap = require('tap')
-var configurator = require('../../../lib/config')
-var Agent = require('../../../lib/agent')
+const tap = require('tap')
+const configurator = require('../../../lib/config')
+const Agent = require('../../../lib/agent')
 
 
-tap.test('Collector API should connect to staging-collector.newrelic.com', function(t) {
-  var config = configurator.initialize({
+tap.test('Collector API should connect to staging-collector.newrelic.com', (t) => {
+  const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
     host: 'staging-collector.newrelic.com',
@@ -22,18 +22,47 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', funct
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
+  const agent = new Agent(config)
 
-
-  agent.start(function(error, returned) {
+  agent.start((error, returned) => {
     t.notOk(error, 'connected without error')
     t.ok(returned, 'got boot configuration')
     t.ok(returned.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
-    agent.stop(function(error) {
+    agent.stop((error) => {
       t.notOk(error, 'should have shut down without issue')
       t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
+
+      t.end()
+    })
+  })
+})
+
+tap.test('Agent should not connect to collector in lambda mode', (t) => {
+  const config = configurator.initialize({
+    app_name: 'node.js Tests',
+    license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+    lambda_mode: true,
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_gcp: false,
+      detect_docker: false
+    },
+    logging: {
+      level: 'trace'
+    }
+  })
+  const agent = new Agent(config)
+
+  agent.start((error, returned) => {
+    t.notOk(error, 'started without error')
+    t.ok(returned, 'got boot configuration')
+    t.ok(agent._env, 'got agent environment details')
+
+    agent.stop((error) => {
+      t.notOk(error, 'should have shut down without issue')
 
       t.end()
     })
