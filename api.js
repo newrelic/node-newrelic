@@ -411,18 +411,17 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
 
   let attributes = customAttributes
 
-  // If high security mode is on, noticeError does not collect custom attributes.
+  // If high security mode is on or custom attributes are disabled,
+  // noticeError does not collect custom attributes.
   if (this.agent.config.high_security === true) {
     logger.debug(
       'Passing custom attributes to notice error API is disabled in high security mode.'
     )
-    attributes = null
   } else if (!this.agent.config.api.custom_attributes_enabled) {
     logger.debug(
       'Config.api.custom_attributes_enabled set to false, ' +
       'ignoring custom error attributes.'
     )
-    attributes = null
   }
 
   if (typeof error === 'string') {
