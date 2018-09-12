@@ -1,4 +1,15 @@
-### 1.0.5 (2018-4-12):
+
+### 1.0.6 (2018-09-12):
+
+* Fixed coveralls link in readme to point at master branch.
+
+* Removed testing on Node 4 and 5 for Koa and dependent modules.
+
+  Koa versions that supported Node 4 and 5 had an open dependency on `debug`
+  (e.g. `"debug": "*"`). The latest major version of `debug` no longer works on
+  Node <6 thus rendering these older versions of Koa unusable on Node <6 as well.
+
+### 1.0.5 (2018-04-12):
 
 * Upgraded `newrelic` peerDep semver to allow newest major version.
 
