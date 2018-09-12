@@ -1,6 +1,5 @@
 language: node_js
 node_js:
-  - "4"
   - "6"
   - "7"
   - "8"
@@ -12,8 +11,6 @@ env:
   - SUITE=versioned
 matrix:
   exclude:
-    - node_js: "4"
-      env: SUITE=lint
     - node_js: "6"
       env: SUITE=lint
     - node_js: "7"
