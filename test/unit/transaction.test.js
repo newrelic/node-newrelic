@@ -751,16 +751,62 @@ describe('Transaction', function() {
       })
     })
 
-    it('short circuits if config is invalid', function() {
-      tx.agent.config.cross_application_tracer.enabled = false
-      tx.agent.config.distributed_tracing.enabled = false
+    it('should not accept payload if no configured trusted key', function() {
       tx.agent.config.trusted_account_key = null
+      tx.agent.config.account_id = null
 
-      tx.acceptDistributedTracePayload({})
+      const data = {
+        ac: '1',
+        ty: 'App',
+        tx: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() - 1
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Exception'
       )
       expect(tx.isDistributedTrace).to.not.be.true
+    })
+
+    it('should not accept payload if DT disabled', function() {
+      tx.agent.config.distributed_tracing.enabled = false
+
+      const data = {
+        ac: '1',
+        ty: 'App',
+        tx: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() - 1
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'DistributedTrace/AcceptPayload/Exception'
+      )
+      expect(tx.isDistributedTrace).to.not.be.true
+    })
+
+    it('should accept payload if config valid and CAT disabled', function() {
+      tx.agent.config.cross_application_tracer.enabled = false
+
+      const data = {
+        ac: '1',
+        ty: 'App',
+        tx: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() - 1
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+
+      expect(tx.isDistributedTrace).to.be.true
     })
 
     it('fails if payload version is above agent-supported version', function() {
