@@ -8,7 +8,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "tap tests/**/*.tap.js",
+    "test": "npm run unit && npm run versioned",
+    "unit": "tap tests/unit/**/*.tap.js",
     "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests"
   },
