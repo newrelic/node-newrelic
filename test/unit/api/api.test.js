@@ -1055,11 +1055,21 @@ describe('the New Relic agent API', function() {
       expect(agent.errors.errors.length).equal(1)
     })
 
-    it("should not add errors in high security mode", function() {
+    it("should still add errors in high security mode", function() {
       agent.config.high_security = true
       expect(agent.errors.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
+      expect(agent.errors.errors.length).equal(1)
+      agent.config.high_security = false
+    })
+
+    it('should not track custom attributes in high security mode', () => {
+      agent.config.high_security = true
       expect(agent.errors.errors.length).equal(0)
+      api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
+      expect(agent.errors.errors.length).equal(1)
+      const attributes = agent.errors.errors[0][4]
+      expect(attributes.userAttributes).to.deep.equal({})
       agent.config.high_security = false
     })
 
