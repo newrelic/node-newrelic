@@ -951,14 +951,22 @@ describe('Transaction', function() {
       agent.recordSupportability.restore && agent.recordSupportability.restore()
     })
 
-    it('short circuits if config is invalid', function() {
-      tx.agent.config.cross_application_tracer.enabled = false
+    it('should not create payload when DT disabled', function() {
       tx.agent.config.distributed_tracing.enabled = false
 
       const payload = tx.createDistributedTracePayload().text()
       expect(payload).to.equal('')
       expect(tx.agent.recordSupportability.callCount).to.equal(0)
       expect(tx.isDistributedTrace).to.not.be.true
+    })
+
+    it('should create payload when DT eanbled and CAT disabled', function() {
+      tx.agent.config.cross_application_tracer.enabled = false
+
+      const payload = tx.createDistributedTracePayload().text()
+
+      expect(payload).to.not.be.null
+      expect(payload).to.not.equal('')
     })
 
     it('generates a priority for entry-point transactions', () => {
