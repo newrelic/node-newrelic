@@ -409,8 +409,6 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
     return false
   }
 
-  let attributes = customAttributes
-
   // If high security mode is on or custom attributes are disabled,
   // noticeError does not collect custom attributes.
   if (this.agent.config.high_security === true) {
@@ -429,7 +427,7 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
   }
   const transaction = this.agent.tracer.getTransaction()
 
-  this.agent.errors.addUserError(transaction, error, attributes)
+  this.agent.errors.addUserError(transaction, error, customAttributes)
 }
 
 /**
