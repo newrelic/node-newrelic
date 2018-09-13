@@ -14,6 +14,7 @@ var shimmer = require('./lib/shimmer')
 var Shim = require('./lib/shim/shim')
 var TransactionHandle = require('./lib/transaction/handle')
 
+const DESTS = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
@@ -612,6 +613,22 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
     // we don't use these parameters yet
     agentToken: null
+  }
+
+  var attrs = Object.create(null)
+
+  const customAttrs = trans.trace.custom.get(DESTS.BROWSER_EVENT)
+  if (!properties.isEmpty(customAttrs)) {
+    attrs.u = customAttrs
+  }
+
+  const agentAttrs = trans.trace.attributes.get(DESTS.BROWSER_EVENT)
+  if (!properties.isEmpty(agentAttrs)) {
+    attrs.a = agentAttrs
+  }
+
+  if (!properties.isEmpty(attrs)) {
+    rum_hash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
   }
 
   // if debugging, do pretty format of JSON
