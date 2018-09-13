@@ -9,28 +9,37 @@ var sinon = require('sinon')
 var Config = require('../../../lib/config')
 var securityPolicies = require('../../lib/fixtures').securityPolicies
 
-
 function idempotentEnv(name, value, callback) {
-  var is
-  var saved
+  let saved = {}
+  let envObj = null
 
-  // process.env is not a normal object
-  if (Object.hasOwnProperty.call(process.env, name)) {
-    is = true
-    saved = process.env[name]
+  if (typeof name === 'object') {
+    envObj = name
+    callback = callback || value
+  } else {
+    envObj = {[name]: value}
   }
 
-  process.env[name] = value
-  try {
-    var tc = Config.initialize({})
-    callback(tc)
-  } finally {
-    if (is) {
-      process.env[name] = saved
-    } else {
-      delete process.env[name]
+  Object.keys(envObj).forEach((key) => {
+    // process.env is not a normal object
+    if (Object.hasOwnProperty.call(process.env, key)) {
+      saved[key] = process.env[key]
     }
-  }
+
+    process.env[key] = envObj[key]
+    try {
+      var tc = Config.initialize({})
+      callback(tc)
+    } finally {
+      Object.keys(envObj).forEach((finalKey) => {
+        if (saved[finalKey]) {
+          process.env[finalKey] = saved[finalKey]
+        } else {
+          delete process.env[finalKey]
+        }
+      })
+    }
+  })
 }
 
 describe('the agent configuration', function() {
@@ -478,6 +487,30 @@ describe('the agent configuration', function() {
         expect(tc.lambda_mode).to.be.true
       })
     })
+
+    it('should set lambda_mode from lambda-specific env var if not set by user', () => {
+      idempotentEnv('AWS_LAMBDA_FUNCTION_NAME', 'someFunc', (tc) => {
+        expect(tc.lambda_mode).to.be.true
+      })
+    })
+
+    it('should pick up trusted_account_key', () => {
+      idempotentEnv('NEW_RELIC_TRUSTED_ACCOUNT_KEY', '1234', (tc) => {
+        expect(tc.trusted_account_key).to.equal('1234')
+      })
+    })
+
+    it('should pick up application_id', () => {
+      idempotentEnv('NEW_RELIC_APPLICATION_ID', '5678', (tc) => {
+        expect(tc.application_id).to.equal('5678')
+      })
+    })
+
+    it('should pick up account_id', () => {
+      idempotentEnv('NEW_RELIC_ACCOUNT_ID', '91011', (tc) => {
+        expect(tc.account_id).to.equal('91011')
+      })
+    })
   })
 
   describe('with both high_security and security_policies_token defined', function() {
@@ -488,6 +521,28 @@ describe('the agent configuration', function() {
           security_policies_token: 'fffff'
         })
       }).throws()
+    })
+  })
+
+  describe('with both distributed_tracing and lambda_mode defined', () => {
+    it('blows up if missing DT config environment variables', () => {
+      expect(() => {
+        Config.initialize({
+          distributed_tracing: {enabled: true},
+          lambda_mode: true
+        })
+      }).throws()
+    })
+
+    it('works if all required env vars are defined', () => {
+      const env = {
+        NEW_RELIC_TRUST_KEY: 'defined',
+        NEW_RELIC_ACCOUNT_ID: 'defined',
+        NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_LAMBDA_MODE: true,
+        NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      }
+      expect(idempotentEnv.bind(idempotentEnv, env, () => {})).to.not.throw()
     })
   })
 
