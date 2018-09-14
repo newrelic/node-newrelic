@@ -11,7 +11,7 @@ var hashes = require('./lib/util/hashes')
 var properties = require('./lib/util/properties')
 var stringify = require('json-stringify-safe')
 var shimmer = require('./lib/shimmer')
-var Shim = require('./lib/shim/shim')
+var TransactionShim = require('./lib/shim/transaction-shim')
 var TransactionHandle = require('./lib/transaction/handle')
 
 const DESTS = require('./lib/config/attribute-filter').DESTINATIONS
@@ -55,7 +55,7 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
  */
 function API(agent) {
   this.agent = agent
-  this.shim = new Shim(agent, 'NewRelicAPI')
+  this.shim = new TransactionShim(agent, 'NewRelicAPI')
 }
 
 /**
@@ -1651,6 +1651,93 @@ function _checkKeyLength(object, maxLength) {
     }
   }
   return badKey
+}
+
+API.prototype.recordLambda = function recordLambda(handler) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/recordLambda'
+  )
+
+  metric.incrementCallCount()
+
+  if (typeof handler !== 'function') {
+    logger.warn('handler argument is not a function and cannot be recorded')
+    return handler
+  }
+
+  let isColdStart = true
+
+  const shim = this.shim
+
+  return shim.bindCreateTransaction(wrappedHandler, {type: shim.BG})
+
+  function wrappedHandler() {
+    let coldStartTime
+    if (isColdStart) {
+      isColdStart = false
+      coldStartTime = process.uptime()
+    }
+
+    const args = shim.argsToArray.apply(shim, arguments)
+    const context = args[1]
+
+    const name = context.function_name
+    const group = NAMES.FUNCTION.PREFIX
+    const transactionName = group + name
+
+    const segment = shim.createSegment(name, recordBackground)
+
+    const transaction = shim.tracer.getTransaction()
+    transaction.setPartialName(transactionName)
+    transaction.baseSegment = segment
+
+    const cbIndex = args.length - 1
+
+    args[cbIndex] = wrapCallbackAndCaptureError(args[cbIndex])
+    context.done = wrapCallbackAndCaptureError(context.done)
+    context.fail = wrapCallbackAndCaptureError(context.fail)
+
+    const succeed = context.succeed
+    context.succeed = function wrappedSucceed() {
+      end()
+      return succeed.apply(this, arguments)
+    }
+
+    segment.start()
+
+    return shim.applySegment(handler, segment, false, this, args)
+
+    function wrapCallbackAndCaptureError(cb) {
+      return function wrappedCallback() {
+        let err = arguments[0]
+        if (typeof err === 'string') {
+          err = new Error(err)
+        }
+
+        shim.agent.errors.add(transaction, err)
+
+        end()
+
+        return cb.apply(this, arguments)
+      }
+    }
+
+    function end() {
+      segment.end()
+
+      transaction.finalizeName()
+
+      if (coldStartTime) {
+        transaction.measure(
+          NAMES.SERVERLESS.COLD_START_TIME, transaction.name, coldStartTime
+        )
+
+        transaction.measure(NAMES.SERVERLESS.COLD_START_TIME, null, coldStartTime)
+      }
+
+      transaction.end()
+    }
+  }
 }
 
 module.exports = API
