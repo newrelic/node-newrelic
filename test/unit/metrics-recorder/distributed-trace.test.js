@@ -37,6 +37,11 @@ describe('recordDistributedTrace', () => {
       primary_application_id: '5678',
       trusted_account_key: '1234'
     })
+    // Set the DT required data after config runs, since they'll be cleared when
+    // not in lambda_mode
+    agent.config.account_id = '1234',
+    agent.config.application_id = '5678',
+    agent.config.trusted_account_key = '1234'
     tx = new Transaction(agent)
   })
 

@@ -494,23 +494,6 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up trusted_account_key', () => {
-      idempotentEnv('NEW_RELIC_TRUSTED_ACCOUNT_KEY', '1234', (tc) => {
-        expect(tc.trusted_account_key).to.equal('1234')
-      })
-    })
-
-    it('should pick up application_id', () => {
-      idempotentEnv('NEW_RELIC_APPLICATION_ID', '5678', (tc) => {
-        expect(tc.application_id).to.equal('5678')
-      })
-    })
-
-    it('should pick up account_id', () => {
-      idempotentEnv('NEW_RELIC_ACCOUNT_ID', '91011', (tc) => {
-        expect(tc.account_id).to.equal('91011')
-      })
-    })
   })
 
   describe('with both high_security and security_policies_token defined', function() {
@@ -543,6 +526,48 @@ describe('the agent configuration', function() {
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       expect(idempotentEnv.bind(idempotentEnv, env, () => {})).to.not.throw()
+    })
+  })
+
+  describe('with lambda_mode disabled', () => {
+    it('should clear lambda_mode dt config options', () => {
+      const env = {
+        NEW_RELIC_TRUST_KEY: 'defined',
+        NEW_RELIC_ACCOUNT_ID: 'defined',
+        NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      }
+      idempotentEnv.bind(idempotentEnv, env, (tc) => {
+        expect(tc.application_id).to.equal(null)
+        expect(tc.account_id).to.equal(null)
+        expect(tc.trusted_account_key).to.equal(null)
+      })
+    })
+  })
+
+  describe('with lambda_mode enabled', () => {
+    it('should pick up trusted_account_key', () => {
+      idempotentEnv('NEW_RELIC_LAMBDA_MODE', true, () => {
+        idempotentEnv('NEW_RELIC_TRUSTED_ACCOUNT_KEY', '1234', (tc) => {
+          expect(tc.trusted_account_key).to.equal('1234')
+        })
+      })
+    })
+
+    it('should pick up application_id', () => {
+      idempotentEnv('NEW_RELIC_LAMBDA_MODE', true, () => {
+        idempotentEnv('NEW_RELIC_APPLICATION_ID', '5678', (tc) => {
+          expect(tc.application_id).to.equal('5678')
+        })
+      })
+    })
+
+    it('should pick up account_id', () => {
+      idempotentEnv('NEW_RELIC_LAMBDA_MODE', true, () => {
+        idempotentEnv('NEW_RELIC_ACCOUNT_ID', '91011', (tc) => {
+          expect(tc.account_id).to.equal('91011')
+        })
+      })
     })
   })
 
