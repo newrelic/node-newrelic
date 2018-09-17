@@ -27,6 +27,9 @@ tap.test('distributed tracing full integration', (t) => {
     encoding_key: 'some key',
   }
   const agent = helper.instrumentMockedAgent(null, config)
+  agent.config.account_id = ACCOUNT_ID
+  agent.config.application_id = APP_ID
+  agent.config.trusted_account_key = ACCOUNT_ID
   // require http after creating the agent
   const http = require('http')
   const api = new API(agent)
