@@ -13,13 +13,13 @@ tap.test('background transactions should not blow up with CAT', (t) => {
       enabled: true
     },
     cross_application_tracer: {enabled: true},
-    account_id: '1337',
-    application_id: '7331',
-    trusted_account_key: '1337',
     encoding_key: 'some key',
   }
 
   const agent = helper.instrumentMockedAgent(null, config)
+  agent.config.account_id = '1337'
+  agent.config.application_id = '7331'
+  agent.config.trusted_account_key = '1337'
   const http = require('http')
   const api = new API(agent)
 
