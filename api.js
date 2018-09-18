@@ -43,6 +43,8 @@ const CUSTOM_BLACKLIST = new Set([
 
 const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
+const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
+
 /**
  * The exported New Relic API. This contains all of the functions meant to be
  * used by New Relic customers. For now, that means transaction naming.
@@ -1658,7 +1660,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
     const args = shim.argsToArray.apply(shim, arguments)
     const context = args[1]
 
-    const name = context.function_name
+    const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX
     const transactionName = group + name
 
@@ -1679,6 +1681,48 @@ API.prototype.recordLambda = function recordLambda(handler) {
       end()
       return succeed.apply(this, arguments)
     }
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.functionName',
+      context.functionName
+    )
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.functionVersion',
+      context.functionVersion
+    )
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.arn',
+      context.invokedFunctionArn
+    )
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.memoryLimit',
+      context.memoryLimitInMB
+    )
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.requestId',
+      context.awsRequestId
+    )
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.region',
+      process.env.AWS_REGION
+    )
+
+    transaction.trace.addAttribute(
+      ATTR_DEST.TRANS_EVENT,
+      'aws.executionEnv',
+      process.env.AWS_EXECUTION_ENV
+    )
 
     segment.start()
 
