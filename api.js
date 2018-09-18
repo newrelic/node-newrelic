@@ -1682,47 +1682,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
       return succeed.apply(this, arguments)
     }
 
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.functionName',
-      context.functionName
-    )
-
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.functionVersion',
-      context.functionVersion
-    )
-
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.arn',
-      context.invokedFunctionArn
-    )
-
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.memoryLimit',
-      context.memoryLimitInMB
-    )
-
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.requestId',
-      context.awsRequestId
-    )
-
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.region',
-      process.env.AWS_REGION
-    )
-
-    transaction.trace.addAttribute(
-      ATTR_DEST.TRANS_EVENT,
-      'aws.executionEnv',
-      process.env.AWS_EXECUTION_ENV
-    )
+    addAwsAgentAttributes()
 
     segment.start()
 
@@ -1741,6 +1701,50 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
         return cb.apply(this, arguments)
       }
+    }
+
+    function addAwsAgentAttributes() {
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.functionName',
+        context.functionName
+      )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.functionVersion',
+        context.functionVersion
+      )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.arn',
+        context.invokedFunctionArn
+      )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.memoryLimit',
+        context.memoryLimitInMB
+      )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.requestId',
+        context.awsRequestId
+      )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.region',
+        process.env.AWS_REGION
+      )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.executionEnv',
+        process.env.AWS_EXECUTION_ENV
+      )
     }
 
     function end() {
