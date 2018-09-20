@@ -1630,6 +1630,9 @@ function _checkKeyLength(object, maxLength) {
   return badKey
 }
 
+// A function with no references used to stub out closures
+function cleanClosure() {}
+
 API.prototype.recordLambda = function recordLambda(handler) {
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordLambda'
@@ -1646,6 +1649,22 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
   const shim = this.shim
 
+  // this array holds all the closures used to end transactions
+  var transactionEnders = []
+
+  // There is no prependListener in node 4, so we wrap emit to look for 'beforeExit'
+  shim.wrap(process, 'emit', function wrapEmit(shim, emit) {
+    return function wrappedEmit(ev) {
+      if (ev === 'beforeExit') {
+        transactionEnders.forEach((ender) => {
+          ender()
+        })
+        transactionEnders = []
+      }
+      return emit.apply(process, arguments)
+    }
+  })
+
   return shim.bindCreateTransaction(wrappedHandler, {type: shim.BG})
 
   function wrappedHandler() {
@@ -1658,7 +1677,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
     const args = shim.argsToArray.apply(shim, arguments)
     const context = args[1]
 
-    const name = context.function_name
+    const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX
     const transactionName = group + name
 
@@ -1673,6 +1692,8 @@ API.prototype.recordLambda = function recordLambda(handler) {
     args[cbIndex] = wrapCallbackAndCaptureError(args[cbIndex])
     context.done = wrapCallbackAndCaptureError(context.done)
     context.fail = wrapCallbackAndCaptureError(context.fail)
+
+    const enderIndex = transactionEnders.push(end)
 
     const succeed = context.succeed
     context.succeed = function wrappedSucceed() {
@@ -1701,6 +1722,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
     function end() {
       segment.end()
+
+      // Clear the end closure to let go of captured references
+      transactionEnders[enderIndex] = cleanClosure
 
       transaction.finalizeName()
 
