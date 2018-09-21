@@ -1635,6 +1635,14 @@ function _checkKeyLength(object, maxLength) {
 // A function with no references used to stub out closures
 function cleanClosure() {}
 
+const eventSourceNameLookup = {
+  'aws:kinesis': 'Kinesis',
+  'aws:s3': 'S3',
+  'aws:sns': 'SNS',
+  'aws:dynamodb': 'DynamoDB',
+  'aws:codecommit': 'CodeCommit'
+}
+
 API.prototype.recordLambda = function recordLambda(handler) {
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordLambda'
@@ -1767,14 +1775,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
     }
 
     function getRecordBasedEventSource(record) {
-      const eventSourceNameLookup = {
-        'aws:kinesis': 'Kinesis',
-        'aws:s3': 'S3',
-        'aws:sns': 'SNS',
-        'aws:dynamodb': 'DynamoDB',
-        'aws:codecommit': 'CodeCommit'
-      }
-
       if (!record) {
         return
       }
