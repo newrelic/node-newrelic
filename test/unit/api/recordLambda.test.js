@@ -30,7 +30,6 @@ describe('The recordLambda API', function() {
 
     stubEvent = {}
     stubContext = {
-      functionName: functionName,
       done: function() {},
       succeed: function() {},
       fail: function() {},
