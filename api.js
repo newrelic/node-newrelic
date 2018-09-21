@@ -1728,7 +1728,8 @@ API.prototype.recordLambda = function recordLambda(handler) {
       return succeed.apply(this, arguments)
     }
 
-    addAwsAgentAttributes()
+    const awsAttributes = getAwsAgentAttributes()
+    transaction.trace.addAttributes(ATTR_DEST.TRANS_EVENT, awsAttributes)
 
     segment.start()
 
@@ -1749,54 +1750,17 @@ API.prototype.recordLambda = function recordLambda(handler) {
       }
     }
 
-    function addAwsAgentAttributes() {
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.functionName',
-        context.functionName
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.functionVersion',
-        context.functionVersion
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.arn',
-        context.invokedFunctionArn
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.memoryLimit',
-        context.memoryLimitInMB
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.requestId',
-        context.awsRequestId
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.region',
-        process.env.AWS_REGION
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.executionEnv',
-        process.env.AWS_EXECUTION_ENV
-      )
-
-      transaction.trace.addAttribute(
-        ATTR_DEST.TRANS_EVENT,
-        'aws.eventSource',
-        getEventSource()
-      )
+    function getAwsAgentAttributes() {
+      return {
+        'aws.functionName': context.functionName,
+        'aws.functionVersion': context.functionVersion,
+        'aws.arn': context.invokedFunctionArn,
+        'aws.memoryLimit': context.memoryLimitInMB,
+        'aws.requestId': context.awsRequestId,
+        'aws.region': process.env.AWS_REGION,
+        'aws.executionEnv': process.env.AWS_EXECUTION_ENV,
+        'aws.eventSource': getEventSource()
+      }
     }
 
     function getEventSource() {
