@@ -1700,7 +1700,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
     }
 
     const args = shim.argsToArray.apply(shim, arguments)
-    const context = args[1]
+    const [event, context] = args
 
     const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX
@@ -1789,6 +1789,64 @@ API.prototype.recordLambda = function recordLambda(handler) {
         'aws.executionEnv',
         process.env.AWS_EXECUTION_ENV
       )
+
+      transaction.trace.addAttribute(
+        ATTR_DEST.TRANS_EVENT,
+        'aws.eventSource',
+        getEventSource()
+      )
+    }
+
+    function getEventSource() {
+      const unknownSource = 'Unknown'
+
+      if (event.Records) {
+        return getRecordBasedEventSource(event.Records[0]) || unknownSource
+      }
+
+      if (event.StackId && event.RequestType && event.ResourceType) {
+        return 'CloudFormation'
+      }
+
+      if (event.headers && event.requestContext) {
+        return 'ApiGatewayProxy'
+      }
+
+      if (event.awslogs && event.awslogs.data) {
+        return 'CloudWatchLogs'
+      }
+
+      if (event.records && event.deliveryStreamArn) {
+        return 'KinesisFirehose'
+      }
+
+      return unknownSource
+    }
+
+    function getRecordBasedEventSource(record) {
+      const eventSourceNameLookup = {
+        'aws:kinesis': 'Kinesis',
+        'aws:s3': 'S3',
+        'aws:sns': 'SNS',
+        'aws:dynamodb': 'DynamoDB',
+        'aws:codecommit': 'CodeCommit'
+      }
+
+      if (!record) {
+        return
+      }
+
+      if (record.eventSource) {
+        return eventSourceNameLookup[record.eventSource]
+      }
+
+      if (record.EventSource) {
+        return eventSourceNameLookup[record.EventSource]
+      }
+
+      if (record.cf && record.cf.config) {
+        return 'CloudFront'
+      }
     }
 
     function end() {
