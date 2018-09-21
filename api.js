@@ -1700,7 +1700,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
     }
 
     const args = shim.argsToArray.apply(shim, arguments)
-    const [event, context] = args
+
+    const event = args[0]
+    const context = args[1]
 
     const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX
@@ -1836,12 +1838,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
         return
       }
 
-      if (record.eventSource) {
-        return eventSourceNameLookup[record.eventSource]
-      }
-
-      if (record.EventSource) {
-        return eventSourceNameLookup[record.EventSource]
+      const eventSource = record.eventSource || record.EventSource
+      if (eventSource) {
+        return eventSourceNameLookup[eventSource]
       }
 
       if (record.cf && record.cf.config) {
