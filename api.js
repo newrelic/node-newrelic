@@ -43,6 +43,8 @@ const CUSTOM_BLACKLIST = new Set([
 
 const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
+const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
+
 /**
  * The exported New Relic API. This contains all of the functions meant to be
  * used by New Relic customers. For now, that means transaction naming.
@@ -1633,6 +1635,14 @@ function _checkKeyLength(object, maxLength) {
 // A function with no references used to stub out closures
 function cleanClosure() {}
 
+const eventSourceNameLookup = {
+  'aws:kinesis': 'Kinesis',
+  'aws:s3': 'S3',
+  'aws:sns': 'SNS',
+  'aws:dynamodb': 'DynamoDB',
+  'aws:codecommit': 'CodeCommit'
+}
+
 API.prototype.recordLambda = function recordLambda(handler) {
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordLambda'
@@ -1675,6 +1685,8 @@ API.prototype.recordLambda = function recordLambda(handler) {
     }
 
     const args = shim.argsToArray.apply(shim, arguments)
+
+    const event = args[0]
     const context = args[1]
 
     const name = context.functionName
@@ -1701,6 +1713,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
       return succeed.apply(this, arguments)
     }
 
+    const awsAttributes = getAwsAgentAttributes()
+    transaction.trace.addAttributes(ATTR_DEST.TRANS_EVENT, awsAttributes)
+
     segment.start()
 
     return shim.applySegment(handler, segment, false, this, args)
@@ -1717,6 +1732,60 @@ API.prototype.recordLambda = function recordLambda(handler) {
         end()
 
         return cb.apply(this, arguments)
+      }
+    }
+
+    function getAwsAgentAttributes() {
+      return {
+        'aws.functionName': context.functionName,
+        'aws.functionVersion': context.functionVersion,
+        'aws.arn': context.invokedFunctionArn,
+        'aws.memoryLimit': context.memoryLimitInMB,
+        'aws.requestId': context.awsRequestId,
+        'aws.region': process.env.AWS_REGION,
+        'aws.executionEnv': process.env.AWS_EXECUTION_ENV,
+        'aws.eventSource': getEventSource()
+      }
+    }
+
+    function getEventSource() {
+      const unknownSource = 'Unknown'
+
+      if (event.Records) {
+        return getRecordBasedEventSource(event.Records[0]) || unknownSource
+      }
+
+      if (event.StackId && event.RequestType && event.ResourceType) {
+        return 'CloudFormation'
+      }
+
+      if (event.headers && event.requestContext) {
+        return 'ApiGatewayProxy'
+      }
+
+      if (event.awslogs && event.awslogs.data) {
+        return 'CloudWatchLogs'
+      }
+
+      if (event.records && event.deliveryStreamArn) {
+        return 'KinesisFirehose'
+      }
+
+      return unknownSource
+    }
+
+    function getRecordBasedEventSource(record) {
+      if (!record) {
+        return
+      }
+
+      const eventSource = record.eventSource || record.EventSource
+      if (eventSource) {
+        return eventSourceNameLookup[eventSource]
+      }
+
+      if (record.cf && record.cf.config) {
+        return 'CloudFront'
       }
     }
 
