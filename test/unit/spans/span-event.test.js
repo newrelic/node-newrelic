@@ -58,7 +58,7 @@ describe('SpanEvent', () => {
           expect(span).to.have.property('transactionId', tx.id)
           expect(span).to.have.property('sampled', true)
           expect(span).to.have.property('priority', 42)
-          expect(span).to.have.property('name', 'global.setTimeout')
+          expect(span).to.have.property('name', 'timers.setTimeout')
           expect(span).to.have.property('timestamp', seg.timer.start)
           expect(span).to.have.property('duration').within(0.03, 0.07)
 
