@@ -409,14 +409,14 @@ describe('Shim', function() {
     })
 
     it('should not blow up when wrapping a non-object prototype', function() {
-      function noProto(){}
+      function noProto() {}
       noProto.prototype = undefined
       var instance = shim.wrapReturn(noProto, function() {}).bind({})
       expect(instance).to.not.throw()
     })
 
     it('should not blow up when wrapping a non-object prototype', function() {
-      function noProto(){}
+      function noProto() {}
       noProto.prototype = undefined
       var instance = shim.wrapReturn(noProto, function() {}).bind(null)
       expect(instance).to.not.throw()
@@ -729,7 +729,7 @@ describe('Shim', function() {
             }
           })
           expect(function() {
-            wrapped(function(){})
+            wrapped(function() {})
           }).to.not.throw()
         })
       })
@@ -1710,7 +1710,6 @@ describe('Shim', function() {
       it('should make the `parentSegment` translucent after running', function() {
         helper.runInTransaction(agent, function() {
           var args = [wrappable.getActiveSegment]
-          var segment = wrappable.getActiveSegment()
           var parent = shim.createSegment('test segment')
           parent.opaque = true
           shim.bindCallbackSegment(args, shim.LAST, parent)
@@ -1801,6 +1800,24 @@ describe('Shim', function() {
       }).to.not.throw()
       expect(agent.tracer.segment).to.equal(segment)
       expect(activeSegment).to.equal(segment)
+    })
+
+    describe('when `func` has no `.apply` method', () => {
+      let func = null
+      beforeEach(() => {
+        func = function() {}
+        func.__proto__ = {}
+      })
+
+      it('should not throw in a transaction', () => {
+        expect(func).to.not.have.property('apply')
+        expect(() => shim.applySegment(func, segment)).to.not.throw()
+      })
+
+      it('should not throw out of a transaction', () => {
+        expect(func).to.not.have.property('apply')
+        expect(() => shim.applySegment(func, null)).to.not.throw()
+      })
     })
 
     describe('when `func` throws an exception', function() {
