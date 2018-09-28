@@ -14,7 +14,7 @@ tap.test('background transactions should not blow up with CAT', (t) => {
     },
     cross_application_tracer: {enabled: true},
     account_id: '1337',
-    application_id: '7331',
+    primary_application_id: '7331',
     trusted_account_key: '1337',
     encoding_key: 'some key',
   }
