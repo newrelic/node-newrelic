@@ -22,7 +22,7 @@ tap.test('cross application tracing full integration', (t) => {
     },
     cross_application_tracer: {enabled: true},
     account_id: ACCOUNT_ID,
-    application_id: APP_ID,
+    primary_application_id: APP_ID,
     trusted_account_key: ACCOUNT_ID,
     encoding_key: 'some key',
   }

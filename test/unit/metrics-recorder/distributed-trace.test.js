@@ -34,7 +34,7 @@ describe('recordDistributedTrace', () => {
       },
       cross_application_tracer: { enabled: true },
       account_id: '1234',
-      application_id: '5678',
+      primary_application_id: '5678',
       trusted_account_key: '1234'
     })
     tx = new Transaction(agent)

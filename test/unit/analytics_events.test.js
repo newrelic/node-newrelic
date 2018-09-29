@@ -132,7 +132,7 @@ describe('Analytics events', function() {
 
     it('should add DT parent attributes with an accepted payload', function(done) {
       agent.config.distributed_tracing.enabled = true
-      agent.config.application_id = 'test'
+      agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       trans = new Transaction(agent)
       const payload = trans.createDistributedTracePayload().text()
@@ -148,7 +148,7 @@ describe('Analytics events', function() {
         expect(attributes.sampled).to.equal(trans.sampled)
         expect(attributes.parentId).to.equal(trans.id)
         expect(attributes['parent.type']).to.equal('App')
-        expect(attributes['parent.app']).to.equal(agent.config.application_id)
+        expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
         expect(attributes['parent.account']).to.equal(agent.config.account_id)
         expect(attributes.error).to.equal(false)
         expect(trans.sampled).to.equal(true)

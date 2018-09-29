@@ -39,7 +39,7 @@ describe('Error events', function() {
     })
     it('should include DT intrinsics', function(done) {
       agent.config.distributed_tracing.enabled = true
-      agent.config.application_id = 'test'
+      agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       helper.runInTransaction(agent, function(tx) {
         const payload = tx.createDistributedTracePayload().text()
@@ -55,7 +55,7 @@ describe('Error events', function() {
           expect(attributes.priority).to.equal(tx.priority)
           expect(attributes.sampled).to.equal(tx.sampled)
           expect(attributes['parent.type']).to.equal('App')
-          expect(attributes['parent.app']).to.equal(agent.config.application_id)
+          expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
           expect(attributes['parent.account']).to.equal(agent.config.account_id)
           expect(attributes['nr.transactionGuid']).to.equal(tx.id)
           expect(attributes.parentId).to.be.undefined
@@ -67,7 +67,7 @@ describe('Error events', function() {
 
     it('should have the expected priority', function(done) {
       agent.config.distributed_tracing.enabled = true
-      agent.config.application_id = 'test'
+      agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       helper.runInTransaction(agent, function(tx) {
         var error = new Error('some error')

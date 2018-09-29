@@ -983,7 +983,7 @@ describe('Transaction', function() {
       agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = true
       agent.config.account_id = '5678'
-      agent.config.application_id = '1234'
+      agent.config.primary_application_id = '1234'
       agent.config.trusted_account_key = '5678'
 
       // Clear deprecated values just to be extra sure.
@@ -1006,7 +1006,7 @@ describe('Transaction', function() {
       expect(tx.isDistributedTrace).to.not.be.true
     })
 
-    it('should create payload when DT eanbled and CAT disabled', function() {
+    it('should create payload when DT enabled and CAT disabled', function() {
       tx.agent.config.cross_application_tracer.enabled = false
 
       const payload = tx.createDistributedTracePayload().text()
@@ -1113,7 +1113,7 @@ describe('Transaction', function() {
 
     it('adds DT attributes if payload was accepted', function() {
       tx.agent.config.account_id = '5678'
-      tx.agent.config.application_id = '1234'
+      tx.agent.config.primary_application_id = '1234'
       tx.agent.config.trusted_account_key = '5678'
       tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.distributed_tracing.enabled = true

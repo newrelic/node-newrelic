@@ -1270,7 +1270,7 @@ describe('Errors', function() {
 
       it('should contain DT intrinsic parameters', function(done) {
         agent.config.distributed_tracing.enabled = true
-        agent.config.application_id = 'test'
+        agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
         var transaction = createTransaction(agent, 200)
 
@@ -1295,7 +1295,7 @@ describe('Errors', function() {
 
       it('should contain DT intrinsic parameters', function(done) {
         agent.config.distributed_tracing.enabled = true
-        agent.config.application_id = 'test'
+        agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
         var transaction = createTransaction(agent, 200)
         var payload = transaction.createDistributedTracePayload().text()
@@ -1314,7 +1314,7 @@ describe('Errors', function() {
           expect(attributes.priority).to.equal(transaction.priority)
           expect(attributes.sampled).to.equal(transaction.sampled)
           expect(attributes['parent.type']).to.equal('App')
-          expect(attributes['parent.app']).to.equal(agent.config.application_id)
+          expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
           expect(attributes['parent.account']).to.equal(agent.config.account_id)
           expect(attributes.parentId).to.be.undefined
           expect(attributes.parentSpanId).to.be.undefined

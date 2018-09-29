@@ -68,7 +68,7 @@ describe("recordWeb", function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.cross_application_tracer.enabled = true
         agent.config.account_id = '1234'
-        agent.config.application_id = '5677',
+        agent.config.primary_application_id = '5677',
         agent.config.trusted_account_key = '1234'
 
         const payload = trans.createDistributedTracePayload().text()
@@ -123,7 +123,7 @@ describe("recordWeb", function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.cross_application_tracer.enabled = true
         agent.config.account_id = '1234'
-        agent.config.application_id = '5677',
+        agent.config.primary_application_id = '5677',
         agent.config.trusted_account_key = '1234'
 
         record({
