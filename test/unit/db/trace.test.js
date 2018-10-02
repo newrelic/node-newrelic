@@ -26,7 +26,7 @@ describe('SQL trace', function() {
     })
     it('should include all DT intrinsics sans parentId and parentSpanId', function(done) {
       agent.config.distributed_tracing.enabled = true
-      agent.config.application_id = 'test'
+      agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function(tx) {
@@ -47,7 +47,7 @@ describe('SQL trace', function() {
           expect(attributes.priority).to.equal(tx.priority)
           expect(attributes.sampled).to.equal(tx.sampled)
           expect(attributes['parent.type']).to.equal('App')
-          expect(attributes['parent.app']).to.equal(agent.config.application_id)
+          expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
           expect(attributes['parent.account']).to.equal(agent.config.account_id)
           expect(attributes.parentId).to.be.undefined
           expect(attributes.parentSpanId).to.be.undefined
@@ -57,7 +57,7 @@ describe('SQL trace', function() {
     })
     it('should include the proper priority on transaction end', function(done) {
       agent.config.distributed_tracing.enabled = true
-      agent.config.application_id = 'test'
+      agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function(tx) {

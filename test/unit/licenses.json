@@ -1,5 +1,6 @@
 {
   "@newrelic/koa": "LicenseRef-LICENSE",
+  "@newrelic/superagent": "SEE LICENSE IN LICENSE",
   "@newrelic/native-metrics": "LicenseRef-LICENSE",
   "@tyriar/fibonacci-heap": "MIT",
   "async": "MIT",

@@ -33,6 +33,9 @@ describe('recordDistributedTrace', () => {
         enabled: true
       },
       cross_application_tracer: { enabled: true },
+      account_id: '1234',
+      primary_application_id: '5678',
+      trusted_account_key: '1234'
     })
     // Set the DT required data after config runs, since they'll be cleared when
     // not in lambda_mode

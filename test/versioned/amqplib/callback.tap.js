@@ -296,7 +296,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
     agent.config.account_id = 1234
-    agent.config.application_id = 4321
+    agent.config.primary_application_id = 4321
 
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null

@@ -399,29 +399,35 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
  *  Optional. Any custom attributes to be displayed in the New Relic UI.
  */
 API.prototype.noticeError = function noticeError(error, customAttributes) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/noticeError'
   )
   metric.incrementCallCount()
 
-  // If high security mode is on, noticeError is disabled.
-  if (this.agent.config.high_security === true) {
-    logger.warnOnce(
-      'Notice Error',
-      'Notice error API is disabled by high security mode.'
-    )
-    return false
-  } else if (!this.agent.config.api.notice_error_enabled) {
+  if (!this.agent.config.api.notice_error_enabled) {
     logger.debug(
       'Config.api.notice_error_enabled set to false, not collecting error'
     )
     return false
   }
 
+  // If high security mode is on or custom attributes are disabled,
+  // noticeError does not collect custom attributes.
+  if (this.agent.config.high_security === true) {
+    logger.debug(
+      'Passing custom attributes to notice error API is disabled in high security mode.'
+    )
+  } else if (!this.agent.config.api.custom_attributes_enabled) {
+    logger.debug(
+      'Config.api.custom_attributes_enabled set to false, ' +
+      'ignoring custom error attributes.'
+    )
+  }
+
   if (typeof error === 'string') {
     error = new Error(error)
   }
-  var transaction = this.agent.tracer.getTransaction()
+  const transaction = this.agent.tracer.getTransaction()
 
   this.agent.errors.addUserError(transaction, error, customAttributes)
 }

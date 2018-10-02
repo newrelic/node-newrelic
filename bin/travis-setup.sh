@@ -1,9 +1,10 @@
 #! /bin/bash
 
-function get_gcc_version {
-  local gcc_version_match='[[:digit:]]\.[[:digit:]]\.[[:digit:]]'
-  local gcc_version=`$CC --version 2>/dev/null | grep -o "$gcc_version_match" | head -1`
-  echo $gcc_version | grep -o '[[:digit:]]' | head -1
+
+function get_version {
+  local num='[[:digit:]][[:digit:]]*' # Grep doesn't have `+` operator.
+  local version=`$1 --version 2>/dev/null | grep -o "$num\.$num\.$num" | head -1`
+  echo $version | grep -o "$num" | head -1
 }
 
 TOOLCHAIN_ADDED="false"
@@ -15,15 +16,25 @@ function add_toolchain {
   TOOLCHAIN_ADDED="true"
 }
 
-# Only upgrade GCC if we need to.
 
 if [ "$SUITE" = "versioned" ]; then
-  if [ "$(get_gcc_version)" != "5" ]; then
+
+  # GCC 5 is the lowest version of GCC we can use.
+  if [ "$(get_version gcc)" == "4" ]; then
     echo " --- upgrading GCC --- "
     add_toolchain
     ./bin/travis-install-gcc5.sh > /dev/null
   else
-    echo " --- not upgrading GCC --- "
+    echo " --- not upgrading GCC ($(gcc --version)) --- "
+  fi
+
+  # npm 2 has an issue installing correctly for the superagent versioned tests.
+  # TODO: Remove this check when deprecating Node <5.
+  if [ "$(get_version npm)" == "2" ]; then
+    echo " -- upgrading npm --- "
+    npm install -g npm@3
+  else
+    echo " --- not upgrading npm ($(npm --version)) --- "
   fi
 
   echo " --- installing $SUITE requirements --- "
