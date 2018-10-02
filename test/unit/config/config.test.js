@@ -482,18 +482,19 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up lambda_mode', () => {
-      idempotentEnv('NEW_RELIC_LAMBDA_MODE', true, (tc) => {
-        expect(tc.lambda_mode).to.be.true
+    it('should pick up serverless_mode', () => {
+      idempotentEnv('NEW_RELIC_SERVERLESS_MODE', true, (tc) => {
+        expect(tc.serverless_mode).to.be.true
       })
     })
 
-    it('should set lambda_mode from lambda-specific env var if not set by user', () => {
-      idempotentEnv('AWS_LAMBDA_FUNCTION_NAME', 'someFunc', (tc) => {
-        expect(tc.lambda_mode).to.be.true
-      })
-    })
-
+    it('should set serverless_mode from lambda-specific env var if not set by user',
+      () => {
+        idempotentEnv('AWS_LAMBDA_FUNCTION_NAME', 'someFunc', (tc) => {
+          expect(tc.serverless_mode).to.be.true
+        })
+      }
+    )
   })
 
   describe('with both high_security and security_policies_token defined', function() {
@@ -507,12 +508,12 @@ describe('the agent configuration', function() {
     })
   })
 
-  describe('with both distributed_tracing and lambda_mode defined', () => {
+  describe('with both distributed_tracing and serverless_mode defined', () => {
     it('blows up if missing DT config environment variables', () => {
       expect(() => {
         Config.initialize({
           distributed_tracing: {enabled: true},
-          lambda_mode: true
+          serverless_mode: true
         })
       }).throws()
     })
@@ -522,15 +523,15 @@ describe('the agent configuration', function() {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
         NEW_RELIC_APPLICATION_ID: 'defined',
-        NEW_RELIC_LAMBDA_MODE: true,
+        NEW_RELIC_SERVERLESS_MODE: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       expect(idempotentEnv.bind(idempotentEnv, env, () => {})).to.not.throw()
     })
   })
 
-  describe('with lambda_mode disabled', () => {
-    it('should clear lambda_mode dt config options', () => {
+  describe('with serverless_mode disabled', () => {
+    it('should clear serverless_mode dt config options', () => {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
@@ -545,10 +546,10 @@ describe('the agent configuration', function() {
     })
   })
 
-  describe('with lambda_mode enabled', () => {
+  describe('with serverless_mode enabled', () => {
     it('should pick up trusted_account_key', () => {
       idempotentEnv({
-        NEW_RELIC_LAMBDA_MODE: true,
+        NEW_RELIC_SERVERLESS_MODE: true,
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
       }, (tc) => {
         console.log(process.env)
@@ -558,7 +559,7 @@ describe('the agent configuration', function() {
 
     it('should pick up application_id', () => {
       idempotentEnv({
-        NEW_RELIC_LAMBDA_MODE: true,
+        NEW_RELIC_SERVERLESS_MODE: true,
         NEW_RELIC_APPLICATION_ID: '5678'
       }, (tc) => {
         console.log(tc)
@@ -568,7 +569,7 @@ describe('the agent configuration', function() {
 
     it('should pick up account_id', () => {
       idempotentEnv({
-        NEW_RELIC_LAMBDA_MODE: true,
+        NEW_RELIC_SERVERLESS_MODE: true,
         NEW_RELIC_ACCOUNT_ID: '91011'
       }, (tc) => {
         expect(tc.account_id).to.equal('91011')
@@ -769,8 +770,8 @@ describe('the agent configuration', function() {
       expect(configuration.max_payload_size_in_bytes).to.equal(1000000)
     })
 
-    it('should not enable lambda_mode', () => {
-      expect(configuration.lambda_mode).to.be.false
+    it('should not enable serverless_mode', () => {
+      expect(configuration.serverless_mode).to.be.false
     })
   })
 
@@ -1228,11 +1229,11 @@ describe('the agent configuration', function() {
       expect(config.max_payload_size_in_bytes).equals(100)
     })
 
-    it('should not accept lambda_mode', () => {
+    it('should not accept serverless_mode', () => {
       expect(() => {
-        config.onConnect({lambda_mode: true})
+        config.onConnect({serverless_mode: true})
       }).not.throws()
-      expect(config.lambda_mode).to.be.false
+      expect(config.serverless_mode).to.be.false
     })
 
     describe('when data_report_period is set', function() {
