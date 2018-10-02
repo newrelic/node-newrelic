@@ -40,7 +40,12 @@ tap.test('Restify transaction naming', (t) => {
   t.test('transaction name with async response middleware', (t) => {
     t.plan(1)
 
-    server.use(restify.gzipResponse())
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
 
     server.get('/path1', (req, res, next) => {
       res.send({
@@ -62,7 +67,12 @@ tap.test('Restify transaction naming', (t) => {
   t.test('transaction name with async response middleware (res.json)', (t) => {
     t.plan(1)
 
-    server.use(restify.gzipResponse())
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
 
     server.get('/path1', (req, res, next) => {
       res.json({
