@@ -37,13 +37,35 @@ tap.test('Restify transaction naming', (t) => {
     runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
-  t.test('transaction name with async response', (t) => {
+  t.test('transaction name with async response middleware', (t) => {
     t.plan(1)
 
     server.use(restify.gzipResponse())
 
     server.get('/path1', (req, res, next) => {
       res.send({
+        patientId: 5,
+        entries: ['hi', 'bye', 'example'],
+        total: 3
+      })
+      next()
+    })
+
+    runTest({
+      t,
+      endpoint: '/path1',
+      expectedName: 'GET//path1',
+      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+    })
+  })
+
+  t.test('transaction name with async response middleware (res.json)', (t) => {
+    t.plan(1)
+
+    server.use(restify.gzipResponse())
+
+    server.get('/path1', (req, res, next) => {
+      res.json({
         patientId: 5,
         entries: ['hi', 'bye', 'example'],
         total: 3
