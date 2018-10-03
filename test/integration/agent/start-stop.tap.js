@@ -39,11 +39,11 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
   })
 })
 
-tap.test('Agent should not connect to collector in lambda mode', (t) => {
+tap.test('Agent should not connect to collector in serverless mode', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
-    lambda_mode: true,
+    serverless_mode: true,
     logging: {
       level: 'trace'
     }
