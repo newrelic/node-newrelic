@@ -1,8 +1,10 @@
 'use strict'
 
-const tap = require('tap')
-const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
+const async = require('async')
+const helper = require('../../lib/agent_helper')
+const request = require('request').defaults({json: true})
+const tap = require('tap')
 
 const START_PORT = 10000
 const MIDDLE_PORT = 10001
@@ -11,6 +13,7 @@ const ACCOUNT_ID = '1337'
 const APP_ID = '7331'
 const EXPECTED_DT_METRICS = ['DurationByCaller', 'TransportDuration']
 const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
+const SYMBOLS = require('../../../lib/shim/constants').SYMBOLS
 
 let compareSampled = null
 
@@ -27,6 +30,10 @@ tap.test('cross application tracing full integration', (t) => {
     encoding_key: 'some key',
   }
   const agent = helper.instrumentMockedAgent(null, config)
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
   agent.config.account_id = ACCOUNT_ID
   agent.config.application_id = APP_ID
   agent.config.trusted_account_key = ACCOUNT_ID
@@ -80,6 +87,12 @@ tap.test('cross application tracing full integration', (t) => {
     res.end()
   })
 
+  t.tearDown(() => {
+    start.close()
+    middle.close()
+    end.close()
+  })
+
   function runTest() {
     http.get(generateUrl(START_PORT, 'start'), (res) => {
       res.resume()
@@ -96,7 +109,7 @@ tap.test('cross application tracing full integration', (t) => {
       })[0]
       testsToCheck.push(transInspector[txCount].bind(this, trans, event))
       if (++txCount === 3) {
-        testsToCheck.map((test) => test())
+        testsToCheck.forEach((test) => test())
       }
     })
   }
@@ -242,6 +255,102 @@ tap.test('cross application tracing full integration', (t) => {
       t.end()
     }
   ]
+})
+
+tap.test('distributed tracing', (t) => {
+  let agent = null
+  let start = null
+  let middle = null
+  let end = null
+
+  t.autoend()
+
+  t.beforeEach((done) => {
+    agent = helper.instrumentMockedAgent(null, {
+      distributed_tracing: {enabled: true},
+      cross_application_tracer: {enabled: true},
+      primary_application_id: APP_ID,
+      trusted_account_key: ACCOUNT_ID
+    })
+    const http = require('http')
+    const api = new API(agent)
+
+    async.parallel([
+      (cb) => {
+        start = generateServer(http, api, START_PORT, cb, (req, res) => {
+          const tx = agent.tracer.getTransaction()
+          tx.nameState.appendPath('foobar')
+          request.get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, response, body) => {
+            tx.nameState.popPath('foobar')
+
+            body.start = req.headers
+            body = JSON.stringify(body)
+            res.setHeader('Content-Type', 'application/json')
+            res.setHeader('Content-Length', Buffer.byteLength(body))
+            res.write(body)
+            res.end()
+          })
+        })
+      },
+
+      (cb) => {
+        middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
+          const tx = agent.tracer.getTransaction()
+          tx.nameState.appendPath('foobar')
+          request.get(generateUrl(END_PORT, 'middle/end'), (err, response, body) => {
+            tx.nameState.popPath('foobar')
+
+            body.middle = req.headers
+            body = JSON.stringify(body)
+            res.setHeader('Content-Type', 'application/json')
+            res.setHeader('Content-Length', Buffer.byteLength(body))
+            res.write(body)
+            res.end()
+          })
+        })
+      },
+
+      (cb) => {
+        end = generateServer(http, api, END_PORT, cb, (req, res) => {
+          const body = JSON.stringify({end: req.headers})
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Content-Length', Buffer.byteLength(body))
+          res.write(body)
+          res.end()
+        })
+      }
+    ], done)
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    async.parallel([
+      (cb) => start.close(cb),
+      (cb) => middle.close(cb),
+      (cb) => end.close(cb),
+    ], done)
+  })
+
+  t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      request.get({
+        uri: generateUrl(START_PORT, 'start'),
+        // headers: {[SYMBOLS.DISABLE_DT]: true}
+      }, (err, response, body) => {
+        t.error(err)
+
+        console.log(body)
+
+        t.notOk(body.start.newrelic, 'should not add DT header when disabled')
+        t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
+
+        t.notOk(tx.isDistributedTrace, 'should not mark transaction as distributed')
+
+        t.end()
+      })
+    })
+  })
 })
 
 function generateServer(http, api, port, started, responseHandler) {
