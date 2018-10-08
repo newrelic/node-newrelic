@@ -63,6 +63,30 @@ tap.test('Agent#harvest', (t) => {
     })
   })
 
+  t.test('harvest should disregard sampling limits in serverless_mode', (t) => {
+    agent.config.transaction_events.max_samples_per_minute = 0
+    agent.config.serverless_mode = true
+
+    agent.metrics.measureMilliseconds('TEST/discard', null, 101)
+
+    var transaction
+    var proxy = agent.tracer.transactionProxy(function() {
+      transaction = agent.getTransaction()
+      transaction.finalizeNameFromUri('/nonexistent', 501)
+    })
+    proxy()
+    // ensure it's slow enough to get traced
+    transaction.trace.setDurationInMillis(5001)
+    transaction.end(function() {
+      t.ok(agent.traces.trace, 'have a slow trace to send')
+
+      agent.harvest(function(error) {
+        t.error(error, 'harvest ran correctly')
+        t.end()
+      })
+    })
+  })
+
   t.test('sending metrics', (t) => {
     t.plan(5)
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
