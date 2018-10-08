@@ -67,7 +67,7 @@ describe('the New Relic agent', function() {
     expect(agent.config.agent_enabled).equal(false)
   })
 
-  describe.only('when in serverless_mode', () => {
+  describe('when in serverless_mode', () => {
     let agent = null
 
     before(() => {
