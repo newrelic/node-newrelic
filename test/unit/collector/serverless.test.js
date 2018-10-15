@@ -74,11 +74,11 @@ describe('ServerlessCollector API', () => {
     })
   })
 
-  describe('#analyticEvents', () => {
+  describe('#analyticsEvents', () => {
     it('adds analytic_event_data to the payload object', (done) => {
-      const analyticEvents = {type: 'analytic_event_data'}
-      api.analyticEvents(analyticEvents, () => {
-        expect(api.payload.analytic_event_data).to.deep.equal(analyticEvents)
+      const analyticsEvents = {type: 'analytic_event_data'}
+      api.analyticsEvents(analyticsEvents, () => {
+        expect(api.payload.analytic_event_data).to.deep.equal(analyticsEvents)
         done()
       })
     })
