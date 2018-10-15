@@ -55,7 +55,6 @@ tap.test('Serverless mode harvest', (t) => {
             return t.fail(err, 'decompression failed')
           }
 
-          process._rawDebug(decoded.data.transaction_sample_data)
           t.ok(decoded.metadata, 'decoded payload has metadata object')
           t.ok(decoded.data, 'decoded payload has data object')
           t.end()
