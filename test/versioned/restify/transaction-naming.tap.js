@@ -2,17 +2,20 @@
 
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
+const semver = require('semver')
 
 tap.test('Restify transaction naming', (t) => {
   t.autoend()
 
   let agent = null
   let restify = null
+  let restifyPkg = null
   let server = null
 
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
     restify = require('restify')
+    restifyPkg = require('restify/package.json')
     server = restify.createServer()
     done()
   })
@@ -91,32 +94,34 @@ tap.test('Restify transaction naming', (t) => {
     })
   })
 
-  t.test('transaction name with async response middleware (res.sendRaw)', (t) => {
-    t.plan(1)
+  if (semver.satisfies(restifyPkg.version, '>=5')) {
+    t.test('transaction name with async response middleware (res.sendRaw)', (t) => {
+      t.plan(1)
 
-    // restify v5 added the plugins object
-    if (restify.plugins && restify.plugins.gzipResponse) {
-      server.use(restify.plugins.gzipResponse())
-    } else {
-      server.use(restify.gzipResponse())
-    }
+      // restify v5 added the plugins object
+      if (restify.plugins && restify.plugins.gzipResponse) {
+        server.use(restify.plugins.gzipResponse())
+      } else {
+        server.use(restify.gzipResponse())
+      }
 
-    server.get('/path1', (req, res, next) => {
-      res.sendRaw({
-        patientId: 5,
-        entries: ['hi', 'bye', 'example'],
-        total: 3
+      server.get('/path1', (req, res, next) => {
+        res.sendRaw(JSON.stringify({
+          patientId: 5,
+          entries: ['hi', 'bye', 'example'],
+          total: 3
+        }))
+        next()
       })
-      next()
-    })
 
-    runTest({
-      t,
-      endpoint: '/path1',
-      expectedName: 'GET//path1',
-      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+      runTest({
+        t,
+        endpoint: '/path1',
+        expectedName: 'GET//path1',
+        requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+      })
     })
-  })
+  }
 
   t.test('transaction name with async response middleware (res.redirect)', (t) => {
     t.plan(1)
