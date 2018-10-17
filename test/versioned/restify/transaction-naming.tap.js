@@ -91,6 +91,55 @@ tap.test('Restify transaction naming', (t) => {
     })
   })
 
+  t.test('transaction name with async response middleware (res.sendRaw)', (t) => {
+    t.plan(1)
+
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
+
+    server.get('/path1', (req, res, next) => {
+      res.sendRaw({
+        patientId: 5,
+        entries: ['hi', 'bye', 'example'],
+        total: 3
+      })
+      next()
+    })
+
+    runTest({
+      t,
+      endpoint: '/path1',
+      expectedName: 'GET//path1',
+      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+    })
+  })
+
+  t.test('transaction name with async response middleware (res.redirect)', (t) => {
+    t.plan(1)
+
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
+
+    server.get('/path1', (req, res, next) => {
+      res.redirect('http://google.com', next)
+    })
+
+    runTest({
+      t,
+      endpoint: '/path1',
+      expectedName: 'GET//path1',
+      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+    })
+  })
+
   t.test('transaction name with no matched routes', (t) => {
     t.plan(1)
 
