@@ -1658,13 +1658,8 @@ function _checkKeyLength(object, maxLength) {
 // A function with no references used to stub out closures
 function cleanClosure() {}
 
-const eventSourceNameLookup = {
-  'aws:kinesis': 'Kinesis',
-  'aws:s3': 'S3',
-  'aws:sns': 'SNS',
-  'aws:dynamodb': 'DynamoDB',
-  'aws:codecommit': 'CodeCommit'
-}
+const EVENT_SOURCE_ARN_KEY = 'aws.lambda.eventSource.arn'
+const EVENT_SOURCE_REGION_KEY = 'aws.lamdba.eventSource.region'
 
 API.prototype.recordLambda = function recordLambda(handler) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1759,56 +1754,50 @@ API.prototype.recordLambda = function recordLambda(handler) {
     }
 
     function getAwsAgentAttributes() {
-      return {
-        'aws.functionName': context.functionName,
-        'aws.functionVersion': context.functionVersion,
-        'aws.arn': context.invokedFunctionArn,
-        'aws.memoryLimit': context.memoryLimitInMB,
-        'aws.requestId': context.awsRequestId,
-        'aws.region': process.env.AWS_REGION,
+      const attributes = {
         'aws.executionEnv': process.env.AWS_EXECUTION_ENV,
-        'aws.eventSource': getEventSource()
+        'aws.lambda.arn': context.invokedFunctionArn,
+        'aws.lambda.functionName': context.functionName,
+        'aws.lambda.functionVersion': context.functionVersion,
+        'aws.lambda.memoryLimit': context.memoryLimitInMB,
+        'aws.region': process.env.AWS_REGION,
+        'aws.requestId': context.awsRequestId
       }
+
+      getEventSourceAttributes(attributes)
+
+      if (isColdStart) {
+        attributes['aws.lambda.coldStart'] = isColdStart
+      }
+
+      return attributes
     }
 
-    function getEventSource() {
-      const unknownSource = 'Unknown'
-
+    function getEventSourceAttributes(obj) {
       if (event.Records) {
-        return getRecordBasedEventSource(event.Records[0]) || unknownSource
-      }
-
-      if (event.StackId && event.RequestType && event.ResourceType) {
-        return 'CloudFormation'
-      }
-
-      if (event.headers && event.requestContext) {
-        return 'ApiGatewayProxy'
-      }
-
-      if (event.awslogs && event.awslogs.data) {
-        return 'CloudWatchLogs'
-      }
-
-      if (event.records && event.deliveryStreamArn) {
-        return 'KinesisFirehose'
-      }
-
-      return unknownSource
-    }
-
-    function getRecordBasedEventSource(record) {
-      if (!record) {
-        return
-      }
-
-      const eventSource = record.eventSource || record.EventSource
-      if (eventSource) {
-        return eventSourceNameLookup[eventSource]
-      }
-
-      if (record.cf && record.cf.config) {
-        return 'CloudFront'
+        const record = event.Records[0]
+        if (record.eventSourceARN) {
+          // SQS/Kinesis Stream/DynamoDB/CodeCommit
+          obj[EVENT_SOURCE_ARN_KEY] = record.eventSourceARN
+          if (record.awsRegion) {
+            obj[EVENT_SOURCE_REGION_KEY] = record.awsRegion
+          }
+        } else if (record.s3) {
+          // S3
+          if (record.s3.bucket && record.s3.bucket.arn) {
+            obj[EVENT_SOURCE_ARN_KEY] = record.s3.bucket.arn
+          }
+          if (record.s3.awsRegion) {
+            obj[EVENT_SOURCE_REGION_KEY] = record.s3.awsRegion
+          }
+        } else if (record.EventSubscriptionArn) {
+          // SNS
+          obj[EVENT_SOURCE_ARN_KEY] = record.EventSubscriptionArn
+        }
+      } else if (event.records && event.deliveryStreamArn) {
+        // Kinesis Firehose
+        obj[EVENT_SOURCE_ARN_KEY] = event.deliveryStreamArn
+        obj[EVENT_SOURCE_REGION_KEY] = event.region
       }
     }
 
