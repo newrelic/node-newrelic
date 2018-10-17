@@ -303,6 +303,20 @@ describe('WebFrameworkShim', function() {
           wrappable.bar(routes, () => {})
         })
 
+        it('should not overwrite regex entries in the array of routes', () => {
+          const routes = [/a\/b\/$/, /anotherRegex/, /a/]
+          shim.wrapMiddlewareMounter(wrappable, 'bar', {
+            route: shim.FIRST,
+            wrapper: (shim, fn, name, route) => {
+              routes.forEach((r) => {
+                expect(r instanceof RegExp).to.be.true
+              })
+            }
+          })
+
+          wrappable.bar(routes, () => {})
+        })
+
         it('should pass null if the route parameter is a middleware', function() {
           var callCount = 0
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
