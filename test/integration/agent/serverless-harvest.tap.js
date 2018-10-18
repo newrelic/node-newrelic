@@ -5,12 +5,18 @@ const tap = require('tap')
 const sinon = require('sinon')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const TEST_ARN = 'test:arn'
+const TEST_EX_ENV = 'test-AWS_Lambda_nodejs8.10'
+const PROTOCOL_VERSION = 16
 
 tap.test('Serverless mode harvest', (t) => {
   t.autoend()
 
   let agent = null
   let logSpy = null
+
+  process.env.AWS_LAMBDA_FUNCTION_ARN = TEST_ARN
+  process.env.AWS_EXECUTION_ENV = TEST_EX_ENV
 
   t.beforeEach((done) => {
     logSpy = sinon.spy(console, 'log')
@@ -56,6 +62,16 @@ tap.test('Serverless mode harvest', (t) => {
           }
 
           t.ok(decoded.metadata, 'decoded payload has metadata object')
+          t.deepEqual(
+            decoded.metadata,
+            {
+              arn: TEST_ARN,
+              execution_environment: TEST_EX_ENV,
+              protocol_version: PROTOCOL_VERSION,
+              agent_version: agent.version
+            },
+            'metadata object has expected data'
+          )
           t.ok(decoded.data, 'decoded payload has data object')
           t.end()
         })
