@@ -14,7 +14,7 @@ const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
 
 let compareSampled = null
 
-tap.test('cross application tracing full integration', (t) => {
+tap.test('distributed tracing full integration', (t) => {
   t.plan(79)
   const config = {
     distributed_tracing: {
