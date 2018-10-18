@@ -708,7 +708,6 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
-      agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
 
@@ -980,7 +979,6 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
-      agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = true
       agent.config.account_id = '5678'
       agent.config.primary_application_id = '1234'
@@ -1115,7 +1113,6 @@ describe('Transaction', function() {
       tx.agent.config.account_id = '5678'
       tx.agent.config.primary_application_id = '1234'
       tx.agent.config.trusted_account_key = '5678'
-      tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.distributed_tracing.enabled = true
 
       const payload = tx.createDistributedTracePayload().text()
