@@ -138,6 +138,7 @@ describe('ServerlessCollector API', () => {
       api.flushPayload(() => {
         const logPayload = logStub.args[0][0]
         expect(logPayload).to.be.an('array')
+        expect(logPayload[0]).to.be.a('number')
         expect(logPayload[1]).to.equal('NR_LAMBDA_MONITORING')
         expect(logPayload[2]).to.be.a('string')
         done()
