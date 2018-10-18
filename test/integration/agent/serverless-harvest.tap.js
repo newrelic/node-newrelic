@@ -38,7 +38,7 @@ tap.test('Serverless mode harvest', (t) => {
   })
 
   t.test('simple harvest', (t) => {
-    t.plan(5)
+    t.plan(6)
     let transaction
     const proxy = agent.tracer.transactionProxy(() => {
       transaction = agent.getTransaction()
@@ -77,7 +77,7 @@ tap.test('Serverless mode harvest', (t) => {
   })
 
   t.test('sending metrics', (t) => {
-    t.plan(6)
+    t.plan(7)
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
 
     const metrics = agent.metrics.toJSON()
@@ -100,7 +100,7 @@ tap.test('Serverless mode harvest', (t) => {
   })
 
   t.test('sending errors', (t) => {
-    t.plan(5)
+    t.plan(6)
 
     const spy = sinon.spy(agent.collector, 'errorData')
     t.tearDown(() => spy.restore())
@@ -132,7 +132,7 @@ tap.test('Serverless mode harvest', (t) => {
   })
 
   t.test('sending traces', (t) => {
-    t.plan(5)
+    t.plan(6)
 
     const spy = sinon.spy(agent.collector, 'transactionSampleData')
     t.tearDown(() => spy.restore())
@@ -159,7 +159,7 @@ tap.test('Serverless mode harvest', (t) => {
   })
 
   t.test('sending span events', (t) => {
-    t.plan(5)
+    t.plan(6)
 
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
@@ -203,6 +203,12 @@ function checkCompressedPayload(t, payload, prop, cb) {
 
     const data = decoded.data[prop]
     t.ok(data, `compressed payload includes ${prop} prop`)
+
+    for (let key in decoded.data) {
+      if (!decoded.data[key].length) {
+        t.fail(`payload data.${key} property is empty`)
+      }
+    }
 
     cb()
   })
