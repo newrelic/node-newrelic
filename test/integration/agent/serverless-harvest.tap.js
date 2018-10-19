@@ -158,6 +158,35 @@ tap.test('Serverless mode harvest', (t) => {
     })
   })
 
+  t.test('serverless_mode harvest should disregard sampling limits', (t) => {
+    t.plan(5)
+
+    agent.config.transaction_events.max_samples_per_minute = 0
+
+    const spy = sinon.spy(agent.collector, 'transactionSampleData')
+    t.tearDown(() => spy.restore())
+
+    var transaction
+    var proxy = agent.tracer.transactionProxy(() => {
+      transaction = agent.getTransaction()
+      transaction.finalizeNameFromUri('/nonexistent', 200)
+    })
+    proxy()
+
+    // ensure it's slow enough to get traced
+    transaction.trace.setDurationInMillis(5001)
+    transaction.end(() => {
+      t.ok(spy.called, 'should send sample trace data')
+
+      const payload = spy.args[0][0]
+      t.ok(payload, 'should have trace payload')
+      t.type(payload[1][0], 'Array', 'should have trace')
+      t.type(payload[1][0][4], 'string', 'should have encoded trace')
+
+      checkCompressedPayload(t, logSpy.args[0][0][2], 'transaction_sample_data', t.end)
+    })
+  })
+
   t.test('sending span events', (t) => {
     t.plan(5)
 
