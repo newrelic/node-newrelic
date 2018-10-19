@@ -13,7 +13,7 @@ const kinesisDataStreamEvent = {
     },
     "invokeIdentityArn": "identityarn",
     "eventName": "aws:kinesis:record",
-    "eventSourceARN": "eventsourcearn",
+    "eventSourceARN": "kinesis:eventsourcearn",
     "eventSource": "aws:kinesis",
     "awsRegion": "us-east-1"
   }]
@@ -110,7 +110,7 @@ const dynamoDbUpdateEvent = {
     },
     "awsRegion": "us-west-2",
     "eventName": "INSERT",
-    "eventSourceARN": "eventsourcearn",
+    "eventSourceARN": "dynamodb:eventsourcearn",
     "eventSource": "aws:dynamodb"
   },
   {
