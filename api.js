@@ -1645,18 +1645,16 @@ const EVENT_SOURCE_ARN_KEY = 'aws.lambda.eventSource.arn'
 const EVENT_SOURCE_REGION_KEY = 'aws.lamdba.eventSource.region'
 
 API.prototype.recordLambda = function recordLambda(handler) {
-  const metric = this.agent.metrics.getOrCreateMetric(
+  const agent = this.agent
+  const metric = agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordLambda'
   )
-
   metric.incrementCallCount()
 
   if (typeof handler !== 'function') {
     logger.warn('handler argument is not a function and cannot be recorded')
     return handler
   }
-
-  let isColdStart = true
 
   const shim = this.shim
 
@@ -1679,12 +1677,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
   return shim.bindCreateTransaction(wrappedHandler, {type: shim.BG})
 
   function wrappedHandler() {
-    let coldStartTime
-    if (isColdStart) {
-      isColdStart = false
-      coldStartTime = process.uptime()
-    }
-
     const args = shim.argsToArray.apply(shim, arguments)
 
     const event = args[0]
@@ -1749,8 +1741,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
       getEventSourceAttributes(attributes)
 
-      if (isColdStart) {
-        attributes['aws.lambda.coldStart'] = isColdStart
+      if (!agent._coldStartRecorded) {
+        attributes['aws.lambda.coldStart'] = true
+        agent._coldStartRecorded = true
       }
 
       return attributes
@@ -1791,14 +1784,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
       transactionEnders[enderIndex] = cleanClosure
 
       transaction.finalizeName()
-
-      if (coldStartTime) {
-        transaction.measure(
-          NAMES.SERVERLESS.COLD_START_TIME, transaction.name, coldStartTime
-        )
-
-        transaction.measure(NAMES.SERVERLESS.COLD_START_TIME, null, coldStartTime)
-      }
 
       transaction.end()
     }
