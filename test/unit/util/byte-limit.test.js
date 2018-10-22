@@ -4,17 +4,21 @@ const expect = require('chai').expect
 const byteUtils = require('../../../lib/util/byte-limit')
 
 describe('byte-limit', () => {
-  describe('#isValidLength', () => {
-    it('verifies string is within given byte limit', () => {
+  describe('#compareLength', () => {
+    it('returns -1 when the string is smaller than the limit', () => {
       const str = '123456789'
-      const isValidLength = byteUtils.isValidLength(str, 255)
-      expect(isValidLength).to.be.true
+      const cmpVal = byteUtils.compareLength(str, 255)
+      expect(cmpVal).to.equal(-1)
     })
-
-    it('verifies string is larger than given byte limit', () => {
+    it('returns 0 when the string is equal than the limit', () => {
       const str = '123456789'
-      const isValidLength = byteUtils.isValidLength(str, 2)
-      expect(isValidLength).to.be.false
+      const cmpVal = byteUtils.compareLength(str, 9)
+      expect(cmpVal).to.equal(0)
+    })
+    it('returns 1 when the string is larger than the limit', () => {
+      const str = '123456789'
+      const cmpVal = byteUtils.compareLength(str, 2)
+      expect(cmpVal).to.equal(1)
     })
   })
 
