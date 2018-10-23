@@ -9,9 +9,11 @@ const lambdaSampleEvents = require('./lambdaSampleEvents')
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
 
 describe('The recordLambda API', () => {
-  const bgGroup = 'Function'
+  const groupName = 'Function'
   const functionName = 'testName'
-  const expectedBgTransactionName = 'OtherTransaction/' + bgGroup + '/' + functionName
+  const expectedTransactionName = groupName + '/' + functionName
+  const expectedBgTransactionName = 'OtherTransaction/' + expectedTransactionName
+  const expectedWebTransactionName = 'WebTransaction/' + expectedTransactionName
   const errorMessage = 'sad day'
 
   let agent
@@ -74,17 +76,312 @@ describe('The recordLambda API', () => {
     expect(metric.callCount).to.equal(1)
   })
 
-  it('should create a transaction for handler', () => {
-    const wrappedHandler = api.recordLambda((event, context, callback) => {
-      const transaction = agent.tracer.getTransaction()
-      expect(transaction.type).to.equal('bg')
-      expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-      expect(transaction.isActive()).to.be.true
+  describe('when invoked with non web event', () => {
+    it('should create a transaction for handler', () => {
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        const transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+        expect(transaction.isActive()).to.be.true
 
-      callback(null, 'worked')
+        callback(null, 'worked')
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
     })
 
-    wrappedHandler(stubEvent, stubContext, stubCallback)
+    it('should record standard background metrics', (done) => {
+      agent.on('transactionFinished', confirmMetrics)
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, 'worked')
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+
+      function confirmMetrics() {
+        const unscopedMetrics = agent.metrics.unscoped
+        expect(unscopedMetrics).exist
+
+        const otherTransactionAll = 'OtherTransaction/all'
+        expect(unscopedMetrics[otherTransactionAll], otherTransactionAll)
+          .to.exist.and.have.property('callCount', 1)
+
+        expect(
+          unscopedMetrics[expectedBgTransactionName],
+          expectedBgTransactionName
+        ).to.exist.and.have.property('callCount', 1)
+
+        expect(unscopedMetrics.OtherTransactionTotalTime, 'OtherTransactionTotalTime')
+          .to.exist.and.have.property('callCount', 1)
+
+        const transactionOtherTotalTime =
+          'OtherTransactionTotalTime/' + expectedTransactionName
+        expect(unscopedMetrics[transactionOtherTotalTime], transactionOtherTotalTime)
+          .to.exist.and.have.property('callCount', 1)
+
+        done()
+      }
+    })
+  })
+
+  describe('when invoked with API Gateway Lambda proxy event', () => {
+    const validResponse = {
+      "isBase64Encoded": false,
+      "statusCode": 200,
+      "headers": {"responseHeader": "headerValue"},
+      "body": "worked"
+    }
+
+    it('should create web transaction', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        const transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('web')
+        expect(transaction.getFullName()).to.equal(expectedWebTransactionName)
+        expect(transaction.isActive()).to.be.true
+
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property('request.method', 'GET')
+        expect(agentAttributes).to.have.property('request.uri', '/test/hello')
+
+        done()
+      }
+    })
+
+    it('should capture status code', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'httpResponseCode',
+          '200'
+        )
+
+        expect(agentAttributes).to.have.property(
+          'response.status',
+          '200'
+        )
+
+        done()
+      }
+    })
+
+    it('should capture request parameters', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      agent.config.attributes.enabled = true
+      agent.config.attributes.include = ['request.parameters.*']
+      agent.config.emit('attributes.include')
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property('request.parameters.name', 'me')
+        expect(agentAttributes).to.have.property('request.parameters.team', 'node agent')
+
+        done()
+      }
+    })
+
+    it('should capture request headers', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'request.headers.accept',
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.acceptEncoding',
+          'gzip, deflate, lzma, sdch, br'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.acceptLanguage',
+          'en-US,en;q=0.8'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.cloudFrontForwardedProto',
+          'https'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.cloudFrontIsDesktopViewer',
+          'true'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.cloudFrontIsMobileViewer',
+          'false'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.cloudFrontIsSmartTVViewer',
+          'false'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.cloudFrontIsTabletViewer',
+          'false'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.cloudFrontViewerCountry',
+          'US'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.host',
+          'wt6mne2s9k.execute-api.us-west-2.amazonaws.com'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.upgradeInsecureRequests',
+          '1'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.userAgent',
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
+        )
+        expect(agentAttributes).to.have.property(
+          'request.headers.via',
+          '1.1 fb7cca60f0ecd82ce07790c9c5eef16c.cloudfront.net (CloudFront)'
+        )
+
+        done()
+      }
+    })
+
+    it('should filter request headers by `exclude` rules', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.not.have.property('request.headers.X-Amz-Cf-Id')
+        expect(agentAttributes).to.not.have.property('request.headers.X-Forwarded-For')
+        expect(agentAttributes).to.not.have.property('request.headers.X-Forwarded-Port')
+        expect(agentAttributes).to.not.have.property('request.headers.X-Forwarded-Proto')
+
+        expect(agentAttributes).to.not.have.property('request.headers.xAmzCfId')
+        expect(agentAttributes).to.not.have.property('request.headers.xForwardedFor')
+        expect(agentAttributes).to.not.have.property('request.headers.xForwardedPort')
+        expect(agentAttributes).to.not.have.property('request.headers.xForwardedProto')
+
+        expect(agentAttributes).to.not.have.property('request.headers.XAmzCfId')
+        expect(agentAttributes).to.not.have.property('request.headers.XForwardedFor')
+        expect(agentAttributes).to.not.have.property('request.headers.XForwardedPort')
+        expect(agentAttributes).to.not.have.property('request.headers.XForwardedProto')
+
+        done()
+      }
+    })
+
+    it('should capture response headers', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'response.headers.responseHeader',
+          'headerValue'
+        )
+
+        done()
+      }
+    })
+
+    it('should record standard web metrics', (done) => {
+      agent.on('transactionFinished', confirmMetrics)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmMetrics() {
+        const unscopedMetrics = agent.metrics.unscoped
+        expect(unscopedMetrics).exist
+
+        expect(unscopedMetrics.HttpDispatcher, 'HttpDispatcher')
+          .to.exist.and.have.property('callCount', 1)
+
+        expect(unscopedMetrics.Apdex, 'Apdex').to.exist.and.have.property('satisfying', 1)
+
+        const transactionApdex = 'Apdex/' + expectedTransactionName
+        expect(unscopedMetrics[transactionApdex], transactionApdex)
+          .to.exist.and.have.property('satisfying', 1)
+
+        expect(unscopedMetrics.WebTransaction, 'WebTransaction')
+          .to.exist.and.have.property('callCount', 1)
+
+        expect(
+          unscopedMetrics[expectedWebTransactionName],
+          expectedWebTransactionName
+        ).to.exist.and.have.property('callCount', 1)
+
+        expect(unscopedMetrics.WebTransactionTotalTime, 'WebTransactionTotalTime')
+          .to.exist.and.have.property('callCount', 1)
+
+        const transactionWebTotalTime =
+          'WebTransactionTotalTime/' + expectedTransactionName
+        expect(unscopedMetrics[transactionWebTotalTime], transactionWebTotalTime)
+          .to.exist.and.have.property('callCount', 1)
+
+        done()
+      }
+    })
   })
 
   it('should create a segment for handler', () => {

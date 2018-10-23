@@ -1667,8 +1667,13 @@ function cleanClosure() {}
 
 const EVENT_SOURCE_ARN_KEY = 'aws.lambda.eventSource.arn'
 
+const urltils = require('./lib/util/urltils')
+const headerAttributes = require('./lib/header-attributes')
+
 API.prototype.recordLambda = function recordLambda(handler) {
   const agent = this.agent
+  const shim = this.shim
+
   const metric = agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordLambda'
   )
@@ -1678,8 +1683,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
     logger.warn('handler argument is not a function and cannot be recorded')
     return handler
   }
-
-  const shim = this.shim
 
   // this array holds all the closures used to end transactions
   var transactionEnders = []
@@ -1709,11 +1712,57 @@ API.prototype.recordLambda = function recordLambda(handler) {
     const group = NAMES.FUNCTION.PREFIX
     const transactionName = group + name
 
-    const segment = shim.createSegment(name, recordBackground)
+    const isApiGatewayLambdaProxy = isApiGatewayLambdaProxyEvent(event)
+
+    let segment
+    if (isApiGatewayLambdaProxy) {
+      // record web is needed for web metrics
+      segment = shim.createSegment(name, recordWeb)
+    } else {
+      segment = shim.createSegment(name, recordBackground)
+    }
 
     const transaction = shim.tracer.getTransaction()
     transaction.setPartialName(transactionName)
     transaction.baseSegment = segment
+
+    if (isApiGatewayLambdaProxy) {
+      transaction.type = shim.WEB
+
+      // TODO: potentially two wrappers... chose which at runtime.
+      // http -> request ln 551
+
+      const transportType = event.headers['X-Forwarded-Proto']
+
+      transaction.url = urltils.scrub(event.path)
+      transaction.verb = event.httpMethod
+      transaction.trace.addAttribute(DESTS.COMMON, 'request.method', event.httpMethod)
+      transaction.port = event.headers['X-Forwarded-Port']
+
+      transaction.addRequestParameters(event.queryStringParameters)
+
+      // URL is sent as an agent attribute with transaction events
+      transaction.trace.addAttribute(
+        DESTS.TRANS_EVENT | DESTS.ERROR_EVENT,
+        'request.uri',
+        transaction.url
+      )
+
+      headerAttributes.collectRequestHeaders(event.headers, transaction)
+
+      if (shim.agent.config.distributed_tracing.enabled) {
+        const payload =
+          event.headers.newrelic || event.headers.NEWRELIC || event.headers.Newrelic
+
+        if (payload) {
+          logger.trace(
+            'Accepting distributed trace payload for transaction %s',
+            transaction.id
+          )
+          transaction.acceptDistributedTracePayload(payload, transportType)
+        }
+      }
+    }
 
     const cbIndex = args.length - 1
 
@@ -1744,6 +1793,35 @@ API.prototype.recordLambda = function recordLambda(handler) {
         }
 
         shim.agent.errors.add(transaction, err)
+
+        if (transaction.isWeb) {
+          const res = arguments[1]
+          if (res) {
+            if (res.statusCode) {
+              transaction.statusCode = res.statusCode
+
+              const responseCode = String(res.statusCode)
+              transaction.trace.addAttribute(
+                DESTS.COMMON, 'httpResponseCode', responseCode
+              )
+
+              if (/^\d+$/.test(responseCode)) {
+                transaction.trace.addAttribute(
+                  DESTS.COMMON,
+                  'response.status',
+                  responseCode)
+              }
+            } else {
+              logger.warnOnce(
+                'Did not response.statusCode. This may indicate a ' +
+                'web transaction was incorrectly created for this lambda event type. ' +
+                'This log message will appear only once per agent run.'
+              )
+            }
+
+            headerAttributes.collectResponseHeaders(res.headers, transaction)
+          }
+        }
 
         end()
 
@@ -1803,6 +1881,14 @@ API.prototype.recordLambda = function recordLambda(handler) {
       transaction.end()
     }
   }
+}
+
+function isApiGatewayLambdaProxyEvent(event) {
+  if (event.path && event.headers && event.httpMethod) {
+    return true
+  }
+
+  return false
 }
 
 module.exports = API
