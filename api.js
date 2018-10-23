@@ -1685,6 +1685,10 @@ API.prototype.recordLambda = function recordLambda(handler) {
   return shim.bindCreateTransaction(wrappedHandler, {type: shim.BG})
 
   function wrappedHandler() {
+    const args = shim.argsToArray.apply(shim, arguments)
+
+    const context = args[1]
+
     let coldStartTime
     if (isColdStart) {
       agent.lambdaArn = context.invokedFunctionArn,
@@ -1693,10 +1697,8 @@ API.prototype.recordLambda = function recordLambda(handler) {
       coldStartTime = process.uptime()
     }
 
-    const args = shim.argsToArray.apply(shim, arguments)
 
     const event = args[0]
-    const context = args[1]
 
     const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX
