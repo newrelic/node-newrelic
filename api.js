@@ -1688,6 +1688,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
     const args = shim.argsToArray.apply(shim, arguments)
 
     const context = args[1]
+    const event = args[0]
 
     let coldStartTime
     if (isColdStart) {
@@ -1696,9 +1697,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
       isColdStart = false
       coldStartTime = process.uptime()
     }
-
-
-    const event = args[0]
 
     const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX
