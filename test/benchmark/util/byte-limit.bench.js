@@ -12,7 +12,7 @@ var equalString = '1234567890'
 
 // 2^20 characters
 // using unicode characters to force it into the search case
-var longString = '\uD87E\uDC04\uD87E\uDC04'
+var longString = '1324\uD87E\uDC04\uD87E\uDC04'
 for (var i = 0; i < 20; ++i) {
   longString += longString
 }
@@ -34,7 +34,7 @@ suite.add({
 suite.add({
   name: 'truncate (longer than limit)',
   fn: function() {
-    truncate(longString, 100)
+    truncate(longString, 1023)
   }
 })
 
