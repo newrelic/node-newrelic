@@ -5,6 +5,8 @@ var assert = require('assert')
 var helper = require('../lib/agent_helper')
 var API    = require('../../api')
 
+var hashes = require('../../lib/util/hashes')
+
 
 chai.should()
 
@@ -14,7 +16,15 @@ describe('the RUM API', function() {
 
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    agent = helper.loadMockedAgent(null, {
+      license_key: 'license key here',
+      browser_monitoring: {
+        attributes: {
+          enabled: true,
+          include: ['*']
+        }
+      }
+    })
     agent.config.browser_monitoring.enable          = true
     agent.config.browser_monitoring.debug           = false
     agent.config.application_id                     = 12345
@@ -120,6 +130,20 @@ describe('the RUM API', function() {
       t.finalizeNameFromUri('hello')
       api.getBrowserTimingHeader({ nonce: nonce })
         .indexOf('nonce="' + nonce + '">').should.not.equal(-1)
+    })
+  })
+
+  it('should add custom attributes', function() {
+    helper.runInTransaction(agent, function(t) {
+      api.addCustomAttribute('hello', 1)
+      t.finalizeNameFromUri('hello')
+      var payload = /"atts":"(.*)"/.exec(api.getBrowserTimingHeader())
+      payload.should.not.be.null
+      var deobf = hashes.deobfuscateNameUsingKey(
+        payload[1],
+        agent.config.license_key.substr(0,13)
+      )
+      JSON.parse(deobf).u.hello.should.equal(1)
     })
   })
 })
