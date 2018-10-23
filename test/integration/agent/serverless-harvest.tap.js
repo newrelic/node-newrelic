@@ -48,7 +48,9 @@ tap.test('Serverless mode harvest', (t) => {
 
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
-    transaction.end(() => {
+    transaction.end()
+    agent.once('harvestFinished', () => {
+      console.log('asdf')
       const payload = logSpy.args[0][0]
 
       t.equal(payload[0], 1, 'payload has expected version')
@@ -111,7 +113,8 @@ tap.test('Serverless mode harvest', (t) => {
       tx.trace.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
       agent.errors.add(tx, new Error('test error'))
 
-      tx.end(() => {
+      tx.end()
+      agent.once('harvestFinished', () => {
         t.ok(spy.called, 'should send error data')
 
         const payload = spy.args[0][0]
@@ -146,7 +149,8 @@ tap.test('Serverless mode harvest', (t) => {
 
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
-    transaction.end(() => {
+    transaction.end()
+    agent.once('harvestFinished', () => {
       t.ok(spy.called, 'should send sample trace data')
 
       const payload = spy.args[0][0]
@@ -175,7 +179,8 @@ tap.test('Serverless mode harvest', (t) => {
 
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
-    transaction.end(() => {
+    transaction.end()
+    agent.once('harvestFinished', () => {
       t.ok(spy.called, 'should send sample trace data')
 
       const payload = spy.args[0][0]
@@ -200,8 +205,9 @@ tap.test('Serverless mode harvest', (t) => {
       setTimeout(() => {
         // Just to create an extra span.
         tx.finalizeNameFromUri('/some/path', 200)
-        tx.end(end)
-      }, 10)
+        tx.end()
+        agent.once('harvestFinished', end)
+      }, 100)
     })
 
     function end() {
