@@ -15,7 +15,6 @@ tap.test('Serverless mode harvest', (t) => {
   let agent = null
   let logSpy = null
 
-  process.env.AWS_LAMBDA_FUNCTION_ARN = TEST_ARN
   process.env.AWS_EXECUTION_ENV = TEST_EX_ENV
 
   t.beforeEach((done) => {
@@ -25,6 +24,7 @@ tap.test('Serverless mode harvest', (t) => {
       app_name: 'serverless mode tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
     })
+    agent.lambdaArn = TEST_ARN
 
     agent.start(done)
   })

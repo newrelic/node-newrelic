@@ -114,14 +114,6 @@ describe('ServerlessCollector API', () => {
     })
   })
 
-  describe('#preparePayload', () => {
-    it('resets instance payload object', () => {
-      api.payload = {type: 'initial payload'}
-      api.preparePayload()
-      expect(api.payload).to.deep.equal({})
-    })
-  })
-
   describe('#flushPayload', () => {
     let logStub = null
 
