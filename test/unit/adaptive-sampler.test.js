@@ -9,7 +9,6 @@ const helper = require('../lib/agent_helper')
 describe('AdaptiveSampler', () => {
   let sampler = null
   let fakeTransaction = null
-  let agent = null
 
   beforeEach(() => {
     sampler = new AdaptiveSampler({period: 60000, target: 10})
@@ -24,6 +23,7 @@ describe('AdaptiveSampler', () => {
   })
 
   describe('in serverless mode', () => {
+    let agent = null
     beforeEach(() => {
       agent = helper.loadMockedAgent(null, {
         serverless_mode: true
@@ -34,6 +34,10 @@ describe('AdaptiveSampler', () => {
         period: 100,
         target: 10
       })
+    })
+
+    afterEach(() => {
+      helper.unloadAgent(agent)
     })
 
     it('should reset itself after a transaction outside the window has been created', (done) => {
