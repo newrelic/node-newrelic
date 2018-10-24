@@ -1664,6 +1664,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
   let isColdStart = true
 
   const shim = this.shim
+  const agent = this.agent
 
   // this array holds all the closures used to end transactions
   var transactionEnders = []
@@ -1684,16 +1685,18 @@ API.prototype.recordLambda = function recordLambda(handler) {
   return shim.bindCreateTransaction(wrappedHandler, {type: shim.BG})
 
   function wrappedHandler() {
+    const args = shim.argsToArray.apply(shim, arguments)
+
+    const context = args[1]
+    const event = args[0]
+
     let coldStartTime
     if (isColdStart) {
+      agent.lambdaArn = context.invokedFunctionArn,
+
       isColdStart = false
       coldStartTime = process.uptime()
     }
-
-    const args = shim.argsToArray.apply(shim, arguments)
-
-    const event = args[0]
-    const context = args[1]
 
     const name = context.functionName
     const group = NAMES.FUNCTION.PREFIX

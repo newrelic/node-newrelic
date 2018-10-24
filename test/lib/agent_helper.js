@@ -8,6 +8,7 @@ var shimmer = require('../../lib/shimmer')
 var Agent = require('../../lib/agent')
 var params = require('../lib/params')
 var request = require('request')
+const zlib = require('zlib')
 
 
 /*
@@ -393,6 +394,28 @@ var helper = module.exports = {
 
   runOutOfContext: function(fn) {
     tasks.push(fn)
+  },
+
+  decodeServerlessPayload: (t, payload, cb) => {
+    if (!payload) {
+      t.comment('No payload to decode')
+      return cb()
+    }
+
+    zlib.gunzip(Buffer.from(payload, 'base64'), (err, decompressed) => {
+      if (err) {
+        t.comment('Error occurred when decompressing payload')
+        return cb(err)
+      }
+
+      let parsed = null
+      try {
+        parsed = JSON.parse(decompressed)
+        cb(null, parsed)
+      } catch (err) {
+        cb(err)
+      }
+    })
   }
 }
 
