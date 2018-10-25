@@ -18,7 +18,7 @@ tap.test('Serverless mode harvest', (t) => {
   process.env.AWS_EXECUTION_ENV = TEST_EX_ENV
 
   t.beforeEach((done) => {
-    logSpy = sinon.spy(console, 'log')
+    logSpy = sinon.spy(process.stdout, 'write')
     agent = helper.instrumentMockedAgent(null, {
       serverless_mode: true,
       app_name: 'serverless mode tests',
@@ -50,8 +50,7 @@ tap.test('Serverless mode harvest', (t) => {
     transaction.trace.setDurationInMillis(5001)
     transaction.end()
     agent.once('harvestFinished', () => {
-      console.log('asdf')
-      const payload = logSpy.args[0][0]
+      const payload = JSON.parse(logSpy.args[2][0])
 
       t.equal(payload[0], 1, 'payload has expected version')
       t.equal(payload[1], 'NR_LAMBDA_MONITORING', 'payload has expected marker')
@@ -97,7 +96,7 @@ tap.test('Serverless mode harvest', (t) => {
       t.ok(payload, 'should have payload')
       t.deepEqual(payload[3][0][0], {name: 'TEST/discard'}, 'should have test metric')
 
-      checkCompressedPayload(t, logSpy.args[0][0][2], 'metric_data', t.end)
+      checkCompressedPayload(t, findPayload(logSpy.args)[2], 'metric_data', t.end)
     })
   })
 
@@ -129,7 +128,7 @@ tap.test('Serverless mode harvest', (t) => {
           'should have the correct attributes'
         )
 
-        checkCompressedPayload(t, logSpy.args[0][0][2], 'error_data', t.end)
+        checkCompressedPayload(t, findPayload(logSpy.args)[2], 'error_data', t.end)
       })
     })
   })
@@ -158,7 +157,7 @@ tap.test('Serverless mode harvest', (t) => {
       t.type(payload[1][0], 'Array', 'should have trace')
       t.type(payload[1][0][4], 'string', 'should have encoded trace')
 
-      checkCompressedPayload(t, logSpy.args[0][0][2], 'transaction_sample_data', t.end)
+      checkCompressedPayload(t, findPayload(logSpy.args)[2], 'transaction_sample_data', t.end)
     })
   })
 
@@ -188,7 +187,7 @@ tap.test('Serverless mode harvest', (t) => {
       t.type(payload[1][0], 'Array', 'should have trace')
       t.type(payload[1][0][4], 'string', 'should have encoded trace')
 
-      checkCompressedPayload(t, logSpy.args[0][0][2], 'transaction_sample_data', t.end)
+      checkCompressedPayload(t, findPayload(logSpy.args)[2], 'transaction_sample_data', t.end)
     })
   })
 
@@ -218,7 +217,7 @@ tap.test('Serverless mode harvest', (t) => {
       t.type(payload[2], 'Array', 'should have spans')
       t.equal(payload[2].length, 2, 'should have all spans')
 
-      checkCompressedPayload(t, logSpy.args[0][0][2], 'span_event_data', t.end)
+      checkCompressedPayload(t, findPayload(logSpy.args)[2], 'span_event_data', t.end)
     }
   })
 })
@@ -247,4 +246,13 @@ function checkCompressedPayload(t, payload, prop, cb) {
 
     cb()
   })
+}
+
+function findPayload(args) {
+  for (var i = 0; i < args.length; ++i) {
+    var arg = args[i][0]
+    if (typeof arg === 'string') {
+      return JSON.parse(arg)
+    }
+  }
 }
