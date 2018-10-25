@@ -118,7 +118,7 @@ describe('ServerlessCollector API', () => {
     let logStub = null
 
     before(() => {
-      logStub = sinon.stub(console, 'log').callsFake(() => {})
+      logStub = sinon.stub(process.stdout, 'write').callsFake(() => {})
     })
 
     after(() => {
@@ -128,7 +128,7 @@ describe('ServerlessCollector API', () => {
     it('compresses full payload and writes formatted to stdout', (done) => {
       api.payload = {type: 'test payload'}
       api.flushPayload(() => {
-        const logPayload = logStub.args[0][0]
+        const logPayload = JSON.parse(logStub.args[0][0])
         expect(logPayload).to.be.an('array')
         expect(logPayload[0]).to.be.a('number')
         expect(logPayload[1]).to.equal('NR_LAMBDA_MONITORING')
