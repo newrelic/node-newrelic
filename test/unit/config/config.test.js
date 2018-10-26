@@ -79,6 +79,14 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up the apdex_t', function() {
+      idempotentEnv('NEW_RELIC_APDEX_T', '111', function(tc) {
+        should.exist(tc.apdex_t)
+        expect(tc.apdex_t).to.be.a('number')
+        expect(tc.apdex_t).to.equal(111)
+      })
+    })
+
     it('should pick up the collector host', function() {
       idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
         should.exist(tc.host)
