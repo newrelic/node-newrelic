@@ -332,11 +332,27 @@ tap.test('distributed tracing', (t) => {
     ], done)
   })
 
+  t.test('should create tracing headers at each step', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      request.get({uri: generateUrl(START_PORT, 'start')}, (err, res, body) => {
+        t.error(err)
+
+        console.log(body)
+
+        t.ok(body.start.newrelic, 'should have DT headers from the start')
+        t.ok(body.middle.newrelic, 'should continue trace to through next state')
+        t.ok(tx.isDistributedTrace, 'should mark transaction as distributed')
+
+        t.end()
+      })
+    })
+  })
+
   t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
     helper.runInTransaction(agent, (tx) => {
       request.get({
         uri: generateUrl(START_PORT, 'start'),
-        // headers: {[SYMBOLS.DISABLE_DT]: true}
+        headers: {[SYMBOLS.DISABLE_DT]: true}
       }, (err, response, body) => {
         t.error(err)
 
