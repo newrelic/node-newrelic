@@ -25,13 +25,13 @@ tap.test('aws-sdk', (t) => {
   })
 
   t.test('should mark requests to be dt-disabled', (t) => {
-    const http = require('http')
-    sinon.spy(http, 'request')
+    const https = require('https')
+    sinon.spy(https, 'request')
     t.tearDown(() => {
       // `afterEach` runs before `tearDown`, so the sinon spy may have already
       // been removed.
-      if (http.request.restore) {
-        http.request.restore()
+      if (https.request.restore) {
+        https.request.restore()
       }
     })
 
@@ -48,8 +48,8 @@ tap.test('aws-sdk', (t) => {
     })
     s3.listObjects({Delimiter: '/'}, () => {})
 
-    if (t.ok(http.request.calledOnce, 'should call http.request')) {
-      const args = http.request.getCall(0).args
+    if (t.ok(https.request.calledOnce, 'should call http.request')) {
+      const args = https.request.getCall(0).args
       const headers = args[0].headers
       t.ok(headers[SYMBOLS.DISABLE_DT], 'should have disabled dt')
     }
