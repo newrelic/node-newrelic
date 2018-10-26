@@ -490,6 +490,16 @@ describe('the agent configuration', function() {
       })
     })
 
+    describe('serverless mode', () => {
+      it('should require the feature flag to be enabled', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE: true,
+        }, (tc) => {
+          expect(tc.serverless_mode).to.be.false
+        })
+      })
+    })
+
     it('should pick up serverless_mode', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE: true,
@@ -519,6 +529,27 @@ describe('the agent configuration', function() {
           security_policies_token: 'fffff'
         })
       }).throws()
+    })
+  })
+
+  describe('when loading from a file', () => {
+    describe('serverless mode', () => {
+      it('should be false when the feature flag is not specified', () => {
+        const conf = Config.initialize({
+          serverless_mode: true
+        })
+        expect(conf.serverless_mode).to.be.false
+      })
+ 
+      it('should be true when both config and feature flags are supplied', () => {
+        const conf = Config.initialize({
+          serverless_mode: true,
+          feature_flag: {
+            serverless_mode: true
+          }
+        })
+        expect(conf.serverless_mode).to.be.true
+      })
     })
   })
 
