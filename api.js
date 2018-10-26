@@ -1730,7 +1730,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
     function getAwsAgentAttributes() {
       const attributes = {
-        'aws.executionEnv': process.env.AWS_EXECUTION_ENV,
         'aws.lambda.arn': context.invokedFunctionArn,
         'aws.lambda.functionName': context.functionName,
         'aws.lambda.functionVersion': context.functionVersion,
