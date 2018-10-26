@@ -79,7 +79,12 @@ describe('AdaptiveSampler', () => {
   describe('in serverless mode', () => {
     let agent = null
     beforeEach(() => {
-      agent = helper.loadMockedAgent(null, {serverless_mode: true})
+      agent = helper.loadMockedAgent(null, {
+        serverless_mode: true,
+        feature_flag: {
+          serverless_mode: true
+        }
+      })
       sampler = agent.transactionSampler
       fakeTransaction = {
         priority: 0,
