@@ -11,3 +11,4 @@ ca-serial*
 .DS_Store
 .idea
 out
+.vscode
