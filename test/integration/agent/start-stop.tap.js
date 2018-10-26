@@ -44,6 +44,9 @@ tap.test('Agent should not connect to collector in serverless mode', (t) => {
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
     serverless_mode: true,
+    feature_flag: {
+      serverless_mode: true
+    },
     logging: {
       level: 'trace'
     }
