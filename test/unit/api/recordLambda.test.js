@@ -1,19 +1,18 @@
 'use strict'
 
-var API = require('../../../api')
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
-var lambdaSampleEvents = require('./lambdaSampleEvents')
+const API = require('../../../api')
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../../lib/agent_helper')
+const lambdaSampleEvents = require('./lambdaSampleEvents')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
 
-describe('The recordLambda API', function() {
+describe('The recordLambda API', () => {
   const bgGroup = 'Function'
   const functionName = 'testName'
   const expectedBgTransactionName = 'OtherTransaction/' + bgGroup + '/' + functionName
   const errorMessage = 'sad day'
-  const coldStartTimeName = 'coldStartTime'
 
   let agent
   let api
@@ -24,22 +23,22 @@ describe('The recordLambda API', function() {
 
   let error
 
-  beforeEach(function() {
+  beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
 
     stubEvent = {}
     stubContext = {
-      done: function() {},
-      succeed: function() {},
-      fail: function() {},
+      done: () => {},
+      succeed: () => {},
+      fail: () => {},
       functionName: functionName,
       functionVersion: 'TestVersion',
       invokedFunctionArn: 'arn:test:function',
       memoryLimitInMB: '128',
       awsRequestId: 'testid'
     },
-    stubCallback = function() {}
+    stubCallback = () => {}
 
     process.env.AWS_REGION = 'nr-test'
     process.env.AWS_EXECUTION_ENV = 'Test_nodejsNegative2.3'
@@ -47,7 +46,7 @@ describe('The recordLambda API', function() {
     error = new SyntaxError(errorMessage)
   })
 
-  afterEach(function() {
+  afterEach(() => {
     stubEvent = null
     stubContext = null
     stubCallback = null
@@ -61,22 +60,22 @@ describe('The recordLambda API', function() {
     api = null
   })
 
-  it('should return original handler if not a function', function() {
-    var handler = {}
-    var newHandler = api.recordLambda(handler)
+  it('should return original handler if not a function', () => {
+    const handler = {}
+    const newHandler = api.recordLambda(handler)
 
     expect(newHandler).to.equal(handler)
   })
 
-  it('should report API supportability metric', function() {
-    api.recordLambda(function() {})
+  it('should report API supportability metric', () => {
+    api.recordLambda(() => {})
 
     const metric = agent.metrics.getMetric('Supportability/API/recordLambda')
     expect(metric.callCount).to.equal(1)
   })
 
-  it('should create a transaction for handler', function() {
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+  it('should create a transaction for handler', () => {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       const transaction = agent.tracer.getTransaction()
       expect(transaction.type).to.equal('bg')
       expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
@@ -88,8 +87,8 @@ describe('The recordLambda API', function() {
     wrappedHandler(stubEvent, stubContext, stubCallback)
   })
 
-  it('should create a segment for handler', function() {
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+  it('should create a segment for handler', () => {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       const segment = api.shim.getSegment()
       expect(segment).is.not.null
       expect(segment.name).to.equal(functionName)
@@ -100,92 +99,74 @@ describe('The recordLambda API', function() {
     wrappedHandler(stubEvent, stubContext, stubCallback)
   })
 
-  it('should capture cold start on first invocation', function(done) {
+  it('should capture cold start boolean on first invocation', (done) => {
     agent.on('transactionFinished', confirmColdStart)
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmColdStart(transaction) {
-      const metric = agent.metrics.getMetric(coldStartTimeName)
-      expect(metric.callCount).to.equal(1)
-
-      const scopedMetric = agent.metrics.getMetric(
-        coldStartTimeName, expectedBgTransactionName
-      )
-      expect(scopedMetric.callCount).to.equal(1)
-
-      var attributes = agent._addIntrinsicAttrsFromTransaction(transaction)
-      expect(attributes.coldStartTime, 'coldStartTime intrinsic').to.exist
-
+      const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      expect(attributes['aws.lambda.coldStart']).to.equal(true)
       done()
     }
   })
 
-  it('should not create cold start on subsequent invocations', function(done) {
+  it('should not include cold start on subsequent invocations', (done) => {
     let transactionNum = 1
 
     agent.on('transactionFinished', confirmNoAdditionalColdStart)
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
-    wrappedHandler(stubEvent, stubContext, function() {
+    wrappedHandler(stubEvent, stubContext, () => {
       done()
     })
 
     function confirmNoAdditionalColdStart(transaction) {
-      const metric = agent.metrics.getMetric(coldStartTimeName)
-      expect(metric.callCount).to.equal(1)
-
-      const scopedMetric = agent.metrics.getMetric(
-        coldStartTimeName, expectedBgTransactionName
-      )
-      expect(scopedMetric.callCount).to.equal(1)
-
       if (transactionNum > 1) {
-        var attributes = agent._addIntrinsicAttrsFromTransaction(transaction)
-        expect(attributes.coldStartTime, 'coldStartTime intrinsic').to.not.exist
+        const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        expect(attributes['aws.lambda.coldStart']).to.not.exist
       }
 
       transactionNum++
     }
   })
 
-  it('should capture AWS agent attributes', function(done) {
+  it('should capture AWS agent attributes', (done) => {
     agent.on('transactionFinished', confirmAgentAttributes)
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttributes(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.functionName']).to.equal(stubContext.functionName)
-      expect(agentAttributes['aws.functionVersion']).to.equal(stubContext.functionVersion)
-      expect(agentAttributes['aws.arn']).to.equal(stubContext.invokedFunctionArn)
-      expect(agentAttributes['aws.memoryLimit']).to.equal(stubContext.memoryLimitInMB)
-      expect(agentAttributes['aws.requestId']).to.equal(stubContext.awsRequestId)
-
-      expect(agentAttributes['aws.region']).to.equal(process.env.AWS_REGION)
-      expect(agentAttributes['aws.executionEnv']).to.equal(process.env.AWS_EXECUTION_ENV)
+      expect(attributes['aws.lambda.functionName']).to.equal(stubContext.functionName)
+      expect(attributes['aws.lambda.functionVersion'])
+        .to.equal(stubContext.functionVersion)
+      expect(attributes['aws.lambda.arn']).to.equal(stubContext.invokedFunctionArn)
+      expect(attributes['aws.lambda.memoryLimit']).to.equal(stubContext.memoryLimitInMB)
+      expect(attributes['aws.requestId']).to.equal(stubContext.awsRequestId)
+      expect(attributes['aws.region']).to.equal(process.env.AWS_REGION)
 
       done()
     }
   })
 
-  it('should capture unknown event source attribute', function(done) {
+  it('should not add attributes from empty event', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -194,17 +175,17 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('Unknown')
+      expect(agentAttributes['aws.lambda.eventSource.arn']).to.be.undefined
       done()
     }
   })
 
-  it('should capture kinesis data stream event source attribute', function(done) {
+  it('should capture kinesis data stream event source arn', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.kinesisDataStreamEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -213,17 +194,18 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('Kinesis')
+      expect(agentAttributes['aws.lambda.eventSource.arn'])
+        .to.equal('kinesis:eventsourcearn')
       done()
     }
   })
 
-  it('should capture S3 PUT event source attribute', function(done) {
+  it('should capture S3 PUT event source arn attribute', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.s3PutEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -232,17 +214,17 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('S3')
+      expect(agentAttributes['aws.lambda.eventSource.arn']).to.equal('bucketarn')
       done()
     }
   })
 
-  it('should capture SNS event source attribute', function(done) {
+  it('should capture SNS event source arn attribute', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.snsEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -251,17 +233,18 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('SNS')
+      expect(agentAttributes['aws.lambda.eventSource.arn'])
+        .to.equal('eventsubscriptionarn')
       done()
     }
   })
 
-  it('should capture DynamoDB Update event source attribute', function(done) {
+  it('should capture DynamoDB Update event source attribute', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.dynamoDbUpdateEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -270,17 +253,18 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('DynamoDB')
+      expect(agentAttributes['aws.lambda.eventSource.arn'])
+        .to.equal('dynamodb:eventsourcearn')
       done()
     }
   })
 
-  it('should capture CodeCommit event source attribute', function(done) {
+  it('should capture CodeCommit event source attribute', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.codeCommitEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -289,17 +273,18 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('CodeCommit')
+      expect(agentAttributes['aws.lambda.eventSource.arn'])
+        .to.equal('arn:aws:codecommit:us-west-2:123456789012:my-repo')
       done()
     }
   })
 
-  it('should capture CloudFront event source attribute', function(done) {
+  it('should not capture unknown event source attribute', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.cloudFrontEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -308,76 +293,17 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('CloudFront')
+      expect(agentAttributes['aws.lambda.eventSource.arn']).to.be.undefined
       done()
     }
   })
 
-  it('should capture CloudFormation Create Request event source attribute',
-    function(done) {
-      agent.on('transactionFinished', confirmAgentAttribute)
-
-      stubEvent = lambdaSampleEvents.cloudFormationCreateRequestEvent
-
-      const wrappedHandler = api.recordLambda(function(event, context, callback) {
-        callback(null, 'worked')
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmAgentAttribute(transaction) {
-        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-
-        expect(agentAttributes['aws.eventSource']).to.equal('CloudFormation')
-        done()
-      }
-    }
-  )
-
-  it('should capture API Gateway Proxy Request event source attribute', function(done) {
-    agent.on('transactionFinished', confirmAgentAttribute)
-
-    stubEvent = lambdaSampleEvents.apiGatewayProxyEvent
-
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
-      callback(null, 'worked')
-    })
-
-    wrappedHandler(stubEvent, stubContext, stubCallback)
-
-    function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-
-      expect(agentAttributes['aws.eventSource']).to.equal('ApiGatewayProxy')
-      done()
-    }
-  })
-
-  it('should capture CloudWatch Logs event source attribute', function(done) {
-    agent.on('transactionFinished', confirmAgentAttribute)
-
-    stubEvent = lambdaSampleEvents.cloudWatchLogsEvent
-
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
-      callback(null, 'worked')
-    })
-
-    wrappedHandler(stubEvent, stubContext, stubCallback)
-
-    function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-
-      expect(agentAttributes['aws.eventSource']).to.equal('CloudWatchLogs')
-      done()
-    }
-  })
-
-  it('should capture Kinesis Data Firehose event source attribute', function(done) {
+  it('should capture Kinesis Data Firehose event source attribute', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
     stubEvent = lambdaSampleEvents.kinesisDataFirehoseEvent
 
-    const wrappedHandler = api.recordLambda(function(event, context, callback) {
+    const wrappedHandler = api.recordLambda((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -386,16 +312,16 @@ describe('The recordLambda API', function() {
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      expect(agentAttributes['aws.eventSource']).to.equal('KinesisFirehose')
+      expect(agentAttributes['aws.lambda.eventSource.arn']).to.equal('aws:lambda:events')
       done()
     }
   })
 
-  describe('when callback used', function() {
-    it('should end appropriately', function() {
+  describe('when callback used', () => {
+    it('should end appropriately', () => {
       let transaction
 
-      const wrappedHandler = api.recordLambda(function(event, context, callback) {
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
         transaction = agent.tracer.getTransaction()
         callback(null, 'worked')
       })
@@ -408,10 +334,10 @@ describe('The recordLambda API', function() {
       })
     })
 
-    it('should notice errors', function(done) {
+    it('should notice errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      var wrappedHandler = api.recordLambda(function(event, context, callback) {
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
         callback(error, 'failed')
       })
 
@@ -428,10 +354,10 @@ describe('The recordLambda API', function() {
       }
     })
 
-    it('should notice string errors', function(done) {
+    it('should notice string errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      var wrappedHandler = api.recordLambda(function(event, context, callback) {
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
         callback('failed')
       })
 
@@ -452,13 +378,13 @@ describe('The recordLambda API', function() {
     })
   })
 
-  describe('when context.done used', function() {
-    it('should end appropriately', function() {
+  describe('when context.done used', () => {
+    it('should end appropriately', () => {
       let transaction
 
       context.done = confirmEndCallback
 
-      const wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         transaction = agent.tracer.getTransaction()
         context.done(null, 'worked')
       })
@@ -473,10 +399,10 @@ describe('The recordLambda API', function() {
       }
     })
 
-    it('should notice errors', function(done) {
+    it('should notice errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      var wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         context.done(error, 'failed')
       })
 
@@ -493,10 +419,10 @@ describe('The recordLambda API', function() {
       }
     })
 
-    it('should notice string errors', function(done) {
+    it('should notice string errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      var wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         context.done('failed')
       })
 
@@ -517,13 +443,13 @@ describe('The recordLambda API', function() {
     })
   })
 
-  describe('when context.succeed used', function() {
-    it('should end appropriately', function() {
+  describe('when context.succeed used', () => {
+    it('should end appropriately', () => {
       let transaction
 
       context.succeed = confirmEndCallback
 
-      const wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         transaction = agent.tracer.getTransaction()
         context.succeed('worked')
       })
@@ -539,13 +465,13 @@ describe('The recordLambda API', function() {
     })
   })
 
-  describe('when context.fail used', function() {
-    it('should end appropriately', function() {
+  describe('when context.fail used', () => {
+    it('should end appropriately', () => {
       let transaction
 
       context.fail = confirmEndCallback
 
-      const wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         transaction = agent.tracer.getTransaction()
         context.fail()
       })
@@ -560,10 +486,10 @@ describe('The recordLambda API', function() {
       }
     })
 
-    it('should notice errors', function(done) {
+    it('should notice errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      var wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         context.fail(error)
       })
 
@@ -580,10 +506,10 @@ describe('The recordLambda API', function() {
       }
     })
 
-    it('should notice string errors', function(done) {
+    it('should notice string errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      var wrappedHandler = api.recordLambda(function(event, context) {
+      const wrappedHandler = api.recordLambda((event, context) => {
         context.fail('failed')
       })
 
