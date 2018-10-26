@@ -158,7 +158,6 @@ describe('The recordLambda API', () => {
       expect(attributes['aws.lambda.memoryLimit']).to.equal(stubContext.memoryLimitInMB)
       expect(attributes['aws.requestId']).to.equal(stubContext.awsRequestId)
       expect(attributes['aws.region']).to.equal(process.env.AWS_REGION)
-      expect(attributes['aws.executionEnv']).to.equal(process.env.AWS_EXECUTION_ENV)
 
       done()
     }
