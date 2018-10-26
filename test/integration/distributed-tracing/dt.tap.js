@@ -3,8 +3,8 @@
 const API = require('../../../api')
 const async = require('async')
 const helper = require('../../lib/agent_helper')
-const request = require('request').defaults({json: true})
 const tap = require('tap')
+const url = require('url')
 
 const START_PORT = 10000
 const MIDDLE_PORT = 10001
@@ -272,6 +272,8 @@ tap.test('distributed tracing', (t) => {
       primary_application_id: APP_ID,
       trusted_account_key: ACCOUNT_ID
     })
+    agent.config.account_id = ACCOUNT_ID // Can't be set through config object.
+
     const http = require('http')
     const api = new API(agent)
 
@@ -280,7 +282,8 @@ tap.test('distributed tracing', (t) => {
         start = generateServer(http, api, START_PORT, cb, (req, res) => {
           const tx = agent.tracer.getTransaction()
           tx.nameState.appendPath('foobar')
-          request.get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, response, body) => {
+
+          get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, body) => {
             tx.nameState.popPath('foobar')
 
             body.start = req.headers
@@ -297,7 +300,8 @@ tap.test('distributed tracing', (t) => {
         middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
           const tx = agent.tracer.getTransaction()
           tx.nameState.appendPath('foobar')
-          request.get(generateUrl(END_PORT, 'middle/end'), (err, response, body) => {
+
+          get(generateUrl(END_PORT, 'middle/end'), (err, body) => {
             tx.nameState.popPath('foobar')
 
             body.middle = req.headers
@@ -334,10 +338,8 @@ tap.test('distributed tracing', (t) => {
 
   t.test('should create tracing headers at each step', (t) => {
     helper.runInTransaction(agent, (tx) => {
-      request.get({uri: generateUrl(START_PORT, 'start')}, (err, res, body) => {
+      get(generateUrl(START_PORT, 'start'), (err, body) => {
         t.error(err)
-
-        console.log(body)
 
         t.ok(body.start.newrelic, 'should have DT headers from the start')
         t.ok(body.middle.newrelic, 'should continue trace to through next state')
@@ -350,13 +352,9 @@ tap.test('distributed tracing', (t) => {
 
   t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
     helper.runInTransaction(agent, (tx) => {
-      request.get({
-        uri: generateUrl(START_PORT, 'start'),
-        headers: {[SYMBOLS.DISABLE_DT]: true}
-      }, (err, response, body) => {
+      const headers = {[SYMBOLS.DISABLE_DT]: true}
+      get(generateUrl(START_PORT, 'start'), {headers}, (err, body) => {
         t.error(err)
-
-        console.log(body)
 
         t.notOk(body.start.newrelic, 'should not add DT header when disabled')
         t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
@@ -376,7 +374,7 @@ function generateServer(http, api, port, started, responseHandler) {
     req.resume()
     responseHandler(req, res)
   })
-  server.listen(port, started)
+  server.listen(port, () => started())
   return server
 }
 
@@ -429,4 +427,19 @@ function validateIntrinsics(t, intrinsic, reqName, type, parentSpanId) {
     intrinsic['parent.transportDuration'],
     `${reqName} should have a parent transportDuration on ${type}`
   )
+}
+
+function get(uri, options, cb) {
+  if (typeof options === 'function') {
+    cb = options
+    options = {}
+  }
+  Object.assign(options, url.parse(uri))
+
+  require('http').get(options, (res) => {
+    let body = ''
+    res.on('data', (data) => body += data.toString('utf8'))
+    res.on('error', (err) => cb(err))
+    res.on('end', () => cb(null, JSON.parse(body)))
+  })
 }
