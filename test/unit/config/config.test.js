@@ -483,14 +483,20 @@ describe('the agent configuration', function() {
     })
 
     it('should pick up serverless_mode', () => {
-      idempotentEnv('NEW_RELIC_SERVERLESS_MODE', true, (tc) => {
+      idempotentEnv({
+        NEW_RELIC_SERVERLESS_MODE: true,
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+      }, (tc) => {
         expect(tc.serverless_mode).to.be.true
       })
     })
 
     it('should set serverless_mode from lambda-specific env var if not set by user',
       () => {
-        idempotentEnv('AWS_LAMBDA_FUNCTION_NAME', 'someFunc', (tc) => {
+        idempotentEnv({
+          AWS_LAMBDA_FUNCTION_NAME: 'someFunc',
+          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+        }, (tc) => {
           expect(tc.serverless_mode).to.be.true
         })
       }
@@ -513,7 +519,10 @@ describe('the agent configuration', function() {
       expect(() => {
         Config.initialize({
           distributed_tracing: {enabled: true},
-          serverless_mode: true
+          serverless_mode: true,
+          feature_flag: {
+            serverless_mode: true
+          }
         })
       }).throws()
     })
@@ -523,6 +532,7 @@ describe('the agent configuration', function() {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
         NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_SERVERLESS_MODE: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
@@ -536,6 +546,7 @@ describe('the agent configuration', function() {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
         NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {
@@ -550,6 +561,7 @@ describe('the agent configuration', function() {
     it('should pick up trusted_account_key', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE: true,
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
       }, (tc) => {
         console.log(process.env)
@@ -560,6 +572,7 @@ describe('the agent configuration', function() {
     it('should pick up application_id', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE: true,
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_APPLICATION_ID: '5678'
       }, (tc) => {
         console.log(tc)
@@ -570,6 +583,7 @@ describe('the agent configuration', function() {
     it('should pick up account_id', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE: true,
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_ACCOUNT_ID: '91011'
       }, (tc) => {
         expect(tc.account_id).to.equal('91011')
