@@ -360,16 +360,10 @@ var helper = module.exports = {
       options = {}
     }
     request.get(url, options, function requestCb(error, response, body) {
-      if (error) {
-        if (error.code === 'ECONNREFUSED') {
-          return request.get(url, options, requestCb)
-        }
-        if (typeof callback === 'function') {
-          return callback(error)
-        }
-      }
-      if (typeof callback === 'function') {
-        return callback(null, response, body)
+      if (error && error.code === 'ECONNREFUSED') {
+        request.get(url, options, requestCb)
+      } else if (typeof callback === 'function') {
+        callback(error, response, body)
       }
     })
   },
