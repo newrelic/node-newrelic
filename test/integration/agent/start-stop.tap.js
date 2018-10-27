@@ -43,6 +43,9 @@ tap.test('Agent should not connect to collector in serverless mode', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     serverless_mode: true,
+    feature_flag: {
+      serverless_mode: true
+    },
     logging: {
       level: 'trace'
     }
