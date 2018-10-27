@@ -1552,14 +1552,18 @@ function instrumentMessages(moduleName, onRequire, onError) {
 /**
  * Shuts down the agent.
  *
- * @param {object}  [options]                           object with shut down options
- * @param {boolean} [options.collectPendingData=false]  If true, the agent will send any
- *                                                      pending data to the collector
- *                                                      before shutting down.
- * @param {number}  [options.timeout]                   time in ms to wait before
- *                                                      shutting down
- * @param {function} [callback]                         callback function that runs when
- *                                                      agent stopped
+ * @param {object}  [options]
+ *  Object with shut down options.
+ *
+ * @param {boolean} [options.collectPendingData=false]
+ *  If true, the agent will send any pending data to the collector before
+ *  shutting down.
+ *
+ * @param {number}  [options.timeout=0]
+ *  Time in milliseconds to wait before shutting down.
+ *
+ * @param {function} [callback]
+ *  Callback function that runs when agent stopped.
  */
 API.prototype.shutdown = function shutdown(options, cb) {
   var metric = this.agent.metrics.getOrCreateMetric(
@@ -1570,8 +1574,11 @@ API.prototype.shutdown = function shutdown(options, cb) {
   var callback = cb
   if (!callback) {
     if (typeof options === 'function') {
+      // shutdown(callback)
       callback = options
+      options = null
     } else {
+      // shutdown([options])
       callback = function noop() {}
     }
   }

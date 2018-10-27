@@ -1,8 +1,10 @@
 'use strict'
 
-const tap = require('tap')
-const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
+const async = require('async')
+const helper = require('../../lib/agent_helper')
+const tap = require('tap')
+const url = require('url')
 
 const START_PORT = 10000
 const MIDDLE_PORT = 10001
@@ -11,6 +13,7 @@ const ACCOUNT_ID = '1337'
 const APP_ID = '7331'
 const EXPECTED_DT_METRICS = ['DurationByCaller', 'TransportDuration']
 const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
+const SYMBOLS = require('../../../lib/shim/constants').SYMBOLS
 
 let compareSampled = null
 
@@ -27,6 +30,10 @@ tap.test('cross application tracing full integration', (t) => {
     encoding_key: 'some key',
   }
   const agent = helper.instrumentMockedAgent(null, config)
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
   agent.config.account_id = ACCOUNT_ID
   agent.config.application_id = APP_ID
   agent.config.trusted_account_key = ACCOUNT_ID
@@ -80,6 +87,12 @@ tap.test('cross application tracing full integration', (t) => {
     res.end()
   })
 
+  t.tearDown(() => {
+    start.close()
+    middle.close()
+    end.close()
+  })
+
   function runTest() {
     http.get(generateUrl(START_PORT, 'start'), (res) => {
       res.resume()
@@ -96,7 +109,7 @@ tap.test('cross application tracing full integration', (t) => {
       })[0]
       testsToCheck.push(transInspector[txCount].bind(this, trans, event))
       if (++txCount === 3) {
-        testsToCheck.map((test) => test())
+        testsToCheck.forEach((test) => test())
       }
     })
   }
@@ -244,6 +257,116 @@ tap.test('cross application tracing full integration', (t) => {
   ]
 })
 
+tap.test('distributed tracing', (t) => {
+  let agent = null
+  let start = null
+  let middle = null
+  let end = null
+
+  t.autoend()
+
+  t.beforeEach((done) => {
+    agent = helper.instrumentMockedAgent(null, {
+      distributed_tracing: {enabled: true},
+      cross_application_tracer: {enabled: true},
+      primary_application_id: APP_ID,
+      trusted_account_key: ACCOUNT_ID
+    })
+    agent.config.account_id = ACCOUNT_ID // Can't be set through config object.
+
+    const http = require('http')
+    const api = new API(agent)
+
+    async.parallel([
+      (cb) => {
+        start = generateServer(http, api, START_PORT, cb, (req, res) => {
+          const tx = agent.tracer.getTransaction()
+          tx.nameState.appendPath('foobar')
+
+          get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, body) => {
+            tx.nameState.popPath('foobar')
+
+            body.start = req.headers
+            body = JSON.stringify(body)
+            res.setHeader('Content-Type', 'application/json')
+            res.setHeader('Content-Length', Buffer.byteLength(body))
+            res.write(body)
+            res.end()
+          })
+        })
+      },
+
+      (cb) => {
+        middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
+          const tx = agent.tracer.getTransaction()
+          tx.nameState.appendPath('foobar')
+
+          get(generateUrl(END_PORT, 'middle/end'), (err, body) => {
+            tx.nameState.popPath('foobar')
+
+            body.middle = req.headers
+            body = JSON.stringify(body)
+            res.setHeader('Content-Type', 'application/json')
+            res.setHeader('Content-Length', Buffer.byteLength(body))
+            res.write(body)
+            res.end()
+          })
+        })
+      },
+
+      (cb) => {
+        end = generateServer(http, api, END_PORT, cb, (req, res) => {
+          const body = JSON.stringify({end: req.headers})
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Content-Length', Buffer.byteLength(body))
+          res.write(body)
+          res.end()
+        })
+      }
+    ], done)
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    async.parallel([
+      (cb) => start.close(cb),
+      (cb) => middle.close(cb),
+      (cb) => end.close(cb),
+    ], done)
+  })
+
+  t.test('should create tracing headers at each step', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      get(generateUrl(START_PORT, 'start'), (err, body) => {
+        t.error(err)
+
+        t.ok(body.start.newrelic, 'should have DT headers from the start')
+        t.ok(body.middle.newrelic, 'should continue trace to through next state')
+        t.ok(tx.isDistributedTrace, 'should mark transaction as distributed')
+
+        t.end()
+      })
+    })
+  })
+
+  t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      const headers = {[SYMBOLS.DISABLE_DT]: true}
+      get(generateUrl(START_PORT, 'start'), {headers}, (err, body) => {
+        t.error(err)
+
+        t.notOk(body.start.newrelic, 'should not add DT header when disabled')
+        t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
+
+        t.notOk(tx.isDistributedTrace, 'should not mark transaction as distributed')
+
+        t.end()
+      })
+    })
+  })
+})
+
 function generateServer(http, api, port, started, responseHandler) {
   const server = http.createServer((req, res) => {
     const tx = api.agent.getTransaction()
@@ -251,7 +374,7 @@ function generateServer(http, api, port, started, responseHandler) {
     req.resume()
     responseHandler(req, res)
   })
-  server.listen(port, started)
+  server.listen(port, () => started())
   return server
 }
 
@@ -304,4 +427,19 @@ function validateIntrinsics(t, intrinsic, reqName, type, parentSpanId) {
     intrinsic['parent.transportDuration'],
     `${reqName} should have a parent transportDuration on ${type}`
   )
+}
+
+function get(uri, options, cb) {
+  if (typeof options === 'function') {
+    cb = options
+    options = {}
+  }
+  Object.assign(options, url.parse(uri))
+
+  require('http').get(options, (res) => {
+    let body = ''
+    res.on('data', (data) => body += data.toString('utf8'))
+    res.on('error', (err) => cb(err))
+    res.on('end', () => cb(null, JSON.parse(body)))
+  })
 }
