@@ -94,7 +94,7 @@ describe('header-attributes', () => {
         }
 
         helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectResponseheaders(headers, transaction)
+          headerAttributes.collectResponseHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('response.headers.invalid')
@@ -118,7 +118,7 @@ describe('header-attributes', () => {
         }
 
         helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectResponseheaders(headers, transaction)
+          headerAttributes.collectResponseHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('response.headers.x-filtered-out')
