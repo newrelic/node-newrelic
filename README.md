@@ -686,7 +686,7 @@ part of our team, and this can take a little while.
 
 We owe a debt to all of the beta testers and users who have provided us with
 feedback, and in some cases significant pieces of code. (If you wish to
-contribute, please see CONTRIBUTING.md in this directory.) In particular, we're
+contribute, please see [CONTRIBUTING.md](CONTRIBUTING.md) in this directory.) In particular, we're
 indebted to these people:
 
 * Hernan Silberman, for his work on the memcached instrumentation.
