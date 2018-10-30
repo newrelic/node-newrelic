@@ -24,11 +24,21 @@
         "node": ">=6"
       },
       "dependencies": {
+        "koa": ">=2.0.0"
+      },
+      "files": [
+        "koa.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=6"
+      },
+      "dependencies": {
         "koa": ">=2.0.0",
         "koa-router": ">=7.0.0"
       },
       "files": [
-        "koa.tap.js",
         "koa-router.tap.js"
       ]
     },
@@ -41,12 +51,9 @@
         "koa-route": ">=3.0.0"
       },
       "files": [
-        "koa.tap.js",
         "koa-route.tap.js"
       ]
     }
   ],
-  "dependencies": {
-    "koa": "^2.5.0"
-  }
+  "dependencies": {}
 }
