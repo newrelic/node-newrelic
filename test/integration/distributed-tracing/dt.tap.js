@@ -17,13 +17,13 @@ const SYMBOLS = require('../../../lib/shim/constants').SYMBOLS
 
 let compareSampled = null
 
-tap.test('cross application tracing full integration', (t) => {
+tap.test('distributed tracing full integration', (t) => {
   t.plan(79)
   const config = {
     distributed_tracing: {
       enabled: true
     },
-    cross_application_tracer: {enabled: true},
+    cross_application_tracer: {enabled: false},
     account_id: ACCOUNT_ID,
     primary_application_id: APP_ID,
     trusted_account_key: ACCOUNT_ID,

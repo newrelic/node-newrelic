@@ -6,13 +6,13 @@ const API = require('../../../api')
 
 let compareSampled = null
 
-tap.test('background transactions should not blow up with CAT', (t) => {
+tap.test('background transactions should not blow up with DT', (t) => {
   t.plan(24)
   const config = {
     distributed_tracing: {
       enabled: true
     },
-    cross_application_tracer: {enabled: true},
+    cross_application_tracer: {enabled: false},
     account_id: '1337',
     primary_application_id: '7331',
     trusted_account_key: '1337',
