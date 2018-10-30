@@ -30,7 +30,9 @@ describe('header-attributes', () => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes['request.headers.referer']).to.equal('https://www.google.com/search/cats')
+        expect(attributes['request.headers.referer']).to.equal(
+          'https://www.google.com/search/cats'
+        )
         done()
       })
     })
