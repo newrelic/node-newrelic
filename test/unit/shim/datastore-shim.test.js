@@ -841,4 +841,44 @@ describe('DatastoreShim', function() {
       })
     })
   })
+
+  describe('#getDatabaseNameFromUseQuery', () => {
+    it('should match single statement use expressions', () => {
+      expect(shim.getDatabaseNameFromUseQuery('use test_db;')).to.equal('test_db')
+      expect(shim.getDatabaseNameFromUseQuery('USE INIT')).to.equal('INIT')
+    })
+
+    it('should not be sensitive to ; omission', () => {
+      expect(shim.getDatabaseNameFromUseQuery('use test_db')).to.equal('test_db')
+    })
+
+    it('should not be sensitive to extra ;', () => {
+      expect(shim.getDatabaseNameFromUseQuery('use test_db;;;;;;')).to.equal('test_db')
+    })
+
+    it('should not be sensitive to extra white space', () => {
+      expect(shim.getDatabaseNameFromUseQuery('            use test_db;'))
+        .to.equal('test_db')
+      expect(shim.getDatabaseNameFromUseQuery('use             test_db;'))
+        .to.equal('test_db')
+      expect(shim.getDatabaseNameFromUseQuery('use test_db            ;'))
+        .to.equal('test_db')
+      expect(shim.getDatabaseNameFromUseQuery('use test_db;            '))
+        .to.equal('test_db')
+    })
+
+    it('should match backtick expressions', () => {
+      expect(shim.getDatabaseNameFromUseQuery('use `test_db`;')).to.equal('`test_db`')
+      expect(shim.getDatabaseNameFromUseQuery('use `☃☃☃☃☃☃`;')).to.equal('`☃☃☃☃☃☃`')
+    })
+
+    it('should not match malformed use expressions', () => {
+      expect(shim.getDatabaseNameFromUseQuery('use cxvozicjvzocixjv`oasidfjaosdfij`;'))
+        .to.be.null
+      expect(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij`123;')).to.be.null
+      expect(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij` 123;')).to.be.null
+      expect(shim.getDatabaseNameFromUseQuery('use \u0001;')).to.be.null
+      expect(shim.getDatabaseNameFromUseQuery('use oasidfjaosdfij 123;')).to.be.null
+    })
+  })
 })
