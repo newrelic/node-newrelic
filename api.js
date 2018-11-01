@@ -1666,7 +1666,6 @@ function _checkKeyLength(object, maxLength) {
 function cleanClosure() {}
 
 const EVENT_SOURCE_ARN_KEY = 'aws.lambda.eventSource.arn'
-const EVENT_SOURCE_REGION_KEY = 'aws.lamdba.eventSource.region'
 
 API.prototype.recordLambda = function recordLambda(handler) {
   const agent = this.agent
@@ -1778,16 +1777,10 @@ API.prototype.recordLambda = function recordLambda(handler) {
         if (record.eventSourceARN) {
           // SQS/Kinesis Stream/DynamoDB/CodeCommit
           obj[EVENT_SOURCE_ARN_KEY] = record.eventSourceARN
-          if (record.awsRegion) {
-            obj[EVENT_SOURCE_REGION_KEY] = record.awsRegion
-          }
         } else if (record.s3) {
           // S3
           if (record.s3.bucket && record.s3.bucket.arn) {
             obj[EVENT_SOURCE_ARN_KEY] = record.s3.bucket.arn
-          }
-          if (record.s3.awsRegion) {
-            obj[EVENT_SOURCE_REGION_KEY] = record.s3.awsRegion
           }
         } else if (record.EventSubscriptionArn) {
           // SNS
@@ -1796,7 +1789,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
       } else if (event.records && event.deliveryStreamArn) {
         // Kinesis Firehose
         obj[EVENT_SOURCE_ARN_KEY] = event.deliveryStreamArn
-        obj[EVENT_SOURCE_REGION_KEY] = event.region
       }
     }
 
