@@ -1567,33 +1567,59 @@ function instrumentMessages(moduleName, onRequire, onError) {
 /**
  * Shuts down the agent.
  *
- * @param {object}  [options]                           object with shut down options
- * @param {boolean} [options.collectPendingData=false]  If true, the agent will send any
- *                                                      pending data to the collector
- *                                                      before shutting down.
- * @param {number}  [options.timeout]                   time in ms to wait before
- *                                                      shutting down
- * @param {function} [callback]                         callback function that runs when
- *                                                      agent stopped
+ * @param {object} [options]
+ *  Object with shut down options.
+ *
+ * @param {boolean} [options.collectPendingData=false]
+ *  If true, the agent will send any pending data to the collector before
+ *  shutting down.
+ *
+ * @param {number} [options.timeout=0]
+ *  Time in milliseconds to wait before shutting down.
+ *
+ * @param {boolean} [options.waitForIdle=false]
+ *  If true, the agent will not shut down until there are no active transactions.
+ *
+ * @param {function} [callback]
+ *  Callback function that runs when agent stops.
  */
 API.prototype.shutdown = function shutdown(options, cb) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/shutdown'
-  )
-  metric.incrementCallCount()
+  this.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/shutdown`)
+    .incrementCallCount()
 
-  var callback = cb
-  if (!callback) {
-    if (typeof options === 'function') {
-      callback = options
-    } else {
-      callback = function noop() {}
-    }
+  let callback = cb
+  if (typeof options === 'function') {
+    // shutdown(cb)
+    callback = options
+    options = {}
+  } else if (typeof callback !== 'function') {
+    // shutdown([options])
+    callback = () => {}
+  }
+  if (!options) {
+    // shutdown(null, cb)
+    options = {}
   }
 
-  var agent = this.agent
+  _doShutdown(this, options, callback)
+}
 
-  function cb_harvest(error) {
+function _doShutdown(api, options, callback) {
+  const agent = api.agent
+
+  // If we need to wait for idle and there are currently active transactions,
+  // listen for transactions ending and check if we're ready to go.
+  if (options.waitForIdle && agent.activeTransactions) {
+    options.waitForIdle = false // To prevent recursive waiting.
+    agent.on('transactionFinished', function onTransactionFinished() {
+      if (agent.activeTransactions === 0) {
+        setImmediate(_doShutdown, api, options, callback)
+      }
+    })
+    return
+  }
+
+  function afterHarvest(error) {
     if (error) {
       logger.error(
         error,
@@ -1603,7 +1629,7 @@ API.prototype.shutdown = function shutdown(options, cb) {
     agent.stop(callback)
   }
 
-  if (options && options.collectPendingData && agent._state !== 'started') {
+  if (options.collectPendingData && agent._state !== 'started') {
     if (typeof options.timeout === 'number') {
       setTimeout(function shutdownTimeout() {
         agent.stop(callback)
@@ -1616,7 +1642,7 @@ API.prototype.shutdown = function shutdown(options, cb) {
     }
 
     agent.on('started', function shutdownHarvest() {
-      agent.harvest(cb_harvest)
+      agent.harvest(afterHarvest)
     })
     agent.on('errored', function logShutdownError(error) {
       agent.stop(callback)
@@ -1627,8 +1653,8 @@ API.prototype.shutdown = function shutdown(options, cb) {
         )
       }
     })
-  } else if (options && options.collectPendingData) {
-    agent.harvest(cb_harvest)
+  } else if (options.collectPendingData) {
+    agent.harvest(afterHarvest)
   } else {
     agent.stop(callback)
   }

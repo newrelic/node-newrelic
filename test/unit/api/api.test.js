@@ -1397,6 +1397,36 @@ describe('the New Relic agent API', function() {
       })
     })
 
+    describe('when `options.waitForIdle` is `true`', () => {
+      it('calls stop when there are no active transactions', () => {
+        const mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('stop').once()
+        api.shutdown({waitForIdle: true})
+        mock.verify()
+      })
+
+      it('calls stop after transactions complete when there are some', (done) => {
+        let mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('stop').never()
+        helper.runInTransaction(agent, (tx) => {
+          api.shutdown({waitForIdle: true})
+          mock.verify()
+          mock.restore()
+
+          mock = sinon.mock(agent)
+          mock.expects('stop').once()
+          tx.end(() => {
+            setImmediate(() => {
+              mock.verify()
+              done()
+            })
+          })
+        })
+      })
+    })
+
     it('calls harvest when a timeout is given and not reached', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
