@@ -14,7 +14,7 @@ var shimmer = require('./lib/shimmer')
 var TransactionShim = require('./lib/shim/transaction-shim')
 var TransactionHandle = require('./lib/transaction/handle')
 
-const DESTS = require('./lib/config/attribute-filter').DESTINATIONS
+const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
@@ -43,8 +43,6 @@ const CUSTOM_BLACKLIST = new Set([
 ])
 
 const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
-
-const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 
 /**
  * The exported New Relic API. This contains all of the functions meant to be
@@ -625,12 +623,12 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
   var attrs = Object.create(null)
 
-  const customAttrs = trans.trace.custom.get(DESTS.BROWSER_EVENT)
+  const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(customAttrs)) {
     attrs.u = customAttrs
   }
 
-  const agentAttrs = trans.trace.attributes.get(DESTS.BROWSER_EVENT)
+  const agentAttrs = trans.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(agentAttrs)) {
     attrs.a = agentAttrs
   }
