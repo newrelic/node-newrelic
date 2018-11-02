@@ -117,6 +117,13 @@ describe("the stubbed New Relic agent API", function() {
     expect(retVal).to.equal(myNop)
   })
 
+  it("should return a function when calling recordLambda", function() {
+    function myNop() {}
+    var retVal = api.recordLambda(myNop)
+    expect(retVal).to.equal(myNop)
+  })
+
+
   it('should call the function passed into `startSegment`', function(done) {
     api.startSegment('foo', false, done)
   })
