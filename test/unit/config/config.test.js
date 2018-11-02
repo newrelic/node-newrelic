@@ -509,6 +509,16 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should explicitly disable cross_application_tracer in serverless_mode', () => {
+      idempotentEnv({
+        NEW_RELIC_SERVERLESS_MODE: true,
+        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+      }, (tc) => {
+        expect(tc.serverless_mode).to.be.true
+        expect(tc.cross_application_tracer.enabled).to.be.false
+      })
+    })
+
     it('should set serverless_mode from lambda-specific env var if not set by user',
       () => {
         idempotentEnv({
@@ -540,7 +550,7 @@ describe('the agent configuration', function() {
         })
         expect(conf.serverless_mode).to.be.false
       })
- 
+
       it('should be true when both config and feature flags are supplied', () => {
         const conf = Config.initialize({
           serverless_mode: true,
@@ -597,6 +607,15 @@ describe('the agent configuration', function() {
   })
 
   describe('with serverless_mode enabled', () => {
+    it('should explicitly disable cross_application_tracer', () => {
+      const config = Config.initialize({
+        cross_application_tracer: {enabled: true},
+        serverless_mode: true,
+        feature_flag: {serverless_mode: true}
+      })
+      expect(config.cross_application_tracer.enabled).to.be.false
+    })
+
     it('should pick up trusted_account_key', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE: true,
