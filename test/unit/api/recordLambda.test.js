@@ -159,34 +159,6 @@ describe('The recordLambda API', () => {
       }
     })
 
-    it('should capture status code', (done) => {
-      agent.on('transactionFinished', confirmAgentAttribute)
-
-      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
-
-      const wrappedHandler = api.recordLambda((event, context, callback) => {
-        callback(null, validResponse)
-      })
-
-      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
-
-      function confirmAgentAttribute(transaction) {
-        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-
-        expect(agentAttributes).to.have.property(
-          'httpResponseCode',
-          '200'
-        )
-
-        expect(agentAttributes).to.have.property(
-          'response.status',
-          '200'
-        )
-
-        done()
-      }
-    })
-
     it('should capture request parameters', (done) => {
       agent.on('transactionFinished', confirmAgentAttribute)
 
@@ -311,6 +283,34 @@ describe('The recordLambda API', () => {
         expect(agentAttributes).to.not.have.property('request.headers.XForwardedFor')
         expect(agentAttributes).to.not.have.property('request.headers.XForwardedPort')
         expect(agentAttributes).to.not.have.property('request.headers.XForwardedProto')
+
+        done()
+      }
+    })
+
+    it('should capture status code', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = api.recordLambda((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'httpResponseCode',
+          '200'
+        )
+
+        expect(agentAttributes).to.have.property(
+          'response.status',
+          '200'
+        )
 
         done()
       }

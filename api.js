@@ -1708,65 +1708,29 @@ API.prototype.recordLambda = function recordLambda(handler) {
     const event = args[0]
     const context = args[1]
 
-    const name = context.functionName
+    const functionName = context.functionName
     const group = NAMES.FUNCTION.PREFIX
-    const transactionName = group + name
-
-    const isApiGatewayLambdaProxy = isApiGatewayLambdaProxyEvent(event)
-
-    let segment
-    if (isApiGatewayLambdaProxy) {
-      // record web is needed for web metrics
-      segment = shim.createSegment(name, recordWeb)
-    } else {
-      segment = shim.createSegment(name, recordBackground)
-    }
+    const transactionName = group + functionName
 
     const transaction = shim.tracer.getTransaction()
     transaction.setPartialName(transactionName)
-    transaction.baseSegment = segment
 
+    const isApiGatewayLambdaProxy = isApiGatewayLambdaProxyEvent(event)
+
+    let resultProcessor
     if (isApiGatewayLambdaProxy) {
-      transaction.type = shim.WEB
-
-      // TODO: potentially two wrappers... chose which at runtime.
-      // http -> request ln 551
-
-      const transportType = event.headers['X-Forwarded-Proto']
-
-      transaction.url = urltils.scrub(event.path)
-      transaction.verb = event.httpMethod
-      transaction.trace.addAttribute(DESTS.COMMON, 'request.method', event.httpMethod)
-      transaction.port = event.headers['X-Forwarded-Port']
-
-      transaction.addRequestParameters(event.queryStringParameters)
-
-      // URL is sent as an agent attribute with transaction events
-      transaction.trace.addAttribute(
-        DESTS.TRANS_EVENT | DESTS.ERROR_EVENT,
-        'request.uri',
-        transaction.url
-      )
-
-      headerAttributes.collectRequestHeaders(event.headers, transaction)
-
-      if (shim.agent.config.distributed_tracing.enabled) {
-        const payload =
-          event.headers.newrelic || event.headers.NEWRELIC || event.headers.Newrelic
-
-        if (payload) {
-          logger.trace(
-            'Accepting distributed trace payload for transaction %s',
-            transaction.id
-          )
-          transaction.acceptDistributedTracePayload(payload, transportType)
-        }
-      }
+      const webRequest = new ApiGatewayLambdaProxyWebRequest(event)
+      setWebRequest(shim, transaction, webRequest)
+      resultProcessor = getApiGatewayLambdaProxyResultProcessor(transaction)
     }
+
+    const segmentRecorder = isApiGatewayLambdaProxy ? recordWeb : recordBackground
+    const segment = shim.createSegment(functionName, segmentRecorder)
+    transaction.baseSegment = segment
 
     const cbIndex = args.length - 1
 
-    args[cbIndex] = wrapCallbackAndCaptureError(args[cbIndex])
+    args[cbIndex] = wrapCallbackAndCaptureError(args[cbIndex], resultProcessor)
     context.done = wrapCallbackAndCaptureError(context.done)
     context.fail = wrapCallbackAndCaptureError(context.fail)
 
@@ -1785,7 +1749,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
     return shim.applySegment(handler, segment, false, this, args)
 
-    function wrapCallbackAndCaptureError(cb) {
+    function wrapCallbackAndCaptureError(cb, processResult) {
       return function wrappedCallback() {
         let err = arguments[0]
         if (typeof err === 'string') {
@@ -1794,33 +1758,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
         shim.agent.errors.add(transaction, err)
 
-        if (transaction.isWeb) {
-          const res = arguments[1]
-          if (res) {
-            if (res.statusCode) {
-              transaction.statusCode = res.statusCode
-
-              const responseCode = String(res.statusCode)
-              transaction.trace.addAttribute(
-                DESTS.COMMON, 'httpResponseCode', responseCode
-              )
-
-              if (/^\d+$/.test(responseCode)) {
-                transaction.trace.addAttribute(
-                  DESTS.COMMON,
-                  'response.status',
-                  responseCode)
-              }
-            } else {
-              logger.warnOnce(
-                'Did not response.statusCode. This may indicate a ' +
-                'web transaction was incorrectly created for this lambda event type. ' +
-                'This log message will appear only once per agent run.'
-              )
-            }
-
-            headerAttributes.collectResponseHeaders(res.headers, transaction)
-          }
+        if (processResult) {
+          const result = arguments[1]
+          processResult(result)
         }
 
         end()
@@ -1889,6 +1829,144 @@ function isApiGatewayLambdaProxyEvent(event) {
   }
 
   return false
+}
+
+function isValidApiGatewayResponse(response) {
+  if (response && response.statusCode) {
+    return true
+  }
+
+  return false
+}
+
+function getApiGatewayLambdaProxyResultProcessor(transaction) {
+  return function processApiGatewayLambdaProxyResponse(response) {
+    if (isValidApiGatewayResponse(response)) {
+      const webResponse = new ApiGatewayLambdaProxyWebResponse(response)
+      setWebResponse(transaction, webResponse)
+    } else {
+      logger.debug('Did not contain a valid API Gateway Lambda Proxy response.')
+    }
+  }
+}
+
+function setWebRequest(shim, transaction, request) {
+  transaction.type = shim.WEB
+
+  transaction.url = urltils.scrub(request.url.path)
+  transaction.verb = request.method
+  transaction.trace.addAttribute(DESTS.COMMON, 'request.method', request.method)
+  transaction.port = request.url.port
+
+  transaction.addRequestParameters(request.url.requestParameters)
+
+  // URL is sent as an agent attribute with transaction events
+  transaction.trace.addAttribute(
+    DESTS.TRANS_EVENT | DESTS.ERROR_EVENT,
+    'request.uri',
+    request.url.path
+  )
+
+  headerAttributes.collectRequestHeaders(request.headers, transaction)
+
+  if (shim.agent.config.distributed_tracing.enabled) {
+    const payload = request.headers.newrelic || request.headers.NEWRELIC ||
+      request.headers.Newrelic
+
+    if (payload) {
+      logger.trace(
+        'Accepting distributed trace payload for transaction %s',
+        transaction.id
+      )
+      transaction.acceptDistributedTracePayload(payload, request.transportType)
+    }
+  }
+}
+
+function setWebResponse(transaction, response) {
+  transaction.statusCode = response.statusCode
+
+  const responseCode = String(response.statusCode)
+  transaction.trace.addAttribute(
+    DESTS.COMMON, 'httpResponseCode', responseCode
+  )
+
+  if (/^\d+$/.test(responseCode)) {
+    transaction.trace.addAttribute(
+      DESTS.COMMON,
+      'response.status',
+      responseCode)
+  }
+
+  headerAttributes.collectResponseHeaders(response.headers, transaction)
+}
+
+class ApiGatewayLambdaProxyWebRequest {
+  constructor(event) {
+    this.headers = event.headers
+    this.url = {
+      'path': event.path,
+      'port': event.headers['X-Forwarded-Port'],
+      'requestParameters': event.queryStringParameters
+    }
+    this.method = event.httpMethod
+    this.transportType = event.headers['X-Forwarded-Proto']
+  }
+
+  get headers() {
+    return this._headers
+  }
+
+  set headers(value) {
+    this._headers = value
+  }
+
+  get url() {
+    return this._url
+  }
+
+  set url(value) {
+    this._url = value
+  }
+
+  get method() {
+    return this._method
+  }
+
+  set method(value) {
+    this._method = value
+  }
+
+  get transportType() {
+    return this._transportType
+  }
+
+  set transportType(value) {
+    this._transportType = value
+  }
+}
+
+class ApiGatewayLambdaProxyWebResponse {
+  constructor(lambdaResponse) {
+    this.headers = lambdaResponse.headers
+    this.statusCode = lambdaResponse.statusCode
+  }
+
+  get headers() {
+    return this._headers
+  }
+
+  set headers(value) {
+    this._headers = value
+  }
+
+  get statusCode() {
+    return this._statusCode
+  }
+
+  set statusCode(value) {
+    this._statusCode = value
+  }
 }
 
 module.exports = API
