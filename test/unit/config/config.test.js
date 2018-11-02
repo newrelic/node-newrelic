@@ -607,6 +607,15 @@ describe('the agent configuration', function() {
   })
 
   describe('with serverless_mode enabled', () => {
+    it('should explicitly disable cross_application_tracer', () => {
+      const config = Config.initialize({
+        cross_application_tracer: {enabled: true},
+        serverless_mode: true,
+        feature_flag: {serverless_mode: true}
+      })
+      expect(config.cross_application_tracer.enabled).to.be.false
+    })
+
     it('should pick up trusted_account_key', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE: true,
