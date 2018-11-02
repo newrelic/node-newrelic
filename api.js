@@ -1740,13 +1740,9 @@ API.prototype.recordLambda = function recordLambda(handler) {
       return succeed.apply(this, arguments)
     }
 
-    const awsAttributes = getAwsAgentAttributes(event, context)
-    if (!agent._coldStartRecorded) {
-      awsAttributes['aws.lambda.coldStart'] = true
-      agent._coldStartRecorded = true
-    }
-
-    transaction.trace.addAttributes(ATTR_DEST.TRANS_EVENT, awsAttributes)
+    const awsAttributes = getAwsAgentAttributes(agent, event, context)
+    transaction.trace.addAttributes(ATTR_DEST.COMMON, awsAttributes.all)
+    transaction.trace.addAttributes(ATTR_DEST.LIMITED, awsAttributes.noTxEvents)
 
     segment.start()
 
@@ -1785,17 +1781,26 @@ API.prototype.recordLambda = function recordLambda(handler) {
   }
 }
 
-function getAwsAgentAttributes(event, context) {
+function getAwsAgentAttributes(agent, event, context) {
   const attributes = {
-    'aws.lambda.arn': context.invokedFunctionArn,
-    'aws.lambda.functionName': context.functionName,
-    'aws.lambda.functionVersion': context.functionVersion,
-    'aws.lambda.memoryLimit': context.memoryLimitInMB,
-    'aws.region': process.env.AWS_REGION,
-    'aws.requestId': context.awsRequestId
+    all: {
+      'aws.lambda.arn': context.invokedFunctionArn,
+      'aws.region': process.env.AWS_REGION,
+      'aws.requestId': context.awsRequestId
+    },
+    noTxEvents: {
+      'aws.lambda.functionName': context.functionName,
+      'aws.lambda.functionVersion': context.functionVersion,
+      'aws.lambda.memoryLimit': context.memoryLimitInMB,
+    }
   }
 
-  setEventSourceAttributes(event, attributes)
+  setEventSourceAttributes(event, attributes.noTxEvents)
+
+  if (!agent._coldStartRecorded) {
+    attributes.all['aws.lambda.coldStart'] = true
+    agent._coldStartRecorded = true
+  }
 
   return attributes
 }
@@ -1853,14 +1858,14 @@ function setWebRequest(shim, transaction, request) {
 
   transaction.url = urltils.scrub(request.url.path)
   transaction.verb = request.method
-  transaction.trace.addAttribute(DESTS.COMMON, 'request.method', request.method)
+  transaction.trace.addAttribute(ATTR_DEST.COMMON, 'request.method', request.method)
   transaction.port = request.url.port
 
   transaction.addRequestParameters(request.url.requestParameters)
 
   // URL is sent as an agent attribute with transaction events
   transaction.trace.addAttribute(
-    DESTS.TRANS_EVENT | DESTS.ERROR_EVENT,
+    ATTR_DEST.TRANS_EVENT | ATTR_DEST.ERROR_EVENT,
     'request.uri',
     request.url.path
   )
@@ -1886,12 +1891,12 @@ function setWebResponse(transaction, response) {
 
   const responseCode = String(response.statusCode)
   transaction.trace.addAttribute(
-    DESTS.COMMON, 'httpResponseCode', responseCode
+    ATTR_DEST.COMMON, 'httpResponseCode', responseCode
   )
 
   if (/^\d+$/.test(responseCode)) {
     transaction.trace.addAttribute(
-      DESTS.COMMON,
+      ATTR_DEST.COMMON,
       'response.status',
       responseCode)
   }
