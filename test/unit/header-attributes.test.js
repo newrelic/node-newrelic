@@ -19,6 +19,37 @@ describe('header-attributes', () => {
   })
 
   describe('#collectRequestHeaders', () => {
+    it('should strip `-` from headers', (done) => {
+      const headers = {
+        'content-type': 'valid-type'
+      }
+
+      helper.runInTransaction(agent, (transaction) => {
+        headerAttributes.collectRequestHeaders(headers, transaction)
+
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+        expect(attributes).to.not.have.property('content-type')
+        done()
+      })
+    })
+
+    it('should lowercase first letter in headers', (done) => {
+      const headers = {
+        'Content-Type': 'valid-type'
+      }
+
+      helper.runInTransaction(agent, (transaction) => {
+        headerAttributes.collectRequestHeaders(headers, transaction)
+
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+        expect(attributes).to.not.have.property('Content-Type')
+        expect(attributes).to.not.have.property('ContentType')
+        done()
+      })
+    })
+
     it('should capture a scrubbed version of the referer header', (done) => {
       const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
 
@@ -30,9 +61,12 @@ describe('header-attributes', () => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes['request.headers.referer']).to.equal(
+
+        expect(attributes).to.have.property(
+          'request.headers.referer',
           'https://www.google.com/search/cats'
         )
+
         done()
       })
     })
@@ -76,6 +110,7 @@ describe('header-attributes', () => {
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('request.headers.x-filtered-out')
           expect(attributes).to.not.have.property('request.headers.xFilteredOut')
+          expect(attributes).to.not.have.property('request.headers.XFilteredOut')
           expect(attributes).to.have.property('request.headers.valid', 'header')
           expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
           expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
@@ -125,6 +160,7 @@ describe('header-attributes', () => {
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('response.headers.x-filtered-out')
           expect(attributes).to.not.have.property('response.headers.xFilteredOut')
+          expect(attributes).to.not.have.property('response.headers.XFilteredOut')
           expect(attributes).to.have.property('response.headers.valid', 'header')
           expect(attributes).to.have.property(
             'response.headers.contentType',

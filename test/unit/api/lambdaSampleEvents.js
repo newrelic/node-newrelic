@@ -298,7 +298,8 @@ const apiGatewayProxyEvent = {
   "resource": "/{proxy+}",
   "httpMethod": "GET",
   "queryStringParameters": {
-    "name": "me"
+    "name": "me",
+    "team": "node agent"
   },
   "stageVariables": {
     "stageVarName": "stageVarValue"

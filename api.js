@@ -1667,8 +1667,13 @@ function cleanClosure() {}
 
 const EVENT_SOURCE_ARN_KEY = 'aws.lambda.eventSource.arn'
 
+const urltils = require('./lib/util/urltils')
+const headerAttributes = require('./lib/header-attributes')
+
 API.prototype.recordLambda = function recordLambda(handler) {
   const agent = this.agent
+  const shim = this.shim
+
   const metric = agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordLambda'
   )
@@ -1678,8 +1683,6 @@ API.prototype.recordLambda = function recordLambda(handler) {
     logger.warn('handler argument is not a function and cannot be recorded')
     return handler
   }
-
-  const shim = this.shim
 
   // this array holds all the closures used to end transactions
   var transactionEnders = []
@@ -1705,19 +1708,29 @@ API.prototype.recordLambda = function recordLambda(handler) {
     const event = args[0]
     const context = args[1]
 
-    const name = context.functionName
+    const functionName = context.functionName
     const group = NAMES.FUNCTION.PREFIX
-    const transactionName = group + name
-
-    const segment = shim.createSegment(name, recordBackground)
+    const transactionName = group + functionName
 
     const transaction = shim.tracer.getTransaction()
     transaction.setPartialName(transactionName)
+
+    const isApiGatewayLambdaProxy = isApiGatewayLambdaProxyEvent(event)
+
+    let resultProcessor
+    if (isApiGatewayLambdaProxy) {
+      const webRequest = new ApiGatewayLambdaProxyWebRequest(event)
+      setWebRequest(shim, transaction, webRequest)
+      resultProcessor = getApiGatewayLambdaProxyResultProcessor(transaction)
+    }
+
+    const segmentRecorder = isApiGatewayLambdaProxy ? recordWeb : recordBackground
+    const segment = shim.createSegment(functionName, segmentRecorder)
     transaction.baseSegment = segment
 
     const cbIndex = args.length - 1
 
-    args[cbIndex] = wrapCallbackAndCaptureError(args[cbIndex])
+    args[cbIndex] = wrapCallbackAndCaptureError(args[cbIndex], resultProcessor)
     context.done = wrapCallbackAndCaptureError(context.done)
     context.fail = wrapCallbackAndCaptureError(context.fail)
 
@@ -1729,14 +1742,19 @@ API.prototype.recordLambda = function recordLambda(handler) {
       return succeed.apply(this, arguments)
     }
 
-    const awsAttributes = getAwsAgentAttributes()
+    const awsAttributes = getAwsAgentAttributes(event, context)
+    if (!agent._coldStartRecorded) {
+      awsAttributes['aws.lambda.coldStart'] = true
+      agent._coldStartRecorded = true
+    }
+
     transaction.trace.addAttributes(ATTR_DEST.TRANS_EVENT, awsAttributes)
 
     segment.start()
 
     return shim.applySegment(handler, segment, false, this, args)
 
-    function wrapCallbackAndCaptureError(cb) {
+    function wrapCallbackAndCaptureError(cb, processResult) {
       return function wrappedCallback() {
         let err = arguments[0]
         if (typeof err === 'string') {
@@ -1745,50 +1763,14 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
         shim.agent.errors.add(transaction, err)
 
+        if (processResult) {
+          const result = arguments[1]
+          processResult(result)
+        }
+
         end()
 
         return cb.apply(this, arguments)
-      }
-    }
-
-    function getAwsAgentAttributes() {
-      const attributes = {
-        'aws.lambda.arn': context.invokedFunctionArn,
-        'aws.lambda.functionName': context.functionName,
-        'aws.lambda.functionVersion': context.functionVersion,
-        'aws.lambda.memoryLimit': context.memoryLimitInMB,
-        'aws.region': process.env.AWS_REGION,
-        'aws.requestId': context.awsRequestId
-      }
-
-      getEventSourceAttributes(attributes)
-
-      if (!agent._coldStartRecorded) {
-        attributes['aws.lambda.coldStart'] = true
-        agent._coldStartRecorded = true
-      }
-
-      return attributes
-    }
-
-    function getEventSourceAttributes(obj) {
-      if (event.Records) {
-        const record = event.Records[0]
-        if (record.eventSourceARN) {
-          // SQS/Kinesis Stream/DynamoDB/CodeCommit
-          obj[EVENT_SOURCE_ARN_KEY] = record.eventSourceARN
-        } else if (record.s3) {
-          // S3
-          if (record.s3.bucket && record.s3.bucket.arn) {
-            obj[EVENT_SOURCE_ARN_KEY] = record.s3.bucket.arn
-          }
-        } else if (record.EventSubscriptionArn) {
-          // SNS
-          obj[EVENT_SOURCE_ARN_KEY] = record.EventSubscriptionArn
-        }
-      } else if (event.records && event.deliveryStreamArn) {
-        // Kinesis Firehose
-        obj[EVENT_SOURCE_ARN_KEY] = event.deliveryStreamArn
       }
     }
 
@@ -1802,6 +1784,188 @@ API.prototype.recordLambda = function recordLambda(handler) {
 
       transaction.end()
     }
+  }
+}
+
+function getAwsAgentAttributes(event, context) {
+  const attributes = {
+    'aws.lambda.arn': context.invokedFunctionArn,
+    'aws.lambda.functionName': context.functionName,
+    'aws.lambda.functionVersion': context.functionVersion,
+    'aws.lambda.memoryLimit': context.memoryLimitInMB,
+    'aws.region': process.env.AWS_REGION,
+    'aws.requestId': context.awsRequestId
+  }
+
+  setEventSourceAttributes(event, attributes)
+
+  return attributes
+}
+
+function setEventSourceAttributes(event, attributes) {
+  if (event.Records) {
+    const record = event.Records[0]
+    if (record.eventSourceARN) {
+      // SQS/Kinesis Stream/DynamoDB/CodeCommit
+      attributes[EVENT_SOURCE_ARN_KEY] = record.eventSourceARN
+    } else if (record.s3) {
+      // S3
+      if (record.s3.bucket && record.s3.bucket.arn) {
+        attributes[EVENT_SOURCE_ARN_KEY] = record.s3.bucket.arn
+      }
+    } else if (record.EventSubscriptionArn) {
+      // SNS
+      attributes[EVENT_SOURCE_ARN_KEY] = record.EventSubscriptionArn
+    }
+  } else if (event.records && event.deliveryStreamArn) {
+    // Kinesis Firehose
+    attributes[EVENT_SOURCE_ARN_KEY] = event.deliveryStreamArn
+  }
+}
+
+function isApiGatewayLambdaProxyEvent(event) {
+  if (event.path && event.headers && event.httpMethod) {
+    return true
+  }
+
+  return false
+}
+
+function isValidApiGatewayResponse(response) {
+  if (response && response.statusCode) {
+    return true
+  }
+
+  return false
+}
+
+function getApiGatewayLambdaProxyResultProcessor(transaction) {
+  return function processApiGatewayLambdaProxyResponse(response) {
+    if (isValidApiGatewayResponse(response)) {
+      const webResponse = new ApiGatewayLambdaProxyWebResponse(response)
+      setWebResponse(transaction, webResponse)
+    } else {
+      logger.debug('Did not contain a valid API Gateway Lambda Proxy response.')
+    }
+  }
+}
+
+function setWebRequest(shim, transaction, request) {
+  transaction.type = shim.WEB
+
+  transaction.url = urltils.scrub(request.url.path)
+  transaction.verb = request.method
+  transaction.trace.addAttribute(DESTS.COMMON, 'request.method', request.method)
+  transaction.port = request.url.port
+
+  transaction.addRequestParameters(request.url.requestParameters)
+
+  // URL is sent as an agent attribute with transaction events
+  transaction.trace.addAttribute(
+    DESTS.TRANS_EVENT | DESTS.ERROR_EVENT,
+    'request.uri',
+    request.url.path
+  )
+
+  headerAttributes.collectRequestHeaders(request.headers, transaction)
+
+  if (shim.agent.config.distributed_tracing.enabled) {
+    const payload = request.headers.newrelic || request.headers.NEWRELIC ||
+      request.headers.Newrelic
+
+    if (payload) {
+      logger.trace(
+        'Accepting distributed trace payload for transaction %s',
+        transaction.id
+      )
+      transaction.acceptDistributedTracePayload(payload, request.transportType)
+    }
+  }
+}
+
+function setWebResponse(transaction, response) {
+  transaction.statusCode = response.statusCode
+
+  const responseCode = String(response.statusCode)
+  transaction.trace.addAttribute(
+    DESTS.COMMON, 'httpResponseCode', responseCode
+  )
+
+  if (/^\d+$/.test(responseCode)) {
+    transaction.trace.addAttribute(
+      DESTS.COMMON,
+      'response.status',
+      responseCode)
+  }
+
+  headerAttributes.collectResponseHeaders(response.headers, transaction)
+}
+
+class ApiGatewayLambdaProxyWebRequest {
+  constructor(event) {
+    this.headers = event.headers
+    this.url = {
+      'path': event.path,
+      'port': event.headers['X-Forwarded-Port'],
+      'requestParameters': event.queryStringParameters
+    }
+    this.method = event.httpMethod
+    this.transportType = event.headers['X-Forwarded-Proto']
+  }
+
+  get headers() {
+    return this._headers
+  }
+
+  set headers(value) {
+    this._headers = value
+  }
+
+  get url() {
+    return this._url
+  }
+
+  set url(value) {
+    this._url = value
+  }
+
+  get method() {
+    return this._method
+  }
+
+  set method(value) {
+    this._method = value
+  }
+
+  get transportType() {
+    return this._transportType
+  }
+
+  set transportType(value) {
+    this._transportType = value
+  }
+}
+
+class ApiGatewayLambdaProxyWebResponse {
+  constructor(lambdaResponse) {
+    this.headers = lambdaResponse.headers
+    this.statusCode = lambdaResponse.statusCode
+  }
+
+  get headers() {
+    return this._headers
+  }
+
+  set headers(value) {
+    this._headers = value
+  }
+
+  get statusCode() {
+    return this._statusCode
+  }
+
+  set statusCode(value) {
+    this._statusCode = value
   }
 }
 
