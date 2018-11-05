@@ -85,6 +85,12 @@ describe('The recordLambda API', () => {
     expect(metric.callCount).to.equal(1)
   })
 
+  it('should pick up on the arn', function() {
+    expect(agent.lambdaArn).to.be.undefined
+    api.recordLambda(function(){})(stubEvent, stubContext, stubCallback)
+    expect(agent.lambdaArn).to.equal(stubContext.invokedFunctionArn)
+  })
+
   describe('when invoked with non web event', () => {
     it('should create a transaction for handler', () => {
       const wrappedHandler = api.recordLambda((event, context, callback) => {
