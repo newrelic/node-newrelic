@@ -1591,11 +1591,11 @@ describe('the New Relic agent API', function() {
     })
   })
 
-  describe('recordLambda', () => {
+  describe('setLambdaHandler', () => {
     it('should report API supportability metric', () => {
-      api.recordLambda(() => {})
+      api.setLambdaHandler(() => {})
 
-      const metric = agent.metrics.getMetric('Supportability/API/recordLambda')
+      const metric = agent.metrics.getMetric('Supportability/API/setLambdaHandler')
       expect(metric.callCount).to.equal(1)
     })
   })

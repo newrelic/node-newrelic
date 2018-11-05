@@ -1662,13 +1662,13 @@ function _checkKeyLength(object, maxLength) {
   return badKey
 }
 
-API.prototype.recordLambda = function recordLambda(handler) {
+API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
   const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/recordLambda'
+    NAMES.SUPPORTABILITY.API + '/setLambdaHandler'
   )
   metric.incrementCallCount()
 
-  return this.awsLambda.wrapLambdaHandler(handler)
+  return this.awsLambda.patchLambdaHandler(handler)
 }
 
 module.exports = API

@@ -8,7 +8,7 @@ const lambdaSampleEvents = require('./lambdaSampleEvents')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
 
-describe('AwsLambda.wrapLambdaHandler', () => {
+describe('AwsLambda.patchLambdaHandler', () => {
   const groupName = 'Function'
   const functionName = 'testName'
   const expectedTransactionName = groupName + '/' + functionName
@@ -64,14 +64,14 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
   it('should return original handler if not a function', () => {
     const handler = {}
-    const newHandler = awsLambda.wrapLambdaHandler(handler)
+    const newHandler = awsLambda.patchLambdaHandler(handler)
 
     expect(newHandler).to.equal(handler)
   })
 
   describe('when invoked with non web event', () => {
     it('should create a transaction for handler', () => {
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         const transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
@@ -86,7 +86,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should record standard background metrics', (done) => {
       agent.on('transactionFinished', confirmMetrics)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, 'worked')
       })
 
@@ -131,7 +131,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         const transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal(expectedWebTransactionName)
@@ -161,7 +161,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, validResponse)
       })
 
@@ -182,7 +182,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, validResponse)
       })
 
@@ -253,7 +253,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, validResponse)
       })
 
@@ -286,7 +286,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, validResponse)
       })
 
@@ -314,7 +314,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, validResponse)
       })
 
@@ -337,7 +337,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, validResponse)
       })
 
@@ -378,7 +378,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
   })
 
   it('should create a segment for handler', () => {
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       const segment = awsLambda.shim.getSegment()
       expect(segment).is.not.null
       expect(segment.name).to.equal(functionName)
@@ -392,7 +392,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
   it('should capture cold start boolean on first invocation', (done) => {
     agent.on('transactionFinished', confirmColdStart)
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -410,7 +410,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     agent.on('transactionFinished', confirmNoAdditionalColdStart)
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -432,7 +432,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
   it('should capture AWS agent attributes', (done) => {
     agent.on('transactionFinished', confirmAgentAttributes)
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -456,7 +456,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
   it('should not add attributes from empty event', (done) => {
     agent.on('transactionFinished', confirmAgentAttribute)
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -475,7 +475,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.kinesisDataStreamEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -495,7 +495,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.s3PutEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -514,7 +514,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.snsEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -534,7 +534,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.dynamoDbUpdateEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -554,7 +554,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.codeCommitEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -574,7 +574,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.cloudFrontEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -593,7 +593,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
     stubEvent = lambdaSampleEvents.kinesisDataFirehoseEvent
 
-    const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
@@ -611,7 +611,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should end appropriately', () => {
       let transaction
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         transaction = agent.tracer.getTransaction()
         callback(null, 'worked')
       })
@@ -627,7 +627,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should notice errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(error, 'failed')
       })
 
@@ -647,7 +647,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should notice string errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback('failed')
       })
 
@@ -674,7 +674,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       context.done = confirmEndCallback
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         transaction = agent.tracer.getTransaction()
         context.done(null, 'worked')
       })
@@ -692,7 +692,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should notice errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.done(error, 'failed')
       })
 
@@ -712,7 +712,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should notice string errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.done('failed')
       })
 
@@ -739,7 +739,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       context.succeed = confirmEndCallback
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         transaction = agent.tracer.getTransaction()
         context.succeed('worked')
       })
@@ -761,7 +761,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
 
       context.fail = confirmEndCallback
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         transaction = agent.tracer.getTransaction()
         context.fail()
       })
@@ -779,7 +779,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should notice errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.fail(error)
       })
 
@@ -799,7 +799,7 @@ describe('AwsLambda.wrapLambdaHandler', () => {
     it('should notice string errors', (done) => {
       agent.on('transactionFinished', confirmErrorCapture)
 
-      const wrappedHandler = awsLambda.wrapLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.fail('failed')
       })
 
