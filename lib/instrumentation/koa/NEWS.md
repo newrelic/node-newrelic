@@ -1,6 +1,8 @@
 
 ### 1.0.7 (2018-11-5):
 
+* Adds support for naming transactions without setting the `context.body` property.
+
 * Added missing instrumentation hooks when module imported directly.
 
 * Upgraded dev dependencies.
