@@ -1590,4 +1590,13 @@ describe('the New Relic agent API', function() {
       expect(opts).to.have.property('onError', onError)
     })
   })
+
+  describe('recordLambda', () => {
+    it('should report API supportability metric', () => {
+      api.recordLambda(() => {})
+
+      const metric = agent.metrics.getMetric('Supportability/API/recordLambda')
+      expect(metric.callCount).to.equal(1)
+    })
+  })
 })

@@ -69,13 +69,6 @@ describe('The recordLambda API', () => {
     expect(newHandler).to.equal(handler)
   })
 
-  it('should report API supportability metric', () => {
-    api.recordLambda(() => {})
-
-    const metric = agent.metrics.getMetric('Supportability/API/recordLambda')
-    expect(metric.callCount).to.equal(1)
-  })
-
   describe('when invoked with non web event', () => {
     it('should create a transaction for handler', () => {
       const wrappedHandler = api.recordLambda((event, context, callback) => {
