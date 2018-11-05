@@ -13,7 +13,7 @@ var stringify = require('json-stringify-safe')
 var shimmer = require('./lib/shimmer')
 var TransactionShim = require('./lib/shim/transaction-shim')
 var TransactionHandle = require('./lib/transaction/handle')
-var wrapLambdaHandler = require('./lib/serverless/aws-lambda')
+const AwsLambda = require('./lib/serverless/aws-lambda')
 
 const DESTS = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
@@ -45,8 +45,6 @@ const CUSTOM_BLACKLIST = new Set([
 
 const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
-const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
-
 /**
  * The exported New Relic API. This contains all of the functions meant to be
  * used by New Relic customers. For now, that means transaction naming.
@@ -59,6 +57,7 @@ const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 function API(agent) {
   this.agent = agent
   this.shim = new TransactionShim(agent, 'NewRelicAPI')
+  this.awsLambda = new AwsLambda(agent)
 }
 
 /**
@@ -1669,7 +1668,7 @@ API.prototype.recordLambda = function recordLambda(handler) {
   )
   metric.incrementCallCount()
 
-  return wrapLambdaHandler(this.shim, handler)
+  return this.awsLambda.wrapLambdaHandler(handler)
 }
 
 module.exports = API
