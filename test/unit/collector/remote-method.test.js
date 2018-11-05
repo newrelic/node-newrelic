@@ -225,6 +225,7 @@ describe('RemoteMethod', function() {
     var config
     var method
     var sendMetrics
+    let mockHeaders
 
 
     before(function() {
@@ -245,6 +246,7 @@ describe('RemoteMethod', function() {
         run_id: RUN_ID,
         license_key: 'license key here'
       })
+      mockHeaders = {}
       method = new RemoteMethod('metric_data', config)
     })
 
@@ -258,7 +260,7 @@ describe('RemoteMethod', function() {
       method = new RemoteMethod('test', {host: 'localhost'})
       method._shouldCompress = function() { return true }
       // zlib.deflate really wants a stringlike entity
-      method._post(-1, function(error) {
+      method._post(-1, mockHeaders, function(error) {
         should.exist(error)
 
         done()
@@ -275,14 +277,14 @@ describe('RemoteMethod', function() {
       })
 
       it('should invoke the callback without error', function(done) {
-        method._post('[]', function(error) {
+        method._post('[]', mockHeaders, function(error) {
           should.not.exist(error)
           done()
         })
       })
 
       it('should use the right URL', function(done) {
-        method._post('[]', function(error) {
+        method._post('[]', mockHeaders, function(error) {
           should.not.exist(error)
           expect(sendMetrics.isDone()).to.be.true
           done()
@@ -296,7 +298,7 @@ describe('RemoteMethod', function() {
           .reply(200, {return_value: []})
 
         config.put_for_data_send = true
-        method._post('[]', function(error) {
+        method._post('[]', mockHeaders, function(error) {
           should.not.exist(error)
           expect(putMetrics.isDone()).to.be.true
           done()
@@ -321,7 +323,7 @@ describe('RemoteMethod', function() {
 
         it('should default to deflated compression', function(done) {
           method._shouldCompress = function() { return true }
-          method._post('[]', function(error) {
+          method._post('[]', mockHeaders, function(error) {
             should.not.exist(error)
             expect(sendMetrics.isDone()).to.be.false
             expect(sendDeflatedMetrics.isDone()).to.be.true
@@ -333,7 +335,7 @@ describe('RemoteMethod', function() {
         it('should respect the compressed_content_encoding config', function(done) {
           config.compressed_content_encoding = 'gzip'
           method._shouldCompress = function() { return true }
-          method._post('[]', function(error) {
+          method._post('[]', mockHeaders, function(error) {
             should.not.exist(error)
             expect(sendMetrics.isDone()).to.be.false
             expect(sendDeflatedMetrics.isDone()).to.be.false
@@ -351,7 +353,7 @@ describe('RemoteMethod', function() {
       })
 
       it('should invoke the callback with an error', function(done) {
-        method._post('[]', function(error) {
+        method._post('[]', mockHeaders, function(error) {
           should.exist(error)
 
           done()
@@ -359,7 +361,7 @@ describe('RemoteMethod', function() {
       })
 
       it('should say what the error was', function(done) {
-        method._post('[]', function(error) {
+        method._post('[]', mockHeaders, function(error) {
           expect(error.message).equal('No body found in response to metric_data.')
 
           done()
@@ -367,7 +369,7 @@ describe('RemoteMethod', function() {
       })
 
       it('should include the status code on the error', function(done) {
-        method._post('[]', function(error) {
+        method._post('[]', mockHeaders, function(error) {
           expect(error.statusCode).equal(500)
 
           done()
@@ -483,7 +485,12 @@ describe('RemoteMethod', function() {
       var body = 'test☃'
       var method = new RemoteMethod(body, config)
 
-      headers = method._headers(body, false)
+      const options = {
+        body,
+        compressed: false
+      }
+
+      headers = method._headers(options)
     })
 
     it('should use the content type from the parameter', function() {
@@ -523,7 +530,12 @@ describe('RemoteMethod', function() {
       var body = 'test☃'
       var method = new RemoteMethod(body, config)
 
-      headers = method._headers(body, true)
+      const options = {
+        body,
+        compressed: true
+      }
+
+      headers = method._headers(options)
     })
 
     it('should use the content type from the parameter', function() {
