@@ -67,7 +67,7 @@
     },
     {
       "engines": {
-        "node": ">=5"
+        "node": ">=6"
       },
       "dependencies": {
         "hapi": ">=16.0.0 <17",
