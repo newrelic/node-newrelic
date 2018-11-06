@@ -1744,6 +1744,11 @@ API.prototype.recordLambda = function recordLambda(handler) {
     transaction.trace.addAttributes(ATTR_DEST.COMMON, awsAttributes.all)
     transaction.trace.addAttributes(ATTR_DEST.LIMITED, awsAttributes.noTxEvents)
 
+    if (!agent.lambdaArn) {
+      // Pull the ARN off the context to a well known place
+      agent.lambdaArn = context.invokedFunctionArn
+    }
+
     segment.start()
 
     return shim.applySegment(handler, segment, false, this, args)
