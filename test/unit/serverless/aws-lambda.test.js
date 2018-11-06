@@ -7,6 +7,15 @@ const AwsLambda = require('../../../lib/serverless/aws-lambda')
 const lambdaSampleEvents = require('./lambdaSampleEvents')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
+// attribute key names
+const REGION = 'aws.region'
+const REQ_ID = 'aws.requestId'
+const LAMBDA_ARN = 'aws.lambda.arn'
+const COLDSTART = 'aws.lambda.coldStart'
+const FUNCTION_NAME = 'aws.lambda.functionName'
+const FUNCTION_VERS = 'aws.lambda.functionVersion'
+const MEM_LIMIT = 'aws.lambda.memoryLimit'
+const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
 
 describe('AwsLambda.patchLambdaHandler', () => {
   const groupName = 'Function'
@@ -67,6 +76,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
     const newHandler = awsLambda.patchLambdaHandler(handler)
 
     expect(newHandler).to.equal(handler)
+  })
+
+  it('should pick up on the arn', function() {
+    expect(agent.lambdaArn).to.be.undefined
+    awsLambda.patchLambdaHandler(() => {})(stubEvent, stubContext, stubCallback)
+    expect(agent.lambdaArn).to.equal(stubContext.invokedFunctionArn)
   })
 
   describe('when invoked with non web event', () => {
@@ -429,27 +444,56 @@ describe('AwsLambda.patchLambdaHandler', () => {
     }
   })
 
-  it('should capture AWS agent attributes', (done) => {
+  it('should capture AWS agent attributes and send to correct dests', (done) => {
     agent.on('transactionFinished', confirmAgentAttributes)
 
     const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
       callback(null, 'worked')
     })
 
-    wrappedHandler(stubEvent, stubContext, stubCallback)
+    const stubEvt = {
+      Records: [
+        {eventSourceARN: 'stub:eventsource:arn'}
+      ]
+    }
+
+    wrappedHandler(stubEvt, stubContext, stubCallback)
 
     function confirmAgentAttributes(transaction) {
-      const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      // verify attributes exist in correct destinations
+      const txTrace = _verifyDestinations(transaction)
 
-      expect(attributes['aws.lambda.functionName']).to.equal(stubContext.functionName)
-      expect(attributes['aws.lambda.functionVersion'])
-        .to.equal(stubContext.functionVersion)
-      expect(attributes['aws.lambda.arn']).to.equal(stubContext.invokedFunctionArn)
-      expect(attributes['aws.lambda.memoryLimit']).to.equal(stubContext.memoryLimitInMB)
-      expect(attributes['aws.requestId']).to.equal(stubContext.awsRequestId)
-      expect(attributes['aws.region']).to.equal(process.env.AWS_REGION)
+      // now verify actual values
+      expect(txTrace[REGION]).to.equal(process.env.AWS_REGION)
+      expect(txTrace[REQ_ID]).to.equal(stubContext.awsRequestId)
+      expect(txTrace[LAMBDA_ARN]).to.equal(stubContext.invokedFunctionArn)
+      expect(txTrace[COLDSTART]).to.be.true
+      expect(txTrace[FUNCTION_NAME]).to.equal(stubContext.functionName)
+      expect(txTrace[FUNCTION_VERS]).to.equal(stubContext.functionVersion)
+      expect(txTrace[MEM_LIMIT]).to.equal(stubContext.memoryLimitInMB)
 
       done()
+    }
+
+    function _verifyDestinations(tx) {
+      const txTrace = tx.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const errEvent = tx.trace.attributes.get(ATTR_DEST.ERROR_EVENT)
+      const txEvent = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+      const all = [REGION, REQ_ID, LAMBDA_ARN, COLDSTART]
+      const limited = [FUNCTION_NAME, FUNCTION_VERS, MEM_LIMIT, EVENTSOURCE_ARN]
+
+      all.forEach((key) => {
+        expect(txTrace[key], key).to.not.be.undefined
+        expect(errEvent[key], key).to.not.be.undefined
+        expect(txEvent[key], key).to.not.be.undefined
+      })
+      limited.forEach((key) => {
+        expect(txTrace[key], key).to.not.be.undefined
+        expect(errEvent[key], key).to.not.be.undefined
+      })
+
+      return txTrace
     }
   })
 
@@ -463,9 +507,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn']).to.be.undefined
+      expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
       done()
     }
   })
@@ -482,9 +526,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn'])
+      expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('kinesis:eventsourcearn')
       done()
     }
@@ -502,9 +546,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn']).to.equal('bucketarn')
+      expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('bucketarn')
       done()
     }
   })
@@ -521,9 +565,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn'])
+      expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('eventsubscriptionarn')
       done()
     }
@@ -541,9 +585,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn'])
+      expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('dynamodb:eventsourcearn')
       done()
     }
@@ -561,9 +605,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn'])
+      expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('arn:aws:codecommit:us-west-2:123456789012:my-repo')
       done()
     }
@@ -581,9 +625,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn']).to.be.undefined
+      expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
       done()
     }
   })
@@ -600,9 +644,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     wrappedHandler(stubEvent, stubContext, stubCallback)
 
     function confirmAgentAttribute(transaction) {
-      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
-      expect(agentAttributes['aws.lambda.eventSource.arn']).to.equal('aws:lambda:events')
+      expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('aws:lambda:events')
       done()
     }
   })

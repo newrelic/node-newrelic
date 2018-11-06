@@ -15,7 +15,7 @@ var TransactionShim = require('./lib/shim/transaction-shim')
 var TransactionHandle = require('./lib/transaction/handle')
 const AwsLambda = require('./lib/serverless/aws-lambda')
 
-const DESTS = require('./lib/config/attribute-filter').DESTINATIONS
+const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
@@ -625,12 +625,12 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
   var attrs = Object.create(null)
 
-  const customAttrs = trans.trace.custom.get(DESTS.BROWSER_EVENT)
+  const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(customAttrs)) {
     attrs.u = customAttrs
   }
 
-  const agentAttrs = trans.trace.attributes.get(DESTS.BROWSER_EVENT)
+  const agentAttrs = trans.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(agentAttrs)) {
     attrs.a = agentAttrs
   }

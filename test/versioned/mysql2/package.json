@@ -8,7 +8,7 @@
         "node": ">=0.10"
       },
       "dependencies": {
-        "mysql2": ">=1 <1.3.1",
+        "mysql2": ">=1 <1.3.1 <1.6.2",
         "generic-pool": "2.4 <2.5"
       },
       "files": [
@@ -23,7 +23,7 @@
         "node": ">=4.0"
       },
       "dependencies": {
-        "mysql2": ">=1.3.1",
+        "mysql2": ">=1.3.1 <1.6.2",
         "generic-pool": "2.4 <2.5"
       },
       "files": [
@@ -36,6 +36,6 @@
   ],
   "dependencies": {
     "generic-pool": "^2.4.6",
-    "mysql2": "^1.5.1"
+    "mysql2": "^1.6.1"
   }
 }
