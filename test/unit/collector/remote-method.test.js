@@ -256,7 +256,7 @@ describe('RemoteMethod', () => {
 
     it('should pass through error when compression fails', (done) => {
       method = new RemoteMethod('test', {host: 'localhost'})
-      method._shouldCompress = function() { return true }
+      method._shouldCompress = () => true
       // zlib.deflate really wants a stringlike entity
       method._post(-1, mockHeaders, (error) => {
         should.exist(error)
@@ -381,7 +381,6 @@ describe('RemoteMethod', () => {
           return_value: 'collector-42.newrelic.com'
         }
 
-
         beforeEach(() => {
           config = new Config({
             host: 'collector.newrelic.com',
@@ -473,6 +472,8 @@ describe('RemoteMethod', () => {
 
   describe('when generating headers for a plain request', () => {
     let headers
+    let options
+    let method
 
     beforeEach(() => {
       const config = new Config({
@@ -481,9 +482,9 @@ describe('RemoteMethod', () => {
         run_id: 12
       })
       const body = 'test☃'
-      const method = new RemoteMethod(body, config)
+      method = new RemoteMethod(body, config)
 
-      const options = {
+      options = {
         body,
         compressed: false
       }
@@ -513,6 +514,19 @@ describe('RemoteMethod', () => {
 
     it('should have a user-agent string', () => {
       expect(headers['User-Agent']).not.equal(undefined)
+    })
+
+    describe('with stored NR request headers', () => {
+      it('should include store NR headers in outgoing request headers', () => {
+        options.nrHeaders = {
+          'X-NR-Run-Token': 'AFBE4546FEADDEAD1243',
+          'X-NR-Metadata': '12BAED78FC89BAFE1243'
+        }
+        headers = method._headers(options)
+
+        expect(headers['X-NR-Run-Token']).to.equal('AFBE4546FEADDEAD1243')
+        expect(headers['X-NR-Metadata']).to.equal('12BAED78FC89BAFE1243')
+      })
     })
   })
 
