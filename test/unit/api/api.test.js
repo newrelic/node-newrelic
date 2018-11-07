@@ -143,7 +143,7 @@ describe('the New Relic agent API', function() {
     })
 
     it("should have a method to create a distributed trace payload", function(done) {
-      helper.runInTransaction(agent, function(txn) {
+      helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
         expect(handle.createDistributedTracePayload).to.be.a('function')
         agent.config.cross_process_id = '1234#5678'
@@ -155,7 +155,7 @@ describe('the New Relic agent API', function() {
     })
 
     it("should have a method for accepting a distributed trace payload", function(done) {
-      helper.runInTransaction(agent, function(txn) {
+      helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
         expect(handle.acceptDistributedTracePayload).to.be.a('function')
         done()
@@ -415,7 +415,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should end the transaction after a promise returned by the transaction function resolves", function() {
+    it('should end the txn after a promise returned by the txn function resolves', () => {
       api.startWebTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
@@ -428,7 +428,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should not end the transaction if the transaction is being handled externally", function() {
+    it('should not end the txn if the txn is being handled externally', () => {
       api.startWebTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
@@ -453,7 +453,7 @@ describe('the New Relic agent API', function() {
     })
   })
 
-  describe("when starting a background transaction using startBackgroundTransaction", function() {
+  describe('when starting a background txn using startBackgroundTransaction', () => {
     var thenCalled = false
     var FakePromise = {
       then: function(f) {
@@ -512,7 +512,7 @@ describe('the New Relic agent API', function() {
     })
 
 
-    it("should start a background transaction with the given name as the name and group", function() {
+    it('should start a background txn with the given name as the name and group', () => {
       api.startBackgroundTransaction('test', 'group', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
@@ -522,7 +522,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should end the transaction after a promise returned by the transaction function resolves", function() {
+    it('should end the txn after a promise returned by the txn function resolves', () => {
       api.startBackgroundTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
@@ -535,7 +535,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should not end the transaction if the transaction is being handled externally", function() {
+    it('should not end the txn if the txn is being handled externally', () => {
       api.startBackgroundTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
@@ -1352,51 +1352,79 @@ describe('the New Relic agent API', function() {
       mock.verify()
     })
 
-    it('calls harvest when options.collectPendingData is true and state is "started"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('started')
-      mock.expects('harvest').once()
-      api.shutdown({collectPendingData: true})
-      mock.verify()
+    describe('when `options.collectPendingData` is `true`', () => {
+      it('calls harvest when state is `started`', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('harvest').once()
+        api.shutdown({collectPendingData: true})
+        mock.verify()
+      })
+
+      it('calls harvest when state is not "started" and changes to "started"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('harvest').once()
+        api.shutdown({collectPendingData: true})
+        agent.setState('started')
+        mock.verify()
+      })
+
+      it('does not call harvest when state is not "started" and not changed', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('harvest').never()
+        api.shutdown({collectPendingData: true})
+        mock.verify()
+      })
+
+      it('calls stop when timeout is not given and state changes to "errored"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('stop').once()
+        api.shutdown({collectPendingData: true})
+        agent.setState('errored')
+        mock.verify()
+      })
+
+      it('calls stop when timeout is given and state changes to "errored"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('stop').once()
+        api.shutdown({collectPendingData: true, timeout: 1000})
+        agent.setState('errored')
+        mock.verify()
+      })
     })
 
-    it('calls harvest when options.collectPendingData is true ' +
-       'and state is not "started" and changes to "started"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('harvest').once()
-      api.shutdown({collectPendingData: true})
-      agent.setState('started')
-      mock.verify()
-    })
+    describe('when `options.waitForIdle` is `true`', () => {
+      it('calls stop when there are no active transactions', () => {
+        const mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('stop').once()
+        api.shutdown({waitForIdle: true})
+        mock.verify()
+      })
 
-    it('does not call harvest when options.collectPendingData is true ' +
-       'and state is not "started" and not changed', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('harvest').never()
-      api.shutdown({collectPendingData: true})
-      mock.verify()
-    })
+      it('calls stop after transactions complete when there are some', (done) => {
+        let mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('stop').never()
+        helper.runInTransaction(agent, (tx) => {
+          api.shutdown({waitForIdle: true})
+          mock.verify()
+          mock.restore()
 
-    it('calls stop when options.collectPendingData is true, timeout is not given ' +
-       'and state is not "started" and changes to "errored"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('stop').once()
-      api.shutdown({collectPendingData: true})
-      agent.setState('errored')
-      mock.verify()
-    })
-
-    it('calls stop when options.collectPendingData is true, timeout is given ' +
-       'and state is not "started" and changes to "errored"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('stop').once()
-      api.shutdown({collectPendingData: true, timeout: 1000})
-      agent.setState('errored')
-      mock.verify()
+          mock = sinon.mock(agent)
+          mock.expects('stop').once()
+          tx.end(() => {
+            setImmediate(() => {
+              mock.verify()
+              done()
+            })
+          })
+        })
+      })
     })
 
     it('calls harvest when a timeout is given and not reached', function() {

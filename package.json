@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "4.9.0",
+  "version": "4.10.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -131,7 +131,7 @@
     "@newrelic/native-metrics": "^3.0.0"
   },
   "devDependencies": {
-    "@newrelic/test-utilities": "^1.2.0",
+    "@newrelic/test-utilities": "^2.0.1",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
