@@ -58,7 +58,7 @@ Stub.prototype.startBackgroundTransaction = startBackgroundTransaction
 Stub.prototype.getTransaction = getTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
 Stub.prototype.shutdown = shutdown
-Stub.prototype.recordLambda = recordLambda
+Stub.prototype.setLambdaHandler = setLambdaHandler
 
 // This code gets injected into HTML templates
 // and we don't want it to return undefined/null.
@@ -88,8 +88,8 @@ function createBackgroundTransaction(name, group, callback) {
   return (callback === undefined) ? group : callback
 }
 
-function recordLambda(callback) {
-  logger.debug('Not calling recordLambda because New Relic is disabled.')
+function setLambdaHandler(callback) {
+  logger.debug('Not calling setLambdaHandler because New Relic is disabled.')
   return callback
 }
 

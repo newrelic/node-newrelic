@@ -117,9 +117,9 @@ describe("the stubbed New Relic agent API", function() {
     expect(retVal).to.equal(myNop)
   })
 
-  it("should return a function when calling recordLambda", function() {
+  it("should return a function when calling setLambdaHandler", function() {
     function myNop() {}
-    var retVal = api.recordLambda(myNop)
+    var retVal = api.setLambdaHandler(myNop)
     expect(retVal).to.equal(myNop)
   })
 
