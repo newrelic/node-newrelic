@@ -6,6 +6,7 @@ const expect = chai.expect
 const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
+const serverfulAPI = require('../../../lib/collector/api')
 
 describe('ServerlessCollector API', () => {
   let api = null
@@ -26,6 +27,21 @@ describe('ServerlessCollector API', () => {
   afterEach(() => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
+  })
+
+  it('has all expected methods shared with the serverful API', () => {
+    const serverfulSpecificPublicMethods = new Set([
+      'connect',
+      'reportSettings'
+    ])
+
+    const sharedMethods = Object.keys(serverfulAPI.prototype).filter((key) => {
+      return !key.startsWith('_') && !serverfulSpecificPublicMethods.has(key)
+    })
+
+    sharedMethods.forEach((method) => {
+      expect(API.prototype[method]).to.be.a('function')
+    })
   })
 
   describe('#isConnected', () => {
