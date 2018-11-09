@@ -42,7 +42,9 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
 tap.test('Agent should not connect to collector in serverless mode', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
-    serverless_mode: true,
+    serverless_mode: {
+      enabled: true
+    },
     feature_flag: {
       serverless_mode: true
     },

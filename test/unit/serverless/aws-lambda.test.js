@@ -43,7 +43,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
           'response.headers.x*'
         ]
       },
-      serverless_mode: true,
+      serverless_mode: {
+        enabled: true
+      },
       feature_flag: {
         serverless_mode: true,
       }

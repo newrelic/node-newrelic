@@ -15,7 +15,9 @@ describe('ServerlessCollector API', () => {
   beforeEach(() => {
     nock.disableNetConnect()
     agent = helper.loadMockedAgent(null, {
-      serverless_mode: true,
+      serverless_mode: {
+        enabled: true
+      },
       app_name: ['TEST'],
       license_key: 'license key here'
     })
