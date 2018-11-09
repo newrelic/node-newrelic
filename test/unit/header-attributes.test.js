@@ -19,6 +19,22 @@ describe('header-attributes', () => {
   })
 
   describe('#collectRequestHeaders', () => {
+    it('should be case insensitive when allow_all_headers is false', (done) => {
+      agent.config.allow_all_headers = false
+      const headers = {
+        'Accept': 'acceptValue'
+      }
+
+      helper.runInTransaction(agent, (transaction) => {
+        headerAttributes.collectRequestHeaders(headers, transaction)
+
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes).to.have.property('request.headers.accept', 'acceptValue')
+        expect(attributes).to.not.have.property('Accept')
+        agent.config.allow_all_headers = true
+        done()
+      })
+    })
     it('should strip `-` from headers', (done) => {
       const headers = {
         'content-type': 'valid-type'

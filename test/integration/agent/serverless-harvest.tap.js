@@ -20,14 +20,16 @@ tap.test('Serverless mode harvest', (t) => {
   t.beforeEach((done) => {
     logSpy = sinon.spy(process.stdout, 'write')
     agent = helper.instrumentMockedAgent(null, {
-      serverless_mode: true,
+      serverless_mode: {
+        enabled: true
+      },
       feature_flag: {
         serverless_mode: true
       },
       app_name: 'serverless mode tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
     })
-    agent.lambdaArn = TEST_ARN
+    agent.setLambdaArn(TEST_ARN)
 
     agent.start(done)
   })
