@@ -4,7 +4,7 @@ const chai = require('chai')
 const expect = chai.expect
 const helper = require('../../lib/agent_helper')
 const AwsLambda = require('../../../lib/serverless/aws-lambda')
-const lambdaSampleEvents = require('./lambdaSampleEvents')
+const lambdaSampleEvents = require('./lambda-sample-events')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
 // attribute key names
@@ -51,6 +51,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
     awsLambda = new AwsLambda(agent)
+    awsLambda._resetColdStart()
 
     stubEvent = {}
     stubContext = {
