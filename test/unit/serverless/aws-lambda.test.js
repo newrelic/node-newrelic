@@ -35,7 +35,19 @@ describe('AwsLambda.patchLambdaHandler', () => {
   let error
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent()
+    agent = helper.loadMockedAgent(null, {
+      allow_all_headers: true,
+      attributes: {
+        exclude: [
+          'request.headers.x*',
+          'response.headers.x*'
+        ]
+      },
+      serverless_mode: true,
+      feature_flag: {
+        serverless_mode: true,
+      }
+    })
     awsLambda = new AwsLambda(agent)
 
     stubEvent = {}
@@ -79,9 +91,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
   })
 
   it('should pick up on the arn', function() {
-    expect(agent.lambdaArn).to.be.undefined
+    expect(agent.collector.metadata.arn).to.be.null
     awsLambda.patchLambdaHandler(() => {})(stubEvent, stubContext, stubCallback)
-    expect(agent.lambdaArn).to.equal(stubContext.invokedFunctionArn)
+    expect(agent.collector.metadata.arn).to.equal(stubContext.invokedFunctionArn)
   })
 
   describe('when invoked with non web event', () => {
@@ -99,7 +111,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should record standard background metrics', (done) => {
-      agent.on('transactionFinished', confirmMetrics)
+      agent.on('harvestStarted', confirmMetrics)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(null, 'worked')
@@ -348,7 +360,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should record standard web metrics', (done) => {
-      agent.on('transactionFinished', confirmMetrics)
+      agent.on('harvestStarted', confirmMetrics)
 
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
@@ -669,7 +681,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should notice errors', (done) => {
-      agent.on('transactionFinished', confirmErrorCapture)
+      agent.on('harvestStarted', confirmErrorCapture)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback(error, 'failed')
@@ -689,7 +701,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should notice string errors', (done) => {
-      agent.on('transactionFinished', confirmErrorCapture)
+      agent.on('harvestStarted', confirmErrorCapture)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         callback('failed')
@@ -734,7 +746,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should notice errors', (done) => {
-      agent.on('transactionFinished', confirmErrorCapture)
+      agent.on('harvestStarted', confirmErrorCapture)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.done(error, 'failed')
@@ -754,7 +766,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should notice string errors', (done) => {
-      agent.on('transactionFinished', confirmErrorCapture)
+      agent.on('harvestStarted', confirmErrorCapture)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.done('failed')
@@ -821,7 +833,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should notice errors', (done) => {
-      agent.on('transactionFinished', confirmErrorCapture)
+      agent.on('harvestStarted', confirmErrorCapture)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.fail(error)
@@ -841,7 +853,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should notice string errors', (done) => {
-      agent.on('transactionFinished', confirmErrorCapture)
+      agent.on('harvestStarted', confirmErrorCapture)
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         context.fail('failed')
