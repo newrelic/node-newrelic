@@ -8,7 +8,7 @@
     "ecmaVersion": 6
   },
   "rules": {
-    "indent": ["warn", 2],
+    "indent": ["warn", 2, {"SwitchCase": 1}],
     "brace-style": "error",
     "comma-dangle": "off",
     "comma-style": ["error", "last"],
