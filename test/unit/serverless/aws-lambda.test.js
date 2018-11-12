@@ -8,13 +8,9 @@ const lambdaSampleEvents = require('./lambda-sample-events')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
 // attribute key names
-const REGION = 'aws.region'
 const REQ_ID = 'aws.requestId'
 const LAMBDA_ARN = 'aws.lambda.arn'
 const COLDSTART = 'aws.lambda.coldStart'
-const FUNCTION_NAME = 'aws.lambda.functionName'
-const FUNCTION_VERS = 'aws.lambda.functionVersion'
-const MEM_LIMIT = 'aws.lambda.memoryLimit'
 const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
 
 describe('AwsLambda.patchLambdaHandler', () => {
@@ -66,7 +62,6 @@ describe('AwsLambda.patchLambdaHandler', () => {
     },
     stubCallback = () => {}
 
-    process.env.AWS_REGION = 'nr-test'
     process.env.AWS_EXECUTION_ENV = 'Test_nodejsNegative2.3'
 
     error = new SyntaxError(errorMessage)
@@ -78,7 +73,6 @@ describe('AwsLambda.patchLambdaHandler', () => {
     stubCallback = null
     error = null
 
-    delete process.env.AWS_REGION
     delete process.env.AWS_EXECUTION_ENV
 
     helper.unloadAgent(agent)
@@ -479,13 +473,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const txTrace = _verifyDestinations(transaction)
 
       // now verify actual values
-      expect(txTrace[REGION]).to.equal(process.env.AWS_REGION)
       expect(txTrace[REQ_ID]).to.equal(stubContext.awsRequestId)
       expect(txTrace[LAMBDA_ARN]).to.equal(stubContext.invokedFunctionArn)
       expect(txTrace[COLDSTART]).to.be.true
-      expect(txTrace[FUNCTION_NAME]).to.equal(stubContext.functionName)
-      expect(txTrace[FUNCTION_VERS]).to.equal(stubContext.functionVersion)
-      expect(txTrace[MEM_LIMIT]).to.equal(stubContext.memoryLimitInMB)
 
       done()
     }
@@ -495,17 +485,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const errEvent = tx.trace.attributes.get(ATTR_DEST.ERROR_EVENT)
       const txEvent = tx.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-      const all = [REGION, REQ_ID, LAMBDA_ARN, COLDSTART]
-      const limited = [FUNCTION_NAME, FUNCTION_VERS, MEM_LIMIT, EVENTSOURCE_ARN]
+      const all = [REQ_ID, LAMBDA_ARN, COLDSTART, EVENTSOURCE_ARN]
 
       all.forEach((key) => {
         expect(txTrace[key], key).to.not.be.undefined
         expect(errEvent[key], key).to.not.be.undefined
         expect(txEvent[key], key).to.not.be.undefined
-      })
-      limited.forEach((key) => {
-        expect(txTrace[key], key).to.not.be.undefined
-        expect(errEvent[key], key).to.not.be.undefined
       })
 
       return txTrace
