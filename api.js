@@ -85,8 +85,10 @@ API.prototype.setTransactionName = function setTransactionName(name) {
 
   if (!name) {
     if (transaction && transaction.url) {
-      logger.error("Must include name in setTransactionName call for URL %s.",
-                   transaction.url)
+      logger.error(
+        "Must include name in setTransactionName call for URL %s.",
+        transaction.url
+      )
     } else {
       logger.error("Must include name in setTransactionName call.")
     }
@@ -193,8 +195,10 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 
   if (!name) {
     if (transaction && transaction.url) {
-      logger.error("Must include name in setControllerName call for URL %s.",
-                   transaction.url)
+      logger.error(
+        "Must include name in setControllerName call for URL %s.",
+        transaction.url
+      )
     } else {
       logger.error("Must include name in setControllerName call.")
     }
