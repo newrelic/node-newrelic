@@ -18,10 +18,11 @@ tap.test('harvesting with a mocked collector that returns 415 on connect', funct
   var transaction = new Transaction(agent)
 
 
-  function path(method, runID) {
+  function path(method, runID, protocolVersion) {
+    protocolVersion = protocolVersion || 16
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=16&' +
-      'license_key=license%20key%20here&method=' + method
+      `marshal_format=json&protocol_version=${protocolVersion}&` +
+      `license_key=license%20key%20here&method=${method}`
 
     if (runID) fragment += '&run_id=' + runID
 
@@ -94,10 +95,11 @@ tap.test('discarding metrics and errors after a 415', function(t) {
   var transaction = new Transaction(agent)
 
 
-  function path(method, runID) {
+  function (method, runID, protocolVersion) {
+    protocolVersion = protocolVersion || 16
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=16&' +
-      'license_key=license%20key%20here&method=' + method
+      `marshal_format=json&protocol_version=${protocolVersion}&` +
+      `license_key=license%20key%20here&method=${method}`
 
     if (runID) fragment += '&run_id=' + runID
 
