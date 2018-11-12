@@ -1,20 +1,21 @@
 'use strict'
 
-var arity = require('./lib/util/arity')
-var util = require('util')
-var logger = require('./lib/logger').child({component: 'api'})
-var NAMES = require('./lib/metrics/names')
-var recordWeb = require('./lib/metrics/recorders/http')
-var recordBackground = require('./lib/metrics/recorders/other')
-var customRecorder = require('./lib/metrics/recorders/custom')
-var hashes = require('./lib/util/hashes')
-var properties = require('./lib/util/properties')
-var stringify = require('json-stringify-safe')
-var shimmer = require('./lib/shimmer')
-var Shim = require('./lib/shim/shim')
-var TransactionHandle = require('./lib/transaction/handle')
+const arity = require('./lib/util/arity')
+const util = require('util')
+const logger = require('./lib/logger').child({component: 'api'})
+const NAMES = require('./lib/metrics/names')
+const recordWeb = require('./lib/metrics/recorders/http')
+const recordBackground = require('./lib/metrics/recorders/other')
+const customRecorder = require('./lib/metrics/recorders/custom')
+const hashes = require('./lib/util/hashes')
+const properties = require('./lib/util/properties')
+const stringify = require('json-stringify-safe')
+const shimmer = require('./lib/shimmer')
+const TransactionShim = require('./lib/shim/transaction-shim')
+const TransactionHandle = require('./lib/transaction/handle')
+const AwsLambda = require('./lib/serverless/aws-lambda')
 
-const DESTS = require('./lib/config/attribute-filter').DESTINATIONS
+const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
@@ -55,7 +56,8 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
  */
 function API(agent) {
   this.agent = agent
-  this.shim = new Shim(agent, 'NewRelicAPI')
+  this.shim = new TransactionShim(agent, 'NewRelicAPI')
+  this.awsLambda = new AwsLambda(agent)
 }
 
 /**
@@ -627,12 +629,12 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
   var attrs = Object.create(null)
 
-  const customAttrs = trans.trace.custom.get(DESTS.BROWSER_EVENT)
+  const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(customAttrs)) {
     attrs.u = customAttrs
   }
 
-  const agentAttrs = trans.trace.attributes.get(DESTS.BROWSER_EVENT)
+  const agentAttrs = trans.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(agentAttrs)) {
     attrs.a = agentAttrs
   }
@@ -1681,6 +1683,15 @@ function _checkKeyLength(object, maxLength) {
     }
   }
   return badKey
+}
+
+API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setLambdaHandler'
+  )
+  metric.incrementCallCount()
+
+  return this.awsLambda.patchLambdaHandler(handler)
 }
 
 module.exports = API

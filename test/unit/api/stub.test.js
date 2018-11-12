@@ -13,8 +13,8 @@ describe("the stubbed New Relic agent API", function() {
     api = new API()
   })
 
-  it("should export 28 API calls", function() {
-    expect(Object.keys(api.constructor.prototype).length).to.equal(28)
+  it("should export 29 API calls", function() {
+    expect(Object.keys(api.constructor.prototype).length).to.equal(29)
   })
 
   it("exports a transaction naming function", function() {
@@ -116,6 +116,13 @@ describe("the stubbed New Relic agent API", function() {
     var retVal = api.createTracer('name', myNop)
     expect(retVal).to.equal(myNop)
   })
+
+  it("should return a function when calling setLambdaHandler", function() {
+    function myNop() {}
+    var retVal = api.setLambdaHandler(myNop)
+    expect(retVal).to.equal(myNop)
+  })
+
 
   it('should call the function passed into `startSegment`', function(done) {
     api.startSegment('foo', false, done)
