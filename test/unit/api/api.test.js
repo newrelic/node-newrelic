@@ -1618,4 +1618,13 @@ describe('the New Relic agent API', function() {
       expect(opts).to.have.property('onError', onError)
     })
   })
+
+  describe('setLambdaHandler', () => {
+    it('should report API supportability metric', () => {
+      api.setLambdaHandler(() => {})
+
+      const metric = agent.metrics.getMetric('Supportability/API/setLambdaHandler')
+      expect(metric.callCount).to.equal(1)
+    })
+  })
 })

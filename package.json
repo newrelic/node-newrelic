@@ -131,7 +131,7 @@
     "@newrelic/native-metrics": "^3.0.0"
   },
   "devDependencies": {
-    "@newrelic/test-utilities": "^1.2.0",
+    "@newrelic/test-utilities": "^2.0.1",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
