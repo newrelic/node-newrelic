@@ -47,7 +47,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
     awsLambda = new AwsLambda(agent)
-    awsLambda._resetColdStart()
+    awsLambda._resetModuleState()
 
     stubEvent = {}
     stubContext = {
