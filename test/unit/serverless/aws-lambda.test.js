@@ -47,7 +47,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
     awsLambda = new AwsLambda(agent)
-    awsLambda._resetColdStart()
+    awsLambda._resetModuleState()
 
     stubEvent = {}
     stubContext = {
@@ -102,6 +102,21 @@ describe('AwsLambda.patchLambdaHandler', () => {
         expect(transaction.isActive()).to.be.true
 
         callback(null, 'worked')
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+    })
+
+    it('should end transactions on a beforeExit event on process', () => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        const transaction = agent.tracer.getTransaction()
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+        expect(transaction.isActive()).to.be.true
+
+        process.emit('beforeExit')
+
+        expect(transaction.isActive()).to.be.false
       })
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
