@@ -86,10 +86,11 @@ var helper = module.exports = {
    *
    * @returns String URL path for the collector.
    */
-  generateCollectorPath: function generateCollectorPath(method, runID) {
+  generateCollectorPath: function generateCollectorPath(method, runID, protocolVersion) {
+    protocolVersion = protocolVersion || 16
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=16&' +
-      'license_key=license%20key%20here&method=' + method
+      `marshal_format=json&protocol_version=${protocolVersion}&` +
+      `license_key=license%20key%20here&method=${method}`
 
     if (runID) {
       fragment += '&run_id=' + runID

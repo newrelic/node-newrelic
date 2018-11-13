@@ -9,10 +9,11 @@ var RemoteMethod = require('../../../lib/collector/remote-method')
 var semver = require('semver')
 
 
-function generate(method, runID) {
+function generate(method, runID, protocolVersion) {
+  protocolVersion = protocolVersion || 16
   var fragment = '/agent_listener/invoke_raw_method?' +
-    'marshal_format=json&protocol_version=16&' +
-    'license_key=license%20key%20here&method=' + method
+    `marshal_format=json&protocol_version=${protocolVersion}&` +
+    `license_key=license%20key%20here&method=${method}`
 
   if (runID) fragment += '&run_id=' + runID
 
@@ -32,6 +33,20 @@ describe('RemoteMethod', function() {
 
   it('should expose its name', function() {
     expect(new RemoteMethod('test').name).equal('test')
+  })
+
+  it('should default to protocol 16', function() {
+    expect(new RemoteMethod('test')._protocolVersion).equal(16)
+  })
+
+  describe('with protocol_17 feature flag', () => {
+    it('should use protocol 17', () => {
+      const config = {
+        feature_flag: {protocol_17: true}
+      }
+
+      expect(new RemoteMethod('test', config)._protocolVersion).to.equal(17)
+    })
   })
 
   describe('serialize', function() {
@@ -240,7 +255,7 @@ describe('RemoteMethod', function() {
     })
 
     it('should pass through error when compression fails', function(done) {
-      var method = new RemoteMethod('test', {host: 'localhost'})
+      method = new RemoteMethod('test', {host: 'localhost'})
       method._shouldCompress = function() { return true }
       // zlib.deflate really wants a stringlike entity
       method._post(-1, function(error) {
@@ -368,7 +383,7 @@ describe('RemoteMethod', function() {
 
 
         beforeEach(function() {
-          var config = new Config({
+          config = new Config({
             host: 'collector.newrelic.com',
             port: 443,
             ssl: true,

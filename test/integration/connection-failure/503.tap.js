@@ -18,10 +18,11 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
   agent.recordSupportability = () => {}
 
 
-  function path(method, runID) {
+  function path(method, runID, protocolVersion) {
+    protocolVersion = protocolVersion || 16
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=16&' +
-      'license_key=license%20key%20here&method=' + method
+      `marshal_format=json&protocol_version=${protocolVersion}&` +
+      `license_key=license%20key%20here&method=${method}`
 
     if (runID) fragment += '&run_id=' + runID
 
@@ -104,10 +105,11 @@ tap.test('merging metrics and errors after a 503', function(t) {
 
   transaction.name = 'trans1'
 
-  function path(method, runID) {
+  function path(method, runID, protocolVersion) {
+    protocolVersion = protocolVersion || 16
     var fragment = '/agent_listener/invoke_raw_method?' +
-      'marshal_format=json&protocol_version=16&' +
-      'license_key=license%20key%20here&method=' + method
+      `marshal_format=json&protocol_version=${protocolVersion}&` +
+      `license_key=license%20key%20here&method=${method}`
 
     if (runID) fragment += '&run_id=' + runID
 
