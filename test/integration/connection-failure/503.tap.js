@@ -42,10 +42,6 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 
   // Want to individually confirm each of these endpoints.
   const sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
-  const sendErrors = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
-  const sendTrace = nock(url)
-    .post(path('transaction_sample_data', RUN_ID))
-    .reply(503, returned)
 
   const settings = nock(url)
   settings.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
@@ -65,17 +61,10 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
     agent.errors.add(transaction, new Error('test error'))
     agent.traces.trace = transaction.trace
 
-    agent.harvest(function(error) {
-      t.ok(error, 'error received on 503')
-      t.equal(
-        error.message,
-        'Got HTTP 503 in response to metric_data.',
-        'got expected error message'
-      )
+    agent.harvest(function(err) {
+      t.error(err, 'collection error should stay inside collector')
 
       t.ok(sendMetrics.isDone(), 'initial sent metrics...')
-      t.notOk(sendErrors.isDone(), '...but did not send error data...')
-      t.notOk(sendTrace.isDone(), '...and also did not send trace, because of 503')
 
       agent.stop(function() {
         t.ok(settings.isDone(), 'got agent_settings message')
@@ -132,7 +121,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
       agent.traces.trace = transaction.trace
 
       agent.harvest(function(error) {
-        t.ok(error, 'should have gotten back error for 503')
+        t.error(error, 'error should be contained by collector')
 
         t.equal(agent.errors.errors.length, 1, 'errors were merged back in')
         var merged = agent.errors.errors[0]
