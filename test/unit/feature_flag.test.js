@@ -22,6 +22,7 @@ var used = [
   'native_metrics',
   'postgres',
   'promise_segments',
+  'protocol_17',
   'serverless_mode',
   'proxy',
   'released',
