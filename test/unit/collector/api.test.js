@@ -1060,9 +1060,8 @@ describe('CollectorAPI', function() {
     })
 
     describe('on the happy path', function() {
-      var bad
-      var nothing
-      var raw
+      let bad = null
+      let command = null
       var response = {return_value: []}
 
       before(function(done) {
@@ -1081,10 +1080,9 @@ describe('CollectorAPI', function() {
           ]
         ]
 
-        api.errorData(errors, function test(error, res, json) {
+        api.errorData(errors, function test(error, res) {
           bad = error
-          nothing = res
-          raw = json
+          command = res
 
           shutdown.done()
           done()
@@ -1100,11 +1098,7 @@ describe('CollectorAPI', function() {
       })
 
       it('should return empty data array', function() {
-        expect(nothing).eql([])
-      })
-
-      it('should pass through exactly what it got back from the server', function() {
-        expect(raw).eql(response)
+        expect(command).to.have.property('returned').eql([])
       })
     })
   })
@@ -1121,10 +1115,8 @@ describe('CollectorAPI', function() {
     })
 
     describe('on the happy path', function() {
-      var bad
-      var nothing
-      var raw
-
+      let bad = null
+      let command = null
 
       var response = {return_value: []}
 
@@ -1149,10 +1141,9 @@ describe('CollectorAPI', function() {
           ]
         ]
 
-        api.queryData(queries, function test(error, res, json) {
+        api.queryData(queries, function test(error, res) {
           bad = error
-          nothing = res
-          raw = json
+          command = res
 
           shutdown.done()
           done()
@@ -1168,11 +1159,7 @@ describe('CollectorAPI', function() {
       })
 
       it('should return empty data array', function() {
-        expect(nothing).eql([])
-      })
-
-      it('should pass through exactly what it got back from the server', function() {
-        expect(raw).eql(response)
+        expect(command).to.have.property('returned').eql([])
       })
     })
   })
@@ -1189,10 +1176,8 @@ describe('CollectorAPI', function() {
     })
 
     describe('on the happy path', function() {
-      var bad
-      var nothing
-      var raw
-
+      let bad = null
+      let command = null
 
       var response = {return_value: []}
 
@@ -1216,10 +1201,9 @@ describe('CollectorAPI', function() {
           }]
         ]
 
-        api.analyticsEvents(errors, function test(error, res, json) {
+        api.analyticsEvents(errors, function test(error, res) {
           bad = error
-          nothing = res
-          raw = json
+          command = res
 
           shutdown.done()
           done()
@@ -1235,11 +1219,7 @@ describe('CollectorAPI', function() {
       })
 
       it('should return empty data array', function() {
-        expect(nothing).eql([])
-      })
-
-      it('should pass through exactly what it got back from the server', function() {
-        expect(raw).eql(response)
+        expect(command).to.have.property('returned').eql([])
       })
     })
   })
@@ -1256,10 +1236,8 @@ describe('CollectorAPI', function() {
     })
 
     describe('on the happy path', function() {
-      var bad
-      var nothing
-      var raw
-
+      let bad = null
+      let command = null
 
       var response = {return_value: []}
 
@@ -1280,10 +1258,9 @@ describe('CollectorAPI', function() {
           }
         }
 
-        api.metricData(metrics, function test(error, res, json) {
+        api.metricData(metrics, function test(error, res) {
           bad = error
-          nothing = res
-          raw = json
+          command = res
 
           shutdown.done()
           done()
@@ -1299,11 +1276,7 @@ describe('CollectorAPI', function() {
       })
 
       it('should return empty data array', function() {
-        expect(nothing).eql([])
-      })
-
-      it('should pass through exactly what it got back from the server', function() {
-        expect(raw).eql(response)
+        expect(command).to.have.property('returned').eql([])
       })
     })
   })
@@ -1320,10 +1293,8 @@ describe('CollectorAPI', function() {
     })
 
     describe('on the happy path', function() {
-      var bad
-      var nothing
-      var raw
-
+      let bad = null
+      let command = null
 
       var response = {return_value: []}
 
@@ -1336,10 +1307,9 @@ describe('CollectorAPI', function() {
         // imagine this is a serialized transaction trace
         var trace = []
 
-        api.transactionSampleData([trace], function test(error, res, json) {
+        api.transactionSampleData([trace], function test(error, res) {
           bad = error
-          nothing = res
-          raw = json
+          command = res
 
           shutdown.done()
           done()
@@ -1355,11 +1325,7 @@ describe('CollectorAPI', function() {
       })
 
       it('should return empty data array', function() {
-        expect(nothing).eql([])
-      })
-
-      it('should pass through exactly what it got back from the server', function() {
-        expect(raw).eql(response)
+        expect(command).to.have.property('returned').eql([])
       })
     })
   })
@@ -1371,8 +1337,7 @@ describe('CollectorAPI', function() {
 
     describe('on the happy path', function() {
       var bad = null
-      var nothing = null
-      var raw = null
+      var command = null
 
       var response = {return_value: null}
 
@@ -1382,10 +1347,9 @@ describe('CollectorAPI', function() {
           .post(helper.generateCollectorPath('shutdown', RUN_ID))
           .reply(200, response)
 
-        api.shutdown(function test(error, res, json) {
+        api.shutdown(function test(error, res) {
           bad = error
-          nothing = res
-          raw = json
+          command = res
 
           shutdown.done()
           done()
@@ -1401,18 +1365,14 @@ describe('CollectorAPI', function() {
       })
 
       it('should return null', function() {
-        expect(nothing).equal(null)
-      })
-
-      it('should pass through exactly what it got back from the server', function() {
-        expect(raw).eql(response)
+        expect(command).to.exist.and.have.property('returned', null)
       })
     })
 
     describe('off the happy path', function() {
       describe('fails on a 503 status code', function() {
         var captured = null
-        var body = null
+        var command = null
 
         beforeEach(function(done) {
           api._agent.config.run_id = RUN_ID
@@ -1422,7 +1382,7 @@ describe('CollectorAPI', function() {
 
           api.shutdown(function test(error, response) {
             captured = error
-            body = response
+            command = response
 
             failure.done()
             done()
@@ -1446,8 +1406,8 @@ describe('CollectorAPI', function() {
             .equal('No body found in response to shutdown.')
         })
 
-        it('should not have a response body', function() {
-          should.not.exist(body)
+        it('should tell the requester to shutd down', () => {
+          expect(command).to.have.property('shutdownAgent', true)
         })
       })
     })
@@ -1528,12 +1488,13 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should pass through HTTP 500 errors', function(done) {
+    it('should retain after HTTP 500 errors', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(500)
-      function tested(error) {
-        expect(error.message).equal('No body found in response to metric_data.')
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('retainData', true)
 
         failure.done()
         done()
@@ -1542,12 +1503,13 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should pass through HTTP 503 errors', function(done) {
+    it('should retain after HTTP 503 errors', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(503)
-      function tested(error) {
-        expect(error.message).equal('No body found in response to metric_data.')
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('retainData', true)
 
         failure.done()
         done()
@@ -1556,7 +1518,7 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should pass through InvalidLicenseKey errors', function(done) {
+    it('should retain data after InvalidLicenseKey errors', function(done) {
       var exception = {
         exception: {
           message: 'Your license key is invalid or the collector is busted.',
@@ -1567,9 +1529,9 @@ describe('CollectorAPI', function() {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(200, exception)
-      function tested(error) {
-        expect(error.message)
-          .equal('Your license key is invalid or the collector is busted.')
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('retainData', true)
 
         failure.done()
         done()
@@ -1662,10 +1624,11 @@ describe('CollectorAPI', function() {
         .post(helper.generateCollectorPath('shutdown', 31337))
         .reply(200, {return_value: null})
 
-      function tested(error) {
-        expect(error.message).equal('Wake up! Time to die!')
-        expect(error.class).equal('NewRelic::Agent::ForceDisconnectException')
-        should.not.exist(api._agent.config.run_id)
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('shutdownAgent', true)
+
+        expect(api._agent.config).property('run_id').to.not.exist
 
         restart.done()
         shutdown.done()
@@ -1675,7 +1638,7 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should pass through maintenance notices', function(done) {
+    it('should retain data after maintenance notices', function(done) {
       var exception = {
         exception: {
           message: 'Out for a smoke beeearrrbeee',
@@ -1686,9 +1649,9 @@ describe('CollectorAPI', function() {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(200, exception)
-      function tested(error) {
-        expect(error.message).equal('Out for a smoke beeearrrbeee')
-        expect(error.class).equal('NewRelic::Agent::MaintenanceError')
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('retainData', true)
 
         failure.done()
         done()
@@ -1697,7 +1660,7 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should pass through runtime errors', function(done) {
+    it('should retain data after runtime errors', function(done) {
       var exception = {
         exception: {
           message: 'What does this button do?',
@@ -1708,9 +1671,9 @@ describe('CollectorAPI', function() {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(200, exception)
-      function tested(error) {
-        expect(error.message).equal('What does this button do?')
-        expect(error.class).equal('RuntimeError')
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('retainData', true)
 
         failure.done()
         done()
@@ -1719,12 +1682,13 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should pass through unexpected errors', function(done) {
+    it('should retain data after unexpected errors', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(501)
-      function tested(error) {
-        expect(error.message).equal('No body found in response to metric_data.')
+      function tested(error, command) {
+        expect(error).to.not.exist
+        expect(command).to.have.property('retainData', true)
 
         failure.done()
         done()
