@@ -1,13 +1,15 @@
 'use strict'
 
-var hostname = require('os').hostname
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var facts = require('../../lib/collector/facts')
-var sysInfo = require('../../lib/system-info')
-var utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
-var bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
+const os = require('os')
+const hostname = os.hostname
+const networkInterfaces = os.networkInterfaces
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../lib/agent_helper')
+const facts = require('../../lib/collector/facts')
+const sysInfo = require('../../lib/system-info')
+const utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
+const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
 
 
 var EXPECTED = [
@@ -38,13 +40,18 @@ var IP_V4_PATTERN = new RegExp(
   '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
 )
 
-var DISABLE_ALL_DETECTIONS = {utilization: {
-  detect_aws: false,
-  detect_azure: false,
-  detect_gcp: false,
-  detect_pcf: false,
-  detect_docker: false
-}}
+var DISABLE_ALL_DETECTIONS = {
+  utilization: {
+    detect_aws: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_pcf: false,
+    detect_docker: false
+  },
+  feature_flag: {
+    protocol_17: true
+  }
+}
 
 
 describe('fun facts about apps that New Relic is interested in include', function() {
@@ -56,6 +63,7 @@ describe('fun facts about apps that New Relic is interested in include', functio
 
   afterEach(function() {
     helper.unloadAgent(agent)
+    os.networkInterfaces = networkInterfaces
   })
 
   it("the current process ID as 'pid'", function(done) {
@@ -199,6 +207,7 @@ describe('utilization', function() {
       helper.unloadAgent(agent)
     }
 
+    os.networkInterfaces = networkInterfaces
     process.env = startingEnv
     sysInfo._getMemoryStats = startingGetMemory
     sysInfo._getProcessorStats = startingGetProcessor
@@ -224,13 +233,18 @@ describe('utilization', function() {
       var mockRam = false
       var mockProc = false
       var mockVendorMetadata = false
-      var config = {utilization: {
-        detect_aws: false,
-        detect_azure: false,
-        detect_gcp: false,
-        detect_pcf: false,
-        detect_docker: false
-      }}
+      var config = {
+        utilization: {
+          detect_aws: false,
+          detect_azure: false,
+          detect_gcp: false,
+          detect_pcf: false,
+          detect_docker: false
+        },
+        feature_flag: {
+          protocol_17: true
+        }
+      }
 
       Object.keys(test).forEach(function setVal(key) {
         var testValue = test[key]
@@ -296,8 +310,13 @@ describe('utilization', function() {
             }
             break
 
+          case 'input_ip_address':
+            mockIpAddresses(testValue) 
+            break
+
           // Ignore these keys.
           case 'testname':
+          case 'input_full_hostname':
           case 'expected_output_json':
             break
 
@@ -308,6 +327,7 @@ describe('utilization', function() {
       })
 
       var expected = test.expected_output_json
+      delete expected.full_hostname
 
       // Stub out docker container id query to make this consistent on all OSes.
       sysInfo._getDockerContainerId = function(_agent, callback) {
@@ -476,7 +496,9 @@ describe('boot_id', function() {
         common.readProc = mockReadProc
       }
       facts(agent, function getFacts(factsed) {
-        expect(factsed.utilization).to.deep.equal(expected)
+        Object.keys(expected).forEach((key) => {
+          expect(factsed.utilization[key]).to.equal(expected[key])
+        })
         checkMetrics(test.expected_metrics)
         done()
       })
@@ -636,5 +658,16 @@ describe('display_host', function() {
 function createMock(output) {
   return function mock() {
     return output
+  }
+}
+
+function mockIpAddresses(values) {
+  os.networkInterfaces = function() {
+    return {
+      en0: values.reduce((interfaces, address) => {
+        interfaces.push({address})
+        return interfaces
+      }, [])
+    }
   }
 }
