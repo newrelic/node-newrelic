@@ -33,7 +33,7 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
       server.close()
     })
 
-    method._post('[]', (error, results, json) => {
+    method._post('[]', {}, (error, results, json) => {
       if (error) {
         t.fail(error)
         return t.end()
