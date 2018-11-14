@@ -10,8 +10,8 @@ var cat = require('../../../lib/util/cat.js')
 var NAMES = require('../../../lib/metrics/names.js')
 
 
-function mockTransaction(agent, test, durationInSeconds, totalTimeInSeconds, cb) {
-  var trans = new Transaction(agent)
+function getMockTransaction(agent, test, durationInSeconds, totalTimeInSeconds) {
+  const trans = new Transaction(agent)
 
   // non-CAT data
   trans.name = test.transactionName
@@ -50,7 +50,7 @@ function mockTransaction(agent, test, durationInSeconds, totalTimeInSeconds, cb)
     }
   }
 
-  cb(null, trans)
+  return trans
 }
 
 describe('when CAT is disabled', function() {
@@ -65,34 +65,33 @@ describe('when CAT is disabled', function() {
   })
 
   tests.forEach(function(test) {
-    it(test.name + ' tx event should only contain non-CAT intrinsic attrs', function(done) {
-      const expectedDurationInSeconds = 0.020
-      const expectedTotalTimeInSeconds = 0.030
+    it(test.name + ' tx event should only contain non-CAT intrinsic attrs', () => {
+      const expectedDuration = 0.020
+      const expectedTotalTime = 0.030
 
-      var start = Date.now()
-      mockTransaction(agent, test, expectedDurationInSeconds, expectedTotalTimeInSeconds, function(err, trans) {
-        var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+      const start = Date.now()
 
-        chai.expect(Object.keys(attrs)).to.have.members([
-          'duration',
-          'name',
-          'timestamp',
-          'totalTime',
-          'type',
-          'webDuration',
-          'error'
-        ])
+      const trans = getMockTransaction(agent, test, expectedDuration, expectedTotalTime)
 
-        chai.expect(attrs.duration).to.be.closeTo(expectedDurationInSeconds, 0.001)
-        chai.expect(attrs.webDuration).to.be.closeTo(expectedDurationInSeconds, 0.001)
-        chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTimeInSeconds, 0.001)
-        chai.expect(attrs.timestamp).to.be.within(start, start + 10)
-        chai.expect(attrs.name).to.equal(test.transactionName)
-        chai.expect(attrs.type).to.equal('Transaction')
-        chai.expect(attrs.error).to.be.false
+      const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
-        done()
-      })
+      chai.expect(Object.keys(attrs)).to.have.members([
+        'duration',
+        'name',
+        'timestamp',
+        'totalTime',
+        'type',
+        'webDuration',
+        'error'
+      ])
+
+      chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
+      chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
+      chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
+      chai.expect(attrs.timestamp).to.be.within(start, start + 10)
+      chai.expect(attrs.name).to.equal(test.transactionName)
+      chai.expect(attrs.type).to.equal('Transaction')
+      chai.expect(attrs.error).to.be.false
     })
   })
 
@@ -174,78 +173,76 @@ describe('when CAT is enabled', function() {
   const expectedDurationsInSeconds = [0.030, 0.150, 0.500]
 
   tests.forEach(function(test, index) {
-    it(test.name + ' tx event should contain all intrinsic attrs', function(done) {
+    it(test.name + ' tx event should contain all intrinsic attrs', () => {
       var idx = index % expectedDurationsInSeconds.length
-      var expectedDurationInSeconds = expectedDurationsInSeconds[idx]
+      var expectedDuration = expectedDurationsInSeconds[idx]
 
-      const expectedTotalTimeInSeconds = 0.030
+      const expectedTotalTime = 0.030
+
+      const trans = getMockTransaction(agent, test, expectedDuration, expectedTotalTime)
 
       var start = Date.now()
-      mockTransaction(agent, test, expectedDurationInSeconds, expectedTotalTimeInSeconds, function(err, trans) {
-        var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+      var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
-        var keys = [
-          'duration',
-          'name',
-          'timestamp',
-          'type',
-          'totalTime',
-          'webDuration',
-          'error',
-          'nr.guid',
-          'nr.pathHash',
-          'nr.referringPathHash',
-          'nr.tripId',
-          'nr.referringTransactionGuid',
-          'nr.alternatePathHashes',
-          'nr.apdexPerfZone'
-        ]
-        for (var i = 0; i < test.nonExpectedIntrinsicFields.length; ++i) {
-          keys.splice(keys.indexOf(test.nonExpectedIntrinsicFields[i]), 1)
+      var keys = [
+        'duration',
+        'name',
+        'timestamp',
+        'type',
+        'totalTime',
+        'webDuration',
+        'error',
+        'nr.guid',
+        'nr.pathHash',
+        'nr.referringPathHash',
+        'nr.tripId',
+        'nr.referringTransactionGuid',
+        'nr.alternatePathHashes',
+        'nr.apdexPerfZone'
+      ]
+      for (var i = 0; i < test.nonExpectedIntrinsicFields.length; ++i) {
+        keys.splice(keys.indexOf(test.nonExpectedIntrinsicFields[i]), 1)
+      }
+      if (!test.expectedIntrinsicFields['nr.pathHash']) {
+        keys.splice(keys.indexOf('nr.apdexPerfZone'), 1)
+      }
+
+      chai.expect(Object.keys(attrs)).to.have.members(keys)
+
+      chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
+      chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
+      chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
+      chai.expect(attrs.timestamp).to.be.within(start, start + 10)
+      chai.expect(attrs.name).to.equal(test.transactionName)
+      chai.expect(attrs.type).to.equal('Transaction')
+      chai.expect(attrs.error).to.be.false
+      chai.expect(attrs['nr.guid'])
+        .to.equal(test.expectedIntrinsicFields['nr.guid'])
+      chai.expect(attrs['nr.pathHash'])
+        .to.equal(test.expectedIntrinsicFields['nr.pathHash'])
+      chai.expect(attrs['nr.referringPathHash'])
+        .to.equal(test.expectedIntrinsicFields['nr.referringPathHash'])
+      chai.expect(attrs['nr.tripId'])
+        .to.equal(test.expectedIntrinsicFields['nr.tripId'])
+      chai.expect(attrs['nr.referringTransactionGuid'])
+        .to.equal(test.expectedIntrinsicFields['nr.referringTransactionGuid'])
+      chai.expect(attrs['nr.alternatePathHashes'])
+        .to.equal(test.expectedIntrinsicFields['nr.alternatePathHashes'])
+
+      if (test.expectedIntrinsicFields['nr.pathHash']) {
+        // nr.apdexPerfZone not specified in the test, this is used to exercise it.
+        switch (idx) {
+          case 0:
+            chai.expect(attrs['nr.apdexPerfZone']).to.equal('S')
+            break
+          case 1:
+            chai.expect(attrs['nr.apdexPerfZone']).to.equal('T')
+            break
+          case 2:
+            chai.expect(attrs['nr.apdexPerfZone']).to.equal('F')
+            break
         }
-        if (!test.expectedIntrinsicFields['nr.pathHash']) {
-          keys.splice(keys.indexOf('nr.apdexPerfZone'), 1)
-        }
-
-        chai.expect(Object.keys(attrs)).to.have.members(keys)
-
-        chai.expect(attrs.duration).to.be.closeTo(expectedDurationInSeconds, 0.001)
-        chai.expect(attrs.webDuration).to.be.closeTo(expectedDurationInSeconds, 0.001)
-        chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTimeInSeconds, 0.001)
-        chai.expect(attrs.timestamp).to.be.within(start, start + 10)
-        chai.expect(attrs.name).to.equal(test.transactionName)
-        chai.expect(attrs.type).to.equal('Transaction')
-        chai.expect(attrs.error).to.be.false
-        chai.expect(attrs['nr.guid'])
-          .to.equal(test.expectedIntrinsicFields['nr.guid'])
-        chai.expect(attrs['nr.pathHash'])
-          .to.equal(test.expectedIntrinsicFields['nr.pathHash'])
-        chai.expect(attrs['nr.referringPathHash'])
-          .to.equal(test.expectedIntrinsicFields['nr.referringPathHash'])
-        chai.expect(attrs['nr.tripId'])
-          .to.equal(test.expectedIntrinsicFields['nr.tripId'])
-        chai.expect(attrs['nr.referringTransactionGuid'])
-          .to.equal(test.expectedIntrinsicFields['nr.referringTransactionGuid'])
-        chai.expect(attrs['nr.alternatePathHashes'])
-          .to.equal(test.expectedIntrinsicFields['nr.alternatePathHashes'])
-
-        if (test.expectedIntrinsicFields['nr.pathHash']) {
-          // nr.apdexPerfZone not specified in the test, this is used to exercise it.
-          switch (idx) {
-            case 0:
-              chai.expect(attrs['nr.apdexPerfZone']).to.equal('S')
-              break
-            case 1:
-              chai.expect(attrs['nr.apdexPerfZone']).to.equal('T')
-              break
-            case 2:
-              chai.expect(attrs['nr.apdexPerfZone']).to.equal('F')
-              break
-          }
-        }
-
-        done()
-      })
+      }
     })
   })
 })
