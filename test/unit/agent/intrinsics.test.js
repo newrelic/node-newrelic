@@ -10,7 +10,7 @@ var cat = require('../../../lib/util/cat.js')
 var NAMES = require('../../../lib/metrics/names.js')
 
 
-function mockTransaction(agent, test, durationInSeconds, cb) {
+function mockTransaction(agent, test, durationInSeconds, totalTimeInSeconds, cb) {
   var trans = new Transaction(agent)
 
   // non-CAT data
@@ -19,9 +19,14 @@ function mockTransaction(agent, test, durationInSeconds, cb) {
   trans.type = 'web'
 
   const durationInMilliseconds = durationInSeconds * 1000
+  const totalTimeInMilliseconds = totalTimeInSeconds * 1000
 
   trans.timer.getDurationInMillis = function stubDurationInMillis() {
     return durationInMilliseconds
+  }
+
+  trans.trace.getTotalTimeDurationInMillis = function stubTotalTimeInMillis() {
+    return totalTimeInMilliseconds
   }
 
   // CAT data
@@ -62,8 +67,10 @@ describe('when CAT is disabled', function() {
   tests.forEach(function(test) {
     it(test.name + ' tx event should only contain non-CAT intrinsic attrs', function(done) {
       const expectedDurationInSeconds = 0.020
+      const expectedTotalTimeInSeconds = 0.030
+
       var start = Date.now()
-      mockTransaction(agent, test, expectedDurationInSeconds, function(err, trans) {
+      mockTransaction(agent, test, expectedDurationInSeconds, expectedTotalTimeInSeconds, function(err, trans) {
         var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
         chai.expect(Object.keys(attrs)).to.have.members([
@@ -78,6 +85,7 @@ describe('when CAT is disabled', function() {
 
         chai.expect(attrs.duration).to.be.closeTo(expectedDurationInSeconds, 0.001)
         chai.expect(attrs.webDuration).to.be.closeTo(expectedDurationInSeconds, 0.001)
+        chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTimeInSeconds, 0.001)
         chai.expect(attrs.timestamp).to.be.within(start, start + 10)
         chai.expect(attrs.name).to.equal(test.transactionName)
         chai.expect(attrs.type).to.equal('Transaction')
@@ -170,8 +178,10 @@ describe('when CAT is enabled', function() {
       var idx = index % expectedDurationsInSeconds.length
       var expectedDurationInSeconds = expectedDurationsInSeconds[idx]
 
+      const expectedTotalTimeInSeconds = 0.030
+
       var start = Date.now()
-      mockTransaction(agent, test, expectedDurationInSeconds, function(err, trans) {
+      mockTransaction(agent, test, expectedDurationInSeconds, expectedTotalTimeInSeconds, function(err, trans) {
         var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
         var keys = [
@@ -201,6 +211,7 @@ describe('when CAT is enabled', function() {
 
         chai.expect(attrs.duration).to.be.closeTo(expectedDurationInSeconds, 0.001)
         chai.expect(attrs.webDuration).to.be.closeTo(expectedDurationInSeconds, 0.001)
+        chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTimeInSeconds, 0.001)
         chai.expect(attrs.timestamp).to.be.within(start, start + 10)
         chai.expect(attrs.name).to.equal(test.transactionName)
         chai.expect(attrs.type).to.equal('Transaction')
