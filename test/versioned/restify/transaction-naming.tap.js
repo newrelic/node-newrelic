@@ -2,17 +2,20 @@
 
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
+const semver = require('semver')
 
 tap.test('Restify transaction naming', (t) => {
   t.autoend()
 
   let agent = null
   let restify = null
+  let restifyPkg = null
   let server = null
 
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
     restify = require('restify')
+    restifyPkg = require('restify/package.json')
     server = restify.createServer()
     done()
   })
@@ -34,7 +37,112 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+  })
+
+  t.test('transaction name with async response middleware', (t) => {
+    t.plan(1)
+
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
+
+    server.get('/path1', (req, res, next) => {
+      res.send({
+        patientId: 5,
+        entries: ['hi', 'bye', 'example'],
+        total: 3
+      })
+      next()
+    })
+
+    runTest({
+      t,
+      endpoint: '/path1',
+      expectedName: 'GET//path1',
+      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+    })
+  })
+
+  t.test('transaction name with async response middleware (res.json)', (t) => {
+    t.plan(1)
+
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
+
+    server.get('/path1', (req, res, next) => {
+      res.json({
+        patientId: 5,
+        entries: ['hi', 'bye', 'example'],
+        total: 3
+      })
+      next()
+    })
+
+    runTest({
+      t,
+      endpoint: '/path1',
+      expectedName: 'GET//path1',
+      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+    })
+  })
+
+  if (semver.satisfies(restifyPkg.version, '>=5')) {
+    t.test('transaction name with async response middleware (res.sendRaw)', (t) => {
+      t.plan(1)
+
+      // restify v5 added the plugins object
+      if (restify.plugins && restify.plugins.gzipResponse) {
+        server.use(restify.plugins.gzipResponse())
+      } else {
+        server.use(restify.gzipResponse())
+      }
+
+      server.get('/path1', (req, res, next) => {
+        res.sendRaw(JSON.stringify({
+          patientId: 5,
+          entries: ['hi', 'bye', 'example'],
+          total: 3
+        }))
+        next()
+      })
+
+      runTest({
+        t,
+        endpoint: '/path1',
+        expectedName: 'GET//path1',
+        requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+      })
+    })
+  }
+
+  t.test('transaction name with async response middleware (res.redirect)', (t) => {
+    t.plan(1)
+
+    // restify v5 added the plugins object
+    if (restify.plugins && restify.plugins.gzipResponse) {
+      server.use(restify.plugins.gzipResponse())
+    } else {
+      server.use(restify.gzipResponse())
+    }
+
+    server.get('/path1', (req, res, next) => {
+      res.redirect('http://google.com', next)
+    })
+
+    runTest({
+      t,
+      endpoint: '/path1',
+      expectedName: 'GET//path1',
+      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+    })
   })
 
   t.test('transaction name with no matched routes', (t) => {
@@ -46,7 +154,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/foobar', 'Nodejs', 'GET/(not found)', t.end)
+    runTest({t, endpoint: '/foobar', prefix: 'Nodejs', expectedName: 'GET/(not found)'})
   })
 
   t.test('transaction name with route that has multiple handlers', (t) => {
@@ -61,7 +169,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('transaction name with middleware', (t) => {
@@ -77,7 +185,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('multiple route handlers with the same name do not duplicate', (t) => {
@@ -94,7 +202,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('responding from middleware', (t) => {
@@ -110,7 +218,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//'})
   })
 
   t.test('with error', (t) => {
@@ -122,7 +230,7 @@ tap.test('Restify transaction naming', (t) => {
       next(new errors.InternalServerError('foobar'))
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('with error while out of context', (t) => {
@@ -136,7 +244,7 @@ tap.test('Restify transaction naming', (t) => {
       })
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('when using a route variable', (t) => {
@@ -148,7 +256,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/foo/fizz', 'GET//foo/:bar', t.end)
+    runTest({t, endpoint: '/foo/fizz', expectedName: 'GET//foo/:bar'})
   })
 
   t.test('when using a regular expression in path', (t) => {
@@ -160,7 +268,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/foo/bar', 'GET//^\\/foo\\/(.*)/', t.end)
+    runTest({t, endpoint: '/foo/bar', expectedName: 'GET//^\\/foo\\/(.*)/'})
   })
 
   t.test('when next is called after transaction state loss', (t) => {
@@ -184,7 +292,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('responding after transaction state loss', (t) => {
@@ -198,7 +306,7 @@ tap.test('Restify transaction naming', (t) => {
       })
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('responding with just a status code', (t) => {
@@ -209,7 +317,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
   t.test('responding with just a status code after state loss', (t) => {
@@ -222,26 +330,32 @@ tap.test('Restify transaction naming', (t) => {
       })
     })
 
-    runTest(t, '/path1', 'GET//path1', t.end)
+    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
-  function runTest(t, endpoint, prefix, expectedName, cb) {
-    if (typeof expectedName === 'function') {
-      // runTest(t, endpoint, expectedName, cb)
-      cb = expectedName
-      expectedName = prefix
-      prefix = 'Restify'
-    }
+  /**
+   * @param {Object} cfg
+   * @property {Object} cfg.t
+   * @property {string} cfg.endpoint
+   * @property {string} [cfg.prefix='Restify']
+   * @property {string} cfg.expectedName
+   * @property {Function} [cfg.cb=t.end]
+   * @property {Object} [cfg.requestOpts=null]
+   */
+  function runTest(cfg) {
+    const t = cfg.t
+    const endpoint = cfg.endpoint
+    const prefix = cfg.prefix || 'Restify'
+    const expectedName = `WebTransaction/${prefix}/${cfg.expectedName}`
 
-    expectedName = `WebTransaction/${prefix}/${expectedName}`
     agent.on('transactionFinished', (tx) => {
       t.equal(tx.name, expectedName, 'should have correct name')
-      cb()
+      cfg.cb && cfg.cb() || t.end()
     })
 
     server.listen(() => {
       const port = server.address().port
-      helper.makeGetRequest(`http://localhost:${port}${endpoint}`)
+      helper.makeGetRequest(`http://localhost:${port}${endpoint}`, cfg.requestOpts || null)
     })
   }
 })
