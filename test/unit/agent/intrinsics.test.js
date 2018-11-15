@@ -10,7 +10,7 @@ var cat = require('../../../lib/util/cat.js')
 var NAMES = require('../../../lib/metrics/names.js')
 
 
-function getMockTransaction(agent, test, durationInSeconds, totalTimeInSeconds) {
+function getMockTransaction(agent, test, start, durationInSeconds, totalTimeInSeconds) {
   const trans = new Transaction(agent)
 
   // non-CAT data
@@ -20,6 +20,8 @@ function getMockTransaction(agent, test, durationInSeconds, totalTimeInSeconds) 
 
   const durationInMilliseconds = durationInSeconds * 1000
   const totalTimeInMilliseconds = totalTimeInSeconds * 1000
+
+  trans.timer.start = start
 
   trans.timer.getDurationInMillis = function stubDurationInMillis() {
     return durationInMilliseconds
@@ -71,7 +73,8 @@ describe('when CAT is disabled', function() {
 
       const start = Date.now()
 
-      const trans = getMockTransaction(agent, test, expectedDuration, expectedTotalTime)
+      const trans =
+        getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
 
       const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
@@ -88,7 +91,7 @@ describe('when CAT is disabled', function() {
       chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
-      chai.expect(attrs.timestamp).to.be.within(start, start + 10)
+      chai.expect(attrs.timestamp).to.equal(start)
       chai.expect(attrs.name).to.equal(test.transactionName)
       chai.expect(attrs.type).to.equal('Transaction')
       chai.expect(attrs.error).to.be.false
@@ -179,9 +182,10 @@ describe('when CAT is enabled', function() {
 
       const expectedTotalTime = 0.030
 
-      const trans = getMockTransaction(agent, test, expectedDuration, expectedTotalTime)
-
       var start = Date.now()
+      const trans =
+        getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
+
       var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
       var keys = [
@@ -212,7 +216,7 @@ describe('when CAT is enabled', function() {
       chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
-      chai.expect(attrs.timestamp).to.be.within(start, start + 10)
+      chai.expect(attrs.timestamp).to.equal(start)
       chai.expect(attrs.name).to.equal(test.transactionName)
       chai.expect(attrs.type).to.equal('Transaction')
       chai.expect(attrs.error).to.be.false
