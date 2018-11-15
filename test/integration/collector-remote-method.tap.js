@@ -61,7 +61,7 @@ tap.test('remote method to preconnect', (t) => {
 
     // create mock collector
     startMockCollector(t, () => {
-      method.invoke([], (error, returnValue) => {
+      method.invoke([], {}, (error, returnValue) => {
         validateResponse(t, error, returnValue)
         t.end()
       })

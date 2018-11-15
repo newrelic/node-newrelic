@@ -21,6 +21,12 @@ function generate(method, runID, protocolVersion) {
 }
 
 describe('RemoteMethod', () => {
+  let mockHeaders
+
+  beforeEach(() => {
+    mockHeaders = {}
+  })
+
   it('should require a name for the method to call', () => {
     expect(() => {
       new RemoteMethod() // eslint-disable-line no-new
@@ -164,7 +170,7 @@ describe('RemoteMethod', () => {
         return done()
       }
 
-      method.invoke('data')
+      method.invoke('data', mockHeaders)
     })
 
     it('should not throw when preparing uncompressed data', (done) => {
@@ -175,7 +181,7 @@ describe('RemoteMethod', () => {
         return done()
       }
 
-      method.invoke('data')
+      method.invoke('data', mockHeaders)
     })
   })
 
@@ -186,7 +192,7 @@ describe('RemoteMethod', () => {
         port: 8765,
         max_payload_size_in_bytes: 100000
       })
-      method.invoke({message: 'none'}, (error) => {
+      method.invoke({message: 'none'}, mockHeaders, (error) => {
         should.exist(error)
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
           expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
@@ -204,7 +210,7 @@ describe('RemoteMethod', () => {
         port: 80,
         max_payload_size_in_bytes: 100000
       })
-      method.invoke([], (error) => {
+      method.invoke([], mockHeaders, (error) => {
         should.exist(error)
 
         // https://github.com/joyent/node/commit/7295bb9435c
@@ -224,7 +230,6 @@ describe('RemoteMethod', () => {
     let config
     let method
     let sendMetrics
-    let mockHeaders
 
     before(() => {
       // order dependency: requiring nock at the top of the file breaks other tests
@@ -244,7 +249,6 @@ describe('RemoteMethod', () => {
         run_id: RUN_ID,
         license_key: 'license key here'
       })
-      mockHeaders = {}
       method = new RemoteMethod('metric_data', config)
     })
 
@@ -396,7 +400,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should not error', (done) => {
-          method.invoke(undefined, (error) => {
+          method.invoke(undefined, mockHeaders, (error) => {
             should.not.exist(error)
 
             done()
@@ -404,7 +408,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should find the expected value', (done) => {
-          method.invoke(undefined, (error, host) => {
+          method.invoke(undefined, mockHeaders, (error, host) => {
             expect(host).equal('collector-42.newrelic.com')
 
             done()
@@ -412,7 +416,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should not alter the sent JSON', (done) => {
-          method.invoke(undefined, (error, host, json) => {
+          method.invoke(undefined, mockHeaders, (error, host, json) => {
             expect(json).eql(response)
 
             done()
@@ -435,7 +439,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should set error message to the JSON\'s message', (done) => {
-          method.invoke([], (error) => {
+          method.invoke([], mockHeaders, (error) => {
             expect(error.message)
               .equal('Configuration has changed, need to restart agent.')
 
@@ -444,7 +448,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should pass along the New Relic error type', (done) => {
-          method.invoke([], (error) => {
+          method.invoke([], mockHeaders, (error) => {
             expect(error.class).equal('NewRelic::Agent::ForceRestartException')
 
             done()
@@ -452,7 +456,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should include the HTTP status code for the response', (done) => {
-          method.invoke([], (error) => {
+          method.invoke([], mockHeaders, (error) => {
             expect(error.statusCode).equal(200)
 
             done()
@@ -460,7 +464,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should not alter the sent JSON', (done) => {
-          method.invoke(undefined, (error, host, json) => {
+          method.invoke(undefined, mockHeaders, (error, host, json) => {
             expect(json).eql(response)
 
             done()
