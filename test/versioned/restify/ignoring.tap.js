@@ -21,8 +21,11 @@ test("Restify router introspection", function(t) {
   })
 
   agent.on('transactionFinished', function(transaction) {
-    t.equal(transaction.name, 'WebTransaction/Restify/GET//polling/:id',
-            "transaction has expected name even on error")
+    t.equal(
+      transaction.name, 'WebTransaction/Restify/GET//polling/:id',
+      "transaction has expected name even on error"
+    )
+
     t.ok(transaction.ignore, "transaction is ignored")
 
     t.notOk(agent.traces.trace, "should have no transaction trace")
