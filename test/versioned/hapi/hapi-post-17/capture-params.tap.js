@@ -131,7 +131,7 @@ tap.test('Hapi capture params support', function(t) {
 
     server.start().then(function() {
       port = server.info.port
-        makeRequest(t, 'http://localhost:' + port + '/test/1337/?name=hapi')
+      makeRequest(t, 'http://localhost:' + port + '/test/1337/?name=hapi')
     })
   })
 })

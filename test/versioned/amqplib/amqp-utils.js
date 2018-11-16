@@ -240,14 +240,18 @@ function verifyGet(t, tx, exchangeName, routingKey, queue) {
   var produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   var consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
   if (isCallback) {
-    t.doesNotThrow(function() {
-      metrics.assertSegments(tx.trace.root, [
-        produceName,
-        consumeName, [
-            'Callback: <anonymous>'
+    t.doesNotThrow(assertions, 'should have expected segments')
+
+    function assertions() {
+      metrics.assertSegments(
+        tx.trace.root,
+        [
+          produceName,
+          consumeName,
+          ['Callback: <anonymous>']
         ]
-      ])
-    }, 'should have expected segments')
+      )
+    }
   } else {
     t.doesNotThrow(function() {
       metrics.assertSegments(tx.trace.root, [

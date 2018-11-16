@@ -120,8 +120,11 @@ function runTests(flags) {
         request.get(TEST_URL + port + TEST_PATH, function(error, response, body) {
           t.error(error, 'should not fail making request')
 
-          t.ok(/application\/json/.test(response.headers['content-type']),
-               "got correct content type")
+          t.ok(
+            /application\/json/.test(response.headers['content-type']),
+            "got correct content type"
+          )
+
           t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
 
           var stats
@@ -145,8 +148,10 @@ function runTests(flags) {
           t.equal(stats.callCount, 1, "only one HTTP-dispatched request was made")
 
           var serialized = JSON.stringify(agent.metrics)
-          t.ok(serialized.match(/WebTransaction\/Expressjs\/GET\/\/test/),
-               "serialized metrics as expected")
+          t.ok(
+            serialized.match(/WebTransaction\/Expressjs\/GET\/\/test/),
+            "serialized metrics as expected"
+          )
 
           t.end()
         })
@@ -225,8 +230,11 @@ function runTests(flags) {
           // route middleware doesn't have a name, sentinel is our error handler,
           // neither should be wrapped.
           if (layer.route === undefined && layer.handle.name !== 'sentinel') {
-            t.equal(typeof layer.handle.__NR_original, 'function',
-                    'all middlewares are wrapped')
+            t.equal(
+              typeof layer.handle.__NR_original,
+              'function',
+              'all middlewares are wrapped'
+            )
           }
         }
 
@@ -244,8 +252,11 @@ function runTests(flags) {
           var first = errors[0]
           t.ok(first, "have the first error")
 
-          t.equal(first[2], "Cannot read property 'ohno' of undefined",
-                  "got the expected error")
+          t.equal(
+            first[2],
+            "Cannot read property 'ohno' of undefined",
+            "got the expected error"
+          )
 
           t.end()
         })

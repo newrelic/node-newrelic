@@ -5,30 +5,32 @@ var common = require('./collection-common')
 
 common.test('deleteMany', function deleteManyTest(t, collection, verify) {
   collection.deleteMany({mod10: 5}, function done(err, data) {
-      t.error(err)
-      t.deepEqual(data.result, {ok: 1, n: 3})
-      verify(null, [
-          'Datastore/statement/MongoDB/testCollection/deleteMany',
-          'Callback: done'
-        ],
-        ['deleteMany']
-      )
-    }
-  )
+    t.error(err)
+    t.deepEqual(data.result, {ok: 1, n: 3})
+    verify(
+      null,
+      [
+        'Datastore/statement/MongoDB/testCollection/deleteMany',
+        'Callback: done'
+      ],
+      ['deleteMany']
+    )
+  })
 })
 
 common.test('deleteOne', function deleteOneTest(t, collection, verify) {
   collection.deleteOne({mod10: 5}, function done(err, data) {
-      t.error(err)
-      t.deepEqual(data.result, {ok: 1, n: 1})
-      verify(null, [
-          'Datastore/statement/MongoDB/testCollection/deleteOne',
-          'Callback: done'
-        ],
-        ['deleteOne']
-      )
-    }
-  )
+    t.error(err)
+    t.deepEqual(data.result, {ok: 1, n: 1})
+    verify(
+      null,
+      [
+        'Datastore/statement/MongoDB/testCollection/deleteOne',
+        'Callback: done'
+      ],
+      ['deleteOne']
+    )
+  })
 })
 
 common.test('insert', function insertTest(t, collection, verify) {
@@ -36,7 +38,9 @@ common.test('insert', function insertTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 1})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/insert',
         'Callback: done'
       ],
@@ -50,7 +54,9 @@ common.test('insertMany', function insertManyTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 2})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/insertMany',
         'Callback: done'
       ],
@@ -64,7 +70,9 @@ common.test('insertOne', function insertOneTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 1})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/insertOne',
         'Callback: done'
       ],
@@ -78,7 +86,9 @@ common.test('remove', function removeTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 3})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/remove',
         'Callback: done'
       ],
@@ -92,7 +102,9 @@ common.test('replaceOne', function replaceOneTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/replaceOne',
         'Callback: done'
       ],
@@ -106,7 +118,9 @@ common.test('save', function saveTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, n: 1})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/save',
         'Callback: done'
       ],
@@ -120,7 +134,9 @@ common.test('update', function updateTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/update',
         'Callback: done'
       ],
@@ -134,7 +150,9 @@ common.test('updateMany', function updateManyTest(t, collection, verify) {
     t.error(err)
     t.deepEqual(data.result, {ok: 1, nModified: 3, n: 3})
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/updateMany',
         'Callback: done'
       ],
@@ -148,7 +166,9 @@ common.test('updateOne', function updateOneTest(t, collection, verify) {
     t.notOk(err, 'should not error')
     t.deepEqual(data.result, {ok: 1, nModified: 1, n: 1}, 'should have correct results')
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/updateOne',
         'Callback: done'
       ],

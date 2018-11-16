@@ -21,8 +21,12 @@ tap.test('ignoring a Hapi route', function(t) {
   })
 
   agent.on('transactionFinished', function(tx) {
-    t.equal(tx.name, 'WebTransaction/Hapi/GET//order/{id}',
-            'transaction has expected name even on error')
+    t.equal(
+      tx.name,
+      'WebTransaction/Hapi/GET//order/{id}',
+      'transaction has expected name even on error'
+    )
+
     t.ok(tx.ignore, 'transaction is ignored')
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')

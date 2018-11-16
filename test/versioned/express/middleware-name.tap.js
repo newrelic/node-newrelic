@@ -18,8 +18,11 @@ test('should name middleware correctly', function(t) {
   app.use('/', testMiddleware)
 
   server = app.listen(0, function() {
-    t.equal(app._router.stack.length, 3,
-            '3 middleware functions: query parser, Express, router')
+    t.equal(
+      app._router.stack.length,
+      3,
+      '3 middleware functions: query parser, Express, router'
+    )
 
     var count = 0
     for (var i = 0; i < app._router.stack.length; i++) {

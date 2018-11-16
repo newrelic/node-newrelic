@@ -59,13 +59,12 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 30000}, func
                     '  FROM ' + DBNAME + '.' + DBTABLE +
                     ' WHERE id = ?'
         client.query(query, [params.id], function(err, results) {
-            withRetry.release(client) // always release back to the pool
+          withRetry.release(client) // always release back to the pool
 
-            if (err) return callback(err)
+          if (err) return callback(err)
 
-            callback(null, results.length ? results[0] : results)
-          }
-        )
+          callback(null, results.length ? results[0] : results)
+        })
       })
     }
   }
@@ -92,8 +91,11 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 30000}, func
       }
 
       t.equals(row.id, 1, 'mysql2 should still work (found id)')
-      t.equals(row.test_value, 'hamburgefontstiv',
-                'mysql driver should still work (found value)')
+      t.equals(
+        row.test_value,
+        'hamburgefontstiv',
+        'mysql driver should still work (found value)'
+      )
 
       transaction.end()
 
@@ -104,9 +106,11 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 30000}, func
 
       var selectSegment = trace.root.children[0]
       t.ok(selectSegment, 'trace segment for first SELECT should exist')
-      t.equals(selectSegment.name,
-               'Datastore/statement/MySQL/agent_integration.test/select',
-               'should register as SELECT')
+      t.equals(
+        selectSegment.name,
+        'Datastore/statement/MySQL/agent_integration.test/select',
+        'should register as SELECT'
+      )
 
       t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
       t.equals(selectSegment.children[0].name, 'Callback: <anonymous>')

@@ -34,8 +34,12 @@ test("Express router introspection", function(t) {
   })
 
   agent.on('transactionFinished', function(transaction) {
-    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//a/:param1/b/:param2',
-            "transaction has expected name")
+    t.equal(
+      transaction.name,
+      'WebTransaction/Expressjs/GET//a/:param1/b/:param2',
+      "transaction has expected name"
+    )
+
     t.equal(transaction.url, '/a/foo/b/bar', "URL is left alone")
     t.equal(transaction.statusCode, 200, "status code is OK")
     t.equal(transaction.verb, 'GET', "HTTP method is GET")

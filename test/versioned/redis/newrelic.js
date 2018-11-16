@@ -1,3 +1,5 @@
+'use strict'
+
 exports.config = {
   app_name: ['redis@2 test'],
   license_key: 'license key here',

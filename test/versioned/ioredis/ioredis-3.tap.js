@@ -67,15 +67,14 @@ tap.test('ioredis instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
-      var p1 = redisClient.set('testkey', 'testvalue')
-
-      p1.then(function() {
-        return redisClient.get('testkey')
-      })
-      .then(function() {
-        transaction.end()
-      })
-      .catch(onError)
+      redisClient.set('testkey', 'testvalue')
+        .then(function() {
+          return redisClient.get('testkey')
+        })
+        .then(function() {
+          transaction.end()
+        })
+        .catch(onError)
     })
   })
 
@@ -88,7 +87,7 @@ tap.test('ioredis instrumentation', function(t) {
           t.notOk(agent.getTransaction(), 'transaction should have ended')
           t.end()
         })
-        transaction.end()
+      transaction.end()
     })
   })
 

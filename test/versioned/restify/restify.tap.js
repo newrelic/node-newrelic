@@ -85,8 +85,10 @@ tap.test('Restify', (t) => {
             return t.end()
           }
 
-          t.notOk(agent.getTransaction(),
-                  'transaction should not leak into external request')
+          t.notOk(
+            agent.getTransaction(),
+            'transaction should not leak into external request'
+          )
 
           var metric = agent.metrics.getMetric(METRIC)
           t.ok(metric, 'request metrics should have been gathered')
