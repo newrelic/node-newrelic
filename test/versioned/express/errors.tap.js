@@ -25,9 +25,9 @@ function runTests(flags) {
     })
 
     runTest(t, function(errors, statusCode) {
-     t.equals(errors.length, 1)
-     t.equals(statusCode, 500)
-     t.end()
+      t.equals(errors.length, 1)
+      t.equals(statusCode, 500)
+      t.end()
     })
   })
 
@@ -39,9 +39,9 @@ function runTests(flags) {
     })
 
     runTest(t, function(errors, statusCode) {
-     t.equals(errors.length, 1)
-     t.equals(statusCode, 500)
-     t.end()
+      t.equals(errors.length, 1)
+      t.equals(statusCode, 500)
+      t.end()
     })
   })
 
@@ -53,88 +53,90 @@ function runTests(flags) {
     })
 
     runTest(t, function(errors, statusCode) {
-     t.equals(errors.length, 1)
-     t.equals(statusCode, 500)
-     t.end()
+      t.equals(errors.length, 1)
+      t.equals(statusCode, 500)
+      t.end()
     })
   })
 
   tap.test('should not report error when error handler responds', function(t) {
-   setup(t)
+    setup(t)
 
-   app.get('/test', function() {
-     throw new Error('some error')
-   })
+    app.get('/test', function() {
+      throw new Error('some error')
+    })
 
-   app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
-     res.end()
-   })
+    app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
+      res.end()
+    })
 
-   runTest(t, function(errors, statusCode) {
-     t.equals(errors.length, 0)
-     t.equals(statusCode, 200)
-     t.end()
-   })
+    runTest(t, function(errors, statusCode) {
+      t.equals(errors.length, 0)
+      t.equals(statusCode, 200)
+      t.end()
+    })
   })
 
-  tap.test('should report error when error handler responds, but sets error status code',
-      function(t) {
-   setup(t)
+  tap.test(
+    'should report error when error handler responds, but sets error status code',
+    function(t) {
+      setup(t)
 
-   app.get('/test', function() {
-     throw new Error('some error')
-   })
+      app.get('/test', function() {
+        throw new Error('some error')
+      })
 
-   app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
-     res.status(400).end()
-   })
+      app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
+        res.status(400).end()
+      })
 
-   runTest(t, function(errors, statusCode) {
-     t.equals(errors.length, 1)
-     t.equals(errors[0][2], 'some error')
-     t.equals(statusCode, 400)
-     t.end()
-   })
-  })
+      runTest(t, function(errors, statusCode) {
+        t.equals(errors.length, 1)
+        t.equals(errors[0][2], 'some error')
+        t.equals(statusCode, 400)
+        t.end()
+      })
+    }
+  )
 
   tap.test('should report errors passed out of errorware', function(t) {
-   setup(t)
+    setup(t)
 
-   app.get('/test', function() {
-     throw new Error('some error')
-   })
+    app.get('/test', function() {
+      throw new Error('some error')
+    })
 
-   app.use(function(error, req, res, next) {
-     next(error)
-   })
+    app.use(function(error, req, res, next) {
+      next(error)
+    })
 
-   runTest(t, function(errors, statuscode) {
-     t.equals(errors.length, 1)
-     t.equals(statuscode, 500)
-     t.end()
-   })
+    runTest(t, function(errors, statuscode) {
+      t.equals(errors.length, 1)
+      t.equals(statuscode, 500)
+      t.end()
+    })
   })
 
   tap.test('should report errors from errorware followed by routes', function(t) {
-   setup(t)
+    setup(t)
 
-   app.use(function() {
-    throw new Error('some error')
-   })
+    app.use(function() {
+      throw new Error('some error')
+    })
 
-   app.use(function(error, req, res, next) {
-     next(error)
-   })
+    app.use(function(error, req, res, next) {
+      next(error)
+    })
 
-   app.get('/test', function(req, res) {
-     res.end()
-   })
+    app.get('/test', function(req, res) {
+      res.end()
+    })
 
-   runTest(t, function(errors, statuscode) {
-     t.equals(errors.length, 1)
-     t.equals(statuscode, 500)
-     t.end()
-   })
+    runTest(t, function(errors, statuscode) {
+      t.equals(errors.length, 1)
+      t.equals(statuscode, 500)
+      t.end()
+    })
   })
 
   tap.test('should not report errors swallowed by errorware', function(t) {
