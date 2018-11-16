@@ -59,7 +59,7 @@ module.exports = function runTests(name, clientFactory) {
         runTest()
       })
     })
-   }
+  }
 
   function verify(t, segment, selectTable) {
     verifyMetrics(t, segment, selectTable)
@@ -97,12 +97,12 @@ module.exports = function runTests(name, clientFactory) {
     var expectedNames = Object.keys(expected)
     var unscopedNames = Object.keys(unscoped)
 
-    expectedNames.forEach(function(name) {
-      t.ok(unscoped[name], 'should have unscoped metric ' + name)
-      if (unscoped[name]) {
+    expectedNames.forEach(function(expectedName) {
+      t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
+      if (unscoped[expectedName]) {
         t.equals(
-          unscoped[name].callCount, expected[name],
-          'metric ' + name + ' should have correct callCount'
+          unscoped[expectedName].callCount, expected[expectedName],
+          'metric ' + expectedName + ' should have correct callCount'
         )
       }
     })
@@ -136,8 +136,11 @@ module.exports = function runTests(name, clientFactory) {
 
     if (!getSegment) return
 
-    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
-             'should register the query call')
+    t.equals(
+      getSegment.name,
+      'Datastore/statement/Postgres/' + selectTable + '/select',
+      'should register the query call'
+    )
 
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
@@ -202,8 +205,8 @@ module.exports = function runTests(name, clientFactory) {
     t.beforeEach(function(done) {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
-      var name = require.resolve('pg')
-      delete require.cache[name]
+      var pgName = require.resolve('pg')
+      delete require.cache[pgName]
 
       agent = helper.instrumentMockedAgent()
       pg = clientFactory()
@@ -371,8 +374,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     // https://github.com/newrelic/node-newrelic/pull/223
-    t.test('query using an config object with `text` getter instead of property',
-        function(t) {
+    t.test('query using an config object with `text` getter instead of property', (t) => {
       t.plan(3)
       var client = new pg.Client(CON_OBJ)
 
