@@ -41,13 +41,13 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
       agent.metrics
     ]
 
-    api.metricData(payload, function(error, response) {
+    api.metricData(payload, function(error, command) {
       t.notOk(error, 'sent metrics without error')
-      t.ok(response, 'got a response')
+      t.ok(command, 'got a response')
 
-      t.equal(response.length, 0, 'got back no mappings')
+      t.equal(command.returned.length, 0, 'got back no mappings')
       t.doesNotThrow(function() {
-        agent.mapper.load(response)
+        agent.mapper.load(command.returned)
       }, 'was able to load mapping')
 
       t.end()

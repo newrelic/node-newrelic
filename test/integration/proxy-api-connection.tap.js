@@ -52,10 +52,9 @@ tap.test('support ssl to the proxy', function(t) {
       t.ok(returned.agent_run_id, 'got run ID')
       t.ok(agent.config.run_id, 'run ID set in configuration')
 
-      api.shutdown(function(error, returned, json) {
+      api.shutdown(function(error, command) {
         t.notOk(error, 'should have shut down without issue')
-        t.equal(returned, null, 'collector explicitly returns null')
-        t.deepEqual(json, {return_value: null}, 'raw message looks right')
+        t.equal(command.returned, null, 'collector explicitly returns null')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
         server.close()
@@ -107,10 +106,9 @@ tap.test('setting proxy_port should use the proxy agent', function(t) {
       t.ok(returned.agent_run_id, 'got run ID')
       t.ok(agent.config.run_id, 'run ID set in configuration')
 
-      api.shutdown(function(error, returned, json) {
+      api.shutdown(function(error, command) {
         t.notOk(error, 'should have shut down without issue')
-        t.equal(returned, null, 'collector explicitly returns null')
-        t.deepEqual(json, {return_value: null}, 'raw message looks right')
+        t.equal(command.returned, null, 'collector explicitly returns null')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
         server.close()
@@ -195,10 +193,9 @@ tap.test('no proxy set should not use proxy agent', function(t) {
     t.ok(returned.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
-    api.shutdown(function(error, returned, json) {
+    api.shutdown(function(error, command) {
       t.notOk(error, 'should have shut down without issue')
-      t.equal(returned, null, 'collector explicitly returns null')
-      t.deepEqual(json, {return_value: null}, 'raw message looks right')
+      t.equal(command.returned, null, 'collector explicitly returns null')
       t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
       t.end()

@@ -49,10 +49,9 @@ tap.test('Collector API should send errors to newrelic.com', function(t) {
           [encoded]
         ]
 
-        api.transactionSampleData(payload, function(error, response, json) {
+        api.transactionSampleData(payload, function(error, command) {
           t.error(error, 'sent transaction trace without error')
-          t.notOk(response, 'return value is null')
-          t.deepEqual(json, {return_value: null}, 'got raw return value')
+          t.notOk(command.returned, 'return value is null')
 
           agent.stop((err) => {
             t.error(err, 'should not fail to stop')
