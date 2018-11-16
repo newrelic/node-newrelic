@@ -210,7 +210,8 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
 
         // disabled until metric explosions can be handled by server
         /*
-        var instance = 'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port
+        var instance =
+          'Datastore/instance/MongoDB/' + params.mongodb_host + ':' + params.mongodb_port
         t.equals(
           metrics.getMetric(instance).callCount,
           3,

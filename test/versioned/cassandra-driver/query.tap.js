@@ -59,7 +59,7 @@ function cassSetup(runTest) {
 
   function done(err) {
     if (err) {
-     throw err
+      throw err
     }
     setupClient.shutdown()
     runTest()
@@ -116,8 +116,12 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
             var trace = transaction.trace
             t.ok(trace, 'trace should exist')
             t.ok(trace.root, 'root element should exist')
-            t.equals(trace.root.children.length, 1,
-                   'there should be only one child of the root')
+
+            t.equals(
+              trace.root.children.length,
+              1,
+              'there should be only one child of the root'
+            )
 
             var setSegment = trace.root.children[0]
             t.ok(setSegment, 'trace segment for insert should exist')

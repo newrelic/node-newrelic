@@ -98,7 +98,7 @@ tap.test('ioredis instrumentation', (t) => {
           t.notOk(agent.getTransaction(), 'transaction should have ended')
           t.end()
         })
-        transaction.end()
+      transaction.end()
     })
   })
 })

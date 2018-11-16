@@ -69,8 +69,10 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           var trace = transaction.trace
           t.ok(trace, "trace should exist")
           t.ok(trace.root, "root element should exist")
-          t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root")
+          t.equals(
+            trace.root.children.length, 1,
+            "there should be only one child of the root"
+          )
 
           var setSegment = trace.root.children[0]
           t.ok(setSegment, "trace segment for set should exist")
@@ -89,12 +91,24 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
           var getSegment = setSegment.children[0].children[0]
           t.ok(getSegment, "trace segment for get should exist")
-          t.equals(getSegment.name, "Datastore/operation/Redis/get",
-                   "should register the get")
-          t.equals(getSegment.parameters.key, "\"testkey\"",
-                   "should have the get key as a parameter")
-          t.ok(getSegment.children.length >= 1,
-                   "get should have a callback segment")
+
+          t.equals(
+            getSegment.name,
+            "Datastore/operation/Redis/get",
+            "should register the get"
+          )
+
+          t.equals(
+            getSegment.parameters.key,
+            "\"testkey\"",
+            "should have the get key as a parameter"
+          )
+
+          t.ok(
+            getSegment.children.length >= 1,
+            "get should have a callback segment"
+          )
+
           t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
         })
       })

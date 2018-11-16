@@ -11,7 +11,9 @@ common.test('findAndModify', function findAndModifyTest(t, collection, verify) {
     t.equal(data.value.a, 15)
     t.equal(data.value.i, 1)
     t.equal(data.ok, 1)
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/findAndModify',
         'Callback: done'
       ],
@@ -25,7 +27,9 @@ common.test('findAndRemove', function findAndRemoveTest(t, collection, verify) {
     t.error(err)
     t.equal(data.value.i, 1)
     t.equal(data.ok, 1)
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/findAndRemove',
         'Callback: done'
       ],
@@ -38,7 +42,9 @@ common.test('findOne', function findOneTest(t, collection, verify) {
   collection.findOne({i: 15}, function done(err, data) {
     t.error(err)
     t.equal(data.i, 15)
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/findOne',
         'Callback: done'
       ],
@@ -52,7 +58,9 @@ common.test('findOneAndDelete', function findOneAndDeleteTest(t, collection, ver
     t.error(err)
     t.equal(data.ok, 1)
     t.equal(data.value.i, 15)
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/findOneAndDelete',
         'Callback: done'
       ],
@@ -68,7 +76,9 @@ common.test('findOneAndReplace', function findAndReplaceTest(t, collection, veri
     t.error(err)
     t.equal(data.value.b, 15)
     t.equal(data.ok, 1)
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/findOneAndReplace',
         'Callback: done'
       ],
@@ -84,7 +94,9 @@ common.test('findOneAndUpdate', function findOneAndUpdateTest(t, collection, ver
     t.error(err)
     t.equal(data.value.a, 15)
     t.equal(data.ok, 1)
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/findOneAndUpdate',
         'Callback: done'
       ],

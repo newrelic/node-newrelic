@@ -44,7 +44,7 @@ tap.test('Hapi Plugins', function(t) {
         method: 'GET',
         path: '/test',
         handler: function myHandler(req, reply) {
-        t.ok(agent.getTransaction(), 'transaction is available')
+          t.ok(agent.getTransaction(), 'transaction is available')
           reply('hello')
         }
       })
@@ -76,7 +76,7 @@ tap.test('Hapi Plugins', function(t) {
         method: 'GET',
         path: '/test',
         handler: function myHandler(req, reply) {
-        t.ok(agent.getTransaction(), 'transaction is available')
+          t.ok(agent.getTransaction(), 'transaction is available')
           reply('hello')
         }
       })
@@ -108,7 +108,7 @@ tap.test('Hapi Plugins', function(t) {
           method: 'GET',
           path: '/test',
           handler: function myHandler(req, reply) {
-          t.ok(agent.getTransaction(), 'transaction is available')
+            t.ok(agent.getTransaction(), 'transaction is available')
             reply('hello')
           }
         })

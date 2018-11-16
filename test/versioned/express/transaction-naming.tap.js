@@ -186,20 +186,22 @@ function runTests(flags) {
     runTest(t, '/api/path1', '/api/path1')
   })
 
-  test('multiple route handlers with the same name do not duplicate transaction name',
-      function(t) {
-    setup(t)
+  test(
+    'multiple route handlers with the same name do not duplicate transaction name',
+    function(t) {
+      setup(t)
 
-    app.get('/path1', function(req, res, next) {
-      next()
-    })
+      app.get('/path1', function(req, res, next) {
+        next()
+      })
 
-    app.get('/path1', function(req, res) {
-      res.end()
-    })
+      app.get('/path1', function(req, res) {
+        res.end()
+      })
 
-    runTest(t, '/path1', '/path1')
-  })
+      runTest(t, '/path1', '/path1')
+    }
+  )
 
   test('responding from middleware', function(t) {
     setup(t)

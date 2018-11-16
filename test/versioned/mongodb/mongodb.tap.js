@@ -141,10 +141,12 @@ function verifyNoStats(t, agent, operation) {
       metrics.getMetric('Datastore/operation/MongoDB/' + operation),
       'generic ' + operation + ' should not be recorded'
     )
+
     t.notOk(
       metrics.getMetric('Datastore/statement/MongoDB/' + COLLECTION + '/' + operation),
-     'MongoDB ' + operation + ' should not be recorded'
-   )
+      'MongoDB ' + operation + ' should not be recorded'
+    )
+
     t.notOk(
       metrics.getMetric(
         'Datastore/instance/MongoDB/' + MONGO_HOST + '/' + MONGO_PORT
@@ -744,7 +746,7 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
           runWithoutTransaction(t, function(agent, collection) {
             var saved = {id: 444, oneoff: 'radicchio', __saved: true}
             collection.save(saved, function() {
-               collection.find({oneoff: 'radicchio'}).toArray(function(error, docs) {
+              collection.find({oneoff: 'radicchio'}).toArray(function(error, docs) {
                 if (error) t.fail(error)
 
                 t.notOk(agent.getTransaction(), 'should be no transaction')

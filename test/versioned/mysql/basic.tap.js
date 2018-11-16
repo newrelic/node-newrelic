@@ -239,10 +239,17 @@ tap.test('Basic run through mysql functionality', {timeout : 30 * 1000}, functio
               'Datastore/statement/MySQL/unknown/select'
             )
             var queryNodeDuration = segment.timer.getDurationInMillis()
-            t.ok(Math.abs(duration - queryNodeDuration) < 50,
-                'query duration should be roughly be the time between query and end')
-            t.ok(traceRootDuration - queryNodeDuration > 900,
-                'query duration should be small compared to transaction duration')
+
+            t.ok(
+              Math.abs(duration - queryNodeDuration) < 50,
+              'query duration should be roughly be the time between query and end'
+            )
+
+            t.ok(
+              traceRootDuration - queryNodeDuration > 900,
+              'query duration should be small compared to transaction duration'
+            )
+
             t.end()
           })
         }, 2000)

@@ -55,6 +55,47 @@ describe('Transaction', function() {
     trans.end()
   })
 
+  describe('when distributed tracing is enabled', function() {
+    beforeEach(function() {
+      agent.config.distributed_tracing.enabled = true
+    })
+
+    afterEach(function() {
+      agent.config.distributed_tracing.enabled = false
+    })
+
+    it('should produce span events when finalizing', function(done) {
+      agent.once('transactionFinished', function() {
+        expect(agent.spans.length).to.equal(1)
+
+        return done()
+      })
+      helper.runInTransaction(agent, function(txn) {
+
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.end()
+      })
+    })
+
+    it('should not produce span events when ignored', function(done) {
+      agent.once('transactionFinished', function() {
+        expect(agent.spans.length).to.equal(0)
+
+        return done()
+      })
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.ignore = true
+        txn.end()
+      })
+    })
+  })
+
   it('should hand itself off to the agent upon finalization', function(done) {
     agent.on('transactionFinished', function(inner) {
       expect(inner).equal(trans)

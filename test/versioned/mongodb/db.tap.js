@@ -144,13 +144,13 @@ dbTest('collections', [], function collectionTest(t, db, verify) {
 
 dbTest('command', [], function commandTest(t, db, verify) {
   db.command({ping: 1}, function onCommand(err, result) {
-   t.error(err, 'should not have error')
-   t.deepEqual(result, {ok: 1}, 'got correct result')
-   verify([
-     'Datastore/operation/MongoDB/command',
-     'Callback: onCommand',
-   ])
- })
+    t.error(err, 'should not have error')
+    t.deepEqual(result, {ok: 1}, 'got correct result')
+    verify([
+      'Datastore/operation/MongoDB/command',
+      'Callback: onCommand',
+    ])
+  })
 })
 
 dbTest('createCollection', ['testCollection'], function createTest(t, db, verify) {

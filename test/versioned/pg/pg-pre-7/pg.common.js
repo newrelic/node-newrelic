@@ -59,7 +59,7 @@ module.exports = function runTests(name, clientFactory) {
         runTest()
       })
     })
-   }
+  }
 
   function verify(t, segment, selectTable) {
     verifyMetrics(t, segment, selectTable)
@@ -136,8 +136,11 @@ module.exports = function runTests(name, clientFactory) {
 
     if (!getSegment) return
 
-    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
-             'should register the query call')
+    t.equals(
+      getSegment.name,
+      'Datastore/statement/Postgres/' + selectTable + '/select',
+      'should register the query call'
+    )
 
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
@@ -502,8 +505,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     // https://github.com/newrelic/node-newrelic/pull/223
-    t.test("query using an config object with `text` getter instead of property",
-        function(t) {
+    t.test("query using an config object with `text` getter instead of property", (t) => {
       t.plan(3)
       var client = new pg.Client(CON_OBJ)
 

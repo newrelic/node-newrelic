@@ -50,7 +50,13 @@ tap.test('Hapi v17 error handling', function(t) {
 
     runTest(t, function(errors, statusCode) {
       t.equals(errors.length, 1, 'should have one error')
-      t.equals(errors[0][2], 'rejected promise error', 'should have expected error message')
+
+      t.equals(
+        errors[0][2],
+        'rejected promise error',
+        'should have expected error message'
+      )
+
       t.equals(statusCode, 500, 'should have expected error code')
       t.end()
     })
@@ -198,7 +204,7 @@ function runTest(t, callback) {
   var endpoint = '/test'
   server.start().then(function() {
     port = server.info.port
-    makeRequest(server, endpoint, function(response) {
+    makeRequest(endpoint, function(response) {
       statusCode = response.statusCode
       if (errors) {
         callback(errors, statusCode)
@@ -211,6 +217,6 @@ function runTest(t, callback) {
   })
 }
 
-function makeRequest(server, path, callback) {
+function makeRequest(path, callback) {
   http.request({port: port, path: path}, callback).end()
 }

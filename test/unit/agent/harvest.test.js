@@ -131,7 +131,7 @@ describe('Agent harvests', () => {
       expect(agent.metrics.empty).to.be.false
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
 
         expect(agent.metrics.empty).to.be.false
@@ -312,7 +312,7 @@ describe('Agent harvests', () => {
       expect(agent.errors.errors).to.have.length(3)
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
 
         expect(agent.errors).to.have.length(3) // <-- Events length
@@ -434,7 +434,7 @@ describe('Agent harvests', () => {
       expect(agent.traces.trace).to.exist
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
 
         expect(agent.traces.trace).to.exist
@@ -571,7 +571,7 @@ describe('Agent harvests', () => {
           expect(agent.events).to.have.length(0)
         }
       ], function handleError(err) {
-        expect(err).to.exist
+        expect(err).to.not.exist
         expect(agent.events.toArray()).to.have.members(expectedEvents)
         done()
       })
@@ -604,7 +604,7 @@ describe('Agent harvests', () => {
       const event = agent.events.toArray()[0]
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
         expect(agent.events).to.have.length(1)
         expect(agent.events.toArray()[0]).to.equal(event)
@@ -699,7 +699,7 @@ describe('Agent harvests', () => {
       expect(agent.customEvents).to.have.length(1)
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
         expect(agent.customEvents).to.have.length(1)
 
@@ -808,7 +808,7 @@ describe('Agent harvests', () => {
       expect(agent.queries.samples).to.have.property('size', 1)
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
         expect(agent.queries.samples).to.have.property('size', 1)
 
@@ -906,7 +906,7 @@ describe('Agent harvests', () => {
       expect(agent.spans).to.have.length(1)
 
       agent.harvest((err) => {
-        expect(err).to.exist
+        expect(err).to.not.exist
         harvest.done()
         expect(agent.spans).to.have.length(1)
 

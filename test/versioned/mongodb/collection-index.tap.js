@@ -5,30 +5,32 @@ var common = require('./collection-common')
 
 common.test('createIndex', function createIndexTest(t, collection, verify) {
   collection.createIndex('i', function onIndex(err, data) {
-      t.error(err)
-      t.equal(data, 'i_1')
-      verify(null, [
-          'Datastore/statement/MongoDB/testCollection/createIndex',
-          'Callback: onIndex'
-        ],
-        ['createIndex']
-      )
-    }
-  )
+    t.error(err)
+    t.equal(data, 'i_1')
+    verify(
+      null,
+      [
+        'Datastore/statement/MongoDB/testCollection/createIndex',
+        'Callback: onIndex'
+      ],
+      ['createIndex']
+    )
+  })
 })
 
 common.test('dropAllIndexes', function dropAllIndexesTest(t, collection, verify) {
   collection.dropAllIndexes(function done(err, data) {
-      t.error(err)
-      t.equal(data, true)
-      verify(null, [
-          'Datastore/statement/MongoDB/testCollection/dropAllIndexes',
-          'Callback: done'
-        ],
-        ['dropAllIndexes']
-      )
-    }
-  )
+    t.error(err)
+    t.equal(data, true)
+    verify(
+      null,
+      [
+        'Datastore/statement/MongoDB/testCollection/dropAllIndexes',
+        'Callback: done'
+      ],
+      ['dropAllIndexes']
+    )
+  })
 })
 
 common.test('dropIndex', function dropIndexTest(t, collection, verify) {
@@ -37,7 +39,9 @@ common.test('dropIndex', function dropIndexTest(t, collection, verify) {
     collection.dropIndex('i_1', function done(err, data) {
       t.error(err)
       t.equal(data.ok, 1)
-      verify(null, [
+      verify(
+        null,
+        [
           'Datastore/statement/MongoDB/testCollection/createIndex',
           'Callback: onIndex',
           'Datastore/statement/MongoDB/testCollection/dropIndex',
@@ -53,7 +57,9 @@ common.test('ensureIndex', function ensureIndexTest(t, collection, verify) {
   collection.ensureIndex('i', function done(err, data) {
     t.error(err)
     t.equal(data, 'i_1')
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/ensureIndex',
         'Callback: done'
       ],
@@ -73,7 +79,9 @@ common.test('indexes', function indexesTest(t, collection, verify) {
       ns: common.DB_NAME + '.testCollection'
     }, 'should have expected results')
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/indexes',
         'Callback: done'
       ],
@@ -87,7 +95,9 @@ common.test('indexExists', function indexExistsTest(t, collection, verify) {
     t.error(err)
     t.equal(data, true)
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/indexExists',
         'Callback: done'
       ],
@@ -101,7 +111,9 @@ common.test('indexInformation', function indexInformationTest(t, collection, ver
     t.error(err)
     t.deepEqual(data && data._id_, [['_id', 1]], 'should have expected results')
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/indexInformation',
         'Callback: done'
       ],
@@ -115,7 +127,9 @@ common.test('reIndex', function reIndexTest(t, collection, verify) {
     t.error(err)
     t.equal(data, true)
 
-    verify(null, [
+    verify(
+      null,
+      [
         'Datastore/statement/MongoDB/testCollection/reIndex',
         'Callback: done'
       ],
