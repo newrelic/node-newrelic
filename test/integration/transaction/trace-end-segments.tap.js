@@ -1,11 +1,13 @@
+'use strict'
+
 var API = require('../../../api')
 var helper = require('../../lib/agent_helper')
 var test = require('tap').test
 
-test('running custom segment should have its timer ended', function (t) {
+test('running custom segment should have its timer ended', function(t) {
   var agent = helper.loadTestAgent(t)
   var newrelic = new API(agent)
-  helper.runInTransaction(agent, function (transaction) {
+  helper.runInTransaction(agent, function(transaction) {
     var segmentName = 'my-tracer'
     // createTracer creates a segment as a child of the current segment and
     // immediately starts the timer.
@@ -20,8 +22,8 @@ test('running custom segment should have its timer ended', function (t) {
     t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
 
     // In a timeout to give it some duration above 0.
-    setTimeout(function () {
-      transaction.end(function () {
+    setTimeout(function() {
+      transaction.end(function() {
         t.notOk(
           segment.timer.isActive(),
           'segment timer should have been stopped by tx end'
@@ -55,10 +57,10 @@ test('running custom segment should have its timer ended', function (t) {
 })
 
 
-test('touched custom segment should have its timer ended', function (t) {
+test('touched custom segment should have its timer ended', function(t) {
   var agent = helper.loadTestAgent(t)
   var newrelic = new API(agent)
-  helper.runInTransaction(agent, function (transaction) {
+  helper.runInTransaction(agent, function(transaction) {
     var segmentName = 'my-tracer'
     // createTracer creates a segment as a child of the current segment and
     // immediately starts the timer.
@@ -73,14 +75,14 @@ test('touched custom segment should have its timer ended', function (t) {
     t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
 
     // In a timeout to give it some duration above 0.
-    setTimeout(function () {
+    setTimeout(function() {
       segment.touch()
       t.ok(segment.timer.isRunning(), 'timer should still be running')
 
       var touchDuration = segment.getDurationInMillis()
 
-      setTimeout(function () {
-        transaction.end(function () {
+      setTimeout(function() {
+        transaction.end(function() {
           t.notOk(
             segment.timer.isActive(),
             'segment timer should have been stopped by tx end'
@@ -115,10 +117,10 @@ test('touched custom segment should have its timer ended', function (t) {
   })
 })
 
-test('ending segment early adds Truncated prefix to its name', function (t) {
+test('ending segment early adds Truncated prefix to its name', function(t) {
   var agent = helper.loadTestAgent(t)
   var newrelic = new API(agent)
-  helper.runInTransaction(agent, function (transaction) {
+  helper.runInTransaction(agent, function(transaction) {
     var segmentName = 'my-tracer'
     var tracedFn = newrelic.createTracer(segmentName, noop)
 
@@ -126,8 +128,8 @@ test('ending segment early adds Truncated prefix to its name', function (t) {
     var segment = parent.children[0]
 
     // In a timeout to give it some duration above 0.
-    setTimeout(function () {
-      transaction.end(function () {
+    setTimeout(function() {
+      transaction.end(function() {
         t.equal(segment.name, 'Truncated/my-tracer')
         // end the segment
         tracedFn()
@@ -139,26 +141,27 @@ test('ending segment early adds Truncated prefix to its name', function (t) {
 })
 
 test('segment ended before transaction ends should not have Truncated prefix in its name',
-    function (t) {
-  var agent = helper.loadTestAgent(t)
-  var newrelic = new API(agent)
-  helper.runInTransaction(agent, function (transaction) {
-    var segmentName = 'my-tracer'
-    var tracedFn = newrelic.createTracer(segmentName, noop)
+  function(t) {
+    var agent = helper.loadTestAgent(t)
+    var newrelic = new API(agent)
+    helper.runInTransaction(agent, function(transaction) {
+      var segmentName = 'my-tracer'
+      var tracedFn = newrelic.createTracer(segmentName, noop)
 
-    var parent = agent.tracer.getSegment()
-    var segment = parent.children[0]
+      var parent = agent.tracer.getSegment()
+      var segment = parent.children[0]
 
-    // In a timeout to give it some duration above 0.
-    setTimeout(function () {
-      // end the segment
-      tracedFn()
-      transaction.end(function () {
-        t.equal(segment.name, 'my-tracer')
-        t.end()
-      })
-    }, 50)
-  })
-})
+      // In a timeout to give it some duration above 0.
+      setTimeout(function() {
+        // end the segment
+        tracedFn()
+        transaction.end(function() {
+          t.equal(segment.name, 'my-tracer')
+          t.end()
+        })
+      }, 50)
+    })
+  }
+)
 
-function noop () {}
+function noop() {}
