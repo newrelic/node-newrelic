@@ -219,12 +219,12 @@ describe('RemoteMethod', function() {
   })
 
   describe('when posting to collector', function() {
-    var RUN_ID = 1337
-    var URL = 'https://collector.newrelic.com'
-    var nock
-    var config
-    var method
-    var sendMetrics
+    const RUN_ID = 1337
+    const URL = 'https://collector.newrelic.com'
+    let nock = null
+    let config = null
+    let method = null
+    let sendMetrics = null
 
 
     before(function() {
@@ -370,6 +370,28 @@ describe('RemoteMethod', function() {
         method._post('[]', function(error) {
           expect(error.statusCode).equal(500)
 
+          done()
+        })
+      })
+    })
+
+    describe('with an error', () => {
+      let thrown = null
+      let originalSafeRequest = null
+
+      beforeEach(() => {
+        thrown = new Error('whoops!')
+        originalSafeRequest = method._safeRequest
+        method._safeRequest = () => {throw thrown}
+      })
+
+      afterEach(() => {
+        method._safeRequest = originalSafeRequest
+      })
+
+      it('should not allow the error to go uncaught', (done) => {
+        method._post('[]', (caught) => {
+          expect(caught).to.equal(thrown)
           done()
         })
       })
