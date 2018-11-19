@@ -311,7 +311,7 @@ describe('utilization', function() {
             break
 
           case 'input_ip_address':
-            mockIpAddresses(testValue) 
+            mockIpAddresses(testValue)
             break
 
           // Ignore these keys.
