@@ -316,7 +316,7 @@ describe('utilization', function() {
 
           // Ignore these keys.
           case 'testname':
-          case 'input_full_hostname':
+          case 'input_full_hostname': // We don't collect full hostnames
           case 'expected_output_json':
             break
 
@@ -327,6 +327,7 @@ describe('utilization', function() {
       })
 
       var expected = test.expected_output_json
+      // We don't collect full hostnames
       delete expected.full_hostname
 
       // Stub out docker container id query to make this consistent on all OSes.
@@ -496,6 +497,8 @@ describe('boot_id', function() {
         common.readProc = mockReadProc
       }
       facts(agent, function getFacts(factsed) {
+        // There are keys in the facts that aren't accounted for in the
+        // expected object (namely ip addresses).
         Object.keys(expected).forEach((key) => {
           expect(factsed.utilization[key]).to.equal(expected[key])
         })
