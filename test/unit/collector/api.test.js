@@ -227,16 +227,16 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                .post(helper.generateCollectorPath('preconnect'))
-                .reply(200, {
-                  return_value: {
-                    redirect_host: HOST + ':chug:8089',
-                    security_policies: {}
-                  }
-                })
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {
+                redirect_host: HOST + ':chug:8089',
+                security_policies: {}
+              }
+            })
           var connect = nock(URL)
-                .post(helper.generateCollectorPath('connect'))
-                .reply(200, {return_value: {agent_run_id: RUN_ID}})
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
           api._login(function test(error, config) {
             captured = error
