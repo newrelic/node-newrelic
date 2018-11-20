@@ -146,7 +146,7 @@ describe('Trace', function() {
     expect(nested).to.have.property('sampled', transaction.sampled)
     expect(nested).to.have.property('name', 'nested')
     expect(nested).to.have.property('traceId', transaction.id)
-    expect(nested).to.have.property('timestamp', child1.timer.start)
+    expect(nested).to.have.property('timestamp')
 
     expect(testSpan).to.have.property('parentId', null)
     expect(testSpan).to.have.property('nr.entryPoint').and.be.true
@@ -156,7 +156,7 @@ describe('Trace', function() {
     expect(testSpan).to.have.property('sampled', transaction.sampled)
     expect(testSpan).to.have.property('name', 'test')
     expect(testSpan).to.have.property('traceId', transaction.id)
-    expect(testSpan).to.have.property('timestamp', child2.timer.start)
+    expect(testSpan).to.have.property('timestamp')
   })
 
   it('should not generate span events on end if span_events is disabled', function() {
