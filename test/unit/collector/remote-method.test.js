@@ -394,7 +394,7 @@ describe('RemoteMethod', () => {
       })
 
       it('should not allow the error to go uncaught', (done) => {
-        method._post('[]', (caught) => {
+        method._post('[]', null, (caught) => {
           expect(caught).to.equal(thrown)
           done()
         })

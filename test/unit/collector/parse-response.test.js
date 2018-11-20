@@ -9,7 +9,6 @@ const semver = require('semver')
 
 describe('collector response parser', () => {
   it('should call back with an error if called with no collector method name', (done) => {
-    var response = {statusCode : 200}
     parse(null, {statusCode: 200}, (err) => {
       expect(err)
         .to.be.an.instanceOf(Error)
