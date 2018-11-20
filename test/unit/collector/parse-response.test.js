@@ -8,21 +8,23 @@ const semver = require('semver')
 
 
 describe('collector response parser', () => {
-  it('should throw if called without a collector method name', () => {
+  it('should call back with an error if called with no collector method name', (done) => {
     var response = {statusCode : 200}
-    function callback() {}
-
-    expect(() => {
-      parse(undefined, response, callback)
-    }).throws('collector method name required!')
+    parse(null, {statusCode: 200}, (err) => {
+      expect(err)
+        .to.be.an.instanceOf(Error)
+        .and.have.property('message', 'collector method name required!')
+      done()
+    })
   })
 
-  it('should throw if called without a response', () => {
-    function callback() {}
-
-    expect(() => {
-      parse('TEST', undefined, callback)
-    }).throws('HTTP response required!')
+  it('should call back with an error if called without a response', (done) => {
+    parse('TEST', null, (err) => {
+      expect(err)
+        .to.be.an.instanceOf(Error)
+        .and.have.property('message', 'HTTP response required!')
+      done()
+    })
   })
 
   it('should throw if called without a callback', () => {
