@@ -226,10 +226,10 @@ describe('RemoteMethod', () => {
   describe('when posting to collector', () => {
     const RUN_ID = 1337
     const URL = 'https://collector.newrelic.com'
-    let nock
-    let config
-    let method
-    let sendMetrics
+    let nock = null
+    let config = null
+    let method = null
+    let sendMetrics = null
 
     before(() => {
       // order dependency: requiring nock at the top of the file breaks other tests
@@ -374,6 +374,28 @@ describe('RemoteMethod', () => {
         method._post('[]', mockHeaders, (error) => {
           expect(error.statusCode).equal(500)
 
+          done()
+        })
+      })
+    })
+
+    describe('with an error', () => {
+      let thrown = null
+      let originalSafeRequest = null
+
+      beforeEach(() => {
+        thrown = new Error('whoops!')
+        originalSafeRequest = method._safeRequest
+        method._safeRequest = () => {throw thrown}
+      })
+
+      afterEach(() => {
+        method._safeRequest = originalSafeRequest
+      })
+
+      it('should not allow the error to go uncaught', (done) => {
+        method._post('[]', null, (caught) => {
+          expect(caught).to.equal(thrown)
           done()
         })
       })

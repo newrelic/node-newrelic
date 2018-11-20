@@ -227,16 +227,16 @@ describe('CollectorAPI', function() {
 
         before(function(done) {
           var redirection = nock(URL)
-                .post(helper.generateCollectorPath('preconnect'))
-                .reply(200, {
-                  return_value: {
-                    redirect_host: HOST + ':chug:8089',
-                    security_policies: {}
-                  }
-                })
+            .post(helper.generateCollectorPath('preconnect'))
+            .reply(200, {
+              return_value: {
+                redirect_host: HOST + ':chug:8089',
+                security_policies: {}
+              }
+            })
           var connect = nock(URL)
-                .post(helper.generateCollectorPath('connect'))
-                .reply(200, {return_value: {agent_run_id: RUN_ID}})
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
           api._login(function test(error, config) {
             captured = error
@@ -1049,9 +1049,13 @@ describe('CollectorAPI', function() {
   })
 
   describe('errorData', function() {
-    it('requires errors to send', function() {
-      expect(function() { api.errorData(null, function() {}) })
-        .to.throw('must pass errors to send')
+    it('requires errors to send', (done) => {
+      api.errorData(null, (err) => {
+        expect(err)
+          .to.be.an.instanceOf(Error)
+          .and.have.property('message', 'must pass errors to send')
+        done()
+      })
     })
 
     it('requires a callback', function() {
@@ -1104,9 +1108,13 @@ describe('CollectorAPI', function() {
   })
 
   describe('queryData', function() {
-    it('requires queries to send', function() {
-      expect(function() { api.queryData(null, function() {}) })
-        .to.throw('must pass queries to send')
+    it('requires queries to send', (done) => {
+      api.queryData(null, (err) => {
+        expect(err)
+          .to.be.an.instanceOf(Error)
+          .and.have.property('message', 'must pass queries to send')
+        done()
+      })
     })
 
     it('requires a callback', function() {
@@ -1165,9 +1173,13 @@ describe('CollectorAPI', function() {
   })
 
   describe('analyticsEvents', function() {
-    it('requires errors to send', function() {
-      expect(function() { api.analyticsEvents(null, function() {}) })
-        .to.throw('must pass events to send')
+    it('requires errors to send', (done) => {
+      api.analyticsEvents(null, (err) => {
+        expect(err)
+          .to.be.an.instanceOf(Error)
+          .and.have.property('message', 'must pass events to send')
+        done()
+      })
     })
 
     it('requires a callback', function() {
@@ -1225,9 +1237,13 @@ describe('CollectorAPI', function() {
   })
 
   describe('metricData', function() {
-    it('requires metrics to send', function() {
-      expect(function() { api.metricData(null, function() {}) })
-        .to.throw('must pass metrics to send')
+    it('requires metrics to send', (done) => {
+      api.metricData(null, (err) => {
+        expect(err)
+          .to.be.an.instanceOf(Error)
+          .and.have.property('message', 'must pass metrics to send')
+        done()
+      })
     })
 
     it('requires a callback', function() {
@@ -1282,9 +1298,13 @@ describe('CollectorAPI', function() {
   })
 
   describe('transactionSampleData', function() {
-    it('requires slow trace data to send', function() {
-      expect(function() { api.transactionSampleData(null, function() {}) })
-        .to.throw('must pass slow trace data to send')
+    it('requires slow trace data to send', (done) => {
+      api.transactionSampleData(null, (err) => {
+        expect(err)
+          .to.be.an.instanceOf(Error)
+          .and.have.property('message', 'must pass slow trace data to send')
+        done()
+      })
     })
 
     it('requires a callback', function() {
