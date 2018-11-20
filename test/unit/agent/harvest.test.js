@@ -451,9 +451,8 @@ describe('Agent harvests', () => {
 
     beforeEach((done) => {
       helper.runInTransaction(agent, (transaction) => {
-        tx = transaction
-        tx.finalizeNameFromUri('/some/test/url', 200)
-        tx.end(() => done())
+        transaction.finalizeNameFromUri('/some/test/url', 200)
+        transaction.end(() => done())
       })
     })
 
