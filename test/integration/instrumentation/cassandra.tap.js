@@ -40,19 +40,19 @@ function cassSetup(runTest) {
 
   async.series(
     [
-      function (callback) {
+      function(callback) {
         setupClient.execute(ksDrop, callback)
       },
-      function (callback) {
+      function(callback) {
         setupClient.execute(ksCreate, callback)
       },
-      function (callback) {
+      function(callback) {
         setupClient.execute(famCreate, callback)
       }
     ],
-    function(err, results) {
+    function(err) {
       if (err) {
-       throw err
+        throw err
       }
       setupClient.shutdown()
       runTest()
@@ -61,13 +61,11 @@ function cassSetup(runTest) {
 }
 
 
-test("Cassandra instrumentation",
-    {timeout: 5000},
-      function (t) {
-        t.plan(2)
+test("Cassandra instrumentation", {timeout: 5000}, function(t) {
+  t.plan(2)
   cassSetup(runTest)
   function runTest() {
-    t.test("executeBatch", function (t) {
+    t.test("executeBatch", function(t) {
       t.notOk(agent.getTransaction(), "no transaction should be in play")
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -93,7 +91,7 @@ test("Cassandra instrumentation",
           }
         ]
 
-        client.executeBatch(insArr, function (error, ok) {
+        client.executeBatch(insArr, function(error, ok) {
           if (error) return t.fail(error)
 
           t.ok(agent.getTransaction(), "transaction should still be visible")
@@ -101,7 +99,7 @@ test("Cassandra instrumentation",
 
           var selQuery = 'SELECT * FROM ' + KS + '.' + FAM + ' WHERE '
           selQuery += PK + ' = 111;'
-          client.execute(selQuery, function (error, value) {
+          client.execute(selQuery, function(error, value) {
             if (error) return t.fail(error)
 
             t.ok(agent.getTransaction(), "transaction should still still be visible")
@@ -112,21 +110,39 @@ test("Cassandra instrumentation",
             var trace = transaction.trace
             t.ok(trace, "trace should exist")
             t.ok(trace.root, "root element should exist")
-            t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root")
+            t.equals(
+              trace.root.children.length,
+              1,
+              "there should be only one child of the root"
+            )
 
             var setSegment = trace.root.children[0]
             t.ok(setSegment, "trace segment for insert should exist")
-            t.equals(setSegment.name, "Datastore/statement/Cassandra/test.testFamily/insert/batch",
-                   "should register the executeBatch")
-            t.ok(setSegment.children.length >= 2,
-                   "set should have atleast a dns lookup and callback child")
+
+            t.equals(
+              setSegment.name,
+              "Datastore/statement/Cassandra/test.testFamily/insert/batch",
+              "should register the executeBatch"
+            )
+
+            t.ok(
+              setSegment.children.length >= 2,
+              "set should have atleast a dns lookup and callback child"
+            )
+
             var getSegment = setSegment.children[1].children[0]
             t.ok(getSegment, "trace segment for select should exist")
-            t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
-                   "should register the execute")
-            t.ok(getSegment.children.length >= 1,
-                   "get should have a callback segment")
+
+            t.equals(
+              getSegment.name, "Datastore/operation/Cassandra/execute",
+              "should register the execute"
+            )
+
+            t.ok(
+              getSegment.children.length >= 1,
+              "get should have a callback segment"
+            )
+
             t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
 
             transaction.end(function() {
@@ -137,7 +153,7 @@ test("Cassandra instrumentation",
       })
     })
 
-    t.test('executeAsPrepared', function (t) {
+    t.test('executeAsPrepared', function(t) {
       t.notOk(agent.getTransaction(), "no transaction should be in play")
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -147,7 +163,7 @@ test("Cassandra instrumentation",
         var pkVal = 444
         var insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' + COL
         insQuery += ') VALUES(?, ?);'
-        client.executeAsPrepared(insQuery, [pkVal, colVal], function (error, ok) {
+        client.executeAsPrepared(insQuery, [pkVal, colVal], function(error, ok) {
           if (error) return t.fail(error)
 
           t.ok(agent.getTransaction(), "transaction should still be visible")
@@ -155,7 +171,7 @@ test("Cassandra instrumentation",
 
           var selQuery = 'SELECT * FROM ' + KS + '.' + FAM + ' WHERE '
           selQuery += PK + ' = ' + pkVal + ';'
-          client.execute(selQuery, function (error, value) {
+          client.execute(selQuery, function(error, value) {
             if (error) return t.fail(error)
             t.ok(agent.getTransaction(), "transaction should still still be visible")
             t.equals(value.rows[0][COL], colVal, "Cassandra client should still work")
@@ -163,20 +179,39 @@ test("Cassandra instrumentation",
             var trace = transaction.trace
             t.ok(trace, "trace should exist")
             t.ok(trace.root, "root element should exist")
-            t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root")
+
+            t.equals(
+              trace.root.children.length, 1,
+              "there should be only one child of the root"
+            )
+
             var setSegment = trace.root.children[0]
             t.ok(setSegment, "trace segment for set should exist")
-            t.equals(setSegment.name, "Datastore/operation/Cassandra/executeAsPrepared",
-                   "should register the executeAsPrepared")
-            t.ok(setSegment.children.length >= 1,
-                   "set should have a callback segment")
+            t.equals(
+              setSegment.name,
+              "Datastore/operation/Cassandra/executeAsPrepared",
+              "should register the executeAsPrepared"
+            )
+
+            t.ok(
+              setSegment.children.length >= 1,
+              "set should have a callback segment"
+            )
+
             var getSegment = setSegment.children[0].children[0]
             t.ok(getSegment, "trace segment for get should exist")
-            t.equals(getSegment.name, "Datastore/operation/Cassandra/execute",
-                   "should register the execute")
-            t.ok(getSegment.children.length >= 1,
-                   "should have a callback")
+
+            t.equals(
+              getSegment.name,
+              "Datastore/operation/Cassandra/execute",
+              "should register the execute"
+            )
+
+            t.ok(
+              getSegment.children.length >= 1,
+              "should have a callback"
+            )
+
             t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
 
             transaction.end(function() {
@@ -187,7 +222,7 @@ test("Cassandra instrumentation",
       })
     })
 
-    t.tearDown(function () {
+    t.tearDown(function() {
       helper.unloadAgent(agent)
       client.shutdown()
     })
