@@ -430,7 +430,7 @@ describe('CollectorAPI', function() {
         })
       })
 
-      describe('receiving InvalidLicenseKey after preconnect', function() {
+      describe('receiving a 401 after preconnect', function() {
         var captured
         var data
         var raw
@@ -443,10 +443,10 @@ describe('CollectorAPI', function() {
           }
         }
 
-        before(function(done) {
+        beforeEach(function(done) {
           var redirection = nock(URL)
             .post(helper.generateCollectorPath('preconnect'))
-            .reply(200, response)
+            .reply(401, response)
 
           api._login(function test(error, res, json) {
             captured = error
@@ -463,16 +463,12 @@ describe('CollectorAPI', function() {
         })
 
         it('should have a status code on the error', function() {
-          expect(captured.statusCode).equal(200)
+          expect(captured.statusCode).equal(401)
         })
 
         it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal('Invalid license key. Please contact support@newrelic.com.')
-        })
-
-        it('should have included the New Relic error class', function() {
-          expect(captured.class).to.equal('NewRelic::Agent::LicenseException')
+            .equal('Got HTTP 401 in response to preconnect.')
         })
 
         it('should have no return value', function() {
@@ -832,9 +828,9 @@ describe('CollectorAPI', function() {
         var captured = null
         var body = null
 
-        before(function(done) {
+        beforeEach(function(done) {
           var redirectURL = helper.generateCollectorPath('preconnect')
-          var failure = nock(URL).post(redirectURL).times(1).reply(503, exception)
+          var failure = nock(URL).post(redirectURL).times(1).reply(410, exception)
 
           api.connect(function test(error, response) {
             captured = error
@@ -850,12 +846,12 @@ describe('CollectorAPI', function() {
         })
 
         it('should have passed on the status code', function() {
-          expect(captured.statusCode).to.equal(503)
+          expect(captured.statusCode).to.equal(410)
         })
 
         it('should have included an informative error message', function() {
           expect(captured.message)
-            .to.equal('fake force disconnect')
+            .to.equal('Got HTTP 410 in response to preconnect.')
         })
 
         it('should not have a response body', function() {
@@ -863,14 +859,14 @@ describe('CollectorAPI', function() {
         })
       })
 
-      describe('retries preconnect until forced to disconnect', function() {
+      describe('retries preconnect until forced to disconnect (410)', function() {
         var captured = null
         var body = null
 
         before(function(done) {
           var redirectURL = helper.generateCollectorPath('preconnect')
           var failure = nock(URL).post(redirectURL).times(500).reply(503)
-          var disconnect = nock(URL).post(redirectURL).times(1).reply(503, exception)
+          var disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
           api.connect(function test(error, response) {
             captured = error
             body = response
@@ -886,12 +882,12 @@ describe('CollectorAPI', function() {
         })
 
         it('should have passed on the status code', function() {
-          expect(captured.statusCode).to.equal(503)
+          expect(captured.statusCode).to.equal(410)
         })
 
         it('should have included an informative error message', function() {
           expect(captured.message)
-            .to.equal('fake force disconnect')
+            .to.equal('Got HTTP 410 in response to preconnect.')
         })
 
         it('should not have a response body', function() {
@@ -899,7 +895,7 @@ describe('CollectorAPI', function() {
         })
       })
 
-      describe('fails on receiving InvalidLicenseKey', function() {
+      describe('retries on receiving invalid license key (401)', function() {
         var captured = null
         var data = null
         var raw = null
@@ -912,8 +908,8 @@ describe('CollectorAPI', function() {
         }
 
         before(function(done) {
-          var redirectURL = helper.generateCollectorPath('preconnect')
-          failure = nock(URL).post(redirectURL).times(1).reply(200, error)
+          var preconnectURL = helper.generateCollectorPath('preconnect')
+          failure = nock(URL).post(preconnectURL).times(5).reply(401, error)
 
           api.connect(function test(error, response, json) {
             captured = error
@@ -934,74 +930,7 @@ describe('CollectorAPI', function() {
         })
 
         it('should have a status code on the error', function() {
-          expect(captured.statusCode).equal(200)
-        })
-
-        it('should have included an informative error message', function() {
-          expect(captured.message)
-            .equal('Invalid license key. Please contact support@newrelic.com.')
-        })
-
-        it('should have included the New Relic error class', function() {
-          expect(captured.class).to.equal('NewRelic::Agent::LicenseException')
-        })
-
-        it('should have no return value', function() {
-          should.not.exist(data)
-        })
-
-        it('should have passed along raw response', function() {
-          expect(raw).eql(error)
-        })
-      })
-
-      describe('fails on receiving InvalidLicenseKey after one 503', function() {
-        var captured = null
-        var data = null
-        var raw = null
-        var failure = null
-        var license = null
-        var error = {
-          exception: {
-            message: 'Invalid license key. Please contact support@newrelic.com.',
-            error_type: 'NewRelic::Agent::LicenseException'
-          }
-        }
-
-        before(function(done) {
-          var redirectURL = helper.generateCollectorPath('preconnect')
-          failure = nock(URL).post(redirectURL).reply(503)
-          license = nock(URL).post(redirectURL).times(1).reply(200, error)
-
-          api.connect(function test(error, response, json) {
-            captured = error
-            data = response
-            raw = json
-
-            done()
-          })
-        })
-
-        it('should call the expected number of times', function() {
-          failure.done()
-          license.done()
-        })
-
-        it('should have gotten an error', function() {
-          should.exist(captured)
-        })
-
-        it('should have a status code on the error', function() {
-          expect(captured.statusCode).equal(200)
-        })
-
-        it('should have included an informative error message', function() {
-          expect(captured.message)
-            .equal('Invalid license key. Please contact support@newrelic.com.')
-        })
-
-        it('should have included the New Relic error class', function() {
-          expect(captured.class).to.equal('NewRelic::Agent::LicenseException')
+          expect(captured.statusCode).equal(401)
         })
 
         it('should have no return value', function() {
@@ -1487,19 +1416,13 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should discard InternalLimitExceeded exceptions', function(done) {
-      var exception = {
-        exception: {
-          message: 'Trace memory limit exceeded: 32MB -- discarding trace for 1337',
-          error_type: 'NewRelic::Agent::InternalLimitExceeded'
-        }
-      }
-
+    it('should discard 413 exceptions', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
-        .reply(200, exception)
-      function tested(error) {
+        .reply(413)
+      function tested(error, command) {
         should.not.exist(error)
+        expect(command).to.have.property('retainData', false)
 
         failure.done()
         done()
@@ -1538,20 +1461,13 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should retain data after InvalidLicenseKey errors', function(done) {
-      var exception = {
-        exception: {
-          message: 'Your license key is invalid or the collector is busted.',
-          error_type: 'NewRelic::Agent::LicenseException'
-        }
-      }
-
+    it('should discard data after 401 errors', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
-        .reply(200, exception)
+        .reply(401, {})
       function tested(error, command) {
         expect(error).to.not.exist
-        expect(command).to.have.property('retainData', true)
+        expect(command).to.have.property('retainData', false)
 
         failure.done()
         done()
@@ -1560,7 +1476,7 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    describe('on ForceRestartException', function() {
+    describe('on 409 status', function() {
       var restart = null
       var shutdown = null
       var redirect = null
@@ -1568,16 +1484,9 @@ describe('CollectorAPI', function() {
       var succeed = null
 
       beforeEach(function() {
-        var exception = {
-          exception: {
-            message: 'Yo, break off a piece of that Irish Sprang!',
-            error_type: 'NewRelic::Agent::ForceRestartException'
-          }
-        }
-
         restart = nock(URL)
           .post(helper.generateCollectorPath('metric_data', 31337))
-          .reply(200, exception)
+          .reply(409, {return_value: {}})
         shutdown = nock(URL)
           .post(helper.generateCollectorPath('shutdown', 31337))
           .reply(200, {return_value: null})
@@ -1629,17 +1538,10 @@ describe('CollectorAPI', function() {
       })
     })
 
-    it('should stop the agent on ForceDisconnectException', function(done) {
-      var exception = {
-        exception: {
-          message: 'Wake up! Time to die!',
-          error_type: 'NewRelic::Agent::ForceDisconnectException'
-        }
-      }
-
+    it('should stop the agent on 410 (force disconnect)', function(done) {
       var restart = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
-        .reply(200, exception)
+        .reply(410)
       var shutdown = nock(URL)
         .post(helper.generateCollectorPath('shutdown', 31337))
         .reply(200, {return_value: null})
@@ -1668,7 +1570,7 @@ describe('CollectorAPI', function() {
 
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
-        .reply(200, exception)
+        .reply(503, exception)
       function tested(error, command) {
         expect(error).to.not.exist
         expect(command).to.have.property('retainData', true)
@@ -1690,7 +1592,7 @@ describe('CollectorAPI', function() {
 
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
-        .reply(200, exception)
+        .reply(500, exception)
       function tested(error, command) {
         expect(error).to.not.exist
         expect(command).to.have.property('retainData', true)
@@ -1702,13 +1604,13 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should retain data after unexpected errors', function(done) {
+    it('should not retain data after unexpected errors', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(501)
       function tested(error, command) {
         expect(error).to.not.exist
-        expect(command).to.have.property('retainData', true)
+        expect(command).to.have.property('retainData', false)
 
         failure.done()
         done()

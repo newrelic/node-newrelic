@@ -447,40 +447,17 @@ describe('RemoteMethod', () => {
       })
 
       describe('that indicated a New Relic error', () => {
-        const response = {
-          exception: {
-            message: 'Configuration has changed, need to restart agent.',
-            error_type: 'NewRelic::Agent::ForceRestartException'
-          }
-        }
+        const response = {}
 
         beforeEach(() => {
           nock(URL)
             .post(generate('metric_data', RUN_ID))
-            .reply(200, response)
-        })
-
-        it('should set error message to the JSON\'s message', (done) => {
-          method.invoke([], mockHeaders, (error) => {
-            expect(error.message)
-              .equal('Configuration has changed, need to restart agent.')
-
-            done()
-          })
-        })
-
-        it('should pass along the New Relic error type', (done) => {
-          method.invoke([], mockHeaders, (error) => {
-            expect(error.class).equal('NewRelic::Agent::ForceRestartException')
-
-            done()
-          })
+            .reply(409, response)
         })
 
         it('should include the HTTP status code for the response', (done) => {
           method.invoke([], mockHeaders, (error) => {
-            expect(error.statusCode).equal(200)
-
+            expect(error.statusCode).equal(409)
             done()
           })
         })

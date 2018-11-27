@@ -90,7 +90,7 @@ describe('collector response parser', () => {
       parser(null, null)
     })
 
-    it('should error on no return value or server exception', (done) => {
+    it('should error on no return value', (done) => {
       function callback(error) {
         expect(error.message).equal('No data found in response to TEST.')
         should.not.exist(error.laterErrors)
@@ -99,46 +99,6 @@ describe('collector response parser', () => {
 
       var parser = parse(methodName, response, callback)
       parser(null, '{}')
-    })
-
-    it('should error on a server exception', (done) => {
-      function callback(error) {
-        expect(error.message).equal('whoops')
-        should.not.exist(error.laterErrors)
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
-    })
-
-    it('should not error on a server exception with no error type', (done) => {
-      function callback(error) {
-        expect(error.message).equal('whoops')
-        should.not.exist(error.class)
-        should.not.exist(error.laterErrors)
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
-    })
-
-    it('should use a generic message for server exception without one', (done) => {
-      function callback(error) {
-        expect(error.message).equal('New Relic internal error')
-        should.not.exist(error.laterErrors)
-        done()
-      }
-
-      var exception = '{"exception":{"error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
     })
 
     it('should use a specific error message when parsing fails', (done) => {
@@ -160,7 +120,6 @@ describe('collector response parser', () => {
 
     it('should not error on a server exception with no error message', (done) => {
       function callback(error) {
-        expect(error.class).equal('RuntimeError')
         should.not.exist(error.laterErrors)
         done()
       }
@@ -234,14 +193,12 @@ describe('collector response parser', () => {
     it('should pass back passed in errors but retain collector errors', (done) => {
       function callback(error) {
         expect(error.laterErrors.length).equal(1)
-        expect(error.laterErrors[0].message).equal('whoops')
+        expect(error.laterErrors[0].message).equal('No data found in response to TEST.')
         done()
       }
 
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
       var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), exception)
+      parser(new Error('oh no!'), '{}')
     })
 
     it('should set the status code on any errors passed in', (done) => {
@@ -256,7 +213,6 @@ describe('collector response parser', () => {
 
     it('should set error class on a server exception', (done) => {
       function callback(error) {
-        expect(error.class).equal('RuntimeError')
         should.not.exist(error.laterErrors)
         done()
       }
@@ -293,16 +249,6 @@ describe('collector response parser', () => {
       parser(null, '{"return_value":[1,1,2,3,5,8],"exception":{"message":"uh"}}')
     })
 
-    it('should pass server exception before status code', (done) => {
-      function callback(error) {
-        expect(error.message).equal('uh')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, '{"return_value":[1,1,2,3,5,8],"exception":{"message":"uh"}}')
-    })
-
     it('should pass server exception but retain status code', (done) => {
       function callback(error) {
         expect(error.laterErrors.length).equal(1)
@@ -311,7 +257,7 @@ describe('collector response parser', () => {
       }
 
       var parser = parse(methodName, response, callback)
-      parser(null, '{"return_value":[1,1,2,3,5,8],"exception":{"message":"uh"}}')
+      parser(null, '{"return_value":undefined,"exception":{"message":"uh"}}')
     })
 
     it('should error because status code is weird', (done) => {
@@ -355,46 +301,9 @@ describe('collector response parser', () => {
       parser(null, '{}')
     })
 
-    it('should error on a server exception', (done) => {
-      function callback(error) {
-        expect(error.message).equal('whoops')
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
-    })
-
-    it('should not error on a server exception with no error type', (done) => {
-      function callback(error) {
-        expect(error.message).equal('whoops')
-        should.not.exist(error.class)
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
-    })
-
     it('should error w/status code for server exception w/no message', (done) => {
       function callback(error) {
         expect(error.message).equal('Got HTTP 503 in response to TEST.')
-        done()
-      }
-
-      var exception = '{"exception":{"error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
-    })
-
-    it('should not error on a server exception with no error message', (done) => {
-      function callback(error) {
-        expect(error.class).equal('RuntimeError')
         done()
       }
 
@@ -444,18 +353,6 @@ describe('collector response parser', () => {
 
       var parser = parse(methodName, response, callback)
       parser(new Error('oh no!'), null)
-    })
-
-    it('should set error class on a server exception', (done) => {
-      function callback(error) {
-        expect(error.class).equal('RuntimeError')
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
     })
   })
 })
