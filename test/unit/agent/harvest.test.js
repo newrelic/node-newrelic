@@ -453,9 +453,9 @@ describe('Agent harvests', () => {
 
     beforeEach((done) => {
       helper.runInTransaction(agent, (transaction) => {
-        transaction.finalizeNameFromUri('/some/test/url', 200)
         tx = transaction
-        transaction.end(() => done())
+        tx.finalizeNameFromUri('/some/test/url', 200)
+        tx.end(() => done())
       })
     })
 
@@ -552,7 +552,8 @@ describe('Agent harvests', () => {
       })
 
       const harvest = nock(URL)
-      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).times(2).reply(500, EMPTY_RESPONSE)
 
       var expectedEvents
       a.series([
