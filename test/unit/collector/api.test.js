@@ -1452,7 +1452,7 @@ describe('CollectorAPI', function() {
         .reply(401, {})
       const shutdown = nock(URL)
         .post(helper.generateCollectorPath('shutdown', 31337))
-        .reply(200, {})
+        .reply(200, {return_value: null})
       const preconnect = nock(URL)
         .post(helper.generateCollectorPath('preconnect'))
         .reply(200, {return_value: {}})
