@@ -896,10 +896,9 @@ describe('CollectorAPI', function() {
       })
 
       describe('retries on receiving invalid license key (401)', function() {
-        var captured = null
-        var data = null
-        var raw = null
         var failure = null
+        let success = null
+        let connect = null
         var error = {
           exception: {
             message: 'Invalid license key. Please contact support@newrelic.com.',
@@ -907,38 +906,24 @@ describe('CollectorAPI', function() {
           }
         }
 
-        before(function(done) {
+        beforeEach(function(done) {
           var preconnectURL = helper.generateCollectorPath('preconnect')
           failure = nock(URL).post(preconnectURL).times(5).reply(401, error)
+          success = nock(URL).post(preconnectURL).reply(200, {return_value: {}})
+          connect = nock(URL)
+            .post(helper.generateCollectorPath('connect'))
+            .reply(200, {return_value: {agent_run_id: 31338}})
 
-          api.connect(function test(error, response, json) {
-            captured = error
-            data = response
-            raw = json
-
+          api.connect(function test() {
             failure.done()
+            success.done()
+            connect.done()
             done()
           })
         })
 
         it('should call the expected number of times', function() {
           failure.done()
-        })
-
-        it('should have gotten an error', function() {
-          should.exist(captured)
-        })
-
-        it('should have a status code on the error', function() {
-          expect(captured.statusCode).equal(401)
-        })
-
-        it('should have no return value', function() {
-          should.not.exist(data)
-        })
-
-        it('should have passed along raw response', function() {
-          expect(raw).eql(error)
         })
       })
     })
@@ -1461,15 +1446,29 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should discard data after 401 errors', function(done) {
+    it('should restart and discard data after 401 errors', function(done) {
       var failure = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(401, {})
+      const shutdown = nock(URL)
+        .post(helper.generateCollectorPath('shutdown', 31337))
+        .reply(200, {})
+      const preconnect = nock(URL)
+        .post(helper.generateCollectorPath('preconnect'))
+        .reply(200, {return_value: {}})
+      const connect = nock(URL)
+        .post(helper.generateCollectorPath('connect'))
+        .reply(200, {return_value: {agent_run_id: 12345}})
+
       function tested(error, command) {
         expect(error).to.not.exist
         expect(command).to.have.property('retainData', false)
+        expect(agent.config.run_id).to.equal(12345)
 
         failure.done()
+        shutdown.done()
+        preconnect.done()
+        connect.done()
         done()
       }
 
@@ -1481,7 +1480,6 @@ describe('CollectorAPI', function() {
       var shutdown = null
       var redirect = null
       var connect = null
-      var succeed = null
 
       beforeEach(function() {
         restart = nock(URL)
@@ -1496,9 +1494,6 @@ describe('CollectorAPI', function() {
         connect = nock(URL)
           .post(helper.generateCollectorPath('connect'))
           .reply(200, {return_value: {agent_run_id: 31338}})
-        succeed = nock(URL)
-          .post(helper.generateCollectorPath('metric_data', 31338))
-          .reply(200, {return_value: {}})
       })
 
       function nockDone() {
@@ -1506,16 +1501,16 @@ describe('CollectorAPI', function() {
         shutdown.done()
         redirect.done()
         connect.done()
-        succeed.done()
       }
 
-      it('should reconnect and resubmit', function(done) {
-        api._runLifecycle(method, null, function(error) {
+      it('should reconnect and discard data', function(done) {
+        api._runLifecycle(method, null, function(error, command) {
           if (error) {
             console.error(error.stack) // eslint-disable-line no-console
           }
           expect(error).to.not.exist
           expect(api._agent.config.run_id).equal(31338) // has new run ID
+          expect(command).to.have.property('retainData', false)
           nockDone()
           done()
         })
