@@ -104,6 +104,63 @@ describe('CollectorAPI', function() {
       })
     })
 
+    describe('when getting request headers', function() {
+      var reqHeaderMap = {
+        'X-NR-TEST-HEADER': 'TEST VALUE'
+      }
+      var valid = {
+        capture_params: true,
+        agent_run_id: RUN_ID,
+        request_headers_map: reqHeaderMap
+      }
+
+      var response = {return_value: valid}
+      var oldProtocolVersion
+      beforeEach(function() {
+        oldProtocolVersion = agent.config.feature_flag.protocol_17
+      })
+
+      afterEach(function() {
+        agent.config.feature_flag.protocol_17 = oldProtocolVersion
+      })
+
+      it('should not copy them under p16', function(done) {
+        agent.config.port = 8080
+        agent.config.feature_flag.protocol_17 = false
+        var redirection = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
+        var connection = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, response)
+
+        api._login(function test(error, config, json) {
+          expect(api._reqHeadersMap).to.be.null
+          redirection.done()
+          connection.done()
+          done()
+        })
+      })
+
+      it('should copy them under p17', function(done) {
+        agent.config.port = 8080
+        agent.config.feature_flag.protocol_17 = true
+        var redirection = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
+        var connection = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, response)
+
+        api._login(function test(error, config, json) {
+          expect(api._reqHeadersMap).to.deep.equal(reqHeaderMap)
+          redirection.done()
+          connection.done()
+          done()
+        })
+      })
+    })
+
     describe('on the happy path', function() {
       var bad
       var ssc
