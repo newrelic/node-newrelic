@@ -1656,27 +1656,31 @@ describe('the agent configuration', function() {
 
       var cb = function(err, res) {
         expect(err).to.be.null
-        expect(res).to.be.null
+        expect(res.payload).to.be.null
         done()
       }
 
       config.applyLasp(agent, {}, cb)
     })
 
-    it('returns error if required policy is not implemented or unknown', function(done) {
-      var cb = function(err) {
-        expect(err.message).to.contain('received one or more required security policies')
-        done()
+    it('returns fatal response if required policy is not implemented or unknown',
+      function(done) {
+        var cb = function(err, response) {
+          expect(err).to.be.null
+          expect(response.shutdownAgent).to.be.true
+          done()
+        }
+
+        policies.job_arguments = { enabled: true, required: true }
+        policies.test = { enabled: true, required: true }
+
+        config.applyLasp(agent, policies, cb)
       }
-
-      policies.job_arguments = { enabled: true, required: true }
-      policies.test = { enabled: true, required: true }
-
-      config.applyLasp(agent, policies, cb)
-    })
+    )
 
     it('takes the most secure from local', function(done) {
       var cb = function(err, res) {
+        const payload = res.payload
         expect(config.transaction_tracer.record_sql).to.equal('off')
         expect(agent._resetQueries.callCount).to.equal(0)
         expect(config.attributes.include_enabled).to.equal(false)
@@ -1686,8 +1690,8 @@ describe('the agent configuration', function() {
         expect(config.api.custom_events_enabled).to.equal(false)
         expect(agent._resetCustomEvents.callCount).to.equal(0)
         expect(config.api.custom_attributes_enabled).to.equal(false)
-        Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.false
+        Object.keys(payload).forEach(function checkPolicy(key) {
+          expect(payload[key].enabled).to.be.false
         })
         done()
       }
@@ -1707,6 +1711,7 @@ describe('the agent configuration', function() {
 
     it('takes the most secure from lasp', function(done) {
       var cb = function(err, res) {
+        const payload = res.payload
         expect(config.transaction_tracer.record_sql).to.equal('off')
         expect(agent._resetQueries.callCount).to.equal(1)
         expect(config.attributes.include_enabled).to.equal(false)
@@ -1716,8 +1721,8 @@ describe('the agent configuration', function() {
         expect(agent._resetCustomEvents.callCount).to.equal(1)
         expect(config.api.custom_attributes_enabled).to.equal(false)
         expect(agent.traces.reset.callCount).to.equal(1)
-        Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.false
+        Object.keys(payload).forEach(function checkPolicy(key) {
+          expect(payload[key].enabled).to.be.false
         })
         done()
       }
@@ -1737,13 +1742,14 @@ describe('the agent configuration', function() {
 
     it('allow permissive settings', function(done) {
       var cb = function(err, res) {
+        const payload = res.payload
         expect(config.transaction_tracer.record_sql).to.equal('obfuscated')
         expect(config.attributes.include_enabled).to.equal(true)
         expect(config.strip_exception_messages.enabled).to.equal(false)
         expect(config.api.custom_events_enabled).to.equal(true)
         expect(config.api.custom_attributes_enabled).to.equal(true)
-        Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.true
+        Object.keys(payload).forEach(function checkPolicy(key) {
+          expect(payload[key].enabled).to.be.true
         })
         done()
       }
@@ -1761,9 +1767,10 @@ describe('the agent configuration', function() {
       config.applyLasp(agent, policies, cb)
     })
 
-    it('returns error if expected policy is not sent from server', function(done) {
-      var cb = function(err) {
-        expect(err.message).to.contain('did not receive one or more security policies')
+    it('returns fatal response if expected policy is not received', function(done) {
+      var cb = function(err, response) {
+        expect(err).to.be.null
+        expect(response.shutdownAgent).to.be.true
         done()
       }
 
@@ -1775,7 +1782,7 @@ describe('the agent configuration', function() {
     it('should return known policies', function(done) {
       var cb = function(err, res) {
         expect(err).to.be.null
-        expect(res).to.deep.equal({
+        expect(res.payload).to.deep.equal({
           record_sql: { enabled: false, required: false },
           attributes_include: { enabled: false, required: false },
           allow_raw_exception_messages: { enabled: false, required: false },

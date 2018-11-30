@@ -75,8 +75,9 @@ describe('CollectorAPI', function() {
             }
           })
 
-        api._login(function test(err) {
-          expect(err.message).to.contain('did not receive one or more security policies')
+        api._login(function test(err, response) {
+          expect(err).to.be.null
+          expect(response.shutdownAgent).to.be.true
 
           redirection.done()
           done()
@@ -95,8 +96,9 @@ describe('CollectorAPI', function() {
             }
           })
 
-        api._login(function test(err) {
-          expect(err.message).to.contain('received one or more required security')
+        api._login(function test(err, response) {
+          expect(err).to.be.null
+          expect(response.shutdownAgent).to.be.true
 
           redirection.done()
           done()
@@ -134,7 +136,7 @@ describe('CollectorAPI', function() {
           .post(helper.generateCollectorPath('connect'))
           .reply(200, response)
 
-        api._login(function test(error, config, json) {
+        api._login(function test() {
           expect(api._reqHeadersMap).to.be.null
           redirection.done()
           connection.done()
@@ -152,7 +154,7 @@ describe('CollectorAPI', function() {
           .post(helper.generateCollectorPath('connect'))
           .reply(200, response)
 
-        api._login(function test(error, config, json) {
+        api._login(function test() {
           expect(api._reqHeadersMap).to.deep.equal(reqHeaderMap)
           redirection.done()
           connection.done()
@@ -751,26 +753,20 @@ describe('CollectorAPI', function() {
           expect(captured).to.be.null
         })
 
-        it('should have passed on the status code', function() {
-          expect(res.status).to.equal(410)
-        })
-
         it('should not have a response body', function() {
-          expect(res.payload).to.not.exist
+          expect(res).to.not.exist
         })
       })
 
       describe('retries preconnect until forced to disconnect (410)', function() {
         var captured = null
-        var res = null
 
         before(function(done) {
           var redirectURL = helper.generateCollectorPath('preconnect')
           var failure = nock(URL).post(redirectURL).times(500).reply(503)
           var disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
-          api.connect(function test(error, response) {
+          api.connect(function test(error) {
             captured = error
-            res = response
 
             failure.done()
             disconnect.done()
@@ -780,10 +776,6 @@ describe('CollectorAPI', function() {
 
         it('should have gotten an error', function() {
           expect(captured).to.be.null
-        })
-
-        it('should have passed on the status code', function() {
-          expect(res.status).to.equal(410)
         })
       })
 
