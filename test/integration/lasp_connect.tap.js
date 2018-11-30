@@ -33,13 +33,14 @@ tap.test('connecting with a LASP token should not error', function(t) {
 
     api.shutdown(function(error, command) {
       t.notOk(error, 'should have shut down without issue')
-      t.equal(command.returned, null, 'collector explicitly returns null')
+      t.equal(command.payload, null, 'collector explicitly returns null')
       t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
       t.end()
     })
   })
 })
 
+// TODO: should cause shutdown without error
 tap.test('missing required policies should error', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',

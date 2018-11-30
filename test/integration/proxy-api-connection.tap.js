@@ -54,7 +54,7 @@ tap.test('support ssl to the proxy', function(t) {
 
       api.shutdown(function(error, command) {
         t.notOk(error, 'should have shut down without issue')
-        t.equal(command.returned, null, 'collector explicitly returns null')
+        t.equal(command.payload, null, 'collector explicitly returns null')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
         server.close()
@@ -108,7 +108,7 @@ tap.test('setting proxy_port should use the proxy agent', function(t) {
 
       api.shutdown(function(error, command) {
         t.notOk(error, 'should have shut down without issue')
-        t.equal(command.returned, null, 'collector explicitly returns null')
+        t.equal(command.payload, null, 'collector explicitly returns null')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
         server.close()
@@ -195,7 +195,7 @@ tap.test('no proxy set should not use proxy agent', function(t) {
 
     api.shutdown(function(error, command) {
       t.notOk(error, 'should have shut down without issue')
-      t.equal(command.returned, null, 'collector explicitly returns null')
+      t.equal(command.payload, null, 'collector explicitly returns null')
       t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
       t.end()
