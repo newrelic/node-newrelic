@@ -55,7 +55,7 @@ tap.test('remote method to preconnect', (t) => {
   t.plan(1)
 
   t.test('https with custom certificate', (t) => {
-    t.plan(3)
+    t.plan(4)
     const method = createRemoteMethod()
 
     // create mock collector
