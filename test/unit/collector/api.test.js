@@ -273,7 +273,7 @@ describe('CollectorAPI', function() {
 
           api._login(function test(error, config) {
             captured = error
-            ssc = config
+            ssc = config.payload
 
             redirection.done()
             connect.done()
