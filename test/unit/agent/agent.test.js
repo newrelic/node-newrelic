@@ -497,10 +497,9 @@ describe('the New Relic agent', function() {
 
         it('should pass through error if shutdown fails', function(done) {
           agent.config.run_id = RUN_ID
-          var shutdown =
-            nock(URL)
-              .post(helper.generateCollectorPath('shutdown', RUN_ID))
-              .reply(503)
+          var shutdown = nock(URL)
+            .post(helper.generateCollectorPath('shutdown', RUN_ID))
+            .reply(503)
 
           agent.stop(function cb_stop(error) {
             should.exist(error)

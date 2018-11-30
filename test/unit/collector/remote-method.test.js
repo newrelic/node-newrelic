@@ -348,37 +348,6 @@ describe('RemoteMethod', () => {
       })
     })
 
-    describe('unsuccessfully', () => {
-      beforeEach(() => {
-        // whoops
-        sendMetrics = nock(URL).post(generate('metric_data', RUN_ID)).reply(500)
-      })
-
-      it('should invoke the callback with an error', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          should.exist(error)
-
-          done()
-        })
-      })
-
-      it('should say what the error was', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          expect(error.message).equal('No body found in response to metric_data.')
-
-          done()
-        })
-      })
-
-      it('should include the status code on the error', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          expect(error.statusCode).equal(500)
-
-          done()
-        })
-      })
-    })
-
     describe('with an error', () => {
       let thrown = null
       let originalSafeRequest = null
@@ -422,7 +391,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should not error', (done) => {
-          method.invoke(undefined, mockHeaders, (error) => {
+          method.invoke(null, mockHeaders, (error) => {
             should.not.exist(error)
 
             done()
@@ -430,16 +399,8 @@ describe('RemoteMethod', () => {
         })
 
         it('should find the expected value', (done) => {
-          method.invoke(undefined, mockHeaders, (error, host) => {
-            expect(host).equal('collector-42.newrelic.com')
-
-            done()
-          })
-        })
-
-        it('should not alter the sent JSON', (done) => {
-          method.invoke(undefined, mockHeaders, (error, host, json) => {
-            expect(json).eql(response)
+          method.invoke(null, mockHeaders, (error, res) => {
+            expect(res.payload).equal('collector-42.newrelic.com')
 
             done()
           })
@@ -455,17 +416,10 @@ describe('RemoteMethod', () => {
             .reply(409, response)
         })
 
-        it('should include the HTTP status code for the response', (done) => {
-          method.invoke([], mockHeaders, (error) => {
-            expect(error.statusCode).equal(409)
-            done()
-          })
-        })
-
-        it('should not alter the sent JSON', (done) => {
-          method.invoke(undefined, mockHeaders, (error, host, json) => {
-            expect(json).eql(response)
-
+        it('should include status in callback response', (done) => {
+          method.invoke([], mockHeaders, (error, res) => {
+            expect(error).to.be.null
+            expect(res.status).equal(409)
             done()
           })
         })

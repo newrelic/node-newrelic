@@ -4,7 +4,6 @@ const chai = require('chai')
 const expect = chai.expect
 const should = chai.should()
 const parse = require('../../../lib/collector/parse-response')
-const semver = require('semver')
 
 
 describe('collector response parser', () => {
@@ -40,8 +39,18 @@ describe('collector response parser', () => {
 
 
     it('should pass through return value', (done) => {
-      function callback(error, returned) {
-        expect(returned).eql([1,1,2,3,5,8])
+      function callback(error, res) {
+        expect(res.payload).eql([1,1,2,3,5,8])
+        done()
+      }
+
+      var parser = parse(methodName, response, callback)
+      parser(null, '{"return_value":[1,1,2,3,5,8]}')
+    })
+
+    it('should pass through status code', (done) => {
+      function callback(error, res) {
+        expect(res.status).eql(200)
         done()
       }
 
@@ -50,8 +59,8 @@ describe('collector response parser', () => {
     })
 
     it('should pass through even a null return value', (done) => {
-      function callback(error, returned) {
-        expect(returned).equal(null)
+      function callback(error, res) {
+        expect(res.payload).equal(null)
         done()
       }
 
@@ -79,10 +88,10 @@ describe('collector response parser', () => {
       parser(null, '{"return_value":[1,1,2,3,5,8]}')
     })
 
-    it('should error on a missing body', (done) => {
-      function callback(error) {
-        expect(error.message).equal('No body found in response to TEST.')
-        should.not.exist(error.laterErrors)
+    it('should not error on a missing body', (done) => {
+      function callback(error, res) {
+        expect(error).to.be.null
+        expect(res.status).eql(200)
         done()
       }
 
@@ -90,25 +99,11 @@ describe('collector response parser', () => {
       parser(null, null)
     })
 
-    it('should error on no return value', (done) => {
-      function callback(error) {
-        expect(error.message).equal('No data found in response to TEST.')
-        should.not.exist(error.laterErrors)
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, '{}')
-    })
-
-    it('should use a specific error message when parsing fails', (done) => {
-      function callback(error) {
-        var expectedErrorMessage = 'Unexpected token <'
-        if (semver.satisfies(process.versions.node, '>=6.0.0')) {
-          expectedErrorMessage = 'Unexpected token < in JSON at position 0'
-        }
-        expect(error.message).equal(expectedErrorMessage)
-        should.not.exist(error.laterErrors)
+    it('should not error on unparsable return value', (done) => {
+      function callback(error, res) {
+        expect(error).to.be.null
+        expect(res.payload).to.be.null
+        expect(res.status).to.equal(200)
         done()
       }
 
@@ -119,8 +114,10 @@ describe('collector response parser', () => {
     })
 
     it('should not error on a server exception with no error message', (done) => {
-      function callback(error) {
-        should.not.exist(error.laterErrors)
+      function callback(error, res) {
+        expect(error).to.be.null
+        expect(res.payload).to.be.null
+        expect(res.status).to.equal(200)
         done()
       }
 
@@ -138,89 +135,6 @@ describe('collector response parser', () => {
 
       var parser = parse(methodName, response, callback)
       parser(new Error('oh no!'), null)
-    })
-
-    it('should pass back passed in errors but retain body error', (done) => {
-      function callback(error) {
-        expect(error.laterErrors.length).equal(1)
-        expect(error.laterErrors[0].message).equal("No body found in response to TEST.")
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), null)
-    })
-
-    it('should pass back passed in errors before parse errors', (done) => {
-      function callback(error) {
-        expect(error.message).equal('oh no!')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), 'uhhh')
-    })
-
-    it('should pass back passed in errors but retain parse errors', (done) => {
-      function callback(error) {
-        expect(error.laterErrors.length).equal(1)
-
-        var expectedErrorMessage = 'Unexpected token u'
-        if (semver.satisfies(process.versions.node, '>=6.0.0')) {
-          expectedErrorMessage = 'Unexpected token u in JSON at position 0'
-        }
-
-        expect(error.laterErrors[0].message).equal(expectedErrorMessage)
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), 'uhhh')
-    })
-
-    it('should pass back passed in errors before collector exceptions', (done) => {
-      function callback(error) {
-        expect(error.message).equal('oh no!')
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), exception)
-    })
-
-    it('should pass back passed in errors but retain collector errors', (done) => {
-      function callback(error) {
-        expect(error.laterErrors.length).equal(1)
-        expect(error.laterErrors[0].message).equal('No data found in response to TEST.')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), '{}')
-    })
-
-    it('should set the status code on any errors passed in', (done) => {
-      function callback(error) {
-        expect(error.statusCode).equal(200)
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), null)
-    })
-
-    it('should set error class on a server exception', (done) => {
-      function callback(error) {
-        should.not.exist(error.laterErrors)
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
     })
   })
 
@@ -230,8 +144,10 @@ describe('collector response parser', () => {
 
 
     it('should pass through return value despite weird status code', (done) => {
-      function callback(error, returned) {
-        expect(returned).eql([1,1,2,3,5,8])
+      function callback(error, res) {
+        expect(error).to.be.null
+        expect(res.payload).eql([1,1,2,3,5,8])
+        expect(res.status).to.equal(503)
         done()
       }
 
@@ -239,120 +155,15 @@ describe('collector response parser', () => {
       parser(null, '{"return_value":[1,1,2,3,5,8]}')
     })
 
-    it('should return value despite weird code and server exception', (done) => {
-      function callback(error, returned) {
-        expect(returned).eql([1,1,2,3,5,8])
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, '{"return_value":[1,1,2,3,5,8],"exception":{"message":"uh"}}')
-    })
-
-    it('should pass server exception but retain status code', (done) => {
-      function callback(error) {
-        expect(error.laterErrors.length).equal(1)
-        expect(error.laterErrors[0].message).equal('Got HTTP 503 in response to TEST.')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, '{"return_value":undefined,"exception":{"message":"uh"}}')
-    })
-
-    it('should error because status code is weird', (done) => {
-      function callback(error) {
-        expect(error.message).equal('Got HTTP 503 in response to TEST.')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, '{"return_value":[1,1,2,3,5,8]}')
-    })
-
-    it('should error on a missing body', (done) => {
-      function callback(error) {
-        expect(error.message).equal('No body found in response to TEST.')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, null)
-    })
-
-    it('should error on no return value or server exception', (done) => {
-      function callback(error) {
-        expect(error.message).equal('Got HTTP 503 in response to TEST.')
+    it('should not error on no return value or server exception', (done) => {
+      function callback(error, res) {
+        expect(error).to.be.null
+        expect(res.status).eql(503)
         done()
       }
 
       var parser = parse(methodName, response, callback)
       parser(null, '{}')
-    })
-
-    // a little weird, but we already know the response is strange due to status code
-    it('should have no later errors on no return or exception', (done) => {
-      function callback(error) {
-        should.not.exist(error.laterErrors)
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(null, '{}')
-    })
-
-    it('should error w/status code for server exception w/no message', (done) => {
-      function callback(error) {
-        expect(error.message).equal('Got HTTP 503 in response to TEST.')
-        done()
-      }
-
-      var exception = '{"exception":{"error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(null, exception)
-    })
-
-    it('should pass back passed in errors before missing body errors', (done) => {
-      function callback(error) {
-        expect(error.message).equal('oh no!')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), null)
-    })
-
-    it('should pass back passed in errors before parse errors', (done) => {
-      function callback(error) {
-        expect(error.message).equal('oh no!')
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), 'uhhh')
-    })
-
-    it('should pass back passed in errors before collector exceptions', (done) => {
-      function callback(error) {
-        expect(error.message).equal('oh no!')
-        done()
-      }
-
-      var exception = '{"exception":{"message":"whoops","error_type":"RuntimeError"}}'
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), exception)
-    })
-
-    it('should set the status code on any errors passed in', (done) => {
-      function callback(error) {
-        expect(error.statusCode).equal(503)
-        done()
-      }
-
-      var parser = parse(methodName, response, callback)
-      parser(new Error('oh no!'), null)
     })
   })
 })

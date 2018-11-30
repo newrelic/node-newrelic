@@ -431,6 +431,7 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.TRACES).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.traces.trace).to.exist
@@ -808,6 +809,8 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.TRACES).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.QUERIES).reply(500, EMPTY_RESPONSE)
 
       expect(agent.queries.samples).to.have.property('size', 1)
