@@ -6,28 +6,32 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
 var mockAWSInfo = require('../../lib/nock/aws').mockAWSInfo
+const helper = require('../../lib/agent_helper')
 
+const RUN_ID = 1337
+const ENDPOINTS = {
+  CONNECT: helper.generateCollectorPath('connect'),
+  CUSTOM_EVENTS: helper.generateCollectorPath('custom_event_data', RUN_ID),
+  ERRORS: helper.generateCollectorPath('error_data', RUN_ID),
+  ERROR_EVENTS: helper.generateCollectorPath('error_event_data', RUN_ID),
+  EVENTS: helper.generateCollectorPath('analytic_event_data', RUN_ID),
+  METRICS: helper.generateCollectorPath('metric_data', RUN_ID),
+  PRECONNECT: helper.generateCollectorPath('preconnect'),
+  QUERIES: helper.generateCollectorPath('sql_trace_data', RUN_ID),
+  SETTINGS: helper.generateCollectorPath('agent_settings', RUN_ID),
+  SHUTDOWN: helper.generateCollectorPath('shutdown', RUN_ID),
+  SPAN_EVENTS: helper.generateCollectorPath('span_event_data', RUN_ID),
+  TRACES: helper.generateCollectorPath('transaction_sample_data', RUN_ID)
+}
 
 nock.disableNetConnect()
 
 tap.test('harvesting with a mocked collector that returns 503 on connect', function(t) {
-  var RUN_ID = 1337
   var url = 'https://collector.newrelic.com'
   var agent = new Agent(configurator.initialize())
   var transaction = new Transaction(agent)
   agent.recordSupportability = () => {}
 
-
-  function path(method, runID, protocolVersion) {
-    protocolVersion = protocolVersion || 16
-    var fragment = '/agent_listener/invoke_raw_method?' +
-      `marshal_format=json&protocol_version=${protocolVersion}&` +
-      `license_key=license%20key%20here&method=${method}`
-
-    if (runID) fragment += '&run_id=' + runID
-
-    return fragment
-  }
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
@@ -35,20 +39,19 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 
   const connect = nock(url)
   connect
-    .post(path('preconnect'))
+    .post(ENDPOINTS.PRECONNECT)
     .reply(200, {return_value: 'collector.newrelic.com'})
   connect
-    .post(path('connect'))
+    .post(ENDPOINTS.CONNECT)
     .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
+  nock(url).post(ENDPOINTS.TRACES).reply(503, returned)
+
   // Want to individually confirm each of these endpoints.
-  const sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
+  const sendMetrics = nock(url).post(ENDPOINTS.METRICS).reply(503, returned)
+  const settings = nock(url).post(ENDPOINTS.SETTINGS).reply(200, {return_value: []})
+  const sendShutdown = nock(url).post(ENDPOINTS.SHUTDOWN).reply(200)
 
-  const settings = nock(url)
-  settings.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
-
-  const sendShutdown = nock(url)
-  sendShutdown.post(path('shutdown', RUN_ID)).reply(200)
 
   // setup nock for AWS
   mockAWSInfo()
@@ -79,7 +82,6 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
 tap.test('merging metrics and errors after a 503', function(t) {
   t.plan(8)
 
-  var RUN_ID = 1338
   var url = 'https://collector.newrelic.com'
   var agentConfig = configurator.initialize()
   agentConfig.utilization.detect_docker = false
@@ -94,27 +96,20 @@ tap.test('merging metrics and errors after a 503', function(t) {
 
   transaction.name = 'trans1'
 
-  function path(method, runID, protocolVersion) {
-    protocolVersion = protocolVersion || 16
-    var fragment = '/agent_listener/invoke_raw_method?' +
-      `marshal_format=json&protocol_version=${protocolVersion}&` +
-      `license_key=license%20key%20here&method=${method}`
-
-    if (runID) fragment += '&run_id=' + runID
-
-    return fragment
-  }
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
   const collector = nock(url)
-  collector.post(path('preconnect')).reply(200, {return_value: 'collector.newrelic.com'})
-  collector.post(path('connect')).reply(200, {return_value: {agent_run_id: RUN_ID}})
-  collector.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
-  collector.post(path('metric_data', RUN_ID)).reply(503)
-  collector.post(path('error_data', RUN_ID)).reply(503)
-  collector.post(path('transaction_sample_data', RUN_ID)).reply(503)
-  collector.post(path('shutdown', RUN_ID)).reply(200)
+  collector.post(ENDPOINTS.PRECONNECT)
+    .reply(200, {return_value: 'collector.newrelic.com'})
+  collector.post(ENDPOINTS.CONNECT).reply(200, {return_value: {agent_run_id: RUN_ID}})
+  collector.post(ENDPOINTS.SETTINGS).reply(200, {return_value: []})
+  collector.post(ENDPOINTS.METRICS).reply(503)
+  collector.post(ENDPOINTS.ERRORS).reply(503)
+  collector.post(ENDPOINTS.ERROR_EVENTS).reply(503)
+  collector.post(ENDPOINTS.EVENTS).reply(503)
+  collector.post(ENDPOINTS.TRACES).reply(503)
+  collector.post(ENDPOINTS.SHUTDOWN).reply(200)
 
   agent.start(function() {
     agent.errors.add(transaction, new Error('test error'))
