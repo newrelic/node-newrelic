@@ -3,7 +3,6 @@
 const arity = require('./lib/util/arity')
 const util = require('util')
 const logger = require('./lib/logger').child({component: 'api'})
-const NAMES = require('./lib/metrics/names')
 const recordWeb = require('./lib/metrics/recorders/http')
 const recordBackground = require('./lib/metrics/recorders/other')
 const customRecorder = require('./lib/metrics/recorders/custom')
@@ -17,6 +16,7 @@ const AwsLambda = require('./lib/serverless/aws-lambda')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
+const NAMES = require('./lib/metrics/names')
 
 /*
  *
