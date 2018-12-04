@@ -409,7 +409,6 @@ describe('the New Relic agent', function() {
           .reply(200, {return_value: []})
         var metrics = nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .times(2)
           .reply(503)
 
         agent.start(function cb_start() {
@@ -495,15 +494,14 @@ describe('the New Relic agent', function() {
           })
         })
 
-        it('should pass through error if shutdown fails', function(done) {
+        it('should pass through error if shutdown fails', (done) => {
           agent.config.run_id = RUN_ID
           var shutdown = nock(URL)
             .post(helper.generateCollectorPath('shutdown', RUN_ID))
-            .reply(503)
+            .replyWithError('whoops!')
 
-          agent.stop(function cb_stop(error) {
-            should.exist(error)
-            expect(error.message).equal('No body found in response to shutdown.')
+          agent.stop((error) => {
+            expect(error).to.exist.and.have.property('message', 'whoops!')
 
             shutdown.done()
             done()
@@ -672,41 +670,41 @@ describe('the New Relic agent', function() {
       })
 
       it('should begin with no harvester active', function() {
-        should.not.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.not.exist
       })
 
       it('should start a harvester without throwing', function() {
-        expect(function() { agent._startHarvester(10) }).not.throws()
-        should.exist(agent.harvesterHandle)
+        expect(function() { agent._scheduleHarvester(10) }).not.throws()
+        expect(agent.harvesterHandle).to.exist
       })
 
       it('should stop an unstarted harvester without throwing', function() {
-        expect(function() { agent._startHarvester(10) }).not.throws()
+        expect(function() { agent._scheduleHarvester(10) }).not.throws()
       })
 
       it('should stop a started harvester', function() {
-        agent._startHarvester(10)
+        agent._scheduleHarvester(10)
         agent._stopHarvester()
-        should.not.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.not.exist
       })
 
       it('should restart an unstarted harvester without throwing', function() {
         expect(function() { agent._restartHarvester(10) }).not.throws()
-        should.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.exist
       })
 
       it('should restart a started harvester', function() {
-        agent._startHarvester(10)
+        agent._scheduleHarvester(10)
         var before = agent.harvesterHandle
-        should.exist(before)
+        expect(before).to.exist
         agent._restartHarvester(10)
         expect(agent.harvesterHandle).not.equal(before)
       })
 
       it('should not alter interval when harvester\'s not running', function(done) {
-        should.not.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.not.exist
         agent._harvesterIntervalChange(13, function() {
-          should.not.exist(agent.harvesterHandle)
+          expect(agent.harvesterHandle).to.not.exist
 
           done()
         })
@@ -718,9 +716,9 @@ describe('the New Relic agent', function() {
       })
 
       it('should alter interval when harvester\'s not running', function(done) {
-        agent._startHarvester(10)
+        agent._scheduleHarvester(10)
         var before = agent.harvesterHandle
-        should.exist(before)
+        expect(before).to.exist
 
         agent._harvesterIntervalChange(13, function(error) {
           expect(error.message).equal('Not connected to New Relic!')
