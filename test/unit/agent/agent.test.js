@@ -300,7 +300,7 @@ describe('the New Relic agent', function() {
 
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback()
+          callback(null, {})
         }
 
         agent.start(done)
@@ -309,7 +309,7 @@ describe('the New Relic agent', function() {
       it('should call connect when config is correct', function(done) {
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback()
+          callback(null, {})
         }
 
         agent.start(done)
@@ -489,21 +489,22 @@ describe('the New Relic agent', function() {
 
           agent.stop(function cb_stop(error) {
             should.not.exist(error)
+            expect(agent.config.run_id).to.be.undefined
 
             shutdown.done()
             done()
           })
         })
 
-        it('should pass through error if shutdown fails', function(done) {
+        it('should pass through error if shutdown fails with error', function(done) {
           agent.config.run_id = RUN_ID
           var shutdown = nock(URL)
             .post(helper.generateCollectorPath('shutdown', RUN_ID))
-            .reply(503)
+            .replyWithError('shutdown failed')
 
-          agent.stop(function cb_stop(error) {
+          agent.stop((error) => {
             should.exist(error)
-            expect(error.message).equal('No body found in response to shutdown.')
+            expect(error.message).equal('shutdown failed')
 
             shutdown.done()
             done()
