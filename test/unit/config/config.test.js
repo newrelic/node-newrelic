@@ -53,8 +53,7 @@ describe('the agent configuration', function() {
 
   describe('when overriding configuration values via environment variables', function() {
     it('should pick up the application name', function() {
-      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic',
-                    function(tc) {
+      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic', (tc) => {
         should.exist(tc.app_name)
         expect(tc.app_name).eql(['feeling testy', 'and schizophrenic'])
       })
@@ -219,7 +218,7 @@ describe('the agent configuration', function() {
       for (var key in logAliases) { // eslint-disable-line guard-for-in
         idempotentEnv('NEW_RELIC_LOG_LEVEL', key, function(tc) {
           should.exist(tc.logging.level)
-            expect(tc.logging.level).equal(logAliases[key])
+          expect(tc.logging).to.have.property('level', logAliases[key])
         })
       }
     })
@@ -301,7 +300,8 @@ describe('the agent configuration', function() {
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([401, 404, 502])
-      })
+        }
+      )
     })
 
     it('should pick up which status codes are ignored when using a range', function() {
@@ -311,7 +311,8 @@ describe('the agent configuration', function() {
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([401, 420, 421, 502])
-      })
+        }
+      )
     })
 
     it('should not add codes given with invalid range', function() {
@@ -321,7 +322,8 @@ describe('the agent configuration', function() {
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
-      })
+        }
+      )
     })
 
     it('should not add codes if given out of range', function() {
@@ -331,7 +333,8 @@ describe('the agent configuration', function() {
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
-      })
+        }
+      )
     })
 
     it('should allow negative status codes ', function() {
@@ -341,7 +344,8 @@ describe('the agent configuration', function() {
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([-7])
-      })
+        }
+      )
     })
 
     it('should not add codes that parse to NaN ', function() {
@@ -351,7 +355,8 @@ describe('the agent configuration', function() {
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
-      })
+        }
+      )
     })
 
     it('should pick up whether the transaction tracer is enabled', function() {
@@ -413,8 +418,7 @@ describe('the agent configuration', function() {
       )
     })
 
-    it('should pick up whether URL backstop has been turned off',
-       function() {
+    it('should pick up whether URL backstop has been turned off', () => {
       idempotentEnv('NEW_RELIC_ENFORCE_BACKSTOP', 'f', function(tc) {
         should.exist(tc.enforce_backstop)
         expect(tc.enforce_backstop).equal(false)
@@ -630,7 +634,6 @@ describe('the agent configuration', function() {
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
       }, (tc) => {
-        console.log(process.env)
         expect(tc.trusted_account_key).to.equal('1234')
       })
     })
@@ -641,7 +644,6 @@ describe('the agent configuration', function() {
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_APPLICATION_ID: '5678'
       }, (tc) => {
-        console.log(tc)
         expect(tc.application_id).to.equal('5678')
       })
     })
@@ -1022,8 +1024,7 @@ describe('the agent configuration', function() {
       config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
     })
 
-    it('should map transaction naming rules to the transaction name normalizer',
-       function(done) {
+    it('should map txn naming rules to the txn name normalizer', (done) => {
       config.on('transaction_name_rules', function(rules) {
         expect(rules).eql([{name : 'sample_rule'}])
         done()
@@ -1270,8 +1271,7 @@ describe('the agent configuration', function() {
       }).not.throws()
     })
 
-    it('should not blow up when collect_analytics_events is received',
-    function() {
+    it('should not blow up when collect_analytics_events is received', () => {
       config.transaction_events.enabled = true
       expect(function() {
         config.onConnect({'collect_analytics_events': false})
@@ -1279,16 +1279,14 @@ describe('the agent configuration', function() {
       expect(config.transaction_events.enabled).equals(false)
     })
 
-    it('should not blow up when transaction_events.max_samples_stored is received',
-    function() {
+    it('should work when transaction_events.max_samples_stored is received', () => {
       expect(function() {
         config.onConnect({'transaction_events.max_samples_stored': 10})
       }).not.throws()
       expect(config.transaction_events.max_samples_stored).equals(10)
     })
 
-    it('should not blow up when transaction_events.max_samples_per_minute is received',
-    function() {
+    it('should work when transaction_events.max_samples_per_minute is received', () => {
       expect(function() {
         config.onConnect({'transaction_events.max_samples_per_minute': 1})
       }).not.throws()
@@ -1317,8 +1315,7 @@ describe('the agent configuration', function() {
     })
 
     describe('when data_report_period is set', function() {
-      it('should emit data_report_period when harvest interval is changed',
-         function(done) {
+      it('should emit data_report_period when harvest interval is changed', (done) => {
         config.once('data_report_period', function(harvestInterval) {
           expect(harvestInterval).equal(45)
 
@@ -1421,8 +1418,7 @@ describe('the agent configuration', function() {
       config.onConnect({'url_rules': [{name : 'sample_rule'}]})
     })
 
-    it('should still pass metric_name_rules to the metric name normalizer',
-       function(done) {
+    it('should still pass metric_name_rules to the metric name normalizer', (done) => {
       config.on('metric_name_rules', function(rules) {
         expect(rules).eql([{name : 'sample_rule'}])
         done()
@@ -1431,8 +1427,7 @@ describe('the agent configuration', function() {
       config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
     })
 
-    it('should still pass transaction_name_rules to the transaction name normalizer',
-       function(done) {
+    it('should still pass transaction_name_rules to the txn name normalizer', (done) => {
       config.on('transaction_name_rules', function(rules) {
         expect(rules).eql([{name : 'sample_rule'}])
         done()

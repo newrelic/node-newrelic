@@ -37,12 +37,12 @@ var awsResponses = {
 var awsRedirect
 
 function refreshAWSEndpoints() {
-    clearAWSCache()
-    awsRedirect = nock(awsHost)
-    for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
-      var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
-      redirect.reply(200, awsResponses[awsPath])
-    }
+  clearAWSCache()
+  awsRedirect = nock(awsHost)
+  for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
+    var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
+    redirect.reply(200, awsResponses[awsPath])
+  }
 }
 
 
@@ -176,9 +176,9 @@ describe('the New Relic agent', function() {
         expect(rules[2].pattern.source).equal('^\\/u')
 
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-            expect(rules[1].pattern.source).equal('^\\/t')
+          expect(rules[1].pattern.source).equal('^\\/t')
         } else {
-            expect(rules[1].pattern.source).equal('^/t')
+          expect(rules[1].pattern.source).equal('^/t')
         }
       })
     })
@@ -513,8 +513,7 @@ describe('the New Relic agent', function() {
     })
 
     describe('when calling out to the collector', function() {
-      it('should update the metrics\' apdex tolerating value when configuration changes',
-         function(done) {
+      it('should update the metric apdexT value when config changes', (done) => {
         expect(agent.metrics.apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
           should.exist(agent.metrics.apdexT)
@@ -526,8 +525,7 @@ describe('the New Relic agent', function() {
         agent.config.emit('apdex_t', 0.666)
       })
 
-      it('should reset the configuration and metrics normalizer on connection',
-         function(done) {
+      it('should reset the config and metrics normalizer on connection', (done) => {
         var config = {
           agent_run_id: 404,
           apdex_t: 0.742,
@@ -544,17 +542,17 @@ describe('the New Relic agent', function() {
             }
           })
         var handshake = nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, {return_value: config})
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: config})
         var settings = nock(URL)
-            .post(helper.generateCollectorPath('agent_settings', 404))
-            .reply(200, {return_value: config})
+          .post(helper.generateCollectorPath('agent_settings', 404))
+          .reply(200, {return_value: config})
         var metrics = nock(URL)
-            .post(helper.generateCollectorPath('metric_data', 404))
-            .reply(200, {return_value: []})
+          .post(helper.generateCollectorPath('metric_data', 404))
+          .reply(200, {return_value: []})
         var shutdown = nock(URL)
-            .post(helper.generateCollectorPath('shutdown', 404))
-            .reply(200, {return_value: null})
+          .post(helper.generateCollectorPath('shutdown', 404))
+          .reply(200, {return_value: null})
 
         agent.start(function cb_start(error) {
           should.not.exist(error)
