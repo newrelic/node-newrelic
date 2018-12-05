@@ -30,12 +30,16 @@ var tests = [
   },
   {
     name: 'instrumentation',
-    agent: {feature_flag: {await_support: false}},
+    agent: {
+      config: {feature_flag: {await_support: false}}
+    },
     runInTransaction: true
   },
   {
     name: 'agent async hooks',
-    agent: {feature_flag: {await_support: true}},
+    agent: {
+      config: {feature_flag: {await_support: true}}
+    },
     runInTransaction: true
   }
 ]

@@ -48,7 +48,7 @@ class Benchmark {
 
     async.eachSeries(this.tests, function startTest(test, callback) {
       if (test.agent) {
-        agent = helper.instrumentMockedAgent(test.agent.feature_flag, test.agent.conig)
+        agent = helper.instrumentMockedAgent(test.agent.config)
       }
 
       var testName = test.name
@@ -72,7 +72,7 @@ class Benchmark {
             execute(txn.end.bind(txn))
           })
         }
-  
+
         execute()
 
         function execute(callback) {
