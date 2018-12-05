@@ -1,12 +1,12 @@
 'use strict'
 
-var tap = require('tap')
-var configurator = require('../../lib/config')
-var Agent = require('../../lib/agent')
-var CollectorAPI = require('../../lib/collector/api')
+const tap = require('tap')
+const configurator = require('../../lib/config')
+const Agent = require('../../lib/agent')
+const CollectorAPI = require('../../lib/collector/api')
 
 tap.test('connecting with a LASP token should not error', function(t) {
-  var config = configurator.initialize({
+  const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: '1cccc807e3eb81266a3f30d9a58cfbbe9d613049',
     security_policies_token: 'ffff-ffff-ffff-ffff',
@@ -22,8 +22,8 @@ tap.test('connecting with a LASP token should not error', function(t) {
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
-  var api = new CollectorAPI(agent)
+  const agent = new Agent(config)
+  const api = new CollectorAPI(agent)
 
   api.connect(function(error, response) {
     t.notOk(error, 'connected without error')
@@ -41,7 +41,7 @@ tap.test('connecting with a LASP token should not error', function(t) {
 })
 
 tap.test('missing required policies should result in shutdown', function(t) {
-  var config = configurator.initialize({
+  const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: '20a5bbc045930ae7e15b530c8a9c6b7c5a918c4f',
     security_policies_token: 'ffff-ffff-ffff-ffff',
@@ -57,7 +57,7 @@ tap.test('missing required policies should result in shutdown', function(t) {
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
+  const agent = new Agent(config)
 
   agent.start(function(error, response) {
     t.notOk(error, 'should not have error')
