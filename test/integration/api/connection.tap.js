@@ -27,8 +27,8 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', funct
 
   api.connect(function(error, returned) {
     t.error(error, 'connected without error')
-    t.ok(returned, 'got boot configuration')
-    t.ok(returned.agent_run_id, 'got run ID')
+    t.ok(returned.payload, 'got boot configuration')
+    t.ok(returned.payload.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
     api.shutdown(function(error, command) {

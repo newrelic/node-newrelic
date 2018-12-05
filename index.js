@@ -156,7 +156,9 @@ function createAgent(config) {
 
       return
     } else if (response.shutdownAgent || response.status === 410) {
-      logger.error('New Relic for Node.js halted startup due to forced disconnection.')
+      return logger.error(
+        'New Relic for Node.js halted startup due to forced disconnection.'
+      )
     }
 
     return logger.debug("New Relic for Node.js is connected to New Relic.")

@@ -48,8 +48,8 @@ tap.test('support ssl to the proxy', function(t) {
 
     api.connect(function(error, returned) {
       t.notOk(error, 'connected without error')
-      t.ok(returned, 'got boot configuration')
-      t.ok(returned.agent_run_id, 'got run ID')
+      t.ok(returned.payload, 'got boot configuration')
+      t.ok(returned.payload.agent_run_id, 'got run ID')
       t.ok(agent.config.run_id, 'run ID set in configuration')
 
       api.shutdown(function(error, command) {
@@ -102,8 +102,8 @@ tap.test('setting proxy_port should use the proxy agent', function(t) {
 
     api.connect(function(error, returned) {
       t.notOk(error, 'connected without error')
-      t.ok(returned, 'got boot configuration')
-      t.ok(returned.agent_run_id, 'got run ID')
+      t.ok(returned.payload, 'got boot configuration')
+      t.ok(returned.payload.agent_run_id, 'got run ID')
       t.ok(agent.config.run_id, 'run ID set in configuration')
 
       api.shutdown(function(error, command) {
@@ -189,8 +189,8 @@ tap.test('no proxy set should not use proxy agent', function(t) {
 
   api.connect(function(error, returned) {
     t.notOk(error, 'connected without error')
-    t.ok(returned, 'got boot configuration')
-    t.ok(returned.agent_run_id, 'got run ID')
+    t.ok(returned.payload, 'got boot configuration')
+    t.ok(returned.payload.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
     api.shutdown(function(error, command) {

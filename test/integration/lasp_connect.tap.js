@@ -25,10 +25,10 @@ tap.test('connecting with a LASP token should not error', function(t) {
   var agent = new Agent(config)
   var api = new CollectorAPI(agent)
 
-  api.connect(function(error, returned) {
+  api.connect(function(error, response) {
     t.notOk(error, 'connected without error')
-    t.ok(returned, 'got boot configuration')
-    t.ok(returned.agent_run_id, 'got run ID')
+    t.ok(response.payload, 'got boot configuration')
+    t.ok(response.payload.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
     api.shutdown(function(error, command) {
@@ -40,8 +40,7 @@ tap.test('connecting with a LASP token should not error', function(t) {
   })
 })
 
-// TODO: should cause shutdown without error
-tap.test('missing required policies should error', function(t) {
+tap.test('missing required policies should result in shutdown', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: '20a5bbc045930ae7e15b530c8a9c6b7c5a918c4f',
@@ -60,11 +59,10 @@ tap.test('missing required policies should error', function(t) {
   })
   var agent = new Agent(config)
 
-  agent.start(function(error, returned) {
-    t.ok(error, 'got an error while attempting to connect')
-    t.ok(returned, 'got boot configuration')
-    t.notOk(returned.agent_run_id, 'got run ID')
-    t.notOk(agent.config.run_id, 'run ID set in configuration')
+  agent.start(function(error, response) {
+    t.notOk(error, 'should not have error')
+    t.notOk(response.payload, 'should not have response payload')
+    t.ok(response.shutdownAgent, 'agent should be marked for shutdown')
     t.equal(agent._state, 'errored')
     t.end()
   })
