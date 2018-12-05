@@ -12,7 +12,9 @@ describe('The custom instrumentation API', function () {
 
   beforeEach(function () {
     // FLAG: custom_instrumentation
-    agent = helper.loadMockedAgent({custom_instrumentation: true})
+    agent = helper.loadMockedAgent({
+      feature_flag: {custom_instrumentation: true}
+    })
     api = new API(agent)
   })
 
