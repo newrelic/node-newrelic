@@ -37,14 +37,13 @@ var helper = module.exports = {
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
    *
-   * @param object flags   Any feature flags
-   * @param object options Any configuration to override in the agent.
-   *                       See agent.js for details, but so far this includes
-   *                       passing in a config object and the connection stub
-   *                       created in this function.
-   * @returns Agent Agent with a stubbed configuration.
+   * @param {object} options Any configuration to override in the agent.
+   *                         See agent.js for details, but so far this includes
+   *                         passing in a config object and the connection stub
+   *                         created in this function.
+   * @returns {Agent} Agent with a stubbed configuration.
    */
-  loadMockedAgent: function loadMockedAgent(flags, conf) {
+  loadMockedAgent: function loadMockedAgent(conf) {
     if (_agent) {
       throw _agent.__created
     }
@@ -66,12 +65,6 @@ var helper = module.exports = {
     _agent = new Agent(config)
     _agent.__created = new Error('Only one agent at a time! This one was created at:')
     _agent.recordSupportability = function() {} // Stub supportabilities.
-
-    if (flags) {
-      var newFlags = Object.assign({}, _agent.config.feature_flag)
-      newFlags = Object.assign(newFlags, flags)
-      _agent.config.feature_flag = newFlags
-    }
 
     global.__NR_agent = _agent
     return _agent
@@ -103,12 +96,16 @@ var helper = module.exports = {
    * Builds on loadMockedAgent by patching the module loader and setting up
    * the instrumentation framework.
    *
-   * @returns Agent Agent with a stubbed configuration.
+   * @param {object} options Any configuration to override in the agent.
+   *                         See agent.js for details, but so far this includes
+   *                         passing in a config object and the connection stub
+   *                         created in this function.
+   * @returns {Agent} Agent with a stubbed configuration.
    */
-  instrumentMockedAgent: function instrumentMockedAgent(flags, conf) {
+  instrumentMockedAgent: function instrumentMockedAgent(conf) {
     shimmer.debug = true
 
-    var agent = helper.loadMockedAgent(flags, conf)
+    var agent = helper.loadMockedAgent(conf)
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
