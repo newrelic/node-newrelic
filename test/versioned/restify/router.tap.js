@@ -12,7 +12,7 @@ tap.test('Restify router', function(t) {
   var server = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
         include: ['request.parameters.*']

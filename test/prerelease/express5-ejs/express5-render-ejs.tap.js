@@ -28,7 +28,7 @@ var BODY = "<!DOCTYPE html>\n" +
 // Regression test for issue 154
 // https://github.com/newrelic/node-newrelic/pull/154
 test("using only the express router", function(t) {
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var router = require('express').Router()
 
   t.tearDown(function cb_tearDown() {
@@ -48,7 +48,7 @@ test("using only the express router", function(t) {
 })
 
 test("the express router should go through a whole request lifecycle", function (t) {
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var router = require('express').Router()
   var server
 
@@ -82,7 +82,7 @@ test("agent instrumentation of Express 5", function (t) {
   t.plan(6)
 
   t.test("for a normal request", {timeout: 1000}, function (t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -139,7 +139,7 @@ test("agent instrumentation of Express 5", function (t) {
   t.test("using EJS templates",
        {timeout: 1000},
        function (t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -176,7 +176,7 @@ test("agent instrumentation of Express 5", function (t) {
   t.test("should generate rum headers",
        {timeout: 1000},
        function (t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
     var api = new API(agent)
@@ -217,7 +217,7 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test("should trap errors correctly", function (t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
 
     var express = require('express')
     var app = express()
@@ -271,7 +271,7 @@ test("agent instrumentation of Express 5", function (t) {
   })
 
   t.test('measure request duration properly (NA-46)', {timeout: 2000}, function(t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -312,7 +312,7 @@ test("agent instrumentation of Express 5", function (t) {
   t.test("should capture URL correctly when configured with a prefix",
          {timeout: 2 * 1000},
          function (t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 

@@ -26,7 +26,7 @@ test('cross application tracing full integration', function(t) {
     config.cross_process_id,
     config.encoding_key
   )
-  var agent = helper.instrumentMockedAgent(null, config)
+  var agent = helper.instrumentMockedAgent(config)
   // require http after creating the agent
   var http = require('http')
   var api = new API(agent)
@@ -168,8 +168,10 @@ test('cross application tracing full integration', function(t) {
         'middle generated a scoped metric block'
       )
       if (scoped['WebTransaction/Nodejs/GET//start/middle']) {
-        t.ok(scoped['WebTransaction/Nodejs/GET//start/middle'][etMetric],
-             'middle generated a ExternalTransaction scoped metric')
+        t.ok(
+          scoped['WebTransaction/Nodejs/GET//start/middle'][etMetric],
+          'middle generated a ExternalTransaction scoped metric'
+        )
         var scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start/middle'])
         t.equal(
           scopedKeys.length, 1,
@@ -246,8 +248,10 @@ test('cross application tracing full integration', function(t) {
         'start generated a scoped metric block'
       )
       if (scoped['WebTransaction/Nodejs/GET//start']) {
-        t.ok(scoped['WebTransaction/Nodejs/GET//start'][etMetric],
-             'start generated a ExternalTransaction scoped metric')
+        t.ok(
+          scoped['WebTransaction/Nodejs/GET//start'][etMetric],
+          'start generated a ExternalTransaction scoped metric'
+        )
         var scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start'])
         t.equal(
           scopedKeys.length, 1,

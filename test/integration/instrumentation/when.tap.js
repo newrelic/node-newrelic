@@ -564,7 +564,7 @@ test('all', function(t) {
   var p1, p2
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
 
@@ -602,7 +602,7 @@ test('any', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -645,7 +645,7 @@ test('some', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -694,7 +694,7 @@ test('map', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -739,7 +739,7 @@ test('reduce', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -784,7 +784,7 @@ test('filter', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -860,7 +860,9 @@ test('node.apply', function(t) {
 })
 
 function setupAgent(t, enableSegments) {
-  var agent = helper.instrumentMockedAgent({promise_segments: enableSegments})
+  var agent = helper.instrumentMockedAgent({
+    feature_flag: {promise_segments: enableSegments}
+  })
   t.tearDown(function tearDown() {
     helper.unloadAgent(agent)
   })

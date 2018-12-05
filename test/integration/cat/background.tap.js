@@ -17,9 +17,9 @@ test('background transactions should not blow up with CAT', function(t) {
     cross_process_id: CROSS_PROCESS_ID,
     encoding_key: 'some key',
   }
-  config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
-                                                     config.encoding_key)
-  var agent = helper.instrumentMockedAgent(null, config)
+  config.obfuscatedId =
+    hashes.obfuscateNameUsingKey(config.cross_process_id, config.encoding_key)
+  var agent = helper.instrumentMockedAgent(config)
   var http = require('http')
   var api = new API(agent)
 
@@ -57,8 +57,8 @@ test('background transactions should not blow up with CAT', function(t) {
         intrinsic['nr.referringPathHash'],
         'web should have an nr.referringPathHash on event'
       )
-      t.ok(intrinsic[
-        'nr.referringTransactionGuid'],
+      t.ok(
+        intrinsic['nr.referringTransactionGuid'],
         'web should have an nr.referringTransactionGuid on event'
       )
       t.ok(intrinsic['nr.apdexPerfZone'], 'web should have an nr.apdexPerfZone on event')

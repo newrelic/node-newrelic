@@ -15,8 +15,10 @@ describe('Promise trace', function() {
 
   before(function() {
     agent = helper.instrumentMockedAgent({
-      promise_segments: true,
-      await_support: false
+      feature_flag: {
+        promise_segments: true,
+        await_support: false
+      }
     })
   })
 

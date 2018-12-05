@@ -431,7 +431,7 @@ describe('built-in http module instrumentation', function() {
     var encKey = 'gringletoes'
 
     beforeEach(function() {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey
       })
@@ -516,7 +516,7 @@ describe('built-in http module instrumentation', function() {
     var encKey = 'gringletoes'
 
     before(function() {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: false},
         encoding_key: encKey
       })
@@ -564,7 +564,7 @@ describe('built-in http module instrumentation', function() {
     var encKey = 'gringletoes'
 
     beforeEach(function() {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         trusted_account_ids: [123],
@@ -665,7 +665,7 @@ describe('built-in http module instrumentation', function() {
     var server
 
     beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         obfuscatedId: 'o123'
@@ -806,7 +806,7 @@ describe('built-in http module instrumentation', function() {
     it('should preserve headers regardless of format', function(done) {
       var encKey = 'gringletoes'
 
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         obfuscatedId: 'o123'
