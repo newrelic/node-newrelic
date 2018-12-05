@@ -134,8 +134,8 @@ var helper = module.exports = {
     }
   },
 
-  loadTestAgent: function loadTestAgent(t, flags, conf) {
-    var agent = helper.instrumentMockedAgent(flags, conf)
+  loadTestAgent: function loadTestAgent(t, conf) {
+    var agent = helper.instrumentMockedAgent(conf)
     t.tearDown(function tearDown() {
       helper.unloadAgent(agent)
     })
