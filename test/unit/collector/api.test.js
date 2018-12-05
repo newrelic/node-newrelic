@@ -456,7 +456,7 @@ describe('CollectorAPI', function() {
           .reply(200, response)
 
         api.connect(function test(error, res) {
-          expect(valid).to.deep.equal(res)
+          expect(res).property('payload').to.deep.equal(valid)
 
           redirection.done()
           connection.done()
@@ -491,7 +491,7 @@ describe('CollectorAPI', function() {
           .reply(200, response)
 
         api.connect(function test(error, res) {
-          expect(res).to.deep.equal(valid)
+          expect(res).property('payload').to.deep.equal(valid)
           expect(agent.queries).to.not.equal('will be overwritten')
           expect(agent.customEvents).to.not.equal('will be overwritten')
 
@@ -527,7 +527,7 @@ describe('CollectorAPI', function() {
 
           api.connect(function test(error, res) {
             bad = error
-            ssc = res
+            ssc = res.payload
 
             redirection.done()
             connection.done()
@@ -571,7 +571,7 @@ describe('CollectorAPI', function() {
 
           api.connect(function test(error, res) {
             bad = error
-            ssc = res
+            ssc = res.payload
 
             redirection.done()
             connection.done()
@@ -634,7 +634,7 @@ describe('CollectorAPI', function() {
 
           api.connect(function test(error, res) {
             bad = error
-            ssc = res
+            ssc = res.payload
 
             failure.done()
             success.done()
@@ -689,7 +689,7 @@ describe('CollectorAPI', function() {
 
           api.connect(function test(error, res) {
             bad = error
-            ssc = res
+            ssc = res.payload
 
             failure.done()
             success.done()

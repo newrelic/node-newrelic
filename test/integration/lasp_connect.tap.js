@@ -25,8 +25,10 @@ tap.test('connecting with a LASP token should not error', function(t) {
   var agent = new Agent(config)
   var api = new CollectorAPI(agent)
 
-  api.connect(function(error, returned) {
+  api.connect(function(error, response) {
     t.notOk(error, 'connected without error')
+
+    const returned = response && response.payload
     t.ok(returned, 'got boot configuration')
     t.ok(returned.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
