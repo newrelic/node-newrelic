@@ -1,80 +1,147 @@
 'use strict'
 
-var path   = require('path')
-var chai   = require('chai')
-var expect = chai.expect
-var Stats  = require('../../lib/stats')
-  
+const chai   = require('chai')
+const expect = chai.expect
+const Stats  = require('../../lib/stats')
 
-/*jshint maxparams:8 */
-describe("Stats", function () {
+describe("Stats", function() {
   var statistics
 
-  var verifyStats = function verifyStats(stats, callCount, totalTime,
-                                         totalExclusive, min, max, sumOfSquares) {
-    expect(stats.callCount).equal(callCount)
-    expect(stats.total).equal(totalTime)
-    expect(stats.totalExclusive).equal(totalExclusive)
-    expect(stats.min).equal(min)
-    expect(stats.max).equal(max)
-    expect(stats.sumOfSquares).equal(sumOfSquares)
+  function verifyStats(actualStats, expectedStats) {
+    expect(actualStats.callCount).equal(expectedStats.callCount)
+    expect(actualStats.total).equal(expectedStats.totalTime)
+    expect(actualStats.totalExclusive).equal(expectedStats.totalExclusive)
+    expect(actualStats.min).equal(expectedStats.min)
+    expect(actualStats.max).equal(expectedStats.max)
+    expect(actualStats.sumOfSquares).equal(expectedStats.sumOfSquares)
   }
 
-  beforeEach(function () {
+  beforeEach(function() {
     statistics = new Stats()
   })
 
-  it("should correctly summarize a sample set of statistics", function () {
+  it("should correctly summarize a sample set of statistics", function() {
+    const expectedStats = {
+      callCount: 3,
+      totalTime: 0.306,
+      totalExclusive: 0.128,
+      min: 0.060,
+      max: 0.123,
+      sumOfSquares: 0.033858
+    }
+
     statistics.recordValueInMillis(60)
     statistics.recordValueInMillis(123, 34)
     statistics.recordValueInMillis(123, 34)
 
-    verifyStats(statistics, 3, 0.306, 0.128, 0.060, 0.123, 0.033858)
+    verifyStats(statistics, expectedStats)
   })
 
-  it("should correctly summarize another simple set of statistics", function () {
+  it("should correctly summarize another simple set of statistics", function() {
+    const expectedStats = {
+      callCount: 2,
+      totalTime: 0.240,
+      totalExclusive: 0.0,
+      min: 0.120,
+      max: 0.120,
+      sumOfSquares: 0.0288
+    }
+
     statistics.recordValueInMillis(120, 0)
     statistics.recordValueInMillis(120, 0)
 
-    verifyStats(statistics, 2, 0.240, 0.0, 0.120, 0.120, 0.0288)
+    verifyStats(statistics, expectedStats)
   })
 
-  describe("when incrementing the call count", function () {
-    it("should increment by 1 by default", function () {
+  describe("when incrementing the call count", function() {
+    it("should increment by 1 by default", function() {
+      const expectedStats = {
+        callCount: 1,
+        totalTime: 0,
+        totalExclusive: 0,
+        min: 0,
+        max: 0,
+        sumOfSquares: 0
+      }
+
       statistics.incrementCallCount()
-
-      verifyStats(statistics, 1, 0, 0, 0, 0, 0)
+      verifyStats(statistics, expectedStats)
     })
 
-    it("should increment by the provided value", function () {
+    it("should increment by the provided value", function() {
+      const expectedStats = {
+        callCount: 23,
+        totalTime: 0,
+        totalExclusive: 0,
+        min: 0,
+        max: 0,
+        sumOfSquares: 0
+      }
+
       statistics.incrementCallCount(23)
-
-      verifyStats(statistics, 23, 0, 0, 0, 0, 0)
+      verifyStats(statistics, expectedStats)
     })
 
-    it("shouldn't increment when the provided value is 0", function () {
-      statistics.incrementCallCount(0)
+    it("shouldn't increment when the provided value is 0", function() {
+      const expectedStats = {
+        callCount: 0,
+        totalTime: 0,
+        totalExclusive: 0,
+        min: 0,
+        max: 0,
+        sumOfSquares: 0
+      }
 
-      verifyStats(statistics, 0, 0, 0, 0, 0, 0)
+      statistics.incrementCallCount(0)
+      verifyStats(statistics, expectedStats)
     })
   })
 
-  it("should correctly merge summaries", function () {
+  it("should correctly merge summaries", function() {
+    const expectedStats = {
+      callCount: 3,
+      totalTime: 0.306,
+      totalExclusive: 0.128,
+      min: 0.060,
+      max: 0.123,
+      sumOfSquares: 0.033858
+    }
+
     statistics.recordValueInMillis(60)
     statistics.recordValueInMillis(123, 34)
     statistics.recordValueInMillis(123, 34)
-    verifyStats(statistics, 3, 0.306, 0.128, 0.060, 0.123, 0.033858)
+
+    verifyStats(statistics, expectedStats)
+
+    const expectedStatsOther = {
+      callCount: 2,
+      totalTime: 0.246,
+      totalExclusive: 0.0,
+      min: 0.123,
+      max: 0.123,
+      sumOfSquares: 0.030258
+    }
 
     var other = new Stats()
     other.recordValueInMillis(123, 0)
     other.recordValueInMillis(123, 0)
-    verifyStats(other, 2, 0.246, 0.0, 0.123, 0.123, 0.030258)
+
+    verifyStats(other, expectedStatsOther)
+
+    const expectedStatsMerged = {
+      callCount: 5,
+      totalTime: 0.552,
+      totalExclusive: 0.128,
+      min: 0.060,
+      max: 0.123,
+      sumOfSquares: 0.064116
+    }
 
     statistics.merge(other)
-    verifyStats(statistics, 5, 0.552, 0.128, 0.060, 0.123, 0.064116)
+    verifyStats(statistics, expectedStatsMerged)
   })
 
-  describe("when handling quantities", function () {
+  describe("when handling quantities", function() {
     it("should store bytes as bytes, rescaling only at serialization")
     it("should store time as nanoseconds, rescaling only at serialization")
   })
