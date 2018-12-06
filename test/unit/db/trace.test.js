@@ -10,7 +10,7 @@ describe('SQL trace', function() {
     var agent
 
     beforeEach(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {
           enabled: true
         },

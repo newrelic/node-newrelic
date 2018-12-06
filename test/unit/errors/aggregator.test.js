@@ -37,7 +37,7 @@ describe('Errors', function() {
   var agent = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
       }

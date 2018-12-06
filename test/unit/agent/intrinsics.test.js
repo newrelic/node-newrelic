@@ -59,7 +59,7 @@ describe('when CAT is disabled', function() {
   var agent
 
   before(function() {
-    agent = helper.loadMockedAgent(null, {cross_application_tracer: {enabled: false}})
+    agent = helper.loadMockedAgent({cross_application_tracer: {enabled: false}})
   })
 
   after(function() {
@@ -160,7 +160,7 @@ describe('when CAT is enabled', function() {
 
   before(function() {
     // App name from test data
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       apdex_t: 0.050,
       cross_application_tracer: {enabled: true}
     })

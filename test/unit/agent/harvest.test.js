@@ -23,7 +23,7 @@ describe('Agent harvests', () => {
   let agent = null
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       license_key: 'license key here',
       run_id: RUN_ID,
       apdex_t: 0.005

@@ -16,7 +16,7 @@ describe('the RUM API', function() {
 
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       license_key: 'license key here',
       browser_monitoring: {
         attributes: {

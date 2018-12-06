@@ -40,7 +40,7 @@ describe('TraceAggregator', function() {
   }
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {run_id: 1337})
+    agent = helper.loadMockedAgent({run_id: 1337})
     agent.collector._runLifecycle = (remote, payload, cb) => {
       setImmediate(cb, null, [], {return_value: []})
     }

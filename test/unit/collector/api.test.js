@@ -25,7 +25,7 @@ describe('CollectorAPI', function() {
 
   beforeEach(function() {
     nock.disableNetConnect()
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       host: HOST,
       port: PORT,
       app_name: ['TEST'],

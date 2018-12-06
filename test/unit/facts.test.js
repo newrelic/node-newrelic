@@ -58,7 +58,7 @@ describe('fun facts about apps that New Relic is interested in include', functio
   var agent = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
+    agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
   })
 
   afterEach(function() {
@@ -335,7 +335,7 @@ describe('utilization', function() {
         return callback(null)
       }
 
-      agent = helper.loadMockedAgent(null, config)
+      agent = helper.loadMockedAgent(config)
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
         mockHostname = false
@@ -480,7 +480,7 @@ describe('boot_id', function() {
         return callback(null)
       }
 
-      agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
+      agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
         mockHostname = false
@@ -529,7 +529,7 @@ describe('display_host', function() {
   this.timeout(10000) // Environment scans can take a long time.
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
+    agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
     agent.config.utilization = null
     os.hostname = function() {
       throw ('BROKEN')
