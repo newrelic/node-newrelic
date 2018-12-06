@@ -24,18 +24,20 @@ var BODY = "<!DOCTYPE html>\n" +
 
 
 runTests({
-  express_segments: false
+  license_key: 'test',
+  feature_flag: {express_segments: false}
 })
 
 runTests({
-  express_segments:  true
+  license_key: 'test',
+  feature_flag: {express_segments:  true}
 })
 
-function runTests(flags) {
+function runTests(conf) {
   // Regression test for issue 154
   // https://github.com/newrelic/node-newrelic/pull/154
   test("using only the express router", function(t) {
-    var agent = helper.instrumentMockedAgent(flags)
+    var agent = helper.instrumentMockedAgent(conf)
     var router = require('express').Router() // eslint-disable-line new-cap
 
     t.tearDown(function cb_tearDown() {
@@ -55,7 +57,7 @@ function runTests(flags) {
   })
 
   test("the express router should go through a whole request lifecycle", function(t) {
-    var agent = helper.instrumentMockedAgent(flags)
+    var agent = helper.instrumentMockedAgent(conf)
     var router = require('express').Router() // eslint-disable-line new-cap
     var server
 
@@ -90,7 +92,7 @@ function runTests(flags) {
     var server = null
 
     t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent(flags)
+      agent = helper.instrumentMockedAgent(conf)
       app = require('express')()
       server = require('http').createServer(app)
       done()
@@ -320,7 +322,7 @@ function runTests(flags) {
     t.autoend()
 
     t.test('collects the actual error object that is thrown', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -351,7 +353,7 @@ function runTests(flags) {
     })
 
     t.test('does not occur with custom defined error handlers', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -386,7 +388,7 @@ function runTests(flags) {
     })
 
     t.test('does not occur with custom defined error handlers', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -421,7 +423,7 @@ function runTests(flags) {
     })
 
     t.test('collects the error message when string is thrown', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -451,7 +453,7 @@ function runTests(flags) {
     })
 
     t.test('collects the actual error object when error handler is used', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -490,7 +492,7 @@ function runTests(flags) {
     // We use message and stack properties to identify an Error object, so in this case
     // we want to at least collect the HTTP error based on the status code.
     t.test('should report errors without message or stack sent to res.send', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -527,7 +529,7 @@ function runTests(flags) {
     })
 
     t.test('should report errors without message or stack sent to next', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      var agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -568,7 +570,7 @@ function runTests(flags) {
     t.plan(1)
 
     // Set up the test.
-    var agent = helper.instrumentMockedAgent(flags)
+    var agent = helper.instrumentMockedAgent(conf)
     var app = require('express')()
     var server = require('http').createServer(app)
     t.tearDown(function cb_tearDown() {
