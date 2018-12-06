@@ -45,14 +45,11 @@ test('no transaction', function(t) {
 
   when.resolve(0).then(function step1() {
     return 1
-  })
-  .then(function step2() {
+  }).then(function step2() {
     return 2
-  })
-  .then(function finalHandler(res) {
+  }).then(function finalHandler(res) {
     t.equal(res, 2, 'should be the correct result')
-  })
-  .finally(function finallyHandler() {
+  }).finally(function finallyHandler() {
     t.end()
   })
 })
@@ -800,8 +797,7 @@ test('filter', function(t) {
       when.filter([1, 2, 3, 4], function(value) {
         // filter out even numbers
         return (value % 2)
-      })
-      .then(function(result) {
+      }).then(function(result) {
         t.equal(result.length, 2)
         t.equal(agent.getTransaction(), transaction, 'has the right transaction')
         t.end()
@@ -814,8 +810,7 @@ test('filter', function(t) {
       Promise.filter([1, 2, 3, 4], function(value) {
         // filter out even numbers
         return (value % 2)
-      })
-      .then(function(result) {
+      }).then(function(result) {
         t.equal(result.length, 2)
         t.equal(agent.getTransaction(), transaction, 'has the right transaction')
         t.end()

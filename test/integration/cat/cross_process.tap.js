@@ -16,6 +16,7 @@ test('client_cross_process_id in called service', function(t) {
   }
   config.obfuscatedId =
     hashes.obfuscateNameUsingKey(config.cross_process_id, config.encoding_key)
+
   var agent = helper.instrumentMockedAgent(config)
   // require http after creating the agent
   var http = require('http')

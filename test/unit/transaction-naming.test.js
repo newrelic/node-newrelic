@@ -65,15 +65,16 @@ describe("Transaction naming:", function() {
 
   it('API naming should trump instrumentation naming (order should not matter)',
     function(done) {
-    var api = new API(agent)
-    helper.runInTransaction(agent, function(transaction) {
-      api.setTransactionName('override')
-      simulateInstrumentation(transaction)
-      transaction.finalizeNameFromUri('http://test.test.com/', 200)
-      expect(transaction.name).equal('WebTransaction/Custom/override')
-      done()
-    })
-  })
+      var api = new API(agent)
+      helper.runInTransaction(agent, function(transaction) {
+        api.setTransactionName('override')
+        simulateInstrumentation(transaction)
+        transaction.finalizeNameFromUri('http://test.test.com/', 200)
+        expect(transaction.name).equal('WebTransaction/Custom/override')
+        done()
+      })
+    }
+  )
 
   it('API should trump 404', function(done) {
     var api = new API(agent)
@@ -95,15 +96,17 @@ describe("Transaction naming:", function() {
     })
   })
 
-  it('Server sent naming rules should be applied when user specified rules are set', function(done) {
-    agent.urlNormalizer.addSimple(/\d+/, '*')
-    agent.userNormalizer.addSimple(/123/, 'abc')
-    helper.runInTransaction(agent, function(transaction) {
-      transaction.finalizeNameFromUri('http://test.test.com/123/456', 200)
-      expect(transaction.name).equal('WebTransaction/NormalizedUri/abc/*')
-      done()
-    })
-  })
+  it('Server sent naming rules should be applied when user specified rules are set',
+    function(done) {
+      agent.urlNormalizer.addSimple(/\d+/, '*')
+      agent.userNormalizer.addSimple(/123/, 'abc')
+      helper.runInTransaction(agent, function(transaction) {
+        transaction.finalizeNameFromUri('http://test.test.com/123/456', 200)
+        expect(transaction.name).equal('WebTransaction/NormalizedUri/abc/*')
+        done()
+      })
+    }
+  )
 
   it('Custom naming rules should be cleaned up', function(done) {
     agent.userNormalizer.addSimple(/\//, 'test-transaction')
@@ -137,7 +140,6 @@ describe("Transaction naming:", function() {
 
   it('Custom naming rules should trump 404', function(done) {
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
-    var api = new API(agent)
     helper.runInTransaction(agent, function(transaction) {
       transaction.finalizeNameFromUri('http://test.test.com/', 404)
       expect(transaction.name).equal('WebTransaction/NormalizedUri/test-transaction')

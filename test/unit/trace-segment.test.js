@@ -404,8 +404,8 @@ describe('TraceSegment', function() {
         3,
         17,
         'DB/select/getSome',
-       {nr_exclusive_duration_millis : 14},
-       []
+        {nr_exclusive_duration_millis : 14},
+        []
       ])
     })
   })

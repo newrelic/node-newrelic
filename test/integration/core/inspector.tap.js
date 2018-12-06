@@ -20,7 +20,7 @@ test('inspector', function(t) {
     session.post(
       'Runtime.evaluate',
       { expression: '2 + 2' },
-      function(err, res) {
+      function() {
         var transaction = agent.getTransaction()
         t.ok(transaction, 'should preserve transaction state')
         t.equal(transaction.id, txn.id)

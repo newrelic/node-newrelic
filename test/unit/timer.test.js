@@ -1,29 +1,28 @@
 'use strict'
 
-var path = require('path')
-  , chai = require('chai')
-  , expect = chai.expect
-  , Timer = require('../../lib/timer')
+const chai = require('chai')
+const expect = chai.expect
+const Timer = require('../../lib/timer')
 
 
-describe('Timer', function () {
-  it("should know when it's active", function () {
+describe('Timer', function() {
+  it("should know when it's active", function() {
     var timer = new Timer()
     expect(timer.isActive()).equal(true)
   })
 
-  it("should know when it hasn't yet been started", function () {
+  it("should know when it hasn't yet been started", function() {
     var timer = new Timer()
     expect(timer.isRunning()).equal(false)
   })
 
-  it("should know when it's running", function () {
+  it("should know when it's running", function() {
     var timer = new Timer()
     timer.begin()
     expect(timer.isRunning()).equal(true)
   })
 
-  it("should know when it's not running", function () {
+  it("should know when it's not running", function() {
     var timer = new Timer()
     expect(timer.isRunning()).equal(false)
 
@@ -32,7 +31,7 @@ describe('Timer', function () {
     expect(timer.isRunning()).equal(false)
   })
 
-  it("should know when it hasn't yet been stopped", function () {
+  it("should know when it hasn't yet been stopped", function() {
     var timer = new Timer()
     expect(timer.isActive()).equal(true)
 
@@ -40,7 +39,7 @@ describe('Timer', function () {
     expect(timer.isActive()).equal(true)
   })
 
-  it("should know when it's stopped", function () {
+  it("should know when it's stopped", function() {
     var timer = new Timer()
     timer.begin()
     timer.end()
@@ -48,17 +47,17 @@ describe('Timer', function () {
     expect(timer.isActive()).equal(false)
   })
 
-  it("should return the time elapsed of a running timer", function (done) {
+  it("should return the time elapsed of a running timer", function(done) {
     var timer = new Timer()
     timer.begin()
-    setTimeout(function () {
+    setTimeout(function() {
       expect(timer.getDurationInMillis()).above(3)
 
       return done()
     }, 5)
   })
 
-  it("should allow setting the start as well as the duration of the range", function () {
+  it("should allow setting the start as well as the duration of the range", function() {
     var timer = new Timer()
     var start = Date.now()
     timer.setDurationInMillis(5, start)
@@ -66,7 +65,7 @@ describe('Timer', function () {
     expect(timer.start).equal(start)
   })
 
-  it("should return a range object", function () {
+  it("should return a range object", function() {
     var timer = new Timer()
     var start = Date.now()
     timer.setDurationInMillis(5, start)
@@ -74,7 +73,7 @@ describe('Timer', function () {
     expect(timer.toRange()).deep.equal([start, start + 5])
   })
 
-  it("should calculate start times relative to other timers", function () {
+  it("should calculate start times relative to other timers", function() {
     var first = new Timer()
     first.begin()
 
@@ -85,22 +84,22 @@ describe('Timer', function () {
     second.end()
 
     var delta
-    expect(function () { delta = second.startedRelativeTo(first); }).not.throw()
+    expect(function() { delta = second.startedRelativeTo(first) }).not.throw()
     expect(delta).a('number')
   })
 
-  it("should support updating the duration with touch", function (done) {
+  it("should support updating the duration with touch", function(done) {
     var timer = new Timer()
     timer.begin()
 
-    setTimeout(function () {
+    setTimeout(function() {
       timer.touch()
       var first = timer.getDurationInMillis()
 
       expect(first).above(0)
       expect(timer.isActive()).equal(true)
 
-      setTimeout(function () {
+      setTimeout(function() {
         timer.end()
 
         var second = timer.getDurationInMillis()
@@ -112,8 +111,7 @@ describe('Timer', function () {
     }, 20)
   })
 
-  describe('endsAfter indicates whether the timer ended after another timer',
-      function() {
+  describe('endsAfter indicates whether the timer ended after another timer', () => {
     var start, first, second
 
     beforeEach(function() {
@@ -123,20 +121,17 @@ describe('Timer', function () {
       second = new Timer()
     })
 
-    it('with the same start and duration',
-        function() {
+    it('with the same start and duration', function() {
       second.setDurationInMillis(10, start)
       expect(second.endsAfter(first)).equal(false)
     })
 
-    it('with longer duration',
-        function() {
+    it('with longer duration', function() {
       second.setDurationInMillis(11, start)
       expect(second.endsAfter(first)).equal(true)
     })
 
-    it('with shorter duration',
-        function() {
+    it('with shorter duration', function() {
       second.setDurationInMillis(9, start)
       expect(second.endsAfter(first)).equal(false)
     })

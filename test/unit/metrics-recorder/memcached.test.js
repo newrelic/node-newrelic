@@ -8,8 +8,7 @@ var Transaction = require('../../../lib/transaction')
 
 
 function makeSegment(options) {
-  var segment = options.transaction.trace.root
-                  .add('Datastore/operation/Memcache/set')
+  var segment = options.transaction.trace.root.add('Datastore/operation/Memcache/set')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
   segment.host = 'localhost'
@@ -29,24 +28,24 @@ function record(options) {
   recordMemcache(segment, options.transaction.name)
 }
 
-describe("recordMemcached", function () {
+describe("recordMemcached", function() {
   var agent
   var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  describe("when scope is undefined", function () {
+  describe("when scope is undefined", function() {
     var segment
 
-    beforeEach(function () {
+    beforeEach(function() {
       segment = makeSegment({
         transaction : trans,
         duration : 0,
@@ -54,11 +53,11 @@ describe("recordMemcached", function () {
       })
     })
 
-    it("shouldn't crash on recording", function () {
-      expect(function () { recordMemcache(segment, undefined); }).not.throws()
+    it("shouldn't crash on recording", function() {
+      expect(function() { recordMemcache(segment, undefined) }).not.throws()
     })
 
-    it("should record no scoped metrics", function () {
+    it("should record no scoped metrics", function() {
       recordMemcache(segment, undefined)
 
       var result = [
@@ -73,8 +72,8 @@ describe("recordMemcached", function () {
     })
   })
 
-  describe("with scope", function () {
-    it("should record scoped metrics", function () {
+  describe("with scope", function() {
+    it("should record scoped metrics", function() {
       record({
         transaction : trans,
         url : '/test',
@@ -84,8 +83,11 @@ describe("recordMemcached", function () {
         exclusive : 2,
       })
 
-      var result = [
-        [{name: 'Datastore/operation/Memcache/set'}, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
+      const result = [
+        [
+          {name: 'Datastore/operation/Memcache/set'},
+          [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+        ],
         [{name: 'Datastore/allWeb'}, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
         [{name: 'Datastore/Memcache/allWeb'}, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
         [{name: 'Datastore/all'}, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
@@ -103,11 +105,11 @@ describe("recordMemcached", function () {
     })
   })
 
-  it("should report exclusive time correctly", function () {
-    var root   = trans.trace.root
-      , parent = root.add('Datastore/operation/Memcache/get',     recordMemcache)
-      , child1 = parent.add('Datastore/operation/Memcache/set',   recordMemcache)
-      , child2 = parent.add('Datastore/operation/Memcache/clear', recordMemcache)
+  it("should report exclusive time correctly", function() {
+    const root = trans.trace.root
+    const parent = root.add('Datastore/operation/Memcache/get',     recordMemcache)
+    const child1 = parent.add('Datastore/operation/Memcache/set',   recordMemcache)
+    const child2 = parent.add('Datastore/operation/Memcache/clear', recordMemcache)
 
 
     root.setDurationInMillis(  32,  0)
@@ -115,30 +117,38 @@ describe("recordMemcached", function () {
     child1.setDurationInMillis(15, 10)
     child2.setDurationInMillis( 2,  1)
 
-    var result = [[
+    const result = [
+      [
         {name: 'Datastore/operation/Memcache/get'},
         [1, 0.032, 0.015, 0.032, 0.032, 0.001024]
-      ], [
+      ],
+      [
         {name: 'Datastore/allOther'},
         [3, 0.049, 0.032, 0.002, 0.032, 0.001253]
-      ], [
+      ],
+      [
         {name: 'Datastore/Memcache/allOther'},
         [3, 0.049, 0.032, 0.002, 0.032, 0.001253]
-      ], [
+      ],
+      [
         {name: 'Datastore/all'},
         [3, 0.049, 0.032, 0.002, 0.032, 0.001253]
-      ], [
+      ],
+      [
         {name: 'Datastore/Memcache/all'},
         [3, 0.049, 0.032, 0.002, 0.032, 0.001253]
-      ], [
+      ],
+      [
         {name: 'Datastore/operation/Memcache/set'},
         [1, 0.015, 0.015, 0.015, 0.015, 0.000225]
-      ], [
+      ],
+      [
         {name: 'Datastore/operation/Memcache/clear'},
         [1, 0.002, 0.002, 0.002, 0.002, 0.000004]
-      ]]
+      ]
+    ]
 
-    trans.end(function(){
+    trans.end(function() {
       expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
   })

@@ -786,9 +786,7 @@ describe('MessageShim', function() {
         var parent = wrapped('my.queue', function consumer() {
           var segment = shim.getSegment()
           expect(segment)
-            .to.exist
-            .and.have.property('name')
-              .not.equal('Callback: consumer')
+            .to.exist.and.have.property('name').not.equal('Callback: consumer')
 
           expect(segment).to.have.nested.property('transaction.type', 'message')
           done()

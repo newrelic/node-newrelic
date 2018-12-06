@@ -79,22 +79,26 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
     server.listen(8443, function() {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-      request.get({url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca},
-                  function(error, response, body) {
+      const options = {
+        url : 'https://ssl.lvh.me:8443/hello/friend',
+        ca : ca
+      }
+
+      request.get(options, (error, response, body) => {
         if (error) {
           t.fail(error)
           return t.end()
         }
 
-        t.notOk(agent.getTransaction(),
-                "transaction shouldn't leak into external request")
+        const transaction = agent.getTransaction()
+        t.notOk(transaction, "transaction shouldn't leak into external request")
 
-        var metric = agent.metrics.getMetric(METRIC)
+        const metric = agent.metrics.getMetric(METRIC)
         t.ok(metric, "request metrics should have been gathered")
         t.equals(metric.callCount, 1, "handler should have been called")
         t.equals(body, '"hello friend"', 'should return expected data')
 
-        var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+        const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
         t.ok(isFramework, 'should indicate that restify is a framework')
       })
     })

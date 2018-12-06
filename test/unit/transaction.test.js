@@ -71,7 +71,6 @@ describe('Transaction', function() {
         return done()
       })
       helper.runInTransaction(agent, function(txn) {
-
         var childSegment = txn.trace.add('child')
         childSegment.start()
 

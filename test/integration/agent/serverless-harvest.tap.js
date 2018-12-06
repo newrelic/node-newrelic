@@ -162,7 +162,12 @@ tap.test('Serverless mode harvest', (t) => {
       t.type(payload[1][0], 'Array', 'should have trace')
       t.type(payload[1][0][4], 'string', 'should have encoded trace')
 
-      checkCompressedPayload(t, findPayload(logSpy.args)[2], 'transaction_sample_data', t.end)
+      checkCompressedPayload(
+        t,
+        findPayload(logSpy.args)[2],
+        'transaction_sample_data',
+        t.end
+      )
     })
   })
 
@@ -192,7 +197,12 @@ tap.test('Serverless mode harvest', (t) => {
       t.type(payload[1][0], 'Array', 'should have trace')
       t.type(payload[1][0][4], 'string', 'should have encoded trace')
 
-      checkCompressedPayload(t, findPayload(logSpy.args)[2], 'transaction_sample_data', t.end)
+      checkCompressedPayload(
+        t,
+        findPayload(logSpy.args)[2],
+        'transaction_sample_data',
+        t.end
+      )
     })
   })
 
