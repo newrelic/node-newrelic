@@ -77,7 +77,7 @@ describe('CollectorAPI', function() {
 
         api._login(function test(err, response) {
           expect(err).to.be.null
-          expect(response.shutdownAgent).to.be.true
+          expect(response.shouldShutdownRun()).to.be.true
 
           redirection.done()
           done()
@@ -98,7 +98,7 @@ describe('CollectorAPI', function() {
 
         api._login(function test(err, response) {
           expect(err).to.be.null
-          expect(response.shutdownAgent).to.be.true
+          expect(response.shouldShutdownRun()).to.be.true
 
           redirection.done()
           done()
@@ -456,7 +456,7 @@ describe('CollectorAPI', function() {
           .reply(200, response)
 
         api.connect(function test(error, res) {
-          expect(valid).to.deep.equal(res.payload)
+          expect(res).property('payload').to.deep.equal(valid)
 
           redirection.done()
           connection.done()
@@ -491,7 +491,7 @@ describe('CollectorAPI', function() {
           .reply(200, response)
 
         api.connect(function test(error, res) {
-          expect(res.payload).to.deep.equal(valid)
+          expect(res).property('payload').to.deep.equal(valid)
           expect(agent.queries).to.not.equal('will be overwritten')
           expect(agent.customEvents).to.not.equal('will be overwritten')
 
@@ -1224,14 +1224,14 @@ describe('CollectorAPI', function() {
         })
 
         it('should tell the requester to shut down', () => {
-          expect(command).to.have.property('shutdownAgent', true)
+          expect(command.shouldShutdownRun()).to.be.true
         })
       })
     })
   })
 
   describe('_runLifecycle', function() {
-    var method
+    let method = null
 
     beforeEach(function() {
       agent.config.run_id = 31337
@@ -1329,40 +1329,32 @@ describe('CollectorAPI', function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it('should restart and discard data after 401 errors', function(done) {
-      var failure = nock(URL)
+    it('should indicate a restart and discard data after 401 errors', (done) => {
+      // First call fails and then shuts down.
+      const metrics = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
-        .reply(401, {})
+        .reply(401)
       const shutdown = nock(URL)
         .post(helper.generateCollectorPath('shutdown', 31337))
         .reply(200, {return_value: null})
-      const preconnect = nock(URL)
-        .post(helper.generateCollectorPath('preconnect'))
-        .reply(200, {return_value: {}})
-      const connect = nock(URL)
-        .post(helper.generateCollectorPath('connect'))
-        .reply(200, {return_value: {agent_run_id: 12345}})
 
-      function tested(error, command) {
+      // Execute!
+      api._runLifecycle(method, null, (error, command) => {
         expect(error).to.not.exist
-        expect(command).to.have.property('retainData', false)
-        expect(agent.config.run_id).to.equal(12345)
 
-        failure.done()
+        metrics.done()
         shutdown.done()
-        preconnect.done()
-        connect.done()
-        done()
-      }
 
-      api._runLifecycle(method, null, tested)
+        expect(command).to.have.property('retainData', false)
+        expect(command.shouldRestartRun()).to.be.true
+
+        done()
+      })
     })
 
     describe('on 409 status', function() {
       var restart = null
       var shutdown = null
-      var redirect = null
-      var connect = null
 
       beforeEach(function() {
         restart = nock(URL)
@@ -1371,45 +1363,21 @@ describe('CollectorAPI', function() {
         shutdown = nock(URL)
           .post(helper.generateCollectorPath('shutdown', 31337))
           .reply(200, {return_value: null})
-        redirect = nock(URL)
-          .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
-        connect = nock(URL)
-          .post(helper.generateCollectorPath('connect'))
-          .reply(200, {return_value: {agent_run_id: 31338}})
       })
 
       function nockDone() {
         restart.done()
         shutdown.done()
-        redirect.done()
-        connect.done()
       }
 
-      it('should reconnect and discard data', function(done) {
+      it('should indicate reconnect and discard data', function(done) {
         api._runLifecycle(method, null, function(error, command) {
           if (error) {
             console.error(error.stack) // eslint-disable-line no-console
           }
           expect(error).to.not.exist
-          expect(api._agent.config.run_id).equal(31338) // has new run ID
           expect(command).to.have.property('retainData', false)
-          nockDone()
-          done()
-        })
-      })
-
-      it('should reconfigure the agent', function(done) {
-        var reconfigureCalled = false
-        var oldReconfigure = agent.reconfigure
-        agent.reconfigure = function() {
-          reconfigureCalled = true
-          return oldReconfigure.apply(this, arguments)
-        }
-
-        api._runLifecycle(method, null, function(err) {
-          expect(err).to.not.exist
-          expect(reconfigureCalled).to.be.true
+          expect(command.shouldRestartRun()).to.be.true
           nockDone()
           done()
         })
@@ -1426,7 +1394,7 @@ describe('CollectorAPI', function() {
 
       function tested(error, command) {
         expect(error).to.not.exist
-        expect(command).to.have.property('shutdownAgent', true)
+        expect(command.shouldShutdownRun()).to.be.true
 
         expect(api._agent.config).property('run_id').to.not.exist
 
