@@ -12,6 +12,7 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
+const CollectorResponse = require('../../../lib/collector/response')
 
 
 /*
@@ -300,7 +301,7 @@ describe('the New Relic agent', function() {
 
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback(null, {})
+          done()
         }
 
         agent.start(done)
@@ -309,7 +310,7 @@ describe('the New Relic agent', function() {
       it('should call connect when config is correct', function(done) {
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback(null, {})
+          done()
         }
 
         agent.start(done)
@@ -335,7 +336,8 @@ describe('the New Relic agent', function() {
           .reply(200, {return_value: []})
 
         agent.collector.connect = function(callback) {
-          callback(null, {agent_run_id: RUN_ID})
+          agent.collector.isConnected = () => true
+          callback(null, CollectorResponse.success(null, {agent_run_id: RUN_ID}))
         }
 
         agent.config.run_id = RUN_ID

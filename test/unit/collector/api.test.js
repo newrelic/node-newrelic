@@ -753,10 +753,6 @@ describe('CollectorAPI', function() {
           expect(captured).to.be.null
         })
 
-        it('should have response code', function() {
-          expect(res.status).to.equal(410)
-        })
-
         it('should not have a response body', function() {
           expect(res.payload).to.not.exist
         })
@@ -1330,20 +1326,16 @@ describe('CollectorAPI', function() {
     })
 
     it('should indicate a restart and discard data after 401 errors', (done) => {
-      // First call fails and then shuts down.
+      // Call fails.
       const metrics = nock(URL)
         .post(helper.generateCollectorPath('metric_data', 31337))
         .reply(401)
-      const shutdown = nock(URL)
-        .post(helper.generateCollectorPath('shutdown', 31337))
-        .reply(200, {return_value: null})
 
       // Execute!
       api._runLifecycle(method, null, (error, command) => {
         expect(error).to.not.exist
 
         metrics.done()
-        shutdown.done()
 
         expect(command).to.have.property('retainData', false)
         expect(command.shouldRestartRun()).to.be.true
@@ -1353,24 +1345,11 @@ describe('CollectorAPI', function() {
     })
 
     describe('on 409 status', function() {
-      var restart = null
-      var shutdown = null
-
-      beforeEach(function() {
-        restart = nock(URL)
+      it('should indicate reconnect and discard data', function(done) {
+        const restart = nock(URL)
           .post(helper.generateCollectorPath('metric_data', 31337))
           .reply(409, {return_value: {}})
-        shutdown = nock(URL)
-          .post(helper.generateCollectorPath('shutdown', 31337))
-          .reply(200, {return_value: null})
-      })
 
-      function nockDone() {
-        restart.done()
-        shutdown.done()
-      }
-
-      it('should indicate reconnect and discard data', function(done) {
         api._runLifecycle(method, null, function(error, command) {
           if (error) {
             console.error(error.stack) // eslint-disable-line no-console
@@ -1378,7 +1357,8 @@ describe('CollectorAPI', function() {
           expect(error).to.not.exist
           expect(command).to.have.property('retainData', false)
           expect(command.shouldRestartRun()).to.be.true
-          nockDone()
+
+          restart.done()
           done()
         })
       })

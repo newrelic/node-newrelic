@@ -62,9 +62,9 @@ tap.test('missing required policies should result in shutdown', function(t) {
   const agent = new Agent(config)
 
   agent.start(function(error, response) {
-    t.notOk(error, 'should not have error')
-    t.notOk(response.payload, 'should not have response payload')
-    t.ok(response.shutdownAgent, 'agent should be marked for shutdown')
+    t.ok(error, 'should have error')
+    t.equal(error.message, 'Failed to connect to collector')
+    t.notOk(response, 'should not have response payload')
     t.equal(agent._state, 'errored')
     t.end()
   })
