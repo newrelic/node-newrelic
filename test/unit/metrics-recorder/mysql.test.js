@@ -8,8 +8,9 @@ var Transaction     = require('../../../lib/transaction')
 
 
 function makeSegment(options) {
-  var segment = options.transaction.trace.root
-                  .add('Datastore/statement/MySQL/users/select')
+  var segment =
+    options.transaction.trace.root.add('Datastore/statement/MySQL/users/select')
+
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
   segment.host = 'localhost'
@@ -38,24 +39,24 @@ function record(options) {
   recordMySQL(segment, options.transaction.name)
 }
 
-describe("record ParsedStatement with MySQL", function () {
+describe("record ParsedStatement with MySQL", function() {
   var agent
   var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  describe("when scope is undefined", function () {
+  describe("when scope is undefined", function() {
     var segment
 
-    beforeEach(function () {
+    beforeEach(function() {
       segment = makeSegment({
         transaction : trans,
         duration : 0,
@@ -63,11 +64,11 @@ describe("record ParsedStatement with MySQL", function () {
       })
     })
 
-    it("shouldn't crash on recording", function () {
-      expect(function () { recordMySQL(segment, undefined); }).not.throws()
+    it("shouldn't crash on recording", function() {
+      expect(function() { recordMySQL(segment, undefined) }).not.throws()
     })
 
-    it("should record no scoped metrics", function () {
+    it("should record no scoped metrics", function() {
       recordMySQL(segment, undefined)
 
       var result = [[
@@ -94,8 +95,8 @@ describe("record ParsedStatement with MySQL", function () {
     })
   })
 
-  describe("with scope", function () {
-    it("should record scoped metrics", function () {
+  describe("with scope", function() {
+    it("should record scoped metrics", function() {
       record({
         transaction: trans,
         url: '/test',
@@ -134,15 +135,20 @@ describe("record ParsedStatement with MySQL", function () {
     })
   })
 
-  it("should report exclusive time correctly", function () {
+  it("should report exclusive time correctly", function() {
     var root   = trans.trace.root
-    var parent = root.add('Datastore/statement/MySQL/users/select',
-                          makeRecorder('users', 'select'))
-    var child1 = parent.add('Datastore/statement/MySQL/users/insert',
-                            makeRecorder('users', 'insert'))
-    var child2 = child1.add('Datastore/statement/MySQL/cache/update',
-                            makeRecorder('cache', 'update'))
+    var parent =
+      root.add('Datastore/statement/MySQL/users/select', makeRecorder('users', 'select'))
 
+    var child1 = parent.add(
+      'Datastore/statement/MySQL/users/insert',
+      makeRecorder('users', 'insert')
+    )
+
+    var child2 = child1.add(
+      'Datastore/statement/MySQL/cache/update',
+      makeRecorder('cache', 'update')
+    )
 
     root.setDurationInMillis(  32,  0)
     parent.setDurationInMillis(32,  0)
