@@ -593,7 +593,7 @@ describe('RemoteMethod', () => {
     })
 
     it('should tell the server we are sending JSON', () => {
-      expect(headers['Content-Type']).equal('application/octet-stream')
+      expect(headers['Content-Type']).equal('application/json')
     })
 
     it('should have a user-agent string', () => {
