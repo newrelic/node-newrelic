@@ -38,8 +38,8 @@ describe('logger', function() {
     logger.info('123', 4, '5')
     process.nextTick(function() {
       expect(results.length).equal(2)
-      compare_entry(results[0], '1: a', 30)
-      compare_entry(results[1], '123 4 5', 30)
+      expectEntry(results[0], '1: a', 30)
+      expectEntry(results[1], '123 4 5', 30)
       done()
     })
   })
@@ -55,10 +55,10 @@ describe('logger', function() {
     process.nextTick(function() {
       var keys = ['a', 'b'].concat(DEFAULT_KEYS)
       expect(results.length).equal(2)
-      compare_entry(results[0], '1: a', 30, keys)
+      expectEntry(results[0], '1: a', 30, keys)
       expect(results[0].a).equal(1)
       expect(results[0].b).equal(2)
-      compare_entry(results[1], '123 4 5', 30, keys)
+      expectEntry(results[1], '123 4 5', 30, keys)
       expect(results[1].a).equal(1)
       expect(results[1].b).equal(2)
       done()
@@ -88,17 +88,17 @@ describe('logger', function() {
     logger.fatal('fatal')
     process.nextTick(function() {
       expect(results.length).equal(4)
-      compare_entry(results[0], 'info', 30)
-      compare_entry(results[1], 'warn', 40)
-      compare_entry(results[2], 'error', 50)
-      compare_entry(results[3], 'fatal', 60)
+      expectEntry(results[0], 'info', 30)
+      expectEntry(results[1], 'warn', 40)
+      expectEntry(results[2], 'error', 50)
+      expectEntry(results[3], 'fatal', 60)
 
       logger.level('trace')
       logger.trace('trace')
       logger.debug('debug')
       expect(results.length).equal(6)
-      compare_entry(results[4], 'trace', 10)
-      compare_entry(results[5], 'debug', 20)
+      expectEntry(results[4], 'trace', 10)
+      expectEntry(results[5], 'debug', 20)
       done()
     })
   })
@@ -121,21 +121,21 @@ describe('logger', function() {
     grandchild.fatal('fatal')
     process.nextTick(function() {
       expect(results.length).equal(8)
-      compare_entry(results[0], 'info', 30, ['aChild'].concat(DEFAULT_KEYS))
-      compare_entry(results[1], 'warn', 40, ['aChild'].concat(DEFAULT_KEYS))
-      compare_entry(results[2], 'error', 50, ['aChild'].concat(DEFAULT_KEYS))
-      compare_entry(results[3], 'fatal', 60, ['aChild'].concat(DEFAULT_KEYS))
-      compare_entry(results[4], 'info', 30, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
-      compare_entry(results[5], 'warn', 40, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
-      compare_entry(results[6], 'error', 50, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
-      compare_entry(results[7], 'fatal', 60, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry(results[0], 'info', 30, ['aChild'].concat(DEFAULT_KEYS))
+      expectEntry(results[1], 'warn', 40, ['aChild'].concat(DEFAULT_KEYS))
+      expectEntry(results[2], 'error', 50, ['aChild'].concat(DEFAULT_KEYS))
+      expectEntry(results[3], 'fatal', 60, ['aChild'].concat(DEFAULT_KEYS))
+      expectEntry(results[4], 'info', 30, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry(results[5], 'warn', 40, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry(results[6], 'error', 50, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry(results[7], 'fatal', 60, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
 
       logger.level('trace')
       child.trace('trace')
       grandchild.debug('debug')
       expect(results.length).equal(10)
-      compare_entry(results[8], 'trace', 10, ['aChild'].concat(DEFAULT_KEYS))
-      compare_entry(results[9], 'debug', 20, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
+      expectEntry(results[8], 'trace', 10, ['aChild'].concat(DEFAULT_KEYS))
+      expectEntry(results[9], 'debug', 20, ['aChild', 'aGrandchild'].concat(DEFAULT_KEYS))
       done()
     })
   })
@@ -205,11 +205,11 @@ describe('logger', function() {
     process.nextTick(function() {
       expect(results.length).equal(3)
       expect(results[0].a).equal(1)
-      compare_entry(results[1], 'hello b', 30, ['b', 'c'].concat(DEFAULT_KEYS))
+      expectEntry(results[1], 'hello b', 30, ['b', 'c'].concat(DEFAULT_KEYS))
       expect(results[1].b).equal(5)
       expect(results[1].c).equal(3)
 
-      compare_entry(results[2], 'hello c', 30, ['a', 'b', 'c'].concat(DEFAULT_KEYS))
+      expectEntry(results[2], 'hello c', 30, ['a', 'b', 'c'].concat(DEFAULT_KEYS))
       expect(results[2].a).equal(10)
       expect(results[2].b).equal(2)
       expect(results[2].c).equal(6)
@@ -217,21 +217,24 @@ describe('logger', function() {
     })
   })
 
-  it('should support child loggers with prepended extras from Error objects', function(done) {
-    var error = new Error('error1')
-    expect(error.message).to.not.be.undefined
-    expect(error.stack).to.not.be.undefined
+  it(
+    'should support child loggers with prepended extras from Error objects',
+    function(done) {
+      var error = new Error('error1')
+      expect(error.message).to.not.be.undefined
+      expect(error.stack).to.not.be.undefined
 
-    var child = logger.child({a: 1})
-    child.info(error, 'log message')
+      var child = logger.child({a: 1})
+      child.info(error, 'log message')
 
-    process.nextTick(function() {
-      var log1 = results[0]
-      expect(log1.message).equal(error.message)
-      expect(log1.stack).equal(error.stack)
-      done()
-    })
-  })
+      process.nextTick(function() {
+        var log1 = results[0]
+        expect(log1.message).equal(error.message)
+        expect(log1.stack).equal(error.stack)
+        done()
+      })
+    }
+  )
 
   describe('should have once methods', function() {
     it('that respect log levels', function(done) {
@@ -242,7 +245,7 @@ describe('logger', function() {
         logger.infoOnce('test', 'value')
         process.nextTick(function() {
           expect(results.length).equal(1)
-          compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
+          expectEntry(results[0], 'value', 30, DEFAULT_KEYS)
           done()
         })
       })
@@ -255,8 +258,8 @@ describe('logger', function() {
 
       process.nextTick(function() {
         expect(results.length).equal(2)
-        compare_entry(results[0], 'info', 30, DEFAULT_KEYS)
-        compare_entry(results[1], 'another', 30, DEFAULT_KEYS)
+        expectEntry(results[0], 'info', 30, DEFAULT_KEYS)
+        expectEntry(results[1], 'another', 30, DEFAULT_KEYS)
         done()
       })
     })
@@ -268,7 +271,7 @@ describe('logger', function() {
       process.nextTick(function() {
         expect(results.length).equal(1)
         expect(results[0].a).equal(2)
-        compare_entry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
+        expectEntry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
         done()
       })
     })
@@ -283,7 +286,7 @@ describe('logger', function() {
         logger.infoOncePer('test', 30, 'value')
         process.nextTick(function() {
           expect(results.length).equal(1)
-          compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
+          expectEntry(results[0], 'value', 30, DEFAULT_KEYS)
           done()
         })
       })
@@ -296,8 +299,8 @@ describe('logger', function() {
         logger.infoOncePer('key', 50, 'value')
         process.nextTick(function() {
           expect(results.length).equal(2)
-          compare_entry(results[0], 'value', 30, DEFAULT_KEYS)
-          compare_entry(results[1], 'value', 30, DEFAULT_KEYS)
+          expectEntry(results[0], 'value', 30, DEFAULT_KEYS)
+          expectEntry(results[1], 'value', 30, DEFAULT_KEYS)
           done()
         })
       }, 100)
@@ -308,7 +311,7 @@ describe('logger', function() {
       process.nextTick(function() {
         expect(results.length).equal(1)
         expect(results[0].a).equal(2)
-        compare_entry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
+        expectEntry(results[0], 'hello a', 30, ['a'].concat(DEFAULT_KEYS))
         done()
       })
     })
@@ -350,7 +353,7 @@ describe('logger', function() {
     logger.info('JSON: %s', obj)
     process.nextTick(function() {
       expect(results.length).equal(1)
-      compare_entry(results[0], 'JSON: {"a":1,"b":2,"self":"[Circular ~]"}', 30)
+      expectEntry(results[0], 'JSON: {"a":1,"b":2,"self":"[Circular ~]"}', 30)
       done()
     })
   })
@@ -364,7 +367,7 @@ describe('logger', function() {
     logger.info('JSON: %s', badObj)
     process.nextTick(function() {
       expect(results.length).equal(1)
-      compare_entry(results[0], 'JSON: [UNPARSABLE OBJECT]', 30)
+      expectEntry(results[0], 'JSON: [UNPARSABLE OBJECT]', 30)
       done()
     })
   })
@@ -387,9 +390,9 @@ describe('logger write queue', function() {
           var parts = str.split('\n').filter(Boolean).map(function(a) {
             return a.toString()
           }).map(JSON.parse)
-          compare_entry(parts[0], 'b', 30)
-          compare_entry(parts[1], 'c', 30)
-          compare_entry(parts[2], 'd', 30)
+          expectEntry(parts[0], 'b', 30)
+          expectEntry(parts[1], 'c', 30)
+          expectEntry(parts[2], 'd', 30)
         }
 
         return pushed
@@ -409,7 +412,7 @@ describe('logger write queue', function() {
   })
 })
 
-function compare_entry(entry, msg, level, keys) {
+function expectEntry(entry, msg, level, keys) {
   expect(entry.hostname).equal('my-host')
   expect(entry.name).equal('my-logger')
   expect(entry.pid).equal(process.pid)
