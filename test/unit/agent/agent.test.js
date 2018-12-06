@@ -12,6 +12,7 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
+const CollectorResponse = require('../../../lib/collector/response')
 
 
 /*
@@ -37,12 +38,12 @@ var awsResponses = {
 var awsRedirect
 
 function refreshAWSEndpoints() {
-    clearAWSCache()
-    awsRedirect = nock(awsHost)
-    for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
-      var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
-      redirect.reply(200, awsResponses[awsPath])
-    }
+  clearAWSCache()
+  awsRedirect = nock(awsHost)
+  for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
+    var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
+    redirect.reply(200, awsResponses[awsPath])
+  }
 }
 
 
@@ -176,9 +177,9 @@ describe('the New Relic agent', function() {
         expect(rules[2].pattern.source).equal('^\\/u')
 
         if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-            expect(rules[1].pattern.source).equal('^\\/t')
+          expect(rules[1].pattern.source).equal('^\\/t')
         } else {
-            expect(rules[1].pattern.source).equal('^/t')
+          expect(rules[1].pattern.source).equal('^/t')
         }
       })
     })
@@ -300,7 +301,7 @@ describe('the New Relic agent', function() {
 
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback(null, {})
+          done()
         }
 
         agent.start(done)
@@ -309,7 +310,7 @@ describe('the New Relic agent', function() {
       it('should call connect when config is correct', function(done) {
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback(null, {})
+          done()
         }
 
         agent.start(done)
@@ -335,7 +336,8 @@ describe('the New Relic agent', function() {
           .reply(200, {return_value: []})
 
         agent.collector.connect = function(callback) {
-          callback(null, {agent_run_id: RUN_ID})
+          agent.collector.isConnected = () => true
+          callback(null, CollectorResponse.success(null, {agent_run_id: RUN_ID}))
         }
 
         agent.config.run_id = RUN_ID
@@ -409,7 +411,6 @@ describe('the New Relic agent', function() {
           .reply(200, {return_value: []})
         var metrics = nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .times(2)
           .reply(503)
 
         agent.start(function cb_start() {
@@ -496,15 +497,14 @@ describe('the New Relic agent', function() {
           })
         })
 
-        it('should pass through error if shutdown fails with error', function(done) {
+        it('should pass through error if shutdown fails', (done) => {
           agent.config.run_id = RUN_ID
           var shutdown = nock(URL)
             .post(helper.generateCollectorPath('shutdown', RUN_ID))
-            .replyWithError('shutdown failed')
+            .replyWithError('whoops!')
 
           agent.stop((error) => {
-            should.exist(error)
-            expect(error.message).equal('shutdown failed')
+            expect(error).to.exist.and.have.property('message', 'whoops!')
 
             shutdown.done()
             done()
@@ -514,8 +514,7 @@ describe('the New Relic agent', function() {
     })
 
     describe('when calling out to the collector', function() {
-      it('should update the metrics\' apdex tolerating value when configuration changes',
-         function(done) {
+      it('should update the metric apdexT value when config changes', (done) => {
         expect(agent.metrics.apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
           should.exist(agent.metrics.apdexT)
@@ -527,8 +526,7 @@ describe('the New Relic agent', function() {
         agent.config.emit('apdex_t', 0.666)
       })
 
-      it('should reset the configuration and metrics normalizer on connection',
-         function(done) {
+      it('should reset the config and metrics normalizer on connection', (done) => {
         var config = {
           agent_run_id: 404,
           apdex_t: 0.742,
@@ -545,17 +543,17 @@ describe('the New Relic agent', function() {
             }
           })
         var handshake = nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, {return_value: config})
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: config})
         var settings = nock(URL)
-            .post(helper.generateCollectorPath('agent_settings', 404))
-            .reply(200, {return_value: config})
+          .post(helper.generateCollectorPath('agent_settings', 404))
+          .reply(200, {return_value: config})
         var metrics = nock(URL)
-            .post(helper.generateCollectorPath('metric_data', 404))
-            .reply(200, {return_value: []})
+          .post(helper.generateCollectorPath('metric_data', 404))
+          .reply(200, {return_value: []})
         var shutdown = nock(URL)
-            .post(helper.generateCollectorPath('shutdown', 404))
-            .reply(200, {return_value: null})
+          .post(helper.generateCollectorPath('shutdown', 404))
+          .reply(200, {return_value: null})
 
         agent.start(function cb_start(error) {
           should.not.exist(error)
@@ -675,41 +673,41 @@ describe('the New Relic agent', function() {
       })
 
       it('should begin with no harvester active', function() {
-        should.not.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.not.exist
       })
 
       it('should start a harvester without throwing', function() {
-        expect(function() { agent._startHarvester(10) }).not.throws()
-        should.exist(agent.harvesterHandle)
+        expect(function() { agent._scheduleHarvester(10) }).not.throws()
+        expect(agent.harvesterHandle).to.exist
       })
 
       it('should stop an unstarted harvester without throwing', function() {
-        expect(function() { agent._startHarvester(10) }).not.throws()
+        expect(function() { agent._scheduleHarvester(10) }).not.throws()
       })
 
       it('should stop a started harvester', function() {
-        agent._startHarvester(10)
+        agent._scheduleHarvester(10)
         agent._stopHarvester()
-        should.not.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.not.exist
       })
 
       it('should restart an unstarted harvester without throwing', function() {
         expect(function() { agent._restartHarvester(10) }).not.throws()
-        should.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.exist
       })
 
       it('should restart a started harvester', function() {
-        agent._startHarvester(10)
+        agent._scheduleHarvester(10)
         var before = agent.harvesterHandle
-        should.exist(before)
+        expect(before).to.exist
         agent._restartHarvester(10)
         expect(agent.harvesterHandle).not.equal(before)
       })
 
       it('should not alter interval when harvester\'s not running', function(done) {
-        should.not.exist(agent.harvesterHandle)
+        expect(agent.harvesterHandle).to.not.exist
         agent._harvesterIntervalChange(13, function() {
-          should.not.exist(agent.harvesterHandle)
+          expect(agent.harvesterHandle).to.not.exist
 
           done()
         })
@@ -721,9 +719,9 @@ describe('the New Relic agent', function() {
       })
 
       it('should alter interval when harvester\'s not running', function(done) {
-        agent._startHarvester(10)
+        agent._scheduleHarvester(10)
         var before = agent.harvesterHandle
-        should.exist(before)
+        expect(before).to.exist
 
         agent._harvesterIntervalChange(13, function(error) {
           expect(error.message).equal('Not connected to New Relic!')

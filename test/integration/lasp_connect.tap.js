@@ -27,8 +27,10 @@ tap.test('connecting with a LASP token should not error', function(t) {
 
   api.connect(function(error, response) {
     t.notOk(error, 'connected without error')
-    t.ok(response.payload, 'got boot configuration')
-    t.ok(response.payload.agent_run_id, 'got run ID')
+
+    const returned = response && response.payload
+    t.ok(returned, 'got boot configuration')
+    t.ok(returned.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
     api.shutdown(function(error, command) {
@@ -60,9 +62,9 @@ tap.test('missing required policies should result in shutdown', function(t) {
   const agent = new Agent(config)
 
   agent.start(function(error, response) {
-    t.notOk(error, 'should not have error')
-    t.notOk(response.payload, 'should not have response payload')
-    t.ok(response.shutdownAgent, 'agent should be marked for shutdown')
+    t.ok(error, 'should have error')
+    t.equal(error.message, 'Failed to connect to collector')
+    t.notOk(response, 'should not have response payload')
     t.equal(agent._state, 'errored')
     t.end()
   })
