@@ -308,8 +308,8 @@ const apiGatewayProxyEvent = {
 
 const cloudWatchLogsEvent = {
   "awslogs": {
-  "data":
-    "l7KSN7tCOEJ4M3/qOI49vMHj+zCKdlFqLaU2ZHV2a4Ct/an0/ivdX8oYc1UVX860fQDQiMdxRQEAAA=="
+    "data":
+      "l7KSN7tCOEJ4M3/qOI49vMHj+zCKdlFqLaU2ZHV2a4Ct/an0/ivdX8oYc1UVX860fQDQiMdxRQEAAA=="
   }
 }
 
