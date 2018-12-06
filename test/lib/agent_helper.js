@@ -365,7 +365,7 @@ const helper = module.exports = {
     }
 
     t.comment('Removing listeners for %s', evnt)
-    const listeners = emitter.listeners(evnt)
+    let listeners = emitter.listeners(evnt)
     t.tearDown(() => {
       t.comment('Re-adding listeners for %s', evnt)
       listeners.forEach((fn) => {
