@@ -4,13 +4,13 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 
 function QContext(t, agent) {
-    this.agent = agent
-    this.test = t
+  this.agent = agent
+  this.test = t
 }
 
 QContext.prototype.assertTransaction = function assertTransaction(transaction) {
-    this.test.equal(this.agent.getTransaction(), transaction)
-    this.test.equal(this.agent.getTransaction().trace.root.children.length, 0)
+  this.test.equal(this.agent.getTransaction(), transaction)
+  this.test.equal(this.agent.getTransaction().trace.root.children.length, 0)
 }
 
 test('q.ninvoke', function testQNInvoke(t) {
