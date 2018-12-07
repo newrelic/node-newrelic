@@ -348,6 +348,31 @@ describe('RemoteMethod', () => {
       })
     })
 
+    describe('unsuccessfully', () => {
+      beforeEach(() => {
+        // nock ensures the correct URL is requested
+        sendMetrics = nock(URL)
+          .post(generate('metric_data', RUN_ID))
+          .reply(500, {return_value: []})
+      })
+
+      it('should invoke the callback without error', (done) => {
+        method._post('[]', mockHeaders, (error) => {
+          should.not.exist(error)
+          done()
+        })
+      })
+
+      it('should include status code in response', (done) => {
+        method._post('[]', mockHeaders, (error, response) => {
+          should.not.exist(error)
+          expect(response.status).to.equal(500)
+          expect(sendMetrics.isDone()).to.be.true
+          done()
+        })
+      })
+    })
+
     describe('with an error', () => {
       let thrown = null
       let originalSafeRequest = null
