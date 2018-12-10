@@ -10,7 +10,7 @@ const semver = require('semver')
 
 
 function generate(method, runID, protocolVersion) {
-  protocolVersion = protocolVersion || 16
+  protocolVersion = protocolVersion || 17
   var fragment = '/agent_listener/invoke_raw_method?' +
     `marshal_format=json&protocol_version=${protocolVersion}&` +
     `license_key=license%20key%20here&method=${method}`
@@ -41,18 +41,8 @@ describe('RemoteMethod', () => {
     expect(new RemoteMethod('test').name).equal('test')
   })
 
-  it('should default to protocol 16', function() {
-    expect(new RemoteMethod('test')._protocolVersion).equal(16)
-  })
-
-  describe('with protocol_17 feature flag', () => {
-    it('should use protocol 17', () => {
-      const config = {
-        feature_flag: {protocol_17: true}
-      }
-
-      expect(new RemoteMethod('test', config)._protocolVersion).to.equal(17)
-    })
+  it('should default to protocol 17', function() {
+    expect(new RemoteMethod('test')._protocolVersion).equal(17)
   })
 
   describe('serialize', function() {
@@ -578,8 +568,8 @@ describe('RemoteMethod', () => {
       parsed = reconstitute(method._path())
     })
 
-    it('should say that it supports protocol 16', () => {
-      expect(parsed.query.protocol_version).equal('16')
+    it('should say that it supports protocol 17', () => {
+      expect(parsed.query.protocol_version).equal('17')
     })
 
     it('should tell the collector it is sending JSON', () => {
