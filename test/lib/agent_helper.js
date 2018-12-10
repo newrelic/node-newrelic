@@ -99,6 +99,23 @@ var helper = module.exports = {
     return fragment
   },
 
+  generateAllPaths: (runId) => {
+    return {
+      CONNECT: helper.generateCollectorPath('connect'),
+      CUSTOM_EVENTS: helper.generateCollectorPath('custom_event_data', runId),
+      ERRORS: helper.generateCollectorPath('error_data', runId),
+      ERROR_EVENTS: helper.generateCollectorPath('error_event_data', runId),
+      EVENTS: helper.generateCollectorPath('analytic_event_data', runId),
+      METRICS: helper.generateCollectorPath('metric_data', runId),
+      PRECONNECT: helper.generateCollectorPath('preconnect'),
+      QUERIES: helper.generateCollectorPath('sql_trace_data', runId),
+      SETTINGS: helper.generateCollectorPath('agent_settings', runId),
+      SHUTDOWN: helper.generateCollectorPath('shutdown', runId),
+      SPAN_EVENTS: helper.generateCollectorPath('span_event_data', runId),
+      TRACES: helper.generateCollectorPath('transaction_sample_data', runId)
+    }
+  },
+
   /**
    * Builds on loadMockedAgent by patching the module loader and setting up
    * the instrumentation framework.
