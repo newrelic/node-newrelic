@@ -5,7 +5,7 @@ var https = require('https')
 var tap = require('tap')
 var fmt = require('util').format
 var join = require('path').join
-var proxySetup = require('proxy')
+var httpProxy = require('http-proxy')
 var read = require('fs').readFileSync
 var configurator = require('../../lib/config')
 var Agent = require('../../lib/agent')
@@ -17,7 +17,7 @@ tap.test('support ssl to the proxy', function(t) {
     key: read(join(__dirname, '../lib/test-key.key')),
     cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
   }
-  var server = proxySetup(https.createServer(opts))
+  var server = httpProxy.createProxyServer(opts)
 
   server.listen(port, function() {
     port = server.address().port
@@ -69,7 +69,7 @@ tap.test('setting proxy_port should use the proxy agent', function(t) {
     key: read(join(__dirname, '../lib/test-key.key')),
     cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
   }
-  var server = proxySetup(https.createServer(opts))
+  var server = httpProxy.createProxyServer(opts)
   var port = 0
 
   server.listen(port, function() {
