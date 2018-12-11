@@ -181,7 +181,7 @@ $(CERTIFICATE): $(CACERT)
 	@rm -f server.csr
 
 security:
-	./node_modules/.bin/nsp check
+	npm audit
 
 services:
 	./bin/docker-services.sh
