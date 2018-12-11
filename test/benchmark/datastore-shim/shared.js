@@ -1,7 +1,6 @@
 'use strict'
 
 const benchmark = require('../../lib/benchmark')
-const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 
 const TestDatastore = require('./test-datastore')
