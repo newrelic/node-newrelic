@@ -151,7 +151,7 @@
     "methods": "^1.1.2",
     "minami": "^1.1.1",
     "mkdirp": "*",
-    "mocha": "^3.5.3",
+    "mocha": "^5.2.0",
     "mongodb": "^2",
     "mysql": "*",
     "nock": "9.1.9",
