@@ -159,7 +159,7 @@
     "proxyquire": "^1.8.0",
     "q": "*",
     "redis": "^1.0.0",
-    "request": "2.81.0",
+    "request": "^2.88.0",
     "restify": "^4",
     "rimraf": "^2.6.2",
     "sequelize": "*",
