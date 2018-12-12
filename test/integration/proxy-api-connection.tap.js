@@ -1,13 +1,13 @@
 'use strict'
 
-var net = require('net')
-var tap = require('tap')
-var join = require('path').join
-var httpProxy = require('http-proxy')
-var read = require('fs').readFileSync
-var configurator = require('../../lib/config')
-var Agent = require('../../lib/agent')
-var CollectorAPI = require('../../lib/collector/api')
+const net = require('net')
+const tap = require('tap')
+const join = require('path').join
+const httpProxy = require('http-proxy')
+const read = require('fs').readFileSync
+const configurator = require('../../lib/config')
+const Agent = require('../../lib/agent')
+const CollectorAPI = require('../../lib/collector/api')
 
 const PORT = 4035
 const SSL_CONFIG = {
@@ -15,11 +15,11 @@ const SSL_CONFIG = {
   cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
 }
 
-tap.test('support ssl to the proxy', function(t) {
-  var server = httpProxy.createProxyServer({ssl: SSL_CONFIG})
+tap.test('support ssl to the proxy', (t) => {
+  const server = httpProxy.createProxyServer({ssl: SSL_CONFIG})
 
-  server.listen(PORT, function() {
-    var config = configurator.initialize({
+  server.listen(PORT, () => {
+    const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
       host: 'staging-collector.newrelic.com',
@@ -40,16 +40,16 @@ tap.test('support ssl to the proxy', function(t) {
         read(join(__dirname, '..', 'lib', 'ca-certificate.crt'), 'utf8')
       ]
     })
-    var agent = new Agent(config)
-    var api = new CollectorAPI(agent)
+    const agent = new Agent(config)
+    const api = new CollectorAPI(agent)
 
-    api.connect(function(error, returned) {
+    api.connect((error, returned) => {
       t.notOk(error, 'connected without error')
       t.ok(returned, 'got boot configuration')
       t.ok(returned.agent_run_id, 'got run ID')
       t.ok(agent.config.run_id, 'run ID set in configuration')
 
-      api.shutdown(function(error, command) {
+      api.shutdown((error, command) => {
         t.notOk(error, 'should have shut down without issue')
         t.equal(command.returned, null, 'collector explicitly returns null')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
@@ -61,11 +61,11 @@ tap.test('support ssl to the proxy', function(t) {
   })
 })
 
-tap.test('setting proxy_port should use the proxy agent', function(t) {
-  var server = httpProxy.createProxyServer({ssl: SSL_CONFIG})
+tap.test('setting proxy_port should use the proxy agent', (t) => {
+  const server = httpProxy.createProxyServer({ssl: SSL_CONFIG})
 
-  server.listen(PORT, function() {
-    var config = configurator.initialize({
+  server.listen(PORT, () => {
+    const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
       host: 'staging-collector.newrelic.com',
@@ -87,16 +87,16 @@ tap.test('setting proxy_port should use the proxy agent', function(t) {
         read(join(__dirname, '..', 'lib', 'ca-certificate.crt'), 'utf8')
       ]
     })
-    var agent = new Agent(config)
-    var api = new CollectorAPI(agent)
+    const agent = new Agent(config)
+    const api = new CollectorAPI(agent)
 
-    api.connect(function(error, returned) {
+    api.connect((error, returned) => {
       t.notOk(error, 'connected without error')
       t.ok(returned, 'got boot configuration')
       t.ok(returned.agent_run_id, 'got run ID')
       t.ok(agent.config.run_id, 'run ID set in configuration')
 
-      api.shutdown(function(error, command) {
+      api.shutdown((error, command) => {
         t.notOk(error, 'should have shut down without issue')
         t.equal(command.returned, null, 'collector explicitly returns null')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
@@ -108,14 +108,14 @@ tap.test('setting proxy_port should use the proxy agent', function(t) {
   })
 })
 
-tap.test('proxy authentication should set headers', function(t) {
+tap.test('proxy authentication should set headers', (t) => {
   t.plan(2)
 
-  var server = net.createServer()
+  const server = net.createServer()
 
-  server.on('connection', function(socket) {
-    socket.on('data', function(chunk) {
-      var data = chunk.toString().split('\r\n')
+  server.on('connection', (socket) => {
+    socket.on('data', (chunk) => {
+      const data = chunk.toString().split('\r\n')
       t.equal(data[0], 'CONNECT staging-collector.newrelic.com:443 HTTP/1.1')
       t.equal(data[1], 'Proxy-Authorization: Basic YTpi')
       server.close()
@@ -123,8 +123,8 @@ tap.test('proxy authentication should set headers', function(t) {
     socket.end()
   })
 
-  server.listen(PORT, function() {
-    var config = configurator.initialize({
+  server.listen(PORT, () => {
+    const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
       host: 'staging-collector.newrelic.com',
@@ -142,17 +142,17 @@ tap.test('proxy authentication should set headers', function(t) {
         level: 'trace'
       }
     })
-    var agent = new Agent(config)
-    var api = new CollectorAPI(agent)
+    const agent = new Agent(config)
+    const api = new CollectorAPI(agent)
 
-    api.connect(function() {
+    api.connect(() => {
       t.end()
     })
   })
 })
 
-tap.test('no proxy set should not use proxy agent', function(t) {
-  var config = configurator.initialize({
+tap.test('no proxy set should not use proxy agent', (t) => {
+  const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
     host: 'staging-collector.newrelic.com',
@@ -169,17 +169,17 @@ tap.test('no proxy set should not use proxy agent', function(t) {
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
-  var api = new CollectorAPI(agent)
+  const agent = new Agent(config)
+  const api = new CollectorAPI(agent)
 
 
-  api.connect(function(error, returned) {
+  api.connect((error, returned) => {
     t.notOk(error, 'connected without error')
     t.ok(returned, 'got boot configuration')
     t.ok(returned.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
-    api.shutdown(function(error, command) {
+    api.shutdown((error, command) => {
       t.notOk(error, 'should have shut down without issue')
       t.equal(command.returned, null, 'collector explicitly returns null')
       t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
