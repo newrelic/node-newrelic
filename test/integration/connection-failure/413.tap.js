@@ -14,7 +14,6 @@ const ENDPOINTS = helper.generateAllPaths(RUN_ID)
 nock.disableNetConnect()
 
 tap.test('harvesting with a mocked collector that returns 413 on connect', (t) => {
-  // var RUN_ID = 1337
   const url = 'https://collector.newrelic.com'
   const agent = new Agent(configurator.initialize())
   const transaction = new Transaction(agent)

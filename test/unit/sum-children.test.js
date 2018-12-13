@@ -1,17 +1,16 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , expect      = chai.expect
-  , sumChildren = require('../../lib/util/sum-children')
-  
+const chai = require('chai')
+const expect = chai.expect
+const sumChildren = require('../../lib/util/sum-children')
 
-describe("simplifying timings lists", function () {
-  it("should correctly reduce a simple list", function () {
+
+describe("simplifying timings lists", function() {
+  it("should correctly reduce a simple list", function() {
     expect(sumChildren([[22, 42]])).equal(20)
   })
 
-  it("should accurately sum overlapping child traces", function () {
+  it("should accurately sum overlapping child traces", function() {
     var intervals = []
     // start with a simple interval
     intervals.push([ 0, 22])
@@ -25,7 +24,7 @@ describe("simplifying timings lists", function () {
     expect(sumChildren(intervals)).equal(37)
   })
 
-  it("should accurately sum partially overlapping child traces", function () {
+  it("should accurately sum partially overlapping child traces", function() {
     var intervals = []
     // start with a simple interval
     intervals.push([ 0, 22])
@@ -37,7 +36,7 @@ describe("simplifying timings lists", function () {
     expect(sumChildren(intervals)).equal(33)
   })
 
-  it("should accurately sum partially overlapping, open-ranged child traces", function () {
+  it("should accurately sum partially overlapping, open-ranged child traces", function() {
     var intervals = []
     // start with a simple interval
     intervals.push([ 0, 22])

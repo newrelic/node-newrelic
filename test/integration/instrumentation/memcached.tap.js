@@ -194,12 +194,14 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
             transaction.end(function() {
-              verifySegments(t, transaction.trace.root, [
-                'Datastore/operation/Memcache/replace',
-              [
-                'Truncated/Callback: <anonymous>'
-              ]
-              ])
+              verifySegments(
+                t,
+                transaction.trace.root,
+                [
+                  'Datastore/operation/Memcache/replace',
+                  ['Truncated/Callback: <anonymous>']
+                ]
+              )
 
               verifyMetrics(t, transaction.metrics, {
                 'Datastore/all': 1,
@@ -481,8 +483,11 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
-            t.equals(segment.parameters.key, "\"foo\"",
-                     "should have the get key as a parameter")
+            t.equals(
+              segment.parameters.key,
+              "\"foo\"",
+              "should have the get key as a parameter"
+            )
           })
         })
       })
@@ -516,8 +521,11 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
-            t.equals(segment.parameters.key, "[\"foo\",\"bar\"]",
-                     "should have the multiple keys fetched as a parameter")
+            t.equals(
+              segment.parameters.key,
+              "[\"foo\",\"bar\"]",
+              "should have the multiple keys fetched as a parameter"
+            )
           })
         })
       })
@@ -532,8 +540,11 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
-            t.equals(segment.parameters.key, "\"foo\"",
-                     "should have the set key as a parameter")
+            t.equals(
+              segment.parameters.key,
+              "\"foo\"",
+              "should have the set key as a parameter"
+            )
           })
         })
       })

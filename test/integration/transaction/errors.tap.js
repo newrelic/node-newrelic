@@ -217,7 +217,11 @@ test('errors in web transactions should gather and merge custom params', functio
     t.equal(ua.preErrorReplace, 'yesssssssss', 'replace custom param from before error')
     t.equal(ua.thisOneIsUnique, 1987, 'custom param that is not overriding also was kept')
     t.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
-    t.equal(ua.postErrorReplace, 'this one is better', 'replace custom param from after error')
+    t.equal(
+      ua.postErrorReplace,
+      'this one is better',
+      'replace custom param from after error'
+    )
 
     // agent/query parameters
     // on older versions of node the content length and response message

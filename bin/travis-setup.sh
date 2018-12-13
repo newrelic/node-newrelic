@@ -48,14 +48,19 @@ if [ "$SUITE" = "versioned" ]; then
   ./bin/travis-install-mongo.sh > /dev/null
 
   echo " --- done installing $SUITE requirements --- "
+
+elif [ "$SUITE" = "security" ]; then
+  # npm 6 has the `audit` command used for security check.
+  if [ "$(get_version npm)" != "6" ]; then
+    echo " -- upgrading npm to 6 --- "
+    npm install -g npm@6
+  else
+    echo " --- not upgrading npm ($(npm --version)) --- "
+  fi
 else
-  echo " --- not installing $SUITE requirements --- "
+  echo " --- no $SUITE installation requirements --- "
 fi
 
-if [ "$SUITE" = "security" ]; then
-  echo " --- installing nsp  --- "
-  npm install --no-save nsp
-fi
 
 # Always install time.
 sudo apt-get install -qq time

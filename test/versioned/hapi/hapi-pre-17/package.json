@@ -8,7 +8,8 @@
         "node": ">=0.10"
       },
       "dependencies": {
-        "hapi": ">=2.0.0 <6"
+        "hapi": ">=2.0.0 <6",
+        "ejs": "2.5"
       },
       "files": [
         "capture-params.tap.js",

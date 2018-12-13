@@ -307,7 +307,7 @@ describe('WebFrameworkShim', function() {
           const routes = [/a\/b\/$/, /anotherRegex/, /a/]
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
             route: shim.FIRST,
-            wrapper: (shim, fn, name, route) => {
+            wrapper: () => {
               routes.forEach((r) => {
                 expect(r instanceof RegExp).to.be.true
               })

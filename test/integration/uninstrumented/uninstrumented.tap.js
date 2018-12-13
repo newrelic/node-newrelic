@@ -47,8 +47,8 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
   instrumentations.push('pg.js', 'mysql2')
 
   instrumentations.forEach(function(module) {
-     // core module--will always be instrumented,
-     // but still added to registeredInstrumentations
+    // core module--will always be instrumented,
+    // but still added to registeredInstrumentations
     if (module !== 'domain') {
       try {
         require(module)

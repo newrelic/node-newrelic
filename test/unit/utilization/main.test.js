@@ -49,7 +49,7 @@ describe('getVendors', function() {
       }
     }).getVendors
 
-    getVendors(agent, function(err, vendors) {
+    getVendors(agent, function(err) {
       expect(err).to.be.null
       expect(awsCalled).to.be.true
       expect(azureCalled).to.be.true

@@ -296,65 +296,35 @@ describe('Trace', function() {
       expect(trace.getTotalTimeDurationInMillis()).equal(48)
     })
 
-    it('should report the expected trees for trees with uncollected segments',
-        function() {
-      var expectedTrace = [
+    it('should report the expected trees for trees with uncollected segments', () => {
+      const expectedTrace = [
         0,
         27,
         "Root",
-        {
-          "nr_exclusive_duration_millis": 3
-        },
+        {"nr_exclusive_duration_millis": 3},
         [
           [
             1,
             10,
             "first",
-            {
-              "nr_exclusive_duration_millis": 9
-            },
+            {"nr_exclusive_duration_millis": 9},
             [
-              [
-                16,
-                25,
-                "first-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ]
+              [16, 25, "first-first", {"nr_exclusive_duration_millis": 9},[]]
             ]
           ],
           [
             1,
             14,
             "second",
-            {
-              "nr_exclusive_duration_millis": 13
-            },
+            {"nr_exclusive_duration_millis": 13},
             [
-              [
-                16,
-                25,
-                "second-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ],
-              [
-                16,
-                25,
-                "second-second",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ]
+              [16, 25, "second-first", {"nr_exclusive_duration_millis": 9}, []],
+              [16, 25, "second-second", {"nr_exclusive_duration_millis": 9}, []]
             ]
           ]
         ]
       ]
+
       trace.setDurationInMillis(40, 0)
       var child = trace.add('Root')
       child.setDurationInMillis(27, 0)
@@ -375,68 +345,30 @@ describe('Trace', function() {
     })
 
     it('should report the expected trees for branched trees', function() {
-      var expectedTrace = [
+      const expectedTrace = [
         0,
         27,
         "Root",
-        {
-          "nr_exclusive_duration_millis": 3
-        },
+        {"nr_exclusive_duration_millis": 3},
         [
           [
             1,
             10,
             "first",
-            {
-              "nr_exclusive_duration_millis": 9
-            },
+            {"nr_exclusive_duration_millis": 9},
             [
-              [
-                16,
-                25,
-                "first-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ],
-              [
-                16,
-                30,
-                "first-second",
-                {
-                  "nr_exclusive_duration_millis": 14
-                },
-                []
-              ]
+              [16, 25, "first-first", {"nr_exclusive_duration_millis": 9},[]],
+              [16, 30, "first-second", {"nr_exclusive_duration_millis": 14}, []]
             ]
           ],
           [
             1,
             14,
             "second",
-            {
-              "nr_exclusive_duration_millis": 13
-            },
+            {"nr_exclusive_duration_millis": 13},
             [
-              [
-                16,
-                25,
-                "second-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ],
-              [
-                16,
-                25,
-                "second-second",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ]
+              [16, 25, "second-first", {"nr_exclusive_duration_millis": 9}, []],
+              [16, 25, "second-second", {"nr_exclusive_duration_millis": 9},[]]
             ]
           ]
         ]
@@ -459,8 +391,7 @@ describe('Trace', function() {
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
-    it('should measure exclusive time vs total time at each level of the graph',
-       function() {
+    it('should measure exclusive time vs total time at each level of the graph', () => {
       var child = trace.add('Custom/Test18/Child1')
 
       trace.setDurationInMillis(42)
