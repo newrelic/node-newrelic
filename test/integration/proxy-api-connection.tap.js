@@ -3,28 +3,29 @@
 const net = require('net')
 const tap = require('tap')
 const join = require('path').join
-const httpProxy = require('http-proxy')
+const https = require('https')
+const proxySetup = require('@newrelic/proxy')
 const read = require('fs').readFileSync
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 
-const PORT = 4035
+let port = 0
 const SSL_CONFIG = {
   key: read(join(__dirname, '../lib/test-key.key')),
   cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
 }
 
 tap.test('support ssl to the proxy', (t) => {
-  const server = httpProxy.createProxyServer({ssl: SSL_CONFIG})
+  const server = proxySetup(https.createServer(SSL_CONFIG))
 
-  server.listen(PORT, () => {
+  server.listen(0, () => {
+    port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
       host: 'staging-collector.newrelic.com',
-      port: 443,
-      proxy: `https://ssl.lvh.me:${PORT}`,
+      proxy: `https://ssl.lvh.me:${port}`,
       ssl: true,
       utilization: {
         detect_aws: false,
@@ -32,9 +33,6 @@ tap.test('support ssl to the proxy', (t) => {
         detect_azure: false,
         detect_gcp: false,
         detect_docker: false
-      },
-      logging: {
-        level: 'trace'
       },
       certificates: [
         read(join(__dirname, '..', 'lib', 'ca-certificate.crt'), 'utf8')
@@ -62,16 +60,17 @@ tap.test('support ssl to the proxy', (t) => {
 })
 
 tap.test('setting proxy_port should use the proxy agent', (t) => {
-  const server = httpProxy.createProxyServer({ssl: SSL_CONFIG})
+  const server = proxySetup(https.createServer(SSL_CONFIG))
 
-  server.listen(PORT, () => {
+  server.listen(0, () => {
+    port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
       host: 'staging-collector.newrelic.com',
       port: 443,
       proxy_host: 'ssl.lvh.me',
-      proxy_port: PORT,
+      proxy_port: port,
       ssl: true,
       utilization: {
         detect_aws: false,
@@ -123,13 +122,14 @@ tap.test('proxy authentication should set headers', (t) => {
     socket.end()
   })
 
-  server.listen(PORT, () => {
+  server.listen(0, () => {
+    port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
       host: 'staging-collector.newrelic.com',
       port: 443,
-      proxy: `http://a:b@localhost:${PORT}`,
+      proxy: `http://a:b@localhost:${port}`,
       ssl: true,
       utilization: {
         detect_aws: false,

@@ -131,6 +131,7 @@
     "@newrelic/native-metrics": "^3.0.0"
   },
   "devDependencies": {
+    "@newrelic/proxy": "^1.0.0",
     "@newrelic/test-utilities": "^2.0.1",
     "JSV": "~4.0.2",
     "architect": "*",
@@ -142,7 +143,6 @@
     "generic-pool": "*",
     "glob": "^7.1.2",
     "got": "^8.0.1",
-    "http-proxy": "^1.17.0",
     "jsdoc": "^3.4.0",
     "lodash": "^4.17.5",
     "memcached": ">=0.2.8",
