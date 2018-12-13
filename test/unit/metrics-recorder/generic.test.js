@@ -26,31 +26,31 @@ function record(options) {
   recordGeneric(segment, options.transaction.name)
 }
 
-describe('recordGeneric', function () {
+describe('recordGeneric', function() {
   var agent
   var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  describe('when scope is undefined', function () {
-    it('shouldn\'t crash on recording', function () {
+  describe('when scope is undefined', function() {
+    it('shouldn\'t crash on recording', function() {
       var segment = makeSegment({
         transaction : trans,
         duration : 0,
         exclusive : 0
       })
-      expect(function () { recordGeneric(segment, undefined); }).not.throws()
+      expect(function() { recordGeneric(segment, undefined) }).not.throws()
     })
 
-    it('should record no scoped metrics', function () {
+    it('should record no scoped metrics', function() {
       var segment = makeSegment({
         transaction : trans,
         duration : 5,
@@ -66,8 +66,8 @@ describe('recordGeneric', function () {
     })
   })
 
-  describe('with scope', function () {
-    it('should record scoped metrics', function () {
+  describe('with scope', function() {
+    it('should record scoped metrics', function() {
       record({
         transaction : trans,
         url : '/test',
@@ -87,7 +87,7 @@ describe('recordGeneric', function () {
     })
   })
 
-  it('should report exclusive time correctly', function () {
+  it('should report exclusive time correctly', function() {
     var root   = trans.trace.root
     var parent = root.add('Test/Parent', recordGeneric)
     var child1 = parent.add('Test/Child/1', recordGeneric)

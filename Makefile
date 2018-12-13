@@ -1,6 +1,5 @@
 MOCHA        = node_modules/.bin/mocha
 MOCHA_NOBIN  = node_modules/.bin/_mocha
-COVER        = node_modules/.bin/cover
 TAP          = node_modules/.bin/tap
 ESLINT       = node_modules/.bin/eslint
 JSDOC        = node_modules/.bin/jsdoc
@@ -105,15 +104,6 @@ smoke: clean
 	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 
-coverage: clean node_modules $(CERTIFICATE)
-	@$(COVER) run $(MOCHA_NOBIN) -- test/unit --recursive
-	@for tapfile in $(INTEGRATION) ; do \
-		$(COVER) run $$tapfile ; \
-	done
-	@$(COVER) combine
-	@$(COVER) report html
-	@$(COVER) report
-
 notes:
 	find . -name node_modules -prune -o \
 	       -name cover_html -prune -o \
@@ -181,7 +171,7 @@ $(CERTIFICATE): $(CACERT)
 	@rm -f server.csr
 
 security:
-	./node_modules/.bin/nsp check
+	npm audit
 
 services:
 	./bin/docker-services.sh

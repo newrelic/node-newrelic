@@ -1,12 +1,10 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , assert = require('assert')
-  , expect = chai.expect
-  , AssertionError = chai.AssertionError
+const chai   = require('chai')
+const expect = chai.expect
+const AssertionError = chai.AssertionError
 
-var metricsHelper = require('../../lib/metrics_helper.js')
+const metricsHelper = require('../../lib/metrics_helper.js')
 
 
 function MockSegment(name, children) {
@@ -17,7 +15,7 @@ function MockSegment(name, children) {
   }
 }
 
-describe("assertSegments", function () {
+describe("assertSegments", function() {
   it('finds missing segment', function() {
     var parent = new MockSegment('a')
     var expected = [
@@ -25,7 +23,9 @@ describe("assertSegments", function () {
     ]
 
     var bound = metricsHelper.assertSegments.bind(null, parent, expected)
-    expect(bound).to.throw(AssertionError, 'segment "a" should have child "b" in position 1')
+
+    expect(bound)
+      .to.throw(AssertionError, 'segment "a" should have child "b" in position 1')
   })
 
   it('finds missing segment among many', function() {
@@ -38,7 +38,8 @@ describe("assertSegments", function () {
     ]
 
     var bound = metricsHelper.assertSegments.bind(null, parent, expected)
-    expect(bound).to.throw(AssertionError, 'segment "a" should have child "c" in position 2')
+    expect(bound)
+      .to.throw(AssertionError, 'segment "a" should have child "c" in position 2')
   })
 
   it('finds missing segment deep', function() {
@@ -53,7 +54,8 @@ describe("assertSegments", function () {
     ]
 
     var bound = metricsHelper.assertSegments.bind(null, parent, expected)
-    expect(bound).to.throw(AssertionError, 'segment "b" should have child "c" in position 1')
+    expect(bound)
+      .to.throw(AssertionError, 'segment "b" should have child "c" in position 1')
   })
 
   it('finds extra segment', function() {

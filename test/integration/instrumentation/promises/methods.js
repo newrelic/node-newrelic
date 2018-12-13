@@ -831,7 +831,7 @@ module.exports = function(t, library, loadLibrary) {
           .catch(function(err) {
             t.equal(err, foo, name + 'should pass throught the correct object')
           })
-        })
+      })
     })
 
     t.test('casting', function(t) {
@@ -1702,8 +1702,7 @@ module.exports = function(t, library, loadLibrary) {
           var foo = {what: 'throw test object'}
           return p[methodName](foo).then(function() {
             t.fail(name + 'should not go into resolve handler after throw')
-          })
-          .catch(function(err) {
+          }).catch(function(err) {
             t.equal(err, foo, name + 'should pass throught the correct object')
           })
         })

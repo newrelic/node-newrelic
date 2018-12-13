@@ -35,13 +35,17 @@ tap.test('harvesting with a mocked collector that returns 415 on connect', funct
   // turn off native metrics to avoid unwanted gc metrics
   agent.config.feature_flag.native_metrics = false
 
-  var redirect = nock(url).post(path('preconnect'))
-                   .reply(200, {return_value: 'collector.newrelic.com'})
+  var redirect = nock(url)
+    .post(path('preconnect'))
+    .reply(200, {return_value: 'collector.newrelic.com'})
 
-  var handshake = nock(url).post(path('connect'))
-                    .reply(200, {return_value: {agent_run_id: RUN_ID}})
-  var settings = nock(url).post(path('agent_settings', RUN_ID))
-                   .reply(200, {return_value: []})
+  var handshake = nock(url)
+    .post(path('connect'))
+    .reply(200, {return_value: {agent_run_id: RUN_ID}})
+
+  var settings = nock(url)
+    .post(path('agent_settings', RUN_ID))
+    .reply(200, {return_value: []})
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(415)
   var sendEvents = nock(url).post(path('analytic_event_data', RUN_ID)).reply(415)
@@ -112,13 +116,17 @@ tap.test('discarding metrics and errors after a 415', function(t) {
   // turn off native metrics to avoid unwanted gc metrics
   agent.config.feature_flag.native_metrics = false
 
-  nock(url).post(path('preconnect'))
-           .reply(200, {return_value: 'collector.newrelic.com'})
+  nock(url)
+    .post(path('preconnect'))
+    .reply(200, {return_value: 'collector.newrelic.com'})
 
-  nock(url).post(path('connect'))
-           .reply(200, {return_value: {agent_run_id: RUN_ID}})
-  nock(url).post(path('agent_settings', RUN_ID))
-           .reply(200, {return_value: []})
+  nock(url)
+    .post(path('connect'))
+    .reply(200, {return_value: {agent_run_id: RUN_ID}})
+
+  nock(url)
+    .post(path('agent_settings', RUN_ID))
+    .reply(200, {return_value: []})
 
   nock(url).post(path('metric_data', RUN_ID)).reply(415)
   nock(url).post(path('error_data', RUN_ID)).reply(415)
