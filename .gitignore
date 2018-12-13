@@ -1,7 +1,6 @@
 node_modules
 newrelic_agent.log
 .coverage_data
-package-lock.json
 cover_html
 npm-debug.log
 *.key
