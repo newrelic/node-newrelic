@@ -350,30 +350,24 @@ describe('RemoteMethod', () => {
 
     describe('unsuccessfully', () => {
       beforeEach(() => {
-        // whoops
-        sendMetrics = nock(URL).post(generate('metric_data', RUN_ID)).reply(500)
+        // nock ensures the correct URL is requested
+        sendMetrics = nock(URL)
+          .post(generate('metric_data', RUN_ID))
+          .reply(500, {return_value: []})
       })
 
-      it('should invoke the callback with an error', (done) => {
+      it('should invoke the callback without error', (done) => {
         method._post('[]', mockHeaders, (error) => {
-          should.exist(error)
-
+          should.not.exist(error)
           done()
         })
       })
 
-      it('should say what the error was', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          expect(error.message).equal('No body found in response to metric_data.')
-
-          done()
-        })
-      })
-
-      it('should include the status code on the error', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          expect(error.statusCode).equal(500)
-
+      it('should include status code in response', (done) => {
+        method._post('[]', mockHeaders, (error, response) => {
+          should.not.exist(error)
+          expect(response.status).to.equal(500)
+          expect(sendMetrics.isDone()).to.be.true
           done()
         })
       })
@@ -422,7 +416,7 @@ describe('RemoteMethod', () => {
         })
 
         it('should not error', (done) => {
-          method.invoke(undefined, mockHeaders, (error) => {
+          method.invoke(null, mockHeaders, (error) => {
             should.not.exist(error)
 
             done()
@@ -430,16 +424,8 @@ describe('RemoteMethod', () => {
         })
 
         it('should find the expected value', (done) => {
-          method.invoke(undefined, mockHeaders, (error, host) => {
-            expect(host).equal('collector-42.newrelic.com')
-
-            done()
-          })
-        })
-
-        it('should not alter the sent JSON', (done) => {
-          method.invoke(undefined, mockHeaders, (error, host, json) => {
-            expect(json).eql(response)
+          method.invoke(null, mockHeaders, (error, res) => {
+            expect(res.payload).equal('collector-42.newrelic.com')
 
             done()
           })
@@ -447,48 +433,18 @@ describe('RemoteMethod', () => {
       })
 
       describe('that indicated a New Relic error', () => {
-        const response = {
-          exception: {
-            message: 'Configuration has changed, need to restart agent.',
-            error_type: 'NewRelic::Agent::ForceRestartException'
-          }
-        }
+        const response = {}
 
         beforeEach(() => {
           nock(URL)
             .post(generate('metric_data', RUN_ID))
-            .reply(200, response)
+            .reply(409, response)
         })
 
-        it('should set error message to the JSON\'s message', (done) => {
-          method.invoke([], mockHeaders, (error) => {
-            expect(error.message)
-              .equal('Configuration has changed, need to restart agent.')
-
-            done()
-          })
-        })
-
-        it('should pass along the New Relic error type', (done) => {
-          method.invoke([], mockHeaders, (error) => {
-            expect(error.class).equal('NewRelic::Agent::ForceRestartException')
-
-            done()
-          })
-        })
-
-        it('should include the HTTP status code for the response', (done) => {
-          method.invoke([], mockHeaders, (error) => {
-            expect(error.statusCode).equal(200)
-
-            done()
-          })
-        })
-
-        it('should not alter the sent JSON', (done) => {
-          method.invoke(undefined, mockHeaders, (error, host, json) => {
-            expect(json).eql(response)
-
+        it('should include status in callback response', (done) => {
+          method.invoke([], mockHeaders, (error, res) => {
+            expect(error).to.be.null
+            expect(res.status).equal(409)
             done()
           })
         })

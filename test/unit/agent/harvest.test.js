@@ -307,6 +307,7 @@ describe('Agent harvests', () => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.ERRORS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.ERROR_EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.errors).to.have.length(3) // <-- Events length
       expect(agent.errors.errors).to.have.length(3)
@@ -429,6 +430,8 @@ describe('Agent harvests', () => {
 
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
+      harvest.post(ENDPOINTS.TRACES).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.traces.trace).to.exist
@@ -551,6 +554,7 @@ describe('Agent harvests', () => {
 
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).times(2).reply(500, EMPTY_RESPONSE)
 
       var expectedEvents
       a.series([
@@ -599,6 +603,7 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.events).to.have.length(1)
       const event = agent.events.toArray()[0]
@@ -804,6 +809,9 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.TRACES).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.QUERIES).reply(500, EMPTY_RESPONSE)
 
       expect(agent.queries.samples).to.have.property('size', 1)
 
@@ -902,6 +910,7 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.SPAN_EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.spans).to.have.length(1)
 

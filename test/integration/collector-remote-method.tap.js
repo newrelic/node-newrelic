@@ -33,19 +33,18 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
       server.close()
     })
 
-    method._post('[]', {}, (error, results, json) => {
+    method._post('[]', {}, (error, results) => {
       if (error) {
         t.fail(error)
         return t.end()
       }
 
-      t.equal(results, 'collector-1.lvh.me:8089', 'parsed result should come through')
-      t.notOk(json.validations, 'fake collector should find no irregularities')
       t.equal(
-        json.return_value,
+        results.payload,
         'collector-1.lvh.me:8089',
-        'collector returns expected collector redirect'
+        'parsed result should come through'
       )
+      t.ok(results.status, 'response status code should come through')
 
       t.end()
     })
@@ -56,21 +55,22 @@ tap.test('remote method to preconnect', (t) => {
   t.plan(1)
 
   t.test('https with custom certificate', (t) => {
-    t.plan(3)
+    t.plan(4)
     const method = createRemoteMethod()
 
     // create mock collector
     startMockCollector(t, () => {
-      method.invoke([], {}, (error, returnValue) => {
-        validateResponse(t, error, returnValue)
+      method.invoke([], {}, (error, response) => {
+        validateResponse(t, error, response)
         t.end()
       })
     })
   })
 
-  function validateResponse(t, error, returnValue) {
+  function validateResponse(t, error, response) {
     t.error(error, 'should not have an error')
-    t.equal(returnValue, 'some-collector-url', 'should get expected response')
+    t.equal(response.payload, 'some-collector-url', 'should get expected response')
+    t.ok(response.status, 'should get response status code')
   }
 
   function createRemoteMethod() {
