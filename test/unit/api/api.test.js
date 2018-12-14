@@ -92,11 +92,6 @@ describe('the New Relic agent API', function() {
     expect(api.addIgnoringRule).to.be.a('function')
   })
 
-  it("exports a function for adding custom parameters", function() {
-    should.exist(api.addCustomParameter)
-    expect(api.addCustomParameter).to.be.a('function')
-  })
-
   it("exports a function for adding custom instrumentation", function() {
     should.exist(api.instrument)
     expect(api.instrument).to.be.a('function')

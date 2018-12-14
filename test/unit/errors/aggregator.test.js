@@ -1037,7 +1037,7 @@ describe('Errors', function() {
       var api = new API(agent)
 
       api.startBackgroundTransaction('job', function() {
-        api.addCustomParameter('jobType', 'timer')
+        api.addCustomAttribute('jobType', 'timer')
         api.noticeError(new Error('record an error'))
         agent.getTransaction().end(function() {
           expect(errorTracer.errors.length).equal(1)

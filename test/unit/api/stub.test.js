@@ -13,8 +13,8 @@ describe("the stubbed New Relic agent API", function() {
     api = new API()
   })
 
-  it("should export 29 API calls", function() {
-    expect(Object.keys(api.constructor.prototype).length).to.equal(29)
+  it("should export 24 API calls", function() {
+    expect(Object.keys(api.constructor.prototype).length).to.equal(24)
   })
 
   it("exports a transaction naming function", function() {
@@ -85,36 +85,19 @@ describe("the stubbed New Relic agent API", function() {
     api.getBrowserTimingHeader().should.equal('')
   })
 
-  it("exports a function for adding custom parameters", function() {
-    should.exist(api.addCustomParameter)
-    expect(api.addCustomParameter).a('function')
-  })
-
   it("shouldn't throw when a custom parameter is added", function() {
-    expect(function() { api.addCustomParameter('test', 'value') }).not.throws()
+    expect(function() { api.addCustomAttribute('test', 'value') }).not.throws()
   })
 
   it("exports a function for adding multiple custom parameters at once", function() {
-    should.exist(api.addCustomParameters)
-    expect(api.addCustomParameters).a('function')
+    should.exist(api.addCustomAttributes)
+    expect(api.addCustomAttributes).a('function')
   })
 
   it("shouldn't throw when multiple custom parameters are added", function() {
     expect(function() {
-      api.addCustomParameters({test: 'value', test2: 'value2'})
+      api.addCustomAttributes({test: 'value', test2: 'value2'})
     }).to.not.throw()
-  })
-
-  it("shouldn't throw when a custom segment is added", function() {
-    expect(function() {
-      api.createTracer('name', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createTracer", function() {
-    function myNop() {}
-    var retVal = api.createTracer('name', myNop)
-    expect(retVal).to.equal(myNop)
   })
 
   it("should return a function when calling setLambdaHandler", function() {
@@ -204,42 +187,6 @@ describe("the stubbed New Relic agent API", function() {
     expect(function() {
       api.startBackgroundTransaction('test')
     }).not.throws()
-  })
-
-  it("shouldn't throw when a custom web transaction is added", function() {
-    expect(function() {
-      api.createWebTransaction('name', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createWebTransaction", function() {
-    function myNop() {}
-    var retVal = api.createWebTransaction('name', myNop)
-    expect(retVal).to.be.equal(myNop)
-  })
-
-  it("shouldn't throw when a custom background transaction is added", function() {
-    expect(function() {
-      api.createBackgroundTransaction('name', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createBackgroundTransaction", function() {
-    function myNop() {}
-    var retVal = api.createBackgroundTransaction('name', myNop)
-    expect(retVal).to.be.equal(myNop)
-  })
-
-  it("shouldn't throw when a custom background transaction with a group is added", function() {
-    expect(function() {
-      api.createBackgroundTransaction('name', 'group', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createBackgroundTransaction", function() {
-    function myNop() {}
-    var retVal = api.createBackgroundTransaction('name', 'group', myNop)
-    expect(retVal).to.be.equal(myNop)
   })
 
   it("shouldn't throw when a transaction is ended", function() {

@@ -518,22 +518,22 @@ configuration. The pattern is mandatory.
 
 ### Other API calls
 
-#### newrelic.addCustomParameter(name, value)
+#### newrelic.addCustomAttribute(name, value)
 
-Set a custom parameter value to be attached to a transaction trace and/or error
+Set a custom attribute value to be attached to a transaction trace and/or error
 in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters.
+so it has a place to set the custom attributes.
 
-#### newrelic.addCustomParameters(params)
+#### newrelic.addCustomAttributes(params)
 
-Set multiple custom parameter values to be attached to a transaction trace and/or
+Set multiple custom attribute values to be attached to a transaction trace and/or
 error in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters.
+so it has a place to set the custom attribute.
 
-Example of setting multiple custom parameters at once:
+Example of setting multiple custom attribute at once:
 
 ```js
-newrelic.addCustomParameters({test: 'value', test2: 'value2'});
+newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
 ```
 
 #### newrelic.setIgnoreTransaction(ignored)

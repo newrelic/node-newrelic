@@ -3,6 +3,33 @@
 This guide is intended to help with upgrading major versions of the Node Agent.
 This information can also be found on [our documentation website][upgrade-doc].
 
+## Upgrading to Agent v5
+
+### Breaking Changes
+
+**Removed deprecated API methods**: The following API methods had been marked as
+deprecated since agent v2, and have now been fully removed from the codebase:
+
+* `newrelic.addCustomParameter()`
+
+  Replace with `newrelic.addCustomAttribute()`.
+
+* `newrelic.addCustomParameters()`
+
+  Replace with `newrelic.addCustomAttributes()`.
+
+* `newrelic.createWebTransaction()()`
+
+  Replace with `newrelic.startWebTransaction()` and `newrelic.getTransaction()`.
+
+* `newrelic.createBackgroundTransaction()`
+
+  Replace with `newrelic.startBackgroundTransaction()` and `newrelic.getTransaction()`.
+
+* `newrelic.createTracer()`
+
+  Replace with `newrelic.startSegment()`.
+
 ## Upgrading to Agent v4
 
 ### Breaking Changes
