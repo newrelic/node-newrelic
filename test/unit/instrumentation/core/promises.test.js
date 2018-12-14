@@ -2,12 +2,6 @@
 
 var expect = require('chai').expect
 var helper = require('../../../lib/agent_helper')
-var semver = require('semver')
-
-
-if (semver.satisfies(process.version, '<4')) {
-  return
-}
 
 
 describe('Promise trace', function() {
@@ -160,62 +154,58 @@ describe('Promise trace', function() {
       })
     })
 
-    if (semver.satisfies(process.version, '>=6')) {
-      it('should handle branches joined by `all`', function() {
-        //         /--g- -\
-        //        /        \
-        //       /--e---f--all-\
-        //      /               \
-        // a---b- - - - - - - - -c---d
-        // a[b]; b[e,g,all]; c[d]; d[]; e[f]; f[]; g[]; all[c]
+    it('should handle branches joined by `all`', function() {
+      //         /--g- -\
+      //        /        \
+      //       /--e---f--all-\
+      //      /               \
+      // a---b- - - - - - - - -c---d
+      // a[b]; b[e,g,all]; c[d]; d[]; e[f]; f[]; g[]; all[c]
 
-        return helper.runInTransaction(agent, function(tx) {
-          return start('a').then(function() {
-            name('b')
-            return Promise.all([start('e').then(step('f')), start('g')])
-          })
-            .then(step('c')).then(step('d'))
-            .then(checkTrace(tx, ['a', ['b',
-              ['e', ['f', ['!!!ignore!!!']]],
-              ['g'],
-              ['Promise.all', ['Promise#then __NR_thenContext',
-                ['!!!ignore!!!'],
-                ['c', ['d']]
-              ]],
-              ['!!!ignore!!!'],
-              ['!!!ignore!!!'],
-              ['!!!ignore!!!'],
-              ['!!!ignore!!!']
-            ]]))
+      return helper.runInTransaction(agent, function(tx) {
+        return start('a').then(function() {
+          name('b')
+          return Promise.all([start('e').then(step('f')), start('g')])
         })
-      })
-    }
-  })
-
-  if (semver.satisfies(process.version, '>=6')) {
-    describe('returned promises', function() {
-      it('should handle continuing from returned promises', function() {
-        //   (return)
-        //       /--e---f---g--\
-        //      /               \
-        // a---b- - - - - - - - -c---d
-        // a[b]; b[e]; c[d]; d[]; e[f]; f[g]; g[c]
-
-        return helper.runInTransaction(agent, function(tx) {
-          return start('a').then(step('b')).then(function() {
-            name('e')
-            return start('f').then(step('g'))
-          }).then(step('c')).then(step('d'))
-            .then(checkTrace(tx, ['a', ['b', ['e', ['f', ['g',
-              ['Promise#then __NR_thenContext', // Implementation detail.
-                ['!!!ignore!!!'],
-                ['c', ['d']]
-              ]
-            ]]]]]))
-        })
+          .then(step('c')).then(step('d'))
+          .then(checkTrace(tx, ['a', ['b',
+            ['e', ['f', ['!!!ignore!!!']]],
+            ['g'],
+            ['Promise.all', ['Promise#then __NR_thenContext',
+              ['!!!ignore!!!'],
+              ['c', ['d']]
+            ]],
+            ['!!!ignore!!!'],
+            ['!!!ignore!!!'],
+            ['!!!ignore!!!'],
+            ['!!!ignore!!!']
+          ]]))
       })
     })
-  }
+  })
+
+  describe('returned promises', function() {
+    it('should handle continuing from returned promises', function() {
+      //   (return)
+      //       /--e---f---g--\
+      //      /               \
+      // a---b- - - - - - - - -c---d
+      // a[b]; b[e]; c[d]; d[]; e[f]; f[g]; g[c]
+
+      return helper.runInTransaction(agent, function(tx) {
+        return start('a').then(step('b')).then(function() {
+          name('e')
+          return start('f').then(step('g'))
+        }).then(step('c')).then(step('d'))
+          .then(checkTrace(tx, ['a', ['b', ['e', ['f', ['g',
+            ['Promise#then __NR_thenContext', // Implementation detail.
+              ['!!!ignore!!!'],
+              ['c', ['d']]
+            ]
+          ]]]]]))
+      })
+    })
+  })
 })
 
 function start(n, rejection) {

@@ -451,11 +451,7 @@ test('realpath', function(t) {
 
       function afterVerify() {
         trans.end(function checkMetrics() {
-          var expectedMetrics = ['lstat', 'realpath']
-          // Node 6 changed implementation of fs.realpath()
-          if (semver.satisfies(process.versions.node, '>=6.0.0')) {
-            expectedMetrics = ['realpath']
-          }
+          var expectedMetrics = ['realpath']
           t.ok(
             checkMetric(expectedMetrics, agent, trans.name),
             'metric should exist after transaction end'
