@@ -87,7 +87,7 @@ var helper = module.exports = {
    * @returns String URL path for the collector.
    */
   generateCollectorPath: function generateCollectorPath(method, runID, protocolVersion) {
-    protocolVersion = protocolVersion || 16
+    protocolVersion = protocolVersion || 17
     var fragment = '/agent_listener/invoke_raw_method?' +
       `marshal_format=json&protocol_version=${protocolVersion}&` +
       `license_key=license%20key%20here&method=${method}`
@@ -97,6 +97,23 @@ var helper = module.exports = {
     }
 
     return fragment
+  },
+
+  generateAllPaths: (runId) => {
+    return {
+      CONNECT: helper.generateCollectorPath('connect'),
+      CUSTOM_EVENTS: helper.generateCollectorPath('custom_event_data', runId),
+      ERRORS: helper.generateCollectorPath('error_data', runId),
+      ERROR_EVENTS: helper.generateCollectorPath('error_event_data', runId),
+      EVENTS: helper.generateCollectorPath('analytic_event_data', runId),
+      METRICS: helper.generateCollectorPath('metric_data', runId),
+      PRECONNECT: helper.generateCollectorPath('preconnect'),
+      QUERIES: helper.generateCollectorPath('sql_trace_data', runId),
+      SETTINGS: helper.generateCollectorPath('agent_settings', runId),
+      SHUTDOWN: helper.generateCollectorPath('shutdown', runId),
+      SPAN_EVENTS: helper.generateCollectorPath('span_event_data', runId),
+      TRACES: helper.generateCollectorPath('transaction_sample_data', runId)
+    }
   },
 
   /**
