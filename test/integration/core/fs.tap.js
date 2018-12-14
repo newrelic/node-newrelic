@@ -116,7 +116,7 @@ test('truncate', function(t) {
   })
 })
 
-test('ftruncate', {skip: fs.ftruncate === undefined}, function(t) {
+test('ftruncate', function(t) {
   var name = path.join(tempDir, 'ftruncate-me')
   var content = 'some-content'
   fs.writeFileSync(name, content)

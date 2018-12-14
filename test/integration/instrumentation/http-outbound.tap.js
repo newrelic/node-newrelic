@@ -2,7 +2,6 @@
 
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
-const semver = require('semver')
 
 
 tap.test('external requests', function(t) {
