@@ -47,9 +47,6 @@ var DISABLE_ALL_DETECTIONS = {
     detect_gcp: false,
     detect_pcf: false,
     detect_docker: false
-  },
-  feature_flag: {
-    protocol_17: true
   }
 }
 
@@ -240,9 +237,6 @@ describe('utilization', function() {
           detect_gcp: false,
           detect_pcf: false,
           detect_docker: false
-        },
-        feature_flag: {
-          protocol_17: true
         }
       }
 

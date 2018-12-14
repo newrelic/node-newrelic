@@ -7,16 +7,7 @@ const nock = require('nock')
 
 const RUN_ID = 1337
 const URL = 'https://collector.newrelic.com'
-const ENDPOINTS = {
-  CUSTOM_EVENTS: helper.generateCollectorPath('custom_event_data', RUN_ID),
-  ERRORS: helper.generateCollectorPath('error_data', RUN_ID),
-  ERROR_EVENTS: helper.generateCollectorPath('error_event_data', RUN_ID),
-  EVENTS: helper.generateCollectorPath('analytic_event_data', RUN_ID),
-  METRICS: helper.generateCollectorPath('metric_data', RUN_ID),
-  QUERIES: helper.generateCollectorPath('sql_trace_data', RUN_ID),
-  SPAN_EVENTS: helper.generateCollectorPath('span_event_data', RUN_ID),
-  TRACES: helper.generateCollectorPath('transaction_sample_data', RUN_ID)
-}
+const ENDPOINTS = helper.generateAllPaths(RUN_ID)
 const EMPTY_RESPONSE = {return_value: null}
 
 describe('Agent harvests', () => {
@@ -307,6 +298,7 @@ describe('Agent harvests', () => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.ERRORS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.ERROR_EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.errors).to.have.length(3) // <-- Events length
       expect(agent.errors.errors).to.have.length(3)
@@ -429,6 +421,8 @@ describe('Agent harvests', () => {
 
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
+      harvest.post(ENDPOINTS.TRACES).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.traces.trace).to.exist
@@ -551,6 +545,7 @@ describe('Agent harvests', () => {
 
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).times(2).reply(500, EMPTY_RESPONSE)
 
       var expectedEvents
       a.series([
@@ -599,6 +594,7 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.events).to.have.length(1)
       const event = agent.events.toArray()[0]
@@ -804,6 +800,9 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.TRACES).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.QUERIES).reply(500, EMPTY_RESPONSE)
 
       expect(agent.queries.samples).to.have.property('size', 1)
 
@@ -902,6 +901,7 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.SPAN_EVENTS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.spans).to.have.length(1)
 

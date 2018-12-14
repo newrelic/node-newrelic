@@ -1,59 +1,49 @@
 'use strict'
 
-var tap = require('tap')
-var nock = require('nock')
-var configurator = require('../../../lib/config')
-var Agent = require('../../../lib/agent')
-var Transaction = require('../../../lib/transaction')
-var mockAWSInfo = require('../../lib/nock/aws').mockAWSInfo
+const tap = require('tap')
+const nock = require('nock')
+const configurator = require('../../../lib/config')
+const Agent = require('../../../lib/agent')
+const Transaction = require('../../../lib/transaction')
+const mockAWSInfo = require('../../lib/nock/aws').mockAWSInfo
+const helper = require('../../lib/agent_helper')
 
+const RUN_ID = 1337
+const ENDPOINTS = helper.generateAllPaths(RUN_ID)
 
 nock.disableNetConnect()
 
-tap.test('harvesting with a mocked collector that returns 503 on connect', function(t) {
-  var RUN_ID = 1337
-  var url = 'https://collector.newrelic.com'
-  var agent = new Agent(configurator.initialize())
-  var transaction = new Transaction(agent)
+tap.test('harvesting with a mocked collector that returns 503 on connect', (t) => {
+  const url = 'https://collector.newrelic.com'
+  const agent = new Agent(configurator.initialize())
+  const transaction = new Transaction(agent)
   agent.recordSupportability = () => {}
 
-
-  function path(method, runID, protocolVersion) {
-    protocolVersion = protocolVersion || 16
-    var fragment = '/agent_listener/invoke_raw_method?' +
-      `marshal_format=json&protocol_version=${protocolVersion}&` +
-      `license_key=license%20key%20here&method=${method}`
-
-    if (runID) fragment += '&run_id=' + runID
-
-    return fragment
-  }
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
-  var returned = {return_value: {}}
+  const returned = {return_value: {}}
 
   const connect = nock(url)
   connect
-    .post(path('preconnect'))
+    .post(ENDPOINTS.PRECONNECT)
     .reply(200, {return_value: 'collector.newrelic.com'})
   connect
-    .post(path('connect'))
+    .post(ENDPOINTS.CONNECT)
     .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
+  nock(url).post(ENDPOINTS.TRACES).reply(503, returned)
+
   // Want to individually confirm each of these endpoints.
-  const sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
+  const sendMetrics = nock(url).post(ENDPOINTS.METRICS).reply(503, returned)
+  const settings = nock(url).post(ENDPOINTS.SETTINGS).reply(200, {return_value: []})
+  const sendShutdown = nock(url).post(ENDPOINTS.SHUTDOWN).reply(200)
 
-  const settings = nock(url)
-  settings.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
-
-  const sendShutdown = nock(url)
-  sendShutdown.post(path('shutdown', RUN_ID)).reply(200)
 
   // setup nock for AWS
   mockAWSInfo()
 
-  agent.start(function(error, config) {
+  agent.start((error, config) => {
     t.notOk(error, 'got no error on connection')
     t.deepEqual(config, {agent_run_id: RUN_ID}, 'got configuration')
     t.ok(connect.isDone(), 'should perform connection stat startup')
@@ -62,12 +52,12 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
     agent.errors.add(transaction, new Error('test error'))
     agent.traces.trace = transaction.trace
 
-    agent.harvest(function(err) {
+    agent.harvest((err) => {
       t.error(err, 'collection error should stay inside collector')
 
       t.ok(sendMetrics.isDone(), 'initial sent metrics...')
 
-      agent.stop(function() {
+      agent.stop(() => {
         t.ok(settings.isDone(), 'got agent_settings message')
         t.ok(sendShutdown.isDone(), 'got shutdown message')
         t.end()
@@ -76,57 +66,49 @@ tap.test('harvesting with a mocked collector that returns 503 on connect', funct
   })
 })
 
-tap.test('merging metrics and errors after a 503', function(t) {
+tap.test('merging metrics and errors after a 503', (t) => {
   t.plan(8)
 
-  var RUN_ID = 1338
-  var url = 'https://collector.newrelic.com'
-  var agentConfig = configurator.initialize()
+  const url = 'https://collector.newrelic.com'
+  const agentConfig = configurator.initialize()
   agentConfig.utilization.detect_docker = false
 
   // Disable native metrics for these tests so they don't generate unpredictable
   // metrics.
   agentConfig.feature_flag.native_metrics = false
 
-  var agent = new Agent(agentConfig)
-  var transaction = new Transaction(agent)
-  agent.recordSupportability = function() {}
+  const agent = new Agent(agentConfig)
+  const transaction = new Transaction(agent)
+  agent.recordSupportability = () => {}
 
   transaction.name = 'trans1'
 
-  function path(method, runID, protocolVersion) {
-    protocolVersion = protocolVersion || 16
-    var fragment = '/agent_listener/invoke_raw_method?' +
-      `marshal_format=json&protocol_version=${protocolVersion}&` +
-      `license_key=license%20key%20here&method=${method}`
-
-    if (runID) fragment += '&run_id=' + runID
-
-    return fragment
-  }
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
   const collector = nock(url)
-  collector.post(path('preconnect')).reply(200, {return_value: 'collector.newrelic.com'})
-  collector.post(path('connect')).reply(200, {return_value: {agent_run_id: RUN_ID}})
-  collector.post(path('agent_settings', RUN_ID)).reply(200, {return_value: []})
-  collector.post(path('metric_data', RUN_ID)).reply(503)
-  collector.post(path('error_data', RUN_ID)).reply(503)
-  collector.post(path('transaction_sample_data', RUN_ID)).reply(503)
-  collector.post(path('shutdown', RUN_ID)).reply(200)
+  collector.post(ENDPOINTS.PRECONNECT)
+    .reply(200, {return_value: 'collector.newrelic.com'})
+  collector.post(ENDPOINTS.CONNECT).reply(200, {return_value: {agent_run_id: RUN_ID}})
+  collector.post(ENDPOINTS.SETTINGS).reply(200, {return_value: []})
+  collector.post(ENDPOINTS.METRICS).reply(503)
+  collector.post(ENDPOINTS.ERRORS).reply(503)
+  collector.post(ENDPOINTS.ERROR_EVENTS).reply(503)
+  collector.post(ENDPOINTS.EVENTS).reply(503)
+  collector.post(ENDPOINTS.TRACES).reply(503)
+  collector.post(ENDPOINTS.SHUTDOWN).reply(200)
 
-  agent.start(function() {
+  agent.start(() => {
     agent.errors.add(transaction, new Error('test error'))
 
-    transaction.end(function() {
+    transaction.end(() => {
       agent.traces.trace = transaction.trace
 
-      agent.harvest(function(error) {
+      agent.harvest((error) => {
         t.error(error, 'error should be contained by collector')
 
         t.equal(agent.errors.errors.length, 1, 'errors were merged back in')
-        var merged = agent.errors.errors[0]
+        const merged = agent.errors.errors[0]
         t.deepEqual(merged[0], 0, 'found timestamp in merged error')
         t.deepEqual(merged[1], 'trans1', 'found scope in merged error')
         t.deepEqual(merged[2], 'test error', 'found message in merged error')
@@ -184,7 +166,7 @@ tap.test('merging metrics and errors after a 503', function(t) {
           'metrics were merged'
         )
 
-        agent.stop(function() {})
+        agent.stop(() => {})
       })
 
       t.ok(agent.metrics.empty, 'should have cleared metrics on harvest')
