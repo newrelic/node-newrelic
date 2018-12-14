@@ -12,7 +12,7 @@ tap.test('Agent#harvest', (t) => {
 
   let agent = null
   let requestSpy = null
-  let headersMapKeys = null
+  let headersMap = null
 
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent({
@@ -38,7 +38,7 @@ tap.test('Agent#harvest', (t) => {
     requestSpy = sinon.spy(https, 'request')
 
     agent.start(() => {
-      headersMapKeys = Object.keys(agent.collector._reqHeadersMap || {})
+      headersMap = agent.collector._reqHeadersMap || {}
       done()
     })
   })
@@ -89,7 +89,7 @@ tap.test('Agent#harvest', (t) => {
 
       // Verify mapped headers are sent in metrics POST
       const metricsRequest = requestSpy.args[3][0]
-      checkHeaders(t, headersMapKeys, metricsRequest.headers)
+      checkHeaders(t, headersMap, metricsRequest.headers)
 
       const payload = spy.args[0][0]
       t.ok(payload, 'should have payload')
@@ -113,7 +113,7 @@ tap.test('Agent#harvest', (t) => {
 
         // Verify mapped headers are sent in errors POST
         const errorsRequest = requestSpy.args[6][0]
-        checkHeaders(t, headersMapKeys, errorsRequest.headers)
+        checkHeaders(t, headersMap, errorsRequest.headers)
 
         const payload = spy.args[0][0]
         t.ok(payload, 'should get the payload')
@@ -165,7 +165,7 @@ tap.test('Agent#harvest', (t) => {
 
         // Verify mapped headers are sent in traces POST
         const tracesRequest = requestSpy.args[6][0]
-        checkHeaders(t, headersMapKeys, tracesRequest.headers)
+        checkHeaders(t, headersMap, tracesRequest.headers)
 
         const payload = spy.args[0][0]
         t.ok(payload, 'should have trace payload')
@@ -205,7 +205,7 @@ tap.test('Agent#harvest', (t) => {
 
         // Verify mapped headers are sent in spans POST
         const spansRequest = requestSpy.args[6][0]
-        checkHeaders(t, headersMapKeys, spansRequest.headers)
+        checkHeaders(t, headersMap, spansRequest.headers)
 
         const payload = spy.args[0][0]
         t.ok(payload, 'should have trace payload')
@@ -225,9 +225,10 @@ function findMetric(metrics, name) {
   }
 }
 
-function checkHeaders(t, keys, headers) {
+function checkHeaders(t, mappedHeaders, headers) {
+  const keys = Object.keys(mappedHeaders)
   t.ok(
-    keys.every((key) => !!headers[key]),
+    keys.every((key) => headers[key] === mappedHeaders[key]),
     `All expected headers from connect included in request (${keys.length})`
   )
 }
