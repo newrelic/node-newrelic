@@ -79,7 +79,7 @@ describe('AdaptiveSampler', () => {
   describe('in serverless mode', () => {
     let agent = null
     beforeEach(() => {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         serverless_mode: {
           enabled: true
         },

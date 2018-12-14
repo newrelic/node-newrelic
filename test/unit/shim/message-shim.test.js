@@ -30,7 +30,7 @@ describe('MessageShim', function() {
   })
 
   beforeEach(function() {
-    agent = helper.instrumentMockedAgent(null, {attributes: { enabled: true }})
+    agent = helper.instrumentMockedAgent({attributes: { enabled: true }})
     shim = new MessageShim(agent, 'test-module')
     shim.setLibrary(shim.RABBITMQ)
     wrappable = {

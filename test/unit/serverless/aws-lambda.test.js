@@ -31,7 +31,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
   let error
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       allow_all_headers: true,
       attributes: {
         exclude: [

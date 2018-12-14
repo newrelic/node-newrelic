@@ -10,7 +10,7 @@ var API = require('../../../api.js')
 test("ignoring an Express 5 route", function (t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var api = new API(agent)
   var express = require('express')
   var app = express()

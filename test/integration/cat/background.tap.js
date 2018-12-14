@@ -19,8 +19,7 @@ test('background transactions should not blow up with CAT', function(t) {
   }
   config.obfuscatedId =
     hashes.obfuscateNameUsingKey(config.cross_process_id, config.encoding_key)
-
-  var agent = helper.instrumentMockedAgent(null, config)
+  var agent = helper.instrumentMockedAgent(config)
   var http = require('http')
   var api = new API(agent)
 

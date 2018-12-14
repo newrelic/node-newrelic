@@ -37,7 +37,7 @@ describe('Errors', function() {
   var agent = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
       }
@@ -1396,8 +1396,7 @@ describe('Errors', function() {
 
     it('not spill over reservoir size', function() {
       if (agent) helper.unloadAgent(agent)
-      agent = helper.loadMockedAgent(null,
-        { error_collector: { max_event_samples_stored: 10 } })
+      agent = helper.loadMockedAgent({error_collector: {max_event_samples_stored: 10}})
 
       for (var i = 0; i < 20; i++) {
         agent.errors.add(null, new Error('some error'))

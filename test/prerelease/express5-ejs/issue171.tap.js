@@ -3,7 +3,7 @@
 var path = require('path')
 var helper = require('../../lib/agent_helper.js')
 
-var agent = helper.instrumentMockedAgent({express5: true})
+var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
 
 var test = require('tap').test
 var http = require('http')

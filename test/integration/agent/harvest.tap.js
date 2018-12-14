@@ -12,7 +12,7 @@ tap.test('Agent#harvest', (t) => {
   let agent = null
 
   t.beforeEach((done) => {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       ssl: true,
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',

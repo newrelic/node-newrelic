@@ -19,7 +19,7 @@ tap.test('Serverless mode harvest', (t) => {
 
   t.beforeEach((done) => {
     logSpy = sinon.spy(process.stdout, 'write')
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       serverless_mode: {
         enabled: true
       },

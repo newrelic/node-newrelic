@@ -18,7 +18,7 @@ describe('Transaction', function() {
   var trans = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       attributes: {enabled: true}
     })
     trans = new Transaction(agent)

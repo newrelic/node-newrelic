@@ -29,7 +29,7 @@ tap.test('distributed tracing full integration', (t) => {
     trusted_account_key: ACCOUNT_ID,
     encoding_key: 'some key',
   }
-  const agent = helper.instrumentMockedAgent(null, config)
+  const agent = helper.instrumentMockedAgent(config)
   t.tearDown(() => {
     helper.unloadAgent(agent)
   })
@@ -266,7 +266,7 @@ tap.test('distributed tracing', (t) => {
   t.autoend()
 
   t.beforeEach((done) => {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       distributed_tracing: {enabled: true},
       cross_application_tracer: {enabled: true},
       primary_application_id: APP_ID,

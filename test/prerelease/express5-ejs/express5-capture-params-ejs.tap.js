@@ -20,7 +20,7 @@ test("test attributes.enabled for express", function (t) {
 
   t.test("no variables", function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -81,7 +81,7 @@ test("test attributes.enabled for express", function (t) {
 
   t.test("route variables", function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -144,7 +144,7 @@ test("test attributes.enabled for express", function (t) {
 
   t.test("query variables", {timeout: 1000}, function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -207,7 +207,7 @@ test("test attributes.enabled for express", function (t) {
 
   t.test("route and query variables", function (t) {
     t.plan(5)
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 
@@ -271,7 +271,7 @@ test("test attributes.enabled for express", function (t) {
   })
 
   t.test("query params mask route parameters", function (t) {
-    var agent = helper.instrumentMockedAgent({express5: true})
+    var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
     var app = require('express')()
     var server = require('http').createServer(app)
 

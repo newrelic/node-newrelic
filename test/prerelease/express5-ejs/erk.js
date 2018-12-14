@@ -6,7 +6,7 @@ var helper = require('../../lib/agent_helper.js')
 
 
 // bootstrap instrumentation
-var agent = helper.instrumentMockedAgent({express5: true})
+var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
 
 // once instrumentation is bootstrapped
 var express = require('express')

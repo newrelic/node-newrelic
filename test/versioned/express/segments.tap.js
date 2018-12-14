@@ -726,7 +726,7 @@ test('when using a regular expression in path', function(t) {
 
 function setup(t) {
   agent = helper.instrumentMockedAgent({
-    express_segments: true
+    feature_flag: {express_segments: true}
   })
   express = require('express')
   app = express()

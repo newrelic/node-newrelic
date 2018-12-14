@@ -14,7 +14,7 @@ config.obfuscatedId = hashes.obfuscateNameUsingKey(
   config.encoding_key
 )
 
-var agent = helper.instrumentMockedAgent(null, config)
+var agent = helper.instrumentMockedAgent(config)
 // require http after creating the agent
 var http = require('http')
 

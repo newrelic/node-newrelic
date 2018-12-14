@@ -224,7 +224,7 @@ describe('recording slow queries', function() {
     var agent
 
     before(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
           record_sql: 'obfuscated'
@@ -294,7 +294,7 @@ describe('recording slow queries', function() {
     var agent
 
     before(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
           record_sql: 'obfuscated'
@@ -363,7 +363,7 @@ describe('recording slow queries', function() {
     var agent
 
     before(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
           record_sql: 'obfuscated'

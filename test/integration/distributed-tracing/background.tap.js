@@ -19,7 +19,7 @@ tap.test('background transactions should not blow up with DT', (t) => {
     encoding_key: 'some key',
   }
 
-  const agent = helper.instrumentMockedAgent(null, config)
+  const agent = helper.instrumentMockedAgent(config)
   agent.config.account_id = '1337'
   agent.config.application_id = '7331'
   agent.config.trusted_account_key = '1337'

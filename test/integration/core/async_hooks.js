@@ -389,7 +389,7 @@ test('promise hooks', function(t) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent({
-    await_support: true
+    feature_flag: {await_support: true}
   })
   t.tearDown(function() {
     helper.unloadAgent(agent)
