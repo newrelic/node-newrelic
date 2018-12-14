@@ -804,7 +804,7 @@ test('read', function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  var buf = new Buffer(content.length)
+  var buf = Buffer.alloc(content.length)
 
   helper.runInTransaction(agent, function(trans) {
     fs.read(fd, buf, 0, content.length, 0, function(err, len, data) {
@@ -831,7 +831,7 @@ test('write', function(t) {
   fs.writeFileSync(name, '')
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  var buf = new Buffer(content)
+  var buf = Buffer.from(content)
 
   helper.runInTransaction(agent, function(trans) {
     fs.write(fd, buf, 0, content.length, 0, function(err, len) {
