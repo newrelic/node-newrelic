@@ -3,6 +3,13 @@
 This guide is intended to help with upgrading major versions of the Node Agent.
 This information can also be found on [our documentation website][upgrade-doc].
 
+## Upgrading to Agent v5
+
+### Node Version Support
+The agent now only supports Node version 6 and above, which brings it up to date
+with Node's [LTS][node-lts-schedule] schedule. Customers running Node 4.x or 5.x 
+will need to upgrade to a supported version of Node or remain on the v4 agent.
+
 ## Upgrading to Agent v4
 
 ### Breaking Changes
