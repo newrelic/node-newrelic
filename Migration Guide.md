@@ -7,7 +7,8 @@ This information can also be found on [our documentation website][upgrade-doc].
 
 ### Breaking Changes
 
-**Removed `ignore_server_configuration` setting**: This
+**Removed `ignore_server_configuration` setting**: This setting was only implemented
+by the Node agent, so removing it improves parity with other language agents.
 
 ## Upgrading to Agent v4
 
