@@ -32,6 +32,12 @@ codebase:
   sent to New Relic. Set `attributes.enabled: true` to include agent-defined or
   custom attributes in traces.
 
+* `ignored_params`
+
+  Replaced with `attributes.exclude`. Add any request attribute keys to the
+  `attributes.exclude` list. Now, instead of having to be an exact match,
+  wildcards (`*`) may be appended to each item for broader filtering.
+
 ## Upgrading to Agent v4
 
 ### Breaking Changes

@@ -258,13 +258,6 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up ignored request parameters', function() {
-      idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
-        should.exist(tc.ignored_params)
-        expect(tc.ignored_params).eql(['one', 'two', 'three'])
-      })
-    })
-
     it('should pick up excluded attributes', function() {
       idempotentEnv('NEW_RELIC_ATTRIBUTES_EXCLUDE', 'one,two,three', function(tc) {
         should.exist(tc.attributes.exclude)
@@ -726,10 +719,6 @@ describe('the agent configuration', function() {
       expect(configuration.apdex_t).equal(0.1)
     })
 
-    it('should have no ignored request parameters', function() {
-      expect(configuration.ignored_params).eql([])
-    })
-
     it('should have the default excluded request attributes', function() {
       expect(configuration.attributes.exclude).eql([])
     })
@@ -1031,18 +1020,6 @@ describe('the agent configuration', function() {
     it('should reject high_security', function() {
       config.onConnect({'high_security': true})
       expect(config.high_security).equal(false)
-    })
-
-    it('should configure ignored params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['a', 'b'])
-    })
-
-    it('should configure ignored params without stomping local config', function() {
-      config.ignored_params = ['b', 'c']
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['b', 'c', 'a'])
     })
 
     it('should configure cross application tracing', function() {
@@ -1473,12 +1450,6 @@ describe('the agent configuration', function() {
       expect(config.attributes.enabled).to.be.true
       config.onConnect({'attributes.enabled': false})
       expect(config.attributes.enabled).to.be.true
-    })
-
-    it('should not configure ignored_params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql([])
     })
 
     it('should not configure attributes.exclude', function() {
