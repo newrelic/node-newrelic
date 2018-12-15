@@ -3,6 +3,12 @@
 This guide is intended to help with upgrading major versions of the Node Agent.
 This information can also be found on [our documentation website][upgrade-doc].
 
+## Upgrading to Agent v5
+
+### Breaking Changes
+
+**Removed `ignore_server_configuration` setting**: This
+
 ## Upgrading to Agent v4
 
 ### Breaking Changes

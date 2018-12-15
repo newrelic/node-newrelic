@@ -230,13 +230,6 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up whether server-side config is enabled', function() {
-      idempotentEnv('NEW_RELIC_IGNORE_SERVER_CONFIGURATION', 'yeah', function(tc) {
-        should.exist(tc.ignore_server_configuration)
-        expect(tc.ignore_server_configuration).equal(true)
-      })
-    })
-
     it('should pick up whether the agent is enabled', function() {
       idempotentEnv('NEW_RELIC_ENABLED', 0, function(tc) {
         should.exist(tc.agent_enabled)
@@ -719,10 +712,6 @@ describe('the agent configuration', function() {
 
     it('should have no proxy port', function() {
       expect(configuration.proxy_port).equal('')
-    })
-
-    it('should not ignore server-side configuration', function() {
-      expect(configuration.ignore_server_configuration).equal(false)
     })
 
     it('should enable the agent', function() {
@@ -1364,7 +1353,6 @@ describe('the agent configuration', function() {
 
     beforeEach(function() {
       config = new Config()
-      config.ignore_server_configuration = true
     })
 
     it('should still set rum properties', function() {
