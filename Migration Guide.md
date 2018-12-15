@@ -22,6 +22,20 @@ will need to upgrade to a supported version of Node or remain on the v4 agent.
 
 ### Breaking Changes
 
+**Removed deprecated configuration settings**: The following configuration
+settings have been deprecated since agent v3, and have now been removed from the
+codebase:
+
+* `capture_params`
+
+  Replaced with `attributes.enabled`. By default, request attributes are not
+  sent to New Relic. Set `attributes.enabled: true` to include agent-defined or
+  custom attributes in traces.
+
+## Upgrading to Agent v4
+
+### Breaking Changes
+
 **Upgraded https-proxy-agent from v0 to v2**: This dependency has been updated
 due to a security issue in the version of `https-proxy-agent` the New Relic Node.js
 agent used. `https-proxy` v2 is incompatible with node v0.10 and v0.12,
