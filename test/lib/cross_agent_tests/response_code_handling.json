@@ -1,0 +1,26 @@
+[
+	{"code": 200, "success": true, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 202, "success": true, "disconnect": false, "restart": false, "retain_data": false},
+
+	{"code": 410, "success": false, "disconnect": true, "restart": false, "retain_data": false},
+
+	{"code": 401, "success": false, "disconnect": false, "restart": true, "retain_data": false},
+	{"code": 409, "success": false, "disconnect": false, "restart": true, "retain_data": false},
+
+	{"code": 408, "success": false, "disconnect": false, "restart": false, "retain_data": true},
+	{"code": 429, "success": false, "disconnect": false, "restart": false, "retain_data": true},
+	{"code": 500, "success": false, "disconnect": false, "restart": false, "retain_data": true},
+	{"code": 503, "success": false, "disconnect": false, "restart": false, "retain_data": true},
+
+	{"code": 400, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 403, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 404, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 405, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 407, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 411, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 413, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 414, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 415, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 417, "success": false, "disconnect": false, "restart": false, "retain_data": false},
+	{"code": 431, "success": false, "disconnect": false, "restart": false, "retain_data": false}
+]
