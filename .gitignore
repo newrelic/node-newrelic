@@ -11,3 +11,4 @@ ca-serial*
 .idea
 out
 .vscode
+.nyc_output
