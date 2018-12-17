@@ -31,7 +31,7 @@ function install(packages, retry) {
   packages.forEach(function(packageJsonPath) {
     var packagePath = path.resolve(packageJsonPath).split('/').slice(0, -1).join('/')
     console.log('installing deps in ' + packagePath)
-    exec('cd ' + packagePath + ' && rm -rf node_modules && npm i',
+    exec('cd ' + packagePath + ' && rm -rf node_modules && npm i --no-package-lock',
       {maxBuffer: 1024 * 500},
       function(err, stdout, stderr) {
         if (err || isErrorOutput(stderr)) {
