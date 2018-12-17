@@ -72,7 +72,7 @@ describe('the New Relic agent', function() {
     let agent = null
 
     before(() => {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         serverless_mode: {
           enabled: true
         },

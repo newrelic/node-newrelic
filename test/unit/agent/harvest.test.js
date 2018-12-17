@@ -7,23 +7,14 @@ const nock = require('nock')
 
 const RUN_ID = 1337
 const URL = 'https://collector.newrelic.com'
-const ENDPOINTS = {
-  CUSTOM_EVENTS: helper.generateCollectorPath('custom_event_data', RUN_ID),
-  ERRORS: helper.generateCollectorPath('error_data', RUN_ID),
-  ERROR_EVENTS: helper.generateCollectorPath('error_event_data', RUN_ID),
-  EVENTS: helper.generateCollectorPath('analytic_event_data', RUN_ID),
-  METRICS: helper.generateCollectorPath('metric_data', RUN_ID),
-  QUERIES: helper.generateCollectorPath('sql_trace_data', RUN_ID),
-  SPAN_EVENTS: helper.generateCollectorPath('span_event_data', RUN_ID),
-  TRACES: helper.generateCollectorPath('transaction_sample_data', RUN_ID)
-}
+const ENDPOINTS = helper.generateAllPaths(RUN_ID)
 const EMPTY_RESPONSE = {return_value: null}
 
 describe('Agent harvests', () => {
   let agent = null
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       license_key: 'license key here',
       run_id: RUN_ID,
       apdex_t: 0.005

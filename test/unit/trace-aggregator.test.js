@@ -40,7 +40,7 @@ describe('TraceAggregator', function() {
   }
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {run_id: 1337})
+    agent = helper.loadMockedAgent({run_id: 1337})
     agent.collector._runLifecycle = (remote, payload, cb) => {
       setImmediate(cb, null, [], {return_value: []})
     }
@@ -107,15 +107,13 @@ describe('TraceAggregator', function() {
       expect(aggregator.capacity).equal(TOP_N)
     })
 
-    it("should track the top 20 slowest transactions if top_n is unconfigured",
-       function() {
+    it("should track the top 20 slowest transactions if top_n is unconfigured", () => {
       var aggregator = new TraceAggregator(config)
 
       expect(aggregator.capacity).equal(20)
     })
 
-    it("should track the slowest transaction in a harvest period if top_n is 0",
-       function() {
+    it("should track the slowest transaction in a harvest period if top_n is 0", () => {
       config.transaction_tracer.top_n = 0
       var aggregator = new TraceAggregator(config)
 

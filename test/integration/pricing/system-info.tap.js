@@ -23,7 +23,7 @@ test('pricing system-info aws', function(t) {
     awsRedirect.get('/2016-09-02/' + awsPath).reply(200, awsResponses[awsPath])
   }
 
-  var agent = helper.loadMockedAgent(null, {
+  var agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: true,
       detect_pcf: false,
@@ -69,7 +69,7 @@ test('pricing system-info azure', function(t) {
   azureRedirect.get('/metadata/instance/compute?api-version=2017-03-01')
     .reply(200, azureResponse)
 
-  var agent = helper.loadMockedAgent(null, {
+  var agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: false,
       detect_pcf: false,
@@ -123,7 +123,7 @@ test('pricing system-info gcp', function(t) {
       zone: 'projects/492690098729/zones/us-central1-c'
     })
 
-  var agent = helper.loadMockedAgent(null, {
+  var agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: false,
       detect_pcf: false,
@@ -155,7 +155,7 @@ test('pricing system-info gcp', function(t) {
 })
 
 test('pricing system-info pcf', function(t) {
-  var agent = helper.loadMockedAgent(null, {
+  var agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: false,
       detect_pcf: true,
@@ -197,7 +197,7 @@ test('pricing system-info docker', function(t) {
     './utilization': mockUtilization
   })
 
-  var agent = helper.loadMockedAgent(null, {
+  var agent = helper.loadMockedAgent({
     utilization: {
       detect_aws: false,
       detect_pcf: false,

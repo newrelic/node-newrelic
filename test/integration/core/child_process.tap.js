@@ -36,7 +36,7 @@ test('transaction context is preserved in subscribed events', function(t) {
   helper.runInTransaction(agent, function(transaction) {
     var child = cp.fork('./exec-me.js', {cwd: __dirname})
 
-    child.on('message', function(message) {
+    child.on('message', function() {
       t.equal(agent.tracer.getTransaction(), transaction)
     })
 

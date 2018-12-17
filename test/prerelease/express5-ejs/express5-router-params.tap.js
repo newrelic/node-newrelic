@@ -9,7 +9,7 @@ var helper = require('../../lib/agent_helper.js')
 test("Express 5 router introspection", function (t) {
   t.plan(12)
 
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var express = require('express')
   var app = express()
   var server = require('http').createServer(app)

@@ -3,6 +3,7 @@
 const helper = require('../../lib/agent_helper')
 const sinon = require('sinon')
 const tap = require('tap')
+const https = require('https')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 
@@ -10,9 +11,11 @@ tap.test('Agent#harvest', (t) => {
   t.autoend()
 
   let agent = null
+  let requestSpy = null
+  let headersMap = null
 
   t.beforeEach((done) => {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       ssl: true,
       app_name: 'node.js Tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
@@ -32,11 +35,17 @@ tap.test('Agent#harvest', (t) => {
       attributes: {enabled: true}
     })
 
-    agent.start(done)
+    requestSpy = sinon.spy(https, 'request')
+
+    agent.start(() => {
+      headersMap = agent.collector._reqHeadersMap || {}
+      done()
+    })
   })
 
   t.afterEach((done) => {
     helper.unloadAgent(agent)
+    requestSpy.restore()
     agent.stop((err) => {
       done(err)
     })
@@ -64,7 +73,7 @@ tap.test('Agent#harvest', (t) => {
   })
 
   t.test('sending metrics', (t) => {
-    t.plan(5)
+    t.plan(6)
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
 
     var metrics = agent.metrics.toJSON()
@@ -78,6 +87,10 @@ tap.test('Agent#harvest', (t) => {
 
       t.ok(spy.called, 'should send metric data')
 
+      // Verify mapped headers are sent in metrics POST
+      const metricsRequest = requestSpy.args[3][0]
+      checkHeaders(t, headersMap, metricsRequest.headers)
+
       const payload = spy.args[0][0]
       t.ok(payload, 'should have payload')
       t.deepEqual(payload[3][0][0], {name: 'TEST/discard'}, 'should have test metric')
@@ -87,7 +100,7 @@ tap.test('Agent#harvest', (t) => {
   })
 
   t.test('sending errors', (t) => {
-    t.plan(5)
+    t.plan(6)
 
     const spy = sinon.spy(agent.collector, 'errorData')
     t.tearDown(() => spy.restore())
@@ -97,6 +110,10 @@ tap.test('Agent#harvest', (t) => {
         t.error(error, 'sent errors without error')
 
         t.ok(spy.called, 'should send error data')
+
+        // Verify mapped headers are sent in errors POST
+        const errorsRequest = requestSpy.args[6][0]
+        checkHeaders(t, headersMap, errorsRequest.headers)
 
         const payload = spy.args[0][0]
         t.ok(payload, 'should get the payload')
@@ -124,7 +141,7 @@ tap.test('Agent#harvest', (t) => {
   })
 
   t.test('sending traces', (t) => {
-    t.plan(6)
+    t.plan(7)
 
     const spy = sinon.spy(agent.collector, 'transactionSampleData')
     t.tearDown(() => spy.restore())
@@ -146,6 +163,10 @@ tap.test('Agent#harvest', (t) => {
 
         t.ok(spy.called, 'should send sample trace data')
 
+        // Verify mapped headers are sent in traces POST
+        const tracesRequest = requestSpy.args[6][0]
+        checkHeaders(t, headersMap, tracesRequest.headers)
+
         const payload = spy.args[0][0]
         t.ok(payload, 'should have trace payload')
         t.type(payload[1][0], 'Array', 'should have trace')
@@ -157,7 +178,7 @@ tap.test('Agent#harvest', (t) => {
   })
 
   t.test('sending span events', (t) => {
-    t.plan(6)
+    t.plan(7)
 
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
@@ -182,6 +203,10 @@ tap.test('Agent#harvest', (t) => {
 
         t.ok(spy.called, 'should send span event data')
 
+        // Verify mapped headers are sent in spans POST
+        const spansRequest = requestSpy.args[6][0]
+        checkHeaders(t, headersMap, spansRequest.headers)
+
         const payload = spy.args[0][0]
         t.ok(payload, 'should have trace payload')
         t.type(payload[2], 'Array', 'should have spans')
@@ -198,4 +223,12 @@ function findMetric(metrics, name) {
     var metric = metrics[i]
     if (metric[0].name === name) return metric
   }
+}
+
+function checkHeaders(t, mappedHeaders, headers) {
+  const keys = Object.keys(mappedHeaders)
+  t.ok(
+    keys.every((key) => headers[key] === mappedHeaders[key]),
+    `All expected headers from connect included in request (${keys.length})`
+  )
 }

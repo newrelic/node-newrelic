@@ -28,7 +28,7 @@ describe('recordDistributedTrace', () => {
   let tx
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
       },

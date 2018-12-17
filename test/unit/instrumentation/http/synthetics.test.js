@@ -36,10 +36,11 @@ describe('synthetics outbound header', function() {
   }
 
   before(function(done) {
-    agent = helper.instrumentMockedAgent({synthetics: true}, {
+    agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       trusted_account_ids: [23, 567],
-      encoding_key: ENCODING_KEY
+      encoding_key: ENCODING_KEY,
+      feature_flag: {synthetics: true}
     })
     http = require('http')
     server = http.createServer(function(req, res) {
@@ -115,10 +116,11 @@ describe('synthetics inbound header', function() {
       'larry', // synthetics job id
       'curly' // synthetics monitor id
     ]
-    agent = helper.instrumentMockedAgent({synthetics: true}, {
+    agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       trusted_account_ids: [23, 567],
-      encoding_key: ENCODING_KEY
+      encoding_key: ENCODING_KEY,
+      feature_flag: {synthetics: true}
     })
     http = require('http')
   })

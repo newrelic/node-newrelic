@@ -18,7 +18,7 @@ function runTests(createServer) {
     var port = null
 
     t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         allow_all_headers: false,
         attributes: {
           enabled: true,

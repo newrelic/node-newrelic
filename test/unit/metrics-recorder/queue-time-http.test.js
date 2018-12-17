@@ -27,21 +27,21 @@ function record(options) {
   recordWeb(segment, options.transaction.name)
 }
 
-describe("when recording queueTime", function () {
+describe("when recording queueTime", function() {
   var agent
   var trans
 
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  it("non zero times should record a metric", function () {
+  it("non zero times should record a metric", function() {
     record({
       transaction : trans,
       apdexT      : 0.2,
@@ -52,20 +52,26 @@ describe("when recording queueTime", function () {
       queueTime   : 2200,
     })
 
-    var result = [
-      [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebFrontend/QueueTime'},          [1,2.2,2.2,2.2,2.2,4.840000000000001]],
-      [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
-      [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
+    const result = [
+      [{name: 'WebTransaction'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name: 'WebTransactionTotalTime'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name: 'HttpDispatcher'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [
+        {name: 'WebTransaction/NormalizedUri/*'},
+        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
+      ],
+      [
+        {name: 'WebTransactionTotalTime/NormalizedUri/*'},
+        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
+      ],
+      [{name: 'WebFrontend/QueueTime'}, [1, 2.2, 2.2, 2.2, 2.2, 4.840000000000001]],
+      [{name: 'Apdex/NormalizedUri/*'}, [1,0,0,0.2,0.2,0]],
+      [{name: 'Apdex'}, [1, 0, 0, 0.2, 0.2, 0]]
     ]
     assertMetrics(trans.metrics, result, true)
   })
 
-  it("zero times should not record a metric", function () {
+  it("zero times should not record a metric", function() {
     record({
       transaction : trans,
       apdexT      : 0.2,
@@ -76,14 +82,20 @@ describe("when recording queueTime", function () {
       queueTime   : 0,
     })
 
-    var result = [
-      [{name  : 'WebTransaction'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebTransactionTotalTime'},        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'HttpDispatcher'},                 [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebTransaction/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'WebTransactionTotalTime/NormalizedUri/*'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name  : 'Apdex/NormalizedUri/*'},          [1,     0,     0,   0.2,   0.2,        0]],
-      [{name  : 'Apdex'},                          [1,     0,     0,   0.2,   0.2,        0]]
+    const result = [
+      [{name: 'WebTransaction'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name: 'WebTransactionTotalTime'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{name: 'HttpDispatcher'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [
+        {name: 'WebTransaction/NormalizedUri/*'},
+        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
+      ],
+      [
+        {name: 'WebTransactionTotalTime/NormalizedUri/*'},
+        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
+      ],
+      [{name: 'Apdex/NormalizedUri/*'}, [1, 0, 0, 0.2, 0.2, 0]],
+      [{name: 'Apdex'}, [1, 0, 0, 0.2, 0.2, 0]]
     ]
     assertMetrics(trans.metrics, result, true)
   })

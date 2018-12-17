@@ -5,7 +5,7 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper.js')
 
 test("Express 5 detection", function (t) {
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var express = require('express')
 
   t.tearDown(function cb_tearDown() {

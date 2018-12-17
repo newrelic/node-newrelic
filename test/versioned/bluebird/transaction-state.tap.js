@@ -19,7 +19,9 @@ tap.test('bluebird', function(t) {
 })
 
 function setupAgent(t, enableSegments) {
-  var agent = helper.instrumentMockedAgent({promise_segments: enableSegments})
+  var agent = helper.instrumentMockedAgent({
+    feature_flag: {promise_segments: enableSegments}
+  })
   t.tearDown(function tearDown() {
     helper.unloadAgent(agent)
   })

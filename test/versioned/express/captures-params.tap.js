@@ -19,7 +19,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
   var agent = null
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       apdex_t: 1,
       allow_all_headers: false,
       attributes: {

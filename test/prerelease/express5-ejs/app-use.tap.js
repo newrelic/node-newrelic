@@ -6,7 +6,7 @@ var request = require('request')
 var http = require('http')
 
 test('app should be at top of stack when mounted', function (t) {
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var express = require('express')
 
   t.tearDown(function cb_tearDown() {
@@ -36,7 +36,7 @@ test('app should be at top of stack when mounted', function (t) {
 })
 
 test('app should be at top of stack when mounted', function (t) {
-  var agent = helper.instrumentMockedAgent({express5: true})
+  var agent = helper.instrumentMockedAgent({feature_flag: {express5: true}})
   var express = require('express')
   var main = express()
   var app = express()

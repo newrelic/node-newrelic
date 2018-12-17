@@ -39,7 +39,7 @@ tap.test('amqplib promise instrumentation', function(t) {
       }
     })
 
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true
       }

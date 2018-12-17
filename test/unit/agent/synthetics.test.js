@@ -8,8 +8,7 @@ describe('synthetics transaction traces', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent({
-      synthetics: true
-    }, {
+      feature_flag: {synthetics: true},
       trusted_account_ids: [357]
     })
   })

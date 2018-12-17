@@ -5,7 +5,8 @@ exports.config = {
   license_key        : 'license key here',
   logging            : {
     level : 'trace',
-    filepath : '../../newrelic_agent.log'
+    enabled: false,
+    filepath : '../../../newrelic_agent.log'
   },
   utilization: {
     detect_aws: false,

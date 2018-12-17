@@ -1,13 +1,12 @@
 'use strict'
 
 var benchmark = require('../../lib/benchmark')
-var helper = require('../../lib/agent_helper')
 
 function makeSuite(name) {
   return benchmark.createBenchmark({async: true, name: name, delay: 0.01})
 }
 
-var NUM_PROMISES = 300 
+var NUM_PROMISES = 300
 
 var tests = [
   function forkedTest(Promise) {

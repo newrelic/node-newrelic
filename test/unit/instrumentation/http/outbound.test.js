@@ -232,7 +232,7 @@ describe('should add data from cat header to segment', function() {
   ]
 
   before(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       encoding_key: encKey,
       trusted_account_ids: [123]

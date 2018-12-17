@@ -31,7 +31,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
   let error
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       allow_all_headers: true,
       attributes: {
         exclude: [
@@ -108,7 +108,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
 
     it('should end transactions on a beforeExit event on process', () => {
-      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
         const transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal(expectedBgTransactionName)

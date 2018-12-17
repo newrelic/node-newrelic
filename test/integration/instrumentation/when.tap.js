@@ -45,14 +45,11 @@ test('no transaction', function(t) {
 
   when.resolve(0).then(function step1() {
     return 1
-  })
-  .then(function step2() {
+  }).then(function step2() {
     return 2
-  })
-  .then(function finalHandler(res) {
+  }).then(function finalHandler(res) {
     t.equal(res, 2, 'should be the correct result')
-  })
-  .finally(function finallyHandler() {
+  }).finally(function finallyHandler() {
     t.end()
   })
 })
@@ -564,7 +561,7 @@ test('all', function(t) {
   var p1, p2
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
 
@@ -602,7 +599,7 @@ test('any', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -645,7 +642,7 @@ test('some', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -694,7 +691,7 @@ test('map', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -739,7 +736,7 @@ test('reduce', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -784,7 +781,7 @@ test('filter', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -800,8 +797,7 @@ test('filter', function(t) {
       when.filter([1, 2, 3, 4], function(value) {
         // filter out even numbers
         return (value % 2)
-      })
-      .then(function(result) {
+      }).then(function(result) {
         t.equal(result.length, 2)
         t.equal(agent.getTransaction(), transaction, 'has the right transaction')
         t.end()
@@ -814,8 +810,7 @@ test('filter', function(t) {
       Promise.filter([1, 2, 3, 4], function(value) {
         // filter out even numbers
         return (value % 2)
-      })
-      .then(function(result) {
+      }).then(function(result) {
         t.equal(result.length, 2)
         t.equal(agent.getTransaction(), transaction, 'has the right transaction')
         t.end()
@@ -860,7 +855,9 @@ test('node.apply', function(t) {
 })
 
 function setupAgent(t, enableSegments) {
-  var agent = helper.instrumentMockedAgent({promise_segments: enableSegments})
+  var agent = helper.instrumentMockedAgent({
+    feature_flag: {promise_segments: enableSegments}
+  })
   t.tearDown(function tearDown() {
     helper.unloadAgent(agent)
   })

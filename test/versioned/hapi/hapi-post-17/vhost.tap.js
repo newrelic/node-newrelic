@@ -11,7 +11,7 @@ tap.test('Hapi vhost support', function(t) {
   t.autoend()
 
   t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent(null, {
+    var agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
         include: ['request.parameters.*']

@@ -1,6 +1,5 @@
 'use strict'
 
-var helper = require('../../lib/agent_helper')
 var shared = require('./shared')
 
 
@@ -11,8 +10,8 @@ shared.tests.forEach(function registerTest(testFn) {
     name: testFn.name,
     fn: testFn(Promise),
     agent: {
-      feature_flag: {
-        await_support: false
+      config: {
+        feature_flag: {await_support: false}
       }
     }
   })

@@ -13,7 +13,7 @@ tap.test('Hapi router introspection', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
         include: ['request.parameters.*']
