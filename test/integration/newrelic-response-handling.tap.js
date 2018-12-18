@@ -64,30 +64,16 @@ tap.test('NewRelic server response code handling', (t) => {
             feature_flag: {
               // turn off native metrics to avoid unwanted gc metrics
               native_metrics: false
-            }
+            },
+            distributed_tracing: {enabled: true}
           })
 
           // We don't want any harvests before our manually triggered harvest
           agent.config.no_immediate_harvest = true
           agent._stopHarvester()
 
-
-          // create data for testing...
-          // TODO: can prob just create all types, allow some to fail per noted below
-          const metric = agent.metrics.getOrCreateMetric(
-            'myMetric'
-          )
-          metric.incrementCallCount()
-
-          // add data for endpoint not mocked to ensure metric processing
-          // still successful when another harvest step fails
-          agent.errors.addUserError(null, new Error('Why?!!!?!!'))
-
-          helper.runInTransaction(agent, (transaction) => {
-            transaction.finalizeNameFromUri('/some/test/url', 200)
-            transaction.end(() => {
-              done()
-            })
+          createTestData(agent, () => {
+            done()
           })
         })
 
@@ -122,7 +108,7 @@ tap.test('NewRelic server response code handling', (t) => {
 
 
         statusCodeTest.autoend()
-        statusCodeTest.plan(5)
+        statusCodeTest.plan(7)
 
 
         statusCodeTest.test('metric_data', createReponseHandlingTest(
@@ -157,6 +143,20 @@ tap.test('NewRelic server response code handling', (t) => {
           'transaction_sample_data',
           function hasTransactionTraceData() {
             return !!agent.traces.trace
+          }
+        ))
+
+        statusCodeTest.test('span_event_data', createReponseHandlingTest(
+          'span_event_data',
+          function hasSpanEventData() {
+            return (agent.spans.length > 0)
+          }
+        ))
+
+        statusCodeTest.test('custom_event_data', createReponseHandlingTest(
+          'custom_event_data',
+          function hasCustomEventData() {
+            return (agent.customEvents.length > 0)
           }
         ))
 
@@ -207,7 +207,7 @@ tap.test('NewRelic server response code handling', (t) => {
 
                   const isNockError = error.message.includes('Nock: No match for request')
                   if (!isNockError) {
-                    console.log(error)
+                    console.error(error)
                   }
                   subTest.ok(isNockError, 'should be nock specific error')
 
@@ -251,6 +251,34 @@ tap.test('NewRelic server response code handling', (t) => {
   })
 })
 
+/**
+ * Adds data to agent instance for use in endpoint tests.
+ * Each type is added every test, even though not all endpoints are mocked.
+ * This allows for verifying response handling for endpoint under test still
+ * behaves correctly when other endpoints fail.
+ * @param {*} agent The agent intance to add data to
+ * @param {*} callback
+ */
+function createTestData(agent, callback) {
+  const metric = agent.metrics.getOrCreateMetric(
+    'myMetric'
+  )
+  metric.incrementCallCount()
+
+  agent.errors.addUserError(null, new Error('Why?!!!?!!'))
+
+  agent.customEvents.add([{type: 'MyCustomEvent', timestamp: Date.now()}])
+
+  helper.runInTransaction(agent, (transaction) => {
+    transaction.trace.add("MySegment")
+    transaction.finalizeNameFromUri('/some/test/url', 200)
+    transaction.end(() => {
+      callback()
+    })
+  })
+}
+
+// TODO use agent_helper
 function nockRequest(endpointMethod, runId) {
   let relativepath = '/agent_listener/invoke_raw_method?' +
   `marshal_format=json&protocol_version=${PROTOCOL_VERSION}&` +
