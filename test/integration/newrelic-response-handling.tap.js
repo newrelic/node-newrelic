@@ -59,13 +59,18 @@ tap.test('NewRelic server response code handling', (t) => {
 
           agent = helper.loadMockedAgent({
             license_key: 'license key here',
-            apdex_t: Number.MIN_VALUE,
+            apdex_t: Number.MIN_VALUE, // force transaction traces
             host: TEST_DOMAIN,
             feature_flag: {
               // turn off native metrics to avoid unwanted gc metrics
               native_metrics: false
             },
-            distributed_tracing: {enabled: true}
+            distributed_tracing: {enabled: true},
+            slow_sql: {enabled: true},
+            transaction_tracer: {
+              record_sql: 'obfuscated',
+              explain_threshold: Number.MIN_VALUE // force SQL traces
+            }
           })
 
           // We don't want any harvests before our manually triggered harvest
@@ -108,7 +113,7 @@ tap.test('NewRelic server response code handling', (t) => {
 
 
         statusCodeTest.autoend()
-        statusCodeTest.plan(7)
+        statusCodeTest.plan(8)
 
 
         statusCodeTest.test('metric_data', createReponseHandlingTest(
@@ -157,6 +162,13 @@ tap.test('NewRelic server response code handling', (t) => {
           'custom_event_data',
           function hasCustomEventData() {
             return (agent.customEvents.length > 0)
+          }
+        ))
+
+        statusCodeTest.test('sql_trace_data', createReponseHandlingTest(
+          'sql_trace_data',
+          function hasSqlTraceData() {
+            return (agent.queries.samples.size > 0)
           }
         ))
 
@@ -270,7 +282,15 @@ function createTestData(agent, callback) {
   agent.customEvents.add([{type: 'MyCustomEvent', timestamp: Date.now()}])
 
   helper.runInTransaction(agent, (transaction) => {
-    transaction.trace.add("MySegment")
+    const segment = transaction.trace.add("MySegment")
+    segment.overwriteDurationInMillis(1)
+    agent.queries.addQuery(
+      segment,
+      'mysql',
+      'select * from foo',
+      new Error().stack
+    )
+
     transaction.finalizeNameFromUri('/some/test/url', 200)
     transaction.end(() => {
       callback()
