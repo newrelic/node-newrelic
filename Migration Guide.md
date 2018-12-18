@@ -5,15 +5,18 @@ This information can also be found on [our documentation website][upgrade-doc].
 
 ## Upgrading to Agent v5
 
-### Node Version Support
-The agent now only supports Node version 6 and above, which brings it up to date
-with Node's [LTS][node-lts-schedule] schedule. Customers running Node 4.x or 5.x 
-will need to upgrade to a supported version of Node or remain on the v4 agent.
-
 ### Breaking Changes
 
 **Removed `node-cassandra-cql` instrumentation**: This [library][node-cassandra-cql]
 has not been updated in 5 years, and has since been superseded by [cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is supported by the agent.
+
+### Node Version Support
+
+The agent now only supports Node version 6 and above, which brings it up to date
+with Node's [LTS][node-lts-schedule] schedule. Customers running Node 4.x or 5.x
+will need to upgrade to a supported version of Node or remain on the v4 agent.
+
+--------------------------------------------------------------------------------
 
 ## Upgrading to Agent v4
 
