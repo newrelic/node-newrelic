@@ -18,6 +18,7 @@ tap.test('Serverless mode harvest', (t) => {
   process.env.AWS_EXECUTION_ENV = TEST_EX_ENV
 
   t.beforeEach((done) => {
+    logSpy = sinon.spy(process.stdout, 'write')
     agent = helper.instrumentMockedAgent({
       serverless_mode: {
         enabled: true
@@ -30,10 +31,7 @@ tap.test('Serverless mode harvest', (t) => {
     })
     agent.setLambdaArn(TEST_ARN)
 
-    agent.start(() => {
-      logSpy = sinon.spy(process.stdout, 'write')
-      done()
-    })
+    agent.start(done)
   })
 
   t.afterEach((done) => {
