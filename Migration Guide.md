@@ -10,6 +10,11 @@ This information can also be found on [our documentation website][upgrade-doc].
 **Removed `ignore_server_configuration` setting**: This setting was only implemented
 by the Node agent, so removing it improves parity with other language agents.
 
+**Removed `node-cassandra-cql` instrumentation**: This [library][node-cassandra-cql]
+has not been updated in 5 years, and has since been superseded by [cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is supported by the agent.
+
+--------------------------------------------------------------------------------
+
 ## Upgrading to Agent v4
 
 ### Breaking Changes
@@ -206,3 +211,4 @@ $ npm install --global npm@2
 [messaging-troubleshooting-doc]: https://docs.newrelic.com/docs/agents/nodejs-agent/troubleshooting/troubleshoot-message-consumers
 [instrumentation-tutorial]: https://newrelic.github.io/node-newrelic/docs/tutorial-Instrumentation-Basics.html
 [node-lts-schedule]: https://github.com/nodejs/LTS/tree/2b4253#lts-schedule1
+[node-cassandra-cql]: https://www.npmjs.com/package/node-cassandra-cql
