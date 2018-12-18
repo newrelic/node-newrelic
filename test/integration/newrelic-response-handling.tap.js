@@ -9,7 +9,33 @@ const helper = require('../lib/agent_helper')
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 const RUN_ID = 'runId'
-const PROTOCOL_VERSION = 17
+
+const endpointDataChecks = {
+  metric_data: function hasMetricData(agent) {
+    return !!agent.metrics.getMetric('myMetric')
+  },
+  error_event_data: function hasErrorEventData(agent) {
+    return (agent.errors.getEvents().length > 0)
+  },
+  error_data: function hasErrorData(agent) {
+    return (agent.errors.getErrors().length > 0)
+  },
+  analytic_event_data: function hasTransactionEventData(agent) {
+    return (agent.events.length > 0)
+  },
+  transaction_sample_data: function hasTransactionTraceData(agent) {
+    return !!agent.traces.trace
+  },
+  span_event_data: function hasSpanEventData(agent) {
+    return (agent.spans.length > 0)
+  },
+  custom_event_data: function hasCustomEventData(agent) {
+    return (agent.customEvents.length > 0)
+  },
+  sql_trace_data: function hasSqlTraceData(agent) {
+    return (agent.queries.samples.size > 0)
+  }
+}
 
 tap.test('NewRelic server response code handling', (t) => {
   const crossAgentTestFile = path.resolve(
@@ -115,62 +141,15 @@ tap.test('NewRelic server response code handling', (t) => {
         statusCodeTest.autoend()
         statusCodeTest.plan(8)
 
+        // Test behavior for this status code against every endpoint
+        for (let endpointName in endpointDataChecks) {
+          if (endpointDataChecks.hasOwnProperty(endpointName)) {
+            const hasTestData = endpointDataChecks[endpointName]
+            const test = createReponseHandlingTest(endpointName, hasTestData)
 
-        statusCodeTest.test('metric_data', createReponseHandlingTest(
-          'metric_data',
-          function hasMetricData() {
-            return !!agent.metrics.getMetric('myMetric')
+            statusCodeTest.test(endpointName, test)
           }
-        ))
-
-        statusCodeTest.test('error_event_data', createReponseHandlingTest(
-          'error_event_data',
-          function hasErrorEventData() {
-            return (agent.errors.getEvents().length > 0)
-          }
-        ))
-
-        statusCodeTest.test('error_data', createReponseHandlingTest(
-          'error_data',
-          function hasErrorData() {
-            return (agent.errors.getErrors().length > 0)
-          }
-        ))
-
-        statusCodeTest.test('analytic_event_data', createReponseHandlingTest(
-          'analytic_event_data',
-          function hasTransactionEventData() {
-            return (agent.events.length > 0)
-          }
-        ))
-
-        statusCodeTest.test('transaction_sample_data', createReponseHandlingTest(
-          'transaction_sample_data',
-          function hasTransactionTraceData() {
-            return !!agent.traces.trace
-          }
-        ))
-
-        statusCodeTest.test('span_event_data', createReponseHandlingTest(
-          'span_event_data',
-          function hasSpanEventData() {
-            return (agent.spans.length > 0)
-          }
-        ))
-
-        statusCodeTest.test('custom_event_data', createReponseHandlingTest(
-          'custom_event_data',
-          function hasCustomEventData() {
-            return (agent.customEvents.length > 0)
-          }
-        ))
-
-        statusCodeTest.test('sql_trace_data', createReponseHandlingTest(
-          'sql_trace_data',
-          function hasSqlTraceData() {
-            return (agent.queries.samples.size > 0)
-          }
-        ))
+        }
 
         function createReponseHandlingTest(endpointName, hasTestData) {
           return (subTest) => {
@@ -246,7 +225,7 @@ tap.test('NewRelic server response code handling', (t) => {
                   subTest.notOk(connecting, 'should not have reconnected')
                 }
 
-                const hasDataPostHarvest = hasTestData()
+                const hasDataPostHarvest = hasTestData(agent)
                 if (testCase.retain_data) {
                   subTest.ok(hasDataPostHarvest, `should have retained data after ${endpointName} call`)
                 } else {
@@ -298,15 +277,7 @@ function createTestData(agent, callback) {
   })
 }
 
-// TODO use agent_helper
 function nockRequest(endpointMethod, runId) {
-  let relativepath = '/agent_listener/invoke_raw_method?' +
-  `marshal_format=json&protocol_version=${PROTOCOL_VERSION}&` +
-  `license_key=license%20key%20here&method=${endpointMethod}`
-
-  if (runId) {
-    relativepath += `&run_id=${runId}`
-  }
-
+  const relativepath = helper.generateCollectorPath(endpointMethod, runId)
   return nock(TEST_COLLECTOR_URL).post(relativepath)
 }
