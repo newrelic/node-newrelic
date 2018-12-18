@@ -59,7 +59,7 @@ tap.test('NewRelic server response code handling', (t) => {
 
           agent = helper.loadMockedAgent({
             license_key: 'license key here',
-            apdex_t: 0.005,
+            apdex_t: Number.MIN_VALUE,
             host: TEST_DOMAIN,
             feature_flag: {
               // turn off native metrics to avoid unwanted gc metrics
@@ -121,7 +121,10 @@ tap.test('NewRelic server response code handling', (t) => {
         })
 
 
-        statusCodeTest.plan(4)
+        statusCodeTest.autoend()
+        statusCodeTest.plan(5)
+
+
         statusCodeTest.test('metric_data', createReponseHandlingTest(
           'metric_data',
           function hasMetricData() {
@@ -147,6 +150,13 @@ tap.test('NewRelic server response code handling', (t) => {
           'analytic_event_data',
           function hasTransactionEventData() {
             return (agent.events.length > 0)
+          }
+        ))
+
+        statusCodeTest.test('transaction_sample_data', createReponseHandlingTest(
+          'transaction_sample_data',
+          function hasTransactionTraceData() {
+            return !!agent.traces.trace
           }
         ))
 
