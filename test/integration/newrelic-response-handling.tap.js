@@ -83,7 +83,12 @@ tap.test('NewRelic server response code handling', (t) => {
           // still successful when another harvest step fails
           agent.errors.addUserError(null, new Error('Why?!!!?!!'))
 
-          done()
+          helper.runInTransaction(agent, (transaction) => {
+            transaction.finalizeNameFromUri('/some/test/url', 200)
+            transaction.end(() => {
+              done()
+            })
+          })
         })
 
         statusCodeTest.afterEach((done) => {
@@ -116,7 +121,7 @@ tap.test('NewRelic server response code handling', (t) => {
         })
 
 
-        statusCodeTest.plan(2)
+        statusCodeTest.plan(4)
         statusCodeTest.test('metric_data', createReponseHandlingTest(
           'metric_data',
           function hasMetricData() {
@@ -126,8 +131,22 @@ tap.test('NewRelic server response code handling', (t) => {
 
         statusCodeTest.test('error_event_data', createReponseHandlingTest(
           'error_event_data',
+          function hasErrorEventData() {
+            return (agent.errors.getEvents().length > 0)
+          }
+        ))
+
+        statusCodeTest.test('error_data', createReponseHandlingTest(
+          'error_data',
           function hasErrorData() {
-            return (agent.errors.length > 0)
+            return (agent.errors.getErrors().length > 0)
+          }
+        ))
+
+        statusCodeTest.test('analytic_event_data', createReponseHandlingTest(
+          'analytic_event_data',
+          function hasTransactionEventData() {
+            return (agent.events.length > 0)
           }
         ))
 
