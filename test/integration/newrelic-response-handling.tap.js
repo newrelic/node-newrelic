@@ -2,48 +2,59 @@
 
 const tap = require('tap')
 const nock = require('nock')
-const path = require('path')
-const fs = require('fs')
 const helper = require('../lib/agent_helper')
+const testCases = require('../lib/cross_agent_tests/response_code_handling.json')
 
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 const RUN_ID = 'runId'
 
+const endpointDataChecks = {
+  metric_data: function hasMetricData(agent) {
+    return !!agent.metrics.getMetric('myMetric')
+  },
+  error_event_data: function hasErrorEventData(agent) {
+    return (agent.errors.getEvents().length > 0)
+  },
+  error_data: function hasErrorData(agent) {
+    return (agent.errors.getErrors().length > 0)
+  },
+  analytic_event_data: function hasTransactionEventData(agent) {
+    return (agent.events.length > 0)
+  },
+  transaction_sample_data: function hasTransactionTraceData(agent) {
+    return !!agent.traces.trace
+  },
+  span_event_data: function hasSpanEventData(agent) {
+    return (agent.spans.length > 0)
+  },
+  custom_event_data: function hasCustomEventData(agent) {
+    return (agent.customEvents.length > 0)
+  },
+  sql_trace_data: function hasSqlTraceData(agent) {
+    return (agent.queries.samples.size > 0)
+  }
+}
+
 tap.test('New Relic response code handling', (t) => {
-  const crossAgentTestFile = path.resolve(
-    __dirname,
-    '../lib/cross_agent_tests/',
-    'response_code_handling.json'
-  )
+  t.plan(testCases.length)
 
-  fs.readFile(crossAgentTestFile, function(err, data) {
-    if (err) {
-      throw err
-    }
-
-    const testCases = JSON.parse(data)
-
-    t.autoend()
-    t.plan(testCases.length)
-
-    testCases.forEach((testCase) => {
-      const testName = `Status code: ${testCase.code}`
-      t.test(testName, createStatusCodeTest(testCase))
-    })
+  testCases.forEach((testCase) => {
+    const testName = `Status code: ${testCase.code}`
+    t.test(testName, createStatusCodeTest(testCase))
   })
 })
 
 function createStatusCodeTest(testCase) {
   return (statusCodeTest) => {
-    let startEndpoints
-    let restartEndpoints
-    let shutdown
+    let startEndpoints = null
+    let restartEndpoints = null
+    let shutdown = null
 
-    let disconnected
-    let connecting
+    let disconnected = false
+    let connecting = false
 
-    let agent
+    let agent = null
 
     statusCodeTest.beforeEach((done) => {
       nock.disableNetConnect()
@@ -94,8 +105,6 @@ function createStatusCodeTest(testCase) {
 
       done()
     })
-
-    statusCodeTest.autoend()
 
     // Test behavior for this status code against every endpoint
     // since not all business logic is shared for each.
@@ -208,33 +217,6 @@ function createStatusCodeTest(testCase) {
         }
       }
     }
-  }
-}
-
-const endpointDataChecks = {
-  metric_data: function hasMetricData(agent) {
-    return !!agent.metrics.getMetric('myMetric')
-  },
-  error_event_data: function hasErrorEventData(agent) {
-    return (agent.errors.getEvents().length > 0)
-  },
-  error_data: function hasErrorData(agent) {
-    return (agent.errors.getErrors().length > 0)
-  },
-  analytic_event_data: function hasTransactionEventData(agent) {
-    return (agent.events.length > 0)
-  },
-  transaction_sample_data: function hasTransactionTraceData(agent) {
-    return !!agent.traces.trace
-  },
-  span_event_data: function hasSpanEventData(agent) {
-    return (agent.spans.length > 0)
-  },
-  custom_event_data: function hasCustomEventData(agent) {
-    return (agent.customEvents.length > 0)
-  },
-  sql_trace_data: function hasSqlTraceData(agent) {
-    return (agent.queries.samples.size > 0)
   }
 }
 
