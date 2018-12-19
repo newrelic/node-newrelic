@@ -81,7 +81,6 @@ function createStatusCodeTest(testCase) {
 
       // We don't want any harvests before our manually triggered harvest
       agent.config.no_immediate_harvest = true
-      agent._stopHarvester()
 
       createTestData(agent, () => {
         done()
@@ -123,6 +122,9 @@ function createStatusCodeTest(testCase) {
         const mockEndpoint = nockRequest(endpointName, RUN_ID).reply(testCase.code)
 
         agent.start((error) => {
+          // Clear agent start scheduled harvest to only allow manually triggered harvest
+          agent._stopHarvester()
+
           verifyAgentStart(error)
 
           // Watch state changes once agent already started
@@ -143,6 +145,10 @@ function createStatusCodeTest(testCase) {
           }
 
           agent.harvest((error) => {
+            // A successful harvest will schedule a new one. While unlikely, this
+            // could result in modifying agent data before the test is done.
+            agent._stopHarvester()
+
             verifyHarvestErrorExpected(error)
 
             subTest.ok(mockEndpoint.isDone(), `called ${endpointName} endpoint`)
