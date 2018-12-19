@@ -4,7 +4,6 @@ var chai = require('chai')
 var Config = require('../../../lib/config')
 var expect = chai.expect
 var Normalizer = require('../../../lib/metrics/normalizer')
-var semver = require('semver')
 
 
 describe ("MetricNormalizer", function() {
@@ -85,12 +84,7 @@ describe ("MetricNormalizer", function() {
     })
 
     it("should eliminate duplicate rules as part of loading them", function() {
-      var patternWithSlash
-      if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-        patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
-      } else {
-        patternWithSlash = '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
-      }
+      var patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
       var reduced = [
         {eachSegment: false, precedence: 0, isTerminal: true,
          replacement: '$1', replaceAll: false, ignore: false,

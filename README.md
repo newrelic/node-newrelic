@@ -700,7 +700,7 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 
 ### Known issues:
 
-* New Relic for Node is only supported on Node.js 4 and newer. Some features
+* New Relic for Node is only supported on Node.js 6 and newer. Some features
   may behave differently between the supported versions of Node. The agent is
   optimized for newer versions of Node.
 * There are irregularities around transaction trace capture and display. If you
