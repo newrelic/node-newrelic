@@ -13,7 +13,7 @@ test('loading the application via index.js', {timeout: 15000}, function(t) {
   t.doesNotThrow(function() {
     var api = require('../../../index.js')
     agent = api.agent
-    t.equal(agent._state, 'starting', "agent is booting")
+    t.equal(agent._state, 'connecting', "agent is booting")
   }, "just loading the agent doesn't throw")
 
   var metric = agent.metrics.getMetric(
