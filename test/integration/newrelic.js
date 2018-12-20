@@ -19,6 +19,6 @@ exports.config = {
   },
   feature_flag: {
     await_support: false,
-    synthetics: false
+    express5: true
   }
 }
