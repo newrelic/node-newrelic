@@ -1226,7 +1226,7 @@ API.prototype.endTransaction = function endTransaction() {
 }
 
 /**
- * Record an event-based metric, usually associated with a particular duration.
+ * Record a custom metric, usually associated with a particular duration.
  * The `name` must be a string following standard metric naming rules. The `value` will
  * usually be a number, but it can also be an object.
  *   * When `value` is a numeric value, it should represent the magnitude of a measurement
@@ -1293,12 +1293,13 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 }
 
 /**
- * Update a metric that acts as a simple counter. The count of the selected metric will
- * be incremented by the specified amount, defaulting to 1.
+ * Create or update a custom metric that acts as a simple counter.
+ * The count of the given metric will be incremented by the specified amount,
+ * defaulting to 1.
  *
  * @param  {string} name  The name of the metric.
  * @param  {number} [value] The amount that the count of the metric should be incremented
- *                          by.
+ *                          by. Defaults to 1.
  */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
@@ -1330,7 +1331,7 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
 }
 
 /**
- * Record an event-based metric, usually associated with a particular duration.
+ * Record custom event data which can be queried in New Relic Insights.
  *
  * @param  {string} eventType  The name of the event. It must be an alphanumeric string
  *                             less than 255 characters.
