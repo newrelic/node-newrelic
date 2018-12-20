@@ -109,9 +109,17 @@
   },
   "scripts": {
     "bench": "node ./bin/run-bench.js",
+    "ca-gen": "./bin/update-ca-bundle.sh",
+    "clean": "./bin/clean.sh",
+    "clean-install": "rm -rf node_modules && npm i --loglevel warn --no-package-lock",
+    "lint": "node_modules/.bin/eslint ./*.js lib",
+    "security": "npm audit",
+    "services": "./bin/docker-services.sh",
+    "ssl": "./bin/ssl.sh",
+    "test": "npm run clean-install && npm run unit && make integration",
+    "unit": "rm -f newrelic_agent.log && cd test && npm install --no-package-lock && node_modules/.bin/mocha -r nock -c test/unit --recursive",
     "versioned-tests": "./bin/run-versioned-tests.sh",
-    "versioned": "./bin/run-versioned-tests.sh",
-    "test": "make test"
+    "versioned": "./bin/run-versioned-tests.sh"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
@@ -159,7 +167,7 @@
     "rimraf": "^2.6.2",
     "should": "*",
     "sinon": "^4.5.0",
-    "tap": "^12.0.1",
+    "tap": "^12.1.1",
     "temp": "^0.8.1",
     "through": "^2.3.6",
     "when": "*"

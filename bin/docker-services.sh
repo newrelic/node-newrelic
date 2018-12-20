@@ -50,3 +50,6 @@ if docker ps -a | grep -q "nr_node_oracle"; then
 else
   docker run -d --name nr_node_oracle -p 1521:1521 alexeiled/docker-oracle-xe-11g;
 fi
+
+echo "\nTo run individual integration tests, run 'source test/docker_env_vars.sh' to set\
+	 the environment variables for all services.\n"

@@ -29,7 +29,7 @@ class Certificate {
     let output = `  // ${this.name}\n`
     const rawPEM = this.body.split('\n')
 
-    for (var i = 0; i < rawPEM.length; i++) {
+    for (let i = 0; i < rawPEM.length; i++) {
       const line = rawPEM[i]
       // some Thawte certificates have Windows line endings
       line = line.replace('\r', '')
