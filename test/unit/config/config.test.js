@@ -244,13 +244,6 @@ describe('the agent configuration', function() {
       })
     })
 
-    it("should pick up whether to capture request parameters", function() {
-      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'yes', function(tc) {
-        should.exist(tc.capture_params)
-        expect(tc.capture_params).equal(true)
-      })
-    })
-
     it('should pick up whether to capture attributes', function() {
       idempotentEnv('NEW_RELIC_ATTRIBUTES_ENABLED', 'yes', function(tc) {
         should.exist(tc.attributes.enabled)
@@ -262,13 +255,6 @@ describe('the agent configuration', function() {
       idempotentEnv('NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED', 'yes', function(tc) {
         should.exist(tc.attributes.include_enabled)
         expect(tc.attributes.include_enabled).equal(true)
-      })
-    })
-
-    it('should pick up ignored request parameters', function() {
-      idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
-        should.exist(tc.ignored_params)
-        expect(tc.ignored_params).eql(['one', 'two', 'three'])
       })
     })
 
@@ -733,14 +719,6 @@ describe('the agent configuration', function() {
       expect(configuration.apdex_t).equal(0.1)
     })
 
-    it('should not capture request parameters', function() {
-      expect(configuration.capture_params).equal(false)
-    })
-
-    it('should have no ignored request parameters', function() {
-      expect(configuration.ignored_params).eql([])
-    })
-
     it('should have the default excluded request attributes', function() {
       expect(configuration.attributes.exclude).eql([])
     })
@@ -1042,24 +1020,6 @@ describe('the agent configuration', function() {
     it('should reject high_security', function() {
       config.onConnect({'high_security': true})
       expect(config.high_security).equal(false)
-    })
-
-    it('should reject capture_params', function() {
-      expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params': true})
-      expect(config.capture_params).equal(false)
-    })
-
-    it('should configure ignored params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['a', 'b'])
-    })
-
-    it('should configure ignored params without stomping local config', function() {
-      config.ignored_params = ['b', 'c']
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['b', 'c', 'a'])
     })
 
     it('should configure cross application tracing', function() {
@@ -1486,22 +1446,10 @@ describe('the agent configuration', function() {
       expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
     })
 
-    it('should not configure capture_params', function() {
-      expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params': true})
-      expect(config.capture_params).equal(false)
-    })
-
     it('should not configure attributes.enabled', function() {
       expect(config.attributes.enabled).to.be.true
       config.onConnect({'attributes.enabled': false})
       expect(config.attributes.enabled).to.be.true
-    })
-
-    it('should not configure ignored_params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql([])
     })
 
     it('should not configure attributes.exclude', function() {
