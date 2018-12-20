@@ -8,7 +8,6 @@ var EventEmitter = require('events').EventEmitter
 var helper = require('../../../lib/agent_helper')
 var hashes = require('../../../../lib/util/hashes')
 var Segment = require('../../../../lib/transaction/trace/segment')
-var semver = require('semver')
 var Shim = require('../../../../lib/shim').Shim
 
 
@@ -399,10 +398,6 @@ describe('built-in http module instrumentation', function() {
     })
 
     describe('for http.request', function() {
-      // this scenario is specifically broken on Node 5.7.1, see
-      // https://github.com/nodejs/node/issues/5555
-      if (!semver.satisfies(process.versions.node, '==5.7.1')) return
-
       it('should trace errors in listeners', function(done) {
         var server
         process.once('uncaughtException', function() {

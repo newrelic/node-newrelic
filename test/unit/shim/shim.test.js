@@ -5,7 +5,6 @@ var EventEmitter = require('events').EventEmitter
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var Promise = global.Promise || require('bluebird')
-var semver = require('semver')
 var sinon = require('sinon')
 var Shim = require('../../../lib/shim/shim')
 
@@ -896,8 +895,6 @@ describe('Shim', function() {
     })
 
     describe('with a promise', function() {
-      var itUnhandled = semver.satisfies(process.version, '>=1.4.1') ? it : xit
-
       var promise = null
       var toWrap = null
 
@@ -1017,7 +1014,7 @@ describe('Shim', function() {
         }, 5)
       })
 
-      itUnhandled('should not affect unhandledRejection event', function(done) {
+      it('should not affect unhandledRejection event', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', promise: true}
         })

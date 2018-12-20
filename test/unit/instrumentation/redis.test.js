@@ -104,7 +104,7 @@ describe('agent instrumentation of Redis', function() {
         })
 
         should.exist(connection.on_data)
-        connection.on_data(new Buffer('+PONG\r\n'))
+        connection.on_data(Buffer.from('+PONG\r\n'))
 
         transaction.end()
       })
@@ -129,7 +129,7 @@ describe('agent instrumentation of Redis', function() {
         })
 
         should.exist(connection.on_data)
-        connection.on_data(new Buffer('+PONG\r\n'))
+        connection.on_data(Buffer.from('+PONG\r\n'))
       })
     })
 
@@ -158,7 +158,7 @@ describe('agent instrumentation of Redis', function() {
         })
 
         should.exist(connection.on_data)
-        connection.on_data(new Buffer('+PONG\r\n'))
+        connection.on_data(Buffer.from('+PONG\r\n'))
 
         transaction.end()
       })
@@ -186,7 +186,7 @@ describe('agent instrumentation of Redis', function() {
         })
 
         should.exist(connection.on_data)
-        connection.on_data(new Buffer('+PONG\r\n'))
+        connection.on_data(Buffer.from('+PONG\r\n'))
       })
     })
   })

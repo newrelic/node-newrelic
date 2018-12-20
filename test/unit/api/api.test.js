@@ -6,7 +6,6 @@ var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
-var semver = require('semver')
 var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
 
@@ -898,11 +897,7 @@ describe('the New Relic agent API', function() {
       })
 
       it("should leave the passed-in pattern alone", function() {
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(mine.pattern.source).equal('^\\/test\\/.*')
-        } else {
-          expect(mine.pattern.source).equal('^/test/.*')
-        }
+        expect(mine.pattern.source).equal('^\\/test\\/.*')
       })
 
       it("should have the correct replacement", function() {
@@ -995,11 +990,7 @@ describe('the New Relic agent API', function() {
       })
 
       it("should leave the passed-in pattern alone", function() {
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(mine.pattern.source).equal('^\\/test\\/.*')
-        } else {
-          expect(mine.pattern.source).equal('^/test/.*')
-        }
+        expect(mine.pattern.source).equal('^\\/test\\/.*')
       })
 
       it("should have the correct replacement", function() {

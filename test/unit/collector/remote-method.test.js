@@ -6,7 +6,6 @@ const expect = chai.expect
 const should = chai.should()
 const Config = require('../../../lib/config')
 const RemoteMethod = require('../../../lib/collector/remote-method')
-const semver = require('semver')
 
 
 function generate(method, runID, protocolVersion) {
@@ -184,11 +183,7 @@ describe('RemoteMethod', () => {
       })
       method.invoke({message: 'none'}, mockHeaders, (error) => {
         should.exist(error)
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
-        } else {
-          expect(error.message).equal('connect ECONNREFUSED')
-        }
+        expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
 
         done()
       })
