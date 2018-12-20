@@ -137,6 +137,9 @@ const helper = module.exports = {
     // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
+    // Stop any already scheduled harvests.
+    agent._stopHarvester()
+
     if (agent === _agent) {
       global.__NR_agent = null
       _agent = null
