@@ -1,16 +1,16 @@
 'use strict'
 
-var expect = require('chai').expect
-var helper = require('../../lib/agent_helper.js')
-var API = require('../../../api.js')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
+const API = require('../../../api')
+const assertMetrics = require('../../lib/metrics_helper').assertMetrics
+const expect = require('chai').expect
+const helper = require('../../lib/agent_helper')
 
 
-describe('The custom instrumentation API', function () {
-  var agent
-  var api
+describe('The custom instrumentation API', () => {
+  let agent = null
+  let api = null
 
-  beforeEach(function () {
+  beforeEach(() => {
     // FLAG: custom_instrumentation
     agent = helper.loadMockedAgent({
       feature_flag: {custom_instrumentation: true}
@@ -18,13 +18,13 @@ describe('The custom instrumentation API', function () {
     api = new API(agent)
   })
 
-  afterEach(function () {
+  afterEach(() => {
     helper.unloadAgent(agent)
   })
 
-  describe('when creating a segment', function () {
-    it('should work in a clean transaction', function (done) {
-      agent.on('transactionFinished', function (transaction) {
+  describe('when creating a segment', () => {
+    it('should work in a clean transaction', (done) => {
+      agent.on('transactionFinished', (transaction) => {
         var trace = transaction.trace
         expect(trace).to.exist
         expect(trace.root.children).to.have.length(1)
@@ -33,16 +33,16 @@ describe('The custom instrumentation API', function () {
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        var markedFunction = api.createTracer('custom:segment', function () {
+      helper.runInTransaction(agent, (transaction) => {
+        var markedFunction = api.createTracer('custom:segment', () => {
           process.nextTick(transaction.end.bind(transaction))
         })
         markedFunction()
       })
     })
 
-    it('should work nested in a segment', function (done) {
-      agent.on('transactionFinished', function (transaction) {
+    it('should work nested in a segment', (done) => {
+      agent.on('transactionFinished', (transaction) => {
         var trace = transaction.trace
         expect(trace).to.exist
         var trace = transaction.trace
@@ -56,10 +56,10 @@ describe('The custom instrumentation API', function () {
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
+      helper.runInTransaction(agent, (transaction) => {
         agent.tracer.addSegment('parent', null, null, false, function(parentSegment) {
-          var markedFunction = api.createTracer('custom:segment', function () {
-            process.nextTick(function() {
+          var markedFunction = api.createTracer('custom:segment', () => {
+            process.nextTick(() => {
               parentSegment.end()
               transaction.end()
             })
@@ -69,8 +69,8 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should work with a segment nested in it', function (done) {
-      agent.on('transactionFinished', function (transaction) {
+    it('should work with a segment nested in it', (done) => {
+      agent.on('transactionFinished', (transaction) => {
         var trace = transaction.trace
         expect(trace).to.exist
         var trace = transaction.trace
@@ -84,10 +84,10 @@ describe('The custom instrumentation API', function () {
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        var markedFunction = api.createTracer('custom:segment', function () {
+      helper.runInTransaction(agent, (transaction) => {
+        var markedFunction = api.createTracer('custom:segment', () => {
           var childSegment = agent.tracer.createSegment('child')
-          process.nextTick(function() {
+          process.nextTick(() => {
             childSegment.end()
             transaction.end()
           })
@@ -96,23 +96,23 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should not cause any errors if called outside of a transaction', function () {
-      expect(function () {
+    it('should not cause any errors if called outside of a transaction', () => {
+      expect(() => {
         api.createTracer('custom:segment', function nop() {})
       }).to.not.throw()
     })
 
-    it('should return the function unwrapped if it is called outside of a transaction', function () {
+    it('should return the function unwrapped if called outside a txn', () => {
       function nop() {}
       var retVal = api.createTracer('custom:segment', nop)
       expect(retVal.name).to.equal('nop')
     })
 
     // FLAG: custom_instrumentation
-    it('should not cause problems when feature flag is disabled', function (done) {
+    it('should not cause problems when feature flag is disabled', (done) => {
       agent.config.feature_flag.custom_instrumentation = false
 
-      agent.on('transactionFinished', function (transaction) {
+      agent.on('transactionFinished', (transaction) => {
         var trace = transaction.trace
         expect(trace).to.exist
         var trace = transaction.trace
@@ -121,31 +121,31 @@ describe('The custom instrumentation API', function () {
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        var markedFunction = api.createTracer('custom:segment', function () {
+      helper.runInTransaction(agent, (transaction) => {
+        var markedFunction = api.createTracer('custom:segment', () => {
           transaction.end()
         })
         markedFunction()
       })
     })
 
-    it('should record a metric for the custom segment', function (done) {
-      agent.on('transactionFinished', function (transaction) {
+    it('should record a metric for the custom segment', (done) => {
+      agent.on('transactionFinished', (transaction) => {
         expect(transaction.metrics.unscoped).to.have.property('Custom/custom:segment')
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        var markedFunction = api.createTracer('custom:segment', function () {
+      helper.runInTransaction(agent, (transaction) => {
+        var markedFunction = api.createTracer('custom:segment', () => {
           process.nextTick(transaction.end.bind(transaction))
         })
         markedFunction()
       })
     })
 
-    it('should allow the user to return a value from the handle', function () {
-      helper.runInTransaction(agent, function (transaction) {
-        var markedFunction = api.createTracer('custom:segment', function () {
+    it('should allow the user to return a value from the handle', () => {
+      helper.runInTransaction(agent, (transaction) => {
+        var markedFunction = api.createTracer('custom:segment', () => {
           return 'something'
           transaction.end()
         })
@@ -154,32 +154,31 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should include end time if transaction ends in callback', function (done) {
-      agent.on('transactionFinished', function (transaction) {
+    it('should include end time if transaction ends in callback', (done) => {
+      agent.on('transactionFinished', (transaction) => {
         var segment = transaction.trace.root.children[0]
         expect(segment.getDurationInMillis()).greaterThan(0)
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        var markedFunction = api.createTracer('custom:segment', function () {
+      helper.runInTransaction(agent, (transaction) => {
+        var markedFunction = api.createTracer('custom:segment', () => {
           transaction.end()
         })
         setTimeout(markedFunction, 0)
       })
     })
-
   })
 
-  describe('when creating a web transaction', function () {
-    it('should return a function', function () {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+  describe('when creating a web transaction', () => {
+    it('should return a function', () => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
       })
       expect(txHandler).to.be.a('function')
     })
 
-    it('should create a transaction', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should create a transaction', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         expect(tx.url).to.be.equal('/custom/transaction')
@@ -191,8 +190,8 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should create an outermost segment', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should create an outermost segment', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
 
@@ -207,8 +206,8 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should respect the in play transaction and not create a new one', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function (outerTx) {
+    it('should respect the in play transaction and not create a new one', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', (outerTx) => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.be.equal(outerTx)
 
@@ -217,15 +216,14 @@ describe('The custom instrumentation API', function () {
 
         done()
       })
-      helper.runInTransaction(agent, function (transaction) {
-
+      helper.runInTransaction(agent, (transaction) => {
         txHandler(transaction)
         transaction.end()
       })
     })
 
-    it('should nest its segment within an in play segment', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function (outerTx) {
+    it('should nest its segment within an in play segment', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', (outerTx) => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.be.equal(outerTx)
 
@@ -238,16 +236,16 @@ describe('The custom instrumentation API', function () {
         done()
       })
 
-      helper.runInTransaction(agent, function (transaction) {
-        agent.tracer.addSegment('outer', null, null, false, function() {
+      helper.runInTransaction(agent, (transaction) => {
+        agent.tracer.addSegment('outer', null, null, false, () => {
           txHandler(transaction)
           transaction.end()
         })
       })
     })
 
-    it('should be ended by calling endTransaction', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should be ended by calling endTransaction', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
 
         expect(tx.isActive()).to.be.true
@@ -259,8 +257,8 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should set name of baseSegment correctly', function(done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function() {
+    it('should set name of baseSegment correctly', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
 
         expect(tx.type).to.equal('web')
@@ -272,15 +270,13 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should create only one rollup metric when nested', function(done) {
-      var handler1 = api.createWebTransaction('/custom1', function() {
+    it('should create only one rollup metric when nested', (done) => {
+      var handler1 = api.createWebTransaction('/custom1', () => {
         handler2()
         api.endTransaction()
       })
 
-      var handler2 = api.createWebTransaction('/custom2', function(outerTx) {
-        api.endTransaction()
-      })
+      var handler2 = api.createWebTransaction('/custom2', () => api.endTransaction())
 
       handler1()
 
@@ -291,8 +287,8 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create proper metrics', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should create proper metrics', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         api.endTransaction()
@@ -315,14 +311,14 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create a new transaction when nested within a background transaction', function(done) {
-      var bgHandler = api.createBackgroundTransaction('background:job', function() {
+    it('should create a new txn when nested within a background txn', (done) => {
+      var bgHandler = api.createBackgroundTransaction('background:job', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         expect(tx.getFullName()).to.equal('OtherTransaction/Nodejs/background:job')
         expect(tx.type).to.equal('bg')
         expect(tx.baseSegment).to.exist
-        var webHandler = api.createWebTransaction('/custom/transaction', function() {
+        var webHandler = api.createWebTransaction('/custom/transaction', () => {
           var webTx = agent.tracer.getTransaction()
           expect(webTx).to.exist.and.not.equal(tx)
           expect(webTx.url).to.be.equal('/custom/transaction')
@@ -340,16 +336,16 @@ describe('The custom instrumentation API', function () {
       bgHandler()
     })
 
-    it('should return the any value that the handler returns', function () {
-      var txHandler = api.createWebTransaction('/custom/transaction', function () {
+    it('should return the any value that the handler returns', () => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         return 'a thing'
       })
       var value = txHandler()
       expect(value).to.be.equal('a thing')
     })
 
-    it('should allow changing the transaction name', function (done) {
-      var txHandler = api.createWebTransaction('/custom/transaction', function (outerTx) {
+    it('should allow changing the transaction name', (done) => {
+      var txHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
 
         api.setTransactionName('new_name')
@@ -363,14 +359,14 @@ describe('The custom instrumentation API', function () {
     })
   })
 
-  describe('when creating an background transaction', function () {
-    it('should return a function', function () {
-      var txHandler = api.createBackgroundTransaction('background:job', function () {})
+  describe('when creating an background transaction', () => {
+    it('should return a function', () => {
+      var txHandler = api.createBackgroundTransaction('background:job', () => {})
       expect(txHandler).to.be.a('function')
     })
 
-    it('should create a transaction', function (done) {
-      var txHandler = api.createBackgroundTransaction('background:job', function () {
+    it('should create a transaction', (done) => {
+      var txHandler = api.createBackgroundTransaction('background:job', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         expect(tx.getFullName()).to.be.equal('OtherTransaction/Nodejs/background:job')
@@ -383,8 +379,8 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should create an outermost segment', function (done) {
-        var txHandler = api.createBackgroundTransaction('background:job', function () {
+    it('should create an outermost segment', (done) => {
+      var txHandler = api.createBackgroundTransaction('background:job', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
 
@@ -399,8 +395,8 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    describe('when a web transaction is active', function() {
-      it('should create a new transaction', function(done) {
+    describe('when a web transaction is active', () => {
+      it('should create a new transaction', (done) => {
         var fn = api.createBackgroundTransaction('background:job', function(outerTx) {
           var tx = agent.tracer.getTransaction()
           expect(tx).to.have.property('id').not.equal(outerTx.id)
@@ -419,8 +415,8 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    describe('when a background transaction is active', function() {
-      it('should not create a new transaction', function(done) {
+    describe('when a background transaction is active', () => {
+      it('should not create a new transaction', (done) => {
         var fn = api.createBackgroundTransaction('background:job', function(outerTx) {
           var tx = agent.tracer.getTransaction()
           expect(tx).to.have.property('id', outerTx.id)
@@ -438,7 +434,7 @@ describe('The custom instrumentation API', function () {
         })
       })
 
-      it('should nest its segment within an in play segment', function(done) {
+      it('should nest its segment within an in play segment', (done) => {
         var fn = api.createBackgroundTransaction('background:job', function(outerTx) {
           var tx = agent.tracer.getTransaction()
           expect(tx).to.have.property('id', outerTx.id)
@@ -454,7 +450,7 @@ describe('The custom instrumentation API', function () {
 
         helper.runInTransaction(agent, function(transaction) {
           transaction.type = 'bg'
-          agent.tracer.addSegment('outer', null, null, false, function() {
+          agent.tracer.addSegment('outer', null, null, false, () => {
             fn(transaction)
             transaction.end()
           })
@@ -462,8 +458,8 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should be ended by calling endTransaction', function (done) {
-      var txHandler = api.createWebTransaction('background:job', function () {
+    it('should be ended by calling endTransaction', (done) => {
+      var txHandler = api.createWebTransaction('background:job', () => {
         var tx = agent.tracer.getTransaction()
 
         expect(tx.isActive()).to.be.true
@@ -475,13 +471,13 @@ describe('The custom instrumentation API', function () {
       txHandler()
     })
 
-    it('should create only one rollup metric when nested', function(done) {
-      var handler1 = api.createBackgroundTransaction('custom1', function() {
+    it('should create only one rollup metric when nested', (done) => {
+      var handler1 = api.createBackgroundTransaction('custom1', () => {
         handler2()
         api.endTransaction()
       })
 
-      var handler2 = api.createBackgroundTransaction('custom2', function(outerTx) {
+      var handler2 = api.createBackgroundTransaction('custom2', () => {
         api.endTransaction()
       })
 
@@ -494,8 +490,8 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create proper metrics with default group name', function (done) {
-      var txHandler = api.createBackgroundTransaction('background:job', function () {
+    it('should create proper metrics with default group name', (done) => {
+      var txHandler = api.createBackgroundTransaction('background:job', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         api.endTransaction()
@@ -515,8 +511,8 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create proper metrics with group name', function (done) {
-      var txHandler = api.createBackgroundTransaction('background:job', 'thinger', function () {
+    it('should create proper metrics with group name', (done) => {
+      var txHandler = api.createBackgroundTransaction('background:job', 'thinger', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         api.endTransaction()
@@ -536,14 +532,14 @@ describe('The custom instrumentation API', function () {
       })
     })
 
-    it('should create a new transaction when nested within a web transaction', function(done) {
-      var webHandler = api.createWebTransaction('/custom/transaction', function() {
+    it('should create a new transaction when nested within a web transaction', (done) => {
+      var webHandler = api.createWebTransaction('/custom/transaction', () => {
         var tx = agent.tracer.getTransaction()
         expect(tx).to.exist
         expect(tx.url).to.equal('/custom/transaction')
         expect(tx.type).to.equal('web')
         expect(tx.baseSegment).to.exist
-        var bgHandler = api.createBackgroundTransaction('background:job', function() {
+        var bgHandler = api.createBackgroundTransaction('background:job', () => {
           var bgTx = agent.tracer.getTransaction()
           expect(bgTx).to.exist.and.not.equal(tx)
           expect(bgTx.getFullName()).to.equal('OtherTransaction/Nodejs/background:job')
@@ -561,8 +557,8 @@ describe('The custom instrumentation API', function () {
       webHandler()
     })
 
-    it('should return the any value that the hanlder returns', function () {
-      var txHandler = api.createBackgroundTransaction('/custom/transaction', function () {
+    it('should return the any value that the hanlder returns', () => {
+      var txHandler = api.createBackgroundTransaction('/custom/transaction', () => {
         return 'a thing'
       })
       var value = txHandler()
@@ -570,11 +566,11 @@ describe('The custom instrumentation API', function () {
     })
   })
 
-  it('endTransaction should not throw an exception if there is no transaction active', function () {
+  it('endTransaction should not throw an exception if no transaction is active', () => {
     var tx = agent.tracer.getTransaction()
     expect(tx).to.not.exist
-    expect(function () {
+    expect(() => {
       api.endTransaction()
     }).to.not.throw()
   })
-});
+})
