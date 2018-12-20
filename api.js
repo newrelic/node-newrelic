@@ -1256,8 +1256,8 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  // TODO: In Agent v5 prefix custom metrics with `Custom/`.
-  var metric = this.agent.metrics.getOrCreateMetric(name)
+  const metricName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + name
+  const metric = this.agent.metrics.getOrCreateMetric(metricName)
 
   if (typeof value === 'number') {
     metric.recordValue(value)
