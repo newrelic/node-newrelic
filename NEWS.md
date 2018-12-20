@@ -1,24 +1,17 @@
 ### 4.13.0 (2018-12-20):
 
 * Fixed clearing of active harvest via _stopHarvester()
+
 * Fixed handling of harvest endpoints when not all fail.
+
 * Added agent state "connecting" to indicate when handshake with New Relic servers
   is starting. This can be triggered on startup and restarts.
 
 * Added `--no-package-lock` to `unit` and `integration` rules.
 
-* Added assertions to harvest tests verifying mapped headers received on `connect`
-  are included in harvest requests.
-
-* Removed `flags` argument from test `agent_helper` methods.
-
 * Released `protocol_17` feature flag.
 
-* Added `generateAllPaths` test helper method.
-
-* Added `CollectorAPI._handleResponseCode`.
-
-  The agent now reacts to failed New Relic requests based on response code, as
+* The agent now reacts to failed New Relic requests based on response code, as
   opposed to parsing an exception message in the response body.
 
 * Replaced `nsp` with `npm audit` in security checks.
