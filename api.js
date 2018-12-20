@@ -1241,7 +1241,7 @@ API.prototype.endTransaction = function endTransaction() {
  * @param  {number|object} value
  */
 API.prototype.recordMetric = function recordMetric(name, value) {
-  var supportMetric = this.agent.metrics.getOrCreateMetric(
+  const supportMetric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordMetric'
   )
   supportMetric.incrementCallCount()
@@ -1269,17 +1269,17 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  var stats = Object.create(null)
-  var required = ['count', 'total', 'min', 'max', 'sumOfSquares']
-  var keyMap = {count: 'callCount'}
+  const stats = Object.create(null)
+  const required = ['count', 'total', 'min', 'max', 'sumOfSquares']
+  const keyMap = {count: 'callCount'}
 
-  for (var i = 0, l = required.length; i < l; ++i) {
+  for (let i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
       logger.warn('Metric object must include %s as a number', required[i])
       return
     }
 
-    var key = keyMap[required[i]] || required[i]
+    const key = keyMap[required[i]] || required[i]
     stats[key] = value[required[i]]
   }
 
@@ -1302,7 +1302,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
  *                          by. Defaults to 1.
  */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
   )
   metric.incrementCallCount()

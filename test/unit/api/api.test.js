@@ -1280,7 +1280,7 @@ describe('the New Relic agent API', function() {
       api.recordMetric('metric/thing', 4)
       api.recordMetric('metric/thing', 5)
 
-      var metric = api.agent.metrics.getMetric('Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1302,7 +1302,7 @@ describe('the New Relic agent API', function() {
         count: 2
       })
 
-      var metric = api.agent.metrics.getMetric('Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1319,7 +1319,7 @@ describe('the New Relic agent API', function() {
       api.incrementMetric('metric/thing')
       api.incrementMetric('metric/thing')
 
-      var metric = api.agent.metrics.getMetric('Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(0)
       expect(metric.totalExclusive).equal(0)
