@@ -1227,11 +1227,6 @@ API.prototype.recordMetric = function recordMetric(name, value) {
   )
   supportMetric.incrementCallCount()
 
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
-
   if (typeof name !== 'string') {
     logger.warn('Metric name must be a string')
     return
@@ -1287,11 +1282,6 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (!value && value !== 0) {
     value = 1

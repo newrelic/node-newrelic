@@ -1302,7 +1302,6 @@ describe('the New Relic agent API', function() {
     })
 
     it('it should aggregate metric values', function() {
-      agent.config.feature_flag.custom_metrics = true
       api.recordMetric('metric/thing', 3)
       api.recordMetric('metric/thing', 4)
       api.recordMetric('metric/thing', 5)
@@ -1315,11 +1314,9 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(5)
       expect(metric.sumOfSquares).equal(50)
       expect(metric.callCount).equal(3)
-      agent.config.feature_flag.custom_metrics = false
     })
 
     it('it should merge metrics', function() {
-      agent.config.feature_flag.custom_metrics = true
       api.recordMetric('metric/thing', 3)
       api.recordMetric('metric/thing', {
         total: 9,
@@ -1337,11 +1334,9 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(5)
       expect(metric.sumOfSquares).equal(50)
       expect(metric.callCount).equal(3)
-      agent.config.feature_flag.custom_metrics = false
     })
 
     it('it should increment properly', function() {
-      agent.config.feature_flag.custom_metrics = true
       api.incrementMetric('metric/thing')
       api.incrementMetric('metric/thing')
       api.incrementMetric('metric/thing')
@@ -1365,13 +1360,6 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(0)
       expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(12)
-      agent.config.feature_flag.custom_metrics = false
-    })
-
-    it('should not blow up when disabled', function() {
-      agent.config.feature_flag.custom_metrics = false
-      api.incrementMetric('metric/thing')
-      api.recordMetric('metric/thing', 3)
     })
   })
 
