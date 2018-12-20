@@ -11,10 +11,7 @@ describe('The custom instrumentation API', () => {
   let api = null
 
   beforeEach(() => {
-    // FLAG: custom_instrumentation
-    agent = helper.loadMockedAgent({
-      feature_flag: {custom_instrumentation: true}
-    })
+    agent = helper.loadMockedAgent()
     api = new API(agent)
   })
 
@@ -106,27 +103,6 @@ describe('The custom instrumentation API', () => {
       function nop() {}
       var retVal = api.createTracer('custom:segment', nop)
       expect(retVal.name).to.equal('nop')
-    })
-
-    // FLAG: custom_instrumentation
-    it('should not cause problems when feature flag is disabled', (done) => {
-      agent.config.feature_flag.custom_instrumentation = false
-
-      agent.on('transactionFinished', (transaction) => {
-        var trace = transaction.trace
-        expect(trace).to.exist
-        var trace = transaction.trace
-        expect(trace).to.exist
-        expect(trace.root.children).to.have.length(0)
-        done()
-      })
-
-      helper.runInTransaction(agent, (transaction) => {
-        var markedFunction = api.createTracer('custom:segment', () => {
-          transaction.end()
-        })
-        markedFunction()
-      })
     })
 
     it('should record a metric for the custom segment', (done) => {

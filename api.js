@@ -685,11 +685,6 @@ function createTracer(name, callback) {
   )
   metric.incrementCallCount()
 
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return callback
-  }
-
   var fail = false
   if (!name) {
     logger.warn('createTracer called without a name')
@@ -837,11 +832,6 @@ function createWebTransaction(url, handle) {
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return handle
-  }
 
   var fail = false
   if (!url) {
@@ -1138,10 +1128,6 @@ function createBackgroundTransaction(name, group, handle) {
     handle = group
     group = 'Nodejs'
   }
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return handle
-  }
 
   var fail = false
   if (!name) {
@@ -1202,11 +1188,6 @@ API.prototype.endTransaction = function endTransaction() {
     NAMES.SUPPORTABILITY.API + '/endTransaction'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return
-  }
 
   var tracer = this.agent.tracer
   var tx = tracer.getTransaction()
