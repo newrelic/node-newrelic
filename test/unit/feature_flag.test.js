@@ -77,7 +77,8 @@ describe('feature flags', function() {
   })
   it('should warn if released flags are still in config', function() {
     Config.prototype.setLogger({
-      warn: function() { called = true }
+      warn: function() { called = true },
+      warnOnce: () => {}
     })
     var called = false
     var config = new Config()
@@ -87,7 +88,8 @@ describe('feature flags', function() {
   })
   it('should warn if unreleased flags are still in config', function() {
     Config.prototype.setLogger({
-      warn: function() { called = true }
+      warn: function() { called = true },
+      warnOnce: () => {}
     })
     var called = false
     var config = new Config()

@@ -7,6 +7,9 @@ This information can also be found on [our documentation website][upgrade-doc].
 
 ### Breaking Changes
 
+**Removed `ignore_server_configuration` setting**: This setting was only implemented
+by the Node agent, so removing it improves parity with other language agents.
+
 **Removed `node-cassandra-cql` instrumentation**: This [library][node-cassandra-cql]
 has not been updated in 5 years, and has since been superseded by [cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is supported by the agent.
 
