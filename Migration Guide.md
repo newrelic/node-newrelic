@@ -13,6 +13,22 @@ by the Node agent, so removing it improves parity with other language agents.
 **Removed `node-cassandra-cql` instrumentation**: This [library][node-cassandra-cql]
 has not been updated in 5 years, and has since been superseded by [cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is supported by the agent.
 
+**Removed deprecated configuration settings**: The following configuration
+settings have been deprecated since agent v3, and have now been removed from the
+codebase:
+
+* `capture_params`
+
+  Replaced with `attributes.enabled`. By default, request attributes are not
+  sent to New Relic. Set `attributes.enabled: true` to include agent-defined or
+  custom attributes in traces.
+
+* `ignored_params`
+
+  Replaced with `attributes.exclude`. Add any request attribute keys to the
+  `attributes.exclude` list. Now, instead of having to be an exact match,
+  wildcards (`*`) may be appended to each item for broader filtering.
+
 ### Node Version Support
 
 The agent now only supports Node version 6 and above, which brings it up to date

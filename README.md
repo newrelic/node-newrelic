@@ -647,9 +647,10 @@ of a transaction it will just pass through.
 
 #### newrelic.recordMetric(name, value)
 
-`name` is the metric name to record, it must be a string that begins with
-`Custom/` typically followed by segments for `category` and `label`.
-(eg. `Custom/my_category/my_label`).
+`name` is the metric name to record. it must be a string and may be prepended
+with segments for `category` and `label`. (eg. `/my_category/my_label/my_name`).
+Custom metrics are automatically prepended with `Custom`, resulting in metrics of
+the form: `Custom/${name}`.
 
 `value` is either a numerical value to associate with the metric sample,
 or an object representing multiple samples for the metric. If `value` is

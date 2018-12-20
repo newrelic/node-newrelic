@@ -111,7 +111,6 @@ describe('CollectorAPI', function() {
         'X-NR-TEST-HEADER': 'TEST VALUE'
       }
       var valid = {
-        capture_params: true,
         agent_run_id: RUN_ID,
         request_headers_map: reqHeaderMap
       }
@@ -141,7 +140,6 @@ describe('CollectorAPI', function() {
       var ssc
 
       var valid = {
-        capture_params: true,
         agent_run_id: RUN_ID
       }
 
@@ -410,7 +408,6 @@ describe('CollectorAPI', function() {
 
       it('should include security policies in connect response', function(done) {
         var valid = {
-          capture_params: true,
           agent_run_id: RUN_ID,
           security_policies: policies
         }
@@ -445,7 +442,6 @@ describe('CollectorAPI', function() {
         agent.customEvents = 'will be overwritten'
 
         var valid = {
-          capture_params: true,
           agent_run_id: RUN_ID,
           security_policies: policies
         }
@@ -482,7 +478,6 @@ describe('CollectorAPI', function() {
 
 
         var valid = {
-          capture_params: true,
           agent_run_id: RUN_ID
         }
 
@@ -523,7 +518,6 @@ describe('CollectorAPI', function() {
 
 
         var valid = {
-          capture_params: true,
           agent_run_id: RUN_ID
         }
 
@@ -584,7 +578,6 @@ describe('CollectorAPI', function() {
 
 
         var valid = {
-          capture_params: true,
           agent_run_id: RUN_ID
         }
 
@@ -639,7 +632,6 @@ describe('CollectorAPI', function() {
 
 
         var valid = {
-          capture_params: true,
           agent_run_id: RUN_ID
         }
 

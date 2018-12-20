@@ -1256,13 +1256,22 @@ describe('the New Relic agent API', function() {
   })
 
   describe('when recording custom metrics', function() {
+    it('should prepend "Custom" in front of name', () => {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', 4)
+      api.recordMetric('metric/thing', 5)
+
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
+      expect(metric).to.exist
+    })
+
     it('it should aggregate metric values', function() {
       agent.config.feature_flag.custom_metrics = true
-      api.recordMetric('/Custom/metric/thing', 3)
-      api.recordMetric('/Custom/metric/thing', 4)
-      api.recordMetric('/Custom/metric/thing', 5)
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', 4)
+      api.recordMetric('metric/thing', 5)
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1275,8 +1284,8 @@ describe('the New Relic agent API', function() {
 
     it('it should merge metrics', function() {
       agent.config.feature_flag.custom_metrics = true
-      api.recordMetric('/Custom/metric/thing', 3)
-      api.recordMetric('/Custom/metric/thing', {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', {
         total: 9,
         min: 4,
         max: 5,
@@ -1284,7 +1293,7 @@ describe('the New Relic agent API', function() {
         count: 2
       })
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1297,11 +1306,11 @@ describe('the New Relic agent API', function() {
 
     it('it should increment properly', function() {
       agent.config.feature_flag.custom_metrics = true
-      api.incrementMetric('/Custom/metric/thing')
-      api.incrementMetric('/Custom/metric/thing')
-      api.incrementMetric('/Custom/metric/thing')
+      api.incrementMetric('metric/thing')
+      api.incrementMetric('metric/thing')
+      api.incrementMetric('metric/thing')
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(0)
       expect(metric.totalExclusive).equal(0)
@@ -1310,8 +1319,8 @@ describe('the New Relic agent API', function() {
       expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(3)
 
-      api.incrementMetric('/Custom/metric/thing', 4)
-      api.incrementMetric('/Custom/metric/thing', 5)
+      api.incrementMetric('metric/thing', 4)
+      api.incrementMetric('metric/thing', 5)
 
 
       expect(metric.total).equal(0)
@@ -1325,8 +1334,8 @@ describe('the New Relic agent API', function() {
 
     it('should not blow up when disabled', function() {
       agent.config.feature_flag.custom_metrics = false
-      api.incrementMetric('/Custom/metric/thing')
-      api.recordMetric('/Custom/metric/thing', 3)
+      api.incrementMetric('metric/thing')
+      api.recordMetric('metric/thing', 3)
     })
   })
 

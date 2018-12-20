@@ -66,7 +66,7 @@ test-ci: node_modules sub_node_modules $(CERTIFICATE)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
-	@cd test && npm install;
+	@cd test && npm install --no-package-lock;
 	@$(MOCHA) -r nock -c test/unit --recursive
 
 sub_node_modules:
@@ -89,7 +89,7 @@ docker:
 	fi; \
 
 integration: node_modules sub_node_modules ca-gen $(CERTIFICATE) docker
-	time $(TAP) $(INTEGRATION)
+	time $(TAP) $(INTEGRATION) --timeout=120
 
 versioned: node_modules ca-gen $(CERTIFICATE) docker
 	time ./bin/run-versioned-tests.sh
