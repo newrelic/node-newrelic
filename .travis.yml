@@ -14,6 +14,23 @@ env:
   - SUITE=security
   - SUITE=versioned
 matrix:
+  exclude:
+    - node_js: "6"
+      env: SUITE=security
+    - node_js: "6"
+      env: SUITE=lint
+    - node_js: "7"
+      env: SUITE=security
+    - node_js: "7"
+      env: SUITE=lint
+    - node_js: "8"
+      env: SUITE=security
+    - node_js: "8"
+      env: SUITE=lint
+    - node_js: "9"
+      env: SUITE=security
+    - node_js: "9"
+      env: SUITE=lint
   allow_failures:
     - env: SUITE=prerelease
 addons:
