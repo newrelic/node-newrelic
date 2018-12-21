@@ -21,7 +21,7 @@ describe('byte-limit', () => {
     it('returns -1 when the string is smaller than the limit', () => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 255)
-      expect(cmpVal).to.equal(-1)
+      expect(cmpVal).to.be.lessThan(0)
     })
     it('returns 0 when the string is equal than the limit', () => {
       const str = '123456789'
@@ -31,7 +31,7 @@ describe('byte-limit', () => {
     it('returns 1 when the string is larger than the limit', () => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 2)
-      expect(cmpVal).to.equal(1)
+      expect(cmpVal).to.be.greaterThan(0)
     })
   })
 
