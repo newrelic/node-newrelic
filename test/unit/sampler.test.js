@@ -172,8 +172,8 @@ describe('environmental sampler', function() {
     })
   })
 
-  it('should not gather GC metrics if the feature flag is off', function() {
-    agent.config.feature_flag.native_metrics = false
+  it('should not gather GC metrics if disabled', function() {
+    agent.config.plugins.native_metrics.enabled = false
     sampler.start(agent)
     expect(sampler.nativeMetrics).to.be.null
   })

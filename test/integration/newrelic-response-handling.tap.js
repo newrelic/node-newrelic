@@ -67,9 +67,9 @@ function createStatusCodeTest(testCase) {
         license_key: 'license key here',
         apdex_t: Number.MIN_VALUE, // force transaction traces
         host: TEST_DOMAIN,
-        feature_flag: {
+        plugins: {
           // turn off native metrics to avoid unwanted gc metrics
-          native_metrics: false
+          native_metrics: {enabled: false}
         },
         distributed_tracing: {enabled: true},
         slow_sql: {enabled: true},

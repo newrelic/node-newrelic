@@ -685,11 +685,6 @@ function createTracer(name, callback) {
   )
   metric.incrementCallCount()
 
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return callback
-  }
-
   var fail = false
   if (!name) {
     logger.warn('createTracer called without a name')
@@ -837,11 +832,6 @@ function createWebTransaction(url, handle) {
     NAMES.SUPPORTABILITY.API + '/createWebTransaction'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return handle
-  }
 
   var fail = false
   if (!url) {
@@ -1138,10 +1128,6 @@ function createBackgroundTransaction(name, group, handle) {
     handle = group
     group = 'Nodejs'
   }
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return handle
-  }
 
   var fail = false
   if (!name) {
@@ -1203,11 +1189,6 @@ API.prototype.endTransaction = function endTransaction() {
   )
   metric.incrementCallCount()
 
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return
-  }
-
   var tracer = this.agent.tracer
   var tx = tracer.getTransaction()
 
@@ -1245,11 +1226,6 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     NAMES.SUPPORTABILITY.API + '/recordMetric'
   )
   supportMetric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (typeof name !== 'string') {
     logger.warn('Metric name must be a string')
@@ -1306,11 +1282,6 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (!value && value !== 0) {
     value = 1
