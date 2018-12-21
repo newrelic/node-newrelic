@@ -9,7 +9,6 @@ INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
 SMOKE        = test/smoke/*.tap.js
-PRERELEASE	 = test/prerelease/*/*.tap.js
 # subcomponents manage their own modules
 PACKAGES = $(shell find . -name package.json -and -not -path '*/node_modules/*' -and -not -path '*/example*')
 # strip the package.json from the results
@@ -93,10 +92,6 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE) docker
 
 versioned: node_modules ca-gen $(CERTIFICATE) docker
 	time ./bin/run-versioned-tests.sh
-
-prerelease: node_modules ca-gen $(CERTIFICATE) docker
-	@node test/bin/install_sub_deps prerelease
-	time $(TAP) $(PRERELEASE)
 
 smoke: clean
 	npm install --production --loglevel warn
