@@ -10,7 +10,6 @@ env:
   - SUITE=unit
   - SUITE=integration
   - SUITE=lint
-  - SUITE=prerelease
   - SUITE=security
   - SUITE=versioned
 matrix:
@@ -31,8 +30,6 @@ matrix:
       env: SUITE=security
     - node_js: "9"
       env: SUITE=lint
-  allow_failures:
-    - env: SUITE=prerelease
 addons:
   postgresql: "9.3"
 services:
