@@ -365,6 +365,14 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
   }
 }
 
+API.prototype.setIgnoreTransaction = util.deprecate(
+  setIgnoreTransaction, [
+    'API#setIgnoreTransaction is being deprecated!',
+    'Please use TransactionHandle#ignore to ignore a transaction.',
+    'Use API#getTransaction to create a new TransactionHandle instance.'
+  ].join(' ')
+)
+
 /**
  * Tell the tracer whether to ignore the current transaction. The most common
  * use for this will be to mark a transaction as ignored (maybe it's handling
@@ -375,7 +383,7 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
  *
  * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
  */
-API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
+function setIgnoreTransaction(ignored) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/setIgnoreTransaction'
   )
