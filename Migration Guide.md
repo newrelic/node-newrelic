@@ -8,7 +8,9 @@ This information can also be found on [our documentation website][upgrade-doc].
 ### Breaking Changes
 
 **Removed `node-cassandra-cql` instrumentation**: This [library][node-cassandra-cql]
-has not been updated in 5 years, and has since been superseded by [cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is supported by the agent.
+has not been updated in 5 years, and has since been superseded by
+[cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is
+supported by the agent.
 
 **Removed deprecated configuration settings**: The following configuration
 settings have been deprecated since agent v3, and have now been removed from the
@@ -31,6 +33,13 @@ codebase:
 The agent now only supports Node version 6 and above, which brings it up to date
 with Node's [LTS][node-lts-schedule] schedule. Customers running Node 4.x or 5.x
 will need to upgrade to a supported version of Node or remain on the v4 agent.
+
+### Released Feature Flags
+* `custom_instrumentation`: This feature is no longer configurable.
+* `custom_metrics`: This feature is no longer configurable.
+* `synthetics`: This feature is no longer configurable.
+* `native_metrics`: This feature is now controlled by the
+  `plugins.native_metrics.enabled` configuration value.
 
 --------------------------------------------------------------------------------
 
