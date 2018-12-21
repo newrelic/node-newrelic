@@ -52,5 +52,11 @@ describe('byte-limit', () => {
       str = byteUtils.truncate(str, 3)
       expect(str).to.equal('\uD87E')
     })
+    it('should strings with split unicode characters properly', () => {
+      let str = '\uD87E\uDC04\uD87E\uDC04'
+      expect(Buffer.byteLength(str, 'utf8')).to.equal(8)
+      str = byteUtils.truncate(str, 2)
+      expect(str).to.equal('')
+    })
   })
 })
