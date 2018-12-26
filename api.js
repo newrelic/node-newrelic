@@ -288,6 +288,14 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
   }
 }
 
+API.prototype.setIgnoreTransaction = util.deprecate(
+  setIgnoreTransaction, [
+    'API#setIgnoreTransaction is being deprecated!',
+    'Please use TransactionHandle#ignore to ignore a transaction.',
+    'Use API#getTransaction to create a new TransactionHandle instance.'
+  ].join(' ')
+)
+
 /**
  * Tell the tracer whether to ignore the current transaction. The most common
  * use for this will be to mark a transaction as ignored (maybe it's handling
@@ -298,7 +306,7 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
  *
  * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
  */
-API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
+function setIgnoreTransaction(ignored) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/setIgnoreTransaction'
   )
@@ -863,11 +871,6 @@ API.prototype.endTransaction = function endTransaction() {
   )
   metric.incrementCallCount()
 
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return
-  }
-
   var tracer = this.agent.tracer
   var tx = tracer.getTransaction()
 
@@ -886,7 +889,7 @@ API.prototype.endTransaction = function endTransaction() {
 }
 
 /**
- * Record an event-based metric, usually associated with a particular duration.
+ * Record a custom metric, usually associated with a particular duration.
  * The `name` must be a string following standard metric naming rules. The `value` will
  * usually be a number, but it can also be an object.
  *   * When `value` is a numeric value, it should represent the magnitude of a measurement
@@ -901,23 +904,18 @@ API.prototype.endTransaction = function endTransaction() {
  * @param  {number|object} value
  */
 API.prototype.recordMetric = function recordMetric(name, value) {
-  var supportMetric = this.agent.metrics.getOrCreateMetric(
+  const supportMetric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordMetric'
   )
   supportMetric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (typeof name !== 'string') {
     logger.warn('Metric name must be a string')
     return
   }
 
-  // TODO: In Agent v5 prefix custom metrics with `Custom/`.
-  var metric = this.agent.metrics.getOrCreateMetric(name)
+  const metricName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + name
+  const metric = this.agent.metrics.getOrCreateMetric(metricName)
 
   if (typeof value === 'number') {
     metric.recordValue(value)
@@ -929,17 +927,17 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  var stats = Object.create(null)
-  var required = ['count', 'total', 'min', 'max', 'sumOfSquares']
-  var keyMap = {count: 'callCount'}
+  const stats = Object.create(null)
+  const required = ['count', 'total', 'min', 'max', 'sumOfSquares']
+  const keyMap = {count: 'callCount'}
 
-  for (var i = 0, l = required.length; i < l; ++i) {
+  for (let i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
       logger.warn('Metric object must include %s as a number', required[i])
       return
     }
 
-    var key = keyMap[required[i]] || required[i]
+    const key = keyMap[required[i]] || required[i]
     stats[key] = value[required[i]]
   }
 
@@ -953,23 +951,19 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 }
 
 /**
- * Update a metric that acts as a simple counter. The count of the selected metric will
- * be incremented by the specified amount, defaulting to 1.
+ * Create or update a custom metric that acts as a simple counter.
+ * The count of the given metric will be incremented by the specified amount,
+ * defaulting to 1.
  *
  * @param  {string} name  The name of the metric.
  * @param  {number} [value] The amount that the count of the metric should be incremented
- *                          by.
+ *                          by. Defaults to 1.
  */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (!value && value !== 0) {
     value = 1
@@ -990,7 +984,7 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
 }
 
 /**
- * Record an event-based metric, usually associated with a particular duration.
+ * Record custom event data which can be queried in New Relic Insights.
  *
  * @param  {string} eventType  The name of the event. It must be an alphanumeric string
  *                             less than 255 characters.

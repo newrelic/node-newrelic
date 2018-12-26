@@ -230,24 +230,10 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up whether server-side config is enabled', function() {
-      idempotentEnv('NEW_RELIC_IGNORE_SERVER_CONFIGURATION', 'yeah', function(tc) {
-        should.exist(tc.ignore_server_configuration)
-        expect(tc.ignore_server_configuration).equal(true)
-      })
-    })
-
     it('should pick up whether the agent is enabled', function() {
       idempotentEnv('NEW_RELIC_ENABLED', 0, function(tc) {
         should.exist(tc.agent_enabled)
         expect(tc.agent_enabled).equal(false)
-      })
-    })
-
-    it("should pick up whether to capture request parameters", function() {
-      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'yes', function(tc) {
-        should.exist(tc.capture_params)
-        expect(tc.capture_params).equal(true)
       })
     })
 
@@ -262,13 +248,6 @@ describe('the agent configuration', function() {
       idempotentEnv('NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED', 'yes', function(tc) {
         should.exist(tc.attributes.include_enabled)
         expect(tc.attributes.include_enabled).equal(true)
-      })
-    })
-
-    it('should pick up ignored request parameters', function() {
-      idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
-        should.exist(tc.ignored_params)
-        expect(tc.ignored_params).eql(['one', 'two', 'three'])
       })
     })
 
@@ -721,24 +700,12 @@ describe('the agent configuration', function() {
       expect(configuration.proxy_port).equal('')
     })
 
-    it('should not ignore server-side configuration', function() {
-      expect(configuration.ignore_server_configuration).equal(false)
-    })
-
     it('should enable the agent', function() {
       expect(configuration.agent_enabled).equal(true)
     })
 
     it('should have an apdexT of 0.1', function() {
       expect(configuration.apdex_t).equal(0.1)
-    })
-
-    it('should not capture request parameters', function() {
-      expect(configuration.capture_params).equal(false)
-    })
-
-    it('should have no ignored request parameters', function() {
-      expect(configuration.ignored_params).eql([])
     })
 
     it('should have the default excluded request attributes', function() {
@@ -1044,24 +1011,6 @@ describe('the agent configuration', function() {
       expect(config.high_security).equal(false)
     })
 
-    it('should reject capture_params', function() {
-      expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params': true})
-      expect(config.capture_params).equal(false)
-    })
-
-    it('should configure ignored params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['a', 'b'])
-    })
-
-    it('should configure ignored params without stomping local config', function() {
-      config.ignored_params = ['b', 'c']
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['b', 'c', 'a'])
-    })
-
     it('should configure cross application tracing', function() {
       expect(config.cross_application_tracer.enabled).to.be.true
       config.onConnect({'cross_application_tracer.enabled': false})
@@ -1356,248 +1305,6 @@ describe('the agent configuration', function() {
 
         config.onConnect({'apdex_t': 0.1})
       })
-    })
-  })
-
-  describe('when receiving server-side configuration while it is disabled', function() {
-    var config
-
-    beforeEach(function() {
-      config = new Config()
-      config.ignore_server_configuration = true
-    })
-
-    it('should still set rum properties', function() {
-      config.onConnect({
-        js_agent_loader      : 'LOADER',
-        js_agent_file        : 'FILE',
-        js_agent_loader_file : 'LOADER_FILE',
-        beacon               : 'BEACON',
-        error_beacon         : 'ERR_BEACON',
-        browser_key          : 'KEY'
-      })
-      var bm = config.browser_monitoring
-
-      expect(bm.js_agent_loader)      .equal ('LOADER')
-      expect(bm.js_agent_file)        .equal ('FILE')
-      expect(bm.js_agent_loader_file) .equal ('LOADER_FILE')
-      expect(bm.beacon)               .equal ('BEACON')
-      expect(bm.error_beacon)         .equal ('ERR_BEACON')
-      expect(bm.browser_key)          .equal ('KEY')
-    })
-
-    it('should still set agent_run_id', function() {
-      config.onConnect({'agent_run_id': 1234})
-      expect(config.run_id).equal(1234)
-    })
-
-    it('should always respect collect_traces', function() {
-      expect(config.collect_traces).equal(true)
-      config.onConnect({'collect_traces': false})
-      expect(config.collect_traces).equal(false)
-    })
-
-    it('should always respect collect_errors', function() {
-      expect(config.collect_errors).equal(true)
-      config.onConnect({'collect_errors': false})
-      expect(config.collect_errors).equal(false)
-    })
-
-    it('should still log product_level', function() {
-      expect(config.product_level).equal(0)
-      config.onConnect({'product_level': 30})
-      expect(config.product_level).equal(30)
-    })
-
-    it('should still pass url_rules to the URL normalizer', function(done) {
-      config.on('url_rules', function(rules) {
-        expect(rules).eql([{name : 'sample_rule'}])
-        done()
-      })
-
-      config.onConnect({'url_rules': [{name : 'sample_rule'}]})
-    })
-
-    it('should still pass metric_name_rules to the metric name normalizer', (done) => {
-      config.on('metric_name_rules', function(rules) {
-        expect(rules).eql([{name : 'sample_rule'}])
-        done()
-      })
-
-      config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
-    })
-
-    it('should still pass transaction_name_rules to the txn name normalizer', (done) => {
-      config.on('transaction_name_rules', function(rules) {
-        expect(rules).eql([{name : 'sample_rule'}])
-        done()
-      })
-
-      config.onConnect({'transaction_name_rules': [{name : 'sample_rule'}]})
-    })
-
-    it('should not configure apdex_t', function() {
-      expect(config.apdex_t).equal(0.1)
-      config.on('apdex_t', function() { throw new Error('should not happen') })
-      config.onConnect({'apdex_t': 0.05})
-      expect(config.apdex_t).equal(0.1)
-    })
-
-    it('should not configure named transaction apdexes', function() {
-      var apdexes = {'WebTransaction/Custom/UrlGenerator/en/betting/Football' : 7.0}
-      expect(config.web_transactions_apdex).eql({})
-      config.onConnect({'web_transactions_apdex': apdexes})
-      expect(config.web_transactions_apdex).eql({})
-    })
-
-    it('should not configure data_report_period', function() {
-      expect(config.data_report_period).equal(60)
-      config.onConnect({'data_report_period': 45})
-      expect(config.data_report_period).equal(60)
-    })
-
-    it('should not configure transaction_tracer.enabled', function() {
-      expect(config.transaction_tracer.enabled).equal(true)
-      config.onConnect({'transaction_tracer.enabled': false})
-      expect(config.transaction_tracer.enabled).equal(true)
-    })
-
-    it('should not configure transaction_tracer.attributes.enabled', function() {
-      expect(config.transaction_tracer.attributes.enabled).equal(true)
-      config.onConnect({'transaction_tracer.attributes.enabled': false})
-      expect(config.transaction_tracer.attributes.enabled).equal(true)
-    })
-
-    it('should not configure error_collector.enabled', function() {
-      expect(config.error_collector.enabled).equal(true)
-      config.onConnect({'error_collector.enabled': false})
-      expect(config.error_collector.enabled).equal(true)
-    })
-
-    it('should not configure error_collector.attributes.enabled', function() {
-      expect(config.error_collector.attributes.enabled).equal(true)
-      config.onConnect({'error_collector.attributes.enabled': false})
-      expect(config.error_collector.attributes.enabled).equal(true)
-    })
-
-    it('should not configure transaction_tracer.transaction_threshold', function() {
-      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
-      config.onConnect({'transaction_tracer.transaction_threshold': 0.75})
-      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
-    })
-
-    it('should not configure capture_params', function() {
-      expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params': true})
-      expect(config.capture_params).equal(false)
-    })
-
-    it('should not configure attributes.enabled', function() {
-      expect(config.attributes.enabled).to.be.true
-      config.onConnect({'attributes.enabled': false})
-      expect(config.attributes.enabled).to.be.true
-    })
-
-    it('should not configure ignored_params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql([])
-    })
-
-    it('should not configure attributes.exclude', function() {
-      expect(config.attributes.exclude).eql([])
-      config.onConnect({'attributes.exclude': ['a', 'b']})
-      expect(config.attributes.exclude).eql([])
-    })
-
-    it('should not configure record_sql', function() {
-      expect(config.transaction_tracer.record_sql).equal('off')
-      config.onConnect({'transaction_tracer.record_sql': 'raw'})
-      expect(config.transaction_tracer.record_sql).equal('off')
-    })
-
-    it('should not configure explain_threshold', function() {
-      expect(config.transaction_tracer.explain_threshold).equal(500)
-      config.onConnect({'transaction_tracer.explain_threshold': 100})
-      expect(config.transaction_tracer.explain_threshold).equal(500)
-    })
-
-    it('should not configure slow_sql.enabled', function() {
-      expect(config.slow_sql.enabled).equal(false)
-      config.onConnect({'transaction_tracer.enabled': true})
-      expect(config.slow_sql.enabled).equal(false)
-    })
-
-    it('should not configure slow_sql.max_samples', function() {
-      expect(config.slow_sql.max_samples).equal(10)
-      config.onConnect({'transaction_tracer.max_samples': 5})
-      expect(config.slow_sql.max_samples).equal(10)
-    })
-
-    it('should ignore sampling_rate', function() {
-      expect(function() {
-        config.onConnect({'sampling_rate': 0})
-      }).not.throws()
-    })
-
-    it('should ignore ssl', function() {
-      expect(config.ssl).eql(true)
-      expect(function() {
-        config.onConnect({'ssl': false})
-      }).not.throws()
-      expect(config.ssl).eql(true)
-    })
-
-    it('should ignore cross_process_id', function() {
-      expect(function() {
-        config.onConnect({'cross_process_id': 'junk'})
-      }).not.throws()
-    })
-
-    it('should ignore cross_application_tracing', function() {
-      expect(function() {
-        config.onConnect({'cross_application_tracing': true})
-      }).not.throws()
-    })
-
-    it('should ignore encoding_key', function() {
-      expect(function() {
-        config.onConnect({'encoding_key': true})
-      }).not.throws()
-    })
-
-    it('should ignore trusted_account_ids', function() {
-      expect(config).to.have.property('trusted_account_ids', null)
-      expect(function() {
-        config.onConnect({'trusted_account_ids': [1, 2, 3]})
-      }).to.not.throw()
-      expect(config).to.have.property('trusted_account_ids').deep.equal([1, 2, 3])
-    })
-
-    it('should ignore trusted_account_key', function() {
-      expect(config).to.have.property('trusted_account_key', null)
-      expect(function() {
-        config.onConnect({'trusted_account_key': 123})
-      }).to.not.throw()
-      expect(config).to.have.property('trusted_account_key', 123)
-    })
-
-    it('should ignore transaction_tracer.record_sql', function() {
-      expect(function() {
-        config.onConnect({'transaction_tracer.record_sql': true})
-      }).not.throws()
-    })
-
-    it('should ignore slow_sql.enabled', function() {
-      expect(function() {
-        config.onConnect({'slow_sql.enabled': true})
-      }).not.throws()
-    })
-
-    it('should ignore rum.load_episodes_file', function() {
-      expect(function() {
-        config.onConnect({'rum.load_episodes_file': true})
-      }).not.throws()
     })
   })
 

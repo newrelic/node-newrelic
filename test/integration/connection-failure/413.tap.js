@@ -22,7 +22,7 @@ tap.test('harvesting with a mocked collector that returns 413 on connect', (t) =
   agent.config.no_immediate_harvest = true
 
   // turn off native metrics to avoid unwanted gc metrics
-  agent.config.feature_flag.native_metrics = false
+  agent.config.plugins.native_metrics.enabled = false
 
   const redirect = nock(url).post(ENDPOINTS.PRECONNECT)
     .reply(200, {return_value: 'collector.newrelic.com'})
@@ -80,7 +80,7 @@ tap.test('discarding metrics and errors after a 413', (t) => {
   agent.config.no_immediate_harvest = true
 
   // turn off native metrics to avoid unwanted gc metrics
-  agent.config.feature_flag.native_metrics = false
+  agent.config.plugins.native_metrics.enabled = false
 
   nock(url).post(ENDPOINTS.PRECONNECT)
     .reply(200, {return_value: 'collector.newrelic.com'})

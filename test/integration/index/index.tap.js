@@ -13,7 +13,7 @@ test('loading the application via index.js', {timeout: 15000}, function(t) {
   t.doesNotThrow(function() {
     var api = require('../../../index.js')
     agent = api.agent
-    t.equal(agent._state, 'starting', "agent is booting")
+    t.equal(agent._state, 'connecting', "agent is booting")
   }, "just loading the agent doesn't throw")
 
   var metric = agent.metrics.getMetric(
@@ -22,7 +22,7 @@ test('loading the application via index.js', {timeout: 15000}, function(t) {
   t.notOk(metric, 'should not create metric for unchanged feature flags')
 
   metric = agent.metrics.getMetric(
-    'Supportability/Nodejs/FeatureFlag/synthetics/disabled'
+    'Supportability/Nodejs/FeatureFlag/express5/enabled'
   )
   t.ok(metric, 'should create metric for changed feature flags')
 

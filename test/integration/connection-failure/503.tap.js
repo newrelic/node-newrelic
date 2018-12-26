@@ -75,7 +75,7 @@ tap.test('merging metrics and errors after a 503', (t) => {
 
   // Disable native metrics for these tests so they don't generate unpredictable
   // metrics.
-  agentConfig.feature_flag.native_metrics = false
+  agentConfig.plugins.native_metrics.enabled = false
 
   const agent = new Agent(agentConfig)
   const transaction = new Transaction(agent)

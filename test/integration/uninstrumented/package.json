@@ -17,7 +17,6 @@
     "mongodb": "*",
     "mysql": "*",
     "mysql2": "*",
-    "node-cassandra-cql": "*",
     "pg": "*",
     "pg.js": "*",
     "q": "*",
