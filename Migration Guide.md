@@ -54,6 +54,9 @@ codebase:
   `attributes.exclude` list. Now, instead of having to be an exact match,
   wildcards (`*`) may be appended to each item for broader filtering.
 
+**Updated custom metric naming**: Custom metrics are now prefixed with `Custom/`.
+Existing insights queries may need to be addressed moving forward.
+
 ### Node Version Support
 
 The agent now only supports Node version 6 and above, which brings it up to date
