@@ -3,7 +3,6 @@
 var logger = require('./lib/logger.js')
 var RealAPI = require('./api.js')
 var TransactionHandle = require('./lib/transaction/handle')
-var util = require('util')
 
 
 /* eslint-disable no-eval */
