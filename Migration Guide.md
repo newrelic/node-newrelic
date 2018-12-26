@@ -7,6 +7,29 @@ This information can also be found on [our documentation website][upgrade-doc].
 
 ### Breaking Changes
 
+**Removed deprecated API methods**: The following API methods had been marked as
+deprecated since agent v2, and have now been fully removed from the codebase:
+
+* `newrelic.addCustomParameter()`
+
+  Replace with `newrelic.addCustomAttribute()`.
+
+* `newrelic.addCustomParameters()`
+
+  Replace with `newrelic.addCustomAttributes()`.
+
+* `newrelic.createWebTransaction()`
+
+  Replace with `newrelic.startWebTransaction()` and `newrelic.getTransaction()`.
+
+* `newrelic.createBackgroundTransaction()`
+
+  Replace with `newrelic.startBackgroundTransaction()` and `newrelic.getTransaction()`.
+
+* `newrelic.createTracer()`
+
+  Replace with `newrelic.startSegment()`.
+
 **Removed `ignore_server_configuration` setting**: This setting was only implemented
 by the Node agent, so removing it improves parity with other language agents.
 
@@ -30,6 +53,9 @@ codebase:
   Replaced with `attributes.exclude`. Add any request attribute keys to the
   `attributes.exclude` list. Now, instead of having to be an exact match,
   wildcards (`*`) may be appended to each item for broader filtering.
+
+**Updated custom metric naming**: Custom metrics are now prefixed with `Custom/`.
+Existing insights queries may need to be addressed moving forward.
 
 ### Node Version Support
 
