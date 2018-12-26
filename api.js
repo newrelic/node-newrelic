@@ -1,6 +1,5 @@
 'use strict'
 
-const arity = require('./lib/util/arity')
 const util = require('util')
 const logger = require('./lib/logger').child({component: 'api'})
 const recordWeb = require('./lib/metrics/recorders/http')
