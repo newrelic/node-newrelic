@@ -18,7 +18,7 @@ deprecated since agent v2, and have now been fully removed from the codebase:
 
   Replace with `newrelic.addCustomAttributes()`.
 
-* `newrelic.createWebTransaction()()`
+* `newrelic.createWebTransaction()`
 
   Replace with `newrelic.startWebTransaction()` and `newrelic.getTransaction()`.
 
