@@ -1,18 +1,7 @@
 TAP          = node_modules/.bin/tap
-JSDOC        = node_modules/.bin/jsdoc
-PACKAGE_VERSION = $(shell node -e 'console.log(require("./package").version)')
 INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
-SMOKE        = test/smoke/*.tap.js
-# subcomponents manage their own modules
-PACKAGES = $(shell find . -name package.json -and -not -path '*/node_modules/*' -and -not -path '*/example*')
-# strip the package.json from the results
-NPMDIRS = $(PACKAGES:/package.json=)
-
-.PHONY: all build test-cov test clean notes pending pending-core
-.PHONY: unit integration ssl ca-gen smoke lint
-.PHONY: sub_node_modules $(SUBNPM)
 
 sub_node_modules:
 	@node test/bin/install_sub_deps
@@ -36,31 +25,15 @@ integration: sub_node_modules ca-gen $(CERTIFICATE) docker
 versioned: node_modules ca-gen $(CERTIFICATE) docker
 	time ./bin/run-versioned-tests.sh
 
-smoke: clean
-	npm install --production --loglevel warn --no-package-lock
-	npm install tap --no-package-lock
-	@cd test/smoke && npm install --no-package-lock
-	time $(TAP) $(SMOKE)
+# versions prior to 1.4(ish) can't upgrade themselves directly to latest so hop to 1.4.28 first.
+# Only upgrade to latest if we are on node 0.x
+update_npm_global:
+	if npm -v | grep -q "^1"; then \
+	  npm install -g npm@1.4.28; \
+	fi
 
-docs: node_modules
-	$(JSDOC) -c ./jsdoc-conf.json --private -r .
+	if node -v | grep -q "^v0"; then \
+	  npm install -g npm@3; \
+	fi
 
-public-docs: node_modules
-	$(JSDOC) -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js
-	cp examples/shim/*.png out/
-
-publish-docs:
-	git checkout gh-pages
-	git pull origin gh-pages
-	git merge -
-	make public-docs
-	git rm -r docs
-	mv out docs
-	git add docs
-	git commit -m "docs: update for ${PACKAGE_VERSION}"
-	git push origin gh-pages && git push public gh-pages:gh-pages
-
-update_cross_agent_tests:
-	rm -rf test/lib/cross_agent_tests
-	git clone git@source.datanerd.us:newrelic/cross_agent_tests.git test/lib/cross_agent_tests
-	rm -rf test/lib/cross_agent_tests/.git
+	echo "\nUpgrading npm is expected to have many warnings due to tolerance changes over the years.\n"
