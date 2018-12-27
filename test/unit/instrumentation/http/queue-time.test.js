@@ -17,6 +17,10 @@ describe("built-in http queueTime", function () {
 
   before(function () {
     agent = helper.instrumentMockedAgent()
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     testDate = Date.now()
     PORT = 0
     THRESHOLD = 200

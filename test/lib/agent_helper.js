@@ -156,8 +156,21 @@ const helper = module.exports = {
   },
 
   /**
+   * Sets agent to a state that can allow collection of data.
+   *
+   * @param {Agent} agent The agent that should allow data collection
+   */
+  allowDataCollection: (agent) => {
+    // Agents are intialized in a 'stopped' state which cannot create transactions.
+    // This sets to a fake 'starting' state that will allow collection.
+    agent.setState('starting')
+  },
+
+  /**
    * Create a transactional scope in which instrumentation that will only add
    * trace segments to existing transactions will funciton.
+   *
+   * If the agent hasn't been started, set to a state that can collect transactions.
    *
    * @param {Agent} agent The agent whose tracer should be used to create the
    *                      transaction.
@@ -172,6 +185,13 @@ const helper = module.exports = {
       throw new TypeError('Must include both agent and function!')
     }
     type = type || 'web'
+
+    // if the agent hasn't been started, set to a state that can collect transactions.
+    // do not override states for an agent that is already started or in the
+    // process of starting.
+    if (agent._state === 'stopped') {
+      helper.allowDataCollection(agent)
+    }
 
     return agent.tracer.transactionNestProxy(type, () => {
       const transaction = agent.getTransaction()

@@ -328,6 +328,9 @@ describe('shimmer', function() {
 
       beforeEach(function() {
         agent = helper.loadMockedAgent()
+
+        // Agent cannot create transactions from initial state
+        helper.allowDataCollection(agent)
       })
 
       afterEach(function() {

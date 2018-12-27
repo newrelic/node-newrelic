@@ -65,6 +65,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
     process.env.AWS_EXECUTION_ENV = 'Test_nodejsNegative2.3'
 
     error = new SyntaxError(errorMessage)
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
   })
 
   afterEach(() => {
@@ -97,6 +100,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     it('should create a transaction for handler', () => {
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         const transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
         expect(transaction.isActive()).to.be.true
@@ -110,6 +114,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
     it('should end transactions on a beforeExit event on process', () => {
       const wrappedHandler = awsLambda.patchLambdaHandler(() => {
         const transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
         expect(transaction.isActive()).to.be.true
@@ -172,6 +177,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         const transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal(expectedWebTransactionName)
         expect(transaction.isActive()).to.be.true

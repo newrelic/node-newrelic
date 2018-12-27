@@ -32,6 +32,9 @@ describe('TransactionShim', function() {
     agent.config.trusted_account_ids = [9876, 6789]
     agent.config._fromServer(params, 'encoding_key')
     agent.config._fromServer(params, 'cross_process_id')
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
   })
 
   afterEach(function() {
@@ -69,6 +72,8 @@ describe('TransactionShim', function() {
   })
 
   describe('#bindCreateTransaction', function() {
+    const notRunningStates = ['stopped', 'stopping', 'errored']
+
     it('should not wrap non-functions', function() {
       shim.bindCreateTransaction(wrappable, 'name', {type: shim.WEB})
       expect(shim.isWrapped(wrappable.name)).to.be.false
@@ -153,6 +158,24 @@ describe('TransactionShim', function() {
           expect(bgCalled).to.be.true
           expect(webTx).to.equal(bgTx)
         })
+
+        notRunningStates.forEach((agentState) => {
+          it(`should not create transaction when agent state is ${agentState}`, () => {
+            agent.setState(agentState)
+
+            let callbackCalled = false
+            let transaction = null
+            const wrapped = shim.bindCreateTransaction(() => {
+              callbackCalled = true
+              transaction = shim.tracer.getTransaction()
+            }, {type: shim.BG})
+
+            wrapped()
+
+            expect(callbackCalled).to.be.true
+            expect(transaction).to.be.null
+          })
+        })
       })
 
       describe('when `spec.nest` is `true`', function() {
@@ -209,6 +232,24 @@ describe('TransactionShim', function() {
               expect(tx1).to.not.equal(tx2, 'tx ' + i + ' should not equal tx ' + j)
             }
           }
+        })
+
+        notRunningStates.forEach((agentState) => {
+          it(`should not create transaction when agent state is ${agentState}`, () => {
+            agent.setState(agentState)
+
+            let callbackCalled = false
+            let transaction = null
+            const wrapped = shim.bindCreateTransaction(() => {
+              callbackCalled = true
+              transaction = shim.tracer.getTransaction()
+            }, {type: shim.BG, nest: true})
+
+            wrapped()
+
+            expect(callbackCalled).to.be.true
+            expect(transaction).to.be.null
+          })
         })
       })
     })

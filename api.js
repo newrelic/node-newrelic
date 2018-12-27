@@ -721,6 +721,10 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
   return tracer.transactionNestProxy('web', function startWebSegment() {
     var tx = tracer.getTransaction()
 
+    if (!tx) {
+      return handle.apply(this, arguments)
+    }
+
     if (tx === parent) {
       logger.debug(
         'not creating nested transaction %s using transaction %s',
@@ -826,6 +830,10 @@ function startBackgroundTransaction(name, group, handle) {
 
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
     var tx = tracer.getTransaction()
+
+    if (!tx) {
+      return handle.apply(this, arguments)
+    }
 
     if (tx === parent) {
       logger.debug(
