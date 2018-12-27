@@ -9,7 +9,11 @@ var utils = require('./hapi-utils')
 tap.test('ignoring a Hapi route', function(t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
+
   var api = new API(agent)
   var server = utils.getServer()
   var port = null

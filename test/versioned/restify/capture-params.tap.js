@@ -20,6 +20,10 @@ test("Restify capture params introspection", function(t) {
         include: ['request.parameters.*']
       }
     })
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     done()
   })
 

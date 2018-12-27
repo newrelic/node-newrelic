@@ -93,6 +93,10 @@ function runTests(conf) {
 
     t.beforeEach(function(done) {
       agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
+
       app = require('express')()
       server = require('http').createServer(app)
       done()
@@ -322,7 +326,10 @@ function runTests(conf) {
     t.autoend()
 
     t.test('collects the actual error object that is thrown', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -353,7 +360,10 @@ function runTests(conf) {
     })
 
     t.test('does not occur with custom defined error handlers', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -388,7 +398,10 @@ function runTests(conf) {
     })
 
     t.test('does not occur with custom defined error handlers', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -423,7 +436,10 @@ function runTests(conf) {
     })
 
     t.test('collects the error message when string is thrown', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -453,7 +469,10 @@ function runTests(conf) {
     })
 
     t.test('collects the actual error object when error handler is used', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -492,7 +511,10 @@ function runTests(conf) {
     // We use message and stack properties to identify an Error object, so in this case
     // we want to at least collect the HTTP error based on the status code.
     t.test('should report errors without message or stack sent to res.send', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -529,7 +551,10 @@ function runTests(conf) {
     })
 
     t.test('should report errors without message or stack sent to next', function(t) {
-      var agent = helper.instrumentMockedAgent(conf)
+      const agent = helper.instrumentMockedAgent(conf)
+
+      // Agent cannot create transactions from initial state
+      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)

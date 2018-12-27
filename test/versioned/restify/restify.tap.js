@@ -14,6 +14,10 @@ tap.test('Restify', (t) => {
   let restify = null
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     restify = require('restify')
     done()
   })

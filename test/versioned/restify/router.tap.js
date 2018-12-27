@@ -18,6 +18,10 @@ tap.test('Restify router', function(t) {
         include: ['request.parameters.*']
       }
     })
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     server = require('restify').createServer()
     done()
   })

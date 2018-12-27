@@ -47,6 +47,9 @@ tap.test('amqplib callback instrumentation', function(t) {
     var instrumentation = require('../../../lib/instrumentation/amqplib')
     api.instrumentMessages('amqplib/callback_api', instrumentation.instrumentCallbackAPI)
 
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     amqplib = require('amqplib/callback_api')
     amqpUtils.getChannel(amqplib, function(err, result) {
       if (err) {

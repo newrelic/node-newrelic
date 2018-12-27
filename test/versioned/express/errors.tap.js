@@ -233,6 +233,10 @@ function runTests(flags) {
 
   function setup(t) {
     agent = helper.instrumentMockedAgent(flags)
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     express = require('express')
     app = express()
     t.tearDown(function() {

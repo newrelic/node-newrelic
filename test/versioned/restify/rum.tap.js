@@ -9,10 +9,12 @@ var API     = require('../../../api')
 tap.test("Restify router introspection", function(t) {
   t.plan(3)
 
-  var agent  = helper.instrumentMockedAgent()
-  var server = require('restify').createServer()
-  var api    = new API(agent)
+  const agent  = helper.instrumentMockedAgent()
+  const server = require('restify').createServer()
+  const api    = new API(agent)
 
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   agent.config.application_id = '12345'
   agent.config.browser_monitoring.browser_key = '12345'

@@ -9,10 +9,12 @@ var API     = require('../../../api')
 test("Restify router introspection", function(t) {
   t.plan(7)
 
-  var agent  = helper.instrumentMockedAgent()
-  var api    = new API(agent)
-  var server = require('restify').createServer()
+  const agent  = helper.instrumentMockedAgent()
+  const api    = new API(agent)
+  const server = require('restify').createServer()
 
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   t.tearDown(function() {
     server.close(function() {

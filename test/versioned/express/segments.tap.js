@@ -728,6 +728,10 @@ function setup(t) {
   agent = helper.instrumentMockedAgent({
     feature_flag: {express_segments: true}
   })
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
+
   express = require('express')
   app = express()
   t.tearDown(function cb_tearDown() {

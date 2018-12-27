@@ -17,6 +17,10 @@ test('agent instrumentation of Hapi', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     done()
   })
 

@@ -9,7 +9,11 @@ var API = require('../../../api')
 test("ignoring an Express route", function(t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
+
   var api = new API(agent)
   var express = require('express')
   var app = express()

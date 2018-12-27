@@ -55,6 +55,9 @@ tap.test('amqplib promise instrumentation', function(t) {
 
     api = new API(agent)
 
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     var instrumentation = require('../../../lib/instrumentation/amqplib')
     api.instrumentMessages('amqplib', instrumentation.instrumentPromiseAPI)
 

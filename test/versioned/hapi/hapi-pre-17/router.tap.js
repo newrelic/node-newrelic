@@ -19,6 +19,10 @@ tap.test('Hapi router introspection', function(t) {
         include: ['request.parameters.*']
       }
     })
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     server = utils.getServer()
 
     done()

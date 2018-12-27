@@ -14,6 +14,10 @@ tap.test('Restify transaction naming', (t) => {
 
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
+
+    // Agent cannot create transactions from initial state
+    helper.allowDataCollection(agent)
+
     restify = require('restify')
     restifyPkg = require('restify/package.json')
     server = restify.createServer()

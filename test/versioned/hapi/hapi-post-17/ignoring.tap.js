@@ -9,9 +9,12 @@ var utils = require('./hapi-17-utils')
 test('ignoring a Hapi route', function(t) {
   t.plan(6)
 
-  var agent = helper.instrumentMockedAgent()
-  var api = new API(agent)
-  var server = utils.getServer()
+  const agent = helper.instrumentMockedAgent()
+  const api = new API(agent)
+  const server = utils.getServer()
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   t.tearDown(function() {
     helper.unloadAgent(agent)
