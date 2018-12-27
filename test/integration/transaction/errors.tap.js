@@ -8,9 +8,12 @@ var util = require('util')
 test('errors in web transactions should gather the query params', function(t) {
   t.plan(9)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
@@ -81,17 +84,21 @@ test('errors in web transactions should gather the query params', function(t) {
 test('multiple errors in web transactions should gather the query params', function(t) {
   t.plan(17)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
-  var names = [
-    'first errors in tx test',
-    'second errors in tx test'
-  ]
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
   agent.config.emit('attributes.include')
+
+  var names = [
+    'first errors in tx test',
+    'second errors in tx test'
+  ]
 
   http.createServer(function(req, res) {
     req.resume()
@@ -164,9 +171,12 @@ test('multiple errors in web transactions should gather the query params', funct
 test('errors in web transactions should gather and merge custom params', function(t) {
   t.plan(12)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
 
@@ -246,9 +256,12 @@ test('errors in web transactions should gather and merge custom params', functio
 test('multiple errors in web tx should gather and merge custom params', function(t) {
   t.plan(21)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
 
@@ -351,8 +364,11 @@ test('multiple errors in web tx should gather and merge custom params', function
 })
 
 test('errors in background transactions are collected with correct data', function(t) {
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
 

@@ -1,9 +1,9 @@
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var hashes = require('../../../lib/util/hashes')
+const helper = require('../../lib/agent_helper')
+const hashes = require('../../../lib/util/hashes')
 
-var config = {
+const config = {
   cross_application_tracer: {enabled: true},
   trusted_account_ids: [1337],
   cross_process_id: '2448#8442',
@@ -14,11 +14,15 @@ config.obfuscatedId = hashes.obfuscateNameUsingKey(
   config.encoding_key
 )
 
-var agent = helper.instrumentMockedAgent(config)
-// require http after creating the agent
-var http = require('http')
+const agent = helper.instrumentMockedAgent(config)
 
-var server = http.createServer(function(req, res) {
+// Agent cannot create transactions from initial state
+helper.allowDataCollection(agent)
+
+// require http after creating the agent
+const http = require('http')
+
+const server = http.createServer(function(req, res) {
   res.end()
 })
 

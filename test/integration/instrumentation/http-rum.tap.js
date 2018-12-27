@@ -25,9 +25,14 @@ test('custom naming rules should be applied early for RUM', function(t) {
     },
   }
 
-  var agent = helper.instrumentMockedAgent(conf)
+  const agent = helper.instrumentMockedAgent(conf)
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
+
   agent.config.application_id = 12345
-  var api = new API(agent)
+
+  const api = new API(agent)
 
   // These can't be set at config time as they are server only options
   agent.config.browser_monitoring.browser_key = 1234
@@ -89,9 +94,14 @@ test('custom web transactions should have rules applied for RUM', function(t) {
     },
   }
 
-  var agent = helper.instrumentMockedAgent(conf)
+  const agent = helper.instrumentMockedAgent(conf)
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
+
   agent.config.application_id = 12345
-  var api = new API(agent)
+
+  const api = new API(agent)
 
   // These can't be set at config time as they are server only options
   agent.config.browser_monitoring.browser_key = 1234

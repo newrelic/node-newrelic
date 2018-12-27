@@ -1,13 +1,17 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
 
 test('http errors are noticed correctly', function testError(t) {
-  var agent = helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
+
+  // Agent cannot create transactions from initial state
+  helper.allowDataCollection(agent)
+
   t.plan(3)
-  var http = require('http')
-  var server = http.createServer(handler)
+  const http = require('http')
+  const server = http.createServer(handler)
 
   server.listen(0)
 
