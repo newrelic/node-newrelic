@@ -42,9 +42,6 @@ describe('Errors', function() {
         enabled: true
       }
     })
-
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
   })
 
   afterEach(function() {
@@ -951,9 +948,6 @@ describe('Errors', function() {
         helper.unloadAgent(agent)
         agent = helper.instrumentMockedAgent()
 
-        // Agent cannot create transactions from initial state
-        helper.allowDataCollection(agent)
-
         /**
          * Mocha is extremely zealous about trapping errors, and runs each test
          * in a try / catch block. To get the exception to propagate out to the
@@ -1652,9 +1646,6 @@ describe('Errors', function() {
 
           helper.unloadAgent(agent)
           agent = helper.instrumentMockedAgent()
-
-          // Agent cannot create transactions from initial state
-          helper.allowDataCollection(agent)
 
           var server = http.createServer(function cb_createServer(req, res) {
             expect(agent.getTransaction()).to.exist

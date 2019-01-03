@@ -9,9 +9,6 @@ test("Express router introspection", function(t) {
 
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   var express = require('express')
   var app = express()
   var server  = require('http').createServer(app)

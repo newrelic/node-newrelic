@@ -109,9 +109,6 @@ describe('built-in http module instrumentation', function() {
     beforeEach(function(done) {
       agent = helper.instrumentMockedAgent()
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       http = require('http')
       agent.config.attributes.enabled = true
       hookCalled = false
@@ -434,9 +431,6 @@ describe('built-in http module instrumentation', function() {
         cross_application_tracer: {enabled: true},
         encoding_key: encKey
       })
-
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
     })
 
     it('should add cat headers from request to transaction', function(done) {
@@ -522,9 +516,6 @@ describe('built-in http module instrumentation', function() {
         cross_application_tracer: {enabled: false},
         encoding_key: encKey
       })
-
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
     })
 
     after(function() {
@@ -575,9 +566,6 @@ describe('built-in http module instrumentation', function() {
         trusted_account_ids: [123],
         cross_process_id: '456'
       })
-
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
     })
 
     it('should set header correctly when all data is present', function(done) {

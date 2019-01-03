@@ -22,9 +22,6 @@ tap.test('Hapi capture params support', function(t) {
       }
     })
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     server = utils.getServer()
 
     agent.config.attributes.enabled = true

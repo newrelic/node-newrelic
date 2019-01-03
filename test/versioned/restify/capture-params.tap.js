@@ -21,9 +21,6 @@ test("Restify capture params introspection", function(t) {
       }
     })
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     done()
   })
 

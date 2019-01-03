@@ -12,9 +12,6 @@ test('errors in web transactions should gather the query params', function(t) {
   const api = new API(agent)
   const http = require('http')
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
   agent.config.emit('attributes.include')
@@ -87,9 +84,6 @@ test('multiple errors in web transactions should gather the query params', funct
   const agent = helper.loadTestAgent(t)
   const api = new API(agent)
   const http = require('http')
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
@@ -175,9 +169,6 @@ test('errors in web transactions should gather and merge custom params', functio
   const api = new API(agent)
   const http = require('http')
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   agent.config.attributes.enabled = true
 
   http.createServer(function(req, res) {
@@ -259,9 +250,6 @@ test('multiple errors in web tx should gather and merge custom params', function
   const agent = helper.loadTestAgent(t)
   const api = new API(agent)
   const http = require('http')
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
 
@@ -366,9 +354,6 @@ test('multiple errors in web tx should gather and merge custom params', function
 test('errors in background transactions are collected with correct data', function(t) {
   const agent = helper.loadTestAgent(t)
   const api = new API(agent)
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   agent.config.attributes.enabled = true
 

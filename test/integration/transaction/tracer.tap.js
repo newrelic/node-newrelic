@@ -411,8 +411,6 @@ test('addSegment + full', function addSegmentTest(t) {
 
 test('transactionProxy', function testTransactionProxy(t) {
   const agent = helper.loadTestAgent(t)
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   var tracer = agent.tracer
   t.plan(10)
@@ -444,8 +442,6 @@ test('transactionProxy', function testTransactionProxy(t) {
 
 test('transactionNestProxy', function testTransactionNestProxy(t) {
   const agent = helper.loadTestAgent(t)
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   var tracer = agent.tracer
   t.plan(20)

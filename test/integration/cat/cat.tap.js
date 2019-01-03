@@ -28,9 +28,6 @@ test('cross application tracing full integration', function(t) {
   )
   const agent = helper.instrumentMockedAgent(config)
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   // require http after creating the agent
   const http = require('http')
   const api = new API(agent)

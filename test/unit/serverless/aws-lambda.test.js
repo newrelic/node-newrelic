@@ -66,8 +66,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     error = new SyntaxError(errorMessage)
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
+    agent.setState('started')
   })
 
   afterEach(() => {

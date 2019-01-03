@@ -32,9 +32,6 @@ test('app should be at top of stack when mounted', function(t) {
 test('app should be at top of stack when mounted', function(t) {
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   var express = require('express')
   var main = express()
   var app = express()
@@ -125,9 +122,6 @@ test('should not pass wrong args when transaction is not present', function(t) {
   t.plan(5)
 
   const agent = helper.instrumentMockedAgent()
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   var express = require('express')
   var main = express()

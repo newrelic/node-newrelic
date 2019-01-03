@@ -27,9 +27,6 @@ test('custom naming rules should be applied early for RUM', function(t) {
 
   const agent = helper.instrumentMockedAgent(conf)
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   agent.config.application_id = 12345
 
   const api = new API(agent)
@@ -95,9 +92,6 @@ test('custom web transactions should have rules applied for RUM', function(t) {
   }
 
   const agent = helper.instrumentMockedAgent(conf)
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   agent.config.application_id = 12345
 

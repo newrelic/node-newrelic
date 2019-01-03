@@ -94,9 +94,6 @@ function runTests(conf) {
     t.beforeEach(function(done) {
       agent = helper.instrumentMockedAgent(conf)
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       app = require('express')()
       server = require('http').createServer(app)
       done()
@@ -328,9 +325,6 @@ function runTests(conf) {
     t.test('collects the actual error object that is thrown', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       var app    = require('express')()
       var server = require('http').createServer(app)
 
@@ -361,9 +355,6 @@ function runTests(conf) {
 
     t.test('does not occur with custom defined error handlers', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
-
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -400,9 +391,6 @@ function runTests(conf) {
     t.test('does not occur with custom defined error handlers', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       var app    = require('express')()
       var server = require('http').createServer(app)
 
@@ -438,9 +426,6 @@ function runTests(conf) {
     t.test('collects the error message when string is thrown', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       var app    = require('express')()
       var server = require('http').createServer(app)
 
@@ -470,9 +455,6 @@ function runTests(conf) {
 
     t.test('collects the actual error object when error handler is used', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
-
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -513,9 +495,6 @@ function runTests(conf) {
     t.test('should report errors without message or stack sent to res.send', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       var app    = require('express')()
       var server = require('http').createServer(app)
 
@@ -552,9 +531,6 @@ function runTests(conf) {
 
     t.test('should report errors without message or stack sent to next', function(t) {
       const agent = helper.instrumentMockedAgent(conf)
-
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
 
       var app    = require('express')()
       var server = require('http').createServer(app)

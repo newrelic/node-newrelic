@@ -21,9 +21,6 @@ tap.test('should not crash when Restify handles a connection', function(t) {
   const restify = require('restify')
   const server  = restify.createServer()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
     server.close()
@@ -64,10 +61,7 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
 
     const agent   = helper.instrumentMockedAgent()
     const restify = require('restify')
-    const server  = restify.createServer({key : key, certificate : certificate})
-
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
+    const server  = restify.createServer({key, certificate})
 
     t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
@@ -115,9 +109,6 @@ tap.test('Restify should generate middleware metrics', function(t) {
   const agent = helper.instrumentMockedAgent()
   const restify = require('restify')
   const server = restify.createServer()
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   t.tearDown(function() {
     helper.unloadAgent(agent)

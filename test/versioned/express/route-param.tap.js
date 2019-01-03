@@ -10,9 +10,6 @@ test('Express route param', function(t) {
   const express = require('express')
   const server = createServer(express)
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   t.tearDown(function() {
     server.close(function() {
       helper.unloadAgent(agent)

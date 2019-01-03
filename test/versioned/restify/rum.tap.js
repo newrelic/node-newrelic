@@ -13,9 +13,6 @@ tap.test("Restify router introspection", function(t) {
   const server = require('restify').createServer()
   const api    = new API(agent)
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   agent.config.application_id = '12345'
   agent.config.browser_monitoring.browser_key = '12345'
   agent.config.browser_monitoring.js_agent_loader = 'function(){}'

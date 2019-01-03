@@ -14,9 +14,6 @@ describe('Tracer', function() {
   beforeEach(function() {
     agent = helper.loadMockedAgent()
     tracer = agent.tracer
-
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
   })
 
   afterEach(function() {

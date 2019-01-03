@@ -11,9 +11,6 @@ test("ignoring an Express route", function(t) {
 
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   var api = new API(agent)
   var express = require('express')
   var app = express()

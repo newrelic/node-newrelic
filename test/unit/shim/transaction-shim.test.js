@@ -32,9 +32,6 @@ describe('TransactionShim', function() {
     agent.config.trusted_account_ids = [9876, 6789]
     agent.config._fromServer(params, 'encoding_key')
     agent.config._fromServer(params, 'cross_process_id')
-
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
   })
 
   afterEach(function() {

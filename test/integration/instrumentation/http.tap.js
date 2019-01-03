@@ -14,9 +14,6 @@ test(
   function(t) {
     const agent = helper.instrumentMockedAgent()
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     agent.config.attributes.enabled = true
 
     const TEST_INTERNAL_PORT = 8123
@@ -191,9 +188,6 @@ test('built-in http instrumentation should not swallow errors', function(t) {
   t.plan(8)
 
   const agent = helper.instrumentMockedAgent()
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   let server = null
 

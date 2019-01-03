@@ -13,9 +13,6 @@ test("Restify router introspection", function(t) {
   const api    = new API(agent)
   const server = require('restify').createServer()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   t.tearDown(function() {
     server.close(function() {
       helper.unloadAgent(agent)

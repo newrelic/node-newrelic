@@ -18,9 +18,6 @@ tap.test('Hapi vhost support', function(t) {
       }
     })
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     var server = utils.getServer()
     var port
 

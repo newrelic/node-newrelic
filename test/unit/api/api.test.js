@@ -20,9 +20,6 @@ describe('the New Relic agent API', function() {
   beforeEach(function() {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
   })
 
   afterEach(function() {

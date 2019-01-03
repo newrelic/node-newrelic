@@ -28,8 +28,6 @@ tap.test('test attributes.enabled for express', function(t) {
       }
     })
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
 
     done()
   })

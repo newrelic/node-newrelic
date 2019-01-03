@@ -16,9 +16,6 @@ tap.test('Hapi vhost support', function(t) {
     const agent = helper.instrumentMockedAgent()
     const server = utils.getServer()
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     // disabled by default
     agent.config.attributes.enabled = true
 

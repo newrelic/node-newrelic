@@ -21,9 +21,6 @@ tap.test('background transactions should not blow up with DT', (t) => {
 
   const agent = helper.instrumentMockedAgent(config)
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   agent.config.account_id = '1337'
   agent.config.application_id = '7331'
   agent.config.trusted_account_key = '1337'

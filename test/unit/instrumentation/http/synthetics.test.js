@@ -121,9 +121,6 @@ describe('synthetics inbound header', function() {
       encoding_key: ENCODING_KEY
     })
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     http = require('http')
   })
 

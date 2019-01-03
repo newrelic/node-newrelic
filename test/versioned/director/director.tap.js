@@ -7,9 +7,6 @@ var helper = require('../../lib/agent_helper')
 tap.test("basic director test", function(t) {
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   const director = require('director')
 
   function fn0() {
@@ -100,9 +97,6 @@ tap.test("basic director test", function(t) {
 tap.test("backward recurse director test", function(t) {
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   const director = require('director')
 
   function fn0() {
@@ -170,9 +164,6 @@ tap.test("backward recurse director test", function(t) {
 tap.test("two routers with same URI director test", function(t) {
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   const director = require('director')
 
   var router = new director.http.Router()
@@ -229,9 +220,6 @@ tap.test("two routers with same URI director test", function(t) {
 
 tap.test("director async routes test", function(t) {
   const agent = helper.instrumentMockedAgent()
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   const director = require('director')
 
@@ -307,9 +295,6 @@ tap.test("director async routes test", function(t) {
 tap.test("express w/ director subrouter test", function(t) {
   t.plan(4)
   const agent = helper.instrumentMockedAgent()
-
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
 
   const director = require('director')
 

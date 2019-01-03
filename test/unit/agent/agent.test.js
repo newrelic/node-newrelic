@@ -97,7 +97,8 @@ describe('the New Relic agent', function() {
     var agent
 
     beforeEach(function() {
-      agent = helper.loadMockedAgent()
+      // Load agent with default 'stopped' state
+      agent = helper.loadMockedAgent(null, false)
     })
 
     afterEach(function() {

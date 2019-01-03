@@ -19,9 +19,6 @@ tap.test('Restify router', function(t) {
       }
     })
 
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
-
     server = require('restify').createServer()
     done()
   })

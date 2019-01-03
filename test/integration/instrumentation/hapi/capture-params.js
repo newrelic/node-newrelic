@@ -26,9 +26,6 @@ function runTests(createServer) {
         }
       })
 
-      // Agent cannot create transactions from initial state
-      helper.allowDataCollection(agent)
-
       server = createServer()
       done()
     })

@@ -13,9 +13,6 @@ test('ignoring a Hapi route', function(t) {
   const api = new API(agent)
   const server = utils.getServer()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   t.tearDown(function() {
     helper.unloadAgent(agent)
     return server.stop()

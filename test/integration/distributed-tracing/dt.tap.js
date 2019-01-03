@@ -31,9 +31,6 @@ tap.test('distributed tracing full integration', (t) => {
   }
   const agent = helper.instrumentMockedAgent(config)
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   t.tearDown(() => {
     helper.unloadAgent(agent)
   })
@@ -276,9 +273,6 @@ tap.test('distributed tracing', (t) => {
       primary_application_id: APP_ID,
       trusted_account_key: ACCOUNT_ID
     })
-
-    // Agent cannot create transactions from initial state
-    helper.allowDataCollection(agent)
 
     agent.config.account_id = ACCOUNT_ID // Can't be set through config object.
 

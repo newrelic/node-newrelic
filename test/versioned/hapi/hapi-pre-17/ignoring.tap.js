@@ -11,9 +11,6 @@ tap.test('ignoring a Hapi route', function(t) {
 
   const agent = helper.instrumentMockedAgent()
 
-  // Agent cannot create transactions from initial state
-  helper.allowDataCollection(agent)
-
   var api = new API(agent)
   var server = utils.getServer()
   var port = null
