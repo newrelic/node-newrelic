@@ -12,7 +12,7 @@
   "author": "New Relic Node.js Agent Team <nodejs@newrelic.com>",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@newrelic/test-utilities": "^1.2.0",
+    "@newrelic/test-utilities": "^2.0.1",
     "coveralls": "^3.0.2",
     "eslint": "^5.1.0",
     "newrelic": "^4.3.0",
