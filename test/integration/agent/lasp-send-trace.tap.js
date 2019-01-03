@@ -4,7 +4,6 @@ var tap = require('tap')
 var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var API = require('../../../api')
-const helper = require('../../lib/agent_helper')
 
 tap.test('LASP-enabled agent', function(t) {
   var agent = null
