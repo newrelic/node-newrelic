@@ -1,4 +1,8 @@
 
+### 1.0.8 (2019-01-07):
+
+* Bumped `@newrelic/test-utilities` dependency to v3.0.0.
+
 ### 1.0.7 (2018-11-5):
 
 * Adds support for naming transactions without setting the `context.body` property.
