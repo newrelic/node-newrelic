@@ -1,4 +1,8 @@
 
+### 1.0.2 (2019-01-07):
+
+* Updated `@newrelic/test-utilities` dependency to v3.0.0.
+
 ### 1.0.1 (2018-11-20):
 * Updated versioned test ranges to account for superagent v4 dropping support
   for node versions <6
