@@ -20,6 +20,7 @@ test("Restify capture params introspection", function(t) {
         include: ['request.parameters.*']
       }
     })
+
     done()
   })
 

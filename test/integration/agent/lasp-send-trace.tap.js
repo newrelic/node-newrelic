@@ -28,8 +28,13 @@ tap.test('LASP-enabled agent', function(t) {
         level: 'trace'
       }
     })
+
     agent = new Agent(config)
     api = new API(agent)
+
+    // Agent cannot create transactions from initial 'stopped' state
+    agent.setState('started')
+
     done()
   })
 

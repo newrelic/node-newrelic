@@ -17,6 +17,7 @@ tap.test('Hapi vhost support', function(t) {
         include: ['request.parameters.*']
       }
     })
+
     var server = utils.getServer()
     var port
 

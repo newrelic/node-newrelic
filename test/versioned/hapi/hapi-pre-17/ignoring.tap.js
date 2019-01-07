@@ -9,7 +9,8 @@ var utils = require('./hapi-utils')
 tap.test('ignoring a Hapi route', function(t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
   var api = new API(agent)
   var server = utils.getServer()
   var port = null

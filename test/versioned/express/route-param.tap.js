@@ -6,9 +6,9 @@ var request = require('request').defaults({json: true})
 
 
 test('Express route param', function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var express = require('express')
-  var server = createServer(express)
+  const agent = helper.instrumentMockedAgent()
+  const express = require('express')
+  const server = createServer(express)
 
   t.tearDown(function() {
     server.close(function() {

@@ -14,6 +14,7 @@ tap.test('Hapi v17 error handling', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     server = utils.getServer()
     done()
   })

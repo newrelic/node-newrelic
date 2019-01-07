@@ -19,9 +19,10 @@ test('background transactions should not blow up with CAT', function(t) {
   }
   config.obfuscatedId =
     hashes.obfuscateNameUsingKey(config.cross_process_id, config.encoding_key)
-  var agent = helper.instrumentMockedAgent(config)
-  var http = require('http')
-  var api = new API(agent)
+
+  const agent = helper.instrumentMockedAgent(config)
+  const http = require('http')
+  const api = new API(agent)
 
   var server = http.createServer(function(req, res) {
     t.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')

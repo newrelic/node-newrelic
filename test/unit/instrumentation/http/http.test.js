@@ -108,6 +108,7 @@ describe('built-in http module instrumentation', function() {
 
     beforeEach(function(done) {
       agent = helper.instrumentMockedAgent()
+
       http = require('http')
       agent.config.attributes.enabled = true
       hookCalled = false

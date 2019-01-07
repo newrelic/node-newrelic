@@ -410,7 +410,8 @@ test('addSegment + full', function addSegmentTest(t) {
 })
 
 test('transactionProxy', function testTransactionProxy(t) {
-  var agent = helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
+
   var tracer = agent.tracer
   t.plan(10)
 
@@ -440,7 +441,8 @@ test('transactionProxy', function testTransactionProxy(t) {
 })
 
 test('transactionNestProxy', function testTransactionNestProxy(t) {
-  var agent = helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
+
   var tracer = agent.tracer
   t.plan(20)
 

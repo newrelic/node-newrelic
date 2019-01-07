@@ -13,8 +13,8 @@ tap.test('Hapi vhost support', function(t) {
   var port = null
 
   t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent()
-    var server = utils.getServer()
+    const agent = helper.instrumentMockedAgent()
+    const server = utils.getServer()
 
     // disabled by default
     agent.config.attributes.enabled = true

@@ -27,6 +27,7 @@ tap.test('Hapi Plugins', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     server = utils.getServer()
     done()
   })

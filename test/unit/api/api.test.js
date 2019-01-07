@@ -384,6 +384,14 @@ describe('the New Relic agent API', function() {
       transaction = null
     })
 
+    it('should not throw when transaction cannot be created', () => {
+      agent.setState('stopped')
+      api.startWebTransaction('test', () => {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.not.exist
+      })
+    })
+
     it('should add nested transaction as segment to parent transaction', function() {
       api.startWebTransaction('test', function() {
         nested()
@@ -463,6 +471,14 @@ describe('the New Relic agent API', function() {
       transaction = null
     })
 
+    it('should not throw when transaction cannot be created', () => {
+      agent.setState('stopped')
+      api.startBackgroundTransaction('test', () => {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.not.exist
+      })
+    })
+
     it('should add nested transaction as segment to parent transaction', function() {
       api.startBackgroundTransaction('test', function() {
         nested()
@@ -509,6 +525,7 @@ describe('the New Relic agent API', function() {
     it('should start a background txn with the given name as the name and group', () => {
       api.startBackgroundTransaction('test', 'group', function() {
         transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/group/test')
         expect(transaction.isActive()).to.be.true

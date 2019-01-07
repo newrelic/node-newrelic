@@ -21,6 +21,7 @@ tap.test('Hapi capture params support', function(t) {
         include: ['request.parameters.*']
       }
     })
+
     server = utils.getServer()
 
     agent.config.attributes.enabled = true

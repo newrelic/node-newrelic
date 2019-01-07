@@ -18,6 +18,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     done()
   })
 

@@ -12,16 +12,17 @@ var HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
 test(
   "built-in http instrumentation should handle internal & external requests",
   function(t) {
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
+
     agent.config.attributes.enabled = true
 
-    var TEST_INTERNAL_PORT = 8123
-    var TEST_INTERNAL_PATH = '/path'
-    var TEST_EXTERNAL_PORT = 8321
-    var TEST_EXTERNAL_PATH = '/status'
-    var TEST_HOST          = 'localhost'
-    var PAYLOAD            = JSON.stringify({msg : 'ok'})
-    var PAGE               = '<html>' +
+    const TEST_INTERNAL_PORT = 8123
+    const TEST_INTERNAL_PATH = '/path'
+    const TEST_EXTERNAL_PORT = 8321
+    const TEST_EXTERNAL_PATH = '/status'
+    const TEST_HOST          = 'localhost'
+    const PAYLOAD            = JSON.stringify({msg : 'ok'})
+    const PAGE               = '<html>' +
                             '<head><title>test response</title></head>' +
                             '<body><p>I heard you like HTML.</p></body>' +
                             '</html>'
@@ -186,8 +187,9 @@ test(
 test('built-in http instrumentation should not swallow errors', function(t) {
   t.plan(8)
 
-  var agent = helper.instrumentMockedAgent()
-  var server = null
+  const agent = helper.instrumentMockedAgent()
+
+  let server = null
 
   t.tearDown(function cb_tearDown() {
     server.close()

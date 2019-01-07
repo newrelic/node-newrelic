@@ -34,6 +34,7 @@ tap.test('Hapi v17 ext', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     server = utils.getServer()
     done()
   })

@@ -120,6 +120,7 @@ describe('synthetics inbound header', function() {
       trusted_account_ids: [23, 567],
       encoding_key: ENCODING_KEY
     })
+
     http = require('http')
   })
 

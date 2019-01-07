@@ -5,8 +5,9 @@ var http = require('http')
 var helper = require('../../lib/agent_helper')
 
 tap.test("basic director test", function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var director = require('director')
+  const agent = helper.instrumentMockedAgent()
+
+  const director = require('director')
 
   function fn0() {
     t.ok(agent.getTransaction(), "transaction is available")
@@ -94,8 +95,9 @@ tap.test("basic director test", function(t) {
 })
 
 tap.test("backward recurse director test", function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var director = require('director')
+  const agent = helper.instrumentMockedAgent()
+
+  const director = require('director')
 
   function fn0() {
     this.res.writeHead(200)
@@ -160,8 +162,9 @@ tap.test("backward recurse director test", function(t) {
 })
 
 tap.test("two routers with same URI director test", function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var director = require('director')
+  const agent = helper.instrumentMockedAgent()
+
+  const director = require('director')
 
   var router = new director.http.Router()
 
@@ -216,8 +219,9 @@ tap.test("two routers with same URI director test", function(t) {
 })
 
 tap.test("director async routes test", function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var director = require('director')
+  const agent = helper.instrumentMockedAgent()
+
+  const director = require('director')
 
   var router = new director.http.Router().configure({ async: true })
 
@@ -290,8 +294,9 @@ tap.test("director async routes test", function(t) {
 
 tap.test("express w/ director subrouter test", function(t) {
   t.plan(4)
-  var agent = helper.instrumentMockedAgent()
-  var director = require('director')
+  const agent = helper.instrumentMockedAgent()
+
+  const director = require('director')
 
   var express = require('express')
   var expressRouter = express.Router() // eslint-disable-line new-cap
