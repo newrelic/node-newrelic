@@ -35,7 +35,7 @@ const helper = module.exports = {
    *                         created in this function.
    * @returns {Agent} Agent with a stubbed configuration.
    */
-  loadMockedAgent: (conf) => {
+  loadMockedAgent: (conf, setState = true) => {
     if (_agent) {
       throw _agent.__created
     }
@@ -59,6 +59,11 @@ const helper = module.exports = {
     _agent.recordSupportability = () => {} // Stub supportabilities.
 
     global.__NR_agent = _agent
+
+    if (setState) {
+      _agent.setState('started')
+    }
+
     return _agent
   },
 
@@ -105,16 +110,24 @@ const helper = module.exports = {
    * Builds on loadMockedAgent by patching the module loader and setting up
    * the instrumentation framework.
    *
-   * @param {object} options Any configuration to override in the agent.
-   *                         See agent.js for details, but so far this includes
-   *                         passing in a config object and the connection stub
-   *                         created in this function.
+   * @param {object} options
+   *  Any configuration to override in the agent. See agent.js for details,
+   *  but so far this includes passing in a config object and the connection
+   *  stub created in this function.
+   *
+   * @param {boolean} [setState=true]
+   *  Initializes agent's state to 'started', enabling data collection.
+   *
    * @returns {Agent} Agent with a stubbed configuration.
    */
-  instrumentMockedAgent: (conf) => {
+  instrumentMockedAgent: (conf, setState = true) => {
     shimmer.debug = true
 
     const agent = helper.loadMockedAgent(conf)
+
+    if (setState) {
+      agent.setState('started')
+    }
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
@@ -146,8 +159,8 @@ const helper = module.exports = {
     }
   },
 
-  loadTestAgent: (t, conf) => {
-    let agent = helper.instrumentMockedAgent(conf)
+  loadTestAgent: (t, conf, setState = true) => {
+    let agent = helper.instrumentMockedAgent(conf, setState)
     t.tearDown(() => {
       helper.unloadAgent(agent)
     })
@@ -158,6 +171,8 @@ const helper = module.exports = {
   /**
    * Create a transactional scope in which instrumentation that will only add
    * trace segments to existing transactions will funciton.
+   *
+   * If the agent hasn't been started, set to a state that can collect transactions.
    *
    * @param {Agent} agent The agent whose tracer should be used to create the
    *                      transaction.
@@ -172,6 +187,13 @@ const helper = module.exports = {
       throw new TypeError('Must include both agent and function!')
     }
     type = type || 'web'
+
+    // if the agent hasn't been started, set to a state that can collect transactions.
+    // do not override states for an agent that is already started or in the
+    // process of starting.
+    if (agent._state === 'stopped') {
+      agent.setState('started')
+    }
 
     return agent.tracer.transactionNestProxy(type, () => {
       const transaction = agent.getTransaction()

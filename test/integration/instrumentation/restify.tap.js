@@ -17,10 +17,9 @@ var METRIC = 'WebTransaction/Restify/GET//hello/:name'
 tap.test('should not crash when Restify handles a connection', function(t) {
   t.plan(7)
 
-  var agent   = helper.instrumentMockedAgent()
-  var restify = require('restify')
-  var server  = restify.createServer()
-
+  const agent   = helper.instrumentMockedAgent()
+  const restify = require('restify')
+  const server  = restify.createServer()
 
   t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
@@ -60,10 +59,9 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
       t.end()
     }
 
-    var agent   = helper.instrumentMockedAgent()
-    var restify = require('restify')
-    var server  = restify.createServer({key : key, certificate : certificate})
-
+    const agent   = helper.instrumentMockedAgent()
+    const restify = require('restify')
+    const server  = restify.createServer({key, certificate})
 
     t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
@@ -108,9 +106,9 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
 tap.test('Restify should generate middleware metrics', function(t) {
   t.plan(5)
 
-  var agent = helper.instrumentMockedAgent()
-  var restify = require('restify')
-  var server = restify.createServer()
+  const agent = helper.instrumentMockedAgent()
+  const restify = require('restify')
+  const server = restify.createServer()
 
   t.tearDown(function() {
     helper.unloadAgent(agent)

@@ -19,6 +19,7 @@ tap.test('Hapi router introspection', function(t) {
         include: ['request.parameters.*']
       }
     })
+
     server = utils.getServer()
 
     done()

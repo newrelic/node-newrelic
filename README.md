@@ -518,22 +518,22 @@ configuration. The pattern is mandatory.
 
 ### Other API calls
 
-#### newrelic.addCustomParameter(name, value)
+#### newrelic.addCustomAttribute(name, value)
 
-Set a custom parameter value to be attached to a transaction trace and/or error
+Set a custom attribute value to be attached to a transaction trace and/or error
 in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters.
+so it has a place to set the custom attributes.
 
-#### newrelic.addCustomParameters(params)
+#### newrelic.addCustomAttributes(params)
 
-Set multiple custom parameter values to be attached to a transaction trace and/or
+Set multiple custom attribute values to be attached to a transaction trace and/or
 error in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters.
+so it has a place to set the custom attribute.
 
-Example of setting multiple custom parameters at once:
+Example of setting multiple custom attribute at once:
 
 ```js
-newrelic.addCustomParameters({test: 'value', test2: 'value2'});
+newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
 ```
 
 #### newrelic.setIgnoreTransaction(ignored)
@@ -647,9 +647,10 @@ of a transaction it will just pass through.
 
 #### newrelic.recordMetric(name, value)
 
-`name` is the metric name to record, it must be a string that begins with
-`Custom/` typically followed by segments for `category` and `label`.
-(eg. `Custom/my_category/my_label`).
+`name` is the metric name to record. it must be a string and may be prepended
+with segments for `category` and `label`. (eg. `/my_category/my_label/my_name`).
+Custom metrics are automatically prepended with `Custom`, resulting in metrics of
+the form: `Custom/${name}`.
 
 `value` is either a numerical value to associate with the metric sample,
 or an object representing multiple samples for the metric. If `value` is
@@ -700,7 +701,7 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 
 ### Known issues:
 
-* New Relic for Node is only supported on Node.js 4 and newer. Some features
+* New Relic for Node is only supported on Node.js 6 and newer. Some features
   may behave differently between the supported versions of Node. The agent is
   optimized for newer versions of Node.
 * There are irregularities around transaction trace capture and display. If you

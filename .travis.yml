@@ -1,7 +1,5 @@
 language: node_js
 node_js:
-  - "4"
-  - "5"
   - "6"
   - "7"
   - "8"
@@ -12,21 +10,26 @@ env:
   - SUITE=unit
   - SUITE=integration
   - SUITE=lint
-  - SUITE=prerelease
   - SUITE=security
   - SUITE=versioned
 matrix:
   exclude:
-    - node_js: "4"
+    - node_js: "6"
       env: SUITE=security
-    - node_js: "4"
+    - node_js: "6"
       env: SUITE=lint
-    - node_js: "5"
+    - node_js: "7"
       env: SUITE=security
-    - node_js: "5"
+    - node_js: "7"
       env: SUITE=lint
-  allow_failures:
-    - env: SUITE=prerelease
+    - node_js: "8"
+      env: SUITE=security
+    - node_js: "8"
+      env: SUITE=lint
+    - node_js: "9"
+      env: SUITE=security
+    - node_js: "9"
+      env: SUITE=lint
 addons:
   postgresql: "9.3"
 services:
@@ -39,6 +42,5 @@ services:
 before_install:
   - if [ "$(npm --version)" = "3.10.3" ]; then npm install -g npm@3.4.1; fi
   - ./bin/travis-setup.sh
-  - make update_npm_global
 install: if [ "$SUITE" != "smoke" ]; then make node_modules; fi
 script: make $SUITE

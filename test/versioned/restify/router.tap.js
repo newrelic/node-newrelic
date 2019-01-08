@@ -18,6 +18,7 @@ tap.test('Restify router', function(t) {
         include: ['request.parameters.*']
       }
     })
+
     server = require('restify').createServer()
     done()
   })

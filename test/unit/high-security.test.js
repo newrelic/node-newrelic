@@ -42,10 +42,6 @@ describe('high security mode', function() {
         check('ssl', true, false)
       })
 
-      it('should reject enabling capture_params', function() {
-        check('capture_params', false, true)
-      })
-
       it('should reject enabling allow_all_headers', function() {
         check('allow_all_headers', false, true)
       })
@@ -114,13 +110,6 @@ describe('high security mode', function() {
         config.onConnect({ssl: false})
         config.ssl.should.equal(true)
       })
-
-      it('should reject enabling capture_params', function() {
-        // disabled by default, but lets make sure.
-        config.capture_params = false
-        config.onConnect({capture_params: true})
-        config.capture_params.should.equal(false)
-      })
     })
   })
 
@@ -154,10 +143,6 @@ describe('high security mode', function() {
     describe('when high_security === true', function() {
       it('should detect that ssl is off', function() {
         check('ssl', false, true)
-      })
-
-      it('should detect that capture_params is on', function() {
-        check('capture_params', true, false)
       })
 
       it('should detect that allow_all_headers is on', function() {
@@ -218,10 +203,10 @@ describe('high security mode', function() {
       it('should detect no problems', function() {
         var config = new Config({high_security: true})
         config.ssl = true
-        config.capture_params = false
+        config.attributes.include = ['some val']
         config._applyHighSecurity()
         config.ssl.should.equal(true)
-        config.capture_params.should.equal(false)
+        config.attributes.include.should.deep.equal([])
       })
     })
 

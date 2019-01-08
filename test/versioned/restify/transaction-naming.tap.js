@@ -14,6 +14,7 @@ tap.test('Restify transaction naming', (t) => {
 
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
+
     restify = require('restify')
     restifyPkg = require('restify/package.json')
     server = restify.createServer()

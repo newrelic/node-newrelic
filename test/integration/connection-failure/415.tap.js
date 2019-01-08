@@ -33,7 +33,7 @@ tap.test('harvesting with a mocked collector that returns 415 on connect', funct
   agent.config.no_immediate_harvest = true
 
   // turn off native metrics to avoid unwanted gc metrics
-  agent.config.feature_flag.native_metrics = false
+  agent.config.plugins.native_metrics.enabled = false
 
   var redirect = nock(url)
     .post(path('preconnect'))
@@ -114,7 +114,7 @@ tap.test('discarding metrics and errors after a 415', function(t) {
   agent.config.no_immediate_harvest = true
 
   // turn off native metrics to avoid unwanted gc metrics
-  agent.config.feature_flag.native_metrics = false
+  agent.config.plugins.native_metrics.enabled = false
 
   nock(url)
     .post(path('preconnect'))

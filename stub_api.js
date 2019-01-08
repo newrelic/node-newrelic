@@ -3,7 +3,6 @@
 var logger = require('./lib/logger.js')
 var RealAPI = require('./api.js')
 var TransactionHandle = require('./lib/transaction/handle')
-var util = require('util')
 
 
 /* eslint-disable no-eval */
@@ -30,28 +29,6 @@ for (var i = 0; i < length; i++) {
   Stub.prototype[functionName] = stubFunction(functionName)
 }
 
-Stub.prototype.createTracer = util.deprecate(
-  createTracer, [
-    'API#createTracer is being deprecated!',
-    'Please use API#startSegment for segment creation.'
-  ].join(' ')
-)
-Stub.prototype.createWebTransaction = util.deprecate(
-  createWebTransaction, [
-    'API#createWebTransaction is being deprecated!',
-    'Please use API#startWebTransaction for transaction creation',
-    'and API#getTransaction for transaction management including',
-    'ending transactions.'
-  ].join(' ')
-)
-Stub.prototype.createBackgroundTransaction = util.deprecate(
-  createBackgroundTransaction, [
-    'API#createBackgroundTransaction is being deprecated!',
-    'Please use API#startBackgroundTransaction for transaction creation',
-    'and API#getTransaction for transaction management including',
-    'ending transactions.'
-  ].join(' ')
-)
 Stub.prototype.startSegment = startSegment
 Stub.prototype.startWebTransaction = startWebTransaction
 Stub.prototype.startBackgroundTransaction = startBackgroundTransaction
@@ -69,23 +46,6 @@ function getBrowserTimingHeader() {
 
 function getTransaction() {
   return new TransactionHandle.Stub()
-}
-
-// Normally the following 3 calls return a wrapped callback, instead we
-// should just return the callback in its unwrapped state.
-function createTracer(name, callback) {
-  logger.debug('Not calling createTracer because New Relic is disabled.')
-  return callback
-}
-
-function createWebTransaction(url, callback) {
-  logger.debug('Not calling createWebTransaction because New Relic is disabled.')
-  return callback
-}
-
-function createBackgroundTransaction(name, group, callback) {
-  logger.debug('Not calling createBackgroundTransaction because New Relic is disabled.')
-  return (callback === undefined) ? group : callback
 }
 
 function setLambdaHandler(callback) {

@@ -101,8 +101,8 @@
   ],
   "homepage": "http://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=4.0.0 <11.0.0",
-    "npm": ">=2.0.0"
+    "node": ">=6.0.0 <11.0.0",
+    "npm": ">=3.0.0"
   },
   "directories": {
     "lib": "lib"
@@ -132,7 +132,7 @@
   },
   "devDependencies": {
     "@newrelic/proxy": "^1.0.0",
-    "@newrelic/test-utilities": "^2.0.1",
+    "@newrelic/test-utilities": "^3.0.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",

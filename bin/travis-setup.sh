@@ -28,12 +28,7 @@ if [ "$SUITE" = "versioned" ]; then
     echo " --- not upgrading GCC ($(gcc --version)) --- "
   fi
 
-  # npm 2 has an issue installing correctly for the superagent versioned tests.
-  # TODO: Remove this check when deprecating Node <5.
-  if [ "$(get_version npm)" == "2" ]; then
-    echo " -- upgrading npm to 3 --- "
-    npm install -g npm@3
-  elif [ "$(get_version npm)" == "5" ]; then
+  if [ "$(get_version npm)" == "5" ]; then
     echo " --- upgrading npm to 6 --- "
     npm install -g npm@6
   else

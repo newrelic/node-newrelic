@@ -26,10 +26,11 @@ test('cross application tracing full integration', function(t) {
     config.cross_process_id,
     config.encoding_key
   )
-  var agent = helper.instrumentMockedAgent(config)
+  const agent = helper.instrumentMockedAgent(config)
+
   // require http after creating the agent
-  var http = require('http')
-  var api = new API(agent)
+  const http = require('http')
+  const api = new API(agent)
 
   var serversToStart = 3
   function started() {

@@ -17,6 +17,7 @@ tap.test('Hapi segments', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     server = utils.getServer()
     done()
   })

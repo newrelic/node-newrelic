@@ -39,8 +39,7 @@ describe('synthetics outbound header', function() {
     agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       trusted_account_ids: [23, 567],
-      encoding_key: ENCODING_KEY,
-      feature_flag: {synthetics: true}
+      encoding_key: ENCODING_KEY
     })
     http = require('http')
     server = http.createServer(function(req, res) {
@@ -119,9 +118,9 @@ describe('synthetics inbound header', function() {
     agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       trusted_account_ids: [23, 567],
-      encoding_key: ENCODING_KEY,
-      feature_flag: {synthetics: true}
+      encoding_key: ENCODING_KEY
     })
+
     http = require('http')
   })
 

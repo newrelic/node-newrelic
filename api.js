@@ -1,6 +1,5 @@
 'use strict'
 
-const arity = require('./lib/util/arity')
 const util = require('util')
 const logger = require('./lib/logger').child({component: 'api'})
 const recordWeb = require('./lib/metrics/recorders/http')
@@ -212,57 +211,6 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 
 
 /**
- * Deprecated. Please use `addCustomAttribute` instead.
- * TODO: remove in v5
- */
-API.prototype.addCustomParameter = util.deprecate(
-  addCustomParameter, [
-    'API#addCustomParameter is being deprecated!',
-    'Please use API#addCustomAttribute instead.'
-  ].join(' ')
-)
-function addCustomParameter(key, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addCustomParameter'
-  )
-  metric.incrementCallCount()
-
-  // If high security mode is on, custom attributes are disabled.
-  if (this.agent.config.high_security === true) {
-    logger.warnOnce(
-      'Custom attributes',
-      'Custom attributes are disabled by high security mode.'
-    )
-    return false
-  } else if (!this.agent.config.api.custom_attributes_enabled) {
-    logger.debug(
-      'Config.api.custom_attributes_enabled set to false, not collecting value'
-    )
-    return false
-  }
-
-  var transaction = this.agent.tracer.getTransaction()
-  if (!transaction) {
-    return logger.warn('No transaction found for custom attributes.')
-  }
-
-  var trace = transaction.trace
-  if (!trace.custom) {
-    return logger.warn(
-      'Could not add attribute %s to nonexistent custom attributes.',
-      key
-    )
-  }
-
-  if (CUSTOM_BLACKLIST.has(key)) {
-    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
-  }
-
-  trace.addCustomAttribute(key, value)
-}
-
-
-/**
  * Add a custom attribute to the current transaction. Some attributes are
  * reserved (see CUSTOM_BLACKLIST for the current, very short list), and
  * as with most API methods, this must be called in the context of an
@@ -312,31 +260,6 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 }
 
 /**
- * Deprecated. Please use `addCustomAttributes` instead.
- * TODO: remove in v5
- */
-API.prototype.addCustomParameters = util.deprecate(
-  addCustomParameters, [
-    '`API#addCustomParameters` has been deprecated!',
-    'Please use `API#addCustomAttributes` instead.'
-  ].join(' ')
-)
-function addCustomParameters(atts) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addCustomParameters'
-  )
-  metric.incrementCallCount()
-
-  for (var key in atts) {
-    if (!properties.hasOwn(atts, key)) {
-      continue
-    }
-
-    this.addCustomAttribute(key, atts[key])
-  }
-}
-
-/**
  * Adds all custom attributes in an object to the current transaction.
  *
  * See documentation for newrelic.addCustomAttribute for more information on
@@ -365,6 +288,14 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
   }
 }
 
+API.prototype.setIgnoreTransaction = util.deprecate(
+  setIgnoreTransaction, [
+    'API#setIgnoreTransaction is being deprecated!',
+    'Please use TransactionHandle#ignore to ignore a transaction.',
+    'Use API#getTransaction to create a new TransactionHandle instance.'
+  ].join(' ')
+)
+
 /**
  * Tell the tracer whether to ignore the current transaction. The most common
  * use for this will be to mark a transaction as ignored (maybe it's handling
@@ -375,7 +306,7 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
  *
  * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
  */
-API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
+function setIgnoreTransaction(ignored) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/setIgnoreTransaction'
   )
@@ -663,74 +594,6 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   return out
 }
 
-API.prototype.createTracer = util.deprecate(
-  createTracer, [
-    'API#createTracer is being deprecated!',
-    'Please use API#startSegment for segment creation.'
-  ].join(' ')
-)
-
-/**
- * This creates a new tracer with the passed in name. It then wraps the
- * callback and binds it to the current transaction and segment so any further
- * custom instrumentation as well as auto instrumentation will also be able to
- * find the current transaction and segment.
- *
- * @memberof API#
- * @deprecated use {@link API#startSegment} instead
- */
-function createTracer(name, callback) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/createTracer'
-  )
-  metric.incrementCallCount()
-
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return callback
-  }
-
-  var fail = false
-  if (!name) {
-    logger.warn('createTracer called without a name')
-    fail = true
-  }
-
-  if (typeof callback !== 'function') {
-    logger.warn('createTracer called with a callback arg that is not a function')
-    fail = true
-  }
-
-  if (fail) {
-    // If name is undefined but callback is defined we should make a best effort
-    // to return it so things don't crash.
-    return callback
-  }
-
-  var tracer = this.agent.tracer
-  var txn = tracer.getTransaction()
-  if (!txn) {
-    logger.debug(
-      'createTracer called with %s (%s) outside of a transaction, ' +
-        'unable to create tracer.',
-      name,
-      callback && callback.name
-    )
-    return callback
-  }
-
-  logger.debug(
-    'creating tracer %s (%s) on transaction %s.',
-    name,
-    callback && callback.name,
-    txn.id
-  )
-
-  var segment = tracer.createSegment(name, customRecorder)
-  segment.start()
-  return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
-}
-
 /**
  * @callback startSegmentCallback
  * @param {function} cb
@@ -802,92 +665,6 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
   return wrappedHandler(callback)
 }
 
-API.prototype.createWebTransaction = util.deprecate(
-  createWebTransaction, [
-    'API#createWebTransaction is being deprecated!',
-    'Please use API#startWebTransaction for transaction creation',
-    'and API#getTransaction for transaction management including',
-    'ending transactions.'
-  ].join(' ')
-)
-
-/**
- * Creates a function that represents a web transaction. It does not start the
- * transaction automatically - the returned function needs to be invoked to start it.
- * Inside the handler function, the transaction must be ended by calling endTransaction().
- *
- * @example
- * var newrelic = require('newrelic')
- * var transaction = newrelic.createWebTransaction('/some/url/path', function() {
- *   // do some work
- *   newrelic.endTransaction()
- * })
- *
- * @param {string}    url       The URL of the transaction.  It is used to name and group
-                                related transactions in APM, so it should be a generic
-                                name and not iclude any variable parameters.
- * @param {Function}  handle    Function that represents the transaction work.
- *
- * @memberof API#
- *
- * @deprecated since version 2.0
- */
-function createWebTransaction(url, handle) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/createWebTransaction'
-  )
-  metric.incrementCallCount()
-
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return handle
-  }
-
-  var fail = false
-  if (!url) {
-    logger.warn('createWebTransaction called without a url')
-    fail = true
-  }
-
-  if (typeof handle !== 'function') {
-    logger.warn('createWebTransaction called with a handle arg that is not a function')
-    fail = true
-  }
-
-  if (fail) {
-    // If name is undefined but handle is defined we should make a best effort
-    // to return it so things don't crash.
-    return handle
-  }
-
-  logger.debug(
-    'creating web transaction generator %s (%s).',
-    url,
-    handle && handle.name
-  )
-
-  var tracer = this.agent.tracer
-
-  var proxy = tracer.transactionNestProxy('web', function createWebSegment() {
-    var tx = tracer.getTransaction()
-
-    logger.debug(
-      'creating web transaction %s (%s) with transaction id: %s',
-      url,
-      handle && handle.name,
-      tx.id
-    )
-    tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
-    tx.url = url
-    tx.applyUserNamingRules(tx.url)
-    tx.baseSegment = tracer.createSegment(url, recordWeb)
-    tx.baseSegment.start()
-
-    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
-  })
-  return arity.fixArity(handle, proxy)
-}
-
 /**
  * Creates and starts a web transaction to record work done in
  * the handle supplied. This transaction will run until the handle
@@ -943,6 +720,10 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
 
   return tracer.transactionNestProxy('web', function startWebSegment() {
     var tx = tracer.getTransaction()
+
+    if (!tx) {
+      return handle.apply(this, arguments)
+    }
 
     if (tx === parent) {
       logger.debug(
@@ -1050,6 +831,10 @@ function startBackgroundTransaction(name, group, handle) {
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
     var tx = tracer.getTransaction()
 
+    if (!tx) {
+      return handle.apply(this, arguments)
+    }
+
     if (tx === parent) {
       logger.debug(
         'not creating nested transaction %s using transaction %s',
@@ -1084,115 +869,6 @@ function startBackgroundTransaction(name, group, handle) {
   })()
 }
 
-API.prototype.createBackgroundTransaction = util.deprecate(
-  createBackgroundTransaction, [
-    'API#createBackgroundTransaction is being deprecated!',
-    'Please use API#startBackgroundTransaction for transaction creation',
-    'and API#getTransaction for transaction management including',
-    'ending transactions.'
-  ].join(' ')
-)
-
-/**
- * Creates a function that represents a background transaction. It does not
- * start the transaction automatically - the returned function needs to be
- * invoked to start it. Inside the handler function, the transaction must be
- * ended by calling `endTransaction()`.
- *
- * @example
- *  var newrelic = require('newrelic')
- *  var startTx = newrelic.createBackgroundTransaction('myTransaction', function(a, b) {
- *    // Do some work
- *    newrelic.endTransaction()
- *  })
- *  startTx('a', 'b') // Start the transaction.
- *
- * @param {string} name
- *  The name of the transaction. It is used to name and group related
- *  transactions in APM, so it should be a generic name and not iclude any
- *  variable parameters.
- *
- * @param {string} [group]
- *  Optional, used for grouping background transactions in APM. For more
- *  information see:
- *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
- *
- * @param {Function} handle
- *  Function that represents the background work.
- *
- * @return {Function} The `handle` function wrapped with starting a new
- *  transaction. This function can be called repeatedly to start multiple
- *  transactions.
- *
- * @memberOf API#
- *
- * @deprecated since version 2.0
- */
-function createBackgroundTransaction(name, group, handle) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/createBackgroundTransaction'
-  )
-  metric.incrementCallCount()
-
-  if (handle === undefined && typeof group === 'function') {
-    handle = group
-    group = 'Nodejs'
-  }
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return handle
-  }
-
-  var fail = false
-  if (!name) {
-    logger.warn('createBackgroundTransaction called without a name')
-    fail = true
-  }
-
-  if (typeof handle !== 'function') {
-    logger.warn(
-      'createBackgroundTransaction called with a handle arg that is not a function'
-    )
-    fail = true
-  }
-
-  if (fail) {
-    // If name is undefined but handle is defined we should make a best effort
-    // to return it so things don't crash.
-    return handle
-  }
-
-  logger.debug(
-    'creating background transaction generator %s:%s (%s)',
-    name,
-    group,
-    handle && handle.name
-  )
-
-  var tracer = this.agent.tracer
-  var txName = group + '/' + name
-
-  var proxy = tracer.transactionNestProxy('bg', function createBGSegment() {
-    var tx = tracer.getTransaction()
-
-    logger.debug(
-      'creating background transaction %s:%s (%s) with transaction id: %s',
-      name,
-      group,
-      handle && handle.name,
-      tx.id
-    )
-
-    tx._partialName = txName
-    tx.baseSegment = tracer.createSegment(name, recordBackground)
-    tx.baseSegment.partialName = group
-    tx.baseSegment.start()
-
-    return tracer.bindFunction(handle, tx.baseSegment).apply(this, arguments)
-  })
-  return arity.fixArity(handle, proxy)
-}
-
 /**
  * End the current web or background custom transaction. This method requires being in
  * the correct transaction context when called.
@@ -1202,11 +878,6 @@ API.prototype.endTransaction = function endTransaction() {
     NAMES.SUPPORTABILITY.API + '/endTransaction'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_instrumentation
-  if (!this.agent.config.feature_flag.custom_instrumentation) {
-    return
-  }
 
   var tracer = this.agent.tracer
   var tx = tracer.getTransaction()
@@ -1226,7 +897,7 @@ API.prototype.endTransaction = function endTransaction() {
 }
 
 /**
- * Record an event-based metric, usually associated with a particular duration.
+ * Record a custom metric, usually associated with a particular duration.
  * The `name` must be a string following standard metric naming rules. The `value` will
  * usually be a number, but it can also be an object.
  *   * When `value` is a numeric value, it should represent the magnitude of a measurement
@@ -1241,23 +912,18 @@ API.prototype.endTransaction = function endTransaction() {
  * @param  {number|object} value
  */
 API.prototype.recordMetric = function recordMetric(name, value) {
-  var supportMetric = this.agent.metrics.getOrCreateMetric(
+  const supportMetric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/recordMetric'
   )
   supportMetric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (typeof name !== 'string') {
     logger.warn('Metric name must be a string')
     return
   }
 
-  // TODO: In Agent v5 prefix custom metrics with `Custom/`.
-  var metric = this.agent.metrics.getOrCreateMetric(name)
+  const metricName = NAMES.CUSTOM + NAMES.ACTION_DELIMITER + name
+  const metric = this.agent.metrics.getOrCreateMetric(metricName)
 
   if (typeof value === 'number') {
     metric.recordValue(value)
@@ -1269,17 +935,17 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  var stats = Object.create(null)
-  var required = ['count', 'total', 'min', 'max', 'sumOfSquares']
-  var keyMap = {count: 'callCount'}
+  const stats = Object.create(null)
+  const required = ['count', 'total', 'min', 'max', 'sumOfSquares']
+  const keyMap = {count: 'callCount'}
 
-  for (var i = 0, l = required.length; i < l; ++i) {
+  for (let i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
       logger.warn('Metric object must include %s as a number', required[i])
       return
     }
 
-    var key = keyMap[required[i]] || required[i]
+    const key = keyMap[required[i]] || required[i]
     stats[key] = value[required[i]]
   }
 
@@ -1293,23 +959,19 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 }
 
 /**
- * Update a metric that acts as a simple counter. The count of the selected metric will
- * be incremented by the specified amount, defaulting to 1.
+ * Create or update a custom metric that acts as a simple counter.
+ * The count of the given metric will be incremented by the specified amount,
+ * defaulting to 1.
  *
  * @param  {string} name  The name of the metric.
  * @param  {number} [value] The amount that the count of the metric should be incremented
- *                          by.
+ *                          by. Defaults to 1.
  */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/incrementMetric'
   )
   metric.incrementCallCount()
-
-  // FLAG: custom_metrics
-  if (!this.agent.config.feature_flag.custom_metrics) {
-    return
-  }
 
   if (!value && value !== 0) {
     value = 1
@@ -1330,7 +992,7 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
 }
 
 /**
- * Record an event-based metric, usually associated with a particular duration.
+ * Record custom event data which can be queried in New Relic Insights.
  *
  * @param  {string} eventType  The name of the event. It must be an alphanumeric string
  *                             less than 255 characters.

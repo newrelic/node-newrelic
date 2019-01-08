@@ -116,7 +116,7 @@ test('truncate', function(t) {
   })
 })
 
-test('ftruncate', {skip: fs.ftruncate === undefined}, function(t) {
+test('ftruncate', function(t) {
   var name = path.join(tempDir, 'ftruncate-me')
   var content = 'some-content'
   fs.writeFileSync(name, content)
@@ -451,11 +451,7 @@ test('realpath', function(t) {
 
       function afterVerify() {
         trans.end(function checkMetrics() {
-          var expectedMetrics = ['lstat', 'realpath']
-          // Node 6 changed implementation of fs.realpath()
-          if (semver.satisfies(process.versions.node, '>=6.0.0')) {
-            expectedMetrics = ['realpath']
-          }
+          var expectedMetrics = ['realpath']
           t.ok(
             checkMetric(expectedMetrics, agent, trans.name),
             'metric should exist after transaction end'
@@ -808,7 +804,7 @@ test('read', function(t) {
   fs.writeFileSync(name, content)
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  var buf = new Buffer(content.length)
+  var buf = Buffer.alloc(content.length)
 
   helper.runInTransaction(agent, function(trans) {
     fs.read(fd, buf, 0, content.length, 0, function(err, len, data) {
@@ -835,7 +831,7 @@ test('write', function(t) {
   fs.writeFileSync(name, '')
   var fd = fs.openSync(name, 'r+')
   var agent = setupAgent(t)
-  var buf = new Buffer(content)
+  var buf = Buffer.from(content)
 
   helper.runInTransaction(agent, function(trans) {
     fs.write(fd, buf, 0, content.length, 0, function(err, len) {

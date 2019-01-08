@@ -9,7 +9,6 @@ INTEGRATION  =  test/integration/*.tap.js
 INTEGRATION  += test/integration/*/*.tap.js
 INTEGRATION  += test/integration/*/*/*.tap.js
 SMOKE        = test/smoke/*.tap.js
-PRERELEASE	 = test/prerelease/*/*.tap.js
 # subcomponents manage their own modules
 PACKAGES = $(shell find . -name package.json -and -not -path '*/node_modules/*' -and -not -path '*/example*')
 # strip the package.json from the results
@@ -93,10 +92,6 @@ integration: node_modules sub_node_modules ca-gen $(CERTIFICATE) docker
 
 versioned: node_modules ca-gen $(CERTIFICATE) docker
 	time ./bin/run-versioned-tests.sh
-
-prerelease: node_modules ca-gen $(CERTIFICATE) docker
-	@node test/bin/install_sub_deps prerelease
-	time $(TAP) $(PRERELEASE)
 
 smoke: clean
 	npm install --production --loglevel warn
@@ -183,16 +178,3 @@ update_cross_agent_tests:
 	rm -rf test/lib/cross_agent_tests
 	git clone git@source.datanerd.us:newrelic/cross_agent_tests.git test/lib/cross_agent_tests
 	rm -rf test/lib/cross_agent_tests/.git
-
-# versions prior to 1.4(ish) can't upgrade themselves directly to latest so hop to 1.4.28 first.
-# Only upgrade to latest if we are on node 0.x
-update_npm_global:
-	if npm -v | grep -q "^1"; then \
-	  npm install -g npm@1.4.28; \
-	fi
-
-	if node -v | grep -q "^v0"; then \
-	  npm install -g npm@3; \
-	fi
-
-	echo "\nUpgrading npm is expected to have many warnings due to tolerance changes over the years.\n"

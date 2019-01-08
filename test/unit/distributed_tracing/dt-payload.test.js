@@ -2,7 +2,6 @@
 
 var expect = require('chai').expect
 
-var makeBuffer = require('../../../lib/util/hashes').makeBuffer
 var DistributedTracePayload = require('../../../lib/transaction/dt-payload')
 var DistributedTracePayloadStub = DistributedTracePayload.Stub
 
@@ -30,7 +29,7 @@ describe('DistributedTracePayload', function() {
       b: 'test'
     }
     var dt = new DistributedTracePayload(payload)
-    var output = JSON.parse(makeBuffer(dt.httpSafe(), 'base64').toString('utf-8'))
+    var output = JSON.parse(Buffer.from(dt.httpSafe(), 'base64').toString('utf-8'))
     expect(output).to.have.property('v').that.is.an('array')
     expect(output).to.have.property('d').that.is.an('object')
     var keys = Object.keys(output.d)

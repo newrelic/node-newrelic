@@ -7,7 +7,7 @@ var helper = require('../../lib/agent_helper')
 test("Express router introspection", function(t) {
   t.plan(14)
 
-  var agent = helper.instrumentMockedAgent({
+  const agent = helper.instrumentMockedAgent({
     attributes: {
       enabled: true,
       include: ['request.parameters.*']

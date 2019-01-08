@@ -6,7 +6,6 @@ var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
-var semver = require('semver')
 var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
 
@@ -90,11 +89,6 @@ describe('the New Relic agent API', function() {
   it("exports a function for ignoring certain URLs", function() {
     should.exist(api.addIgnoringRule)
     expect(api.addIgnoringRule).to.be.a('function')
-  })
-
-  it("exports a function for adding custom parameters", function() {
-    should.exist(api.addCustomParameter)
-    expect(api.addCustomParameter).to.be.a('function')
   })
 
   it("exports a function for adding custom instrumentation", function() {
@@ -390,6 +384,14 @@ describe('the New Relic agent API', function() {
       transaction = null
     })
 
+    it('should not throw when transaction cannot be created', () => {
+      agent.setState('stopped')
+      api.startWebTransaction('test', () => {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.not.exist
+      })
+    })
+
     it('should add nested transaction as segment to parent transaction', function() {
       api.startWebTransaction('test', function() {
         nested()
@@ -469,6 +471,14 @@ describe('the New Relic agent API', function() {
       transaction = null
     })
 
+    it('should not throw when transaction cannot be created', () => {
+      agent.setState('stopped')
+      api.startBackgroundTransaction('test', () => {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.not.exist
+      })
+    })
+
     it('should add nested transaction as segment to parent transaction', function() {
       api.startBackgroundTransaction('test', function() {
         nested()
@@ -515,6 +525,7 @@ describe('the New Relic agent API', function() {
     it('should start a background txn with the given name as the name and group', () => {
       api.startBackgroundTransaction('test', 'group', function() {
         transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/group/test')
         expect(transaction.isActive()).to.be.true
@@ -877,15 +888,33 @@ describe('the New Relic agent API', function() {
       var mine
       beforeEach(function() {
         agent.urlNormalizer.load([
-          {each_segment : true, eval_order : 0, terminate_chain : false,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+          {
+            each_segment: true,
+            eval_order: 0,
+            terminate_chain: false,
+            match_expression: '^(test_match_nothing)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1'
+          },
+          {
+            each_segment: true,
+            eval_order: 1,
+            terminate_chain: false,
+            match_expression: '^[0-9][0-9a-f_,.-]*$',
+            replace_all: false,
+            ignore: false,
+            replacement: '*'
+          },
+          {
+            each_segment: false,
+            eval_order: 2,
+            terminate_chain: false,
+            match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1/.*\\2'
+          }
         ])
 
         api.addNamingRule('^/test/.*', 'Test')
@@ -898,11 +927,7 @@ describe('the New Relic agent API', function() {
       })
 
       it("should leave the passed-in pattern alone", function() {
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(mine.pattern.source).equal('^\\/test\\/.*')
-        } else {
-          expect(mine.pattern.source).equal('^/test/.*')
-        }
+        expect(mine.pattern.source).equal('^\\/test\\/.*')
       })
 
       it("should have the correct replacement", function() {
@@ -974,15 +999,33 @@ describe('the New Relic agent API', function() {
       var mine
       beforeEach(function() {
         agent.urlNormalizer.load([
-          {each_segment : true, eval_order : 0, terminate_chain : false,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+          {
+            each_segment: true,
+            eval_order: 0,
+            terminate_chain: false,
+            match_expression: '^(test_match_nothing)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1'
+          },
+          {
+            each_segment: true,
+            eval_order: 1,
+            terminate_chain: false,
+            match_expression: '^[0-9][0-9a-f_,.-]*$',
+            replace_all: false,
+            ignore: false,
+            replacement: '*'
+          },
+          {
+            each_segment: false,
+            eval_order: 2,
+            terminate_chain: false,
+            match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1/.*\\2'
+          }
         ])
 
         api.addIgnoringRule('^/test/.*')
@@ -995,11 +1038,7 @@ describe('the New Relic agent API', function() {
       })
 
       it("should leave the passed-in pattern alone", function() {
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(mine.pattern.source).equal('^\\/test\\/.*')
-        } else {
-          expect(mine.pattern.source).equal('^/test/.*')
-        }
+        expect(mine.pattern.source).equal('^\\/test\\/.*')
       })
 
       it("should have the correct replacement", function() {
@@ -1265,13 +1304,21 @@ describe('the New Relic agent API', function() {
   })
 
   describe('when recording custom metrics', function() {
-    it('it should aggregate metric values', function() {
-      agent.config.feature_flag.custom_metrics = true
-      api.recordMetric('/Custom/metric/thing', 3)
-      api.recordMetric('/Custom/metric/thing', 4)
-      api.recordMetric('/Custom/metric/thing', 5)
+    it('should prepend "Custom" in front of name', () => {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', 4)
+      api.recordMetric('metric/thing', 5)
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
+      expect(metric).to.exist
+    })
+
+    it('it should aggregate metric values', function() {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', 4)
+      api.recordMetric('metric/thing', 5)
+
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1279,13 +1326,11 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(5)
       expect(metric.sumOfSquares).equal(50)
       expect(metric.callCount).equal(3)
-      agent.config.feature_flag.custom_metrics = false
     })
 
     it('it should merge metrics', function() {
-      agent.config.feature_flag.custom_metrics = true
-      api.recordMetric('/Custom/metric/thing', 3)
-      api.recordMetric('/Custom/metric/thing', {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', {
         total: 9,
         min: 4,
         max: 5,
@@ -1293,7 +1338,7 @@ describe('the New Relic agent API', function() {
         count: 2
       })
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1301,16 +1346,14 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(5)
       expect(metric.sumOfSquares).equal(50)
       expect(metric.callCount).equal(3)
-      agent.config.feature_flag.custom_metrics = false
     })
 
     it('it should increment properly', function() {
-      agent.config.feature_flag.custom_metrics = true
-      api.incrementMetric('/Custom/metric/thing')
-      api.incrementMetric('/Custom/metric/thing')
-      api.incrementMetric('/Custom/metric/thing')
+      api.incrementMetric('metric/thing')
+      api.incrementMetric('metric/thing')
+      api.incrementMetric('metric/thing')
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(0)
       expect(metric.totalExclusive).equal(0)
@@ -1319,8 +1362,8 @@ describe('the New Relic agent API', function() {
       expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(3)
 
-      api.incrementMetric('/Custom/metric/thing', 4)
-      api.incrementMetric('/Custom/metric/thing', 5)
+      api.incrementMetric('metric/thing', 4)
+      api.incrementMetric('metric/thing', 5)
 
 
       expect(metric.total).equal(0)
@@ -1329,13 +1372,6 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(0)
       expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(12)
-      agent.config.feature_flag.custom_metrics = false
-    })
-
-    it('should not blow up when disabled', function() {
-      agent.config.feature_flag.custom_metrics = false
-      api.incrementMetric('/Custom/metric/thing')
-      api.recordMetric('/Custom/metric/thing', 3)
     })
   })
 

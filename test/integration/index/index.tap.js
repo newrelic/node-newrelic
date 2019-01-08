@@ -22,7 +22,7 @@ test('loading the application via index.js', {timeout: 15000}, function(t) {
   t.notOk(metric, 'should not create metric for unchanged feature flags')
 
   metric = agent.metrics.getMetric(
-    'Supportability/Nodejs/FeatureFlag/synthetics/disabled'
+    'Supportability/Nodejs/FeatureFlag/express5/enabled'
   )
   t.ok(metric, 'should create metric for changed feature flags')
 

@@ -3,6 +3,75 @@
 This guide is intended to help with upgrading major versions of the Node Agent.
 This information can also be found on [our documentation website][upgrade-doc].
 
+## Upgrading to Agent v5
+
+### Breaking Changes
+
+**Removed deprecated API methods**: The following API methods had been marked as
+deprecated since agent v2, and have now been fully removed from the codebase:
+
+* `newrelic.addCustomParameter()`
+
+  Replace with `newrelic.addCustomAttribute()`.
+
+* `newrelic.addCustomParameters()`
+
+  Replace with `newrelic.addCustomAttributes()`.
+
+* `newrelic.createWebTransaction()`
+
+  Replace with `newrelic.startWebTransaction()` and `newrelic.getTransaction()`.
+
+* `newrelic.createBackgroundTransaction()`
+
+  Replace with `newrelic.startBackgroundTransaction()` and `newrelic.getTransaction()`.
+
+* `newrelic.createTracer()`
+
+  Replace with `newrelic.startSegment()`.
+
+**Removed `ignore_server_configuration` setting**: This setting was only implemented
+by the Node agent, so removing it improves parity with other language agents.
+
+**Removed `node-cassandra-cql` instrumentation**: This [library][node-cassandra-cql]
+has not been updated in 5 years, and has since been superseded by
+[cassandra-driver](https://www.npmjs.com/package/cassandra-driver), which is
+supported by the agent.
+
+**Removed deprecated configuration settings**: The following configuration
+settings have been deprecated since agent v3, and have now been removed from the
+codebase:
+
+* `capture_params`
+
+  Replaced with `attributes.enabled`. By default, request attributes are not
+  sent to New Relic. Set `attributes.enabled: true` to include agent-defined or
+  custom attributes in traces.
+
+* `ignored_params`
+
+  Replaced with `attributes.exclude`. Add any request attribute keys to the
+  `attributes.exclude` list. Now, instead of having to be an exact match,
+  wildcards (`*`) may be appended to each item for broader filtering.
+
+**Updated custom metric naming**: Custom metrics are now prefixed with `Custom/`.
+Existing insights queries may need to be addressed moving forward.
+
+### Node Version Support
+
+The agent now only supports Node version 6 and above, which brings it up to date
+with Node's [LTS][node-lts-schedule] schedule. Customers running Node 4.x or 5.x
+will need to upgrade to a supported version of Node or remain on the v4 agent.
+
+### Released Feature Flags
+* `custom_instrumentation`: This feature is no longer configurable.
+* `custom_metrics`: This feature is no longer configurable.
+* `synthetics`: This feature is no longer configurable.
+* `native_metrics`: This feature is now controlled by the
+  `plugins.native_metrics.enabled` configuration value.
+
+--------------------------------------------------------------------------------
+
 ## Upgrading to Agent v4
 
 ### Breaking Changes
@@ -199,3 +268,4 @@ $ npm install --global npm@2
 [messaging-troubleshooting-doc]: https://docs.newrelic.com/docs/agents/nodejs-agent/troubleshooting/troubleshoot-message-consumers
 [instrumentation-tutorial]: https://newrelic.github.io/node-newrelic/docs/tutorial-Instrumentation-Basics.html
 [node-lts-schedule]: https://github.com/nodejs/LTS/tree/2b4253#lts-schedule1
+[node-cassandra-cql]: https://www.npmjs.com/package/node-cassandra-cql

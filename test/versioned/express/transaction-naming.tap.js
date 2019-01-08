@@ -523,6 +523,7 @@ function runTests(flags) {
 
   function setup(t) {
     agent = helper.instrumentMockedAgent(flags)
+
     express = require('express')
     app = express()
     t.tearDown(function cb_tearDown() {

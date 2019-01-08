@@ -14,6 +14,7 @@ tap.test('Restify', (t) => {
   let restify = null
   t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
+
     restify = require('restify')
     done()
   })

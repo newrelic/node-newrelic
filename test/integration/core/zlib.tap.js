@@ -50,7 +50,7 @@ test('gzip', function(t) {
 test('inflate', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    zlib.inflate(new Buffer(DEFLATED_CONTENT, 'base64'), function(err, data) {
+    zlib.inflate(Buffer.from(DEFLATED_CONTENT, 'base64'), function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString(), CONTENT)
       verifySegments(t, agent, 'zlib.inflate')
@@ -61,7 +61,7 @@ test('inflate', function(t) {
 test('inflateRaw', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    zlib.inflateRaw(new Buffer(DEFLATED_RAW, 'base64'), function(err, data) {
+    zlib.inflateRaw(Buffer.from(DEFLATED_RAW, 'base64'), function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString(), CONTENT)
       verifySegments(t, agent, 'zlib.inflateRaw')
@@ -72,7 +72,7 @@ test('inflateRaw', function(t) {
 test('gunzip', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    zlib.gunzip(new Buffer(GZIP_CONTENT, 'base64'), function(err, data) {
+    zlib.gunzip(Buffer.from(GZIP_CONTENT, 'base64'), function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString(), CONTENT)
       verifySegments(t, agent, 'zlib.gunzip')
@@ -83,7 +83,7 @@ test('gunzip', function(t) {
 test('unzip', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    zlib.unzip(new Buffer(GZIP_CONTENT, 'base64'), function(err, data) {
+    zlib.unzip(Buffer.from(GZIP_CONTENT, 'base64'), function(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data.toString(), CONTENT)
       verifySegments(t, agent, 'zlib.unzip')
@@ -99,8 +99,8 @@ test('createGunzip', function(t) {
   testStream(
     t,
     'createGunzip',
-    new Buffer(GZIP_CONTENT, 'base64'),
-    new Buffer(CONTENT).toString('base64')
+    Buffer.from(GZIP_CONTENT, 'base64'),
+    Buffer.from(CONTENT).toString('base64')
   )
 })
 
@@ -108,8 +108,8 @@ test('createUnzip', function(t) {
   testStream(
     t,
     'createUnzip',
-    new Buffer(GZIP_CONTENT, 'base64'),
-    new Buffer(CONTENT).toString('base64')
+    Buffer.from(GZIP_CONTENT, 'base64'),
+    Buffer.from(CONTENT).toString('base64')
   )
 })
 
@@ -121,8 +121,8 @@ test('createInflate', function(t) {
   testStream(
     t,
     'createInflate',
-    new Buffer(DEFLATED_CONTENT, 'base64'),
-    new Buffer(CONTENT).toString('base64')
+    Buffer.from(DEFLATED_CONTENT, 'base64'),
+    Buffer.from(CONTENT).toString('base64')
   )
 })
 
@@ -134,8 +134,8 @@ test('createInflateRaw', function(t) {
   testStream(
     t,
     'createInflateRaw',
-    new Buffer(DEFLATED_RAW, 'base64'),
-    new Buffer(CONTENT).toString('base64')
+    Buffer.from(DEFLATED_RAW, 'base64'),
+    Buffer.from(CONTENT).toString('base64')
   )
 })
 

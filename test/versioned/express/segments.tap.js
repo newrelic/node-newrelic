@@ -728,6 +728,7 @@ function setup(t) {
   agent = helper.instrumentMockedAgent({
     feature_flag: {express_segments: true}
   })
+
   express = require('express')
   app = express()
   t.tearDown(function cb_tearDown() {
