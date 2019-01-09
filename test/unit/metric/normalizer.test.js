@@ -1,10 +1,11 @@
 'use strict'
 
-var chai = require('chai')
-var Config = require('../../../lib/config')
-var expect = chai.expect
-var Normalizer = require('../../../lib/metrics/normalizer')
+const chai = require('chai')
+const Config = require('../../../lib/config')
+const expect = chai.expect
+const Normalizer = require('../../../lib/metrics/normalizer')
 
+const stagingRules = require('./staging-rules')
 
 describe ("MetricNormalizer", function() {
   var normalizer
@@ -43,61 +44,48 @@ describe ("MetricNormalizer", function() {
 
   describe("with rules captured from the staging collector on 2012-08-29", function() {
     beforeEach(function() {
-      normalizer.load([
-        {each_segment: false, eval_order: 0, terminate_chain: true,
-         match_expression: '^(test_match_nothing)$',
-         replace_all: false, ignore: false, replacement: '\\1'},
-        {each_segment: false, eval_order: 0, terminate_chain: true,
-         match_expression: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all: false, ignore: false, replacement: '/*.\\1'},
-        {each_segment: false, eval_order: 0, terminate_chain: true,
-         match_expression: '^(test_match_nothing)$',
-         replace_all: false, ignore: false, replacement: '\\1'},
-        {each_segment: false, eval_order: 0, terminate_chain: true,
-         match_expression: '^(test_match_nothing)$',
-         replace_all: false, ignore: false, replacement: '\\1'},
-        {each_segment: false, eval_order: 0, terminate_chain: true,
-         match_expression: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all: false, ignore: false, replacement: '/*.\\1'},
-        {each_segment: false, eval_order: 0, terminate_chain: true,
-         match_expression: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$',
-         replace_all: false, ignore: false, replacement: '/*.\\1'},
-        {each_segment: true, eval_order: 1, terminate_chain: false,
-         match_expression: '^[0-9][0-9a-f_,.-]*$',
-         replace_all: false, ignore: false, replacement: '*'},
-        {each_segment: true, eval_order: 1, terminate_chain: false,
-         match_expression: '^[0-9][0-9a-f_,.-]*$',
-         replace_all: false, ignore: false, replacement: '*'},
-        {each_segment: true, eval_order: 1, terminate_chain: false,
-         match_expression: '^[0-9][0-9a-f_,.-]*$',
-         replace_all: false, ignore: false, replacement: '*'},
-        {each_segment: false, eval_order: 2, terminate_chain: false,
-         match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all: false, ignore: false, replacement: '\\1/.*\\2'},
-        {each_segment: false, eval_order: 2, terminate_chain: false,
-         match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all: false, ignore: false, replacement: '\\1/.*\\2'},
-        {each_segment: false, eval_order: 2, terminate_chain: false,
-         match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-         replace_all: false, ignore: false, replacement: '\\1/.*\\2'}
-      ])
+      normalizer.load(stagingRules)
     })
 
     it("should eliminate duplicate rules as part of loading them", function() {
       var patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
       var reduced = [
-        {eachSegment: false, precedence: 0, isTerminal: true,
-         replacement: '$1', replaceAll: false, ignore: false,
-         pattern: '^(test_match_nothing)$'},
-        {eachSegment: false, precedence: 0, isTerminal: true,
-         replacement: '/*.$1', replaceAll: false, ignore: false,
-         pattern: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$'},
-        {eachSegment: true, precedence: 1, isTerminal: false,
-         replacement: '*', replaceAll: false, ignore: false,
-         pattern: '^[0-9][0-9a-f_,.-]*$'},
-        {eachSegment: false, precedence: 2, isTerminal: false,
-         replacement: '$1/.*$2', replaceAll: false, ignore: false,
-         pattern: patternWithSlash}
+        {
+          eachSegment: false,
+          precedence: 0,
+          isTerminal: true,
+          replacement: '$1',
+          replaceAll: false,
+          ignore: false,
+          pattern: '^(test_match_nothing)$'
+        },
+        {
+          eachSegment: false,
+          precedence: 0,
+          isTerminal: true,
+          replacement: '/*.$1',
+          replaceAll: false,
+          ignore: false,
+          pattern: '.*\\.(css|gif|ico|jpe?g|js|png|swf)$'
+        },
+        {
+          eachSegment: true,
+          precedence: 1,
+          isTerminal: false,
+          replacement: '*',
+          replaceAll: false,
+          ignore: false,
+          pattern: '^[0-9][0-9a-f_,.-]*$'
+        },
+        {
+          eachSegment: false,
+          precedence: 2,
+          isTerminal: false,
+          replacement: '$1/.*$2',
+          replaceAll: false,
+          ignore: false,
+          pattern: patternWithSlash
+        }
       ]
 
       expect(normalizer.rules.map(function cb_map(r) {
@@ -149,9 +137,15 @@ describe ("MetricNormalizer", function() {
 
   it("should ignore a matching name", function() {
     normalizer.load([
-      {each_segment: false, eval_order: 0, terminate_chain: true,
-       match_expression: '^/long_polling$',
-       replace_all: false, ignore: true, replacement: '*'}
+      {
+        each_segment: false,
+        eval_order: 0,
+        terminate_chain: true,
+        match_expression: '^/long_polling$',
+        replace_all: false,
+        ignore: true,
+        replacement: '*'
+      }
     ])
 
     expect(normalizer.normalize('/long_polling')).to.have.property('ignore', true)
@@ -159,12 +153,24 @@ describe ("MetricNormalizer", function() {
 
   it("should apply rules by precedence", function() {
     normalizer.load([
-      {each_segment: true, eval_order: 1, terminate_chain: false,
-       match_expression: 'mochi',
-       replace_all: false, ignore: false, replacement: 'millet'},
-      {each_segment: false, eval_order: 0, terminate_chain: false,
-       match_expression: '/rice$',
-       replace_all: false, ignore: false, replacement: '/mochi'}
+      {
+        each_segment: true,
+        eval_order: 1,
+        terminate_chain: false,
+        match_expression: 'mochi',
+        replace_all: false,
+        ignore: false,
+        replacement: 'millet'
+      },
+      {
+        each_segment: false,
+        eval_order: 0,
+        terminate_chain: false,
+        match_expression: '/rice$',
+        replace_all: false,
+        ignore: false,
+        replacement: '/mochi'
+      }
     ])
 
     expect(normalizer.normalize('/rice/is/not/rice'))
@@ -173,28 +179,40 @@ describe ("MetricNormalizer", function() {
 
   it("should terminate when indicated by rule", function() {
     normalizer.load([
-      {each_segment: true, eval_order: 1, terminate_chain: false,
-       match_expression: 'mochi',
-       replace_all: false, ignore: false, replacement: 'millet'},
-      {each_segment: false, eval_order: 0, terminate_chain: true,
-       match_expression: '/rice$',
-       replace_all: false, ignore: false, replacement: '/mochi'}
+      {
+        each_segment: true,
+        eval_order: 1,
+        terminate_chain: false,
+        match_expression: 'mochi',
+        replace_all: false,
+        ignore: false,
+        replacement: 'millet'
+      },
+      {
+        each_segment: false,
+        eval_order: 0,
+        terminate_chain: true,
+        match_expression: '/rice$',
+        replace_all: false,
+        ignore: false,
+        replacement: '/mochi'
+      }
     ])
 
     expect(normalizer.normalize('/rice/is/not/rice'))
       .to.have.property('value', 'NormalizedUri/rice/is/not/mochi')
   })
 
-  describe("when calling addSimple", function () {
-    it("won't crash with no parameters", function () {
-      expect(function () { normalizer.addSimple(); }).not.throws()
+  describe("when calling addSimple", function() {
+    it("won't crash with no parameters", function() {
+      expect(function() { normalizer.addSimple() }).not.throws()
     })
 
-    it("won't crash when name isn't passed", function () {
-      expect(function () { normalizer.addSimple('^t'); }).not.throws()
+    it("won't crash when name isn't passed", function() {
+      expect(function() { normalizer.addSimple('^t') }).not.throws()
     })
 
-    it("will ignore matches when name isn't passed", function () {
+    it("will ignore matches when name isn't passed", function() {
       normalizer.addSimple('^t')
       expect(normalizer.rules[0].ignore).equal(true)
     })
