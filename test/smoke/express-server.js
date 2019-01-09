@@ -1,13 +1,15 @@
-require('../../index.js') // same as require('newrelic')
-var express = require('express')
+'use strict'
 
-var app = express()
+require('../../index') // same as require('newrelic')
+const express = require('express')
 
-app.get('/', function (req, res) {
+const app = express()
+
+app.get('/', (req, res) => {
   req.resume()
   res.end('hello world!')
 })
 
-var server = app.listen(0, function () {
+const server = app.listen(0, () => {
   process.send(server.address().port)
 })
