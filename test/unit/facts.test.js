@@ -124,7 +124,7 @@ describe('fun facts about apps that New Relic is interested in include', functio
   it("and nothing else", function(done) {
     facts(agent, function getFacts(factsed) {
       expect(Object.keys(factsed).sort()).eql(EXPECTED.sort())
-        done()
+      done()
     })
   })
 
@@ -383,7 +383,6 @@ describe('utilization', function() {
 describe('boot_id', function() {
   var agent = null
   var common = require('../../lib/utilization/common')
-  var os = require('os')
 
   var startingGetMemory = null
   var startingGetProcessor = null
@@ -516,7 +515,6 @@ describe('boot_id', function() {
 })
 
 describe('display_host', function() {
-  var os = require('os')
   var agent
   var original_hostname = os.hostname
 
@@ -620,7 +618,9 @@ describe('display_host', function() {
           /* eslint-enable no-console */
           return done()
         }
-        var mockedNI = {lo: [], en0: [{
+        var mockedNI = {
+          lo: [],
+          en0: [{
             address: 'fe80::a00:27ff:fe4e:66a1',
             netmask: 'ffff:ffff:ffff:ffff::',
             family: 'IPv6',

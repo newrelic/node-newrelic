@@ -141,11 +141,14 @@ describe("the stubbed New Relic agent API", function() {
     }).not.throws()
   })
 
-  it("shouldn't throw when a non-function callback is passed into startWebTransaction", function() {
-    expect(function() {
-      api.startWebTransaction('test', 'asdf')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when a non-function callback is passed into startWebTransaction",
+    function() {
+      expect(function() {
+        api.startWebTransaction('test', 'asdf')
+      }).not.throws()
+    }
+  )
 
   it("shouldn't throw when a custom background transaction is started", function() {
     expect(function() {
@@ -159,35 +162,49 @@ describe("the stubbed New Relic agent API", function() {
     })
   })
 
-  it("shouldn't throw when a callback isn't passed into startBackgroundTransaction", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test', 'group')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when a callback isn't passed into startBackgroundTransaction",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test', 'group')
+      }).not.throws()
+    }
+  )
 
-  it("shouldn't throw when a non-function callback is passed into startBackgroundTransaction", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test', 'group', 'asdf')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when non-function callback is passed to startBackgroundTransaction",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test', 'group', 'asdf')
+      }).not.throws()
+    }
+  )
 
-  it("shouldn't throw when a custom background transaction is started with no group", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test', function nop() {})
-    }).not.throws()
-  })
+  it("shouldn't throw when a custom background transaction is started with no group",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test', function nop() {})
+      }).not.throws()
+    }
+  )
 
-  it("should call the function passed into startBackgroundTransaction with no group", function(done) {
-    api.startBackgroundTransaction('test', function nop() {
-      done()
-    })
-  })
+  it("should call the function passed into startBackgroundTransaction with no group",
+    function(done) {
+      api.startBackgroundTransaction('test', function nop() {
+        done()
+      })
+    }
+  )
 
-  it("shouldn't throw when a callback isn't passed into startBackgroundTransaction with no group", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when a callback isn't passed into startBackgroundTransaction " +
+    "with no group",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test')
+      }).not.throws()
+    }
+  )
 
   it("shouldn't throw when a transaction is ended", function() {
     expect(function() {

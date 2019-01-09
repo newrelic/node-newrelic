@@ -45,7 +45,6 @@ describe('collector host name', function() {
       Object.keys(testCase).forEach(function assignConfValues(key) {
         if (/^env_/.test(key)) {
           envSettings[keyMapping[key]] = testCase[key]
-          
         } else if (/^config_/.test(key)) {
           confSettings[keyMapping[key]] = testCase[key]
         }

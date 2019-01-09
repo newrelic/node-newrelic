@@ -199,7 +199,7 @@ describe('the environment scraper', function() {
     })
   })
 
-   it('should get correct version for dependencies', function(done) {
+  it('should get correct version for dependencies', function(done) {
     var root = path.join(__dirname, '../lib/example-packages')
     environment.listPackages(root, function(err, packages) {
       var versions = packages.reduce(function(map, pkg) {

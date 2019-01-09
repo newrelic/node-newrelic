@@ -70,7 +70,9 @@ describe('AdaptiveSampler', () => {
       // Change this to maxSampled if we change the way the back off works.
       for (let i = 0; i <= 2 * sampler.samplingTarget; ++i) {
         const expected = expectedMSP[i]
-        expect(sampler.minimumPriority).to.be.within(expected - epsilon, expected + epsilon)
+        expect(sampler.minimumPriority)
+          .to.be.within(expected - epsilon, expected + epsilon)
+
         sampler.shouldSample({priority: Infinity})
       }
     }
@@ -102,24 +104,27 @@ describe('AdaptiveSampler', () => {
       sampler = null
     })
 
-    for (let testName in shared) {
+    Object.getOwnPropertyNames(shared).forEach((testName) => {
       it(testName, shared[testName])
-    }
-
-    it('should reset itself after a transaction outside the window has been created', (done) => {
-      const spy = sinon.spy(sampler, '_reset')
-      sampler.samplingPeriod = 50
-      expect(spy.callCount).to.equal(0)
-      agent.emit('transactionStarted', {timer: {start: Date.now()}})
-      expect(spy.callCount).to.equal(1)
-
-      setTimeout(() => {
-        expect(spy.callCount).to.equal(1)
-        agent.emit('transactionStarted', {timer: {start: Date.now()}})
-        expect(spy.callCount).to.equal(2)
-        done()
-      }, 100)
     })
+
+    it(
+      'should reset itself after a transaction outside the window has been created',
+      (done) => {
+        const spy = sinon.spy(sampler, '_reset')
+        sampler.samplingPeriod = 50
+        expect(spy.callCount).to.equal(0)
+        agent.emit('transactionStarted', {timer: {start: Date.now()}})
+        expect(spy.callCount).to.equal(1)
+
+        setTimeout(() => {
+          expect(spy.callCount).to.equal(1)
+          agent.emit('transactionStarted', {timer: {start: Date.now()}})
+          expect(spy.callCount).to.equal(2)
+          done()
+        }, 100)
+      }
+    )
   })
 
   describe('in standard mode', () => {
@@ -140,9 +145,10 @@ describe('AdaptiveSampler', () => {
     afterEach(() => {
       sampler.samplePeriod = 0 // Clear sample interval.
     })
-    for (let testName in shared) {
+
+    Object.getOwnPropertyNames(shared).forEach((testName) => {
       it(testName, shared[testName])
-    }
+    })
 
     it('should reset itself according to the period', (done) => {
       const spy = sinon.spy(sampler, '_reset')
