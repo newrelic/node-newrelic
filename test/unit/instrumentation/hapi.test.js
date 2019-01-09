@@ -7,32 +7,32 @@ var helper = require('../../lib/agent_helper')
 var shims = require('../../../lib/shim')
 
 
-describe("an instrumented Hapi application", function () {
-  describe("shouldn't cause bootstrapping to fail", function () {
+describe("an instrumented Hapi application", function() {
+  describe("shouldn't cause bootstrapping to fail", function() {
     var agent
     var initialize
 
 
-    before(function () {
+    before(function() {
       agent = helper.loadMockedAgent()
       initialize = require('../../../lib/instrumentation/hapi')
     })
 
-    after(function () {
+    after(function() {
       helper.unloadAgent(agent)
     })
 
-    it("when passed nothing", function () {
-      expect(function () { initialize(); }).not.throws()
+    it("when passed nothing", function() {
+      expect(function() { initialize() }).not.throws()
     })
 
-    it("when passed no module", function () {
-      expect(function () { initialize(agent); }).not.throws()
+    it("when passed no module", function() {
+      expect(function() { initialize(agent) }).not.throws()
     })
 
-    it("when passed an empty module", function () {
+    it("when passed an empty module", function() {
       initialize(agent, {})
-      expect(function () { initialize(agent, {}); }).not.throws()
+      expect(function() { initialize(agent, {}) }).not.throws()
     })
   })
 
@@ -46,8 +46,8 @@ describe("an instrumented Hapi application", function () {
       agent.environment.clearFramework()
 
       function Server() {}
-      Server.prototype.route = function(route) {}
-      Server.prototype.start = function() {}
+      Server.prototype.route = () => {}
+      Server.prototype.start = () => {}
 
       stub = {Server : Server}
 
