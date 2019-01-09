@@ -61,7 +61,7 @@ describe('TraceAttributes', function() {
       expect(res.third).to.be.undefined
     })
 
-    it('only includes primitive attribute value types', function() {
+    it('only includes non-null-type primitive attribute values', function() {
       inst = new TraceAttributes({ limit: 10 })
       inst.attributes = {
         first: {
@@ -95,10 +95,11 @@ describe('TraceAttributes', function() {
       }
 
       var res = inst.get(0x01)
-      expect(Object.keys(res).length).to.equal(4)
+      expect(Object.keys(res).length).to.equal(3)
       expect(res.second).to.be.undefined
       expect(res.third).to.be.undefined
       expect(res.sixth).to.be.undefined
+      expect(res.seventh).to.be.undefined
     })
 
     it('returns attributes up to specified limit, regardless of position', function() {
