@@ -9,30 +9,22 @@ var sinon = require('sinon')
 var Config = require('../../../lib/config')
 var securityPolicies = require('../../lib/fixtures').securityPolicies
 
-function idempotentEnv(name, value, callback) {
+function idempotentEnv(envConfig, callback) {
   let saved = {}
-  let envObj = null
 
-  if (typeof name === 'object') {
-    envObj = name
-    callback = callback || value
-  } else {
-    envObj = {[name]: value}
-  }
-
-  Object.keys(envObj).forEach((key) => {
+  Object.keys(envConfig).forEach((key) => {
     // process.env is not a normal object
     if (Object.hasOwnProperty.call(process.env, key)) {
       saved[key] = process.env[key]
     }
 
-    process.env[key] = envObj[key]
+    process.env[key] = envConfig[key]
   })
   try {
     var tc = Config.initialize({})
     callback(tc)
   } finally {
-    Object.keys(envObj).forEach((finalKey) => {
+    Object.keys(envConfig).forEach((finalKey) => {
       if (saved[finalKey]) {
         process.env[finalKey] = saved[finalKey]
       } else {
@@ -53,25 +45,21 @@ describe('the agent configuration', function() {
 
   describe('when overriding configuration values via environment variables', function() {
     it('should pick up the application name', function() {
-      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic', (tc) => {
+      idempotentEnv({'NEW_RELIC_APP_NAME': 'feeling testy,and schizophrenic'}, (tc) => {
         should.exist(tc.app_name)
         expect(tc.app_name).eql(['feeling testy', 'and schizophrenic'])
       })
     })
 
     it('should trim spaces from multiple application names ', function() {
-      idempotentEnv(
-        'NEW_RELIC_APP_NAME',
-        'zero,one, two,  three,   four',
-        function(tc) {
-          should.exist(tc.app_name)
-          expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
-        }
-      )
+      idempotentEnv({'NEW_RELIC_APP_NAME': 'zero,one, two,  three,   four'}, (tc) => {
+        should.exist(tc.app_name)
+        expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
+      })
     })
 
     it('should pick up the license key', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'hambulance', function(tc) {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'hambulance'}, function(tc) {
         should.exist(tc.license_key)
         expect(tc.license_key).to.equal('hambulance')
         expect(tc.host).to.equal('collector.newrelic.com')
@@ -79,7 +67,7 @@ describe('the agent configuration', function() {
     })
 
     it('should pick up the apdex_t', function() {
-      idempotentEnv('NEW_RELIC_APDEX_T', '111', function(tc) {
+      idempotentEnv({'NEW_RELIC_APDEX_T': '111'}, function(tc) {
         should.exist(tc.apdex_t)
         expect(tc.apdex_t).to.be.a('number')
         expect(tc.apdex_t).to.equal(111)
@@ -87,29 +75,29 @@ describe('the agent configuration', function() {
     })
 
     it('should pick up the collector host', function() {
-      idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
+      idempotentEnv({'NEW_RELIC_HOST': 'localhost'}, function(tc) {
         should.exist(tc.host)
         expect(tc.host).equal('localhost')
       })
     })
 
     it('should parse the region off the license key', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'eu01xxhambulance'}, function(tc) {
         should.exist(tc.host)
         expect(tc.host).equal('collector.eu01.nr-data.net')
       })
     })
 
     it('should pick up the security policies token', function() {
-      idempotentEnv( 'NEW_RELIC_SECURITY_POLICIES_TOKEN', 'super secure', function(tc) {
+      idempotentEnv({'NEW_RELIC_SECURITY_POLICIES_TOKEN': 'super secure'}, function(tc) {
         should.exist(tc.security_policies_token)
         expect(tc.security_policies_token).equal('super secure')
       })
     })
 
     it('should take an explicit host over the license key parsed host', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function() {
-        idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'eu01xxhambulance'}, function() {
+        idempotentEnv({'NEW_RELIC_HOST': 'localhost'}, function(tc) {
           should.exist(tc.host)
           expect(tc.host).equal('localhost')
         })
@@ -118,46 +106,47 @@ describe('the agent configuration', function() {
 
     it('should pick up on feature flags set via environment variables', function() {
       const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
-      idempotentEnv(ffNamePrefix + 'AWAIT_SUPPORT', 'false', function(tc) {
+      const awaitFeatureFlag = ffNamePrefix + 'AWAIT_SUPPORT'
+      idempotentEnv({[awaitFeatureFlag]: 'false'}, function(tc) {
         expect(tc.feature_flag.await_support).equal(false)
       })
     })
 
     it('should pick up the collector port', function() {
-      idempotentEnv('NEW_RELIC_PORT', 7777, function(tc) {
+      idempotentEnv({'NEW_RELIC_PORT': 7777}, function(tc) {
         should.exist(tc.port)
         expect(tc.port).equal('7777')
       })
     })
 
     it('should pick up exception message omission settings', function() {
-      idempotentEnv('NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED', 'please', function(tc) {
+      idempotentEnv({'NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED': 'please'}, (tc) => {
         should.exist(tc.strip_exception_messages.enabled)
         expect(tc.strip_exception_messages.enabled).equal(true)
       })
     })
 
     it('should pick up the proxy host', function() {
-      idempotentEnv('NEW_RELIC_PROXY_HOST', 'proxyhost', function(tc) {
+      idempotentEnv({'NEW_RELIC_PROXY_HOST': 'proxyhost'}, function(tc) {
         should.exist(tc.proxy_host)
         expect(tc.proxy_host).equal('proxyhost')
       })
     })
 
     it('should pick up on the DT env var', function() {
-      idempotentEnv('NEW_RELIC_DISTRIBUTED_TRACING_ENABLED', 'true', function(tc) {
+      idempotentEnv({'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'true'}, function(tc) {
         expect(tc.distributed_tracing.enabled).equal(true)
       })
     })
 
     it('should pick up on the spans env var', function() {
-      idempotentEnv('NEW_RELIC_SPAN_EVENTS_ENABLED', 'true', function(tc) {
+      idempotentEnv({'NEW_RELIC_SPAN_EVENTS_ENABLED': 'true'}, function(tc) {
         expect(tc.span_events.enabled).equal(true)
       })
     })
 
     it('should pick up the billing hostname', function() {
-      idempotentEnv('NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS', 123, function(tc) {
+      idempotentEnv({'NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS': 123}, function(tc) {
         should.exist(tc.utilization.logical_processors)
         expect(tc.utilization.logical_processors).equal('123')
       })
@@ -165,21 +154,21 @@ describe('the agent configuration', function() {
 
     it('should pick up the total ram of the system', function() {
       var env = 'NEW_RELIC_UTILIZATION_BILLING_HOSTNAME'
-      idempotentEnv(env, 'a test string', function(tc) {
+      idempotentEnv({[env]: 'a test string'}, function(tc) {
         should.exist(tc.utilization.billing_hostname)
         expect(tc.utilization.billing_hostname).equal('a test string')
       })
     })
 
     it('should pick up the number of logical processors of the system', function() {
-      idempotentEnv('NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB', 123, function(tc) {
+      idempotentEnv({'NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB': 123}, function(tc) {
         should.exist(tc.utilization.total_ram_mib)
         expect(tc.utilization.total_ram_mib).equal('123')
       })
     })
 
     it('should pick up the proxy port', function() {
-      idempotentEnv('NEW_RELIC_PROXY_PORT', 7777, function(tc) {
+      idempotentEnv({'NEW_RELIC_PROXY_PORT': 7777}, function(tc) {
         should.exist(tc.proxy_port)
         expect(tc.proxy_port).equal('7777')
       })
@@ -187,7 +176,7 @@ describe('the agent configuration', function() {
 
     it('should pick up instance reporting', function() {
       var env = 'NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED'
-      idempotentEnv(env, false, function(tc) {
+      idempotentEnv({[env]: false}, function(tc) {
         should.exist(tc.datastore_tracer.instance_reporting.enabled)
         expect(tc.datastore_tracer.instance_reporting.enabled).equal(false)
       })
@@ -195,14 +184,14 @@ describe('the agent configuration', function() {
 
     it('should pick up instance database name reporting', function() {
       var env = 'NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED'
-      idempotentEnv(env, false, function(tc) {
+      idempotentEnv({[env]: false}, function(tc) {
         should.exist(tc.datastore_tracer.database_name_reporting.enabled)
         expect(tc.datastore_tracer.database_name_reporting.enabled).equal(false)
       })
     })
 
     it('should pick up the log level', function() {
-      idempotentEnv('NEW_RELIC_LOG_LEVEL', 'XXNOEXIST', function(tc) {
+      idempotentEnv({'NEW_RELIC_LOG_LEVEL': 'XXNOEXIST'}, function(tc) {
         should.exist(tc.logging.level)
         expect(tc.logging.level).equal('XXNOEXIST')
       })
@@ -216,7 +205,7 @@ describe('the agent configuration', function() {
         'err': 'error'
       }
       for (var key in logAliases) { // eslint-disable-line guard-for-in
-        idempotentEnv('NEW_RELIC_LOG_LEVEL', key, function(tc) {
+        idempotentEnv({'NEW_RELIC_LOG_LEVEL': key}, function(tc) {
           should.exist(tc.logging.level)
           expect(tc.logging).to.have.property('level', logAliases[key])
         })
@@ -224,49 +213,49 @@ describe('the agent configuration', function() {
     })
 
     it('should pick up the log filepath', function() {
-      idempotentEnv('NEW_RELIC_LOG', '/highway/to/the/danger/zone', function(tc) {
+      idempotentEnv({'NEW_RELIC_LOG': '/highway/to/the/danger/zone'}, function(tc) {
         should.exist(tc.logging.filepath)
         expect(tc.logging.filepath).equal('/highway/to/the/danger/zone')
       })
     })
 
     it('should pick up whether the agent is enabled', function() {
-      idempotentEnv('NEW_RELIC_ENABLED', 0, function(tc) {
+      idempotentEnv({'NEW_RELIC_ENABLED': 0}, function(tc) {
         should.exist(tc.agent_enabled)
         expect(tc.agent_enabled).equal(false)
       })
     })
 
     it('should pick up whether to capture attributes', function() {
-      idempotentEnv('NEW_RELIC_ATTRIBUTES_ENABLED', 'yes', function(tc) {
+      idempotentEnv({'NEW_RELIC_ATTRIBUTES_ENABLED': 'yes'}, function(tc) {
         should.exist(tc.attributes.enabled)
         expect(tc.attributes.enabled).equal(true)
       })
     })
 
     it('should pick up whether to add attribute include rules', function() {
-      idempotentEnv('NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED', 'yes', function(tc) {
+      idempotentEnv({'NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED': 'yes'}, function(tc) {
         should.exist(tc.attributes.include_enabled)
         expect(tc.attributes.include_enabled).equal(true)
       })
     })
 
     it('should pick up excluded attributes', function() {
-      idempotentEnv('NEW_RELIC_ATTRIBUTES_EXCLUDE', 'one,two,three', function(tc) {
+      idempotentEnv({'NEW_RELIC_ATTRIBUTES_EXCLUDE': 'one,two,three'}, function(tc) {
         should.exist(tc.attributes.exclude)
         expect(tc.attributes.exclude).eql(['one', 'two', 'three'])
       })
     })
 
     it('should pick up whether the error collector is enabled', function() {
-      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ENABLED', 'NO', function(tc) {
+      idempotentEnv({'NEW_RELIC_ERROR_COLLECTOR_ENABLED': 'NO'}, function(tc) {
         should.exist(tc.error_collector.enabled)
         expect(tc.error_collector.enabled).equal(false)
       })
     })
 
     it('should pick up whether error collector attributes are enabled', function() {
-      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED', 'NO', function(tc) {
+      idempotentEnv({'NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED': 'NO'}, function(tc) {
         should.exist(tc.error_collector.attributes.enabled)
         expect(tc.error_collector.attributes.enabled).equal(false)
       })
@@ -274,8 +263,7 @@ describe('the agent configuration', function() {
 
     it('should pick up which status codes are ignored', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '401,404,502',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '401,404,502'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([401, 404, 502])
@@ -285,8 +273,7 @@ describe('the agent configuration', function() {
 
     it('should pick up which status codes are ignored when using a range', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '401, 420-421, 502',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '401, 420-421, 502'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([401, 420, 421, 502])
@@ -296,8 +283,7 @@ describe('the agent configuration', function() {
 
     it('should not add codes given with invalid range', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '421-420',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '421-420'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
@@ -307,8 +293,7 @@ describe('the agent configuration', function() {
 
     it('should not add codes if given out of range', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '1 - 1776',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '1 - 1776'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
@@ -318,8 +303,7 @@ describe('the agent configuration', function() {
 
     it('should allow negative status codes ', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '-7',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '-7'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([-7])
@@ -329,8 +313,7 @@ describe('the agent configuration', function() {
 
     it('should not add codes that parse to NaN ', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        'abc',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': 'abc'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
@@ -339,7 +322,7 @@ describe('the agent configuration', function() {
     })
 
     it('should pick up whether the transaction tracer is enabled', function() {
-      idempotentEnv('NEW_RELIC_TRACER_ENABLED', false, function(tc) {
+      idempotentEnv({'NEW_RELIC_TRACER_ENABLED': false}, function(tc) {
         should.exist(tc.transaction_tracer.enabled)
         expect(tc.transaction_tracer.enabled).equal(false)
       })
@@ -347,21 +330,21 @@ describe('the agent configuration', function() {
 
     it('should pick up whether transaction tracer attributes are enabled', function() {
       var key = 'NEW_RELIC_TRANSACTION_TRACER_ATTRIBUTES_ENABLED'
-      idempotentEnv(key, false, function(tc) {
+      idempotentEnv({[key]: false}, function(tc) {
         should.exist(tc.transaction_tracer.attributes.enabled)
         expect(tc.transaction_tracer.attributes.enabled).equal(false)
       })
     })
 
     it('should pick up the transaction trace threshold', function() {
-      idempotentEnv('NEW_RELIC_TRACER_THRESHOLD', 0.02, function(tc) {
+      idempotentEnv({'NEW_RELIC_TRACER_THRESHOLD': 0.02}, function(tc) {
         should.exist(tc.transaction_tracer.transaction_threshold)
         expect(tc.transaction_tracer.transaction_threshold).equal(0.02)
       })
     })
 
     it('should pick up the transaction trace Top N scale', function() {
-      idempotentEnv('NEW_RELIC_TRACER_TOP_N', 5, function(tc) {
+      idempotentEnv({'NEW_RELIC_TRACER_TOP_N': 5}, function(tc) {
         should.exist(tc.transaction_tracer.top_n)
         expect(tc.transaction_tracer.top_n).equal('5')
       })
@@ -369,8 +352,10 @@ describe('the agent configuration', function() {
 
     it('should pick up renaming rules', function() {
       idempotentEnv(
-        'NEW_RELIC_NAMING_RULES',
-        '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}',
+        {
+          'NEW_RELIC_NAMING_RULES':
+          '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}'
+        },
         function(tc) {
           should.exist(tc.rules.name)
           expect(tc.rules.name).eql([
@@ -383,8 +368,10 @@ describe('the agent configuration', function() {
 
     it('should pick up ignoring rules', function() {
       idempotentEnv(
-        'NEW_RELIC_IGNORING_RULES',
-        '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$',
+        {
+          'NEW_RELIC_IGNORING_RULES':
+          '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$'
+        },
         function(tc) {
           should.exist(tc.rules.ignore)
           expect(tc.rules.ignore).eql([
@@ -398,56 +385,56 @@ describe('the agent configuration', function() {
     })
 
     it('should pick up whether URL backstop has been turned off', () => {
-      idempotentEnv('NEW_RELIC_ENFORCE_BACKSTOP', 'f', function(tc) {
+      idempotentEnv({'NEW_RELIC_ENFORCE_BACKSTOP': 'f'}, function(tc) {
         should.exist(tc.enforce_backstop)
         expect(tc.enforce_backstop).equal(false)
       })
     })
 
     it('should pick app name from APP_POOL_ID', function() {
-      idempotentEnv('APP_POOL_ID', 'Simple Azure app', function(tc) {
+      idempotentEnv({'APP_POOL_ID': 'Simple Azure app'}, function(tc) {
         should.exist(tc.app_name)
         expect(tc.applications()).eql(['Simple Azure app'])
       })
     })
 
     it('should pick up labels', function() {
-      idempotentEnv('NEW_RELIC_LABELS', 'key:value;a:b;', function(tc) {
+      idempotentEnv({'NEW_RELIC_LABELS': 'key:value;a:b;'}, function(tc) {
         should.exist(tc.labels)
         expect(tc.labels).equal('key:value;a:b;')
       })
     })
 
     it('should pickup record_sql', function() {
-      idempotentEnv('NEW_RELIC_RECORD_SQL', 'raw', function(tc) {
+      idempotentEnv({'NEW_RELIC_RECORD_SQL': 'raw'}, function(tc) {
         should.exist(tc.transaction_tracer.record_sql)
         expect(tc.transaction_tracer.record_sql).equal('raw')
       })
     })
 
     it('should pickup explain_threshold', function() {
-      idempotentEnv('NEW_RELIC_EXPLAIN_THRESHOLD', '100', function(tc) {
+      idempotentEnv({'NEW_RELIC_EXPLAIN_THRESHOLD': '100'}, function(tc) {
         should.exist(tc.transaction_tracer.explain_threshold)
         expect(tc.transaction_tracer.explain_threshold).equal(100)
       })
     })
 
     it('should pickup slow_sql.enabled', function() {
-      idempotentEnv('NEW_RELIC_SLOW_SQL_ENABLED', 'true', function(tc) {
+      idempotentEnv({'NEW_RELIC_SLOW_SQL_ENABLED': 'true'}, function(tc) {
         should.exist(tc.labels)
         expect(tc.slow_sql.enabled).equal(true)
       })
     })
 
     it('should pickup slow_sql.max_samples', function() {
-      idempotentEnv('NEW_RELIC_MAX_SQL_SAMPLES', '100', function(tc) {
+      idempotentEnv({'NEW_RELIC_MAX_SQL_SAMPLES': '100'}, function(tc) {
         should.exist(tc.slow_sql.max_samples)
         expect(tc.slow_sql.max_samples).equal(100)
       })
     })
 
     it('should pick up logging.enabled', function() {
-      idempotentEnv('NEW_RELIC_LOG_ENABLED', 'false', function(tc) {
+      idempotentEnv({'NEW_RELIC_LOG_ENABLED': 'false'}, function(tc) {
         should.exist(tc.logging.enabled)
         expect(tc.logging.enabled).equal(false)
       })
@@ -455,20 +442,20 @@ describe('the agent configuration', function() {
 
     it('should pick up message tracer segment reporting', function() {
       var env = 'NEW_RELIC_MESSAGE_TRACER_SEGMENT_PARAMETERS_ENABLED'
-      idempotentEnv(env, false, function(tc) {
+      idempotentEnv({[env]: false}, function(tc) {
         should.exist(tc.message_tracer.segment_parameters.enabled)
         expect(tc.message_tracer.segment_parameters.enabled).equal(false)
       })
     })
 
     it('should pick up disabled utilization detection', function() {
-      idempotentEnv('NEW_RELIC_UTILIZATION_DETECT_AWS', false, function(tc) {
+      idempotentEnv({'NEW_RELIC_UTILIZATION_DETECT_AWS': false}, function(tc) {
         expect(tc.utilization.detect_aws).to.be.false
       })
     })
 
     it('should reject disabling ssl', function() {
-      idempotentEnv('NEW_RELIC_USE_SSL', false, function(tc) {
+      idempotentEnv({'NEW_RELIC_USE_SSL': false}, function(tc) {
         expect(tc.ssl).to.be.true
       })
     })
