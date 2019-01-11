@@ -12,7 +12,7 @@ describe('Inspector instrumentation', function() {
     agent = helper.loadMockedAgent()
   })
 
-  after(function () {
+  after(function() {
     helper.unloadAgent(agent)
   })
 

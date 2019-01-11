@@ -309,8 +309,7 @@ describe('built-in http module instrumentation', function() {
         expect(agent.environment.get('Dispatcher')).to.include('http')
       })
 
-      it('should record unscoped HTTP dispatcher stats after a normal request',
-         function() {
+      it('should record unscoped HTTP dispatcher stats after a normal request', () => {
         var stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
         expect(stats.callCount).equal(2)
       })

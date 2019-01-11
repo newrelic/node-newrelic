@@ -142,8 +142,7 @@ describe('Metrics', function() {
     expect(scoped['Apdex/ScopedMetricsTest']).an('object')
   })
 
-  it('should implicitly create a blank set of metrics when resolving new scope',
-     function() {
+  it('should implicitly create a blank set of metrics when resolving new scope', () => {
     var scoped = metrics._resolve('NOEXISTBRO')
 
     expect(scoped).an('object')

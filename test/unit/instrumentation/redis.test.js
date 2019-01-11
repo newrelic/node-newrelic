@@ -27,7 +27,7 @@ FakeConnection.prototype.setTimeout = function setTimeout(timeout) {
   this.timeout = timeout
 }
 
-FakeConnection.prototype.setKeepAlive = function setKeepAlive(keepAlive){
+FakeConnection.prototype.setKeepAlive = function setKeepAlive(keepAlive) {
   this.keepAlive = keepAlive
 }
 
@@ -49,23 +49,23 @@ describe('agent instrumentation of Redis', function() {
     })
 
     it('when passed no module', function() {
-      expect(function() { initialize(agent); }).not.throws()
+      expect(function() { initialize(agent) }).not.throws()
     })
 
     it('when passed a module with no RedisClient present.', function() {
-      expect(function() { initialize(agent, {}); }).not.throws()
+      expect(function() { initialize(agent, {}) }).not.throws()
     })
   })
 
   // Redis has a lot of commands, and this is not all of them.
-  describe('when run', function () {
+  describe('when run', function() {
     var agent
     var client
     var connection
     var mockConnection
 
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.instrumentMockedAgent()
       var redis = require('redis')
 
@@ -77,31 +77,33 @@ describe('agent instrumentation of Redis', function() {
       client.port = 8765
     })
 
-    afterEach(function () {
+    afterEach(function() {
       mockConnection.verify()
       helper.unloadAgent(agent)
     })
 
-    it('should instrument PING', function (done) {
+    it('should instrument PING', function(done) {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once()
 
-      agent.once('transactionFinished', function (transaction) {
+      agent.once('transactionFinished', function(transaction) {
         var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping')
         expect(stats.callCount).equal(1)
 
         return done()
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         should.exist(transaction)
 
+        /* eslint-disable new-cap */
         client.PING(function cb_PING(error, results) {
           if (error) return done(error)
 
           should.exist(agent.getTransaction())
           expect(results, 'PING should still work').equal('PONG')
         })
+        /* eslint-enable new-cap */
 
         should.exist(connection.on_data)
         connection.on_data(Buffer.from('+PONG\r\n'))
@@ -110,52 +112,56 @@ describe('agent instrumentation of Redis', function() {
       })
     })
 
-    it('should instrument PING without callback', function (done) {
+    it('should instrument PING without callback', function(done) {
       mockConnection.expects('write').withExactArgs('*1\r\n$4\r\nping\r\n').once()
 
-      agent.once('transactionFinished', function (transaction) {
+      agent.once('transactionFinished', function(transaction) {
         var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping')
         expect(stats.callCount).equal(1)
 
         return done()
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         should.exist(transaction)
 
-        client.PING(function cb_PING(error, results) {
+        /* eslint-disable new-cap */
+        client.PING(function cb_PING() {
           transaction.end()
         })
+        /* eslint-enable new-cap */
 
         should.exist(connection.on_data)
         connection.on_data(Buffer.from('+PONG\r\n'))
       })
     })
 
-    it('should instrument PING with callback in array', function (done) {
+    it('should instrument PING with callback in array', function(done) {
       mockConnection
         .expects('write')
         .withExactArgs('*3\r\n$4\r\nping\r\n$1\r\n1\r\n$1\r\n2\r\n')
         .once()
 
-      agent.once('transactionFinished', function (transaction) {
+      agent.once('transactionFinished', function(transaction) {
         var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping')
         expect(stats.callCount).equal(1)
 
         return done()
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         should.exist(transaction)
 
-        client.PING(1, 2, function (error, results) {
+        /* eslint-disable new-cap */
+        client.PING(1, 2, function(error, results) {
           if (error) return done(error)
 
           should.exist(agent.getTransaction())
           expect(results, 'PING should still work').equal('PONG')
         })
+        /* eslint-enable new-cap */
 
         should.exist(connection.on_data)
         connection.on_data(Buffer.from('+PONG\r\n'))
@@ -164,26 +170,28 @@ describe('agent instrumentation of Redis', function() {
       })
     })
 
-    it('should instrument PING with no callback in array', function (done) {
+    it('should instrument PING with no callback in array', function(done) {
       mockConnection
         .expects('write')
         .withExactArgs('*3\r\n$4\r\nping\r\n$1\r\n1\r\n$1\r\n2\r\n')
         .once()
 
-      agent.once('transactionFinished', function (transaction) {
+      agent.once('transactionFinished', function(transaction) {
         var stats = transaction.metrics.getMetric('Datastore/operation/Redis/ping')
         expect(stats.callCount).equal(1)
 
         return done()
       })
 
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function() {
         var transaction = agent.getTransaction()
         should.exist(transaction)
 
-        client.PING(1, 2, function (error, results) {
+        /* eslint-disable new-cap */
+        client.PING(1, 2, function() {
           transaction.end()
         })
+        /* eslint-enable new-cap */
 
         should.exist(connection.on_data)
         connection.on_data(Buffer.from('+PONG\r\n'))

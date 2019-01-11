@@ -76,25 +76,25 @@ if (global.Promise) {
           segment = agent.tracer.getSegment()
           setTimeout(resolve, 0)
         })
-        .then(function() {
-          throw new Error('some error')
-        })
-        .then(function() {
-          throw new Error('We shouldn\'t be here!')
-        })
-        .catch(function(err) {
-          process.nextTick(function() {
-            expect(agent.tracer.getSegment())
-              .to.exist
-              .and.to.equal(segment)
-            expect(err)
-              .to.have.property('message', 'some error')
-            expect(agent.getTransaction())
-              .to.exist
-              .and.to.equal(transaction)
-            done()
+          .then(function() {
+            throw new Error('some error')
           })
-        })
+          .then(function() {
+            throw new Error('We shouldn\'t be here!')
+          })
+          .catch(function(err) {
+            process.nextTick(function() {
+              expect(agent.tracer.getSegment())
+                .to.exist
+                .and.to.equal(segment)
+              expect(err)
+                .to.have.property('message', 'some error')
+              expect(agent.getTransaction())
+                .to.exist
+                .and.to.equal(transaction)
+              done()
+            })
+          })
       })
     })
   })
