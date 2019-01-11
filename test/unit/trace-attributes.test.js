@@ -1,15 +1,15 @@
 'use strict'
 
-var chai = require('chai')
-var expect = chai.expect
-var TraceAttributes = require('../../lib/transaction/trace/attributes')
+const chai = require('chai')
+const expect = chai.expect
+const TraceAttributes = require('../../lib/transaction/trace/attributes')
 
-describe('TraceAttributes', function() {
-  var inst = null
+describe('TraceAttributes', () => {
+  let inst = null
 
-  describe('#get', function() {
-    it('gets attributes by destination, truncating values if necessary', function() {
-      var longVal = [
+  describe('#get', () => {
+    it('gets attributes by destination, truncating values if necessary', () => {
+      const longVal = [
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
         'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
@@ -34,12 +34,12 @@ describe('TraceAttributes', function() {
       }
 
       expect(Buffer.byteLength(longVal)).to.be.above(255)
-      var res = inst.get(0x01)
+      const res = inst.get(0x01)
       expect(res.valid).to.equal(50)
       expect(Buffer.byteLength(res.tooLong)).to.equal(255)
     })
 
-    it('only returns attributes up to specified limit', function() {
+    it('only returns attributes up to specified limit', () => {
       inst = new TraceAttributes({ limit: 2 })
       inst.attributes = {
         first: {
@@ -56,12 +56,12 @@ describe('TraceAttributes', function() {
         }
       }
 
-      var res = inst.get(0x01)
+      const res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
       expect(res.third).to.be.undefined
     })
 
-    it('only includes primitive attribute value types', function() {
+    it('only includes non-null-type primitive attribute values', () => {
       inst = new TraceAttributes({ limit: 10 })
       inst.attributes = {
         first: {
@@ -94,14 +94,15 @@ describe('TraceAttributes', function() {
         }
       }
 
-      var res = inst.get(0x01)
-      expect(Object.keys(res).length).to.equal(4)
+      const res = inst.get(0x01)
+      expect(Object.keys(res).length).to.equal(3)
       expect(res.second).to.be.undefined
       expect(res.third).to.be.undefined
       expect(res.sixth).to.be.undefined
+      expect(res.seventh).to.be.undefined
     })
 
-    it('returns attributes up to specified limit, regardless of position', function() {
+    it('returns attributes up to specified limit, regardless of position', () => {
       inst = new TraceAttributes({ limit: 2 })
       inst.attributes = {
         first: {
@@ -118,14 +119,14 @@ describe('TraceAttributes', function() {
         }
       }
 
-      var res = inst.get(0x01)
+      const res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
       expect(res.first).to.be.undefined
     })
   })
 
-  describe('#reset', function() {
-    it('resets instance attributes and count', function() {
+  describe('#reset', () => {
+    it('resets instance attributes and count', () => {
       inst = new TraceAttributes()
       inst.attributes = {
         first: {
