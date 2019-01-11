@@ -1,26 +1,21 @@
 'use strict'
 
-module.exports = function initialize(agent, AWS, moduleName, shim) {
-  if (!shim.isFunction(AWS.NodeHttpClient)) {
-    shim.logger.debug('Could not find NodeHttpClient, not instrumenting.')
-    return false
-  }
+const INSTRUMENTATIONS = [
+  require('./core')
+]
 
-  shim.wrap(AWS.NodeHttpClient.prototype, 'handleRequest', wrapHandleRequest)
-  return true
-}
-
-function wrapHandleRequest(shim, handleRequest) {
-  return function wrappedHandleRequest(httpRequest) {
-    if (httpRequest) {
-      if (!httpRequest.headers) {
-        httpRequest.headers = Object.create(null)
-      }
-      httpRequest.headers[shim.DISABLE_DT] = true
-    } else {
-      shim.logger.debug('Unknown arguments to AWS.NodeHttpClient#handleRequest!')
+module.exports = function initialize(shim, AWS) {
+  // Validate every instrumentation before attempting to run any of them.
+  for (let instrumentation of INSTRUMENTATIONS) {
+    if (!instrumentation.validate(shim, AWS)) {
+      return false
     }
-
-    return handleRequest.apply(this, arguments)
   }
+
+  for (let instrumentation of INSTRUMENTATIONS) {
+    const subshim = shim.makeSpecializedShim(instrumentation.type, instrumentation.name)
+    instrumentation.instrument(subshim, AWS)
+  }
+
+  return true
 }
