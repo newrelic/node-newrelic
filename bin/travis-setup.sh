@@ -16,6 +16,13 @@ function add_toolchain {
   TOOLCHAIN_ADDED="true"
 }
 
+# npm 5 introduced 'ci' and 6 introduce 'audit'
+if [ "$(get_version npm)" < "6" ]; then
+  echo " --- upgrading npm to 6 --- "
+  npm install -g npm@6
+else
+  echo " --- not upgrading npm ($(npm --version)) --- "
+fi
 
 if [ "$SUITE" = "versioned" ]; then
 
@@ -28,13 +35,6 @@ if [ "$SUITE" = "versioned" ]; then
     echo " --- not upgrading GCC ($(gcc --version)) --- "
   fi
 
-  if [ "$(get_version npm)" == "5" ]; then
-    echo " --- upgrading npm to 6 --- "
-    npm install -g npm@6
-  else
-    echo " --- not upgrading npm ($(npm --version)) --- "
-  fi
-
   echo " --- installing $SUITE requirements --- "
 
   # MongoDB is always installed in integrations and versioned.
@@ -43,15 +43,6 @@ if [ "$SUITE" = "versioned" ]; then
   ./bin/travis-install-mongo.sh > /dev/null
 
   echo " --- done installing $SUITE requirements --- "
-
-elif [ "$SUITE" = "security" ]; then
-  # npm 6 has the `audit` command used for security check.
-  if [ "$(get_version npm)" != "6" ]; then
-    echo " -- upgrading npm to 6 --- "
-    npm install -g npm@6
-  else
-    echo " --- not upgrading npm ($(npm --version)) --- "
-  fi
 else
   echo " --- no $SUITE installation requirements --- "
 fi
