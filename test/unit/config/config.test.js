@@ -9,8 +9,14 @@ var sinon = require('sinon')
 var Config = require('../../../lib/config')
 var securityPolicies = require('../../lib/fixtures').securityPolicies
 
-function idempotentEnv(envConfig, callback) {
+function idempotentEnv(envConfig, initialConfig, callback) {
   let saved = {}
+
+  // Allow idempotentEnv to be called w/o initialConfig
+  if (typeof initialConfig === 'function') {
+    callback = initialConfig
+    initialConfig = {}
+  }
 
   Object.keys(envConfig).forEach((key) => {
     // process.env is not a normal object
@@ -21,7 +27,7 @@ function idempotentEnv(envConfig, callback) {
     process.env[key] = envConfig[key]
   })
   try {
-    var tc = Config.initialize({})
+    var tc = Config.initialize(initialConfig)
     callback(tc)
   } finally {
     Object.keys(envConfig).forEach((finalKey) => {
@@ -621,6 +627,77 @@ describe('the agent configuration', function() {
         NEW_RELIC_ACCOUNT_ID: '91011'
       }, (tc) => {
         expect(tc.account_id).to.equal('91011')
+      })
+    })
+
+    describe('via configuration input', () => {
+      it('should default logging to disabled', () => {
+        const config = Config.initialize({
+          serverless_mode: {enabled: true},
+          feature_flag: {serverless_mode: true}
+        })
+
+        expect(config.logging.enabled).to.be.false
+      })
+
+      it('should allow logging to be enabled from configuration input', () => {
+        const config = Config.initialize({
+          serverless_mode: {enabled: true},
+          feature_flag: {serverless_mode: true},
+          logging: {enabled: true}
+        })
+        expect(config.logging.enabled).to.be.true
+      })
+
+      it('should allow logging to be enabled from env ', () => {
+        const inputConfig = {
+          serverless_mode: {enabled: true},
+          feature_flag: {serverless_mode: true}
+        }
+
+        const envVariables = {
+          NEW_RELIC_LOG_ENABLED: true
+        }
+
+        idempotentEnv(envVariables, inputConfig, (config) => {
+          expect(config.logging.enabled).to.be.true
+        })
+      })
+    })
+
+    describe('via environment variables', () => {
+      it('should default logging to disabled', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+        }, (config) => {
+          expect(config.logging.enabled).to.be.false
+        })
+      })
+
+      it('should allow logging to be enabled from env', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
+          NEW_RELIC_LOG_ENABLED: true
+        }, (config) => {
+          expect(config.logging.enabled).to.be.true
+        })
+      })
+
+      it('should allow logging to be enabled from configuration ', () => {
+        const envVariables = {
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+        }
+
+        const inputConfig = {
+          logging: {enabled: true}
+        }
+
+        idempotentEnv(envVariables, inputConfig, (config) => {
+          expect(config.logging.enabled).to.be.true
+        })
       })
     })
   })
