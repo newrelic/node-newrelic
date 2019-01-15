@@ -1,9 +1,9 @@
 'use strict'
 
-var chai   = require('chai')
-var should = chai.should()
-var expect = chai.expect
-var API    = require('../../../stub_api.js')
+const chai = require('chai')
+const should = chai.should()
+const expect = chai.expect
+const API = require('../../../stub_api')
 
 
 describe("the stubbed New Relic agent API", function() {
@@ -13,8 +13,8 @@ describe("the stubbed New Relic agent API", function() {
     api = new API()
   })
 
-  it("should export 24 API calls", function() {
-    expect(Object.keys(api.constructor.prototype).length).to.equal(24)
+  it('should export 25 API calls', () => {
+    expect(Object.keys(api.constructor.prototype).length).to.equal(25)
   })
 
   it("exports a transaction naming function", function() {
