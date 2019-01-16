@@ -1,3 +1,18 @@
+### 5.1.0 (2019-01-16):
+
+* Added new shim type: `ConglomerateShim`
+
+  This shim class is useful for instrumenting modules which implement several service
+  interfaces of different types.
+
+* Disabled logging by default when serverless_mode is enabled. Please note
+  serverless/lambda monitoring is not yet officially released.
+
+* `null` trace attribute values are no longer sent to New Relic.
+
+  This change brings the Node agent in alignment with the behavior of other language
+  agents.
+
 ### 5.0.0 (2019-01-08):
 
 * Dropped support for Node versions less than 6.
@@ -46,7 +61,7 @@
 
 ### 4.13.0 (2018-12-20):
 
-* Fixed clearing of active harvest via _stopHarvester()
+* Fixed clearing of active harvest via `_stopHarvester()`.
 
 * Fixed handling of harvest endpoints when not all fail.
 
