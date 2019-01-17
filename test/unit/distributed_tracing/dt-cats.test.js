@@ -48,102 +48,103 @@ describe('distributed tracing', function() {
           if (testCase.intrinsics.target_events.indexOf('TransactionError') > -1) {
             tx.addException(new Error('uh oh'))
           }
-          if (testCase.outbound_payloads) {
-            testCase.outbound_payloads.forEach((outbound) => {
-              const created = JSON.parse(tx.createDistributedTracePayload().text())
-              const exact = outbound.exact
-              const keyRegex = /^d\.(.{2})$/
-              Object.keys(exact).forEach((key) => {
-                const match = keyRegex.exec(key)
-                if (match) {
-                  expect(created.d[match[1]]).to.equal(exact[key])
-                } else {
-                  expect(created.v).to.have.ordered.members(exact.v)
-                }
-              })
+        })
 
-              if (outbound.expected) {
-                outbound.expected.forEach((key) => {
-                  expect(created.d).to.have.property(keyRegex.exec(key)[1])
-                })
-              }
-
-              if (outbound.unexpected) {
-                outbound.unexpected.forEach((key) => {
-                  expect(created.d).to.not.have.property(keyRegex.exec(key)[1])
-                })
+        if (testCase.outbound_payloads) {
+          testCase.outbound_payloads.forEach((outbound) => {
+            const created = JSON.parse(tx.createDistributedTracePayload().text())
+            const exact = outbound.exact
+            const keyRegex = /^d\.(.{2})$/
+            Object.keys(exact).forEach((key) => {
+              const match = keyRegex.exec(key)
+              if (match) {
+                expect(created.d[match[1]]).to.equal(exact[key])
+              } else {
+                expect(created.v).to.have.ordered.members(exact.v)
               }
             })
+
+            if (outbound.expected) {
+              outbound.expected.forEach((key) => {
+                expect(created.d).to.have.property(keyRegex.exec(key)[1])
+              })
+            }
+
+            if (outbound.unexpected) {
+              outbound.unexpected.forEach((key) => {
+                expect(created.d).to.not.have.property(keyRegex.exec(key)[1])
+              })
+            }
+          })
+        }
+
+        tx.trace.root.touch()
+        tx.end()
+        const intrinsics = testCase.intrinsics
+        intrinsics.target_events.forEach((type) => {
+          expect(type).to.be.oneOf([
+            'Transaction',
+            'TransactionError',
+            'Span'
+          ])
+
+          const common = intrinsics.common
+          const specific = intrinsics[type] || {}
+          var toCheck
+          switch (type) {
+            case 'Transaction':
+              toCheck = agent.events.toArray()
+              break
+            case 'TransactionError':
+              toCheck = agent.errors.getEvents()
+              break
+            case 'Span':
+              toCheck = agent.spans.getEvents()
+              break
           }
-          tx.trace.root.touch()
-          tx.end(() => {
-            const intrinsics = testCase.intrinsics
-            intrinsics.target_events.forEach((type) => {
-              expect(type).to.be.oneOf([
-                'Transaction',
-                'TransactionError',
-                'Span'
-              ])
+          const exact = Object.assign(
+            specific.exact || {},
+            common.exact || {}
+          )
 
-              const common = intrinsics.common
-              const specific = intrinsics[type] || {}
-              var toCheck
-              switch (type) {
-                case 'Transaction':
-                  toCheck = agent.events.toArray()
-                  break
-                case 'TransactionError':
-                  toCheck = agent.errors.getEvents()
-                  break
-                case 'Span':
-                  toCheck = agent.spans.getEvents()
-                  break
-              }
-              const exact = Object.assign(
-                specific.exact || {},
-                common.exact || {}
-              )
+          const arbitrary = (specific.expected || []).concat(common.expected || [])
+          const unexpected =
+            (specific.unexpected || []).concat(common.unexpected || [])
 
-              const arbitrary = (specific.expected || []).concat(common.expected || [])
-              const unexpected =
-                (specific.unexpected || []).concat(common.unexpected || [])
+          expect(toCheck).to.have.length.above(0)
+          toCheck.forEach((event) => {
+            // Span events are not payload-formatted straight out of the
+            // aggregator.
+            if (typeof event.toJSON === 'function') {
+              event = event.toJSON()
+            }
 
-              expect(toCheck).to.have.length.above(0)
-              toCheck.forEach((event) => {
-                // Span events are not payload-formatted straight out of the
-                // aggregator.
-                if (typeof event.toJSON === 'function') {
-                  event = event.toJSON()
-                }
-
-                const attributes = event[0]
-                arbitrary.forEach((key) => {
-                  expect(attributes, `${type} should have ${key}`).to.have.property(key)
-                })
-                unexpected.forEach((key) => {
-                  expect(attributes, `${type} should not have ${key}`)
-                    .to.not.have.property(key)
-                })
-                Object.keys(exact).forEach((key) => {
-                  expect(attributes[key], `${type} should have equal ${key}`)
-                    .to.equal(exact[key])
-                })
-              })
+            const attributes = event[0]
+            arbitrary.forEach((key) => {
+              expect(attributes, `${type} should have ${key}`).to.have.property(key)
             })
-
-            const metrics = agent.metrics
-            testCase.expected_metrics.forEach((metricPair) => {
-              const metricName = metricPair[0]
-              const callCount = metrics.getOrCreateMetric(metricName).callCount
-              const metricCount = metricPair[1]
-              expect(
-                callCount,
-                `${metricName} should have ${metricCount} samples`
-              ).to.equal(metricCount)
+            unexpected.forEach((key) => {
+              expect(attributes, `${type} should not have ${key}`)
+                .to.not.have.property(key)
             })
-            done()
+            Object.keys(exact).forEach((key) => {
+              expect(attributes[key], `${type} should have equal ${key}`)
+                .to.equal(exact[key])
+            })
           })
         })
+
+        const metrics = agent.metrics
+        testCase.expected_metrics.forEach((metricPair) => {
+          const metricName = metricPair[0]
+          const callCount = metrics.getOrCreateMetric(metricName).callCount
+          const metricCount = metricPair[1]
+          expect(
+            callCount,
+            `${metricName} should have ${metricCount} samples`
+          ).to.equal(metricCount)
+        })
+        done()
       })
     })
   })

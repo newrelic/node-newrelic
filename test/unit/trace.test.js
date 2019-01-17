@@ -77,22 +77,21 @@ describe('Trace', function() {
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
-      tx.end(() => {
-        const attributes = tx.trace.intrinsics
-        expect(attributes.traceId).to.equal(tx.id)
-        expect(attributes.guid).to.equal(tx.id)
-        expect(attributes.priority).to.equal(tx.priority)
-        expect(attributes.sampled).to.equal(tx.sampled)
-        expect(attributes.parentId).to.be.undefined
-        expect(attributes.parentSpanId).to.be.undefined
-        expect(tx.sampled).to.equal(true)
-        expect(tx.priority).to.be.greaterThan(1)
-        done()
-      })
+      tx.end()
+      const attributes = tx.trace.intrinsics
+      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.guid).to.equal(tx.id)
+      expect(attributes.priority).to.equal(tx.priority)
+      expect(attributes.sampled).to.equal(tx.sampled)
+      expect(attributes.parentId).to.be.undefined
+      expect(attributes.parentSpanId).to.be.undefined
+      expect(tx.sampled).to.equal(true)
+      expect(tx.priority).to.be.greaterThan(1)
+      done()
     })
   })
 
-  it('should have DT parent attributes on payload accept', function(done) {
+  it('should have DT parent attributes on payload accept', function() {
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
@@ -100,21 +99,19 @@ describe('Trace', function() {
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx.acceptDistributedTracePayload(payload)
-      tx.end(() => {
-        const attributes = tx.trace.intrinsics
-        expect(attributes.traceId).to.equal(tx.id)
-        expect(attributes.guid).to.equal(tx.id)
-        expect(attributes.priority).to.equal(tx.priority)
-        expect(attributes.sampled).to.equal(tx.sampled)
-        expect(attributes['parent.type']).to.equal('App')
-        expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
-        expect(attributes['parent.account']).to.equal(agent.config.account_id)
-        expect(attributes.parentId).to.be.undefined
-        expect(attributes.parentSpanId).to.be.undefined
-        expect(tx.sampled).to.equal(true)
-        expect(tx.priority).to.be.greaterThan(1)
-        done()
-      })
+      tx.end()
+      const attributes = tx.trace.intrinsics
+      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.guid).to.equal(tx.id)
+      expect(attributes.priority).to.equal(tx.priority)
+      expect(attributes.sampled).to.equal(tx.sampled)
+      expect(attributes['parent.type']).to.equal('App')
+      expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
+      expect(attributes['parent.account']).to.equal(agent.config.account_id)
+      expect(attributes.parentId).to.be.undefined
+      expect(attributes.parentSpanId).to.be.undefined
+      expect(tx.sampled).to.equal(true)
+      expect(tx.priority).to.be.greaterThan(1)
     })
   })
 

@@ -702,43 +702,39 @@ describe('Transaction', function() {
     })
 
     describe('for web transactions', function() {
-      it('should use the time until transaction.end() is called', function(done) {
+      it('should use the time until transaction.end() is called', function() {
         transaction.url = 'someUrl'
 
         // add a segment that will end after the transaction ends
         var childSegment = transaction.trace.add('child')
         childSegment.start()
 
-        transaction.end(function() {
-          childSegment.end()
+        transaction.end()
+        childSegment.end()
 
-          // response time should equal the transaction timer duration
-          expect(transaction.getResponseTimeInMillis()).to.equal(
-            transaction.timer.getDurationInMillis()
-          )
+        // response time should equal the transaction timer duration
+        expect(transaction.getResponseTimeInMillis()).to.equal(
+          transaction.timer.getDurationInMillis()
+        )
 
-          done()
-        })
       })
     })
 
     describe('for background transactions', function() {
-      it('should report response time equal to trace duration', function(done) {
+      it('should report response time equal to trace duration', function() {
         // add a segment that will end after the transaction ends
         transaction.type = Transaction.TYPES.BG
         var bgTransactionSegment = transaction.trace.add('backgroundWork')
         bgTransactionSegment.start()
 
-        transaction.end(function() {
-          bgTransactionSegment.end()
+        transaction.end()
+        bgTransactionSegment.end()
 
-          // response time should equal the full duration of the trace
-          expect(transaction.getResponseTimeInMillis()).to.equal(
-            transaction.trace.getDurationInMillis()
-          )
+        // response time should equal the full duration of the trace
+        expect(transaction.getResponseTimeInMillis()).to.equal(
+          transaction.trace.getDurationInMillis()
+        )
 
-          done()
-        })
       })
     })
   })

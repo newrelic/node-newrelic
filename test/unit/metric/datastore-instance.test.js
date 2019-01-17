@@ -58,10 +58,9 @@ describe('Datastore instance metrics collected via the datastore shim', function
       helper.runInTransaction(agent, function(tx) {
         testInstrumented.query()
 
-        tx.end(function() {
-          expect(agent.metrics.unscoped).to.have.property(test.expected_instance_metric)
-          done()
-        })
+        tx.end()
+        expect(agent.metrics.unscoped).to.have.property(test.expected_instance_metric)
+        done()
       })
     })
   })
@@ -116,10 +115,9 @@ describe('Datastore instance metrics captured through the segment', function() {
         child.captureDBInstanceAttributes(dbHost, port, 'foo')
         child.touch()
 
-        tx.end(function() {
-          expect(agent.metrics.unscoped).to.have.property(test.expected_instance_metric)
-          done()
-        })
+        tx.end()
+        expect(agent.metrics.unscoped).to.have.property(test.expected_instance_metric)
+        done()
       })
     })
   })

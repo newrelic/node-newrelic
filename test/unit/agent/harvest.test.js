@@ -222,17 +222,17 @@ describe('Agent harvests', () => {
         agent.errors.add(webTx, new Error('application code error'))
         agent.errors.add(webTx, new RangeError('stack depth exceeded'))
 
-        webTx.end(() => {
-          helper.runInTransaction(agent, (bgTx) => {
-            bgTx.type = 'bg'
-            expect(bgTx.isWeb()).to.be.false
+        webTx.end()
+        helper.runInTransaction(agent, (bgTx) => {
+          bgTx.type = 'bg'
+          expect(bgTx.isWeb()).to.be.false
 
-            agent.errors.add(bgTx, new TypeError('no method last on undefined'))
-            agent.errors.add(bgTx, new Error('application code error'))
-            agent.errors.add(bgTx, new RangeError('stack depth exceeded'))
+          agent.errors.add(bgTx, new TypeError('no method last on undefined'))
+          agent.errors.add(bgTx, new Error('application code error'))
+          agent.errors.add(bgTx, new RangeError('stack depth exceeded'))
 
-            bgTx.end(doHarvest)
-          })
+          bgTx.end()
+          doHarvest()
         })
       })
 
@@ -349,7 +349,10 @@ describe('Agent harvests', () => {
     beforeEach((done) => {
       helper.runInTransaction(agent, (transaction) => {
         tx = transaction
-        setTimeout(() => tx.end(() => done()), 50)
+        setTimeout(() => {
+          tx.end()
+          done()
+        }, 50)
       })
     })
 
@@ -447,7 +450,8 @@ describe('Agent harvests', () => {
       helper.runInTransaction(agent, (transaction) => {
         tx = transaction
         tx.finalizeNameFromUri('/some/test/url', 200)
-        tx.end(() => done())
+        tx.end()
+        done()
       })
     })
 
@@ -501,7 +505,8 @@ describe('Agent harvests', () => {
             helper.runInTransaction(agent, (transaction) => {
               tx = transaction
               tx.finalizeNameFromUri(`/some/test/url/${i}`, 200)
-              tx.end(() => cb())
+              tx.end()
+              cb()
             })
           }, cb)
         },
@@ -554,7 +559,8 @@ describe('Agent harvests', () => {
             helper.runInTransaction(agent, (transaction) => {
               tx = transaction
               tx.finalizeNameFromUri(`/some/test/url/${i}`, 200)
-              tx.end(() => cb())
+              tx.end()
+              cb()
             })
           }, cb)
         },
@@ -743,7 +749,8 @@ describe('Agent harvests', () => {
           new Error().stack
         )
 
-        tx.end(() => done())
+        tx.end()
+        done()
       })
     })
 

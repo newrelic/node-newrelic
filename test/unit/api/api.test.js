@@ -315,11 +315,10 @@ describe('the New Relic agent API', function() {
           var segment = api.shim.getSegment()
           expect(segment).to.exist.and.have.property('name', 'foobar')
         })
-        tx.end(function() {
-          expect(tx.metrics.scoped).to.not.have.property(tx.name)
-          expect(tx.metrics.unscoped).to.not.have.property('Custom/foobar')
-          done()
-        })
+        tx.end()
+        expect(tx.metrics.scoped).to.not.have.property(tx.name)
+        expect(tx.metrics.unscoped).to.not.have.property('Custom/foobar')
+        done()
       })
     })
 
@@ -330,12 +329,10 @@ describe('the New Relic agent API', function() {
           var segment = api.shim.getSegment()
           expect(segment).to.exist.and.have.property('name', 'foobar')
         })
-        tx.end(function() {
-          expect(tx.metrics.scoped).property(tx.name)
-            .to.have.property('Custom/foobar')
-          expect(tx.metrics.unscoped).to.have.property('Custom/foobar')
-          done()
-        })
+        tx.end()
+        expect(tx.metrics.scoped).property(tx.name).to.have.property('Custom/foobar')
+        expect(tx.metrics.unscoped).to.have.property('Custom/foobar')
+        done()
       })
     })
 
@@ -1453,11 +1450,10 @@ describe('the New Relic agent API', function() {
 
           mock = sinon.mock(agent)
           mock.expects('stop').once()
-          tx.end(() => {
-            setImmediate(() => {
-              mock.verify()
-              done()
-            })
+          tx.end()
+          setImmediate(() => {
+            mock.verify()
+            done()
           })
         })
       })
