@@ -1,0 +1,19 @@
+{
+  "name": "aws-sdk-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=6.0"
+      },
+      "dependencies": {
+        "aws-sdk": ">=2.300.0"
+      },
+      "files": [
+        "aws-sdk.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

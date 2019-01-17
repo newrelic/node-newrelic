@@ -9,6 +9,9 @@
     "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests"
   },
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/newrelic/node-newrelic-aws-sdk.git"
@@ -18,7 +21,8 @@
   "devDependencies": {
     "@newrelic/test-utilities": "^3.0.0",
     "eslint": "^5.12.0",
-    "newrelic": "^5.0.0",
+    "newrelic": "^5.1.0",
+    "sinon": "^7.2.2",
     "tap": "^12.1.1"
   },
   "peerDependencies": {
