@@ -273,6 +273,7 @@ tap.test('distributed tracing', (t) => {
       primary_application_id: APP_ID,
       trusted_account_key: ACCOUNT_ID
     })
+    agent.config.encoding_key = 'foobar'
 
     agent.config.account_id = ACCOUNT_ID // Can't be set through config object.
 
@@ -354,11 +355,13 @@ tap.test('distributed tracing', (t) => {
 
   t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
     helper.runInTransaction(agent, (tx) => {
+      const OLD_HEADER = 'x-newrelic-transaction'
       const headers = {[SYMBOLS.DISABLE_DT]: true}
       get(generateUrl(START_PORT, 'start'), {headers}, (err, body) => {
         t.error(err)
 
         t.notOk(body.start.newrelic, 'should not add DT header when disabled')
+        t.notOk(body.start[OLD_HEADER], 'should not add old CAT header either')
         t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
 
         t.notOk(tx.isDistributedTrace, 'should not mark transaction as distributed')
