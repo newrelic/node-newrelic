@@ -9,7 +9,7 @@
   "author": "Wraithan <wraithan@newrelic.com>",
   "license": "UNLICENSED",
   "dependencies": {
-    "express": "~4"
+    "express": "^4.6.0"
   },
   "devDependencies": {
     "chai": "^1"
