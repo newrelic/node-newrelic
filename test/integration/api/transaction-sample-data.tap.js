@@ -37,26 +37,25 @@ tap.test('Collector API should send errors to newrelic.com', function(t) {
 
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
-    transaction.end(function() {
-      t.ok(agent.traces.trace, 'have a slow trace to send')
+    transaction.end()
+    t.ok(agent.traces.trace, 'have a slow trace to send')
 
-      agent.traces.trace.generateJSON((err, encoded) => {
-        t.error(err, 'should encode trace without error')
-        t.ok(encoded, 'have the encoded trace')
+    agent.traces.trace.generateJSON((err, encoded) => {
+      t.error(err, 'should encode trace without error')
+      t.ok(encoded, 'have the encoded trace')
 
-        var payload = [
-          agent.config.run_id,
-          [encoded]
-        ]
+      var payload = [
+        agent.config.run_id,
+        [encoded]
+      ]
 
-        api.transactionSampleData(payload, function(error, command) {
-          t.error(error, 'sent transaction trace without error')
-          t.notOk(command.returned, 'return value is null')
+      api.transactionSampleData(payload, function(error, command) {
+        t.error(error, 'sent transaction trace without error')
+        t.notOk(command.returned, 'return value is null')
 
-          agent.stop((err) => {
-            t.error(err, 'should not fail to stop')
-            t.end()
-          })
+        agent.stop((err) => {
+          t.error(err, 'should not fail to stop')
+          t.end()
         })
       })
     })
