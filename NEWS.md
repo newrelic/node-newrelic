@@ -1,3 +1,28 @@
+### 5.2.0 (2019-01-23):
+
+* Upgraded to `@newrelic/native-metrics` v4.
+
+* Removed outdated config files.
+
+* Removed old, outdated examples.
+
+* Fixed an issue where old CAT headers would be injected while distributed tracing
+  was enabled.
+
+  This would happen if both `cross_application_tracing.enabled` and
+  `distributed_tracing.enabled` were set to `true` and an instrumentation disabled
+  tracing for an outbound request.
+
+* Fixed access to `ConglomerateShim` in `shimmer`.
+
+* Added Neptune to the known database names.
+
+* Updated log messages for missing configuration files to point at the base
+  configuration.
+
+  Previously the log messages pointed at an internal file defining default values
+  for every configuration.
+
 ### 5.1.0 (2019-01-16):
 
 * Added new shim type: `ConglomerateShim`
