@@ -520,14 +520,19 @@ describe('the agent configuration', function() {
 
   describe('with a non-boolean truthy HSM setting', () => {
     it('should enable high security mode', () => {
+      const applyHSM = Config.prototype._applyHighSecurity
+
       let hsmApplied = false
-      Config._applyHighSecurity = () => {
+      Config.prototype._applyHighSecurity = () => {
         hsmApplied = true
       }
       const config = Config.initialize({
         high_security: 'true'
       })
       expect(!!config.high_security).to.be.true
+      expect(hsmApplied).to.be.true
+
+      Config.prototype._applyHighSecurity = applyHSM
     })
   })
 
