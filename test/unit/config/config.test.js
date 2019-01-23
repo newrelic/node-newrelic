@@ -1181,9 +1181,9 @@ describe('the agent configuration', function() {
       }).not.throws()
     })
 
-    it('should not blow up when cross_application_tracing is received', function() {
+    it('should not blow up when cross_application_tracer.enabled is received', function() {
       expect(function() {
-        config.onConnect({'cross_application_tracing': true})
+        config.onConnect({'cross_application_tracer.enabled': true})
       }).not.throws()
     })
 
