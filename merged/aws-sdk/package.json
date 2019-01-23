@@ -20,10 +20,10 @@
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@newrelic/test-utilities": "^3.0.0",
-    "eslint": "^5.12.0",
-    "newrelic": "^5.1.0",
-    "sinon": "^7.2.2",
-    "tap": "^12.1.1"
+    "eslint": "^5.12.1",
+    "newrelic": "^5.2.0",
+    "sinon": "^7.2.3",
+    "tap": "^12.4.0"
   },
   "peerDependencies": {
     "newrelic": ">=5.0.0"
