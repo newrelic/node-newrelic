@@ -17,7 +17,7 @@ function add_toolchain {
 }
 
 # npm 5 introduced 'ci' and 6 introduce 'audit'
-if [ "$(get_version npm)" < "6" ]; then
+if [ $(get_version npm) < 6 ]; then
   echo " --- upgrading npm to 6 --- "
   npm install -g npm@6
 else
