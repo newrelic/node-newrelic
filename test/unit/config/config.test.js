@@ -518,6 +518,19 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('with a non-boolean truthy HSM setting', () => {
+    it('should enable high security mode', () => {
+      let hsmApplied = false
+      Config._applyHighSecurity = () => {
+        hsmApplied = true
+      }
+      const config = Config.initialize({
+        high_security: 'true'
+      })
+      expect(!!config.high_security).to.be.true
+    })
+  })
+
   describe('when loading from a file', () => {
     describe('serverless mode', () => {
       it('should be false when the feature flag is not specified', () => {
