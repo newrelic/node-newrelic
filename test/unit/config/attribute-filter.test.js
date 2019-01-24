@@ -185,6 +185,14 @@ function getDefault() {
         include: [],
         exclude: []
       }
+    },
+
+    span_events: {
+      attributes: {
+        enabled: true,
+        include: [],
+        exclude: []
+      }
     }
   }
 }
