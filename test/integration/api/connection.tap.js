@@ -33,9 +33,8 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', funct
     t.ok(returned.agent_run_id, 'got run ID')
     t.ok(agent.config.run_id, 'run ID set in configuration')
 
-    api.shutdown(function(error, command) {
+    api.shutdown(function(error) {
       t.error(error, 'should have shut down without issue')
-      t.equal(command.payload, null, 'collector explicitly returns null')
       t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
 
       agent.stop((err) => {
