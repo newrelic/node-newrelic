@@ -226,7 +226,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
   metric.incrementCallCount()
 
   // If high security mode is on, custom attributes are disabled.
-  if (this.agent.config.high_security === true) {
+  if (this.agent.config.high_security) {
     logger.warnOnce(
       'Custom attributes',
       'Custom attributes are disabled by high security mode.'
@@ -349,7 +349,7 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
 
   // If high security mode is on or custom attributes are disabled,
   // noticeError does not collect custom attributes.
-  if (this.agent.config.high_security === true) {
+  if (this.agent.config.high_security) {
     logger.debug(
       'Passing custom attributes to notice error API is disabled in high security mode.'
     )
@@ -1007,7 +1007,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   metric.incrementCallCount()
 
   // If high security mode is on, custom events are disabled.
-  if (this.agent.config.high_security === true) {
+  if (this.agent.config.high_security) {
     logger.warnOnce(
       "Custom Event",
       "Custom events are disabled by high security mode."
