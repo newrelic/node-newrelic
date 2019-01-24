@@ -749,10 +749,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     var boundHandle = tracer.bindFunction(handle, tx.baseSegment)
     var returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
-      returnResult = shim.interceptPromise(returnResult, function endTx(cb) {
-        tx.end()
-        setImmediate(cb, tx)
-      })
+      returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
       logger.debug('Ending unhandled web transaction immediately.')
       tx.end()
@@ -863,10 +860,7 @@ function startBackgroundTransaction(name, group, handle) {
     var boundHandle = tracer.bindFunction(handle, tx.baseSegment)
     var returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
-      returnResult = shim.interceptPromise(returnResult, function endTx(cb) {
-        tx.end()
-        setImmediate(cb, tx)
-      })
+      returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
       logger.debug('Ending unhandled background transaction immediately.')
       tx.end()
