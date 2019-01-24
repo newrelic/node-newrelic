@@ -145,9 +145,18 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up on the spans env var', function() {
-      idempotentEnv({'NEW_RELIC_SPAN_EVENTS_ENABLED': 'true'}, function(tc) {
-        expect(tc.span_events.enabled).equal(true)
+    it('should pick up on the span events env vars', () => {
+      const env = {
+        NEW_RELIC_SPAN_EVENTS_ENABLED: true,
+        NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_ENABLED: true,
+        NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
+        NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_EXCLUDE: 'four,five,six'
+      }
+      idempotentEnv(env, (tc) => {
+        expect(tc.span_events.enabled).to.be.true
+        expect(tc.span_events.attributes.enabled).to.be.true
+        expect(tc.span_events.attributes.include).to.deep.equal(['one', 'two', 'three'])
+        expect(tc.span_events.attributes.exclude).to.deep.equal(['four', 'five', 'six'])
       })
     })
 
