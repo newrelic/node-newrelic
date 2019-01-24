@@ -44,9 +44,3 @@ if docker ps -a | grep -q "nr_node_rabbit"; then
 else
   docker run -d --name nr_node_rabbit -p 5672:5672 rabbitmq:3;
 fi
-
-if docker ps -a | grep -q "nr_node_oracle"; then
-  docker start nr_node_oracle;
-else
-  docker run -d --name nr_node_oracle -p 1521:1521 alexeiled/docker-oracle-xe-11g;
-fi
