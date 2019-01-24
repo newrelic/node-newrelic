@@ -51,5 +51,5 @@ else
   docker run -d --name nr_node_oracle -p 1521:1521 alexeiled/docker-oracle-xe-11g;
 fi
 
-echo "\nTo run individual integration tests, run 'source test/docker_env_vars.sh' to set\
+echo "\nTo run individual integration tests, run 'source bin/docker-env-vars.sh' to set\
 	 the environment variables for all services.\n"
