@@ -5,14 +5,19 @@ const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const https = require('https')
 const SpanEvent = require('../../../lib/spans/span-event')
+const Attributes = require('../../../lib/attributes')
+const {DESTINATIONS} = require('../../../lib/config/attribute-filter')
 
 describe('SpanEvent', () => {
   describe('#constructor()', () => {
     it('should construct an empty span event', () => {
       const span = new SpanEvent()
       expect(span).to.be.an.instanceOf(SpanEvent)
-      expect(span).to.have.property('type', 'Span')
-      expect(span).to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
+      expect(span).to.have.property('attributes')
+      expect(span.attributes).to.be.an.instanceOf(Attributes)
+      expect(span).to.have.property('intrinsics')
+      expect(span.intrinsics).to.have.property('type', 'Span')
+      expect(span.intrinsics).to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
 
       const emptyProps = [
         'traceId',
@@ -25,7 +30,7 @@ describe('SpanEvent', () => {
         'timestamp',
         'duration'
       ]
-      emptyProps.forEach((prop) => expect(span).to.have.property(prop, null))
+      emptyProps.forEach((prop) => expect(span.intrinsics).to.have.property(prop, null))
     })
   })
 
@@ -50,30 +55,37 @@ describe('SpanEvent', () => {
 
           // Should have all the normal properties.
           expect(span).to.be.an.instanceOf(SpanEvent)
-          expect(span).to.have.property('type', 'Span')
-          expect(span).to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
-          expect(span).to.have.property('traceId', tx.id)
-          expect(span).to.have.property('guid', seg.id)
-          expect(span).to.have.property('parentId', 'parent')
-          expect(span).to.have.property('transactionId', tx.id)
-          expect(span).to.have.property('sampled', true)
-          expect(span).to.have.property('priority', 42)
-          expect(span).to.have.property('name', 'timers.setTimeout')
-          expect(span).to.have.property('timestamp', seg.timer.start)
-          expect(span).to.have.property('duration').within(0.03, 0.07)
+          expect(span).to.have.property('intrinsics')
+          expect(span.intrinsics).to.have.property('type', 'Span')
+          expect(span.intrinsics)
+            .to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
+          expect(span.intrinsics).to.have.property('traceId', tx.id)
+          expect(span.intrinsics).to.have.property('guid', seg.id)
+          expect(span.intrinsics).to.have.property('parentId', 'parent')
+          expect(span.intrinsics).to.have.property('transactionId', tx.id)
+          expect(span.intrinsics).to.have.property('sampled', true)
+          expect(span.intrinsics).to.have.property('priority', 42)
+          expect(span.intrinsics).to.have.property('name', 'timers.setTimeout')
+          expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
+          expect(span.intrinsics).to.have.property('duration').within(0.03, 0.07)
+          // Generic should not have 'span.kind' or 'component'
+          expect(span.intrinsics).to.not.have.property('span.kind')
+          expect(span.intrinsics).to.not.have.property('component')
+
+          expect(span).to.have.property('attributes')
+          expect(span.attributes).to.be.an.instanceOf(Attributes)
+          const attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
 
           // Should have no http properties.
-          expect(span).to.not.have.property('externalLibrary')
-          expect(span).to.not.have.property('externalUri')
-          expect(span).to.not.have.property('externalProcedure')
+          expect(attributes).to.not.have.property('externalLibrary')
+          expect(attributes).to.not.have.property('externalUri')
+          expect(attributes).to.not.have.property('externalProcedure')
 
           // Should have no datastore properties.
-          expect(span).to.not.have.property('component')
-          expect(span).to.not.have.property('db.statement')
-          expect(span).to.not.have.property('db.instance')
-          expect(span).to.not.have.property('peer.hostname')
-          expect(span).to.not.have.property('peer.address')
-          expect(span).to.not.have.property('span.kind')
+          expect(attributes).to.not.have.property('db.statement')
+          expect(attributes).to.not.have.property('db.instance')
+          expect(attributes).to.not.have.property('peer.hostname')
+          expect(attributes).to.not.have.property('peer.address')
 
           done()
         }, 50)
@@ -94,29 +106,36 @@ describe('SpanEvent', () => {
             // Should have all the normal properties.
             expect(span).to.be.an.instanceOf(SpanEvent)
             expect(span).to.be.an.instanceOf(SpanEvent.HttpSpanEvent)
-            expect(span).to.have.property('type', 'Span')
-            expect(span).to.have.property('category', SpanEvent.CATEGORIES.HTTP)
-            expect(span).to.have.property('traceId', tx.id)
-            expect(span).to.have.property('guid', seg.id)
-            expect(span).to.have.property('parentId', 'parent')
-            expect(span).to.have.property('transactionId', tx.id)
-            expect(span).to.have.property('sampled', true)
-            expect(span).to.have.property('priority', 42)
-            expect(span).to.have.property('name', 'External/example.com:443/')
-            expect(span).to.have.property('timestamp', seg.timer.start)
-            expect(span).to.have.property('duration').within(0.01, 2)
+            expect(span).to.have.property('intrinsics')
+            expect(span.intrinsics).to.have.property('type', 'Span')
+            expect(span.intrinsics)
+              .to.have.property('category', SpanEvent.CATEGORIES.HTTP)
+            expect(span.intrinsics).to.have.property('traceId', tx.id)
+            expect(span.intrinsics).to.have.property('guid', seg.id)
+            expect(span.intrinsics).to.have.property('parentId', 'parent')
+            expect(span.intrinsics).to.have.property('transactionId', tx.id)
+            expect(span.intrinsics).to.have.property('sampled', true)
+            expect(span.intrinsics).to.have.property('priority', 42)
+            expect(span.intrinsics).to.have.property('name', 'External/example.com:443/')
+            expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
+            expect(span.intrinsics).to.have.property('duration').within(0.01, 2)
+            // Should have type-specific intrinsics
+            expect(span.intrinsics).to.have.property('component', 'http')
+            expect(span.intrinsics).to.have.property('span.kind', 'client')
+
+            expect(span).to.have.property('attributes')
+            expect(span.attributes).to.be.an.instanceOf(Attributes)
+            const attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
 
             // Should have (most) http properties.
-            expect(span).to.have.property('component', 'http')
-            expect(span).to.have.property('http.url', 'https://example.com:443/')
-            expect(span).to.not.have.property('http.method')
-            expect(span).to.have.property('span.kind', 'client')
+            expect(attributes).to.have.property('http.url', 'https://example.com:443/')
+            expect(attributes).to.not.have.property('http.method')
 
             // Should have no datastore properties.
-            expect(span).to.not.have.property('db.statement')
-            expect(span).to.not.have.property('db.instance')
-            expect(span).to.not.have.property('peer.hostname')
-            expect(span).to.not.have.property('peer.address')
+            expect(attributes).to.not.have.property('db.statement')
+            expect(attributes).to.not.have.property('db.instance')
+            expect(attributes).to.not.have.property('peer.hostname')
+            expect(attributes).to.not.have.property('peer.address')
 
             done()
           })
@@ -146,7 +165,7 @@ describe('SpanEvent', () => {
         return {
           collection: 'test',
           operation: 'test',
-          query: query
+          query
         }
       })
 
@@ -162,32 +181,40 @@ describe('SpanEvent', () => {
             // Should have all the normal properties.
             expect(span).to.be.an.instanceOf(SpanEvent)
             expect(span).to.be.an.instanceOf(SpanEvent.DatastoreSpanEvent)
-            expect(span).to.have.property('type', 'Span')
-            expect(span).to.have.property('category', SpanEvent.CATEGORIES.DATASTORE)
-            expect(span).to.have.property('traceId', tx.id)
-            expect(span).to.have.property('guid', seg.id)
-            expect(span).to.have.property('parentId', 'parent')
-            expect(span).to.have.property('transactionId', tx.id)
-            expect(span).to.have.property('sampled', true)
-            expect(span).to.have.property('priority', 42)
-            expect(span)
+            expect(span).to.have.property('intrinsics')
+            expect(span.intrinsics).to.have.property('type', 'Span')
+            expect(span.intrinsics)
+              .to.have.property('category', SpanEvent.CATEGORIES.DATASTORE)
+            expect(span.intrinsics).to.have.property('traceId', tx.id)
+            expect(span.intrinsics).to.have.property('guid', seg.id)
+            expect(span.intrinsics).to.have.property('parentId', 'parent')
+            expect(span.intrinsics).to.have.property('transactionId', tx.id)
+            expect(span.intrinsics).to.have.property('sampled', true)
+            expect(span.intrinsics).to.have.property('priority', 42)
+            expect(span.intrinsics)
               .to.have.property('name', 'Datastore/statement/TestStore/test/test')
-            expect(span).to.have.property('timestamp', seg.timer.start)
-            expect(span).to.have.property('duration').within(0.03, 0.7)
+            expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
+            expect(span.intrinsics).to.have.property('duration').within(0.03, 0.7)
+            // Should have (most) type-specific intrinsics
+            expect(span.intrinsics).to.not.have.property('component')
+            expect(span.intrinsics).to.have.property('span.kind', 'client')
+
+            expect(span).to.have.property('attributes')
+            expect(span.attributes).to.be.an.instanceOf(Attributes)
+            const attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
 
             // Should have no http properties.
-            expect(span).to.not.have.property('http.url')
-            expect(span).to.not.have.property('http.method')
+            expect(attributes).to.not.have.property('http.url')
+            expect(attributes).to.not.have.property('http.method')
 
             // Should have (most) datastore properties.
-            expect(span).to.not.have.property('component')
-            expect(span).to.have.property('db.instance')
-            expect(span).to.have.property('peer.hostname', 'my-db-host')
-            expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
-            expect(span).to.have.property('span.kind', 'client')
-            expect(span).to.have.property('db.statement')
+            expect(attributes).to.have.property('db.instance')
+            expect(attributes).to.have.property('peer.hostname', 'my-db-host')
+            expect(attributes)
+              .to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
+            expect(attributes).to.have.property('db.statement')
             // Testing query truncation
-            const statement = span['db.statement']
+            const statement = attributes['db.statement']
             expect(statement.endsWith('...')).to.be.true
             expect(Buffer.byteLength(statement, 'utf8')).to.equal(2000)
 

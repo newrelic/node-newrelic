@@ -138,25 +138,27 @@ describe('Trace', function() {
     var events = agent.spans.getEvents()
     var nested = events[0]
     var testSpan = events[1]
+    expect(nested).to.have.property('intrinsics')
+    expect(testSpan).to.have.property('intrinsics')
 
-    expect(nested).to.have.property('parentId', testSpan.guid)
-    expect(nested).to.have.property('category', 'generic')
-    expect(nested).to.have.property('priority', transaction.priority)
-    expect(nested).to.have.property('transactionId', transaction.id)
-    expect(nested).to.have.property('sampled', transaction.sampled)
-    expect(nested).to.have.property('name', 'nested')
-    expect(nested).to.have.property('traceId', transaction.id)
-    expect(nested).to.have.property('timestamp')
+    expect(nested.intrinsics).to.have.property('parentId', testSpan.intrinsics.guid)
+    expect(nested.intrinsics).to.have.property('category', 'generic')
+    expect(nested.intrinsics).to.have.property('priority', transaction.priority)
+    expect(nested.intrinsics).to.have.property('transactionId', transaction.id)
+    expect(nested.intrinsics).to.have.property('sampled', transaction.sampled)
+    expect(nested.intrinsics).to.have.property('name', 'nested')
+    expect(nested.intrinsics).to.have.property('traceId', transaction.id)
+    expect(nested.intrinsics).to.have.property('timestamp')
 
-    expect(testSpan).to.have.property('parentId', null)
-    expect(testSpan).to.have.property('nr.entryPoint').and.be.true
-    expect(testSpan).to.have.property('category', 'generic')
-    expect(testSpan).to.have.property('priority', transaction.priority)
-    expect(testSpan).to.have.property('transactionId', transaction.id)
-    expect(testSpan).to.have.property('sampled', transaction.sampled)
-    expect(testSpan).to.have.property('name', 'test')
-    expect(testSpan).to.have.property('traceId', transaction.id)
-    expect(testSpan).to.have.property('timestamp')
+    expect(testSpan.intrinsics).to.have.property('parentId', null)
+    expect(testSpan.intrinsics).to.have.property('nr.entryPoint').and.be.true
+    expect(testSpan.intrinsics).to.have.property('category', 'generic')
+    expect(testSpan.intrinsics).to.have.property('priority', transaction.priority)
+    expect(testSpan.intrinsics).to.have.property('transactionId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('sampled', transaction.sampled)
+    expect(testSpan.intrinsics).to.have.property('name', 'test')
+    expect(testSpan.intrinsics).to.have.property('traceId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('timestamp')
   })
 
   it('should not generate span events on end if span_events is disabled', function() {
