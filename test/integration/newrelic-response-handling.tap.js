@@ -187,11 +187,11 @@ function createStatusCodeTest(testCase) {
         function verifyHarvestErrorExpected(error) {
           subTest.ok(error, 'should have error from other harvest endpoints')
 
-          const isNockError = error.message.includes('Nock: No match for request')
-          if (!isNockError) {
-            console.error(error)
-          }
-          subTest.ok(isNockError, 'should be nock specific error')
+          subTest.match(
+            error.message,
+            /Nock: No match for request/,
+            'should be nock error'
+          )
 
           const isEndpointUnderTest = error.message.includes(`method=${endpointName}`)
           subTest.notOk(isEndpointUnderTest, 'should not fail for endpoint under test')
