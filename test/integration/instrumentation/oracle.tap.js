@@ -326,7 +326,7 @@ function nextRowTest(t) {
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equals(row2, undefined, 'Oracle client should still work')
 
-            transaction.end(
+            transaction.end()
             client.close()
             verify(t, transaction, {
               getName: expectedStatementPrefix + TABLE + '/Reader.nextRow/select',
