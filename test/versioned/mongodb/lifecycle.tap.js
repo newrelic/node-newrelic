@@ -144,11 +144,10 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
                   'find should leave us here at the end'
                 )
 
-                tx.end(function() {
-                  db.close(function(err) {
-                    if (err) t.fail(err)
-                    t.end()
-                  })
+                tx.end()
+                db.close(function(err) {
+                  if (err) t.fail(err)
+                  t.end()
                 })
               })
             })
@@ -246,12 +245,11 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
 
                   t.equals(results.length, 0, 'should be no results')
 
-                  tx.end(function() {
-                    db.close(function cb_close(err) {
-                      if (err) t.fail(err)
+                  tx.end()
+                  db.close(function cb_close(err) {
+                    if (err) t.fail(err)
 
-                      t.end()
-                    })
+                    t.end()
                   })
                 })
               })

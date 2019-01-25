@@ -313,9 +313,8 @@ function dbTest(name, collections, run) {
         helper.runInTransaction(agent, function(transaction) {
           run(t, db, function(names) {
             verifyMongoSegments(t, agent, transaction, names)
-            transaction.end(function() {
-              t.end()
-            })
+            transaction.end()
+            t.end()
           })
         })
       })
@@ -348,9 +347,8 @@ function dbTest(name, collections, run) {
         helper.runInTransaction(agent, function(transaction) {
           run(t, db, function(names) {
             verifyMongoSegments(t, agent, transaction, names)
-            transaction.end(function() {
-              t.end()
-            })
+            transaction.end()
+            t.end()
           })
         })
       })

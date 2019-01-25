@@ -154,18 +154,17 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
               }
             }
 
-            transaction.end(function end() {
-              checkMetric('Datastore/operation/Cassandra/insert', 1)
-              checkMetric('Datastore/allWeb', 2)
-              checkMetric('Datastore/Cassandra/allWeb', 2)
-              checkMetric('Datastore/Cassandra/all', 2)
-              checkMetric('Datastore/all', 2)
-              checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
-              checkMetric('Datastore/operation/Cassandra/select', 1)
-              checkMetric('Datastore/statement/Cassandra/test.testFamily/select', 1)
+            transaction.end()
+            checkMetric('Datastore/operation/Cassandra/insert', 1)
+            checkMetric('Datastore/allWeb', 2)
+            checkMetric('Datastore/Cassandra/allWeb', 2)
+            checkMetric('Datastore/Cassandra/all', 2)
+            checkMetric('Datastore/all', 2)
+            checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
+            checkMetric('Datastore/operation/Cassandra/select', 1)
+            checkMetric('Datastore/statement/Cassandra/test.testFamily/select', 1)
 
-              t.end()
-            })
+            t.end()
           })
         })
       })

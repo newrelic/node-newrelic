@@ -140,9 +140,8 @@ test('should not pass wrong args when transaction is not present', function(t) {
 
   router.get('/', function(req, res, next) {
     args = [req, res]
-    agent.getTransaction().end(function() {
-      next()
-    })
+    agent.getTransaction().end()
+    next()
   })
 
   router2.get('/', function(req, res, next) {

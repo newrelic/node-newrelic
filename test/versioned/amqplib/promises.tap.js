@@ -216,10 +216,9 @@ tap.test('amqplib promise instrumentation', function(t) {
           amqpUtils.verifyTransaction(t, tx, 'get')
           channel.ack(msg)
         }).then(function() {
-          return tx.end(function() {
-            amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
-            t.end()
-          })
+          tx.end()
+          amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+          t.end()
         })
       })
     }).catch(function(err) {
@@ -250,19 +249,18 @@ tap.test('amqplib promise instrumentation', function(t) {
           t.equal(body, 'hello', 'should receive expected body')
 
           channel.ack(msg)
-          tx.end(function() {
-            amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-            consumeTxnHandle.end(function() {
-              amqpUtils.verifyConsumeTransaction(
-                t,
-                consumeTxn,
-                exchange,
-                queue,
-                'consume-tx-key'
-              )
-              amqpUtils.verifyCAT(t, tx, consumeTxn)
-              t.end()
-            })
+          tx.end()
+          amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+          consumeTxnHandle.end(function() {
+            amqpUtils.verifyConsumeTransaction(
+              t,
+              consumeTxn,
+              exchange,
+              queue,
+              'consume-tx-key'
+            )
+            amqpUtils.verifyCAT(t, tx, consumeTxn)
+            t.end()
           })
         }).then(function() {
           amqpUtils.verifyTransaction(t, tx, 'consume')
@@ -308,19 +306,18 @@ tap.test('amqplib promise instrumentation', function(t) {
           t.equal(body, 'hello', 'should receive expected body')
 
           channel.ack(msg)
-          tx.end(function() {
-            amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-            consumeTxnHandle.end(function() {
-              amqpUtils.verifyConsumeTransaction(
-                t,
-                consumeTxn,
-                exchange,
-                queue,
-                'consume-tx-key'
-              )
-              amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
-              t.end()
-            })
+          tx.end()
+          amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+          consumeTxnHandle.end(function() {
+            amqpUtils.verifyConsumeTransaction(
+              t,
+              consumeTxn,
+              exchange,
+              queue,
+              'consume-tx-key'
+            )
+            amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
+            t.end()
           })
         }).then(function() {
           amqpUtils.verifyTransaction(t, tx, 'consume')
