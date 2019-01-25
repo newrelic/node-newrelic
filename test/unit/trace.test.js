@@ -480,27 +480,6 @@ describe('Trace', function() {
     })
   })
 
-  describe('#addAttribute', function() {
-    var trace = null
-
-    beforeEach(function() {
-      agent.config.attributes.enabled = true
-      trace = new Transaction(agent).trace
-    })
-
-    it('does not add attribute if key length limit is exceeded', function() {
-      var tooLong = [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
-      ].join(' ')
-      trace.addAttribute(DESTINATIONS.ALL, tooLong, 'will fail')
-      var attributes = Object.keys(trace.attributes.attributes)
-      expect(attributes.length).to.equal(0)
-    })
-  })
-
   describe('#generateJSON', function() {
     var details
 
@@ -573,7 +552,7 @@ function makeTrace(agent, callback) {
   agent.config.emit('attributes.include')
 
   var transaction = new Transaction(agent)
-  transaction.trace.addAttribute(DESTINATIONS.COMMON, 'request.uri', URL)
+  transaction.trace.attributes.addAttribute(DESTINATIONS.COMMON, 'request.uri', URL)
   transaction.url  = URL
   transaction.verb = 'GET'
 

@@ -133,8 +133,8 @@ tap.test('Agent#harvest', (t) => {
 
     helper.runInTransaction(agent, (tx) => {
       tx.finalizeNameFromUri('/nonexistent', 501)
-      tx.trace.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
-      tx.trace.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
+      tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
+      tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
       agent.errors.add(tx, new Error('test error'))
       tx.end()
     })

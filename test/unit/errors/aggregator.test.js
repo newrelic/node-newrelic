@@ -61,7 +61,7 @@ describe('Errors', function() {
     })
 
     it('record captured params', function() {
-      trans.trace.addAttribute(DESTS.ALL, 'request.parameters.a', 'A')
+      trans.trace.attributes.addAttribute(DESTS.ALL, 'request.parameters.a', 'A')
       error.add(trans, new Error())
       agent.errors.onTransactionFinished(trans, agent.metrics)
 
@@ -536,7 +536,7 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         transaction.statusCode = 501
         transaction.url = '/'
-        transaction.trace.addAttributes(DESTS.ALL, {
+        transaction.trace.attributes.addAttributes(DESTS.ALL, {
           test_param: 'a value',
           thing: true
         })
@@ -606,8 +606,8 @@ describe('Errors', function() {
       var transaction = new Transaction(agent)
       transaction.statusCode = 501
 
-      transaction.trace.addAttribute(DESTS.ALL, 'test_param', 'a value')
-      transaction.trace.addAttribute(DESTS.ALL, 'thing', 5)
+      transaction.trace.attributes.addAttribute(DESTS.ALL, 'test_param', 'a value')
+      transaction.trace.attributes.addAttribute(DESTS.ALL, 'thing', 5)
 
       agent.errors.add(transaction, null)
       agent._transactionFinished(transaction)
@@ -710,7 +710,7 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         var exception = new TypeError('wanted JSON, got XML')
 
-        transaction.trace.addAttributes(DESTS.ALL, {
+        transaction.trace.attributes.addAttributes(DESTS.ALL, {
           test_param: 'a value',
           thing: true
         })
@@ -809,7 +809,7 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         var exception = 'wanted JSON, got XML'
 
-        transaction.trace.addAttributes(DESTS.ALL, {
+        transaction.trace.attributes.addAttributes(DESTS.ALL, {
           test_param: 'a value',
           thing: true
         })
@@ -1706,7 +1706,7 @@ describe('Errors', function() {
       it('should contain agent attributes', function() {
         agent.config.attributes.enabled = true
         var transaction = createTransaction(agent, 500)
-        transaction.trace.addAttribute(DESTS.ALL, 'host.displayName', 'myHost')
+        transaction.trace.attributes.addAttribute(DESTS.ALL, 'host.displayName', 'myHost')
         var error = new Error('some error')
         aggregator.add(transaction, error, { a: 'a' })
 
