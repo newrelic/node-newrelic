@@ -9,6 +9,9 @@ const Agent = require('../../lib/agent')
 const params = require('../lib/params')
 const request = require('request')
 const zlib = require('zlib')
+const copy = require('../../lib/util/copy')
+const {defaultAttributeConfig} = require('./fixtures')
+const {EventEmitter} = require('events')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -442,6 +445,11 @@ const helper = module.exports = {
         cb(err)
       }
     })
+  },
+
+  makeAttributeFilterConfig: (rules = {}) => {
+    rules = copy.shallow(rules, defaultAttributeConfig())
+    return copy.shallow(rules, new EventEmitter())
   }
 }
 

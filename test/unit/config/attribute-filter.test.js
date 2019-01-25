@@ -1,11 +1,10 @@
 'use strict'
 
-var AttributeFilter = require('../../../lib/config/attribute-filter')
-var copy = require('../../../lib/util/copy')
-var EventEmitter = require('events').EventEmitter
-var expect = require('chai').expect
+const AttributeFilter = require('../../../lib/config/attribute-filter')
+const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
+const {expect} = require('chai')
 
-var DESTS = AttributeFilter.DESTINATIONS
+const DESTS = AttributeFilter.DESTINATIONS
 
 
 describe('AttributeFilter', function() {
@@ -16,14 +15,14 @@ describe('AttributeFilter', function() {
       }).to.throw()
 
       expect(function() {
-        return new AttributeFilter(makeConfig())
+        return new AttributeFilter(makeAttributeFilterConfig())
       }).to.not.throw()
     })
   })
 
   describe('#filter', function() {
     it('should respect the rules', function() {
-      var filter = new AttributeFilter(makeConfig({
+      var filter = new AttributeFilter(makeAttributeFilterConfig({
         attributes: {
           enabled: true,
           include_enabled: true,
@@ -43,7 +42,7 @@ describe('AttributeFilter', function() {
     })
 
     it('should not add include rules when they are disabled', function() {
-      var filter = new AttributeFilter(makeConfig({
+      var filter = new AttributeFilter(makeAttributeFilterConfig({
         attributes: {
           enabled: true,
           include_enabled: false,
@@ -67,7 +66,7 @@ describe('AttributeFilter', function() {
     })
 
     it('should not matter the order of the rules', function() {
-      var filter = new AttributeFilter(makeConfig({
+      var filter = new AttributeFilter(makeAttributeFilterConfig({
         attributes: {
           enabled: true,
           include_enabled: true,
@@ -87,7 +86,7 @@ describe('AttributeFilter', function() {
     })
 
     it('should match `*` to anything', function() {
-      var filter = new AttributeFilter(makeConfig({
+      var filter = new AttributeFilter(makeAttributeFilterConfig({
         attributes: {
           enabled: true,
           include_enabled: true,
@@ -104,7 +103,7 @@ describe('AttributeFilter', function() {
     })
 
     it('should parse dot rules correctly', function() {
-      var filter = new AttributeFilter(makeConfig({
+      var filter = new AttributeFilter(makeAttributeFilterConfig({
         attributes: {
           enabled: true,
           include_enabled: true,
@@ -140,59 +139,3 @@ describe('AttributeFilter', function() {
     }
   })
 })
-
-function makeConfig(rules) {
-  rules = copy.shallow(rules || {}, getDefault())
-  return copy.shallow(rules, new EventEmitter())
-}
-
-function getDefault() {
-  return {
-    attributes: {
-      enabled: true,
-      include_enabled: true,
-      include: [],
-      exclude: []
-    },
-
-    transaction_events: {
-      attributes: {
-        enabled: true,
-        include: [],
-        exclude: []
-      }
-    },
-
-    transaction_tracer: {
-      attributes: {
-        enabled: true,
-        include: [],
-        exclude: []
-      }
-    },
-
-    error_collector: {
-      attributes: {
-        enabled: true,
-        include: [],
-        exclude: []
-      }
-    },
-
-    browser_monitoring: {
-      attributes: {
-        enabled: false,
-        include: [],
-        exclude: []
-      }
-    },
-
-    span_events: {
-      attributes: {
-        enabled: true,
-        include: [],
-        exclude: []
-      }
-    }
-  }
-}
