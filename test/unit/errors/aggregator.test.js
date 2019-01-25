@@ -1645,15 +1645,14 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(transaction, error, { a: 'a' })
 
-        transaction.end(function() {
-          var agentAttributes = getFirstEventAgentAttributes(aggregator)
-          var customAttributes = getFirstEventCustomAttributes(aggregator)
+        transaction.end()
+        var agentAttributes = getFirstEventAgentAttributes(aggregator)
+        var customAttributes = getFirstEventCustomAttributes(aggregator)
 
-          expect(Object.keys(customAttributes)).length(1)
-          expect(customAttributes.a).equal('a')
-          expect(Object.keys(agentAttributes)).length(1)
-          expect(agentAttributes['host.displayName']).equal('myHost')
-        })
+        expect(Object.keys(customAttributes)).length(1)
+        expect(customAttributes.a).equal('a')
+        expect(Object.keys(agentAttributes)).length(1)
+        expect(agentAttributes['host.displayName']).equal('myHost')
       })
     })
   })
