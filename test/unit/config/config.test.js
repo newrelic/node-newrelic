@@ -160,6 +160,22 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up on the transaction segments env vars', () => {
+      const env = {
+        NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_ENABLED: true,
+        NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
+        NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_EXCLUDE: 'four,five,six'
+      }
+      idempotentEnv(env, (tc) => {
+        expect(tc.transaction_segments.attributes.enabled)
+          .to.be.true
+        expect(tc.transaction_segments.attributes.include)
+          .to.deep.equal(['one', 'two', 'three'])
+        expect(tc.transaction_segments.attributes.exclude)
+          .to.deep.equal(['four', 'five', 'six'])
+      })
+    })
+
     it('should pick up the billing hostname', function() {
       idempotentEnv({'NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS': 123}, function(tc) {
         should.exist(tc.utilization.logical_processors)
@@ -1208,7 +1224,7 @@ describe('the agent configuration', function() {
       }).not.throws()
     })
 
-    it('should not blow up when cross_application_tracer.enabled is received', function() {
+    it('should not blow up with cross_application_tracer.enabled', () => {
       expect(function() {
         config.onConnect({'cross_application_tracer.enabled': true})
       }).not.throws()
