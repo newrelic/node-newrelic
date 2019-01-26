@@ -70,6 +70,14 @@ module.exports = {
           include: [],
           exclude: []
         }
+      },
+
+      transaction_segments: {
+        attributes: {
+          enabled: true,
+          include: [],
+          exclude: []
+        }
       }
     }
   }
