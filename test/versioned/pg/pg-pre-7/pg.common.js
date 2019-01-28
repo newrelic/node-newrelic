@@ -1,12 +1,13 @@
 'use strict'
 
-var a = require('async')
-var tap = require('tap')
-var params = require('../../../lib/params')
-var helper = require('../../../lib/agent_helper')
-var findSegment = require('../../../lib/metrics_helper').findSegment
-var test = tap.test
-var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
+const a = require('async')
+const tap = require('tap')
+const params = require('../../../lib/params')
+const helper = require('../../../lib/agent_helper')
+const {findSegment} = require('../../../lib/metrics_helper')
+const test = tap.test
+const {getMetricHostName} = require('../../../lib/metrics_helper')
+const {DESTINATIONS} = require('../../../../lib/config/attribute-filter')
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
@@ -168,17 +169,21 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySpanEvents(t, agent) {
-    var dbSpan = agent.spans.getEvents().find(span => span.name.startsWith('Datastore'))
+    let attributes = null
+    const dbSpan = agent.spans.getEvents().find(span => {
+      attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
+      return span.intrinsics.name.startsWith('Datastore')
+    })
     t.equal(
-      dbSpan['db.instance'],
+      attributes['db.instance'],
       'postgres',
-      'shuld have the correct instace'
+      'shuld have the correct instance'
     )
-    t.ok(dbSpan['peer.hostname'])
-    t.ok(dbSpan['peer.address'])
-    t.ok(dbSpan['db.statement'])
-    t.ok(dbSpan['span.kind'])
-    t.ok(dbSpan.category)
+    t.ok(attributes['peer.hostname'])
+    t.ok(attributes['peer.address'])
+    t.ok(attributes['db.statement'])
+    t.ok(dbSpan.intrinsics.category)
+    t.ok(dbSpan.intrinsics['span.kind'])
   }
 
   function verifySlowQueries(t, agent) {
