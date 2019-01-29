@@ -1,8 +1,19 @@
 'use strict'
 
+const SERVICE_ENDPOINTS = {
+  's3.amazonaws.com': 'S3'
+}
+
 function validate(shim, AWS) {
   if (!shim.isFunction(AWS.NodeHttpClient)) {
     shim.logger.debug('Could not find NodeHttpClient, not instrumenting.')
+    return false
+  }
+  if (
+    !shim.isFunction(AWS.Service) ||
+    !shim.isFunction(AWS.Service.prototype.makeRequest)
+  ) {
+    shim.logger.debug('Could not find AWS.Service#makeRequest, not instrumenting.')
     return false
   }
   return true
@@ -10,6 +21,7 @@ function validate(shim, AWS) {
 
 function instrument(shim, AWS) {
   shim.wrap(AWS.NodeHttpClient.prototype, 'handleRequest', wrapHandleRequest)
+  shim.wrapReturn(AWS.Service.prototype, 'makeRequest', wrapMakeRequest)
 }
 
 function wrapHandleRequest(shim, handleRequest) {
@@ -25,6 +37,38 @@ function wrapHandleRequest(shim, handleRequest) {
 
     return handleRequest.apply(this, arguments)
   }
+}
+
+function wrapMakeRequest(shim, fn, name, request) {
+  if (!request) {
+    shim.logger.trace('No request object returned from Service#makeRequest')
+    return
+  }
+
+  request.on('complete', function onAwsRequestComplete() {
+    const httpRequest = request.httpRequest && request.httpRequest.stream
+    const segment = shim.getSegment(httpRequest)
+    if (!httpRequest || !segment) {
+      shim.logger.trace('No segment found for request, not extracting information.')
+      return
+    }
+
+    const service = request.service
+    const endpoint = service && service.config && service.config.endpoint
+    const operation = request.operation
+
+    segment.parameters['aws.operation'] = operation
+    segment.parameters['aws.service'] = SERVICE_ENDPOINTS[endpoint]
+
+    const response = request.response && request.response.httpResponse
+    const resHeaders = response && response.headers
+    if (resHeaders) {
+      segment.parameters['aws.requestId'] = (
+        resHeaders['x-amzn-requestid'] ||
+        resHeaders['x-amz-request-id']
+      )
+    }
+  })
 }
 
 module.exports = {
