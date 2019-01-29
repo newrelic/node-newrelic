@@ -163,23 +163,24 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
 
             client.query('SELECT 1 + 1 AS solution', function(err) {
               var seg = agent.tracer.getSegment().parent
+              const attributes = seg.getAttributes()
 
               t.notOk(err, 'no errors')
               t.ok(seg, 'there is a segment')
               t.equal(
-                seg.parameters.host,
+                attributes.host,
                 urltils.isLocalhost(params.mysql_host)
                   ? agent.config.getHostnameSafe()
                   : params.mysql_host,
                 'set host'
               )
               t.equal(
-                seg.parameters.database_name,
+                attributes.database_name,
                 'test_db',
                 'set database name'
               )
               t.equal(
-                seg.parameters.port_path_or_id,
+                attributes.port_path_or_id,
                 '3306',
                 'set port'
               )
@@ -366,22 +367,23 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
             t.error(err)
             client.query('SELECT 1 + 1 AS solution', function(err) {
               var seg = agent.tracer.getSegment().parent
+              const attributes = seg.getAttributes()
               t.error(err)
               if (t.ok(seg, 'should have a segment')) {
                 t.equal(
-                  seg.parameters.host,
+                  attributes.host,
                   urltils.isLocalhost(params.mysql_host)
                     ? agent.config.getHostnameSafe()
                     : params.mysql_host,
                   'should set host parameter'
                 )
                 t.equal(
-                  seg.parameters.database_name,
+                  attributes.database_name,
                   'test_db',
                   'should use new database name'
                 )
                 t.equal(
-                  seg.parameters.port_path_or_id,
+                  attributes.port_path_or_id,
                   "3306",
                   'should set port parameter'
                 )

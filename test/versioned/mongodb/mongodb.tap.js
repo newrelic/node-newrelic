@@ -97,6 +97,7 @@ function verifyTrace(t, segment, operation, host, port, done) {
     t.ok(trace.root, 'root element should exist.')
     t.ok(trace.root.children[0], 'should have a child.')
     var op_segment = segment.parent
+    const attributes = op_segment.getAttributes()
 
     t.ok(op_segment, 'trace segment for ' + operation + ' should exist')
     t.equal(
@@ -104,18 +105,14 @@ function verifyTrace(t, segment, operation, host, port, done) {
       'Datastore/statement/MongoDB/' + COLLECTION + '/' + operation,
       'should register the ' + operation
     )
+    t.equal(attributes.host, host, 'should have correct host parameter')
     t.equal(
-      op_segment.parameters.host,
-      host,
-      'should have correct host parameter'
-    )
-    t.equal(
-      op_segment.parameters.port_path_or_id,
+      attributes.port_path_or_id,
       port,
       'should have correct port_path_or_id parameter'
     )
     t.equal(
-      op_segment.parameters.database_name,
+      attributes.database_name,
       DB_NAME,
       'should have correct database_name parameter'
     )

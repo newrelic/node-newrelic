@@ -399,10 +399,10 @@ function verifyMongoSegments(t, agent, transaction, names) {
         dbName = 'admin'
       }
 
-      var parms = current.parameters
-      t.equal(parms.database_name, dbName, 'should have correct db name')
-      t.equal(parms.host, MONGO_HOST, 'should have correct host name')
-      t.equal(parms.port_path_or_id, MONGO_PORT, 'should have correct port')
+      var attributes = current.getAttributes()
+      t.equal(attributes.database_name, dbName, 'should have correct db name')
+      t.equal(attributes.host, MONGO_HOST, 'should have correct host name')
+      t.equal(attributes.port_path_or_id, MONGO_PORT, 'should have correct port')
     }
   }
 
@@ -414,12 +414,12 @@ function verifyMongoSegments(t, agent, transaction, names) {
 function isBadSegment(segment) {
   var nameParts = segment.name.split('/')
   var command = nameParts[nameParts.length - 1]
-  var parms = segment.parameters
+  var attributes = segment.getAttributes()
 
   return (
     BAD_MONGO_COMMANDS.indexOf(command) !== -1 && // Is in the list of bad commands
-    !parms.hasOwnProperty('database_name') &&     // and does not have any of the
-    !parms.hasOwnProperty('host') &&              // instance attributes.
-    !parms.hasOwnProperty('port_path_or_id')
+    !attributes.database_name &&                  // and does not have any of the
+    !attributes.host &&                           // instance attributes.
+    !attributes.port_path_or_id
   )
 }

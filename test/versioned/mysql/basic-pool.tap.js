@@ -120,22 +120,23 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         if (seg && seg.name === 'timers.setTimeout') {
           seg = txn.trace.root.children[0].children[2]
         }
+        const attributes = seg.getAttributes()
         t.error(err, 'should not error')
         t.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           urltils.isLocalhost(config.host)
             ? agent.config.getHostnameSafe()
             : config.host,
           'set host'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'set database name'
         )
         t.equal(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           String(config.port),
           'set port'
         )
@@ -151,17 +152,18 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         var seg = getDatastoreSegment(agent.tracer.getSegment())
         t.error(err, 'should not error making query')
         t.ok(seg, 'should have a segment')
+        const attributes = seg.getAttributes()
 
         t.notOk(
-          seg.parameters.host,
+          attributes.host,
           'should have no host parameter'
         )
         t.notOk(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           'should have no port parameter'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'should set database name'
         )
@@ -176,22 +178,23 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       agent.config.datastore_tracer.database_name_reporting.enabled = false
       pool.query('SELECT 1 + 1 AS solution', function(err) {
         var seg = getDatastoreSegment(agent.tracer.getSegment())
+        const attributes = seg.getAttributes()
         t.notOk(err, 'no errors')
         t.ok(seg, 'there is a segment')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           urltils.isLocalhost(config.host)
             ? agent.config.getHostnameSafe()
             : config.host,
           'set host'
         )
         t.equal(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           String(config.port),
           'set port'
         )
         t.notOk(
-          seg.parameters.database_name,
+          attributes.database_name,
           'should have no database name parameter'
         )
         agent.config.datastore_tracer.database_name_reporting.enabled = true
@@ -213,18 +216,19 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         // localhost the data will still be correctly associated
         // with the query.
         var seg = getDatastoreSegment(agent.tracer.getSegment())
+        const attributes = seg.getAttributes()
         t.ok(seg, 'there is a segment')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           agent.config.getHostnameSafe(),
           'set host'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'set database name'
         )
-        t.equal(seg.parameters.port_path_or_id, String(defaultConfig.port), 'set port')
+        t.equal(attributes.port_path_or_id, String(defaultConfig.port), 'set port')
         txn.end(defaultPool.end.bind(defaultPool, t.end))
       })
     })
@@ -238,23 +242,24 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       defaultPool.query('SELECT 1 + 1 AS solution', function(err) {
         var seg = getDatastoreSegment(agent.tracer.getSegment())
+        const attributes = seg.getAttributes()
 
         t.error(err, 'should not error making query')
         t.ok(seg, 'should have a segment')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           urltils.isLocalhost(config.host)
             ? agent.config.getHostnameSafe()
             : config.host,
           'should set host'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'should set database name'
         )
         t.equal(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           "3306",
           'should set port'
         )
@@ -383,22 +388,23 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
             t.error(err, 'should not error making query')
 
             var seg = getDatastoreSegment(agent.tracer.getSegment())
+            const attributes = seg.getAttributes()
 
             // In the case where you don't have a server running on localhost
             // the data will still be correctly associated with the query.
             t.ok(seg, 'there is a segment')
             t.equal(
-              seg.parameters.host,
+              attributes.host,
               agent.config.getHostnameSafe(),
               'set host'
             )
             t.equal(
-              seg.parameters.port_path_or_id,
+              attributes.port_path_or_id,
               socketPath,
               'set path'
             )
             t.equal(
-              seg.parameters.database_name,
+              attributes.database_name,
               DBNAME,
               'set database name'
             )

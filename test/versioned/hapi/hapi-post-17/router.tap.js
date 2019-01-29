@@ -307,7 +307,7 @@ function verifier(t, verb) {
     )
 
     t.equal(
-      web.parameters['request.parameters.id'], '31337',
+      web.getAttributes()['request.parameters.id'], '31337',
       'namer gets attributes out of route'
     )
   }
