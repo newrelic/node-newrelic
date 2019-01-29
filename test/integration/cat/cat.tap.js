@@ -113,7 +113,7 @@ test('cross application tracing full integration', function(t) {
         'should have no scoped metrics'
       )
 
-      // Check the intrinsic parameters
+      // Check the intrinsic attributes
       var trace = trans.trace
       t.ok(trace.intrinsics.trip_id, 'end should have a trip_id variable')
       t.ok(trace.intrinsics.path_hash, 'end should have a path_hash variable')
@@ -181,7 +181,7 @@ test('cross application tracing full integration', function(t) {
         t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       var trace = trans.trace
       t.ok(trace.intrinsics.trip_id, 'middle should have a trip_id variable')
       t.ok(trace.intrinsics.path_hash, 'middle should have a path_hash variable')
@@ -202,7 +202,7 @@ test('cross application tracing full integration', function(t) {
         'middle should have an ExternalTransaction segment'
       )
       t.ok(
-        externalSegment.parameters.transaction_guid,
+        externalSegment.getAttributes().transaction_guid,
         'middle should have a transaction_guid on its external segment'
       )
 
@@ -261,7 +261,7 @@ test('cross application tracing full integration', function(t) {
         t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       var trace = trans.trace
       t.ok(trace.intrinsics.trip_id, 'start should have a trip_id variable')
       t.ok(trace.intrinsics.path_hash, 'start should have a path_hash variable')
@@ -282,7 +282,7 @@ test('cross application tracing full integration', function(t) {
         'start should have an ExternalTransaction segment'
       )
       t.ok(
-        externalSegment.parameters.transaction_guid,
+        externalSegment.getAttributes().transaction_guid,
         'start should have a transaction_guid on its external segment'
       )
 

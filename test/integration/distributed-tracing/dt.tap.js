@@ -134,7 +134,7 @@ tap.test('distributed tracing full integration', (t) => {
         Object.keys(trans.metrics.scoped).length, 0,
         'should have no scoped metrics'
       )
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       validateIntrinsics(t, trans.trace.intrinsics, 'end', 'trace')
 
       // check the insights event
@@ -189,7 +189,7 @@ tap.test('distributed tracing full integration', (t) => {
         'should have expected scoped metric name'
       )
 
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       validateIntrinsics(t, trans.trace.intrinsics, 'middle', 'trace')
 
       // check the insights event
@@ -240,7 +240,7 @@ tap.test('distributed tracing full integration', (t) => {
         'should have expected scoped metric name'
       )
 
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       validateIntrinsics(t, trans.trace.intrinsics, 'start', 'trace')
 
       // check the insights event

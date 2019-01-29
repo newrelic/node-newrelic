@@ -325,7 +325,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
 
         shim.handleCATHeaders(headers, segment)
 
@@ -333,7 +333,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
       })
     })
 
@@ -347,7 +347,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
 
         shim.handleCATHeaders(headers, segment)
 
@@ -355,7 +355,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
       })
     })
 
@@ -367,7 +367,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
 
         expect(function() {
           shim.handleCATHeaders(null, segment)
@@ -377,7 +377,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
       })
     })
 
@@ -458,7 +458,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.not.exist
           expect(segment.catTransaction).to.not.exist
-          expect(segment.parameters.transaction_guid).to.not.exist
+          expect(segment.getAttributes().transaction_guid).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -467,7 +467,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.equal('6789#app')
           expect(segment.catTransaction).to.equal('app data transaction name')
-          expect(segment.parameters.transaction_guid).to.equal('app trans id')
+          expect(segment.getAttributes().transaction_guid).to.equal('app trans id')
         })
       })
 
@@ -480,13 +480,13 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.not.exist
           expect(segment.catTransaction).to.not.exist
-          expect(segment.parameters.transaction_guid).to.not.exist
+          expect(segment.getAttributes().transaction_guid).to.not.exist
 
           shim.handleCATHeaders(headers)
 
           expect(segment.catId).to.equal('6789#app')
           expect(segment.catTransaction).to.equal('app data transaction name')
-          expect(segment.parameters.transaction_guid).to.equal('app trans id')
+          expect(segment.getAttributes().transaction_guid).to.equal('app trans id')
         })
       })
 
@@ -499,7 +499,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.not.exist
           expect(segment.catTransaction).to.not.exist
-          expect(segment.parameters.transaction_guid).to.not.exist
+          expect(segment.getAttributes().transaction_guid).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -508,7 +508,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.equal('6789#app')
           expect(segment.catTransaction).to.equal('app data transaction name')
-          expect(segment.parameters.transaction_guid).to.equal('app trans id')
+          expect(segment.getAttributes().transaction_guid).to.equal('app trans id')
         })
       })
 
@@ -523,13 +523,13 @@ describe('TransactionShim', function() {
 
             expect(segment.catId).to.not.exist
             expect(segment.catTransaction).to.not.exist
-            expect(segment.parameters.transaction_guid).to.not.exist
+            expect(segment.getAttributes().transaction_guid).to.not.exist
 
             shim.handleCATHeaders(headers)
 
             expect(segment.catId).to.not.exist
             expect(segment.catTransaction).to.not.exist
-            expect(segment.parameters.transaction_guid).to.not.exist
+            expect(segment.getAttributes().transaction_guid).to.not.exist
           })
         })
       })

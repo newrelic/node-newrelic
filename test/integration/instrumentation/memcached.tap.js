@@ -484,7 +484,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
             t.equals(
-              segment.parameters.key,
+              segment.getAttributes().key,
               "\"foo\"",
               "should have the get key as a parameter"
             )
@@ -503,9 +503,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
-            t.equals(
-              segment.parameters.key, "\"foo\"",
-              'should still have the get key as a parameter'
+            t.notOk(
+              segment.getAttributes().key,
+              'should not have any attributes'
             )
           })
         })
@@ -522,7 +522,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
             t.equals(
-              segment.parameters.key,
+              segment.getAttributes().key,
               "[\"foo\",\"bar\"]",
               "should have the multiple keys fetched as a parameter"
             )
@@ -541,7 +541,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
             t.equals(
-              segment.parameters.key,
+              segment.getAttributes().key,
               "\"foo\"",
               "should have the set key as a parameter"
             )
@@ -551,7 +551,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
-  t.test('captures datastore instance parameters', function(t) {
+  t.test('captures datastore instance attributes', function(t) {
     t.autoend()
 
     t.beforeEach(function(done) {
@@ -582,15 +582,16 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
+            const attributes = segment.getAttributes()
             t.equals(
-              segment.parameters.host,
+              attributes.host,
               getMetricHostName(agent, params.memcached_host),
-              'should collect host instance parameters'
+              'should collect host instance attributes'
             )
             t.equals(
-              segment.parameters.port_path_or_id,
+              attributes.port_path_or_id,
               String(params.memcached_port),
-              'should collect port instance parameters'
+              'should collect port instance attributes'
             )
 
             var expectedMetrics = {}
@@ -610,15 +611,16 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
+            const attributes = segment.getAttributes()
             t.equals(
-              segment.parameters.host,
+              attributes.host,
               getMetricHostName(agent, params.memcached_host),
-              'should collect host instance parameters'
+              'should collect host instance attributes'
             )
             t.equals(
-              segment.parameters.port_path_or_id,
+              attributes.port_path_or_id,
               String(params.memcached_port),
-              'should collect port instance parameters'
+              'should collect port instance attributes'
             )
 
             var expectedMetrics = {}
@@ -630,7 +632,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
-  t.test('does not capture datastore instance parameters when disabled', function(t) {
+  t.test('does not capture datastore instance attributes when disabled', function(t) {
     t.autoend()
 
     t.beforeEach(function(done) {
@@ -664,13 +666,14 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
+            const attributes = segment.getAttributes()
             t.equals(
-              segment.parameters.host,
+              attributes.host,
               undefined,
               'should not have host instance parameter'
             )
             t.equals(
-              segment.parameters.port_path_or_id,
+              attributes.port_path_or_id,
               undefined,
               'should should not have port instance parameter'
             )
@@ -692,13 +695,14 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end(function() {
             var segment = transaction.trace.root.children[0]
+            const attributes = segment.getAttributes()
             t.equals(
-              segment.parameters.host,
+              attributes.host,
               undefined,
               'should not have host instance parameter'
             )
             t.equals(
-              segment.parameters.port_path_or_id,
+              attributes.port_path_or_id,
               undefined,
               'should should not have port instance parameter'
             )
@@ -712,7 +716,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
-  t.test('captures datastore instance parameters with multiple hosts', function(t) {
+  t.test('captures datastore instance attributes with multiple hosts', function(t) {
     t.autoend()
     var origCommand = null
     var realServer = params.memcached_host + ':' + params.memcached_port
@@ -757,12 +761,13 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
 
     function checkParams(segment, host, port) {
+      const attributes = segment.getAttributes()
       t.equals(
-        segment.parameters.host, host,
+        attributes.host, host,
         'should have correct host (' + host + ')'
       )
       t.equals(
-        segment.parameters.port_path_or_id, port,
+        attributes.port_path_or_id, port,
         'should have correct port (' + port + ')'
       )
     }
@@ -806,7 +811,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           var firstGet = transaction.trace.root.children[0]
           var secondGet = transaction.trace.root.children[1]
-          if (firstGet.parameters.host === 'server1') {
+          if (firstGet.getAttributes().host === 'server1') {
             t.comment('first get is server 1')
             checkParams(firstGet, 'server1', '1111')
             checkParams(secondGet, 'server2', '2222')

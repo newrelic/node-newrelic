@@ -7,10 +7,12 @@ var tap = require('tap')
 var tests = require('../../lib/cross_agent_tests/attribute_configuration')
 
 var DEST_TO_ID = {
-  'transaction_events': 0x01,
-  'transaction_tracer': 0x02,
-  'error_collector': 0x04,
-  'browser_monitoring': 0x08
+  transaction_events: 0x01,
+  transaction_tracer: 0x02,
+  error_collector: 0x04,
+  browser_monitoring: 0x08,
+  span_events: 0x10,
+  transaction_segments: 0x12
 }
 
 tap.test('Attribute include/exclude configurations', function(t) {

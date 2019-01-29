@@ -6,7 +6,6 @@ const helper = require('../../lib/agent_helper')
 const https = require('https')
 const SpanEvent = require('../../../lib/spans/span-event')
 const Attributes = require('../../../lib/attributes')
-const {DESTINATIONS} = require('../../../lib/config/attribute-filter')
 
 describe('SpanEvent', () => {
   describe('#constructor()', () => {
@@ -74,7 +73,7 @@ describe('SpanEvent', () => {
 
           expect(span).to.have.property('attributes')
           expect(span.attributes).to.be.an.instanceOf(Attributes)
-          const attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
+          const attributes = span.getAttributes()
 
           // Should have no http properties.
           expect(attributes).to.not.have.property('externalLibrary')
@@ -125,7 +124,7 @@ describe('SpanEvent', () => {
 
             expect(span).to.have.property('attributes')
             expect(span.attributes).to.be.an.instanceOf(Attributes)
-            const attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
+            const attributes = span.getAttributes()
 
             // Should have (most) http properties.
             expect(attributes).to.have.property('http.url', 'https://example.com:443/')
@@ -201,7 +200,7 @@ describe('SpanEvent', () => {
 
             expect(span).to.have.property('attributes')
             expect(span.attributes).to.be.an.instanceOf(Attributes)
-            const attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
+            const attributes = span.getAttributes()
 
             // Should have no http properties.
             expect(attributes).to.not.have.property('http.url')

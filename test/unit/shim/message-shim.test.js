@@ -174,9 +174,10 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrappable.getActiveSegment()
-          expect(segment.parameters).to.have.property('routing_key', 'foo.bar')
-          expect(segment.parameters).to.have.property('a', 'a')
-          expect(segment.parameters).to.have.property('b', 'b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('routing_key', 'foo.bar')
+          expect(attributes).to.have.property('a', 'a')
+          expect(attributes).to.have.property('b', 'b')
         })
       })
 
@@ -191,8 +192,9 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrappable.getActiveSegment()
-          expect(segment.parameters).to.not.have.property('a')
-          expect(segment.parameters).to.not.have.property('b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.not.have.property('a')
+          expect(attributes).to.not.have.property('b')
         })
       })
 
@@ -396,8 +398,9 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrapped('foo', function() {})
-          expect(segment.parameters).to.have.property('a', 'a')
-          expect(segment.parameters).to.have.property('b', 'b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('a', 'a')
+          expect(attributes).to.have.property('b', 'b')
         })
       })
 
@@ -418,8 +421,9 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrapped('foo', function() {})
-          expect(segment.parameters).to.not.have.property('a')
-          expect(segment.parameters).to.not.have.property('b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.not.have.property('a')
+          expect(attributes).to.not.have.property('b')
         })
       })
 
@@ -461,8 +465,9 @@ describe('MessageShim', function() {
         return helper.runInTransaction(agent, function() {
           return wrapped('foo', function() {}).then(function(message) {
             expect(message).to.equal(msg)
-            expect(segment.parameters).to.have.property('a', 'a')
-            expect(segment.parameters).to.have.property('b', 'b')
+            const attributes = segment.getAttributes()
+            expect(attributes).to.have.property('a', 'a')
+            expect(attributes).to.have.property('b', 'b')
           })
         })
       })
