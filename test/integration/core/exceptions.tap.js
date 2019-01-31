@@ -1,8 +1,9 @@
 'use strict'
 
-var test = require('tap').test
-var cp = require('child_process')
-var path = require('path')
+const test = require('tap').test
+const cp = require('child_process')
+const path = require('path')
+const helper = require('../../lib/agent_helper')
 
 
 test("Uncaught exceptions", function(t) {
@@ -14,6 +15,7 @@ test("Uncaught exceptions", function(t) {
   }, 10000)
 
   proc.on('exit', function() {
+    t.ok(true, 'Did not timeout')
     clearTimeout(timer)
     t.end()
   })
@@ -51,6 +53,44 @@ test("Report uncaught exceptions", function(t) {
     messageReceived = true
     t.equal(errors.count, 1, 'should have collected an error')
     t.equal(errors.messages[0], message, 'should have the correct message')
+    proc.kill()
+  })
+
+  proc.on('exit', function() {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
+  })
+
+  proc.send({name: 'checkAgent', args: message})
+})
+
+test("Triggers harvest while in serverless mode", function(t) {
+  t.plan(6)
+
+  var proc = startProc({
+    'NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE': 'yes',
+    'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
+    'NEW_RELIC_LOG_ENABLED': 'n',
+    'NEW_RELIC_HOME': path.join(path.resolve('test', 'helpers'))
+  })
+  var message = 'I am a test error'
+  var messageReceived = false
+  var payload = ''
+  proc.stdout.on('data', function bufferData(data) {
+    payload += data.toString('utf8')
+  })
+
+  proc.on('message', function(errors) {
+    messageReceived = true
+    t.equal(errors.count, 0, 'should have harvested the error')
+    const parsed = JSON.parse(payload)
+    helper.decodeServerlessPayload(t, parsed[2], function testDecoded(err, decoded) {
+      t.error(err, 'should not run into errors decoding serverless payload')
+      t.ok(decoded.metadata, 'metadata should be present')
+      t.ok(decoded.data, 'data should be present')
+      const error = decoded.data.error_data[1][0]
+      t.equal(error[2], message)
+    })
     proc.kill()
   })
 
@@ -126,7 +166,10 @@ if (process.setUncaughtExceptionCaptureCallback) {
   })
 }
 
-function startProc() {
+function startProc(env) {
   var testDir = path.resolve(__dirname, '../../')
-  return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {silent: true})
+  return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {
+    stdio: 'pipe',
+    env: env
+  })
 }

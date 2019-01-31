@@ -24,6 +24,7 @@ describe('SQL trace', function() {
     afterEach(function() {
       helper.unloadAgent(agent)
     })
+
     it('should include all DT intrinsics sans parentId and parentSpanId', function(done) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
@@ -55,6 +56,30 @@ describe('SQL trace', function() {
         })
       })
     })
+
+    it('should serialize properly using prepareJSONSync', function() {
+      helper.runInTransaction(agent, function(tx) {
+        const query = 'select pg_sleep(1)'
+        agent.queries.addQuery(
+          tx.trace.root,
+          'postgres',
+          query,
+          'FAKE STACK'
+        )
+        const sampleObj = agent.queries.samples.values().next().value
+        const sample = agent.queries.prepareJSONSync()[0]
+        expect(sample[0]).to.equal(tx.getFullName())
+        expect(sample[1]).to.equal('<unknown>')
+        expect(sample[2]).to.equal(sampleObj.trace.id)
+        expect(sample[3]).to.equal(query)
+        expect(sample[4]).to.equal(sampleObj.trace.metric)
+        expect(sample[5]).to.equal(sampleObj.callCount)
+        expect(sample[6]).to.equal(sampleObj.total)
+        expect(sample[7]).to.equal(sampleObj.min)
+        expect(sample[8]).to.equal(sampleObj.max)
+      })
+    })
+
     it('should include the proper priority on transaction end', function(done) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'

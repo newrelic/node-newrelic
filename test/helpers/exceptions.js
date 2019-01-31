@@ -1,8 +1,8 @@
 'use strict'
 
-var newrelic = require('../../index')
+const newrelic = require('../../index')
 
-var commands = {
+const commands = {
   uncaughtException: function() {
     throw new Error('nothing can keep me down')
   },

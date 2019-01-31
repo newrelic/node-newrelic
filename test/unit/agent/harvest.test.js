@@ -9,6 +9,48 @@ const RUN_ID = 1337
 const URL = 'https://collector.newrelic.com'
 const ENDPOINTS = helper.generateAllPaths(RUN_ID)
 const EMPTY_RESPONSE = {return_value: null}
+const Harvest = require('../../../lib/harvest')
+describe('Synchronous agent harvests', () => {
+  let agent = null
+
+  beforeEach(() => {
+    // This only works in serverless mode currently.
+    agent = helper.loadMockedAgent({
+      license_key: 'license key here',
+      serverless_mode: {
+        enabled: true
+      },
+      feature_flag: {
+        serverless_mode: true
+      },
+      run_id: RUN_ID,
+      apdex_t: 0.005
+    })
+  })
+
+  afterEach(() => {
+    helper.unloadAgent(agent)
+  })
+
+  it('should properly collect data to send', () => {
+    const testObj = {}
+
+    const oldGetPayloads = Harvest.prototype.getPayloads
+    Harvest.prototype.getPayloads = function mockedGetPayloads() {
+      return testObj
+    }
+
+    const oldPopData = agent.collector.populateDataSync
+    agent.collector.populateDataSync = function mockedPopulatedDataSync(data) {
+      expect(testObj).to.equal(data)
+    }
+
+    Harvest.prototype.getPayloads = oldGetPayloads
+    agent.collector.populateDataSync = oldPopData
+  })
+
+})
+
 
 describe('Agent harvests', () => {
   let agent = null
