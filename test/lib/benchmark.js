@@ -69,7 +69,10 @@ class Benchmark {
 
         if (agent && test.runInTransaction) {
           return helper.runInTransaction(agent, function inTransaction(txn) {
-            execute(txn.end.bind(txn))
+            execute(function afterExecute(execCallback) {
+              txn.end()
+              execCallback(txn)
+            })
           })
         }
 
