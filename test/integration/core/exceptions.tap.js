@@ -169,7 +169,7 @@ if (process.setUncaughtExceptionCaptureCallback) {
 function startProc(env) {
   var testDir = path.resolve(__dirname, '../../')
   return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {
-    stdio: 'pipe',
+    stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
     env: env
   })
 }

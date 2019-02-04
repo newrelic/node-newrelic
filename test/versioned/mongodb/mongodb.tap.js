@@ -352,8 +352,8 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
               } else {
                 process.nextTick(function() {
                   transaction.end()
-                  t.end()
                   verifyTrace(t, agent.tracer.getSegment(), 'nextObject')
+                  t.end()
                 })
               }
             }
