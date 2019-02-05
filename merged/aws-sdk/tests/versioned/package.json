@@ -8,7 +8,7 @@
         "node": ">=6.0"
       },
       "dependencies": {
-        "aws-sdk": ">=2.300.0"
+        "aws-sdk": ">=2.380.0"
       },
       "files": [
         "aws-sdk.tap.js",

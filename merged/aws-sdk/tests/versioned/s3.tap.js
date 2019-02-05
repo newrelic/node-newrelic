@@ -4,9 +4,6 @@ const common = require('./common')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
-process.env.AWS_ACCESS_KEY_ID = 'THIS_IS_A_FAKE_KEY_ID'
-process.env.AWS_SECRET_ACCESS_KEY = 'THIS_IS_A_FAKE_SECRET_ACCESS_KEY'
-
 tap.test('S3 buckets', (t) => {
   t.autoend()
 
@@ -28,20 +25,29 @@ tap.test('S3 buckets', (t) => {
 
   t.afterEach((done) => {
     helper && helper.unload()
-    common.clearMockedRequests()
     done()
   })
 
   t.test('commands', (t) => {
-    const Bucket = 'aws-sdk-test-bucket-' + Math.floor(Math.random() * 100)
+    const Bucket = 'aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
+    t.tearDown(() => {
+      // Ensure bucket gets deleted even if test goes awry.
+      S3.deleteBucket({Bucket}, () => {})
+    })
 
     helper.runInTransaction((tx) => {
       S3.headBucket({Bucket}, (err) => {
         t.matches(err, {code: 'NotFound'}, 'should get not found for bucket')
-        S3.createBucket({Bucket}, (err) => {
+        S3.createBucket({Bucket}, (err, data) => {
           t.error(err)
+          t.matches(data, {Location: `/${Bucket}`}, 'should have matching location')
+
           S3.deleteBucket({Bucket}, (err) => {
-            t.error(err)
+            // Sometimes S3 doesn't make the bucket quickly enough. The cleanup
+            // in `t.tearDown` should get it after we do all our checks.
+            if (err && err.code !== 'NoSuchBucket') {
+              t.error(err)
+            }
             tx.end()
             setImmediate(finish, tx)
           })
@@ -56,17 +62,17 @@ tap.test('S3 buckets', (t) => {
 
       t.matches(head.parameters, {
         'aws.operation': 'headBucket',
-        'aws.requestId': 'id-1',
+        'aws.requestId': String,
         'aws.service': 'S3'
       }, 'should have expected parameters')
       t.matches(create.parameters, {
         'aws.operation': 'createBucket',
-        'aws.requestId': 'id-2',
+        'aws.requestId': String,
         'aws.service': 'S3'
       }, 'should have expected parameters')
       t.matches(del.parameters, {
         'aws.operation': 'deleteBucket',
-        'aws.requestId': 'id-3',
+        'aws.requestId': String,
         'aws.service': 'S3'
       }, 'should have expected parameters')
 
