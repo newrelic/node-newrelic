@@ -1,5 +1,6 @@
 'use strict'
 
+const UNKNOWN = 'Unknown'
 const SERVICE_ENDPOINTS = {
   's3.amazonaws.com': 'S3'
 }
@@ -53,21 +54,13 @@ function wrapMakeRequest(shim, fn, name, request) {
       return
     }
 
-    const service = request.service
+    const {service, operation} = request
     const endpoint = service && service.config && service.config.endpoint
-    const operation = request.operation
+    const requestId = request.response && request.response.requestId
 
-    segment.parameters['aws.operation'] = operation
-    segment.parameters['aws.service'] = SERVICE_ENDPOINTS[endpoint]
-
-    const response = request.response && request.response.httpResponse
-    const resHeaders = response && response.headers
-    if (resHeaders) {
-      segment.parameters['aws.requestId'] = (
-        resHeaders['x-amzn-requestid'] ||
-        resHeaders['x-amz-request-id']
-      )
-    }
+    segment.parameters['aws.operation'] = operation || UNKNOWN
+    segment.parameters['aws.service'] = SERVICE_ENDPOINTS[endpoint] || endpoint
+    segment.parameters['aws.requestId'] = requestId || UNKNOWN
   })
 }
 

@@ -11,7 +11,8 @@
         "aws-sdk": ">=2.300.0"
       },
       "files": [
-        "aws-sdk.tap.js"
+        "aws-sdk.tap.js",
+        "s3.tap.js"
       ]
     }
   ],
