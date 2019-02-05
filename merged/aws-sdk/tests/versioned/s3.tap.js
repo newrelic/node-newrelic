@@ -41,7 +41,6 @@ tap.test('S3 buckets', (t) => {
         S3.createBucket({Bucket}, (err, data) => {
           t.error(err)
           t.matches(data, {Location: `/${Bucket}`}, 'should have matching location')
-
           S3.deleteBucket({Bucket}, (err) => {
             // Sometimes S3 doesn't make the bucket quickly enough. The cleanup
             // in `t.tearDown` should get it after we do all our checks.
