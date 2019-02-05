@@ -157,19 +157,18 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         client.get('testkey', function(error) {
           if (error) return t.fail(error)
 
-          transaction.end(function() {
-            var unscoped = transaction.metrics.unscoped
-            var expected = {
-              'Datastore/all': 2,
-              'Datastore/allWeb': 2,
-              'Datastore/Redis/all': 2,
-              'Datastore/Redis/allWeb': 2,
-              'Datastore/operation/Redis/set': 1,
-              'Datastore/operation/Redis/get': 1,
-            }
-            expected['Datastore/instance/Redis/' + HOST_ID] = 2
-            checkMetrics(t, unscoped, expected)
-          })
+          transaction.end()
+          var unscoped = transaction.metrics.unscoped
+          var expected = {
+            'Datastore/all': 2,
+            'Datastore/allWeb': 2,
+            'Datastore/Redis/all': 2,
+            'Datastore/Redis/allWeb': 2,
+            'Datastore/operation/Redis/set': 1,
+            'Datastore/operation/Redis/get': 1,
+          }
+          expected['Datastore/instance/Redis/' + HOST_ID] = 2
+          checkMetrics(t, unscoped, expected)
         })
       })
     })
@@ -263,12 +262,11 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           'should not have db name parameter'
         )
 
-        transaction.end(function() {
-          var unscoped = transaction.metrics.unscoped
-          t.equals(
-            unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
-            'should not have instance metric')
-        })
+        transaction.end()
+        var unscoped = transaction.metrics.unscoped
+        t.equals(
+          unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
+          'should not have instance metric')
       })
     })
   })
@@ -290,7 +288,8 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           client.set('select:test:key:2', 'bar', function(err) {
             t.notOk(err, 'should not fail to set in db 2')
             t.ok(agent.getTransaction(), 'should not lose transaction state')
-            transaction.end(verify)
+            transaction.end()
+            verify(transaction)
           })
         })
       })

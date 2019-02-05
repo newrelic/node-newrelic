@@ -237,12 +237,11 @@ function connectSyncTest(t) {
         t.ok(agent.getTransaction(), 'transaction should still still be visible')
         t.equals(value[0][COL], colVal, 'Oracle client should still work')
 
-        transaction.end(function() {
-          client.close()
-          verify(t, transaction, {
-            getName: expectedStatementPrefix + TABLE + '/Connection.execute/select',
-            setName: expectedStatementPrefix + TABLE +  '/Connection.execute/insert'
-          })
+        transaction.end()
+        client.close()
+        verify(t, transaction, {
+          getName: expectedStatementPrefix + TABLE + '/Connection.execute/select',
+          setName: expectedStatementPrefix + TABLE +  '/Connection.execute/insert'
         })
       })
     }
@@ -278,14 +277,13 @@ function simpleConnectTest(t) {
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
           t.equals(value[0][COL], colVal, 'Oracle client should still work')
 
-          transaction.end(function() {
-            client.close()
+          transaction.end()
+          client.close()
 
-            verify(t, transaction,  {
+          verify(t, transaction,  {
 
-              getName: expectedStatementPrefix + TABLE + '/Connection.execute/select',
-              setName: expectedStatementPrefix + TABLE +  '/Connection.execute/insert'
-            })
+            getName: expectedStatementPrefix + TABLE + '/Connection.execute/select',
+            setName: expectedStatementPrefix + TABLE +  '/Connection.execute/insert'
           })
         })
       })
@@ -328,15 +326,14 @@ function nextRowTest(t) {
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equals(row2, undefined, 'Oracle client should still work')
 
-            transaction.end(function() {
-              client.close()
-              verify(t, transaction, {
-                getName: expectedStatementPrefix + TABLE + '/Reader.nextRow/select',
-                setName: expectedStatementPrefix + TABLE +   '/Connection.execute/insert',
-                callCount: 3,
-                insertCallCount: 1,
-                selectCallCount: 2
-              })
+            transaction.end()
+            client.close()
+            verify(t, transaction, {
+              getName: expectedStatementPrefix + TABLE + '/Reader.nextRow/select',
+              setName: expectedStatementPrefix + TABLE +   '/Connection.execute/insert',
+              callCount: 3,
+              insertCallCount: 1,
+              selectCallCount: 2
             })
           })
         })
@@ -391,14 +388,13 @@ function nextRowsTest(t) {
           var getSegment = getSelectSegment(trace.root.children[0], insertCount)
           getSegment.timer.end()
 
-          transaction.end(function() {
-            client.close()
-            verify(t, transaction,  {
-              getName: expectedStatementPrefix + TABLE + '/Reader.nextRows/select',
-              setName: expectedStatementPrefix + TABLE +   '/Connection.execute/insert',
-              callCount: 6,
-              insertCallCount: 5
-            })
+          transaction.end()
+          client.close()
+          verify(t, transaction,  {
+            getName: expectedStatementPrefix + TABLE + '/Reader.nextRows/select',
+            setName: expectedStatementPrefix + TABLE +   '/Connection.execute/insert',
+            callCount: 6,
+            insertCallCount: 5
           })
         })
       }
@@ -434,106 +430,105 @@ function preparedTest(t) {
         if (err) return t.fail(err)
         t.ok(agent.getTransaction(), 'transaction should still still be visible')
         t.equals(value[0][COL], colVal, 'Oracle client should still work')
-        transaction.end(function() {
-          client.close()
-          var callCount = 2
-          var insertCallCount = 1
-          var selectCallCount = 1
-          t.equal(
-            Object.keys(transaction.metrics.scoped).length,
-            0,
-            'should not have any scoped metrics'
-          )
+        transaction.end()
+        client.close()
+        var callCount = 2
+        var insertCallCount = 1
+        var selectCallCount = 1
+        t.equal(
+          Object.keys(transaction.metrics.scoped).length,
+          0,
+          'should not have any scoped metrics'
+        )
 
-          var unscoped = transaction.metrics.unscoped
+        var unscoped = transaction.metrics.unscoped
 
-          var expected = {
-            'Datastore/all': callCount,
-            'Datastore/allOther': callCount,
-            'Datastore/Oracle/all': callCount,
-            'Datastore/Oracle/allOther': callCount,
-            'Datastore/operation/Oracle/insert': insertCallCount,
-            'Datastore/operation/Oracle/select': selectCallCount
+        var expected = {
+          'Datastore/all': callCount,
+          'Datastore/allOther': callCount,
+          'Datastore/Oracle/all': callCount,
+          'Datastore/Oracle/allOther': callCount,
+          'Datastore/operation/Oracle/insert': insertCallCount,
+          'Datastore/operation/Oracle/select': selectCallCount
+        }
+
+        expected[expectedStatementPrefix + TABLE + '/insert'] = insertCallCount
+        expected[expectedStatementPrefix + TABLE + '/select'] = selectCallCount
+
+        var expectedNames = Object.keys(expected)
+        var unscopedNames = Object.keys(unscoped)
+
+        expectedNames.forEach(function(name) {
+          t.ok(unscoped[name], 'should have unscoped metric ' + name)
+          if (unscoped[name]) {
+            t.equals(
+              unscoped[name].callCount, expected[name],
+              'metric ' + name + ' should have correct callCount'
+            )
           }
-
-          expected[expectedStatementPrefix + TABLE + '/insert'] = insertCallCount
-          expected[expectedStatementPrefix + TABLE + '/select'] = selectCallCount
-
-          var expectedNames = Object.keys(expected)
-          var unscopedNames = Object.keys(unscoped)
-
-          expectedNames.forEach(function(name) {
-            t.ok(unscoped[name], 'should have unscoped metric ' + name)
-            if (unscoped[name]) {
-              t.equals(
-                unscoped[name].callCount, expected[name],
-                'metric ' + name + ' should have correct callCount'
-              )
-            }
-          })
-
-          t.equals(
-            unscopedNames.length,
-            expectedNames.length,
-            'should have correct number of unscoped metrics'
-          )
-
-          var trace = transaction.trace
-          t.ok(trace, 'trace should exist')
-          t.ok(trace.root, 'root element should exist')
-          t.equals(
-            trace.root.children.length,
-            1,
-            'there should be two child roots for this test'
-          )
-
-          var setSegment = trace.root.children[0]
-
-          // todo: figure out how to register host and port
-          // t.equals(setSegment.host, params.oracle_host, 'should register the host')
-          // t.equals(setSegment.port, params.oracle_port, 'should register the port')
-
-          t.ok(setSegment, 'trace segment for insert should exist')
-          t.equals(
-            setSegment.name,
-            expectedStatementPrefix + TABLE + '/Statement.execute/insert',
-            'should register the query call'
-          )
-          t.equals(
-            setSegment.children.length,
-            1,
-            'set should have 1 children for this test'
-          )
-
-          var getSegment = setSegment.children[0].children[0]
-
-          t.ok(getSegment, 'trace segment for select should exist')
-
-          if (!getSegment) return t.end()
-
-          t.equals(
-            getSegment.name,
-            expectedStatementPrefix + TABLE + '/Connection.execute/select',
-            'should register the query call'
-          )
-          t.ok(getSegment._isEnded(), 'trace segment should have ended')
-
-          t.equals(
-            getSegment.children.length,
-            1,
-            'get should have a callback'
-          )
-
-          var callback = getSegment.children[0]
-
-          t.equals(
-            callback.children.length,
-            0,
-            'callback should not have any children'
-          )
-
-          t.end()
         })
+
+        t.equals(
+          unscopedNames.length,
+          expectedNames.length,
+          'should have correct number of unscoped metrics'
+        )
+
+        var trace = transaction.trace
+        t.ok(trace, 'trace should exist')
+        t.ok(trace.root, 'root element should exist')
+        t.equals(
+          trace.root.children.length,
+          1,
+          'there should be two child roots for this test'
+        )
+
+        var setSegment = trace.root.children[0]
+
+        // todo: figure out how to register host and port
+        // t.equals(setSegment.host, params.oracle_host, 'should register the host')
+        // t.equals(setSegment.port, params.oracle_port, 'should register the port')
+
+        t.ok(setSegment, 'trace segment for insert should exist')
+        t.equals(
+          setSegment.name,
+          expectedStatementPrefix + TABLE + '/Statement.execute/insert',
+          'should register the query call'
+        )
+        t.equals(
+          setSegment.children.length,
+          1,
+          'set should have 1 children for this test'
+        )
+
+        var getSegment = setSegment.children[0].children[0]
+
+        t.ok(getSegment, 'trace segment for select should exist')
+
+        if (!getSegment) return t.end()
+
+        t.equals(
+          getSegment.name,
+          expectedStatementPrefix + TABLE + '/Connection.execute/select',
+          'should register the query call'
+        )
+        t.ok(getSegment._isEnded(), 'trace segment should have ended')
+
+        t.equals(
+          getSegment.children.length,
+          1,
+          'get should have a callback'
+        )
+
+        var callback = getSegment.children[0]
+
+        t.equals(
+          callback.children.length,
+          0,
+          'callback should not have any children'
+        )
+
+        t.end()
       })
     })
   })

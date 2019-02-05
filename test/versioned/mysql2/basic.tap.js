@@ -75,13 +75,12 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
 
-          agent.getTransaction().end(function checkQueries() {
-            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-            for (let sample of agent.queries.samples.values()) {
-              t.ok(sample.total > 0, 'the samples should have positive duration')
-            }
-            t.end()
-          })
+          agent.getTransaction().end()
+          t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+          for (let sample of agent.queries.samples.values()) {
+            t.ok(sample.total > 0, 'the samples should have positive duration')
+          }
+          t.end()
         })
       })
     })
@@ -101,13 +100,12 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
-          agent.getTransaction().end(function checkQueries() {
-            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-            for (let sample of agent.queries.samples.values()) {
-              t.ok(sample.total > 0, 'the samples should have positive duration')
-            }
-            t.end()
-          })
+          agent.getTransaction().end()
+          t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+          for (let sample of agent.queries.samples.values()) {
+            t.ok(sample.total > 0, 'the samples should have positive duration')
+          }
+          t.end()
         })
       })
     })
@@ -137,13 +135,12 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
           t.ok(results, 'results should be received')
-          agent.getTransaction().end(function checkQueries() {
-            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-            for (let sample of agent.queries.samples.values()) {
-              t.ok(sample.total > 0, 'the samples should have positive duration')
-            }
-            t.end()
-          })
+          agent.getTransaction().end()
+          t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+          for (let sample of agent.queries.samples.values()) {
+            t.ok(sample.total > 0, 'the samples should have positive duration')
+          }
+          t.end()
         })
       })
     })
@@ -184,13 +181,12 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
                 'set port'
               )
               withRetry.release(client)
-              agent.getTransaction().end(function checkQueries() {
-                t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-                for (let sample of agent.queries.samples.values()) {
-                  t.ok(sample.total > 0, 'the samples should have positive duration')
-                }
-                t.end()
-              })
+              agent.getTransaction().end()
+              t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+              for (let sample of agent.queries.samples.values()) {
+                t.ok(sample.total > 0, 'the samples should have positive duration')
+              }
+              t.end()
             })
           })
         })
@@ -228,29 +224,28 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
         })
 
         setTimeout(function actualEnd() {
-          agent.getTransaction().end(function checkQueries(transaction) {
-            withRetry.release(client)
-            t.ok(results && ended, 'result and end events should occur')
-            var traceRoot = transaction.trace.root
-            var traceRootDuration = traceRoot.timer.getDurationInMillis()
-            var segment = findSegment(
-              traceRoot,
-              'Datastore/statement/MySQL/unknown/select'
-            )
-            var queryNodeDuration = segment.timer.getDurationInMillis()
+          const transaction = agent.getTransaction().end()
+          withRetry.release(client)
+          t.ok(results && ended, 'result and end events should occur')
+          var traceRoot = transaction.trace.root
+          var traceRootDuration = traceRoot.timer.getDurationInMillis()
+          var segment = findSegment(
+            traceRoot,
+            'Datastore/statement/MySQL/unknown/select'
+          )
+          var queryNodeDuration = segment.timer.getDurationInMillis()
 
-            t.ok(
-              Math.abs(duration - queryNodeDuration) < 50,
-              'query duration should be roughly be the time between query and end'
-            )
+          t.ok(
+            Math.abs(duration - queryNodeDuration) < 50,
+            'query duration should be roughly be the time between query and end'
+          )
 
-            t.ok(
-              traceRootDuration - queryNodeDuration > 900,
-              'query duration should be small compared to transaction duration'
-            )
+          t.ok(
+            traceRootDuration - queryNodeDuration > 900,
+            'query duration should be small compared to transaction duration'
+          )
 
-            t.end()
-          })
+          t.end()
         }, 2000)
       })
     })
@@ -278,27 +273,26 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
 
         query.on('end', function endCallback() {
           setTimeout(function actualEnd() {
-            agent.getTransaction().end(function checkQueries(transaction) {
-              withRetry.release(client)
-              var traceRoot = transaction.trace.root
-              var querySegment = traceRoot.children[0]
-              t.equal(
-                querySegment.children.length, 2,
-                'the query segment should have two children'
-              )
+            const transaction = agent.getTransaction().end()
+            withRetry.release(client)
+            var traceRoot = transaction.trace.root
+            var querySegment = traceRoot.children[0]
+            t.equal(
+              querySegment.children.length, 2,
+              'the query segment should have two children'
+            )
 
-              var childSegment = querySegment.children[1]
-              t.equal(
-                childSegment.name, 'Callback: endCallback',
-                'children should be callbacks'
-              )
-              var grandChildSegment = childSegment.children[0]
-              t.equal(
-                grandChildSegment.name, 'timers.setTimeout',
-                'grand children should be timers'
-              )
-              t.end()
-            })
+            var childSegment = querySegment.children[1]
+            t.equal(
+              childSegment.name, 'Callback: endCallback',
+              'children should be callbacks'
+            )
+            var grandChildSegment = childSegment.children[0]
+            t.equal(
+              grandChildSegment.name, 'timers.setTimeout',
+              'grand children should be timers'
+            )
+            t.end()
           }, 100)
         })
       })
@@ -319,13 +313,12 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
-          agent.getTransaction().end(function checkQueries() {
-            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-            for (let sample of agent.queries.samples.values()) {
-              t.ok(sample.total > 0, 'the samples should have positive duration')
-            }
-            t.end()
-          })
+          agent.getTransaction().end()
+          t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+          for (let sample of agent.queries.samples.values()) {
+            t.ok(sample.total > 0, 'the samples should have positive duration')
+          }
+          t.end()
         })
       })
     })
@@ -345,13 +338,12 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
-          agent.getTransaction().end(function checkQueries() {
-            t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-            for (let sample of agent.queries.samples.values()) {
-              t.ok(sample.total > 0, 'the samples should have positive duration')
-            }
-            t.end()
-          })
+          agent.getTransaction().end()
+          t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+          for (let sample of agent.queries.samples.values()) {
+            t.ok(sample.total > 0, 'the samples should have positive duration')
+          }
+          t.end()
         })
       })
     })
@@ -388,7 +380,8 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
               }
               client.query('drop test_db;', function() {
                 withRetry.release(client)
-                txn.end(t.end)
+                txn.end()
+                t.end()
               })
             })
           })

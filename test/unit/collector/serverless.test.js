@@ -1,4 +1,5 @@
 'use strict'
+const zlib = require('zlib')
 
 const nock = require('nock')
 const chai = require('chai')
@@ -90,6 +91,41 @@ describe('ServerlessCollector API', () => {
         done()
       })
     })
+  })
+
+  describe('#populateDataSync', () => {
+    it('assigns the data passed in as the payload to flush synchronously', () => {
+      expect(Object.keys(api.payload).length).to.equal(0)
+      api.populateDataSync({
+        test: "value",
+        metrics: "hello",
+        analyticsEvents: null,
+        cool_stuff: "camelCase"
+      })
+      expect(api.payload.test).to.be.undefined
+      expect(api.payload.cool_stuff).to.be.undefined
+      expect(api.payload.metric_data).to.equal("hello")
+      expect(api.payload.analytic_event_data).to.be.undefined
+    })
+  })
+
+  describe('#flushPayloadSync', () => {
+    it('should base64 encode the gzipped payload synchronously', () => {
+      const testPayload = {
+        someKey: "someValue",
+        buyOne: "getOne"
+      }
+      api.constructor.prototype.payload = testPayload
+      const oldDoFlush = api.constructor.prototype._doFlush
+      api._doFlush = function testFlush(data) {
+        const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
+        expect(decoded).to.deep.equal(testPayload)
+      }
+      api.flushPayloadSync()
+      expect(Object.keys(api.payload).length).to.equal(0)
+      api.constructor.prototype._doFlush = oldDoFlush
+    })
+
   })
 
   describe('#analyticsEvents', () => {

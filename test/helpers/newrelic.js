@@ -29,5 +29,8 @@ exports.config = {
      * production applications.
      */
     level : 'trace'
+  },
+  cross_application_tracer: {
+    enabled: false
   }
 }

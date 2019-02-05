@@ -237,11 +237,10 @@ test('getTransaction', function testGetTransaction(t) {
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.equal(tracer.getTransaction(), transaction)
     t.equal(tracer.segment.transaction, transaction)
-    transaction.end(function ended() {
-      t.notOk(tracer.getTransaction())
-      t.equal(tracer.segment.transaction, transaction)
-      t.end()
-    })
+    transaction.end()
+    t.notOk(tracer.getTransaction())
+    t.equal(tracer.segment.transaction, transaction)
+    t.end()
   })
 })
 
@@ -307,9 +306,8 @@ test('createSegment + recorder', function testCreateSegment(t) {
     var segment = tracer.createSegment('inside transaction', recorder)
     t.equal(segment.name, 'inside transaction')
 
-    transaction.end(function onEnd() {
-      t.end()
-    })
+    transaction.end()
+    t.end()
 
     function recorder(seg) {
       t.equal(seg, segment)
@@ -363,9 +361,8 @@ test('addSegment + recorder', function addSegmentTest(t) {
     t.equal(segment.timer.hrDuration, null)
     t.equal(root.children[0], segment)
 
-    transaction.end(function onEnd() {
-      t.end()
-    })
+    transaction.end()
+    t.end()
   })
 
   function check(seg) {
@@ -394,11 +391,10 @@ test('addSegment + full', function addSegmentTest(t) {
     t.ok(segment.timer.hrDuration)
     t.equal(root.children[0], segment)
 
-    transaction.end(function onEnd() {
-      // because having plan + end after async causes issues
-      t.ok(true)
-      t.end()
-    })
+    transaction.end()
+    // because having plan + end after async causes issues
+    t.ok(true)
+    t.end()
   })
 
   function check(segment) {

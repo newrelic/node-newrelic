@@ -357,12 +357,6 @@ test('errors in background transactions are collected with correct data', functi
 
   agent.config.attributes.enabled = true
 
-  // Create transaction generator
-  api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
-    api.noticeError(new Error('errors in tx test'))
-    // Auto-end transaction in setImmediate.
-  })
-
   agent.on('transactionFinished', function() {
     var error = agent.errors.errors[0]
     t.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
@@ -386,5 +380,11 @@ test('errors in background transactions are collected with correct data', functi
       'should have collected no agent attributes'
     )
     t.end()
+  })
+
+  // Create transaction generator
+  api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
+    api.noticeError(new Error('errors in tx test'))
+    // Auto-end transaction in setImmediate.
   })
 })

@@ -122,8 +122,7 @@ describe("recordExternal", function() {
       [{name : "External/oauth.facebook.com/all"},  [1,0.002,0.002,0.002,0.002,0.000004]]
     ]
 
-    trans.end(function() {
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
-    })
+    trans.end()
+    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
   })
 })

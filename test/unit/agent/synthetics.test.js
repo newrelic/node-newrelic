@@ -26,13 +26,12 @@ describe('synthetics transaction traces', function() {
         monitorId: 'monId'
       }
 
-      txn.end(function() {
-        var trace = txn.trace
-        expect(trace.intrinsics).to.have.property('synthetics_resource_id', 'resId')
-        expect(trace.intrinsics).to.have.property('synthetics_job_id', 'jobId')
-        expect(trace.intrinsics).to.have.property('synthetics_monitor_id', 'monId')
-        done()
-      })
+      txn.end()
+      var trace = txn.trace
+      expect(trace.intrinsics).to.have.property('synthetics_resource_id', 'resId')
+      expect(trace.intrinsics).to.have.property('synthetics_job_id', 'jobId')
+      expect(trace.intrinsics).to.have.property('synthetics_monitor_id', 'monId')
+      done()
     })
   })
 })

@@ -155,44 +155,43 @@ describe('SpanEvent', () => {
         tx.priority = 42
 
         dsConn.myDbOp(longQuery, () => {
-          tx.end(function check() {
-            const seg = tx.trace.root.children[0]
-            const span = SpanEvent.fromSegment(seg, 'parent')
+          tx.end()
+          const seg = tx.trace.root.children[0]
+          const span = SpanEvent.fromSegment(seg, 'parent')
 
-            // Should have all the normal properties.
-            expect(span).to.be.an.instanceOf(SpanEvent)
-            expect(span).to.be.an.instanceOf(SpanEvent.DatastoreSpanEvent)
-            expect(span).to.have.property('type', 'Span')
-            expect(span).to.have.property('category', SpanEvent.CATEGORIES.DATASTORE)
-            expect(span).to.have.property('traceId', tx.id)
-            expect(span).to.have.property('guid', seg.id)
-            expect(span).to.have.property('parentId', 'parent')
-            expect(span).to.have.property('transactionId', tx.id)
-            expect(span).to.have.property('sampled', true)
-            expect(span).to.have.property('priority', 42)
-            expect(span)
-              .to.have.property('name', 'Datastore/statement/TestStore/test/test')
-            expect(span).to.have.property('timestamp', seg.timer.start)
-            expect(span).to.have.property('duration').within(0.03, 0.7)
+          // Should have all the normal properties.
+          expect(span).to.be.an.instanceOf(SpanEvent)
+          expect(span).to.be.an.instanceOf(SpanEvent.DatastoreSpanEvent)
+          expect(span).to.have.property('type', 'Span')
+          expect(span).to.have.property('category', SpanEvent.CATEGORIES.DATASTORE)
+          expect(span).to.have.property('traceId', tx.id)
+          expect(span).to.have.property('guid', seg.id)
+          expect(span).to.have.property('parentId', 'parent')
+          expect(span).to.have.property('transactionId', tx.id)
+          expect(span).to.have.property('sampled', true)
+          expect(span).to.have.property('priority', 42)
+          expect(span)
+            .to.have.property('name', 'Datastore/statement/TestStore/test/test')
+          expect(span).to.have.property('timestamp', seg.timer.start)
+          expect(span).to.have.property('duration').within(0.03, 0.7)
 
-            // Should have no http properties.
-            expect(span).to.not.have.property('http.url')
-            expect(span).to.not.have.property('http.method')
+          // Should have no http properties.
+          expect(span).to.not.have.property('http.url')
+          expect(span).to.not.have.property('http.method')
 
-            // Should have (most) datastore properties.
-            expect(span).to.not.have.property('component')
-            expect(span).to.have.property('db.instance')
-            expect(span).to.have.property('peer.hostname', 'my-db-host')
-            expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
-            expect(span).to.have.property('span.kind', 'client')
-            expect(span).to.have.property('db.statement')
-            // Testing query truncation
-            const statement = span['db.statement']
-            expect(statement.endsWith('...')).to.be.true
-            expect(Buffer.byteLength(statement, 'utf8')).to.equal(2000)
+          // Should have (most) datastore properties.
+          expect(span).to.not.have.property('component')
+          expect(span).to.have.property('db.instance')
+          expect(span).to.have.property('peer.hostname', 'my-db-host')
+          expect(span).to.have.property('peer.address', 'my-db-host:/path/to/db.sock')
+          expect(span).to.have.property('span.kind', 'client')
+          expect(span).to.have.property('db.statement')
+          // Testing query truncation
+          const statement = span['db.statement']
+          expect(statement.endsWith('...')).to.be.true
+          expect(Buffer.byteLength(statement, 'utf8')).to.equal(2000)
 
-            done()
-          })
+          done()
         })
       })
     })

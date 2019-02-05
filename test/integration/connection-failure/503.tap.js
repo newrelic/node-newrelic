@@ -101,76 +101,75 @@ tap.test('merging metrics and errors after a 503', (t) => {
   agent.start(() => {
     agent.errors.add(transaction, new Error('test error'))
 
-    transaction.end(() => {
-      agent.traces.trace = transaction.trace
+    transaction.end()
+    agent.traces.trace = transaction.trace
 
-      agent.harvest((error) => {
-        t.error(error, 'error should be contained by collector')
+    agent.harvest((error) => {
+      t.error(error, 'error should be contained by collector')
 
-        t.equal(agent.errors.errors.length, 1, 'errors were merged back in')
-        const merged = agent.errors.errors[0]
-        t.deepEqual(merged[0], 0, 'found timestamp in merged error')
-        t.deepEqual(merged[1], 'trans1', 'found scope in merged error')
-        t.deepEqual(merged[2], 'test error', 'found message in merged error')
+      t.equal(agent.errors.errors.length, 1, 'errors were merged back in')
+      const merged = agent.errors.errors[0]
+      t.deepEqual(merged[0], 0, 'found timestamp in merged error')
+      t.deepEqual(merged[1], 'trans1', 'found scope in merged error')
+      t.deepEqual(merged[2], 'test error', 'found message in merged error')
 
-        // Sort the metrics by name and filter out supportabilities.
-        const metrics = agent.metrics.toJSON().sort((a, b) => {
-          const aName = a[0].name
-          const bName = b[0].name
-          return aName > bName ? 1 : aName < bName ? -1 : 0
-        }).filter((m) => !/^Supportability\//.test(m[0].name))
+      // Sort the metrics by name and filter out supportabilities.
+      const metrics = agent.metrics.toJSON().sort((a, b) => {
+        const aName = a[0].name
+        const bName = b[0].name
+        return aName > bName ? 1 : aName < bName ? -1 : 0
+      }).filter((m) => !/^Supportability\//.test(m[0].name))
 
-        t.deepEqual(
-          metrics,
-          [[
-            {name: 'Errors/all'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
-            }
-          ], [
-            {name: 'Errors/allOther'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 0
-            }
-          ], [
-            {name: 'Errors/allWeb'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
-            }
-          ], [
-            {name: 'Errors/trans1'},
-            {
-              total: 0,
-              totalExclusive: 0,
-              min: 0,
-              max: 0,
-              sumOfSquares: 0,
-              callCount: 1
-            }
-          ]],
-          'metrics were merged'
-        )
+      t.deepEqual(
+        metrics,
+        [[
+          {name: 'Errors/all'},
+          {
+            total: 0,
+            totalExclusive: 0,
+            min: 0,
+            max: 0,
+            sumOfSquares: 0,
+            callCount: 1
+          }
+        ], [
+          {name: 'Errors/allOther'},
+          {
+            total: 0,
+            totalExclusive: 0,
+            min: 0,
+            max: 0,
+            sumOfSquares: 0,
+            callCount: 0
+          }
+        ], [
+          {name: 'Errors/allWeb'},
+          {
+            total: 0,
+            totalExclusive: 0,
+            min: 0,
+            max: 0,
+            sumOfSquares: 0,
+            callCount: 1
+          }
+        ], [
+          {name: 'Errors/trans1'},
+          {
+            total: 0,
+            totalExclusive: 0,
+            min: 0,
+            max: 0,
+            sumOfSquares: 0,
+            callCount: 1
+          }
+        ]],
+        'metrics were merged'
+      )
 
-        agent.stop(() => {})
-      })
-
-      t.ok(agent.metrics.empty, 'should have cleared metrics on harvest')
-      t.equal(agent.metrics.toJSON().length, 0, 'should have no metrics')
+      agent.stop(() => {})
     })
+
+    t.ok(agent.metrics.empty, 'should have cleared metrics on harvest')
+    t.equal(agent.metrics.toJSON().length, 0, 'should have no metrics')
   })
 })
