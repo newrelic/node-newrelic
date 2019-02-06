@@ -81,6 +81,9 @@ function finish(t, tx) {
 
   segments.forEach((segment, i) => {
     t.matches(segment.parameters, {
+      'host': String,
+      'port_path_or_id': String,
+      'table_name': 'Music',
       'aws.operation': TESTS[i].method,
       'aws.requestId': String
       // 'aws.service': 'DynamoDB' // TODO: Bring back service name.

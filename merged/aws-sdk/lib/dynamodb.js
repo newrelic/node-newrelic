@@ -25,10 +25,17 @@ function instrument(shim, AWS) {
     shim.recordOperation(
       ddb,
       OPERATIONS,
-      {
-        parameters: shim.FIRST,
-        callback: shim.LAST,
-        opaque: true
+      function wrapMethod(shim, original, name, args) {
+        return {
+          parameters: {
+            name,
+            host: this.endpoint.host,
+            port_path_or_id: this.endpoint.port,
+            table_name: args[0].TableName || 'Unknown'
+          },
+          callback: shim.LAST,
+          opaque: true
+        }
       }
     )
   })
