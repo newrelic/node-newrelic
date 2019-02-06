@@ -68,8 +68,11 @@ describe('DatastoreShim', function() {
     it('should be enumerated on the class and prototype', function() {
       var datastores = [
         'CASSANDRA',
+        'DYNAMODB',
+        'MEMCACHED',
         'MONGODB',
         'MYSQL',
+        'NEPTUNE',
         'REDIS',
         'POSTGRES'
       ]
