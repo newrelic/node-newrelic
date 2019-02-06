@@ -1,8 +1,17 @@
 'use strict'
 
+const UNKNOWN = 'Unknown'
+
 function validate(shim, AWS) {
   if (!shim.isFunction(AWS.NodeHttpClient)) {
     shim.logger.debug('Could not find NodeHttpClient, not instrumenting.')
+    return false
+  }
+  if (
+    !shim.isFunction(AWS.Service) ||
+    !shim.isFunction(AWS.Service.prototype.makeRequest)
+  ) {
+    shim.logger.debug('Could not find AWS.Service#makeRequest, not instrumenting.')
     return false
   }
   return true
@@ -10,6 +19,7 @@ function validate(shim, AWS) {
 
 function instrument(shim, AWS) {
   shim.wrap(AWS.NodeHttpClient.prototype, 'handleRequest', wrapHandleRequest)
+  shim.wrapReturn(AWS.Service.prototype, 'makeRequest', wrapMakeRequest)
 }
 
 function wrapHandleRequest(shim, handleRequest) {
@@ -25,6 +35,30 @@ function wrapHandleRequest(shim, handleRequest) {
 
     return handleRequest.apply(this, arguments)
   }
+}
+
+function wrapMakeRequest(shim, fn, name, request) {
+  if (!request) {
+    shim.logger.trace('No request object returned from Service#makeRequest')
+    return
+  }
+
+  request.on('complete', function onAwsRequestComplete() {
+    const httpRequest = request.httpRequest && request.httpRequest.stream
+    const segment = shim.getSegment(httpRequest)
+    if (!httpRequest || !segment) {
+      shim.logger.trace('No segment found for request, not extracting information.')
+      return
+    }
+
+    const requestId = request.response && request.response.requestId
+
+    segment.parameters['aws.operation'] = request.operation || UNKNOWN
+    segment.parameters['aws.requestId'] = requestId || UNKNOWN
+
+    // TODO: Extract service name somehow.
+    // segment.parameters['aws.service'] = ???
+  })
 }
 
 module.exports = {
