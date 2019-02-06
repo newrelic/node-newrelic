@@ -40,6 +40,12 @@ describe('MessageShim', function() {
       anony: function() {},
       getActiveSegment: function() {
         return agent.tracer.getSegment()
+      },
+      withNested: function() {
+        const segment = agent.tracer.getSegment()
+        segment.add('ChildSegment')
+
+        return segment
       }
     }
 
@@ -160,6 +166,7 @@ describe('MessageShim', function() {
           expect(segment.transaction).to.equal(tx)
           expect(segment.name)
             .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
       })
@@ -267,6 +274,42 @@ describe('MessageShim', function() {
           return wrapped().then(function(v) {
             expect(v).to.equal(val)
             expect(segment.getDurationInMillis()).to.be.above(DELAY)
+          })
+        })
+      })
+
+      describe('when opaque false', () => {
+        it('should create a child segment', function() {
+          shim.recordProduce(wrappable, 'withNested', function() {
+            return {destinationName: 'foobar'}
+          })
+
+          helper.runInTransaction(agent, (tx) => {
+            const segment = wrappable.withNested()
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
+            expect(segment.children).to.have.lengthOf(1)
+            const childSegment = segment.children[0]
+            expect(childSegment.name).to.equal('ChildSegment')
+          })
+        })
+      })
+
+      describe('when opaque true', () => {
+        it('should not create a child segment', function() {
+          shim.recordProduce(wrappable, 'withNested', function() {
+            return {destinationName: 'foobar', opaque: true}
+          })
+
+          helper.runInTransaction(agent, (tx) => {
+            const segment = wrappable.withNested()
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
+            expect(segment.children).to.have.lengthOf(0)
           })
         })
       })
