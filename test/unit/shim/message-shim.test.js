@@ -545,6 +545,42 @@ describe('MessageShim', function() {
       })
     })
 
+    describe('when opaque false', () => {
+      it('should create a child segment', function() {
+        shim.recordConsume(wrappable, 'withNested', function() {
+          return {destinationName: 'foobar'}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          const segment = wrappable.withNested()
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+
+          expect(segment.children).to.have.lengthOf(1)
+          const childSegment = segment.children[0]
+          expect(childSegment.name).to.equal('ChildSegment')
+        })
+      })
+    })
+
+    describe('when opaque true', () => {
+      it('should not create a child segment', function() {
+        shim.recordConsume(wrappable, 'withNested', function() {
+          return {destinationName: 'foobar', opaque: true}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          const segment = wrappable.withNested()
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+
+          expect(segment.children).to.have.lengthOf(0)
+        })
+      })
+    })
+
     describe('recorder', function() {
       it('should create message broker metrics', function(done) {
         shim.recordConsume(wrappable, 'getActiveSegment', function() {
