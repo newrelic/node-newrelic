@@ -424,6 +424,27 @@ describe('MessageShim', function() {
         })
       })
 
+      it('should bind the callback if there is one', function() {
+        const cb = function() {}
+        const toWrap = function(wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        const wrapped = shim.recordConsume(toWrap, function() {
+          return {callback: shim.LAST}
+        })
+
+        helper.runInTransaction(agent, function() {
+          wrapped(cb)
+        })
+      })
+
       it('should add parameters to segment', function() {
         function wrapMe(q, cb) {
           cb()
