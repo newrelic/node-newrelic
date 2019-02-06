@@ -1,9 +1,6 @@
 'use strict'
 
 const UNKNOWN = 'Unknown'
-const SERVICE_ENDPOINTS = {
-  's3.amazonaws.com': 'S3'
-}
 
 function validate(shim, AWS) {
   if (!shim.isFunction(AWS.NodeHttpClient)) {
@@ -54,13 +51,13 @@ function wrapMakeRequest(shim, fn, name, request) {
       return
     }
 
-    const {service, operation} = request
-    const endpoint = service && service.config && service.config.endpoint
     const requestId = request.response && request.response.requestId
 
-    segment.parameters['aws.operation'] = operation || UNKNOWN
-    segment.parameters['aws.service'] = SERVICE_ENDPOINTS[endpoint] || endpoint
+    segment.parameters['aws.operation'] = request.operation || UNKNOWN
     segment.parameters['aws.requestId'] = requestId || UNKNOWN
+
+    // TODO: Extract service name somehow.
+    // segment.parameters['aws.service'] = ???
   })
 }
 
