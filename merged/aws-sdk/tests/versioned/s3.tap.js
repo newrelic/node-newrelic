@@ -55,7 +55,8 @@ tap.test('S3 buckets', (t) => {
     })
 
     function finish(tx) {
-      const externals = common.checkAWSExternals(t, tx.trace.root)
+      const pattern = /^External\/.*?amazonaws\.com/
+      const externals = common.checkAWSAttributes(t, tx.trace.root, pattern)
       t.equal(externals.length, 3, 'should have 3 aws externals')
       const [head, create, del] = externals
 
