@@ -593,9 +593,9 @@ function makeTrace(agent, callback) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'nr_exclusive_duration_millis': 8,
           'request.uri': '/test?test=value',
-          'request.parameters.test': 'value'
+          'request.parameters.test': 'value',
+          'nr_exclusive_duration_millis': 8
         },
         [
           // TODO: ensure that the ordering is correct WRT start time
@@ -609,9 +609,7 @@ function makeTrace(agent, callback) {
   var rootNode = [
     trace.root.timer.start / 1000,
     {},
-    {
-      nr_flatten_leading: false
-    },
+    {nr_flatten_leading: false},
     rootSegment,
     {
       agentAttributes: {
@@ -630,10 +628,10 @@ function makeTrace(agent, callback) {
     }
 
     callback(null, {
-      transaction: transaction,
-      trace: trace,
-      rootSegment: rootSegment,
-      rootNode: rootNode,
+      transaction,
+      trace,
+      rootSegment,
+      rootNode,
       expectedEncoding: [
         0,
         DURATION,

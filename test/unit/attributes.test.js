@@ -46,6 +46,28 @@ describe('Attributes', () => {
       expect(attributes).to.have.property('one', '1')
       expect(attributes).to.have.property('two', '2')
     })
+
+    it('only allows non-null-type primitive attribute values', () => {
+      inst = new Attributes({limit: 10, filter})
+      const attributes = {
+        first: 'first',
+        second: [ 'second' ],
+        third: { key: 'third' },
+        fourth: 4,
+        fifth: true,
+        sixth: undefined,
+        seventh: null
+      }
+
+      inst.addAttributes(DESTINATIONS.ALL, attributes)
+
+      const res = inst.get(DESTINATIONS.ALL)
+      expect(Object.keys(res).length).to.equal(3)
+      expect(res.second).to.be.undefined
+      expect(res.third).to.be.undefined
+      expect(res.sixth).to.be.undefined
+      expect(res.seventh).to.be.undefined
+    })
   })
 
   describe('#get', () => {
@@ -100,47 +122,6 @@ describe('Attributes', () => {
       const res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
       expect(res.third).to.be.undefined
-    })
-
-    it('only includes non-null-type primitive attribute values', () => {
-      inst = new Attributes({limit: 10, filter})
-      inst.attributes = {
-        first: {
-          destinations: 0x01,
-          value: 'first'
-        },
-        second: {
-          destinations: 0x01,
-          value: [ 'second' ]
-        },
-        third: {
-          destinations: 0x01,
-          value: { key: 'third' }
-        },
-        fourth: {
-          destinations: 0x01,
-          value: 4
-        },
-        fifth: {
-          destinations: 0x01,
-          value: true
-        },
-        sixth: {
-          destinations: 0x01,
-          value: undefined
-        },
-        seventh: {
-          destinations: 0x01,
-          value: null
-        }
-      }
-
-      const res = inst.get(0x01)
-      expect(Object.keys(res).length).to.equal(3)
-      expect(res.second).to.be.undefined
-      expect(res.third).to.be.undefined
-      expect(res.sixth).to.be.undefined
-      expect(res.seventh).to.be.undefined
     })
 
     it('returns attributes up to specified limit, regardless of position', () => {
