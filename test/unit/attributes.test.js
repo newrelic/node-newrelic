@@ -167,7 +167,7 @@ describe('Attributes', () => {
   })
 
   describe('#reset', () => {
-    it('resets instance attributes and count', () => {
+    it('resets instance attributes', () => {
       inst = new Attributes({filter})
       inst.attributes = {
         first: {
@@ -183,12 +183,10 @@ describe('Attributes', () => {
           value: 'third'
         }
       }
-      inst.count = 3
 
       inst.reset()
 
       expect(inst.attributes).to.deep.equal({})
-      expect(inst.count).to.equal(0)
     })
   })
 })
