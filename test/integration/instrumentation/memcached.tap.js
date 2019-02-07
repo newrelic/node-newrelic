@@ -488,9 +488,9 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
           transaction.end()
           var segment = transaction.trace.root.children[0]
-          t.equals(
-            segment.getAttributes().key, "\"foo\"",
-            'should still have the get key as a parameter'
+          t.notOk(
+            segment.getAttributes().key,
+            'should not have any attributes'
           )
         })
       })
