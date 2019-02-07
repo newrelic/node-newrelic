@@ -3,7 +3,7 @@
 function checkAWSExternals(t, segment, externalSegments = []) {
   const expectedParams = {
     'aws.operation': String,
-    // 'aws.service': String, // TODO: Bring back the service name.
+    'aws.service': String,
     'aws.requestId': String
   }
 

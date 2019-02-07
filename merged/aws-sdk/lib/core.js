@@ -43,6 +43,7 @@ function wrapMakeRequest(shim, fn, name, request) {
     return
   }
 
+  const service = getServiceName(this)
   request.on('complete', function onAwsRequestComplete() {
     const httpRequest = request.httpRequest && request.httpRequest.stream
     const segment = shim.getSegment(httpRequest)
@@ -55,10 +56,24 @@ function wrapMakeRequest(shim, fn, name, request) {
 
     segment.parameters['aws.operation'] = request.operation || UNKNOWN
     segment.parameters['aws.requestId'] = requestId || UNKNOWN
-
-    // TODO: Extract service name somehow.
-    // segment.parameters['aws.service'] = ???
+    segment.parameters['aws.service'] = service || UNKNOWN
   })
+}
+
+function getServiceName(service) {
+  if (service.api && (service.api.abbreviation || service.api.serviceId)) {
+    return service.api.abbreviation || service.api.serviceId
+  }
+
+  // In theory, getting the `constructor.prototype` should be redundant with
+  // checking `service`. However, the aws-sdk dynamically generates classes and
+  // doing this deep check was the recommended method by the maintainers.
+  const constructor = service.constructor
+  const api = constructor && constructor.prototype && constructor.prototype.api
+  if (api) {
+    return api.abbreviation || api.serviceId
+  }
+  return null
 }
 
 module.exports = {
