@@ -53,12 +53,13 @@ function wrapMakeRequest(shim, fn, name, request) {
       return
     }
 
+    const requestRegion = request.httpRequest.region
     const requestId = request.response && request.response.requestId
 
     segment.parameters['aws.operation'] = request.operation || UNKNOWN
     segment.parameters['aws.requestId'] = requestId || UNKNOWN
     segment.parameters['aws.service'] = service || UNKNOWN
-    segment.parameters['aws.region'] = region || UNKNOWN
+    segment.parameters['aws.region'] = requestRegion || region || UNKNOWN
   })
 }
 
