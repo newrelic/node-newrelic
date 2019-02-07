@@ -1,4 +1,4 @@
- #!/bin/bash
+#! /bin/bash
 
 IP=`docker-machine ip default 2>/dev/null`
 

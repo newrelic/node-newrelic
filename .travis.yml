@@ -40,7 +40,9 @@ services:
   - postgresql
   - rabbitmq
 before_install:
-  - if [ "$(npm --version)" = "3.10.3" ]; then npm install -g npm@3.4.1; fi
   - ./bin/travis-setup.sh
-install: if [ "$SUITE" != "smoke" ]; then make node_modules; fi
-script: make $SUITE
+install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
+cache:
+  directories:
+    - "$HOME/.npm"
+script: npm run $SUITE
