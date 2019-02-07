@@ -444,7 +444,8 @@ describe('DatastoreShim', function() {
         })
         helper.runInTransaction(agent, function(tx) {
           wrappable.getActiveSegment()
-          tx.end(function() { done() })
+          tx.end()
+          done()
         })
       })
 

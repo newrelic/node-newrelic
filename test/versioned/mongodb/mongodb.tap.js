@@ -348,8 +348,9 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
                 cursor.nextObject(cb)
               } else {
                 process.nextTick(function() {
-                  transaction.end(t.end.bind(t))
+                  transaction.end()
                   verifyTrace(t, agent.tracer.getSegment(), 'nextObject')
+                  t.end()
                 })
               }
             }
@@ -1226,9 +1227,8 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
             { safe: true, multi: true },
             function(err) {
               t.error(err)
-              tx.end(function() {
-                verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
-              })
+              tx.end()
+              verifyTrace(t, agent.tracer.getSegment(), 'update', host, path)
             }
           )
         })

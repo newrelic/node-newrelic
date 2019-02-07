@@ -87,50 +87,44 @@ describe('Analytics events', function() {
       trans.end()
     })
 
-    it('should generate an event from transaction', function(done) {
-      trans.end(function() {
-        expect(agent.events.toArray().length).to.equal(1)
+    it('should generate an event from transaction', function() {
+      trans.end()
+      expect(agent.events.toArray().length).to.equal(1)
 
-        var event = agent.events.toArray()[0]
-        expect(event).to.be.a('Array')
-        var eventValues = event[0]
-        expect(eventValues).to.be.a('object')
-        expect(eventValues.webDuration).to.be.a('number').and.not.NaN
-        expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
-        expect(eventValues.timestamp).to.be.a('number').and.not.NaN
-        expect(eventValues.timestamp).to.equal(trans.timer.start)
-        expect(eventValues.name).to.equal(trans.name)
-        expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
-        expect(eventValues.type).to.equal('Transaction')
-        expect(eventValues.error).to.equal(false)
-
-        done()
-      })
+      var event = agent.events.toArray()[0]
+      expect(event).to.be.a('Array')
+      var eventValues = event[0]
+      expect(eventValues).to.be.a('object')
+      expect(eventValues.webDuration).to.be.a('number').and.not.NaN
+      expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
+      expect(eventValues.timestamp).to.be.a('number').and.not.NaN
+      expect(eventValues.timestamp).to.equal(trans.timer.start)
+      expect(eventValues.name).to.equal(trans.name)
+      expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
+      expect(eventValues.type).to.equal('Transaction')
+      expect(eventValues.error).to.equal(false)
     })
 
-    it('should flag errored transactions', function(done) {
+    it('should flag errored transactions', function() {
       trans.addException(new Error('wuh oh'))
-      trans.end(function() {
-        expect(agent.events.toArray().length).to.equal(1)
+      trans.end()
+      expect(agent.events.toArray().length).to.equal(1)
 
-        var event = agent.events.toArray()[0]
-        expect(event).to.be.a('Array')
-        var eventValues = event[0]
-        expect(eventValues).to.be.a('object')
-        expect(eventValues.webDuration).to.be.a('number').and.not.NaN
-        expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
-        expect(eventValues.timestamp).to.be.a('number').and.not.NaN
-        expect(eventValues.timestamp).to.equal(trans.timer.start)
-        expect(eventValues.name).to.equal(trans.name)
-        expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
-        expect(eventValues.type).to.equal('Transaction')
-        expect(eventValues.error).to.equal(true)
-
-        done()
-      })
+      var event = agent.events.toArray()[0]
+      expect(event).to.be.a('Array')
+      var eventValues = event[0]
+      expect(eventValues).to.be.a('object')
+      expect(eventValues.webDuration).to.be.a('number').and.not.NaN
+      expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
+      expect(eventValues.timestamp).to.be.a('number').and.not.NaN
+      expect(eventValues.timestamp).to.equal(trans.timer.start)
+      expect(eventValues.name).to.equal(trans.name)
+      expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
+      expect(eventValues.type).to.equal('Transaction')
+      expect(eventValues.error).to.equal(true)
     })
 
-    it('should add DT parent attributes with an accepted payload', function(done) {
+    it('should add DT parent attributes with an accepted payload', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
@@ -138,68 +132,57 @@ describe('Analytics events', function() {
       const payload = trans.createDistributedTracePayload().text()
       trans.isDistributedTrace = null
       trans.acceptDistributedTracePayload(payload)
-      trans.end(function() {
-        expect(agent.events.toArray().length).to.equal(1)
+      trans.end()
+      expect(agent.events.toArray().length).to.equal(1)
 
-        var attributes = agent.events.toArray()[0][0]
-        expect(attributes.traceId).to.equal(trans.id)
-        expect(attributes.guid).to.equal(trans.id)
-        expect(attributes.priority).to.equal(trans.priority)
-        expect(attributes.sampled).to.equal(trans.sampled)
-        expect(attributes.parentId).to.equal(trans.id)
-        expect(attributes['parent.type']).to.equal('App')
-        expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
-        expect(attributes['parent.account']).to.equal(agent.config.account_id)
-        expect(attributes.error).to.equal(false)
-        expect(trans.sampled).to.equal(true)
-        expect(trans.priority).to.be.greaterThan(1)
-
-        done()
-      })
+      var attributes = agent.events.toArray()[0][0]
+      expect(attributes.traceId).to.equal(trans.id)
+      expect(attributes.guid).to.equal(trans.id)
+      expect(attributes.priority).to.equal(trans.priority)
+      expect(attributes.sampled).to.equal(trans.sampled)
+      expect(attributes.parentId).to.equal(trans.id)
+      expect(attributes['parent.type']).to.equal('App')
+      expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
+      expect(attributes['parent.account']).to.equal(agent.config.account_id)
+      expect(attributes.error).to.equal(false)
+      expect(trans.sampled).to.equal(true)
+      expect(trans.priority).to.be.greaterThan(1)
     })
 
-    it('should add DT attributes', function(done) {
+    it('should add DT attributes', function() {
       agent.config.distributed_tracing.enabled = true
       trans = new Transaction(agent)
-      trans.end(function() {
-        expect(agent.events.toArray().length).to.equal(1)
+      trans.end()
+      expect(agent.events.toArray().length).to.equal(1)
 
-        var attributes = agent.events.toArray()[0][0]
-        expect(attributes.traceId).to.equal(trans.id)
-        expect(attributes.guid).to.equal(trans.id)
-        expect(attributes.priority).to.equal(trans.priority)
-        expect(attributes.sampled).to.equal(trans.sampled)
-        expect(trans.sampled).to.equal(true)
-        expect(trans.priority).to.be.greaterThan(1)
-
-        done()
-      })
+      var attributes = agent.events.toArray()[0][0]
+      expect(attributes.traceId).to.equal(trans.id)
+      expect(attributes.guid).to.equal(trans.id)
+      expect(attributes.priority).to.equal(trans.priority)
+      expect(attributes.sampled).to.equal(trans.sampled)
+      expect(trans.sampled).to.equal(true)
+      expect(trans.priority).to.be.greaterThan(1)
     })
 
 
-    it('should contain user and agent attributes', function(done ) {
-      trans.end(function() {
-        expect(agent.events.toArray().length).to.equal(1)
+    it('should contain user and agent attributes', function() {
+      trans.end()
+      expect(agent.events.toArray().length).to.equal(1)
 
-        var event = agent.events.toArray()[0]
-        expect(event[0]).to.be.an('Object')
-        expect(event[1]).to.be.an('Object')
-        expect(event[2]).to.be.an('Object')
-
-        done()
-      })
+      var event = agent.events.toArray()[0]
+      expect(event[0]).to.be.an('Object')
+      expect(event[1]).to.be.an('Object')
+      expect(event[2]).to.be.an('Object')
     })
 
-    it('should contain custom attributes', function(done) {
+    it('should contain custom attributes', function() {
       trans.trace.addCustomAttribute('a', 'b')
-      trans.end(function() {
-        var event = agent.events.toArray()[0]
-        expect(event[1].a).to.equal('b')
-        done()
-      })
+      trans.end()
+      var event = agent.events.toArray()[0]
+      expect(event[1].a).to.equal('b')
     })
 
-    it('includes internal synthetics attributes', function(done) {
+    it('includes internal synthetics attributes', function() {
       trans.syntheticsData = {
         version: 1,
         accountId: 123,
@@ -208,14 +191,12 @@ describe('Analytics events', function() {
         monitorId: 'monId'
       }
 
-      trans.end(function() {
-        var event = agent.events.toArray()[0]
-        var attributes = event[0]
-        expect(attributes['nr.syntheticsResourceId']).equal('resId')
-        expect(attributes['nr.syntheticsJobId']).equal('jobId')
-        expect(attributes['nr.syntheticsMonitorId']).equal('monId')
-        done()
-      })
+      trans.end()
+      var event = agent.events.toArray()[0]
+      var attributes = event[0]
+      expect(attributes['nr.syntheticsResourceId']).equal('resId')
+      expect(attributes['nr.syntheticsJobId']).equal('jobId')
+      expect(attributes['nr.syntheticsMonitorId']).equal('monId')
     })
 
     it('not spill over reservoir size', function() {

@@ -32,17 +32,16 @@ test('await', function(t) {
     )
 
     var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
-    txn.end(function afterTransactionEnd() {
-      // Segments won't be cleared till a gc cycle clears the promises
-      // they are related with.
-      t.ok(segmentMap.size, 'segments should still be in the map')
-      if (global.gc) {
-        // Unroll all the stack frames to let go of the refs to the
-        // promises we want to gc, then call the segment tester.
-        return setImmediate(testSegments, t, segmentMap)
-      }
-      t.end()
-    })
+    txn.end()
+    // Segments won't be cleared till a gc cycle clears the promises
+    // they are related with.
+    t.ok(segmentMap.size, 'segments should still be in the map')
+    if (global.gc) {
+      // Unroll all the stack frames to let go of the refs to the
+      // promises we want to gc, then call the segment tester.
+      return setImmediate(testSegments, t, segmentMap)
+    }
+    t.end()
   })
 })
 

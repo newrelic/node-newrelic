@@ -45,11 +45,83 @@ describe('Trace', function() {
     expect(function() { trace.add('Custom/Test17/Child1') }).to.not.throw()
   })
 
-  it('should produce a transaction trace in the expected format', function(done) {
-    makeTrace(agent, function(err, details) {
-      if (err) {
-        return done(err)
+  describe('when serializing synchronously', () => {
+    var details
+
+    beforeEach(function(done) {
+      makeTrace(agent, function(err, _details) {
+        details = _details
+        done(err)
+      })
+    })
+
+    it('should produce a transaction trace in the expected format', function(done) {
+      const traceJSON = details.trace.generateJSONSync()
+      codec.decode(traceJSON[4], function(derr, reconstituted) {
+        if (derr) {
+          return done(derr)
+        }
+
+        expect(traceJSON, 'full trace JSON')
+          .to.deep.equal(details.expectedEncoding)
+
+        expect(reconstituted, 'reconstituted trace segments')
+          .to.deep.equal(details.rootNode)
+
+        return done()
+      })
+    })
+
+    it('should send response time', function() {
+      details.transaction.getResponseTimeInMillis = function() {
+        return 1234
       }
+
+      const json = details.trace.generateJSONSync()
+      expect(json[1]).to.equal(1234)
+    })
+
+    describe('when `simple_compression` is `false`', function() {
+      it('should compress the segment arrays', function(done) {
+        const json = details.trace.generateJSONSync()
+
+        expect(json[4])
+          .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+
+        codec.decode(json[4], function(err, data) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(data).to.deep.equal(details.rootNode)
+          done()
+        })
+      })
+    })
+
+    describe('when `simple_compression` is `true`', function() {
+      beforeEach(function() {
+        agent.config.simple_compression = true
+      })
+
+      it('should not compress the segment arrays', function() {
+        const json = details.trace.generateJSONSync()
+        expect(json[4]).to.deep.equal(details.rootNode)
+      })
+    })
+  })
+
+  describe('when serializing asynchronously', () => {
+    var details
+
+    beforeEach(function(done) {
+      makeTrace(agent, function(err, _details) {
+        details = _details
+        done(err)
+      })
+    })
+
+    it('should produce a transaction trace in the expected format', function(done) {
       details.trace.generateJSON(function(err, traceJSON) {
         if (err) {
           return done(err)
@@ -70,6 +142,58 @@ describe('Trace', function() {
         })
       })
     })
+
+    it('should send response time', function(done) {
+      details.transaction.getResponseTimeInMillis = function() {
+        return 1234
+      }
+
+      details.trace.generateJSON(function(err, json, trace) {
+        expect(err).to.not.exist
+        expect(json[1]).to.equal(1234)
+        expect(trace).to.equal(details.trace)
+        done()
+      })
+    })
+
+    describe('when `simple_compression` is `false`', function() {
+      it('should compress the segment arrays', function(done) {
+        details.trace.generateJSON(function(err, json) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(json[4])
+            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+
+          codec.decode(json[4], function(err, data) {
+            if (err) {
+              return done(err)
+            }
+
+            expect(data).to.deep.equal(details.rootNode)
+            done()
+          })
+        })
+      })
+    })
+
+    describe('when `simple_compression` is `true`', function() {
+      beforeEach(function() {
+        agent.config.simple_compression = true
+      })
+
+      it('should not compress the segment arrays', function(done) {
+        details.trace.generateJSON(function(err, json) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(json[4]).to.deep.equal(details.rootNode)
+          done()
+        })
+      })
+    })
   })
 
   it('should have DT attributes on transaction end', function(done) {
@@ -77,22 +201,21 @@ describe('Trace', function() {
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
-      tx.end(() => {
-        const attributes = tx.trace.intrinsics
-        expect(attributes.traceId).to.equal(tx.id)
-        expect(attributes.guid).to.equal(tx.id)
-        expect(attributes.priority).to.equal(tx.priority)
-        expect(attributes.sampled).to.equal(tx.sampled)
-        expect(attributes.parentId).to.be.undefined
-        expect(attributes.parentSpanId).to.be.undefined
-        expect(tx.sampled).to.equal(true)
-        expect(tx.priority).to.be.greaterThan(1)
-        done()
-      })
+      tx.end()
+      const attributes = tx.trace.intrinsics
+      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.guid).to.equal(tx.id)
+      expect(attributes.priority).to.equal(tx.priority)
+      expect(attributes.sampled).to.equal(tx.sampled)
+      expect(attributes.parentId).to.be.undefined
+      expect(attributes.parentSpanId).to.be.undefined
+      expect(tx.sampled).to.equal(true)
+      expect(tx.priority).to.be.greaterThan(1)
+      done()
     })
   })
 
-  it('should have DT parent attributes on payload accept', function(done) {
+  it('should have DT parent attributes on payload accept', function() {
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
@@ -100,21 +223,19 @@ describe('Trace', function() {
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx.acceptDistributedTracePayload(payload)
-      tx.end(() => {
-        const attributes = tx.trace.intrinsics
-        expect(attributes.traceId).to.equal(tx.id)
-        expect(attributes.guid).to.equal(tx.id)
-        expect(attributes.priority).to.equal(tx.priority)
-        expect(attributes.sampled).to.equal(tx.sampled)
-        expect(attributes['parent.type']).to.equal('App')
-        expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
-        expect(attributes['parent.account']).to.equal(agent.config.account_id)
-        expect(attributes.parentId).to.be.undefined
-        expect(attributes.parentSpanId).to.be.undefined
-        expect(tx.sampled).to.equal(true)
-        expect(tx.priority).to.be.greaterThan(1)
-        done()
-      })
+      tx.end()
+      const attributes = tx.trace.intrinsics
+      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.guid).to.equal(tx.id)
+      expect(attributes.priority).to.equal(tx.priority)
+      expect(attributes.sampled).to.equal(tx.sampled)
+      expect(attributes['parent.type']).to.equal('App')
+      expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
+      expect(attributes['parent.account']).to.equal(agent.config.account_id)
+      expect(attributes.parentId).to.be.undefined
+      expect(attributes.parentSpanId).to.be.undefined
+      expect(tx.sampled).to.equal(true)
+      expect(tx.priority).to.be.greaterThan(1)
     })
   })
 
@@ -479,69 +600,6 @@ describe('Trace', function() {
       trace.recorders = []
 
       function noop() {}
-    })
-  })
-
-  describe('#generateJSON', function() {
-    var details
-
-    beforeEach(function(done) {
-      makeTrace(agent, function(err, _details) {
-        details = _details
-        done(err)
-      })
-    })
-
-    it('should send response time', function(done) {
-      details.transaction.getResponseTimeInMillis = function() {
-        return 1234
-      }
-
-      details.trace.generateJSON(function(err, json, trace) {
-        expect(err).to.not.exist
-        expect(json[1]).to.equal(1234)
-        expect(trace).to.equal(details.trace)
-        done()
-      })
-    })
-
-    describe('when `simple_compression` is `false`', function() {
-      it('should compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(json[4])
-            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
-
-          codec.decode(json[4], function(err, data) {
-            if (err) {
-              return done(err)
-            }
-
-            expect(data).to.deep.equal(details.rootNode)
-            done()
-          })
-        })
-      })
-    })
-
-    describe('when `simple_compression` is `true`', function() {
-      beforeEach(function() {
-        agent.config.simple_compression = true
-      })
-
-      it('should not compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(json[4]).to.deep.equal(details.rootNode)
-          done()
-        })
-      })
     })
   })
 })

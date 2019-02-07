@@ -300,7 +300,8 @@ describe('MessageShim', function() {
         helper.runInTransaction(agent, function(tx) {
           transaction = tx
           wrappable.getActiveSegment()
-          tx.end(function() { done() })
+          tx.end()
+          done()
         })
       })
 
@@ -661,7 +662,8 @@ describe('MessageShim', function() {
         helper.runInTransaction(agent, function(tx) {
           transaction = tx
           wrappable.getActiveSegment('my-queue')
-          tx.end(function() { done() })
+          tx.end()
+          done()
         })
       })
 

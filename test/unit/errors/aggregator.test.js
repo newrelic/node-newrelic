@@ -243,7 +243,7 @@ describe('Errors', function() {
       agent.config.collect_errors = true
     })
 
-    it('should gather the same error in two transactions', function(done) {
+    it('should gather the same error in two transactions', function() {
       var error = new Error('this happened once')
       var first = new Transaction(agent)
       var second = new Transaction(agent)
@@ -257,15 +257,11 @@ describe('Errors', function() {
       agent.errors.add(second, error)
       expect(second.exceptions.length).equal(1)
 
-      first.end(function onEnd() {
-        expect(agent.errors.errorCount).equal(1)
+      first.end()
+      expect(agent.errors.errorCount).equal(1)
 
-        second.end(function secondEnd() {
-          expect(agent.errors.errorCount).equal(2)
-
-          done()
-        })
-      })
+      second.end()
+      expect(agent.errors.errorCount).equal(2)
     })
 
     it('should not gather the same error twice in the same transaction', function() {
@@ -864,7 +860,7 @@ describe('Errors', function() {
       var error
 
 
-      beforeEach(function(done) {
+      beforeEach(function() {
         tracer = agent.errors
 
         var transaction = new Transaction(agent)
@@ -874,10 +870,8 @@ describe('Errors', function() {
         transaction.url = '/test-request/zxrkbl'
         transaction.name = 'WebTransaction/Uri/test-request/zxrkbl'
         transaction.statusCode = 500
-        transaction.end(function() {
-          error = tracer.errors[0]
-          done()
-        })
+        transaction.end()
+        error = tracer.errors[0]
       })
 
       it('should associate errors with the transaction\'s name', function() {
@@ -910,17 +904,15 @@ describe('Errors', function() {
       var name = 'WebTransaction/Uri/test-request/zxrkbl'
       var error
 
-      beforeEach(function(done) {
+      beforeEach(function() {
         tracer = agent.errors
 
         var transaction = new Transaction(agent)
         transaction.url = '/test-request/zxrkbl'
         transaction.name = 'WebTransaction/Uri/test-request/zxrkbl'
         transaction.statusCode = 503
-        transaction.end(function() {
-          error = tracer.errors[0]
-          done()
-        })
+        transaction.end()
+        error = tracer.errors[0]
       })
 
       it('should associate errors with the transaction\'s name', function() {
@@ -1039,11 +1031,10 @@ describe('Errors', function() {
       api.startBackgroundTransaction('job', function() {
         api.addCustomAttribute('jobType', 'timer')
         api.noticeError(new Error('record an error'))
-        agent.getTransaction().end(function() {
-          expect(errorTracer.errors.length).equal(1)
-          expect(errorTracer.errors[0][2]).equal('record an error')
-          done()
-        })
+        agent.getTransaction().end()
+        expect(errorTracer.errors.length).equal(1)
+        expect(errorTracer.errors[0][2]).equal('record an error')
+        done()
       })
     })
 
@@ -1060,26 +1051,22 @@ describe('Errors', function() {
           expect(aggregator.getTotalErrorCount()).equal(1)
         })
 
-        it('with web transaction', function(done) {
+        it('with web transaction', function() {
           var transaction = createWebTransaction(agent)
           expect(transaction.isWeb()).to.be.true
           aggregator.add(transaction, new Error('error1'))
 
-          transaction.end(function() {
-            expect(aggregator.getTotalErrorCount()).equal(1)
-            done()
-          })
+          transaction.end()
+          expect(aggregator.getTotalErrorCount()).equal(1)
         })
 
-        it('with background transaction', function(done) {
+        it('with background transaction', function() {
           var transaction = createBackgroundTransaction(agent)
           expect(transaction.isWeb()).to.be.false
           aggregator.add(transaction, new Error('error1'))
 
-          transaction.end(function() {
-            expect(aggregator.getTotalErrorCount()).equal(1)
-            done()
-          })
+          transaction.end()
+          expect(aggregator.getTotalErrorCount()).equal(1)
         })
       })
     })
@@ -1097,26 +1084,22 @@ describe('Errors', function() {
           expect(aggregator.getWebTransactionsErrorCount()).equal(0)
         })
 
-        it('with web transaction', function(done) {
+        it('with web transaction', function() {
           var transaction = createWebTransaction(agent)
           expect(transaction.isWeb()).to.be.true
           aggregator.add(transaction, new Error('error1'))
 
-          transaction.end(function() {
-            expect(aggregator.getWebTransactionsErrorCount()).equal(1)
-            done()
-          })
+          transaction.end()
+          expect(aggregator.getWebTransactionsErrorCount()).equal(1)
         })
 
-        it('with background transaction', function(done) {
+        it('with background transaction', function() {
           var transaction = createBackgroundTransaction(agent)
           expect(transaction.isWeb()).to.be.false
           aggregator.add(transaction, new Error('error1'))
 
-          transaction.end(function() {
-            expect(aggregator.getWebTransactionsErrorCount()).equal(0)
-            done()
-          })
+          transaction.end()
+          expect(aggregator.getWebTransactionsErrorCount()).equal(0)
         })
       })
     })
@@ -1134,26 +1117,22 @@ describe('Errors', function() {
           expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
         })
 
-        it('with web transaction', function(done) {
+        it('with web transaction', function() {
           var transaction = createWebTransaction(agent)
           expect(transaction.isWeb()).to.be.true
           aggregator.add(transaction, new Error('error1'))
 
-          transaction.end(function() {
-            expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
-            done()
-          })
+          transaction.end()
+          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
         })
 
-        it('with background transaction', function(done) {
+        it('with background transaction', function() {
           var transaction = createBackgroundTransaction(agent)
           expect(transaction.isWeb()).to.be.false
           aggregator.add(transaction, new Error('error1'))
 
-          transaction.end(function() {
-            expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
-            done()
-          })
+          transaction.end()
+          expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
         })
       })
     })
@@ -1179,28 +1158,24 @@ describe('Errors', function() {
         expect(aggregator.getTotalErrorCount()).equal(0)
       })
 
-      it('clears web tx error count', function(done) {
+      it('clears web tx error count', function() {
         var transaction = createWebTransaction(agent)
         aggregator.add(transaction, new Error('error1'))
 
-        transaction.end(function() {
-          expect(aggregator.getWebTransactionsErrorCount()).equal(1)
-          aggregator.clearErrors()
-          expect(aggregator.getWebTransactionsErrorCount()).equal(0)
-          done()
-        })
+        transaction.end()
+        expect(aggregator.getWebTransactionsErrorCount()).equal(1)
+        aggregator.clearErrors()
+        expect(aggregator.getWebTransactionsErrorCount()).equal(0)
       })
 
-      it('clears background tx error count', function(done) {
+      it('clears background tx error count', function() {
         var transaction = createBackgroundTransaction(agent)
         aggregator.add(transaction, new Error('error1'))
 
-        transaction.end(function() {
-          expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
-          aggregator.clearErrors()
-          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
-          done()
-        })
+        transaction.end()
+        expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
+        aggregator.clearErrors()
+        expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
       })
     })
   })
@@ -1237,18 +1212,16 @@ describe('Errors', function() {
     })
 
     describe('on transaction finished', function() {
-      it('should generate an event if the transaction is an HTTP error', function(done) {
+      it('should generate an event if the transaction is an HTTP error', function() {
         var transaction = createTransaction(agent, 500)
         aggregator.add(transaction)
 
-        transaction.end(function() {
-          var collectedError = aggregator.errors[0]
-          expect(collectedError).to.exist
-          done()
-        })
+        transaction.end()
+        var collectedError = aggregator.errors[0]
+        expect(collectedError).to.exist
       })
 
-      it('should contain CAT intrinsic parameters', function(done) {
+      it('should contain CAT intrinsic parameters', function() {
         var transaction = createTransaction(agent, 200)
 
         transaction.referringTransactionGuid = '1234'
@@ -1257,18 +1230,16 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(transaction, error)
 
-        transaction.end(function() {
-          var attributes = getFirstErrorIntrinsicAttributes(aggregator)
+        transaction.end()
+        var attributes = getFirstErrorIntrinsicAttributes(aggregator)
 
-          expect(attributes).to.be.a('Object')
-          expect(attributes.path_hash).to.be.a('string')
-          expect(attributes.referring_transaction_guid).equal('1234')
-          expect(attributes.client_cross_process_id).equal('2345')
-          done()
-        })
+        expect(attributes).to.be.a('Object')
+        expect(attributes.path_hash).to.be.a('string')
+        expect(attributes.referring_transaction_guid).equal('1234')
+        expect(attributes.client_cross_process_id).equal('2345')
       })
 
-      it('should contain DT intrinsic parameters', function(done) {
+      it('should contain DT intrinsic parameters', function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
@@ -1277,23 +1248,21 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(transaction, error)
 
-        transaction.end(function() {
-          var attributes = getFirstErrorIntrinsicAttributes(aggregator)
+        transaction.end()
+        var attributes = getFirstErrorIntrinsicAttributes(aggregator)
 
-          expect(attributes).to.be.a('Object')
-          expect(attributes.traceId).to.equal(transaction.id)
-          expect(attributes.guid).to.equal(transaction.id)
-          expect(attributes.priority).to.equal(transaction.priority)
-          expect(attributes.sampled).to.equal(transaction.sampled)
-          expect(attributes.parentId).to.be.undefined
-          expect(attributes.parentSpanId).to.be.undefined
-          expect(transaction.sampled).to.equal(true)
-          expect(transaction.priority).to.be.greaterThan(1)
-          done()
-        })
+        expect(attributes).to.be.a('Object')
+        expect(attributes.traceId).to.equal(transaction.id)
+        expect(attributes.guid).to.equal(transaction.id)
+        expect(attributes.priority).to.equal(transaction.priority)
+        expect(attributes.sampled).to.equal(transaction.sampled)
+        expect(attributes.parentId).to.be.undefined
+        expect(attributes.parentSpanId).to.be.undefined
+        expect(transaction.sampled).to.equal(true)
+        expect(transaction.priority).to.be.greaterThan(1)
       })
 
-      it('should contain DT intrinsic parameters', function(done) {
+      it('should contain DT intrinsic parameters', function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
@@ -1305,24 +1274,22 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(transaction, error)
 
-        transaction.end(function() {
-          var attributes = getFirstErrorIntrinsicAttributes(aggregator)
+        transaction.end()
+        var attributes = getFirstErrorIntrinsicAttributes(aggregator)
 
-          expect(attributes).to.be.a('Object')
-          expect(attributes.traceId).to.equal(transaction.id)
-          expect(attributes.guid).to.equal(transaction.id)
-          expect(attributes.priority).to.equal(transaction.priority)
-          expect(attributes.sampled).to.equal(transaction.sampled)
-          expect(attributes['parent.type']).to.equal('App')
-          expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
-          expect(attributes['parent.account']).to.equal(agent.config.account_id)
-          expect(attributes.parentId).to.be.undefined
-          expect(attributes.parentSpanId).to.be.undefined
-          done()
-        })
+        expect(attributes).to.be.a('Object')
+        expect(attributes.traceId).to.equal(transaction.id)
+        expect(attributes.guid).to.equal(transaction.id)
+        expect(attributes.priority).to.equal(transaction.priority)
+        expect(attributes.sampled).to.equal(transaction.sampled)
+        expect(attributes['parent.type']).to.equal('App')
+        expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
+        expect(attributes['parent.account']).to.equal(agent.config.account_id)
+        expect(attributes.parentId).to.be.undefined
+        expect(attributes.parentSpanId).to.be.undefined
       })
 
-      it('should contain Synthetics intrinsic parameters', function(done) {
+      it('should contain Synthetics intrinsic parameters', function() {
         var transaction = createTransaction(agent, 200)
 
         transaction.syntheticsData = {
@@ -1336,31 +1303,27 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(transaction, error)
 
-        transaction.end(function() {
-          var attributes = getFirstErrorIntrinsicAttributes(aggregator)
+        transaction.end()
+        var attributes = getFirstErrorIntrinsicAttributes(aggregator)
 
-          expect(attributes).to.be.a('Object')
-          expect(attributes.synthetics_resource_id).equal('resId')
-          expect(attributes.synthetics_job_id).equal('jobId')
-          expect(attributes.synthetics_monitor_id).equal('monId')
-          done()
-        })
+        expect(attributes).to.be.a('Object')
+        expect(attributes.synthetics_resource_id).equal('resId')
+        expect(attributes.synthetics_job_id).equal('jobId')
+        expect(attributes.synthetics_monitor_id).equal('monId')
       })
 
-      it('should contain custom parameters', function(done) {
+      it('should contain custom parameters', function() {
         var transaction = createTransaction(agent, 500)
         var error = new Error('some error')
         var customParameters = { a: 'b' }
         aggregator.add(transaction, error, customParameters)
 
-        transaction.end(function() {
-          var attributes = getFirstErrorCustomAttributes(aggregator)
-          expect(attributes.a).equal('b')
-          done()
-        })
+        transaction.end()
+        var attributes = getFirstErrorCustomAttributes(aggregator)
+        expect(attributes.a).equal('b')
       })
 
-      it('should merge supplied custom params with those on the trace', (done) => {
+      it('should merge supplied custom params with those on the trace', () => {
         agent.config.attributes.enabled = true
         var transaction = createTransaction(agent, 500)
         transaction.trace.addCustomAttribute('a', 'b')
@@ -1369,12 +1332,10 @@ describe('Errors', function() {
         var customParameters = { c: 'd' }
         aggregator.add(transaction, error, customParameters)
 
-        transaction.end(function() {
-          var attributes = getFirstErrorCustomAttributes(aggregator)
-          expect(attributes.a).equal('b')
-          expect(attributes.c).equal('d')
-          done()
-        })
+        transaction.end()
+        var attributes = getFirstErrorCustomAttributes(aggregator)
+        expect(attributes.a).equal('b')
+        expect(attributes.c).equal('d')
       })
     })
   })
@@ -1509,35 +1470,31 @@ describe('Errors', function() {
     })
 
     describe('on transaction finished', function() {
-      it('should generate an event if the transaction is an HTTP error', function(done) {
+      it('should generate an event if the transaction is an HTTP error', function() {
         var transaction = createTransaction(agent, 500)
         aggregator.add(transaction)
 
-        transaction.end(function() {
-          var collectedError = aggregator.errors[0]
-          expect(collectedError).to.exist
-          done()
-        })
+        transaction.end()
+        var collectedError = aggregator.errors[0]
+        expect(collectedError).to.exist
       })
 
-      it('should contain required intrinsic attributes', function(done) {
+      it('should contain required intrinsic attributes', function() {
         var transaction = createTransaction(agent, 200)
 
         var error = new Error('some error')
         var nowSeconds = Date.now() / 1000
         aggregator.add(transaction, error)
 
-        transaction.end(function() {
-          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+        transaction.end()
+        var attributes = getFirstEventIntrinsicAttributes(aggregator)
 
-          expect(attributes).to.be.a('Object')
-          expect(attributes.type).equal('TransactionError')
-          expect(attributes['error.class']).to.be.a('string')
-          expect(attributes['error.message']).to.be.a('string')
-          expect(attributes.timestamp).closeTo(nowSeconds, 1)
-          expect(attributes.transactionName).equal(transaction.name)
-          done()
-        })
+        expect(attributes).to.be.a('Object')
+        expect(attributes.type).equal('TransactionError')
+        expect(attributes['error.class']).to.be.a('string')
+        expect(attributes['error.message']).to.be.a('string')
+        expect(attributes.timestamp).closeTo(nowSeconds, 1)
+        expect(attributes.transactionName).equal(transaction.name)
       })
 
       describe('transaction-specific intrinsic attributes on a transaction', () => {
@@ -1550,63 +1507,51 @@ describe('Errors', function() {
           aggregator.add(transaction, error)
         })
 
-        it('includes transaction duration', function(done) {
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes.duration)
-              .to.equal(transaction.timer.getDurationInMillis() / 1000)
-            done()
-          })
+        it('includes transaction duration', function() {
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes.duration)
+            .to.equal(transaction.timer.getDurationInMillis() / 1000)
         })
 
-        it('includes queueDuration if available', function(done) {
+        it('includes queueDuration if available', function() {
           transaction.measure(NAMES.QUEUETIME, null, 100)
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes.queueDuration).equal(0.1)
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes.queueDuration).equal(0.1)
         })
 
-        it('includes externalDuration if available', function(done) {
+        it('includes externalDuration if available', function() {
           transaction.measure(NAMES.EXTERNAL.ALL, null, 100)
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes.externalDuration).equal(0.1)
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes.externalDuration).equal(0.1)
         })
 
-        it('includes databaseDuration if available', function(done) {
+        it('includes databaseDuration if available', function() {
           transaction.measure(NAMES.DB.ALL, null, 100)
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes.databaseDuration).equal(0.1)
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes.databaseDuration).equal(0.1)
         })
 
-        it('includes externalCallCount if available', function(done) {
+        it('includes externalCallCount if available', function() {
           transaction.measure(NAMES.EXTERNAL.ALL, null, 100)
           transaction.measure(NAMES.EXTERNAL.ALL, null, 100)
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes.externalCallCount).equal(2)
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes.externalCallCount).equal(2)
         })
 
-        it('includes databaseCallCount if available', function(done) {
+        it('includes databaseCallCount if available', function() {
           transaction.measure(NAMES.DB.ALL, null, 100)
           transaction.measure(NAMES.DB.ALL, null, 100)
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes.databaseCallCount).equal(2)
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes.databaseCallCount).equal(2)
         })
 
-        it('includes internal synthetics attributes', function(done) {
+        it('includes internal synthetics attributes', function() {
           transaction.syntheticsData = {
             version: 1,
             accountId: 123,
@@ -1614,31 +1559,25 @@ describe('Errors', function() {
             jobId: 'jobId',
             monitorId: 'monId'
           }
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes['nr.syntheticsResourceId']).equal('resId')
-            expect(attributes['nr.syntheticsJobId']).equal('jobId')
-            expect(attributes['nr.syntheticsMonitorId']).equal('monId')
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes['nr.syntheticsResourceId']).equal('resId')
+          expect(attributes['nr.syntheticsJobId']).equal('jobId')
+          expect(attributes['nr.syntheticsMonitorId']).equal('monId')
         })
 
-        it('includes internal transactionGuid attribute', function(done) {
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes['nr.transactionGuid']).equal(transaction.id)
-            done()
-          })
+        it('includes internal transactionGuid attribute', function() {
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes['nr.transactionGuid']).equal(transaction.id)
         })
 
-        it('includes internal referringTransactionGuid attribute', function(done) {
+        it('includes internal referringTransactionGuid attribute', function() {
           transaction.referringTransactionGuid = '1234'
-          transaction.end(function() {
-            var attributes = getFirstEventIntrinsicAttributes(aggregator)
-            expect(attributes['nr.referringTransactionGuid'])
-              .to.equal(transaction.referringTransactionGuid)
-            done()
-          })
+          transaction.end()
+          var attributes = getFirstEventIntrinsicAttributes(aggregator)
+          expect(attributes['nr.referringTransactionGuid'])
+            .to.equal(transaction.referringTransactionGuid)
         })
 
         it('includes http port if the transaction is a web transaction', function(done) {
@@ -1670,7 +1609,7 @@ describe('Errors', function() {
         })
       })
 
-      it('should contain custom attributes, with filter rules', function(done) {
+      it('should contain custom attributes, with filter rules', function() {
         agent.config.attributes.exclude.push('c')
         agent.config.emit('attributes.exclude')
         var transaction = createTransaction(agent, 500)
@@ -1678,15 +1617,13 @@ describe('Errors', function() {
         var customAttributes = { a: 'b', c: 'ignored' }
         aggregator.add(transaction, error, customAttributes)
 
-        transaction.end(function() {
-          var attributes = getFirstEventCustomAttributes(aggregator)
-          expect(attributes.a).equal('b')
-          expect(attributes.c).to.be.undefined
-          done()
-        })
+        transaction.end()
+        var attributes = getFirstEventCustomAttributes(aggregator)
+        expect(attributes.a).equal('b')
+        expect(attributes.c).to.be.undefined
       })
 
-      it('should merge new custom attrs with trace custom attrs', function(done) {
+      it('should merge new custom attrs with trace custom attrs', function() {
         var transaction = createTransaction(agent, 500)
         transaction.trace.addCustomAttribute('a', 'b')
         var error = new Error('some error')
@@ -1694,13 +1631,11 @@ describe('Errors', function() {
         var customAttributes = { c: 'd' }
         aggregator.add(transaction, error, customAttributes)
 
-        transaction.end(function() {
-          var attributes = getFirstEventCustomAttributes(aggregator)
-          expect(Object.keys(attributes)).length(2)
-          expect(attributes.a).equal('b')
-          expect(attributes.c).equal('d')
-          done()
-        })
+        transaction.end()
+        var attributes = getFirstEventCustomAttributes(aggregator)
+        expect(Object.keys(attributes)).length(2)
+        expect(attributes.a).equal('b')
+        expect(attributes.c).equal('d')
       })
 
       it('should contain agent attributes', function() {
@@ -1710,15 +1645,14 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(transaction, error, { a: 'a' })
 
-        transaction.end(function() {
-          var agentAttributes = getFirstEventAgentAttributes(aggregator)
-          var customAttributes = getFirstEventCustomAttributes(aggregator)
+        transaction.end()
+        var agentAttributes = getFirstEventAgentAttributes(aggregator)
+        var customAttributes = getFirstEventCustomAttributes(aggregator)
 
-          expect(Object.keys(customAttributes)).length(1)
-          expect(customAttributes.a).equal('a')
-          expect(Object.keys(agentAttributes)).length(1)
-          expect(agentAttributes['host.displayName']).equal('myHost')
-        })
+        expect(Object.keys(customAttributes)).length(1)
+        expect(customAttributes.a).equal('a')
+        expect(Object.keys(agentAttributes)).length(1)
+        expect(agentAttributes['host.displayName']).equal('myHost')
       })
     })
   })

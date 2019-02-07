@@ -1951,19 +1951,18 @@ function _testPromiseContext(t, agent, factory) {
       }
     })
 
-    ctxA.transaction.end(function() {
-      helper.runInTransaction(agent, function(txB) {
-        t.tearDown(function() {
-          ctxA.transaction.end()
-          txB.end()
-        })
-        t.notEqual(id(ctxA.transaction), id(txB), 'should not be in transaction a')
+    ctxA.transaction.end()
+    helper.runInTransaction(agent, function(txB) {
+      t.tearDown(function() {
+        ctxA.transaction.end()
+        txB.end()
+      })
+      t.notEqual(id(ctxA.transaction), id(txB), 'should not be in transaction a')
 
-        ctxA.promise.catch(function() {}).then(function() {
-          var tx = agent.tracer.getTransaction()
-          t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
-          t.equal(id(tx), id(txB), 'should be in expected context')
-        })
+      ctxA.promise.catch(function() {}).then(function() {
+        var tx = agent.tracer.getTransaction()
+        t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
+        t.equal(id(tx), id(txB), 'should be in expected context')
       })
     })
   })

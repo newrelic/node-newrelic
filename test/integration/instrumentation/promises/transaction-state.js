@@ -223,9 +223,8 @@ function checkTransaction(t, agent, transaction) {
 function end(tx, cb) {
   return function() {
     if (tx) {
-      tx.end(cb)
-    } else {
-      cb()
+      tx.end()
     }
+    cb()
   }
 }

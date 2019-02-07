@@ -99,16 +99,15 @@ function collectionTest(name, run) {
             t.equal(current.children.length, 0, 'should have no more children')
             t.ok(current === segment, 'should test to the current segment')
 
-            transaction.end(function onTxEnd() {
-              common.checkMetrics(
-                t,
-                agent,
-                METRIC_HOST_NAME,
-                METRIC_HOST_PORT,
-                metrics || []
-              )
-              t.end()
-            })
+            transaction.end()
+            common.checkMetrics(
+              t,
+              agent,
+              METRIC_HOST_NAME,
+              METRIC_HOST_PORT,
+              metrics || []
+            )
+            t.end()
           })
         })
       })
@@ -227,21 +226,20 @@ function collectionTest(name, run) {
           transaction.name = common.TRANSACTION_NAME
           run(t, collection, function(err, segments, metrics) {
             t.error(err)
-            transaction.end(function() {
-              var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
-              var badMetrics = Object.keys(agent.metrics.unscoped).filter(function(m) {
-                return re.test(m)
-              })
-              t.notOk(badMetrics.length, 'should not use domain path as host name')
-              common.checkMetrics(
-                t,
-                agent,
-                METRIC_HOST_NAME,
-                METRIC_HOST_PORT,
-                metrics || []
-              )
-              t.end()
+            transaction.end()
+            var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
+            var badMetrics = Object.keys(agent.metrics.unscoped).filter(function(m) {
+              return re.test(m)
             })
+            t.notOk(badMetrics.length, 'should not use domain path as host name')
+            common.checkMetrics(
+              t,
+              agent,
+              METRIC_HOST_NAME,
+              METRIC_HOST_PORT,
+              metrics || []
+            )
+            t.end()
           })
         })
       })

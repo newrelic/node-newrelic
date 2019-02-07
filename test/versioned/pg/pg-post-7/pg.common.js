@@ -270,10 +270,9 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
-                t.end()
-              })
+              transaction.end()
+              verify(t, agent.tracer.getSegment())
+              t.end()
             })
           })
         })
@@ -312,10 +311,9 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-            transaction.end(function() {
-              pool.end()
-              verify(t, agent.tracer.getSegment())
-            })
+            transaction.end()
+            pool.end()
+            verify(t, agent.tracer.getSegment())
           })
         })
       })
@@ -366,14 +364,13 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                if (pool.end instanceof Function) {
-                  pool.end()
-                }
+              transaction.end()
+              if (pool.end instanceof Function) {
+                pool.end()
+              }
 
-                done(true)
-                verify(t, agent.tracer.getSegment())
-              })
+              done(true)
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -455,10 +452,9 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              verifySlowQueries(t, agent)
-              t.end()
-            })
+            transaction.end()
+            verifySlowQueries(t, agent)
+            t.end()
           })
         })
       })
@@ -494,27 +490,26 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              const queryParams = agent.queries.samples.values().next().value
+            transaction.end()
+            const queryParams = agent.queries.samples.values().next().value
 
-              t.equal(
-                queryParams.host,
-                undefined,
-                'should not have host parameter'
-              )
+            t.equal(
+              queryParams.host,
+              undefined,
+              'should not have host parameter'
+            )
 
-              t.equal(
-                queryParams.port_path_or_id,
-                undefined,
-                'should not have port parameter'
-              )
+            t.equal(
+              queryParams.port_path_or_id,
+              undefined,
+              'should not have port parameter'
+            )
 
-              t.equal(
-                queryParams.database_name,
-                undefined,
-                'should not have database name parameter'
-              )
-            })
+            t.equal(
+              queryParams.database_name,
+              undefined,
+              'should not have database name parameter'
+            )
           })
         })
       })

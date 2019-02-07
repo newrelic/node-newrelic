@@ -104,8 +104,7 @@ describe('recordGeneric', function() {
       [{name : 'Test/Child/2'}, [1,0.008,0.008,0.008,0.008,0.000064]]
     ]
 
-    trans.end(function() {
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
-    })
+    trans.end()
+    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
   })
 })

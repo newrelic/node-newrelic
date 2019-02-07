@@ -140,7 +140,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           String(config.port),
           'set port'
         )
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -168,7 +169,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           'should set database name'
         )
         agent.config.datastore_tracer.instance_reporting.enabled = true
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -198,7 +200,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           'should have no database name parameter'
         )
         agent.config.datastore_tracer.database_name_reporting.enabled = true
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -229,7 +232,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           'set database name'
         )
         t.equal(attributes.port_path_or_id, String(defaultConfig.port), 'set port')
-        txn.end(defaultPool.end.bind(defaultPool, t.end))
+        txn.end()
+        defaultPool.end(defaultPool, t.end)
       })
     })
   })
@@ -263,7 +267,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           "3306",
           'should set port'
         )
-        txn.end(defaultPool.end.bind(defaultPool, t.end))
+        txn.end()
+        defaultPool.end(t.end)
       })
     })
   })
@@ -273,7 +278,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       pool.query('BLARG', function(err) {
         t.ok(err)
         t.ok(agent.getTransaction(), 'transaction should exit')
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -281,7 +287,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
   t.test('lack of callback does not explode', function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SET SESSION auto_increment_increment=1')
-      txn.end(t.end)
+      txn.end()
+      t.end()
     })
   })
 
@@ -297,7 +304,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         t.ok(segment.timer.start > 0, 'starts at a postitive time')
         t.ok(segment.timer.start <= Date.now(), 'starts in past')
         t.equal(segment.name, 'MySQL Pool#query', 'is named')
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -316,7 +324,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           t.equal(segment.name, 'MySQL Pool#query', 'is named')
         }
 
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -338,7 +347,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-          txn.end(t.end)
+          txn.end()
+          t.end()
         })
       })
     })
@@ -363,7 +373,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
             t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           }
 
-          txn.end(t.end)
+          txn.end()
+          t.end()
         })
       })
     })
@@ -408,7 +419,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
               DBNAME,
               'set database name'
             )
-            txn.end(socketPool.end.bind(socketPool, t.end))
+            txn.end()
+            socketPool.end(t.end)
           })
         })
       }

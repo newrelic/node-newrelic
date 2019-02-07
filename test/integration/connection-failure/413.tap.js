@@ -48,22 +48,21 @@ tap.test('harvesting with a mocked collector that returns 413 on connect', (t) =
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
 
-    transaction.end(() => {
-      agent.traces.trace = transaction.trace
+    transaction.end()
+    agent.traces.trace = transaction.trace
 
-      agent.harvest((error) => {
-        t.notOk(error, 'no error received on 413')
-        t.ok(sendMetrics.isDone(), 'initial sent metrics...')
-        t.ok(sendEvents.isDone(), '...and then sent events...')
-        t.ok(sendErrors.isDone(), '...and then sent error data...')
-        t.ok(sendTrace.isDone(), '...and then sent trace, even though all returned 413')
-        t.ok(sendErrorEvents.isDone(), '...and then sent error events')
+    agent.harvest((error) => {
+      t.notOk(error, 'no error received on 413')
+      t.ok(sendMetrics.isDone(), 'initial sent metrics...')
+      t.ok(sendEvents.isDone(), '...and then sent events...')
+      t.ok(sendErrors.isDone(), '...and then sent error data...')
+      t.ok(sendTrace.isDone(), '...and then sent trace, even though all returned 413')
+      t.ok(sendErrorEvents.isDone(), '...and then sent error events')
 
-        agent.stop(() => {
-          t.ok(settings.isDone(), 'got agent_settings message')
-          t.ok(sendShutdown.isDone(), 'got shutdown message')
-          t.end()
-        })
+      agent.stop(() => {
+        t.ok(settings.isDone(), 'got agent_settings message')
+        t.ok(sendShutdown.isDone(), 'got shutdown message')
+        t.end()
       })
     })
   })

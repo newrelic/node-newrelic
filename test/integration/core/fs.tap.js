@@ -73,12 +73,11 @@ test('rename', function(t) {
       )
       verifySegments(t, agent, NAMES.FS.PREFIX + 'rename')
 
-      trans.end(function cb_metricCheck() {
-        t.ok(
-          checkMetric(['rename'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['rename'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -106,12 +105,11 @@ test('truncate', function(t) {
         [NAMES.FS.PREFIX + 'open']
       )
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(expectedSegments, agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(expectedSegments, agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -133,12 +131,11 @@ test('ftruncate', function(t) {
       )
       verifySegments(t, agent, NAMES.FS.PREFIX + 'ftruncate')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['ftruncate'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['ftruncate'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -155,12 +152,11 @@ test('chown', function(t) {
       t.ok(err, 'should error for non root users')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'chown')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['chown'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['chown'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -178,12 +174,11 @@ test('fchown', function(t) {
       t.ok(err, 'should error for non root users')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fchown')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['fchown'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['fchown'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -204,13 +199,12 @@ test('lchown', {skip: fs.lchown === undefined}, function(t) {
       const extra = useOpen ? [NAMES.FS.PREFIX + 'open'] : null
       verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', extra)
 
-      trans.end(function checkMetrics() {
-        const names = useOpen ? ['lchown', 'open'] : ['lchown']
-        t.ok(
-          checkMetric(names, agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      const names = useOpen ? ['lchown', 'open'] : ['lchown']
+      t.ok(
+        checkMetric(names, agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -228,12 +222,11 @@ test('chmod', function(t) {
       t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '777')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'chmod')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['chmod'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['chmod'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -253,12 +246,11 @@ test('lchmod', {skip: fs.lchmod === undefined}, function(t) {
       t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '777')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'lchmod', [NAMES.FS.PREFIX + 'open'])
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['lchmod', 'open'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['lchmod', 'open'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -277,12 +269,11 @@ test('fchmod', function(t) {
       t.equal((fs.statSync(name).mode & 0x1FF).toString(8), '777')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fchmod')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['fchmod'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['fchmod'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -298,12 +289,11 @@ test('stat', function(t) {
       t.equal((stat.mode & 0x1FF).toString(8), '666')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'stat')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['stat'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['stat'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -319,12 +309,11 @@ test('lstat', function(t) {
       t.equal((stat.mode & 0x1FF).toString(8), '666')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'lstat')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['lstat'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['lstat'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -341,12 +330,11 @@ test('fstat', function(t) {
       t.equal((stat.mode & 0x1FF).toString(8), '666')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fstat')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['fstat'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['fstat'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -368,12 +356,11 @@ test('link', function(t) {
 
       verifySegments(t, agent, NAMES.FS.PREFIX + 'link')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['link'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['link'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -395,12 +382,11 @@ test('symlink', function(t) {
 
       verifySegments(t, agent, NAMES.FS.PREFIX + 'symlink')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['symlink'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['symlink'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -419,12 +405,11 @@ test('readlink', function(t) {
 
       verifySegments(t, agent, NAMES.FS.PREFIX + 'readlink')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['readlink'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['readlink'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -450,14 +435,13 @@ test('realpath', function(t) {
       }
 
       function afterVerify() {
-        trans.end(function checkMetrics() {
-          var expectedMetrics = ['realpath']
-          t.ok(
-            checkMetric(expectedMetrics, agent, trans.name),
-            'metric should exist after transaction end'
-          )
-          t.end()
-        })
+        trans.end()
+        var expectedMetrics = ['realpath']
+        t.ok(
+          checkMetric(expectedMetrics, agent, trans.name),
+          'metric should exist after transaction end'
+        )
+        t.end()
       }
     })
   })
@@ -482,14 +466,13 @@ test('realpath.native', (t) => {
       verifySegments(t, agent, NAMES.FS.PREFIX + 'realpath.native', afterVerify)
 
       function afterVerify() {
-        trans.end(function checkMetrics() {
-          const expectedMetrics = ['realpath.native']
-          t.ok(
-            checkMetric(expectedMetrics, agent, trans.name),
-            'metric should exist after transaction end'
-          )
-          t.end()
-        })
+        trans.end()
+        const expectedMetrics = ['realpath.native']
+        t.ok(
+          checkMetric(expectedMetrics, agent, trans.name),
+          'metric should exist after transaction end'
+        )
+        t.end()
       }
     })
   })
@@ -508,12 +491,11 @@ test('unlink', function(t) {
       t.notOk(fs.existsSync(link), 'link should not exist')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'unlink')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['unlink'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['unlink'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -528,12 +510,11 @@ test('mkdir', function(t) {
       t.ok(fs.readdirSync(name), 'dir should be readable')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'mkdir')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['mkdir'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['mkdir'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -548,12 +529,11 @@ test('rmdir', function(t) {
       t.notOk(fs.existsSync(name), 'dir should not exist')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'rmdir')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['rmdir'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['rmdir'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -568,12 +548,11 @@ test('readdir', function(t) {
       t.deepEqual(data, [], 'should get list of contents')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'readdir')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['readdir'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['readdir'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -589,12 +568,11 @@ test('close', function(t) {
       t.equal(err, null, 'should not error')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'close')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['close'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['close'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -610,12 +588,11 @@ test('open', function(t) {
       t.ok(fd, 'should get a file descriptor')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'open')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['open'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['open'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -636,12 +613,11 @@ test('utimes', function(t) {
       t.equal(stats.mtime.toISOString(), '1970-01-01T00:00:15.000Z')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'utimes')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['utimes'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['utimes'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -663,12 +639,11 @@ test('futimes', function(t) {
       t.equal(stats.mtime.toISOString(), '1970-01-01T00:00:15.000Z')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'futimes')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['futimes'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['futimes'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -685,12 +660,11 @@ test('fsync', function(t) {
       t.notOk(err, 'should not error')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'fsync')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['fsync'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['fsync'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -717,15 +691,14 @@ test('readFile', function(t) {
         expectFSOpen ? [NAMES.FS.PREFIX + 'open'] : []
       )
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(
-            expectFSOpen ? ['open', 'readFile'] : ['readFile'],
-            agent, trans.name
-          ),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(
+          expectFSOpen ? ['open', 'readFile'] : ['readFile'],
+          agent, trans.name
+        ),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -741,12 +714,11 @@ test('writeFile', function(t) {
       t.equal(fs.readFileSync(name).toString('utf8'), content)
       verifySegments(t, agent, NAMES.FS.PREFIX + 'writeFile', [NAMES.FS.PREFIX + 'open'])
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['writeFile', 'open'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['writeFile', 'open'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -767,12 +739,11 @@ test('appendFile', function(t) {
       verifySegments(t, agent, NAMES.FS.PREFIX + 'appendFile',
         [NAMES.FS.PREFIX + 'writeFile'])
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(expectedSegments, agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(expectedSegments, agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })
@@ -788,12 +759,11 @@ test('exists', function(t) {
       t.ok(exists, 'should exist')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'exists')
 
-      trans.end(function checkMetrics() {
-        t.ok(
-          checkMetric(['exists'], agent, trans.name),
-          'metric should exist after transaction end'
-        )
-      })
+      trans.end()
+      t.ok(
+        checkMetric(['exists'], agent, trans.name),
+        'metric should exist after transaction end'
+      )
     })
   })
 })

@@ -264,9 +264,8 @@ function createTestData(agent, callback) {
     )
 
     transaction.finalizeNameFromUri('/some/test/url', 200)
-    transaction.end(() => {
-      callback()
-    })
+    transaction.end()
+    callback()
   })
 }
 

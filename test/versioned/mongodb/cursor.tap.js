@@ -117,13 +117,12 @@ tap.test('piping cursor stream hides internal calls', function(t) {
       var destination = concat(function() {})
 
       destination.on('finish', function() {
-        transaction.end(function() {
-          t.equal(transaction.trace.root.children[0].name,
-            'Datastore/operation/MongoDB/pipe', 'should have pipe segment')
-          t.equal(0, transaction.trace.root.children[0].children.length,
-            'pipe should not have any children')
-          t.end()
-        })
+        transaction.end()
+        t.equal(transaction.trace.root.children[0].name,
+          'Datastore/operation/MongoDB/pipe', 'should have pipe segment')
+        t.equal(0, transaction.trace.root.children[0].children.length,
+          'pipe should not have any children')
+        t.end()
       })
 
       collection

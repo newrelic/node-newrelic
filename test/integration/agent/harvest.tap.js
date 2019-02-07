@@ -62,13 +62,12 @@ tap.test('Agent#harvest', (t) => {
     proxy()
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
-    transaction.end(function() {
-      t.ok(agent.traces.trace, 'have a slow trace to send')
+    transaction.end()
+    t.ok(agent.traces.trace, 'have a slow trace to send')
 
-      agent.harvest(function(error) {
-        t.error(error, 'harvest ran correctly')
-        t.end()
-      })
+    agent.harvest(function(error) {
+      t.error(error, 'harvest ran correctly')
+      t.end()
     })
   })
 
@@ -155,25 +154,24 @@ tap.test('Agent#harvest', (t) => {
 
     // ensure it's slow enough to get traced
     transaction.trace.setDurationInMillis(5001)
-    transaction.end(() => {
-      t.ok(agent.traces.trace, 'have a slow trace to send')
+    transaction.end()
+    t.ok(agent.traces.trace, 'have a slow trace to send')
 
-      agent.harvest((error) => {
-        t.error(error, 'trace sent correctly')
+    agent.harvest((error) => {
+      t.error(error, 'trace sent correctly')
 
-        t.ok(spy.called, 'should send sample trace data')
+      t.ok(spy.called, 'should send sample trace data')
 
-        // Verify mapped headers are sent in traces POST
-        const tracesRequest = requestSpy.args[6][0]
-        checkHeaders(t, headersMap, tracesRequest.headers)
+      // Verify mapped headers are sent in traces POST
+      const tracesRequest = requestSpy.args[6][0]
+      checkHeaders(t, headersMap, tracesRequest.headers)
 
-        const payload = spy.args[0][0]
-        t.ok(payload, 'should have trace payload')
-        t.type(payload[1][0], 'Array', 'should have trace')
-        t.type(payload[1][0][4], 'string', 'should have encoded trace')
+      const payload = spy.args[0][0]
+      t.ok(payload, 'should have trace payload')
+      t.type(payload[1][0], 'Array', 'should have trace')
+      t.type(payload[1][0][4], 'string', 'should have encoded trace')
 
-        t.end()
-      })
+      t.end()
     })
   })
 
@@ -190,7 +188,8 @@ tap.test('Agent#harvest', (t) => {
       setTimeout(() => {
         // Just to create an extra span.
         tx.finalizeNameFromUri('/some/path', 200)
-        tx.end(doHarvest)
+        tx.end()
+        doHarvest()
       }, 10)
     })
 

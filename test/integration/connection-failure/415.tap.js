@@ -68,23 +68,22 @@ tap.test('harvesting with a mocked collector that returns 415 on connect', funct
 
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    transaction.end(function() {
-      agent.traces.trace = transaction.trace
+    transaction.end()
+    agent.traces.trace = transaction.trace
 
-      sampler.nativeMetrics && sampler.nativeMetrics.unbind()
-      agent.harvest(function(error) {
-        t.notOk(error, 'no error received on 415')
-        t.ok(sendMetrics.isDone(), 'initial sent metrics...')
-        t.ok(sendEvents.isDone(), '...and then sent events...')
-        t.ok(sendErrors.isDone(), '...and then sent error data...')
-        t.ok(sendTrace.isDone(), '...and then sent trace, even though all returned 413')
-        t.ok(sendErrorEvents.isDone(), '... and then sent error events')
+    sampler.nativeMetrics && sampler.nativeMetrics.unbind()
+    agent.harvest(function(error) {
+      t.notOk(error, 'no error received on 415')
+      t.ok(sendMetrics.isDone(), 'initial sent metrics...')
+      t.ok(sendEvents.isDone(), '...and then sent events...')
+      t.ok(sendErrors.isDone(), '...and then sent error data...')
+      t.ok(sendTrace.isDone(), '...and then sent trace, even though all returned 413')
+      t.ok(sendErrorEvents.isDone(), '... and then sent error events')
 
-        agent.stop(function() {
-          t.ok(settings.isDone(), 'got agent_settings message')
-          t.ok(sendShutdown.isDone(), 'got shutdown message')
-          t.end()
-        })
+      agent.stop(function() {
+        t.ok(settings.isDone(), 'got agent_settings message')
+        t.ok(sendShutdown.isDone(), 'got shutdown message')
+        t.end()
       })
     })
   })

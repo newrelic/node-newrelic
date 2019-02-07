@@ -17,7 +17,8 @@ test('ending segment after transaction', (t) => {
       t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
       start = segment.getDurationInMillis()
 
-      tx.end(cb)
+      tx.end()
+      setImmediate(cb, tx)
     }, finish)
 
     function finish() {
@@ -60,23 +61,22 @@ test('segment ended before tx ends should not have Truncated prefix', (t) => {
     }, finish)
 
     function finish() {
-      tx.end(() => {
-        t.notOk(
-          segment.timer.isActive(),
-          'segment timer should have been stopped by tx end'
-        )
+      tx.end()
+      t.notOk(
+        segment.timer.isActive(),
+        'segment timer should have been stopped by tx end'
+      )
 
-        t.ok(
-          segment.getDurationInMillis() > start,
-          'time should have been updated'
-        )
+      t.ok(
+        segment.getDurationInMillis() > start,
+        'time should have been updated'
+      )
 
-        const totalTime = tx.trace.getTotalTimeDurationInMillis()
-        t.ok(totalTime > 0, 'transaction should have a totalTime')
-        t.equal(segment.name, segmentName, 'should have original segment name')
+      const totalTime = tx.trace.getTotalTimeDurationInMillis()
+      t.ok(totalTime > 0, 'transaction should have a totalTime')
+      t.equal(segment.name, segmentName, 'should have original segment name')
 
-        t.end()
-      })
+      t.end()
     }
   })
 })
@@ -99,28 +99,27 @@ test('touching a segment', (t) => {
     }, finish)
 
     function finish() {
-      tx.end(() => {
-        t.notOk(
-          segment.timer.isActive(),
-          'segment timer should have been stopped by tx end'
-        )
+      tx.end()
+      t.notOk(
+        segment.timer.isActive(),
+        'segment timer should have been stopped by tx end'
+      )
 
-        const totalTime = tx.trace.getTotalTimeDurationInMillis()
-        t.ok(totalTime > 0, 'transaction should have a totalTime')
+      const totalTime = tx.trace.getTotalTimeDurationInMillis()
+      t.ok(totalTime > 0, 'transaction should have a totalTime')
 
-        // blow away the cache to force a fresh grab of data.
-        tx.trace.totalTimeCache = null
+      // blow away the cache to force a fresh grab of data.
+      tx.trace.totalTimeCache = null
 
-        t.equal(
-          totalTime,
-          tx.trace.getTotalTimeDurationInMillis(),
-          'should not update the total time'
-        )
+      t.equal(
+        totalTime,
+        tx.trace.getTotalTimeDurationInMillis(),
+        'should not update the total time'
+      )
 
-        t.equal(segment.name, segmentName, 'should have original segment name')
+      t.equal(segment.name, segmentName, 'should have original segment name')
 
-        t.end()
-      })
+      t.end()
     }
   })
 })
