@@ -233,7 +233,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         )
         t.equal(attributes.port_path_or_id, String(defaultConfig.port), 'set port')
         txn.end()
-        defaultPool.end(defaultPool, t.end)
+        defaultPool.end(t.end)
       })
     })
   })
