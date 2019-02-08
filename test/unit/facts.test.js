@@ -194,6 +194,7 @@ describe('utilization', () => {
   const awsInfo = require('../../lib/utilization/aws-info')
   const azureInfo = require('../../lib/utilization/azure-info')
   const gcpInfo = require('../../lib/utilization/gcp-info')
+  const kubernetesInfo = require('../../lib/utilization/kubernetes-info')
   const common = require('../../lib/utilization/common')
 
   let startingEnv = null
@@ -223,6 +224,7 @@ describe('utilization', () => {
     awsInfo.clearCache()
     azureInfo.clearCache()
     gcpInfo.clearCache()
+    kubernetesInfo.clearCache()
   })
 
   afterEach(() => {
@@ -262,7 +264,8 @@ describe('utilization', () => {
           detect_azure: false,
           detect_gcp: false,
           detect_pcf: false,
-          detect_docker: false
+          detect_docker: false,
+          detect_kubernetes: false
         }
       }
 
@@ -310,6 +313,11 @@ describe('utilization', () => {
           case 'input_pcf_mem_limit':
             process.env.MEMORY_LIMIT = testValue
             config.utilization.detect_pcf = true
+            break
+
+          case 'input_kubernetes_id':
+            mockVendorMetadata = 'kubernetes'
+            config.utilization.detect_kubernetes = true
             break
 
           case 'input_hostname':
