@@ -31,7 +31,7 @@ function instrument(shim, AWS) {
             name,
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
-            table_name: args[0].TableName || 'Unknown'
+            database_name: args[0].TableName || 'Unknown'
           },
           callback: shim.LAST,
           opaque: true

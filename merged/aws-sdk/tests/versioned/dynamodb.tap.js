@@ -1,20 +1,59 @@
 'use strict'
 
 const common = require('./common')
-const fixtures = require('./fixtures')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
+const TableName = 'test-table-' + Math.floor(Math.random() * 100000)
+const TABLE_DEF = {
+  AttributeDefinitions: [
+    {AttributeName: 'Artist', AttributeType: 'S'},
+    {AttributeName: 'SongTitle', AttributeType: 'S'}
+  ],
+  KeySchema: [
+    {AttributeName: 'Artist', KeyType: 'HASH'},
+    {AttributeName: 'SongTitle', KeyType: 'RANGE'}
+  ],
+  ProvisionedThroughput: {
+    ReadCapacityUnits: 5,
+    WriteCapacityUnits: 5
+  },
+  TableName
+}
+const ITEM_DEF = {
+  Item: {
+    AlbumTitle: {S: 'Somewhat Famous'},
+    Artist: {S: 'No One You Know'},
+    SongTitle: {S: 'Call Me Today'}
+  },
+  TableName
+}
+
+const ITEM = {
+  Key: {
+    Artist: {S: 'No One You Know'},
+    SongTitle: {S: 'Call Me Today'}
+  },
+  TableName
+}
+const QUERY = {
+  ExpressionAttributeValues: {
+    ':v1': {S: 'No One You Know'}
+  },
+  KeyConditionExpression: 'Artist = :v1',
+  TableName
+}
+
 const TESTS = [
-  {method: 'createTable', params: fixtures.tableDef},
-  {method: 'putItem', params: fixtures.itemDef},
-  {method: 'getItem', params: fixtures.item},
-  {method: 'updateItem', params: fixtures.item},
-  {method: 'scan', params: {TableName: 'Music'}},
-  {method: 'query', params: fixtures.query},
-  {method: 'deleteItem', params: fixtures.item},
-  {method: 'deleteTable', params: {TableName: 'Music'}}
+  {method: 'createTable', params: TABLE_DEF},
+  {method: 'putItem', params: ITEM_DEF},
+  {method: 'getItem', params: ITEM},
+  {method: 'updateItem', params: ITEM},
+  {method: 'scan', params: {TableName}},
+  {method: 'query', params: QUERY},
+  {method: 'deleteItem', params: ITEM},
+  {method: 'deleteTable', params: {TableName}}
 ]
 
 tap.test('DynamoDB', (t) => {
@@ -42,8 +81,6 @@ tap.test('DynamoDB', (t) => {
   })
 
   t.test('commands', (t) => {
-    const TableName = 'Music'
-
     t.tearDown(() => {
       ddb.deleteTable({TableName}, () => {})
     })
@@ -83,7 +120,7 @@ function finish(t, tx) {
     t.matches(segment.parameters, {
       'host': String,
       'port_path_or_id': String,
-      'table_name': 'Music',
+      'database_name': String,
       'aws.operation': TESTS[i].method,
       'aws.requestId': String
       // 'aws.service': 'DynamoDB' // TODO: Bring back service name.
