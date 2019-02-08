@@ -14,7 +14,8 @@ describe('getVendors', function() {
       detect_aws: true,
       detect_azure: true,
       detect_gcp: true,
-      detect_docker: true
+      detect_docker: true,
+      detect_kubernetes: true
     }
   })
 
@@ -27,6 +28,7 @@ describe('getVendors', function() {
     var azureCalled = false
     var gcpCalled = false
     var dockerCalled = false
+    let kubernetesCalled = false
 
     var getVendors = proxyquire('../../../lib/utilization', {
       './aws-info': function(agent, cb) {
@@ -46,6 +48,10 @@ describe('getVendors', function() {
           dockerCalled = true
           cb()
         }
+      },
+      './kubernetes-info': (agent, cb) => {
+        kubernetesCalled = true
+        cb()
       }
     }).getVendors
 
@@ -55,6 +61,7 @@ describe('getVendors', function() {
       expect(azureCalled).to.be.true
       expect(gcpCalled).to.be.true
       expect(dockerCalled).to.be.true
+      expect(kubernetesCalled).to.be.true
       done()
     })
   })
