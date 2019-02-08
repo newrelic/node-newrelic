@@ -71,7 +71,7 @@ tap.test('DynamoDB', (t) => {
       onRequire: require('../../lib/instrumentation')
     })
     AWS = require('aws-sdk')
-    ddb = new AWS.DynamoDB({region: 'us-east-2'})
+    ddb = new AWS.DynamoDB({region: 'us-east-1'})
     done()
   })
 
@@ -122,8 +122,9 @@ function finish(t, tx) {
       'port_path_or_id': String,
       'database_name': String,
       'aws.operation': TESTS[i].method,
-      'aws.requestId': String
-      // 'aws.service': 'DynamoDB' // TODO: Bring back service name.
+      'aws.requestId': String,
+      'aws.region': 'us-east-1',
+      'aws.service': 'DynamoDB'
     }, 'should have expected attributes')
   })
 
