@@ -131,6 +131,18 @@ describe('fun facts about apps that New Relic is interested in include', functio
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_STRING', 'hello')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_BOOL', 'true')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
+
+      delete process.env.NEW_RELIC_METADATA_STRING
+      delete process.env.NEW_RELIC_METADATA_BOOL
+      delete process.env.NEW_RELIC_METADATA_NUMBER
+      done()
+    })
+  })
+
+  it("empty 'metadata' object if no metadata env vars found", (done) => {
+    facts(agent, (data) => {
+      expect(data).to.have.property('metadata')
+      expect(data.metadata).to.deep.equal({})
       done()
     })
   })
