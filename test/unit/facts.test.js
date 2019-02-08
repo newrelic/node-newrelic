@@ -15,7 +15,7 @@ const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
 var EXPECTED = [
   'pid', 'host', 'language', 'app_name', 'labels', 'utilization',
   'agent_version', 'environment', 'settings', 'high_security', 'display_host',
-  'identifier'
+  'identifier', 'metadata'
 ]
 
 var _ip6_digits = '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
@@ -117,6 +117,20 @@ describe('fun facts about apps that New Relic is interested in include', functio
       expect(identifier).to.contain('nodejs')
       expect(identifier).to.contain(factsed.host)
       expect(identifier).to.contain(factsed.app_name.sort().join(','))
+      done()
+    })
+  })
+
+  it("'metadata' with NEW_RELIC_METADATA_-prefixed env vars", (done) => {
+    process.env.NEW_RELIC_METADATA_STRING = 'hello'
+    process.env.NEW_RELIC_METADATA_BOOL = true
+    process.env.NEW_RELIC_METADATA_NUMBER = 42
+
+    facts(agent, (data) => {
+      expect(data).to.have.property('metadata')
+      expect(data.metadata).to.have.property('NEW_RELIC_METADATA_STRING', 'hello')
+      expect(data.metadata).to.have.property('NEW_RELIC_METADATA_BOOL', 'true')
+      expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
       done()
     })
   })
