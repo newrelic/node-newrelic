@@ -3,8 +3,9 @@
 function checkAWSExternals(t, segment, externalSegments = []) {
   const expectedParams = {
     'aws.operation': String,
-    // 'aws.service': String, // TODO: Bring back the service name.
-    'aws.requestId': String
+    'aws.service': String,
+    'aws.requestId': String,
+    'aws.region': String
   }
 
   if (/^External\/.*?amazonaws\.com/.test(segment.name)) {
