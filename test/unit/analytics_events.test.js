@@ -27,7 +27,12 @@ describe('Analytics events', function() {
     })
 
     it('event should contain those attributes', function() {
-      trans.trace.attributes.addAttribute(DESTS.TRANS_EVENT, 'test', 'TEST')
+      trans.trace.attributes.addAttribute(
+        'transaction',
+        DESTS.TRANS_EVENT,
+        'test',
+        'TEST'
+      )
       agent._addEventFromTransaction(trans)
 
       var first = 0

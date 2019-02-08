@@ -8,6 +8,7 @@ const Transaction = require('../../../lib/transaction')
 const API = require('../../../api')
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const NAMES = require('../../../lib/metrics/names')
+const TRANSACTION_SCOPE = 'transaction'
 
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') isWeb = true
@@ -61,7 +62,12 @@ describe('Errors', function() {
     })
 
     it('record captured params', function() {
-      trans.trace.attributes.addAttribute(DESTS.ALL, 'request.parameters.a', 'A')
+      trans.trace.attributes.addAttribute(
+        TRANSACTION_SCOPE,
+        DESTS.TRANS_SCOPE,
+        'request.parameters.a',
+        'A'
+      )
       error.add(trans, new Error())
       agent.errors.onTransactionFinished(trans, agent.metrics)
 
@@ -532,10 +538,14 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         transaction.statusCode = 501
         transaction.url = '/'
-        transaction.trace.attributes.addAttributes(DESTS.ALL, {
-          test_param: 'a value',
-          thing: true
-        })
+        transaction.trace.attributes.addAttributes(
+          TRANSACTION_SCOPE,
+          DESTS.TRANS_SCOPE,
+          {
+            test_param: 'a value',
+            thing: true
+          }
+        )
 
         agent.errors.add(transaction, null)
         agent.errors.onTransactionFinished(transaction, agent.metrics)
@@ -602,8 +612,14 @@ describe('Errors', function() {
       var transaction = new Transaction(agent)
       transaction.statusCode = 501
 
-      transaction.trace.attributes.addAttribute(DESTS.ALL, 'test_param', 'a value')
-      transaction.trace.attributes.addAttribute(DESTS.ALL, 'thing', 5)
+      transaction.trace.attributes.addAttributes(
+        TRANSACTION_SCOPE,
+        DESTS.TRANS_SCOPE,
+        {
+          test_param: 'a value',
+          thing: 5
+        }
+      )
 
       agent.errors.add(transaction, null)
       agent._transactionFinished(transaction)
@@ -706,10 +722,14 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         var exception = new TypeError('wanted JSON, got XML')
 
-        transaction.trace.attributes.addAttributes(DESTS.ALL, {
-          test_param: 'a value',
-          thing: true
-        })
+        transaction.trace.attributes.addAttributes(
+          TRANSACTION_SCOPE,
+          DESTS.TRANS_SCOPE,
+          {
+            test_param: 'a value',
+            thing: true
+          }
+        )
         transaction.url = '/test_action.json'
 
         agent.errors.add(transaction, exception)
@@ -805,10 +825,14 @@ describe('Errors', function() {
         var transaction = new Transaction(agent)
         var exception = 'wanted JSON, got XML'
 
-        transaction.trace.attributes.addAttributes(DESTS.ALL, {
-          test_param: 'a value',
-          thing: true
-        })
+        transaction.trace.attributes.addAttributes(
+          TRANSACTION_SCOPE,
+          DESTS.TRANS_SCOPE,
+          {
+            test_param: 'a value',
+            thing: true
+          }
+        )
 
         transaction.url = '/test_action.json'
 
@@ -1641,7 +1665,12 @@ describe('Errors', function() {
       it('should contain agent attributes', function() {
         agent.config.attributes.enabled = true
         var transaction = createTransaction(agent, 500)
-        transaction.trace.attributes.addAttribute(DESTS.ALL, 'host.displayName', 'myHost')
+        transaction.trace.attributes.addAttribute(
+          TRANSACTION_SCOPE,
+          DESTS.TRANS_SCOPE,
+          'host.displayName',
+          'myHost'
+        )
         var error = new Error('some error')
         aggregator.add(transaction, error, { a: 'a' })
 

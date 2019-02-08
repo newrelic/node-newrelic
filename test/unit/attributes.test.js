@@ -7,6 +7,7 @@ const AttributeFilter = require('../../lib/config/attribute-filter')
 const {makeAttributeFilterConfig} = require('../lib/agent_helper')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
+const TRANSACTION_SCOPE = 'transaction'
 
 describe('Attributes', () => {
   let inst = null
@@ -15,8 +16,13 @@ describe('Attributes', () => {
   describe('#addAttribute', () => {
     it('adds an attribute to instance', () => {
       inst = new Attributes({filter})
-      inst.addAttribute(DESTINATIONS.ALL, 'test', 'success')
-      const attributes = inst.get(DESTINATIONS.ALL)
+      inst.addAttribute(
+        TRANSACTION_SCOPE,
+        DESTINATIONS.TRANS_SCOPE,
+        'test',
+        'success'
+      )
+      const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
       expect(attributes).to.have.property('test', 'success')
     })
 
@@ -29,7 +35,12 @@ describe('Attributes', () => {
       ].join(' ')
 
       inst = new Attributes({filter})
-      inst.addAttribute(DESTINATIONS.ALL, tooLong, 'will fail')
+      inst.addAttribute(
+        TRANSACTION_SCOPE,
+        DESTINATIONS.TRANS_SCOPE,
+        tooLong,
+        'will fail'
+      )
       const attributes = Object.keys(inst.attributes)
       expect(attributes.length).to.equal(0)
     })
@@ -38,11 +49,12 @@ describe('Attributes', () => {
   describe('#addAttributes', () => {
     it('adds multiple attributes to instance', () => {
       inst = new Attributes({filter})
-      inst.addAttributes(DESTINATIONS.ALL, {
-        one: '1',
-        two: '2'
-      })
-      const attributes = inst.get(DESTINATIONS.ALL)
+      inst.addAttributes(
+        TRANSACTION_SCOPE,
+        DESTINATIONS.TRANS_SCOPE,
+        {one: '1', two: '2'}
+      )
+      const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
       expect(attributes).to.have.property('one', '1')
       expect(attributes).to.have.property('two', '2')
     })
@@ -59,9 +71,13 @@ describe('Attributes', () => {
         seventh: null
       }
 
-      inst.addAttributes(DESTINATIONS.ALL, attributes)
+      inst.addAttributes(
+        TRANSACTION_SCOPE,
+        DESTINATIONS.TRANS_SCOPE,
+        attributes
+      )
 
-      const res = inst.get(DESTINATIONS.ALL)
+      const res = inst.get(DESTINATIONS.TRANS_SCOPE)
       expect(Object.keys(res).length).to.equal(3)
       expect(res.second).to.be.undefined
       expect(res.third).to.be.undefined

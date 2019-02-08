@@ -5,7 +5,7 @@ const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
 const {expect} = require('chai')
 
 const DESTS = AttributeFilter.DESTINATIONS
-
+const TRANSACTION_SCOPE = 'transaction'
 
 describe('AttributeFilter', function() {
   describe('constructor', function() {
@@ -58,11 +58,16 @@ describe('AttributeFilter', function() {
         }
       }))
 
-      expect(filter.filter(DESTS.COMMON, 'a')).to.equal(DESTS.COMMON)
-      expect(filter.filter(DESTS.COMMON, 'ab')).to.equal(DESTS.NONE)
-      expect(filter.filter(DESTS.COMMON, '')).to.equal(DESTS.COMMON)
-      expect(filter.filter(DESTS.COMMON, 'b')).to.equal(DESTS.COMMON)
-      expect(filter.filter(DESTS.COMMON, 'bc')).to.equal(DESTS.COMMON ^ DESTS.TRANS_EVENT)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'a'))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'ab'))
+        .to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, ''))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'b'))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'bc'))
+        .to.equal(DESTS.LIMITED)
     })
 
     it('should not matter the order of the rules', function() {
@@ -95,11 +100,16 @@ describe('AttributeFilter', function() {
         }
       }))
 
-      expect(filter.filter(DESTS.COMMON, 'a')).to.equal(DESTS.ALL ^ DESTS.BROWSER_EVENT)
-      expect(filter.filter(DESTS.COMMON, 'ab')).to.equal(DESTS.ALL ^ DESTS.BROWSER_EVENT)
-      expect(filter.filter(DESTS.COMMON, '')).to.equal(DESTS.NONE)
-      expect(filter.filter(DESTS.COMMON, 'b')).to.equal(DESTS.NONE)
-      expect(filter.filter(DESTS.COMMON, 'bc')).to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'a'))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'ab'))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, ''))
+        .to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'b'))
+        .to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'bc'))
+        .to.equal(DESTS.NONE)
     })
 
     it('should parse dot rules correctly', function() {
@@ -112,31 +122,41 @@ describe('AttributeFilter', function() {
         }
       }))
 
-      expect(filter.filter(DESTS.COMMON, 'a.c')).to.equal(DESTS.ALL ^ DESTS.BROWSER_EVENT)
-      expect(filter.filter(DESTS.COMMON, 'abc')).to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'a.c'))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'abc'))
+        .to.equal(DESTS.NONE)
 
-      expect(filter.filter(DESTS.NONE, 'a.c')).to.equal(DESTS.ALL ^ DESTS.BROWSER_EVENT)
-      expect(filter.filter(DESTS.NONE, 'abc')).to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'a.c'))
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'abc'))
+        .to.equal(DESTS.NONE)
     })
 
     function makeAssertions(filter) {
-      const NOT_BROWSER = DESTS.COMMON | DESTS.SPAN_EVENT | DESTS.TRANS_SEGMENT
       // Filters down from global rules
-      expect(filter.filter(DESTS.ALL, 'a'), 'a -> common').to.equal(NOT_BROWSER)
-      expect(filter.filter(DESTS.ALL, 'ab'), 'ab -> common')
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'a'), 'a -> common')
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'ab'), 'ab -> common')
         .to.equal(DESTS.TRANS_EVENT)
-      expect(filter.filter(DESTS.ALL, 'abc'), 'abc -> common').to.equal(DESTS.NONE)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'abc'), 'abc -> common')
+        .to.equal(DESTS.NONE)
 
       // Filters down from destination rules.
-      expect(filter.filter(DESTS.ALL, 'b'), 'b -> common').to.equal(NOT_BROWSER)
-      expect(filter.filter(DESTS.ALL, 'bc'), 'bc -> common')
-        .to.equal(NOT_BROWSER & ~DESTS.TRANS_EVENT)
-      expect(filter.filter(DESTS.ALL, 'bcd'), 'bcd -> common').to.equal(NOT_BROWSER)
-      expect(filter.filter(DESTS.ALL, 'bcde'), 'bcde -> common').to.equal(NOT_BROWSER)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'b'), 'b -> common')
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'bc'), 'bc -> common')
+        .to.equal(DESTS.LIMITED)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'bcd'), 'bcd -> common')
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'bcde'), 'bcde -> common')
+        .to.equal(DESTS.TRANS_COMMON)
 
       // Adds destinations on top of defaults.
-      expect(filter.filter(DESTS.NONE, 'a'), 'a -> none').to.equal(NOT_BROWSER)
-      expect(filter.filter(DESTS.NONE, 'ab'), 'ab -> none').to.equal(DESTS.TRANS_EVENT)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'a'), 'a -> none')
+        .to.equal(DESTS.TRANS_COMMON)
+      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'ab'), 'ab -> none')
+        .to.equal(DESTS.TRANS_EVENT)
     }
   })
 })

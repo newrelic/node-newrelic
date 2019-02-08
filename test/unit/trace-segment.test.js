@@ -8,6 +8,7 @@ var helper = require('../lib/agent_helper')
 var TraceSegment = require('../../lib/transaction/trace/segment')
 var Transaction = require('../../lib/transaction')
 
+const TRANSACTION_SCOPE = 'transaction'
 
 describe('TraceSegment', function() {
   var agent = null
@@ -235,7 +236,11 @@ describe('TraceSegment', function() {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      transaction.trace.attributes.addAttributes(DESTINATIONS.ALL, params)
+      transaction.trace.attributes.addAttributes(
+        TRANSACTION_SCOPE,
+        DESTINATIONS.TRANS_SCOPE,
+        params
+      )
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 
@@ -292,7 +297,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
-      webChild.addAttribute('test', 'non-null value')
+      webChild.addAttribute(TRANSACTION_SCOPE, 'test', 'non-null value')
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 

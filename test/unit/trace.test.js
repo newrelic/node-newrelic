@@ -612,7 +612,12 @@ function makeTrace(agent, callback) {
   agent.config.emit('attributes.include')
 
   var transaction = new Transaction(agent)
-  transaction.trace.attributes.addAttribute(DESTINATIONS.COMMON, 'request.uri', URL)
+  transaction.trace.attributes.addAttribute(
+    'transaction',
+    DESTINATIONS.TRANS_COMMON,
+    'request.uri',
+    URL
+  )
   transaction.url  = URL
   transaction.verb = 'GET'
 
