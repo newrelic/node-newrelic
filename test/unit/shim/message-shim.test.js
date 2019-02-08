@@ -40,6 +40,12 @@ describe('MessageShim', function() {
       anony: function() {},
       getActiveSegment: function() {
         return agent.tracer.getSegment()
+      },
+      withNested: function() {
+        const segment = agent.tracer.getSegment()
+        segment.add('ChildSegment')
+
+        return segment
       }
     }
 
@@ -160,6 +166,7 @@ describe('MessageShim', function() {
           expect(segment.transaction).to.equal(tx)
           expect(segment.name)
             .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
       })
@@ -271,6 +278,42 @@ describe('MessageShim', function() {
         })
       })
 
+      describe('when opaque false', () => {
+        it('should create a child segment', function() {
+          shim.recordProduce(wrappable, 'withNested', function() {
+            return {destinationName: 'foobar'}
+          })
+
+          helper.runInTransaction(agent, (tx) => {
+            const segment = wrappable.withNested()
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
+            expect(segment.children).to.have.lengthOf(1)
+            const childSegment = segment.children[0]
+            expect(childSegment.name).to.equal('ChildSegment')
+          })
+        })
+      })
+
+      describe('when opaque true', () => {
+        it('should not create a child segment', function() {
+          shim.recordProduce(wrappable, 'withNested', function() {
+            return {destinationName: 'foobar', opaque: true}
+          })
+
+          helper.runInTransaction(agent, (tx) => {
+            const segment = wrappable.withNested()
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
+            expect(segment.children).to.have.lengthOf(0)
+          })
+        })
+      })
+
       describe('when headers are provided', function() {
         it('should insert CAT request headers', function() {
           var headers = {}
@@ -378,6 +421,27 @@ describe('MessageShim', function() {
           expect(segment.name)
             .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
+        })
+      })
+
+      it('should bind the callback if there is one', function() {
+        const cb = function() {}
+        const toWrap = function(wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        const wrapped = shim.recordConsume(toWrap, function() {
+          return {callback: shim.LAST}
+        })
+
+        helper.runInTransaction(agent, function() {
+          wrapped(cb)
         })
       })
 
@@ -498,6 +562,42 @@ describe('MessageShim', function() {
         helper.runInTransaction(agent, function() {
           wrappable.bar('a', 'b', 'c')
           expect(executed).to.be.true
+        })
+      })
+    })
+
+    describe('when opaque false', () => {
+      it('should create a child segment', function() {
+        shim.recordConsume(wrappable, 'withNested', function() {
+          return {destinationName: 'foobar'}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          const segment = wrappable.withNested()
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+
+          expect(segment.children).to.have.lengthOf(1)
+          const childSegment = segment.children[0]
+          expect(childSegment.name).to.equal('ChildSegment')
+        })
+      })
+    })
+
+    describe('when opaque true', () => {
+      it('should not create a child segment', function() {
+        shim.recordConsume(wrappable, 'withNested', function() {
+          return {destinationName: 'foobar', opaque: true}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          const segment = wrappable.withNested()
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+
+          expect(segment.children).to.have.lengthOf(0)
         })
       })
     })
