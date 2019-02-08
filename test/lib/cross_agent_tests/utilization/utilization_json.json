@@ -7,7 +7,7 @@
     "input_full_hostname": "myhost.com",
     "input_ip_address": ["1.2.3.4", "1.2.3.5"],
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 1024,
       "hostname": "myhost",
@@ -23,7 +23,7 @@
     "input_full_hostname": "myotherhost.com",
     "input_ip_address": ["2001:0db8:0000:0042:0000:8a2e:0370:7334"],
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": null,
       "total_ram_mib": null,
       "hostname": "myotherhost",
@@ -43,7 +43,7 @@
       "NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB": 2048
     },
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": null,
       "total_ram_mib": null,
       "hostname": "myotherhost",
@@ -68,7 +68,7 @@
       "NEW_RELIC_UTILIZATION_BILLING_HOSTNAME": "localhost"
     },
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 2,
       "total_ram_mib": 1,
       "hostname": "myotherhost",
@@ -94,7 +94,7 @@
       "NEW_RELIC_UTILIZATION_BILLING_HOSTNAME": "localhost"
     },
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 4,
       "total_ram_mib": 1024,
       "hostname": "myotherhost",
@@ -119,7 +119,7 @@
       "NEW_RELIC_UTILIZATION_BILLING_HOSTNAME": "localhost"
     },
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 4,
       "total_ram_mib": 1024,
       "hostname": "myotherhost",
@@ -142,7 +142,7 @@
     "input_aws_type": "t2.micro",
     "input_aws_zone": "us-west-1",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -168,7 +168,7 @@
     "input_aws_type": "t2.micro",
     "input_aws_zone": "us-west-1",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -188,7 +188,7 @@
     "input_gcp_name": "aef-default-20170501t160547-7gh8",
     "input_gcp_zone": "projects/492690098729/zones/us-central1-c",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -216,7 +216,7 @@
     "input_gcp_name": null,
     "input_gcp_zone": "projects/492690098729/zones/us-central1-c",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -235,7 +235,7 @@
     "input_pcf_ip": "10.10.147.130",
     "input_pcf_mem_limit": "1024m",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -261,7 +261,7 @@
     "input_pcf_ip": "10.10.147.130",
     "input_pcf_mem_limit": "1024m",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -281,7 +281,7 @@
     "input_azure_id": "5c08b38e-4d57-4c23-ac45-aca61037f084",
     "input_azure_size": "Standard_DS2",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
@@ -309,12 +309,69 @@
     "input_azure_id": null,
     "input_azure_size": "Standard_DS2",
     "expected_output_json": {
-      "metadata_version": 4,
+      "metadata_version": 5,
       "logical_processors": 8,
       "total_ram_mib": 2048,
       "hostname": "myotherhost",
       "full_hostname": "myotherhost.com",
       "ip_address": ["1.2.3.4"]
+    }
+  },
+  {
+    "testname": "kubernetes service host environment variable",
+    "input_kubernetes_id": null,
+    "input_total_ram_mib": null,
+    "input_logical_processors": null,
+    "input_hostname": "myotherhost",
+    "input_full_hostname": "myotherhost.com",
+    "input_ip_address": ["::FFFF:129.144.52.38"],
+    "input_environment_variables": {
+      "NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS": 8,
+      "NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB": 2048,
+      "KUBERNETES_SERVICE_HOST": "10.96.0.1"
+    },
+    "expected_output_json": {
+      "metadata_version": 5,
+      "logical_processors": null,
+      "total_ram_mib": null,
+      "hostname": "myotherhost",
+      "full_hostname": "myotherhost.com",
+      "ip_address": ["::FFFF:129.144.52.38"],
+      "config": {
+        "logical_processors": 8,
+        "total_ram_mib": 2048
+      },
+      "vendors": {
+        "kubernetes": {
+          "kubernetes_service_host": "10.96.0.1"
+        }
+      }
+    }
+  },
+  {
+    "testname": "only kubernetes service port environment variable",
+    "input_kubernetes_id": null,
+    "input_total_ram_mib": null,
+    "input_logical_processors": null,
+    "input_hostname": "myotherhost",
+    "input_full_hostname": "myotherhost.com",
+    "input_ip_address": ["::FFFF:129.144.52.38"],
+    "input_environment_variables": {
+      "NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS": 8,
+      "NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB": 2048,
+      "KUBERNETES_SERVICE_PORT": "8080"
+    },
+    "expected_output_json": {
+      "metadata_version": 5,
+      "logical_processors": null,
+      "total_ram_mib": null,
+      "hostname": "myotherhost",
+      "full_hostname": "myotherhost.com",
+      "ip_address": ["::FFFF:129.144.52.38"],
+      "config": {
+        "logical_processors": 8,
+        "total_ram_mib": 2048
+      }
     }
   }
 ]
