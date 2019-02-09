@@ -24,6 +24,12 @@ describe('DatastoreShim', function() {
       anony: function() {},
       getActiveSegment: function getActiveSegment() {
         return agent.tracer.getSegment()
+      },
+      withNested: function() {
+        const segment = agent.tracer.getSegment()
+        segment.add('ChildSegment')
+
+        return segment
       }
     }
   })
@@ -68,8 +74,11 @@ describe('DatastoreShim', function() {
     it('should be enumerated on the class and prototype', function() {
       var datastores = [
         'CASSANDRA',
+        'DYNAMODB',
+        'MEMCACHED',
         'MONGODB',
         'MYSQL',
+        'NEPTUNE',
         'REDIS',
         'POSTGRES'
       ]
@@ -302,6 +311,40 @@ describe('DatastoreShim', function() {
             expect(segment.name)
               .to.equal('Datastore/operation/Cassandra/getActiveSegment')
             expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when opaque false', () => {
+        it('should create a child segment', () => {
+          shim.recordOperation(wrappable, 'withNested', () => {
+            return {name: 'test', opaque: false}
+          })
+          helper.runInTransaction(agent, (tx) => {
+            const startingSegment = agent.tracer.getSegment()
+            const segment = wrappable.withNested()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('Datastore/operation/Cassandra/test')
+            expect(segment.children).to.have.lengthOf(1)
+            const childSegment = segment.children[0]
+            expect(childSegment.name).to.equal('ChildSegment')
+          })
+        })
+      })
+
+      describe('when opaque true', () => {
+        it('should not create a child segment', () => {
+          shim.recordOperation(wrappable, 'withNested', () => {
+            return {name: 'test', opaque: true}
+          })
+          helper.runInTransaction(agent, (tx) => {
+            const startingSegment = agent.tracer.getSegment()
+            const segment = wrappable.withNested()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.name).to.equal('Datastore/operation/Cassandra/test')
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.children).to.have.lengthOf(0)
           })
         })
       })
