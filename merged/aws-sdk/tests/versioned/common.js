@@ -1,6 +1,6 @@
 'use strict'
 
-function checkAWSExternals(t, segment, externalSegments = []) {
+function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
   const expectedParams = {
     'aws.operation': String,
     'aws.service': String,
@@ -8,17 +8,17 @@ function checkAWSExternals(t, segment, externalSegments = []) {
     'aws.region': String
   }
 
-  if (/^External\/.*?amazonaws\.com/.test(segment.name)) {
-    externalSegments.push(segment)
-    t.matches(segment.parameters, expectedParams, 'should have aws parameters')
+  if (pattern.test(segment.name)) {
+    markedSegments.push(segment)
+    t.matches(segment.parameters, expectedParams, 'should have aws attributes')
   }
   segment.children.forEach((child) => {
-    checkAWSExternals(t, child, externalSegments)
+    checkAWSAttributes(t, child, pattern, markedSegments)
   })
 
-  return externalSegments
+  return markedSegments
 }
 
 module.exports = {
-  checkAWSExternals
+  checkAWSAttributes
 }

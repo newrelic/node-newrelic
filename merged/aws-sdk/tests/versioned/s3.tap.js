@@ -41,7 +41,6 @@ tap.test('S3 buckets', (t) => {
         S3.createBucket({Bucket}, (err, data) => {
           t.error(err)
           t.matches(data, {Location: `/${Bucket}`}, 'should have matching location')
-
           S3.deleteBucket({Bucket}, (err) => {
             // Sometimes S3 doesn't make the bucket quickly enough. The cleanup
             // in `t.tearDown` should get it after we do all our checks.
@@ -56,7 +55,8 @@ tap.test('S3 buckets', (t) => {
     })
 
     function finish(tx) {
-      const externals = common.checkAWSExternals(t, tx.trace.root)
+      const pattern = /^External\/.*?amazonaws\.com/
+      const externals = common.checkAWSAttributes(t, tx.trace.root, pattern)
       t.equal(externals.length, 3, 'should have 3 aws externals')
       const [head, create, del] = externals
 
