@@ -1,7 +1,8 @@
 'use strict'
 
 const INSTRUMENTATIONS = [
-  require('./core')
+  require('./core'),
+  require('./dynamodb')
 ]
 
 module.exports = function initialize(shim, AWS) {
