@@ -391,4 +391,36 @@ describe('when working with http.request', function() {
       })
     })
   })
+
+  describe('when parent segment opaque', () => {
+    it('should not modify parent segment', (done) => {
+      const host = 'http://www.google.com'
+      const paramName = 'testParam'
+      const path = `/index.html?${paramName}=value`
+
+      nock(host).get(path).reply(200, 'Hello from Google')
+
+      helper.runInTransaction(agent, (transaction) => {
+        const parentSegment = agent.tracer.createSegment('ParentSegment')
+        parentSegment.opaque = true
+        agent.tracer.segment = parentSegment // make the current active segment
+
+        http.get(`${host}${path}`, (res) => {
+          const segment = agent.tracer.getSegment()
+
+          expect(segment).to.equal(parentSegment)
+          expect(segment.name).to.equal('ParentSegment')
+
+          expect(segment.parameters.url).to.not.exist
+
+          expect(segment.parameters)
+            .to.not.have.property(`request.parameters.${paramName}`)
+
+          res.resume()
+          transaction.end()
+          done()
+        })
+      })
+    })
+  })
 })
