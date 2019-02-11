@@ -5,7 +5,10 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
-const TableName = 'test-table-' + Math.floor(Math.random() * 100000)
+const TABLE_NAME = 'StaticTestTable_DO_NOT_DELETE'
+const FAKE_TABLE_NAME = 'NON-EXISTENT-TABLE'
+const UNIQUE_ARTIST = `No One You Know ${Math.floor(Math.random() * 100000)}`
+
 const TABLE_DEF = {
   AttributeDefinitions: [
     {AttributeName: 'Artist', AttributeType: 'S'},
@@ -19,30 +22,30 @@ const TABLE_DEF = {
     ReadCapacityUnits: 5,
     WriteCapacityUnits: 5
   },
-  TableName
+  TableName: TABLE_NAME
 }
 const ITEM_DEF = {
   Item: {
     AlbumTitle: {S: 'Somewhat Famous'},
-    Artist: {S: 'No One You Know'},
+    Artist: {S: UNIQUE_ARTIST},
     SongTitle: {S: 'Call Me Today'}
   },
-  TableName
+  TableName: TABLE_NAME
 }
 
 const ITEM = {
   Key: {
-    Artist: {S: 'No One You Know'},
+    Artist: {S: UNIQUE_ARTIST},
     SongTitle: {S: 'Call Me Today'}
   },
-  TableName
+  TableName: TABLE_NAME
 }
 const QUERY = {
   ExpressionAttributeValues: {
-    ':v1': {S: 'No One You Know'}
+    ':v1': {S: UNIQUE_ARTIST}
   },
   KeyConditionExpression: 'Artist = :v1',
-  TableName
+  TableName: TABLE_NAME
 }
 
 const TESTS = [
@@ -50,10 +53,10 @@ const TESTS = [
   {method: 'putItem', params: ITEM_DEF},
   {method: 'getItem', params: ITEM},
   {method: 'updateItem', params: ITEM},
-  {method: 'scan', params: {TableName}},
+  {method: 'scan', params: {TableName: TABLE_NAME}},
   {method: 'query', params: QUERY},
   {method: 'deleteItem', params: ITEM},
-  {method: 'deleteTable', params: {TableName}}
+  {method: 'deleteTable', params: {TableName: FAKE_TABLE_NAME}}
 ]
 
 tap.test('DynamoDB', (t) => {
@@ -81,24 +84,19 @@ tap.test('DynamoDB', (t) => {
   })
 
   t.test('commands', (t) => {
-    t.tearDown(() => {
-      ddb.deleteTable({TableName}, () => {})
-    })
-
     helper.runInTransaction((tx) => {
       async.eachSeries(TESTS, (cfg, cb) => {
         t.comment(`Testing ${cfg.method}`)
         ddb[cfg.method](cfg.params, (err) => {
-          if (err && err.code !== 'ResourceNotFoundException') {
+          if (
+            err &&
+            err.code !== 'ResourceNotFoundException' &&
+            // The table should always exist
+            err.code !== 'ResourceInUseException'
+          ) {
             t.error(err)
           }
-          if (cfg.method === 'createTable') {
-            // tables take a while to create
-            t.comment('Waiting for table to be created...')
-            ddb.waitFor('tableExists', {TableName}, cb)
-          } else {
-            cb()
-          }
+          cb()
         })
       }, () => {
         tx.end()
