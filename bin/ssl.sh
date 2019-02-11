@@ -7,6 +7,10 @@ CAINDEX="test/lib/ca-index"
 CASERIAL="test/lib/ca-serial"
 CERTIFICATE="test/lib/self-signed-test-certificate.crt"
 
+if [ -a $CERTIFICATE ]; then
+  exit 0;
+fi
+
 openssl genrsa -out $SSLKEY 1024
 
 touch $CAINDEX
