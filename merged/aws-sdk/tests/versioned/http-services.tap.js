@@ -4,6 +4,7 @@ const common = require('./common')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
+
 tap.test('AWS HTTP Services', (t) => {
   t.autoend()
 
@@ -180,7 +181,7 @@ tap.test('AWS HTTP Services', (t) => {
 })
 
 function finish(t, service, operation, tx) {
-  const externals = common.checkAWSExternals(t, tx.trace.root)
+  const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
   if (t.equal(externals.length, 1, 'should have an aws external')) {
     const segment = externals[0]
     t.matches(segment.parameters, {

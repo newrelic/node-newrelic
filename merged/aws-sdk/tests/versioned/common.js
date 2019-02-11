@@ -1,5 +1,7 @@
 'use strict'
 
+const EXTERN_PATTERN = /^External\/.*?amazonaws\.com/
+
 function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
   const expectedParams = {
     'aws.operation': String,
@@ -20,5 +22,7 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
 }
 
 module.exports = {
+  EXTERN_PATTERN,
+
   checkAWSAttributes
 }
