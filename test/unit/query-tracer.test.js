@@ -24,7 +24,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
+      assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testUnknown() {
@@ -35,7 +35,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
+      assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testObfuscated() {
@@ -46,7 +46,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {
+      assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
         sql_obfuscated: 'select * from foo where a=?'
       }, 'should record sql in trace')
@@ -60,7 +60,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {
+      assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
         sql: 'select * from foo where a=2'
       }, 'should record sql in trace')
@@ -74,7 +74,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {
+      assert.deepEqual(segment.getAttributes(), {
         sql: 'select * from foo where a=2'
       }, 'should record sql in trace')
     }
@@ -95,7 +95,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
+      assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testUnknown() {
@@ -106,7 +106,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {}, 'should not record sql in trace')
+      assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testObfuscated() {
@@ -116,7 +116,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(segment.parameters, {
+      assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
         sql_obfuscated: 'select * from foo where a=?'
       }, 'should not record sql in trace')
@@ -135,7 +135,7 @@ describe('Query Tracer', function testQueryTracer() {
       }))
 
       var segment = addQuery(queries, 1000)
-      assert.deepEqual(segment.parameters, {
+      assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
         sql: 'select * from foo where a=2'
       }, 'should not record sql in trace')
@@ -155,7 +155,7 @@ describe('Query Tracer', function testQueryTracer() {
 
       var segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.parameters, {
+      assert.deepEqual(segment.getAttributes(), {
         sql: 'select * from foo where a=2'
       }, 'should record sql in trace')
     }
@@ -894,17 +894,21 @@ function addQuery(queries, duration, url, query) {
   return segment
 }
 
-function FakeTransaction(url) {
-  this.url = url || null
+function FakeTransaction(url = null) {
+  this.url = url
   this.name = 'FakeTransaction'
 }
 
 FakeTransaction.prototype.getFullName = function() { return this.name }
 
-function FakeSegment(transaction, duration, name) {
+function FakeSegment(transaction, duration, name = 'FakeSegment') {
   this.transaction = transaction
-  this.parameters = {}
-  this.name = name || 'FakeSegment'
+  this.attributes = {}
+  this.name = name
+  this.addAttribute = function addAttribute(key, value) {
+    this.attributes[key] = value
+  }
+  this.getAttributes = () => this.attributes
   this.getDurationInMillis = function getDurationInMillis() {
     return duration
   }

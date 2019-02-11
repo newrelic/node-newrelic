@@ -21,5 +21,64 @@ module.exports = {
       message_parameters: { enabled: false, required: false },
       job_arguments: { enabled: false, required: false }
     }
+  },
+  // Default config for attribute filter
+  defaultAttributeConfig: () => {
+    return {
+      attributes: {
+        enabled: true,
+        include_enabled: true,
+        include: [],
+        exclude: []
+      },
+
+      transaction_events: {
+        attributes: {
+          enabled: true,
+          include: [],
+          exclude: []
+        }
+      },
+
+      transaction_tracer: {
+        attributes: {
+          enabled: true,
+          include: [],
+          exclude: []
+        }
+      },
+
+      error_collector: {
+        attributes: {
+          enabled: true,
+          include: [],
+          exclude: []
+        }
+      },
+
+      browser_monitoring: {
+        attributes: {
+          enabled: false,
+          include: [],
+          exclude: []
+        }
+      },
+
+      span_events: {
+        attributes: {
+          enabled: true,
+          include: [],
+          exclude: []
+        }
+      },
+
+      transaction_segments: {
+        attributes: {
+          enabled: true,
+          include: [],
+          exclude: []
+        }
+      }
+    }
   }
 }

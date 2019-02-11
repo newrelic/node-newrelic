@@ -8,6 +8,7 @@ var helper = require('../lib/agent_helper')
 var TraceSegment = require('../../lib/transaction/trace/segment')
 var Transaction = require('../../lib/transaction')
 
+const TRANSACTION_SCOPE = 'transaction'
 
 describe('TraceSegment', function() {
   var agent = null
@@ -181,21 +182,22 @@ describe('TraceSegment', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the child segment', function() {
-      should.exist(webChild.parameters)
+    it('should have attributes on the child segment', function() {
+      should.exist(webChild.getAttributes())
     })
 
     it('should have the parameters that were passed in the query string', function() {
-      expect(webChild.parameters).to.have.property('request.parameters.test1', 'value1')
-      expect(webChild.parameters).to.have.property('request.parameters.test3', '50')
+      const attributes = webChild.getAttributes()
+      expect(attributes).to.have.property('request.parameters.test1', 'value1')
+      expect(attributes).to.have.property('request.parameters.test3', '50')
     })
 
     it('should set bare parameters to true (as in present)', function() {
-      expect(webChild.parameters).to.have.property('request.parameters.test2', true)
+      expect(webChild.getAttributes()).to.have.property('request.parameters.test2', true)
     })
 
     it('should set parameters with empty values to ""', function() {
-      expect(webChild.parameters).to.have.property('request.parameters.test4', '')
+      expect(webChild.getAttributes()).to.have.property('request.parameters.test4', '')
     })
 
     it('should serialize the segment with the parameters', function() {
@@ -234,7 +236,11 @@ describe('TraceSegment', function() {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      transaction.trace.addAttributes(DESTINATIONS.ALL, params)
+      transaction.trace.attributes.addAttributes(
+        TRANSACTION_SCOPE,
+        DESTINATIONS.TRANS_SCOPE,
+        params
+      )
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 
@@ -291,6 +297,7 @@ describe('TraceSegment', function() {
 
 
       webChild = segment.add(url)
+      webChild.addAttribute(TRANSACTION_SCOPE, 'test', 'non-null value')
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 
@@ -302,8 +309,8 @@ describe('TraceSegment', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the child segment', function() {
-      expect(webChild.parameters).eql({nr_exclusive_duration_millis : null})
+    it('should have no attributes on the child segment', function() {
+      expect(webChild.getAttributes()).eql({})
     })
 
     it('should serialize the segment without the parameters', function() {
@@ -311,7 +318,7 @@ describe('TraceSegment', function() {
         0,
         1,
         'WebTransaction/NormalizedUri/*',
-        {nr_exclusive_duration_millis : 1},
+        {},
         []
       ]
       expect(webChild.toJSON()).deep.equal(expected)
@@ -320,6 +327,7 @@ describe('TraceSegment', function() {
 
   describe('with attributes.enabled set', function() {
     var webChild
+    let attributes = null
 
     beforeEach(function() {
       agent.config.attributes.enabled = true
@@ -343,30 +351,31 @@ describe('TraceSegment', function() {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
+      attributes = webChild.getAttributes()
     })
 
     it('should return the URL minus any query parameters', function() {
       expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
     })
 
-    it('should have parameters on the child segment', function() {
-      should.exist(webChild.parameters)
+    it('should have attributes on the child segment', function() {
+      should.exist(attributes)
     })
 
     it('should filter the parameters that were passed in the query string', function() {
-      expect(webChild.parameters).to.not.have.property('test1')
-      expect(webChild.parameters).to.not.have.property('request.parameters.test1')
+      expect(attributes).to.not.have.property('test1')
+      expect(attributes).to.not.have.property('request.parameters.test1')
 
-      expect(webChild.parameters).to.not.have.property('test3')
-      expect(webChild.parameters).to.have.property('request.parameters.test3', '50')
+      expect(attributes).to.not.have.property('test3')
+      expect(attributes).to.have.property('request.parameters.test3', '50')
 
-      expect(webChild.parameters).to.not.have.property('test4')
-      expect(webChild.parameters).to.not.have.property('request.parameters.test4')
+      expect(attributes).to.not.have.property('test4')
+      expect(attributes).to.not.have.property('request.parameters.test4')
     })
 
     it('should set bare parameters to true (as in present)', function() {
-      expect(webChild.parameters).to.not.have.property('test2')
-      expect(webChild.parameters).to.have.property('request.parameters.test2', true)
+      expect(attributes).to.not.have.property('test2')
+      expect(attributes).to.have.property('request.parameters.test2', true)
     })
 
     it('should serialize the segment with the parameters', function() {

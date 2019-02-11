@@ -259,25 +259,27 @@ describe('Trace', function() {
     var events = agent.spans.getEvents()
     var nested = events[0]
     var testSpan = events[1]
+    expect(nested).to.have.property('intrinsics')
+    expect(testSpan).to.have.property('intrinsics')
 
-    expect(nested).to.have.property('parentId', testSpan.guid)
-    expect(nested).to.have.property('category', 'generic')
-    expect(nested).to.have.property('priority', transaction.priority)
-    expect(nested).to.have.property('transactionId', transaction.id)
-    expect(nested).to.have.property('sampled', transaction.sampled)
-    expect(nested).to.have.property('name', 'nested')
-    expect(nested).to.have.property('traceId', transaction.id)
-    expect(nested).to.have.property('timestamp')
+    expect(nested.intrinsics).to.have.property('parentId', testSpan.intrinsics.guid)
+    expect(nested.intrinsics).to.have.property('category', 'generic')
+    expect(nested.intrinsics).to.have.property('priority', transaction.priority)
+    expect(nested.intrinsics).to.have.property('transactionId', transaction.id)
+    expect(nested.intrinsics).to.have.property('sampled', transaction.sampled)
+    expect(nested.intrinsics).to.have.property('name', 'nested')
+    expect(nested.intrinsics).to.have.property('traceId', transaction.id)
+    expect(nested.intrinsics).to.have.property('timestamp')
 
-    expect(testSpan).to.have.property('parentId', null)
-    expect(testSpan).to.have.property('nr.entryPoint').and.be.true
-    expect(testSpan).to.have.property('category', 'generic')
-    expect(testSpan).to.have.property('priority', transaction.priority)
-    expect(testSpan).to.have.property('transactionId', transaction.id)
-    expect(testSpan).to.have.property('sampled', transaction.sampled)
-    expect(testSpan).to.have.property('name', 'test')
-    expect(testSpan).to.have.property('traceId', transaction.id)
-    expect(testSpan).to.have.property('timestamp')
+    expect(testSpan.intrinsics).to.have.property('parentId', null)
+    expect(testSpan.intrinsics).to.have.property('nr.entryPoint').and.be.true
+    expect(testSpan.intrinsics).to.have.property('category', 'generic')
+    expect(testSpan.intrinsics).to.have.property('priority', transaction.priority)
+    expect(testSpan.intrinsics).to.have.property('transactionId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('sampled', transaction.sampled)
+    expect(testSpan.intrinsics).to.have.property('name', 'test')
+    expect(testSpan.intrinsics).to.have.property('traceId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('timestamp')
   })
 
   it('should not generate span events on end if span_events is disabled', function() {
@@ -600,30 +602,6 @@ describe('Trace', function() {
       function noop() {}
     })
   })
-
-  describe('#addAttribute', function() {
-    var trace = null
-
-    beforeEach(function() {
-      agent.config.attributes.enabled = true
-      trace = new Transaction(agent).trace
-    })
-
-    it('does not add attribute if key length limit is exceeded', function() {
-      var tooLong = [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
-      ].join(' ')
-      trace.addAttribute(DESTINATIONS.ALL, tooLong, 'will fail')
-      var attributes = Object.keys(trace.attributes.attributes)
-      expect(attributes.length).to.equal(0)
-    })
-  })
-
-
-
 })
 
 function makeTrace(agent, callback) {
@@ -634,7 +612,12 @@ function makeTrace(agent, callback) {
   agent.config.emit('attributes.include')
 
   var transaction = new Transaction(agent)
-  transaction.trace.addAttribute(DESTINATIONS.COMMON, 'request.uri', URL)
+  transaction.trace.attributes.addAttribute(
+    'transaction',
+    DESTINATIONS.TRANS_COMMON,
+    'request.uri',
+    URL
+  )
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -673,9 +656,9 @@ function makeTrace(agent, callback) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'nr_exclusive_duration_millis': 8,
           'request.uri': '/test?test=value',
-          'request.parameters.test': 'value'
+          'request.parameters.test': 'value',
+          'nr_exclusive_duration_millis': 8
         },
         [
           // TODO: ensure that the ordering is correct WRT start time
@@ -689,9 +672,7 @@ function makeTrace(agent, callback) {
   var rootNode = [
     trace.root.timer.start / 1000,
     {},
-    {
-      nr_flatten_leading: false
-    },
+    {nr_flatten_leading: false},
     rootSegment,
     {
       agentAttributes: {
@@ -710,10 +691,10 @@ function makeTrace(agent, callback) {
     }
 
     callback(null, {
-      transaction: transaction,
-      trace: trace,
-      rootSegment: rootSegment,
-      rootNode: rootNode,
+      transaction,
+      trace,
+      rootSegment,
+      rootNode,
       expectedEncoding: [
         0,
         DURATION,

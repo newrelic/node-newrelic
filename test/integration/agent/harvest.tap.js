@@ -6,6 +6,7 @@ const tap = require('tap')
 const https = require('https')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const TRANSACTION_SCOPE = 'transaction'
 
 tap.test('Agent#harvest', (t) => {
   t.autoend()
@@ -132,8 +133,18 @@ tap.test('Agent#harvest', (t) => {
 
     helper.runInTransaction(agent, (tx) => {
       tx.finalizeNameFromUri('/nonexistent', 501)
-      tx.trace.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
-      tx.trace.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
+      tx.trace.attributes.addAttribute(
+        TRANSACTION_SCOPE,
+        DESTS.ERROR_EVENT,
+        'foo',
+        'bar'
+      )
+      tx.trace.attributes.addAttribute(
+        TRANSACTION_SCOPE,
+        DESTS.ERROR_EVENT,
+        'request.uri',
+        '/nonexistent'
+      )
       agent.errors.add(tx, new Error('test error'))
       tx.end()
     })

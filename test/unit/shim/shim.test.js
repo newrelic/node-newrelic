@@ -875,22 +875,20 @@ describe('Shim', function() {
         var eventSegment = stream.segment.children[0]
         expect(eventSegment).to.have.property('name')
           .match(/Event callback: foobar/)
-        expect(eventSegment.parameters).to.have.property('count')
-          .equals(1)
+
+        expect(eventSegment.getAttributes()).to.have.property('count', 1)
 
         // Emit it again and see if the name updated.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
         expect(stream.segment.children[0]).to.equal(eventSegment)
-        expect(eventSegment.parameters).to.have.property('count')
-          .equals(2)
+        expect(eventSegment.getAttributes()).to.have.property('count', 2)
 
         // Emit it once more and see if the name updated again.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
         expect(stream.segment.children[0]).to.equal(eventSegment)
-        expect(eventSegment.parameters).to.have.property('count')
-          .equals(3)
+        expect(eventSegment.getAttributes()).to.have.property('count', 3)
       })
     })
 
@@ -1947,21 +1945,21 @@ describe('Shim', function() {
         })
 
         it('should copy parameters provided into `segment.parameters`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('foo', 'bar')
-          expect(segment.parameters).to.have.property('fiz', 'bang')
+          expect(segment).to.have.property('attributes')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('foo', 'bar')
+          expect(attributes).to.have.property('fiz', 'bang')
         })
 
-        it('should not be affected by `attributes.exclude`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('ignore_me')
-        })
-
-        it('allows datastore instance attrs despite `attributes.exclude`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('host', 'my awesome host')
-          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
-          expect(segment.parameters).to.have.property('database_name', 'my_db')
+        it('should be affected by `attributes.exclude`', function() {
+          expect(segment).to.have.property('attributes')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('foo', 'bar')
+          expect(attributes).to.have.property('fiz', 'bang')
+          expect(attributes).to.not.have.property('ignore_me')
+          expect(attributes).to.not.have.property('host')
+          expect(attributes).to.not.have.property('port_path_or_id')
+          expect(attributes).to.not.have.property('database_name')
         })
       })
 
@@ -1969,22 +1967,19 @@ describe('Shim', function() {
         beforeEach(function() {
           agent.config.attributes.enabled = false
           helper.runInTransaction(agent, function() {
-            segment = shim.createSegment({name: 'child', parameters: parameters})
+            segment = shim.createSegment({name: 'child', parameters})
           })
         })
 
-        it('should still copy parameters provided into `segment.parameters`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('foo')
-          expect(segment.parameters).to.have.property('fiz')
-          expect(segment.parameters).to.have.property('ignore_me')
-        })
-
-        it('should still allow datastore instance attrs', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('host', 'my awesome host')
-          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
-          expect(segment.parameters).to.have.property('database_name', 'my_db')
+        it('should not copy parameters into segment attributes', function() {
+          expect(segment).to.have.property('attributes')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.not.have.property('foo')
+          expect(attributes).to.not.have.property('fiz')
+          expect(attributes).to.not.have.property('ignore_me')
+          expect(attributes).to.not.have.property('host')
+          expect(attributes).to.not.have.property('port_path_or_id')
+          expect(attributes).to.not.have.property('database_name')
         })
       })
     })

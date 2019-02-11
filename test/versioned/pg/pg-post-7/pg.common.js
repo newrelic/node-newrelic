@@ -154,14 +154,21 @@ module.exports = function runTests(name, clientFactory) {
       trace.root,
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
+    const attributes = setSegment.getAttributes()
 
     var metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equals(setSegment.parameters.host, metricHostName,
-      'should add the host parameter')
-    t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
-      'should add the port parameter')
     t.equals(
-      setSegment.parameters.database_name,
+      attributes.host,
+      metricHostName,
+      'should add the host parameter'
+    )
+    t.equals(
+      attributes.port_path_or_id,
+      String(params.postgres_port),
+      'should add the port parameter'
+    )
+    t.equals(
+      attributes.database_name,
       params.postgres_db,
       'should add the database name parameter'
     )

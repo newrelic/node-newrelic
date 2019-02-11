@@ -421,10 +421,11 @@ describe('DatastoreShim', function() {
             port_path_or_id: 1234,
             database_name: 'foobar'
           }, function(segment) {
-            expect(segment).to.have.property('parameters')
-            expect(segment.parameters).to.have.property('host', localhost)
-            expect(segment.parameters).to.have.property('port_path_or_id', '1234')
-            expect(segment.parameters).to.have.property('database_name', 'foobar')
+            expect(segment).to.have.property('attributes')
+            const attributes = segment.getAttributes()
+            expect(attributes).to.have.property('host', localhost)
+            expect(attributes).to.have.property('port_path_or_id', '1234')
+            expect(attributes).to.have.property('database_name', 'foobar')
           })
 
           run({
@@ -432,10 +433,11 @@ describe('DatastoreShim', function() {
             port_path_or_id: null,
             database_name: null
           }, function(segment) {
-            expect(segment).to.have.property('parameters')
-            expect(segment.parameters).to.have.property('host', 'some_other_host')
-            expect(segment.parameters).to.have.property('port_path_or_id', 'unknown')
-            expect(segment.parameters).to.have.property('database_name', 'unknown')
+            expect(segment).to.have.property('attributes')
+            const attributes = segment.getAttributes()
+            expect(attributes).to.have.property('host', 'some_other_host')
+            expect(attributes).to.have.property('port_path_or_id', 'unknown')
+            expect(attributes).to.have.property('database_name', 'unknown')
           })
         })
 
@@ -446,10 +448,11 @@ describe('DatastoreShim', function() {
             port_path_or_id: 1234,
             database_name: 'foobar'
           }, function(segment) {
-            expect(segment).to.have.property('parameters')
-            expect(segment.parameters).to.have.property('host', localhost)
-            expect(segment.parameters).to.have.property('port_path_or_id', '1234')
-            expect(segment.parameters).to.not.have.property('database_name')
+            expect(segment).to.have.property('attributes')
+            const attributes = segment.getAttributes()
+            expect(attributes).to.have.property('host', localhost)
+            expect(attributes).to.have.property('port_path_or_id', '1234')
+            expect(attributes).to.not.have.property('database_name')
           })
         })
 
@@ -460,10 +463,11 @@ describe('DatastoreShim', function() {
             port_path_or_id: 1234,
             database_name: 'foobar'
           }, function(segment) {
-            expect(segment).to.have.property('parameters')
-            expect(segment.parameters).to.not.have.property('host')
-            expect(segment.parameters).to.not.have.property('port_path_or_id')
-            expect(segment.parameters).to.have.property('database_name', 'foobar')
+            expect(segment).to.have.property('attributes')
+            const attributes = segment.getAttributes()
+            expect(attributes).to.not.have.property('host')
+            expect(attributes).to.not.have.property('port_path_or_id')
+            expect(attributes).to.have.property('database_name', 'foobar')
           })
         })
       })
@@ -830,18 +834,16 @@ describe('DatastoreShim', function() {
         var cbSegment = args[2]()
         expect(cbSegment).to.have.property('name')
           .match(/^Callback: getActiveSegment/)
-        expect(cbSegment.parameters).to.have.property('count')
-          .equal(1)
+
+        expect(cbSegment.getAttributes()).to.have.property('count', 1)
 
         // Call it a second time and see if the name changed.
         args[2]()
-        expect(cbSegment.parameters).to.have.property('count')
-          .equal(2)
+        expect(cbSegment.getAttributes()).to.have.property('count', 2)
 
         // And a third time, why not?
         args[2]()
-        expect(cbSegment.parameters).to.have.property('count')
-          .equal(3)
+        expect(cbSegment.getAttributes()).to.have.property('count', 3)
       })
     })
   })
@@ -863,10 +865,11 @@ describe('DatastoreShim', function() {
 
       helper.runInTransaction(agent, function() {
         var segment = bound('foobar', 123, 'bar')
-        expect(segment).to.have.property('parameters')
-        expect(segment.parameters).to.not.have.property('host')
-        expect(segment.parameters).to.not.have.property('port_path_or_id')
-        expect(segment.parameters).to.not.have.property('database_name')
+        expect(segment).to.have.property('attributes')
+        const attributes = segment.getAttributes()
+        expect(attributes).to.not.have.property('host')
+        expect(attributes).to.not.have.property('port_path_or_id')
+        expect(attributes).to.not.have.property('database_name')
       })
     })
 
@@ -878,10 +881,11 @@ describe('DatastoreShim', function() {
 
       helper.runInTransaction(agent, function() {
         var segment = wrapped('foobar', 123, 'bar')
-        expect(segment).to.have.property('parameters')
-        expect(segment.parameters).to.have.property('host', 'foobar')
-        expect(segment.parameters).to.have.property('port_path_or_id', '123')
-        expect(segment.parameters).to.have.property('database_name', 'bar')
+        expect(segment).to.have.property('attributes')
+        const attributes = segment.getAttributes()
+        expect(attributes).to.have.property('host', 'foobar')
+        expect(attributes).to.have.property('port_path_or_id', '123')
+        expect(attributes).to.have.property('database_name', 'bar')
       })
     })
   })

@@ -52,8 +52,9 @@ test("Express router introspection", function(t) {
       web.partialName, 'Expressjs/GET//a/:param1/b/:param2',
       'should have partial name for apdex'
     )
-    t.equal(web.parameters['request.parameters.param1'], 'foo', 'should have param1')
-    t.equal(web.parameters['request.parameters.param2'], 'bar', 'should have param2')
+    const attributes = web.getAttributes()
+    t.equal(attributes['request.parameters.param1'], 'foo', 'should have param1')
+    t.equal(attributes['request.parameters.param2'], 'bar', 'should have param2')
   })
 
   server.listen(0, function() {
