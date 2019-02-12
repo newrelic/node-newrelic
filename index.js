@@ -10,21 +10,7 @@ require('./lib/util/unwrapped-core')
 const featureFlags = require('./lib/feature_flags').prerelease
 const psemver = require('./lib/util/process-version')
 
-const BOOTSTRAP_ERROR =
-  'New Relic for Node.js was unable to bootstrap itself due to an error:'
-
-let logger = null // Gets re-loaded after initialization.
-try {
-  // This will potentially throw due to loading a Config instance
-  // with invalid settings. We don't want the app to crash.
-  logger = require('./lib/logger')
-} catch (error) {
-  /* eslint-disable no-console */
-  console.error(BOOTSTRAP_ERROR)
-  console.error(error.stack)
-  /* eslint-enable no-console */
-  return
-}
+let logger = require('./lib/logger') // Gets re-loaded after initialization.
 
 
 const pkgJSON = require('./package.json')
@@ -91,10 +77,11 @@ function initialize() {
       addStartupSupportabilities(agent)
     }
   } catch (error) {
-    logger.error(error, BOOTSTRAP_ERROR)
+    message = 'New Relic for Node.js was unable to bootstrap itself due to an error:'
+    logger.error(error, message)
 
     /* eslint-disable no-console */
-    console.error(BOOTSTRAP_ERROR)
+    console.error(message)
     console.error(error.stack)
     /* eslint-enable no-console */
   }
