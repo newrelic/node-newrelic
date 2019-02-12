@@ -613,7 +613,6 @@ function makeTrace(agent, callback) {
 
   var transaction = new Transaction(agent)
   transaction.trace.attributes.addAttribute(
-    'transaction',
     DESTINATIONS.TRANS_COMMON,
     'request.uri',
     URL

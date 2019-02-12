@@ -65,7 +65,7 @@ attributes.forEach(function(attr) {
   suite.add({
     name: attr,
     fn: function() {
-      return filter.filter(AttributeFilter.DESTINATIONS.TRANS_TRACE, attr)
+      return filter.filterTransaction(AttributeFilter.DESTINATIONS.TRANS_TRACE, attr)
     }
   })
 })

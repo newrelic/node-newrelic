@@ -348,10 +348,10 @@ describe('the New Relic agent', function() {
         })
       })
 
-      it('should not blow up when harvest cycle runs', function(done) {
+      it('should not blow up when harvest cycle runs', (done) => {
         var origInterval = global.setInterval
-        global.setInterval = function(callback) {
-          return Object.assign({unref: function() {}}, setImmediate(callback))
+        global.setInterval = (callback) => {
+          return Object.assign({unref: () => {}}, setImmediate(callback))
         }
 
         // manually harvesting
@@ -372,8 +372,8 @@ describe('the New Relic agent', function() {
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
           .reply(200, {return_value: []})
 
-        agent.start(function cb_start() {
-          setTimeout(function() {
+        agent.start(() => {
+          setTimeout(() => {
             global.setInterval = origInterval
 
             redirect.done()

@@ -58,15 +58,15 @@ describe('AttributeFilter', function() {
         }
       }))
 
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'a'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'a'))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'ab'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'ab'))
         .to.equal(DESTS.NONE)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, ''))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, ''))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'b'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'b'))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'bc'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'bc'))
         .to.equal(DESTS.LIMITED)
     })
 
@@ -100,15 +100,15 @@ describe('AttributeFilter', function() {
         }
       }))
 
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'a'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'a'))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'ab'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'ab'))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, ''))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, ''))
         .to.equal(DESTS.NONE)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'b'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'b'))
         .to.equal(DESTS.NONE)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'bc'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'bc'))
         .to.equal(DESTS.NONE)
     })
 
@@ -122,40 +122,40 @@ describe('AttributeFilter', function() {
         }
       }))
 
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'a.c'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'a.c'))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_COMMON, 'abc'))
+      expect(filter.filterTransaction(DESTS.TRANS_COMMON, 'abc'))
         .to.equal(DESTS.NONE)
 
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'a.c'))
+      expect(filter.filterTransaction(DESTS.NONE, 'a.c'))
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'abc'))
+      expect(filter.filterTransaction(DESTS.NONE, 'abc'))
         .to.equal(DESTS.NONE)
     })
 
     function makeAssertions(filter) {
       // Filters down from global rules
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'a'), 'a -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'a'), 'a -> common')
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'ab'), 'ab -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'ab'), 'ab -> common')
         .to.equal(DESTS.TRANS_EVENT)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'abc'), 'abc -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'abc'), 'abc -> common')
         .to.equal(DESTS.NONE)
 
       // Filters down from destination rules.
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'b'), 'b -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'b'), 'b -> common')
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'bc'), 'bc -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'bc'), 'bc -> common')
         .to.equal(DESTS.LIMITED)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'bcd'), 'bcd -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'bcd'), 'bcd -> common')
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.TRANS_SCOPE, 'bcde'), 'bcde -> common')
+      expect(filter.filterTransaction(DESTS.TRANS_SCOPE, 'bcde'), 'bcde -> common')
         .to.equal(DESTS.TRANS_COMMON)
 
       // Adds destinations on top of defaults.
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'a'), 'a -> none')
+      expect(filter.filterTransaction(DESTS.NONE, 'a'), 'a -> none')
         .to.equal(DESTS.TRANS_COMMON)
-      expect(filter.filter(TRANSACTION_SCOPE, DESTS.NONE, 'ab'), 'ab -> none')
+      expect(filter.filterTransaction(DESTS.NONE, 'ab'), 'ab -> none')
         .to.equal(DESTS.TRANS_EVENT)
     }
   })
