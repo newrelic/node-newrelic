@@ -1,27 +1,28 @@
 'use strict'
 
-const chai = require('chai')
-const expect = chai.expect
+const {expect} = require('chai')
+const helper = require('../lib/agent_helper')
 const Attributes = require('../../lib/attributes')
 const AttributeFilter = require('../../lib/config/attribute-filter')
-const {makeAttributeFilterConfig} = require('../lib/agent_helper')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'
 
 describe('Attributes', () => {
-  let inst = null
-  const filter = new AttributeFilter(makeAttributeFilterConfig())
+  let agent = null
+  beforeEach(() => {
+    // Load agent to get a config instance.
+    agent = helper.loadMockedAgent()
+  })
+  afterEach(() => {
+    helper.unloadAgent(agent)
+  })
+
 
   describe('#addAttribute', () => {
     it('adds an attribute to instance', () => {
-      inst = new Attributes({filter})
-      inst.addAttribute(
-        TRANSACTION_SCOPE,
-        DESTINATIONS.TRANS_SCOPE,
-        'test',
-        'success'
-      )
+      const inst = new Attributes(TRANSACTION_SCOPE)
+      inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
       const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
       expect(attributes).to.have.property('test', 'success')
     })
@@ -34,13 +35,8 @@ describe('Attributes', () => {
         'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
       ].join(' ')
 
-      inst = new Attributes({filter})
-      inst.addAttribute(
-        TRANSACTION_SCOPE,
-        DESTINATIONS.TRANS_SCOPE,
-        tooLong,
-        'will fail'
-      )
+      const inst = new Attributes(TRANSACTION_SCOPE)
+      inst.addAttribute(DESTINATIONS.TRANS_SCOPE, tooLong, 'will fail')
       const attributes = Object.keys(inst.attributes)
       expect(attributes.length).to.equal(0)
     })
@@ -48,9 +44,8 @@ describe('Attributes', () => {
 
   describe('#addAttributes', () => {
     it('adds multiple attributes to instance', () => {
-      inst = new Attributes({filter})
+      const inst = new Attributes(TRANSACTION_SCOPE)
       inst.addAttributes(
-        TRANSACTION_SCOPE,
         DESTINATIONS.TRANS_SCOPE,
         {one: '1', two: '2'}
       )
@@ -60,7 +55,7 @@ describe('Attributes', () => {
     })
 
     it('only allows non-null-type primitive attribute values', () => {
-      inst = new Attributes({limit: 10, filter})
+      const inst = new Attributes(TRANSACTION_SCOPE, 10)
       const attributes = {
         first: 'first',
         second: [ 'second' ],
@@ -72,7 +67,6 @@ describe('Attributes', () => {
       }
 
       inst.addAttributes(
-        TRANSACTION_SCOPE,
         DESTINATIONS.TRANS_SCOPE,
         attributes
       )
@@ -96,7 +90,7 @@ describe('Attributes', () => {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
       ].join(' ')
 
-      inst = new Attributes({filter})
+      const inst = new Attributes(TRANSACTION_SCOPE)
       inst.attributes = {
         valid: {
           destinations: 0x01,
@@ -119,7 +113,7 @@ describe('Attributes', () => {
     })
 
     it('only returns attributes up to specified limit', () => {
-      inst = new Attributes({limit: 2, filter})
+      const inst = new Attributes(TRANSACTION_SCOPE, 2)
       inst.attributes = {
         first: {
           destinations: 0x01,
@@ -141,7 +135,7 @@ describe('Attributes', () => {
     })
 
     it('returns attributes up to specified limit, regardless of position', () => {
-      inst = new Attributes({limit: 2, filter})
+      const inst = new Attributes(TRANSACTION_SCOPE, 2)
       inst.attributes = {
         first: {
           destinations: 0x08,
@@ -165,7 +159,7 @@ describe('Attributes', () => {
 
   describe('#reset', () => {
     it('resets instance attributes', () => {
-      inst = new Attributes({filter})
+      const inst = new Attributes(TRANSACTION_SCOPE)
       inst.attributes = {
         first: {
           destinations: 0x08,

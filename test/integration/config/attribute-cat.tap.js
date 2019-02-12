@@ -42,7 +42,7 @@ function runTest(t, test) {
   // Filter the destinations.
   var destinations = test.input_default_destinations.filter(function(dest) {
     var destId = DEST_TO_ID[dest]
-    return config.attributeFilter.filter(null, destId, test.input_key) & destId
+    return config.attributeFilter.filterAll(destId, test.input_key) & destId
   })
 
   // Did we pass?

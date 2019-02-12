@@ -176,11 +176,10 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySpanEvents(t, agent) {
-    let attributes = null
-    const dbSpan = agent.spans.getEvents().find(span => {
-      attributes = span.attributes.get(DESTINATIONS.SPAN_EVENT)
-      return span.intrinsics.name.startsWith('Datastore')
-    })
+    const dbSpan = agent.spans.getEvents()
+      .find(span => span.intrinsics.name.startsWith('Datastore'))
+    const attributes = dbSpan.attributes
+
     t.equal(
       attributes['db.instance'],
       'postgres',

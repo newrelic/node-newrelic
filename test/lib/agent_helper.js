@@ -45,7 +45,7 @@ const helper = module.exports = {
 
     // agent needs a 'real' configuration
     const configurator = require('../../lib/config')
-    const config = configurator.initialize(conf)
+    const config = configurator.createInstance(conf)
 
     if (!config.debug) {
       config.debug = {}

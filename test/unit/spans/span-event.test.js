@@ -5,15 +5,15 @@ const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const https = require('https')
 const SpanEvent = require('../../../lib/spans/span-event')
-const Attributes = require('../../../lib/attributes')
+
 
 describe('SpanEvent', () => {
   describe('#constructor()', () => {
     it('should construct an empty span event', () => {
-      const span = new SpanEvent()
+      const attrs = {}
+      const span = new SpanEvent(attrs)
       expect(span).to.be.an.instanceOf(SpanEvent)
-      expect(span).to.have.property('attributes')
-      expect(span.attributes).to.be.an.instanceOf(Attributes)
+      expect(span).property('attributes').to.equal(attrs)
       expect(span).to.have.property('intrinsics')
       expect(span.intrinsics).to.have.property('type', 'Span')
       expect(span.intrinsics).to.have.property('category', SpanEvent.CATEGORIES.GENERIC)
@@ -68,12 +68,11 @@ describe('SpanEvent', () => {
           expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
           expect(span.intrinsics).to.have.property('duration').within(0.03, 0.07)
           // Generic should not have 'span.kind' or 'component'
-          expect(span.intrinsics).to.not.have.property('span.kind')
-          expect(span.intrinsics).to.not.have.property('component')
+          expect(span.intrinsics).to.have.property('span.kind', null)
+          expect(span.intrinsics).to.have.property('component', null)
 
           expect(span).to.have.property('attributes')
-          expect(span.attributes).to.be.an.instanceOf(Attributes)
-          const attributes = span.getAttributes()
+          const attributes = span.attributes
 
           // Should have no http properties.
           expect(attributes).to.not.have.property('externalLibrary')
@@ -123,8 +122,7 @@ describe('SpanEvent', () => {
             expect(span.intrinsics).to.have.property('span.kind', 'client')
 
             expect(span).to.have.property('attributes')
-            expect(span.attributes).to.be.an.instanceOf(Attributes)
-            const attributes = span.getAttributes()
+            const attributes = span.attributes
 
             // Should have (most) http properties.
             expect(attributes).to.have.property('http.url', 'https://example.com:443/')
@@ -195,12 +193,11 @@ describe('SpanEvent', () => {
           expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
           expect(span.intrinsics).to.have.property('duration').within(0.03, 0.7)
           // Should have (most) type-specific intrinsics
-          expect(span.intrinsics).to.not.have.property('component')
+          expect(span.intrinsics).to.have.property('component', null)
           expect(span.intrinsics).to.have.property('span.kind', 'client')
 
           expect(span).to.have.property('attributes')
-          expect(span.attributes).to.be.an.instanceOf(Attributes)
-          const attributes = span.getAttributes()
+          const attributes = span.attributes
 
           // Should have no http properties.
           expect(attributes).to.not.have.property('http.url')
