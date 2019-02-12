@@ -1,7 +1,5 @@
 'use strict'
 
-var benchmark = require('benchmark')
-var copy = require('../../lib/util/copy')
 var helper = require('./agent_helper')
 var async = require('async')
 
@@ -39,7 +37,7 @@ class Benchmark {
   }
 
   print() {
-    console.log(JSON.stringify(this.processSamples(), null, 2))
+    console.log(JSON.stringify(this.processSamples(), null, 2)) // eslint-disable-line
   }
 
   run(cb) {
@@ -64,7 +62,7 @@ class Benchmark {
         }
 
         if (typeof test.before === 'function') {
-          test.before()
+          test.before(agent)
         }
 
         if (agent && test.runInTransaction) {
@@ -87,7 +85,8 @@ class Benchmark {
             after()
           }
           function after() {
-            // The cpu delta is reported in microseconds, so we turn them into milliseconds
+            // The cpu delta is reported in microseconds, so we turn them into
+            // milliseconds
             var delta = process.cpuUsage(prevCpu).user / 1000
 
             if (typeof test.after === 'function') {
@@ -118,7 +117,7 @@ class Benchmark {
       })
     }, function onSuiteFinish() {
       if (typeof cb === 'function') {
-        return cb(samples)
+        return cb(suite.samples)
       }
       return suite.print()
     })
