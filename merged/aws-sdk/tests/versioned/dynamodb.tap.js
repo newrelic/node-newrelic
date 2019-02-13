@@ -107,15 +107,12 @@ tap.test('DynamoDB', (t) => {
 })
 
 function finish(t, tx) {
-  const segments = common.checkAWSAttributes(
-    t,
-    tx.trace.root,
-    /^Datastore/
-  )
+  const segments = common.checkAWSAttributes(t, tx.trace.root, /^Datastore/)
   t.equal(segments.length, 8, 'should have 8 aws datastore segments')
 
   segments.forEach((segment, i) => {
-    t.matches(segment.parameters, {
+    const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+    t.matches(attrs, {
       'host': String,
       'port_path_or_id': String,
       'database_name': String,
