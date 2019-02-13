@@ -34,8 +34,8 @@ if (require.cache.__NR_cache) {
 
 function initialize() {
   logger.debug('Loading agent from %s', __dirname)
-  var agent = null
-  var message = null
+  let agent = null
+  let message = null
 
   try {
     logger.debug(
@@ -45,8 +45,8 @@ function initialize() {
 
     // TODO: Update this check when Node v6 is deprecated.
     if (psemver.satisfies('<6.0.0')) {
-      message = "New Relic for Node.js requires a version of Node equal to or\n" +
-                "greater than 6.0.0. Not starting!"
+      message = 'New Relic for Node.js requires a version of Node equal to or\n' +
+                'greater than 6.0.0. Not starting!'
 
       logger.error(message)
       throw new Error(message)
@@ -59,24 +59,24 @@ function initialize() {
       )
     }
 
-    logger.debug("Current working directory at module load is %s.", process.cwd())
-    logger.debug("Process title is %s.", process.title)
-    logger.debug("Application was invoked as %s.", process.argv.join(' '))
+    logger.debug('Current working directory at module load is %s.', process.cwd())
+    logger.debug('Process title is %s.', process.title)
+    logger.debug('Application was invoked as %s.', process.argv.join(' '))
 
-    var config = require('./lib/config').getOrCreateInstance()
+    const config = require('./lib/config').getOrCreateInstance()
 
     // Get the initialized logger as we likely have a bootstrap logger which
     // just pipes to stdout.
     logger = require('./lib/logger')
 
     if (!config || !config.agent_enabled) {
-      logger.info("Module not enabled in configuration; not starting.")
+      logger.info('Module not enabled in configuration; not starting.')
     } else {
       agent = createAgent(config)
       addStartupSupportabilities(agent)
     }
   } catch (error) {
-    message = "New Relic for Node.js was unable to bootstrap itself due to an error:"
+    message = 'New Relic for Node.js was unable to bootstrap itself due to an error:'
     logger.error(error, message)
 
     /* eslint-disable no-console */
@@ -85,7 +85,7 @@ function initialize() {
     /* eslint-enable no-console */
   }
 
-  var API = null
+  let API = null
   if (agent) {
     API = require('./api')
   } else {
@@ -97,7 +97,7 @@ function initialize() {
   // If we loaded an agent, record a startup time for the agent.
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
   if (agent) {
-    var initDuration = (Date.now() - agentStart) / 1000
+    const initDuration = (Date.now() - agentStart) / 1000
     agent.recordSupportability('Nodejs/Application/Opening/Duration', preAgentTime)
     agent.recordSupportability('Nodejs/Application/Initialization/Duration', initDuration)
     agent.once('started', function timeAgentStart() {
@@ -117,9 +117,9 @@ function createAgent(config) {
    * multiple times, with undefined results. New Relic's instrumentation
    * can't be enabled or disabled without an application restart.
    */
-  var Agent = require('./lib/agent')
-  var agent = new Agent(config)
-  var appNames = agent.config.applications()
+  const Agent = require('./lib/agent')
+  const agent = new Agent(config)
+  const appNames = agent.config.applications()
 
   if (config.logging.diagnostics) {
     logger.warn(
@@ -128,7 +128,7 @@ function createAgent(config) {
   }
 
   if (appNames.length < 1) {
-    var message =
+    const message =
       'New Relic requires that you name this application!\n' +
       'Set app_name in your newrelic.js file or set environment variable\n' +
       'NEW_RELIC_APP_NAME. Not starting!'
@@ -136,17 +136,17 @@ function createAgent(config) {
     throw new Error(message)
   }
 
-  var shimmer = require('./lib/shimmer')
+  const shimmer = require('./lib/shimmer')
   shimmer.patchModule(agent)
   shimmer.bootstrapInstrumentation(agent)
 
   // Check for already loaded modules and warn about them.
-  var uninstrumented = require('./lib/uninstrumented')
+  const uninstrumented = require('./lib/uninstrumented')
   uninstrumented.check(shimmer.registeredInstrumentations)
 
   agent.start(function afterStart(error) {
     if (error) {
-      var errorMessage = 'New Relic for Node.js halted startup due to an error:'
+      const errorMessage = 'New Relic for Node.js halted startup due to an error:'
       logger.error(error, errorMessage)
 
       /* eslint-disable no-console */
@@ -165,15 +165,15 @@ function createAgent(config) {
 
 function addStartupSupportabilities(agent) {
   // TODO: As new versions come out, make sure to update Angler metrics.
-  var nodeMajor = /^v?(\d+)/.exec(process.version)
+  const nodeMajor = /^v?(\d+)/.exec(process.version)
   agent.recordSupportability(
     'Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
   )
 
-  var configFlags = Object.keys(agent.config.feature_flag)
-  for (var i = 0; i < configFlags.length; ++i) {
-    var flag = configFlags[i]
-    var enabled = agent.config.feature_flag[flag]
+  const configFlags = Object.keys(agent.config.feature_flag)
+  for (let i = 0; i < configFlags.length; ++i) {
+    const flag = configFlags[i]
+    const enabled = agent.config.feature_flag[flag]
 
     if (enabled !== featureFlags[flag]) {
       agent.recordSupportability(
