@@ -27,6 +27,6 @@
     "tap": "^12.4.0"
   },
   "peerDependencies": {
-    "newrelic": ">=5.0.0"
+    "newrelic": ">=5.3.0"
   }
 }
