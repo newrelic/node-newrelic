@@ -22,11 +22,11 @@
     "@newrelic/test-utilities": "^3.0.0",
     "async": "^2.6.1",
     "eslint": "^5.12.1",
-    "newrelic": "^5.2.0",
+    "newrelic": "^5.3.0",
     "sinon": "^7.2.3",
     "tap": "^12.4.0"
   },
   "peerDependencies": {
-    "newrelic": ">=5.0.0"
+    "newrelic": ">=5.3.0"
   }
 }

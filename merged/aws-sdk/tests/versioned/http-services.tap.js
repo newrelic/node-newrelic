@@ -183,13 +183,13 @@ tap.test('AWS HTTP Services', (t) => {
 function finish(t, service, operation, tx) {
   const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
   if (t.equal(externals.length, 1, 'should have an aws external')) {
-    const segment = externals[0]
-    t.matches(segment.parameters, {
+    const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
+    t.matches(attrs, {
       'aws.operation': operation,
       'aws.requestId': String,
       'aws.service': service,
       'aws.region': 'us-east-1'
-    }, 'should have expected parameters')
+    }, 'should have expected attributes')
   }
 
   t.end()
