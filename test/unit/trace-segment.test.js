@@ -165,7 +165,8 @@ describe('TraceSegment', function() {
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'UnitTest')
+      const segment = trace.add('UnitTest')
+
       var url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
@@ -174,6 +175,8 @@ describe('TraceSegment', function() {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
+
+      trace.end()
     })
 
     it('should return the URL minus any query parameters', function() {
@@ -224,7 +227,8 @@ describe('TraceSegment', function() {
       trace = transaction.trace
       trace.mer = 6
 
-      var segment = new TraceSegment(transaction, 'UnitTest')
+      const segment = trace.add('UnitTest')
+
       var url = '/test'
       var params = {}
 
@@ -243,6 +247,8 @@ describe('TraceSegment', function() {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
+
+      trace.end()
     })
 
     it('should return the URL minus any query parameters', function() {
@@ -337,9 +343,9 @@ describe('TraceSegment', function() {
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'UnitTest')
-      var url = '/test?test1=value1&test2&test3=50&test4='
+      const segment = trace.add('UnitTest')
 
+      var url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
       transaction.baseSegment = webChild
@@ -349,6 +355,8 @@ describe('TraceSegment', function() {
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
       attributes = webChild.getAttributes()
+
+      trace.end()
     })
 
     it('should return the URL minus any query parameters', function() {
@@ -399,12 +407,15 @@ describe('TraceSegment', function() {
     })
 
     it('should produce JSON that conforms to the collector spec', function() {
-      var transaction = new Transaction(agent)
-      var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'DB/select/getSome')
+      const transaction = new Transaction(agent)
+      const trace = transaction.trace
+      const segment = trace.add('DB/select/getSome')
 
       trace.setDurationInMillis(17, 0)
       segment.setDurationInMillis(14, 3)
+
+      trace.end()
+
       // See documentation on TraceSegment.toJSON for what goes in which field.
       expect(segment.toJSON()).deep.equal([
         3,
