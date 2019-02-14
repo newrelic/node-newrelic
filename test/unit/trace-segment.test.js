@@ -155,6 +155,15 @@ describe('TraceSegment', function() {
     }, 10)
   })
 
+  it('toJSON should not modify attributes', () => {
+    const transaction = new Transaction(agent)
+    const segment = new TraceSegment(transaction, 'TestSegment')
+
+    segment.toJSON()
+
+    expect(segment.getAttributes()).to.eql({})
+  })
+
   describe('with children created from URLs', function() {
     var webChild
 
