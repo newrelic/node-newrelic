@@ -520,11 +520,12 @@ describe('Trace', function() {
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
-    it('should measure exclusive time vs total time at each level of the graph', () => {
+    it.only('should measure exclusive time vs total time at each level of the graph', () => {
       var child = trace.add('Custom/Test18/Child1')
 
-      trace.setDurationInMillis(42)
+      trace.setDurationInMillis(42, 0)
       child.setDurationInMillis(22, 0)
+      console.log(JSON.stringify(trace.root, null, 2))
 
       expect(trace.getExclusiveDurationInMillis()).equal(20)
     })
