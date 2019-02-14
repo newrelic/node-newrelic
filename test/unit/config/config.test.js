@@ -1061,6 +1061,13 @@ describe('the agent configuration', function() {
       expect(config.collect_errors).equal(false)
     })
 
+    it('should always respect collect_span_events', () => {
+      expect(config.collect_span_events).equal(true)
+      expect(config.span_events.enabled).equal(true)
+      config.onConnect({collect_span_events: false})
+      expect(config.span_events.enabled).equal(false)
+    })
+
     it('should disable the error tracer when told to', function() {
       expect(config.error_collector.enabled).equal(true)
       config.onConnect({'error_collector.enabled': false})
