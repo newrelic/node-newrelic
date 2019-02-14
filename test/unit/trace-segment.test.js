@@ -1,12 +1,13 @@
 'use strict'
 
-var chai = require('chai')
-var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
-var should = chai.should()
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var TraceSegment = require('../../lib/transaction/trace/segment')
-var Transaction = require('../../lib/transaction')
+const chai = require('chai')
+const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
+const should = chai.should()
+const expect = chai.expect
+const sinon = require('sinon')
+const helper = require('../lib/agent_helper')
+const TraceSegment = require('../../lib/transaction/trace/segment')
+const Transaction = require('../../lib/transaction')
 
 describe('TraceSegment', function() {
   var agent = null
@@ -474,6 +475,44 @@ describe('TraceSegment', function() {
       expect(function() {
         segment.toJSON()
       }).to.not.throw()
+    })
+  })
+
+  describe('#finalize', () => {
+    it('should add nr_exclusive_duration_millis attribute', () => {
+      const transaction = new Transaction(agent)
+      const segment = new TraceSegment(transaction, 'TestSegment')
+
+      segment._setExclusiveDurationInMillis(1)
+
+      expect(segment.getAttributes()).to.eql({})
+
+      segment.finalize()
+
+      expect(segment.getAttributes()).to.have.property('nr_exclusive_duration_millis', 1)
+    })
+
+    it('should truncate when timer still running', () => {
+      const segmentName = 'TestSegment'
+
+      const transaction = new Transaction(agent)
+      const segment = new TraceSegment(transaction, segmentName)
+
+      // Force truncation
+      sinon.stub(segment.timer, 'softEnd').returns(true)
+      sinon.stub(segment.timer, 'endsAfter').returns(true)
+
+      const root = transaction.trace.root
+
+      // Make root duration calculation predictable
+      root.timer.start  = 1000
+      segment.timer.start = 1001
+      segment.overwriteDurationInMillis(3)
+
+      segment.finalize()
+
+      expect(segment.name).to.equal(`Truncated/${segmentName}`)
+      expect(root.getDurationInMillis()).to.equal(4)
     })
   })
 })
