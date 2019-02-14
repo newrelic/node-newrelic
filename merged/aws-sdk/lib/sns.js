@@ -4,8 +4,8 @@ module.exports = {
   name: 'sns',
   type: 'message',
   validate: (shim, AWS) => {
-    if (!shim.isFunction(AWS.DynamoDB)) {
-      shim.logger.debug('Could not find DynamoDB, not instrumenting.')
+    if (!shim.isFunction(AWS.SNS)) {
+      shim.logger.debug('Could not find SNS, not instrumenting.')
       return false
     }
     return true
