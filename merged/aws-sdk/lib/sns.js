@@ -31,6 +31,5 @@ function wrapPublish(shim, original, name, args) {
 }
 
 function getDestinationName({TopicArn, TargetArn}) {
-  // ignoring PhoneNumber
-  return TopicArn || TargetArn || 'Unknown'
+  return TopicArn || TargetArn || 'PhoneNumber' // We don't want the value of PhoneNumber
 }
