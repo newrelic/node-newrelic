@@ -55,31 +55,24 @@ tap.test('S3 buckets', (t) => {
     })
 
     function finish(tx) {
-      const pattern = /^External\/.*?amazonaws\.com/
-      const externals = common.checkAWSAttributes(t, tx.trace.root, pattern)
+      const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
       t.equal(externals.length, 3, 'should have 3 aws externals')
       const [head, create, del] = externals
-
-      t.matches(head.parameters, {
-        'aws.operation': 'headBucket',
-        'aws.requestId': String,
-        'aws.service': 'Amazon S3',
-        'aws.region': 'us-east-1'
-      }, 'should have expected parameters')
-      t.matches(create.parameters, {
-        'aws.operation': 'createBucket',
-        'aws.requestId': String,
-        'aws.service': 'Amazon S3',
-        'aws.region': 'us-east-1'
-      }, 'should have expected parameters')
-      t.matches(del.parameters, {
-        'aws.operation': 'deleteBucket',
-        'aws.requestId': String,
-        'aws.service': 'Amazon S3',
-        'aws.region': 'us-east-1'
-      }, 'should have expected parameters')
+      checkAttrs(t, head, 'headBucket')
+      checkAttrs(t, create, 'createBucket')
+      checkAttrs(t, del, 'deleteBucket')
 
       t.end()
     }
   })
 })
+
+function checkAttrs(t, segment, operation) {
+  const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+  t.matches(attrs, {
+    'aws.operation': operation,
+    'aws.requestId': String,
+    'aws.service': 'Amazon S3',
+    'aws.region': 'us-east-1'
+  }, `should have expected attributes for ${operation}`)
+}

@@ -13,6 +13,7 @@
       "files": [
         "aws-sdk.tap.js",
         "dynamodb.tap.js",
+        "http-services.tap.js",
         "s3.tap.js"
       ]
     }
