@@ -3,6 +3,7 @@
 const INSTRUMENTATIONS = [
   require('./core'),
   require('./dynamodb'),
+  require('./sqs'),
   require('./sns')
 ]
 

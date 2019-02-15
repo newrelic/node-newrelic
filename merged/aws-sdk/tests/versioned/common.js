@@ -1,6 +1,7 @@
 'use strict'
 
 const EXTERN_PATTERN = /^External\/.*?amazonaws\.com/
+const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 const SEGMENT_DESTINATION = 0x20
 
 function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
@@ -25,6 +26,7 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
 
 module.exports = {
   EXTERN_PATTERN,
+  SQS_PATTERN,
   SEGMENT_DESTINATION,
 
   checkAWSAttributes
