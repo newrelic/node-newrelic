@@ -36,10 +36,8 @@ tap.test('SNS', (t) => {
 
   t.test('publish', (t) => {
     helper.runInTransaction((tx) => {
-      const params = {
-        TopicArn,
-        Message: 'Hello!'
-      }
+      const params = {TopicArn, Message: 'Hello!'}
+
       sns.publish(params, (err) => {
         if (err) {
           t.error(err)
@@ -50,7 +48,6 @@ tap.test('SNS', (t) => {
     })
 
     function finish(tx) {
-      process._rawDebug(JSON.stringify(tx.trace.root, null, 2))
       const messages = common.checkAWSAttributes(t, tx.trace.root, /^MessageBroker/)
       t.equal(messages.length, 1, 'should have 1 message broker segment')
 

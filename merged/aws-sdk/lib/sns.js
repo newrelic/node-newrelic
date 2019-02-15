@@ -14,7 +14,7 @@ module.exports = {
 }
 
 function instrument(shim, AWS) {
-  shim.setLibrary(shim.SNS || 'SNS') // TODO: add to message-shim in agent
+  shim.setLibrary(shim.SNS || 'SNS') // TODO: remove default after next agent release
 
   shim.wrapReturn(AWS, 'SNS', function wrapSns(shim, original, name, sns) {
     shim.recordProduce(sns, 'publish', wrapPublish)
