@@ -1892,13 +1892,47 @@ describe('Shim', function() {
       })
     })
 
-    it('should default to the current segment as the parent', function() {
-      helper.runInTransaction(agent, function() {
-        var parent = shim.getSegment()
-        var child = shim.createSegment('child')
-        expect(parent)
-          .to.have.property('children')
-          .that.deep.equals([child])
+    describe('when parent passed in args', () => {
+      it('should not modify returned parent for opaque segments', () => {
+        helper.runInTransaction(agent, () => {
+          const parent = shim.createSegment('parent')
+          parent.opaque = true
+          parent.internal = true
+
+          const child = shim.createSegment('child', parent)
+
+          expect(child).to.equal(parent)
+          expect(parent).to.have.property('opaque', true)
+          expect(parent).to.have.property('internal', true)
+        })
+      })
+    })
+
+    describe('when parent not passed in args', () => {
+      it('should default to the current segment as the parent', function() {
+        helper.runInTransaction(agent, function() {
+          var parent = shim.getSegment()
+          var child = shim.createSegment('child')
+          expect(parent)
+            .to.have.property('children')
+            .that.deep.equals([child])
+        })
+      })
+
+      it('should not modify returned parent for opaque segments', () => {
+        helper.runInTransaction(agent, () => {
+          const parent = shim.createSegment('parent')
+          parent.opaque = true
+          parent.internal = true
+
+          shim.setActiveSegment(parent)
+
+          const child = shim.createSegment('child')
+
+          expect(child).to.equal(parent)
+          expect(parent).to.have.property('opaque', true)
+          expect(parent).to.have.property('internal', true)
+        })
       })
     })
 
