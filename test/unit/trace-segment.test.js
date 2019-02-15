@@ -1,12 +1,13 @@
 'use strict'
 
-var chai = require('chai')
-var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
-var should = chai.should()
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var TraceSegment = require('../../lib/transaction/trace/segment')
-var Transaction = require('../../lib/transaction')
+const chai = require('chai')
+const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
+const should = chai.should()
+const expect = chai.expect
+const sinon = require('sinon')
+const helper = require('../lib/agent_helper')
+const TraceSegment = require('../../lib/transaction/trace/segment')
+const Transaction = require('../../lib/transaction')
 
 describe('TraceSegment', function() {
   var agent = null
@@ -155,6 +156,15 @@ describe('TraceSegment', function() {
     }, 10)
   })
 
+  it('toJSON should not modify attributes', () => {
+    const transaction = new Transaction(agent)
+    const segment = new TraceSegment(transaction, 'TestSegment')
+
+    segment.toJSON()
+
+    expect(segment.getAttributes()).to.eql({})
+  })
+
   describe('with children created from URLs', function() {
     var webChild
 
@@ -165,7 +175,8 @@ describe('TraceSegment', function() {
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'UnitTest')
+      const segment = trace.add('UnitTest')
+
       var url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
@@ -174,6 +185,8 @@ describe('TraceSegment', function() {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
+
+      trace.end()
     })
 
     it('should return the URL minus any query parameters', function() {
@@ -224,7 +237,8 @@ describe('TraceSegment', function() {
       trace = transaction.trace
       trace.mer = 6
 
-      var segment = new TraceSegment(transaction, 'UnitTest')
+      const segment = trace.add('UnitTest')
+
       var url = '/test'
       var params = {}
 
@@ -243,6 +257,8 @@ describe('TraceSegment', function() {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
+
+      trace.end()
     })
 
     it('should return the URL minus any query parameters', function() {
@@ -337,9 +353,9 @@ describe('TraceSegment', function() {
 
       var transaction = new Transaction(agent)
       var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'UnitTest')
-      var url = '/test?test1=value1&test2&test3=50&test4='
+      const segment = trace.add('UnitTest')
 
+      var url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
       transaction.baseSegment = webChild
@@ -349,6 +365,8 @@ describe('TraceSegment', function() {
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
       attributes = webChild.getAttributes()
+
+      trace.end()
     })
 
     it('should return the URL minus any query parameters', function() {
@@ -399,12 +417,15 @@ describe('TraceSegment', function() {
     })
 
     it('should produce JSON that conforms to the collector spec', function() {
-      var transaction = new Transaction(agent)
-      var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'DB/select/getSome')
+      const transaction = new Transaction(agent)
+      const trace = transaction.trace
+      const segment = trace.add('DB/select/getSome')
 
       trace.setDurationInMillis(17, 0)
       segment.setDurationInMillis(14, 3)
+
+      trace.end()
+
       // See documentation on TraceSegment.toJSON for what goes in which field.
       expect(segment.toJSON()).deep.equal([
         3,
@@ -454,6 +475,44 @@ describe('TraceSegment', function() {
       expect(function() {
         segment.toJSON()
       }).to.not.throw()
+    })
+  })
+
+  describe('#finalize', () => {
+    it('should add nr_exclusive_duration_millis attribute', () => {
+      const transaction = new Transaction(agent)
+      const segment = new TraceSegment(transaction, 'TestSegment')
+
+      segment._setExclusiveDurationInMillis(1)
+
+      expect(segment.getAttributes()).to.eql({})
+
+      segment.finalize()
+
+      expect(segment.getAttributes()).to.have.property('nr_exclusive_duration_millis', 1)
+    })
+
+    it('should truncate when timer still running', () => {
+      const segmentName = 'TestSegment'
+
+      const transaction = new Transaction(agent)
+      const segment = new TraceSegment(transaction, segmentName)
+
+      // Force truncation
+      sinon.stub(segment.timer, 'softEnd').returns(true)
+      sinon.stub(segment.timer, 'endsAfter').returns(true)
+
+      const root = transaction.trace.root
+
+      // Make root duration calculation predictable
+      root.timer.start  = 1000
+      segment.timer.start = 1001
+      segment.overwriteDurationInMillis(3)
+
+      segment.finalize()
+
+      expect(segment.name).to.equal(`Truncated/${segmentName}`)
+      expect(root.getDurationInMillis()).to.equal(4)
     })
   })
 })

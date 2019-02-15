@@ -464,6 +464,9 @@ describe('Trace', function() {
       seg.setDurationInMillis(9, 16)
       seg = seg2.add('second-second')
       seg.setDurationInMillis(9, 16)
+
+      trace.end()
+
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
@@ -511,6 +514,9 @@ describe('Trace', function() {
       seg.setDurationInMillis(9, 16)
       seg = seg2.add('second-second')
       seg.setDurationInMillis(9, 16)
+
+      trace.end()
+
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
@@ -638,6 +644,8 @@ function makeTrace(agent, callback) {
 
   var memcache = web.add('Datastore/operation/Memcache/lookup')
   memcache.setDurationInMillis(20, 8)
+
+  trace.end()
 
   /*
    * Segment data repeats the outermost data, nested, with the scope for the
