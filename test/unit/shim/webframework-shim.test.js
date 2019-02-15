@@ -564,12 +564,11 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist
-              .and.property('parameters').to.deep.equal({
-                nr_exclusive_duration_millis: null,
-                foo: 'bar',
-                biz: 'bang'
-              })
+            expect(segment).to.exist.and.to.have.property('attributes')
+            expect(segment.getAttributes()).to.deep.equal({
+              foo: 'bar',
+              biz: 'bang'
+            })
           })
         })
       })
@@ -589,10 +588,8 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist
-              .and.property('parameters').to.deep.equal({
-                nr_exclusive_duration_millis: null
-              })
+            expect(segment).to.exist.and.to.have.property('attributes')
+            expect(segment.getAttributes()).to.deep.equal({})
           })
         })
       })

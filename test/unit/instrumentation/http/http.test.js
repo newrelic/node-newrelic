@@ -528,7 +528,7 @@ describe('built-in http module instrumentation', function() {
         should.not.exist(transaction.incomingAppData)
         should.not.exist(transaction.tripId)
         should.not.exist(transaction.referringPathHash)
-        should.not.exist(agent.tracer.getSegment().parameters.transaction_guid)
+        should.not.exist(agent.tracer.getSegment().getAttributes().transaction_guid)
 
         res.end()
         req.socket.end()

@@ -1,12 +1,13 @@
 'use strict'
 
-var a = require('async')
-var tap = require('tap')
-var params = require('../../../lib/params')
-var helper = require('../../../lib/agent_helper')
-var findSegment = require('../../../lib/metrics_helper').findSegment
-var test = tap.test
-var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
+const a = require('async')
+const tap = require('tap')
+const params = require('../../../lib/params')
+const helper = require('../../../lib/agent_helper')
+const {findSegment} = require('../../../lib/metrics_helper')
+const test = tap.test
+const {getMetricHostName} = require('../../../lib/metrics_helper')
+const {DESTINATIONS} = require('../../../../lib/config/attribute-filter')
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
@@ -154,31 +155,41 @@ module.exports = function runTests(name, clientFactory) {
       trace.root,
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
+    const attributes = setSegment.getAttributes()
 
     var metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equals(setSegment.parameters.host, metricHostName,
-      'should add the host parameter')
-    t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
-      'should add the port parameter')
     t.equals(
-      setSegment.parameters.database_name,
+      attributes.host,
+      metricHostName,
+      'should add the host parameter'
+    )
+    t.equals(
+      attributes.port_path_or_id,
+      String(params.postgres_port),
+      'should add the port parameter'
+    )
+    t.equals(
+      attributes.database_name,
       params.postgres_db,
       'should add the database name parameter'
     )
   }
 
   function verifySpanEvents(t, agent) {
-    var dbSpan = agent.spans.getEvents().find(span => span.name.startsWith('Datastore'))
+    const dbSpan = agent.spans.getEvents()
+      .find(span => span.intrinsics.name.startsWith('Datastore'))
+    const attributes = dbSpan.attributes
+
     t.equal(
-      dbSpan['db.instance'],
+      attributes['db.instance'],
       'postgres',
-      'shuld have the correct instace'
+      'shuld have the correct instance'
     )
-    t.ok(dbSpan['peer.hostname'])
-    t.ok(dbSpan['peer.address'])
-    t.ok(dbSpan['db.statement'])
-    t.ok(dbSpan['span.kind'])
-    t.ok(dbSpan.category)
+    t.ok(attributes['peer.hostname'])
+    t.ok(attributes['peer.address'])
+    t.ok(attributes['db.statement'])
+    t.ok(dbSpan.intrinsics.category)
+    t.ok(dbSpan.intrinsics['span.kind'])
   }
 
   function verifySlowQueries(t, agent) {

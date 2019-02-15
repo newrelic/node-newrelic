@@ -7,10 +7,12 @@ var tap = require('tap')
 var tests = require('../../lib/cross_agent_tests/attribute_configuration')
 
 var DEST_TO_ID = {
-  'transaction_events': 0x01,
-  'transaction_tracer': 0x02,
-  'error_collector': 0x04,
-  'browser_monitoring': 0x08
+  transaction_events: 0x01,
+  transaction_tracer: 0x02,
+  error_collector: 0x04,
+  browser_monitoring: 0x08,
+  span_events: 0x10,
+  transaction_segments: 0x20
 }
 
 tap.test('Attribute include/exclude configurations', function(t) {
@@ -40,7 +42,7 @@ function runTest(t, test) {
   // Filter the destinations.
   var destinations = test.input_default_destinations.filter(function(dest) {
     var destId = DEST_TO_ID[dest]
-    return config.attributeFilter.filter(destId, test.input_key) & destId
+    return config.attributeFilter.filterAll(destId, test.input_key) & destId
   })
 
   // Did we pass?

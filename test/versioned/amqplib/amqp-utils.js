@@ -61,7 +61,7 @@ function verifySubscribe(t, tx, exchange, routingKey) {
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
   )
-  t.equals(consume.parameters.routing_key, routingKey, 'should store routing key')
+  t.equals(consume.getAttributes().routing_key, routingKey, 'should store routing key')
 }
 
 function verifyCAT(t, produceTransaction, consumeTransaction) {
@@ -172,10 +172,11 @@ function verifySendToQueue(t, tx) {
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
   )
-  t.equals(segment.parameters.routing_key, 'testQueue', 'should store routing key')
-  t.equals(segment.parameters.reply_to, 'my.reply.queue', 'should store reply to')
+  const attributes = segment.getAttributes()
+  t.equals(attributes.routing_key, 'testQueue', 'should store routing key')
+  t.equals(attributes.reply_to, 'my.reply.queue', 'should store reply to')
   t.equals(
-    segment.parameters.correlation_id, 'correlation-id',
+    attributes.correlation_id, 'correlation-id',
     'should store correlation id'
   )
 }
@@ -225,11 +226,12 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   )
+  const attributes = segment.getAttributes()
   if (routingKey) {
-    t.equals(segment.parameters.routing_key, routingKey, 'should have routing key')
+    t.equals(attributes.routing_key, routingKey, 'should have routing key')
   } else {
     t.notOk(
-      segment.parameters.hasOwnProperty('routing_key'),
+      attributes.routing_key,
       'should not have routing key'
     )
   }

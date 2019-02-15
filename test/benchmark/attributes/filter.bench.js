@@ -2,8 +2,7 @@
 
 var AttributeFilter = require('../../../lib/config/attribute-filter')
 var benchmark = require('../../lib/benchmark')
-var copy = require('../../../lib/util/copy')
-var EventEmitter = require('events').EventEmitter
+const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
 
 
 var suite = benchmark.createBenchmark({
@@ -66,23 +65,15 @@ attributes.forEach(function(attr) {
   suite.add({
     name: attr,
     fn: function() {
-      return filter.filter(AttributeFilter.DESTINATIONS.TRANS_TRACE, attr)
+      return filter.filterTransaction(AttributeFilter.DESTINATIONS.TRANS_TRACE, attr)
     }
   })
 })
 
 suite.run()
 
-function makeFilter(opts) {
-  var config = new EventEmitter()
-  copy.shallow(opts, config)
+function makeFilter(rules) {
+  const config = makeAttributeFilterConfig(rules)
   config.attributes.filter_cache_limit = 1000
-  config.transaction_events = config.error_collector = config.browser_monitoring = {
-    attributes: {
-      enabled: true,
-      include: [],
-      exclude: []
-    }
-  }
   return new AttributeFilter(config)
 }

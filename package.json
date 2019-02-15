@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "5.2.1",
+  "version": "5.3.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -133,14 +133,14 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@newrelic/koa": "^1.0.0",
-    "@newrelic/superagent": "^1.0.0",
+    "@newrelic/koa": "^1.0.8",
+    "@newrelic/superagent": "^1.0.2",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^2.1.4",
-    "concat-stream": "^1.5.0",
+    "concat-stream": "^2.0.0",
     "https-proxy-agent": "^2.2.1",
     "json-stringify-safe": "^5.0.0",
-    "readable-stream": "^2.1.4",
+    "readable-stream": "^3.1.1",
     "semver": "^5.3.0"
   },
   "optionalDependencies": {
@@ -154,9 +154,9 @@
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
     "chai": "^4.1.2",
-    "eslint": "^4.19.1",
+    "eslint": "^5.13.0",
     "express": "*",
-    "generic-pool": "*",
+    "generic-pool": "^3.6.1",
     "glob": "^7.1.2",
     "got": "^8.0.1",
     "jsdoc": "^3.4.0",
@@ -172,10 +172,10 @@
     "redis": "^1.0.0",
     "request": "^2.88.0",
     "restify": "^4",
-    "rimraf": "^2.6.2",
+    "rimraf": "^2.6.3",
     "should": "*",
     "sinon": "^4.5.0",
-    "tap": "^12.1.1",
+    "tap": "12.4.1",
     "temp": "^0.8.1",
     "through": "^2.3.6",
     "when": "*"

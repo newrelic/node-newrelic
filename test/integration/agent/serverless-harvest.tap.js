@@ -9,6 +9,7 @@ const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const TEST_ARN = 'test:arn'
 const TEST_EX_ENV = 'test-AWS_Lambda_nodejs8.10'
 const PROTOCOL_VERSION = 16
+const TRANSACTION_SCOPE = 'transaction'
 
 tap.test('Serverless mode harvest', (t) => {
   t.autoend()
@@ -120,13 +121,20 @@ tap.test('Serverless mode harvest', (t) => {
 
     helper.runInTransaction(agent, (tx) => {
       tx.finalizeNameFromUri('/nonexistent', 501)
-      tx.trace.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
-      tx.trace.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
+      tx.trace.attributes.addAttribute(
+        DESTS.ERROR_EVENT,
+        'foo',
+        'bar'
+      )
+      tx.trace.attributes.addAttribute(
+        DESTS.ERROR_EVENT,
+        'request.uri',
+        '/nonexistent'
+      )
       agent.errors.add(tx, new Error('test error'))
 
       tx.end()
       agent.once('harvestFinished', () => {
-
         checkCompressedPayload(
           t,
           findPayload(logSpy.args[0])[2],

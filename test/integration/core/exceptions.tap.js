@@ -1,12 +1,12 @@
 'use strict'
 
-const test = require('tap').test
+const tap = require('tap')
 const cp = require('child_process')
 const path = require('path')
 const helper = require('../../lib/agent_helper')
 
 
-test("Uncaught exceptions", function(t) {
+tap.test('Uncaught exceptions', (t) => {
   var proc = startProc()
 
   var timer = setTimeout(function() {
@@ -23,7 +23,7 @@ test("Uncaught exceptions", function(t) {
   proc.send({name: 'uncaughtException'})
 })
 
-test("Caught uncaught exceptions", function(t) {
+tap.test('Caught uncaught exceptions', (t) => {
   var proc = startProc()
 
   var theRightStuff = 31415927
@@ -42,7 +42,7 @@ test("Caught uncaught exceptions", function(t) {
   proc.send({name: 'caughtUncaughtException', args: theRightStuff})
 })
 
-test("Report uncaught exceptions", function(t) {
+tap.test('Report uncaught exceptions', (t) => {
   t.plan(3)
 
   var proc = startProc()
@@ -64,7 +64,7 @@ test("Report uncaught exceptions", function(t) {
   proc.send({name: 'checkAgent', args: message})
 })
 
-test("Triggers harvest while in serverless mode", function(t) {
+tap.test('Triggers harvest while in serverless mode', (t) => {
   t.plan(6)
 
   var proc = startProc({
@@ -102,7 +102,7 @@ test("Triggers harvest while in serverless mode", function(t) {
   proc.send({name: 'checkAgent', args: message})
 })
 
-test("Don't report domained exceptions", function(t) {
+tap.test('Do not report domained exceptions', (t) => {
   t.plan(3)
   var proc = startProc()
   var message = 'I am a test error'
@@ -125,7 +125,7 @@ test("Don't report domained exceptions", function(t) {
 
 // only available on Node >=9.3
 if (process.setUncaughtExceptionCaptureCallback) {
-  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
     t.plan(3)
     const proc = startProc()
     let messageReceived = false
@@ -145,7 +145,7 @@ if (process.setUncaughtExceptionCaptureCallback) {
     proc.send({ name: 'setUncaughtExceptionCallback' })
   })
 
-  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
     t.plan(3)
     const proc = startProc()
     let messageReceived = false

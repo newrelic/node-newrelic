@@ -84,8 +84,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
       instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
-      expect(transaction.trace.root.children[0].parameters).to.deep.equal({
-        'nr_exclusive_duration_millis': null,
+      expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
         'request.parameters.a': 'b',
         'request.parameters.another': 'yourself',
@@ -266,7 +265,7 @@ describe('should add data from cat header to segment', function() {
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
         expect(segment.name).equal('ExternalTransaction/localhost:4123/123#456/abc')
-        expect(segment.parameters.transaction_guid).equal('xyz')
+        expect(segment.getAttributes().transaction_guid).equal('xyz')
         res.resume()
         agent.getTransaction().end()
         done()
@@ -285,7 +284,7 @@ describe('should add data from cat header to segment', function() {
 
         // TODO: port in metric is a known bug. issue #142
         expect(segment.name).equal('ExternalTransaction/localhost:4123/123#456/abc')
-        expect(segment.parameters.transaction_guid).equal('xyz')
+        expect(segment.getAttributes().transaction_guid).equal('xyz')
         res.resume()
         agent.getTransaction().end()
         done()

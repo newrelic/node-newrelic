@@ -5,16 +5,33 @@ const byteUtils = require('../../../lib/util/byte-limit')
 
 describe('byte-limit', () => {
   describe('#isValidLength', () => {
-    it('verifies string is within given byte limit', () => {
-      const str = '123456789'
-      const isValidLength = byteUtils.isValidLength(str, 255)
-      expect(isValidLength).to.be.true
+    it('returns false when the string is larger than the limit', () => {
+      expect(byteUtils.isValidLength('12345', 4)).to.equal(false)
     })
 
-    it('verifies string is larger than given byte limit', () => {
+    it('returns true when the string is equal to the limit', () => {
+      expect(byteUtils.isValidLength('12345', 5)).to.equal(true)
+    })
+
+    it('returns true when the string is smaller than the limit', () => {
+      expect(byteUtils.isValidLength('12345', 6)).to.equal(true)
+    })
+  })
+  describe('#compareLength', () => {
+    it('returns -1 when the string is smaller than the limit', () => {
       const str = '123456789'
-      const isValidLength = byteUtils.isValidLength(str, 2)
-      expect(isValidLength).to.be.false
+      const cmpVal = byteUtils.compareLength(str, 255)
+      expect(cmpVal).to.be.lessThan(0)
+    })
+    it('returns 0 when the string is equal than the limit', () => {
+      const str = '123456789'
+      const cmpVal = byteUtils.compareLength(str, 9)
+      expect(cmpVal).to.equal(0)
+    })
+    it('returns 1 when the string is larger than the limit', () => {
+      const str = '123456789'
+      const cmpVal = byteUtils.compareLength(str, 2)
+      expect(cmpVal).to.be.greaterThan(0)
     })
   })
 
@@ -34,6 +51,12 @@ describe('byte-limit', () => {
       expect(Buffer.byteLength(str, 'utf8')).to.equal(8)
       str = byteUtils.truncate(str, 3)
       expect(str).to.equal('\uD87E')
+    })
+    it('should strings with split unicode characters properly', () => {
+      let str = '\uD87E\uDC04\uD87E\uDC04'
+      expect(Buffer.byteLength(str, 'utf8')).to.equal(8)
+      str = byteUtils.truncate(str, 2)
+      expect(str).to.equal('')
     })
   })
 })

@@ -35,8 +35,9 @@ describe('SpanAggregator', () => {
 
           const event = aggr.getEvents()[0]
 
-          expect(event).to.have.property('name', segment.name)
-          expect(event).to.have.property('parentId', 'p')
+          expect(event).to.have.property('intrinsics')
+          expect(event.intrinsics).to.have.property('name', segment.name)
+          expect(event.intrinsics).to.have.property('parentId', 'p')
 
           done()
         }, 10)
@@ -56,9 +57,10 @@ describe('SpanAggregator', () => {
 
           const event = aggr.getEvents()[0]
 
-          expect(event).to.have.property('name', segment.name)
-          expect(event).to.have.property('parentId', null)
-          expect(event).to.not.have.property('grandparentId')
+          expect(event).to.have.property('intrinsics')
+          expect(event.intrinsics).to.have.property('name', segment.name)
+          expect(event.intrinsics).to.have.property('parentId', null)
+          expect(event.intrinsics).to.not.have.property('grandparentId')
 
           done()
         }, 10)

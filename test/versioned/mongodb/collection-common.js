@@ -124,17 +124,18 @@ function collectionTest(name, run) {
             while (current) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
+                const attributes = current.getAttributes()
                 t.notOk(
-                  current.parameters.hasOwnProperty('host'),
-                  'should not have host parameter'
+                  attributes.host,
+                  'should not have host attribute'
                 )
                 t.notOk(
-                  current.parameters.hasOwnProperty('port_path_or_id'),
-                  'should not have port parameter'
+                  attributes.port_path_or_id,
+                  'should not have port attribute'
                 )
                 t.ok(
-                  current.parameters.hasOwnProperty('database_name'),
-                  'should have database name parameter'
+                  attributes.database_name,
+                  'should have database name attribute'
                 )
               }
               current = current.children[0]
@@ -156,17 +157,18 @@ function collectionTest(name, run) {
             while (current) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
+                const attributes = current.getAttributes()
                 t.ok(
-                  current.parameters.hasOwnProperty('host'),
-                  'should have host parameter'
+                  attributes.host,
+                  'should have host attribute'
                 )
                 t.ok(
-                  current.parameters.hasOwnProperty('port_path_or_id'),
-                  'should have port parameter'
+                  attributes.port_path_or_id,
+                  'should have port attribute'
                 )
                 t.notOk(
-                  current.parameters.hasOwnProperty('database_name'),
-                  'should not have database name parameter'
+                  attributes.database_name,
+                  'should not have database name attribute'
                 )
               }
               current = current.children[0]
@@ -252,10 +254,10 @@ function checkSegmentParams(t, segment) {
     dbName = 'admin'
   }
 
-  var parms = segment.parameters
-  t.equal(parms.database_name, dbName, 'should have correct db name')
-  t.equal(parms.host, METRIC_HOST_NAME, 'should have correct host name')
-  t.equal(parms.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
+  var attributes = segment.getAttributes()
+  t.equal(attributes.database_name, dbName, 'should have correct db name')
+  t.equal(attributes.host, METRIC_HOST_NAME, 'should have correct host name')
+  t.equal(attributes.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
 }
 
 function populate(db, collection, done) {
