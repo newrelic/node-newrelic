@@ -20,7 +20,7 @@ function instrument(shim, AWS) {
     }
     dynamoProtoWrapped = true
 
-    shim.setDatastore('DynamoDB')
+    shim.setDatastore(shim.DYNAMODB)
 
     shim.recordOperation(
       ddb,

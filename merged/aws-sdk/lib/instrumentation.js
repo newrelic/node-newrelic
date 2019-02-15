@@ -3,7 +3,8 @@
 const INSTRUMENTATIONS = [
   require('./core'),
   require('./dynamodb'),
-  require('./sqs')
+  require('./sqs'),
+  require('./sns')
 ]
 
 module.exports = function initialize(shim, AWS) {
