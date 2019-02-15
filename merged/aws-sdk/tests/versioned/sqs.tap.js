@@ -87,15 +87,15 @@ tap.test('SQS API', (t) => {
     })
 
     function finish(transaction) {
-      const expectedsegmentCount = 3
+      const expectedSegmentCount = 3
 
       const root = transaction.trace.root
       const segments = common.checkAWSAttributes(t, root, common.SQS_PATTERN)
 
       t.equal(
         segments.length,
-        expectedsegmentCount,
-        `should have ${expectedsegmentCount} AWS MessageBroker/SQS segments`
+        expectedSegmentCount,
+        `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
       )
 
       const [sendMessage, sendMessageBatch, receiveMessage] = segments
