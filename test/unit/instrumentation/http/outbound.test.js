@@ -410,9 +410,11 @@ describe('when working with http.request', function() {
           expect(segment).to.equal(parentSegment)
           expect(segment.name).to.equal('ParentSegment')
 
-          expect(segment.parameters.url).to.not.exist
+          const attributes = segment.getAttributes()
 
-          expect(segment.parameters)
+          expect(attributes).to.not.have.property('url')
+
+          expect(attributes)
             .to.not.have.property(`request.parameters.${paramName}`)
 
           res.resume()
