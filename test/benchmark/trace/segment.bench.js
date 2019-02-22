@@ -67,5 +67,44 @@ suite.add({
   }
 })
 
+suite.add({
+  name: 'getExclusiveDurationInMillis flat',
+
+  before: function buildTree() {
+    root = new Segment(tx, 'ROOT')
+    root.timer.setDurationInMillis(10000, Date.now())
+    addChildren(root, 899)
+  },
+  fn: function() {
+    return root.getExclusiveDurationInMillis()
+  }
+})
+
+suite.add({
+  name: 'getExclusiveDurationInMillis linear',
+
+  before: function buildTree() {
+    root = new Segment(tx, 'ROOT')
+    root.timer.setDurationInMillis(10000, Date.now())
+    addChildren(root, 1)
+  },
+  fn: function() {
+    return root.getExclusiveDurationInMillis()
+  }
+})
+
+suite.add({
+  name: 'getExclusiveDurationInMillis binary',
+
+  before: function buildTree() {
+    root = new Segment(tx, 'ROOT')
+    root.timer.setDurationInMillis(10000, Date.now())
+    addChildren(root, 2)
+  },
+  fn: function() {
+    return root.getExclusiveDurationInMillis()
+  }
+})
+
 
 suite.run()
