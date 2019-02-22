@@ -37,8 +37,7 @@ and not ready for general-purpose use.
 
 ### Setup
 
-To run the tests you need a GNU-compatible make, the openssl command-line
-binary, and some services:
+To run the tests you need an openssl command-line binary, and some services:
 
 * Cassandra
 * Memcached
@@ -50,7 +49,7 @@ binary, and some services:
 If you have these all running locally on the standard ports, then you are good
 to go. However, the suggested path is to use [Docker](http://www.docker.com).
 If you use OS X or Windows, use Docker Machine, which can be installed as a part of
-[Docker Toolbox](https://www.docker.com/docker-toolbox).  Then, run `make services`
+[Docker Toolbox](https://www.docker.com/docker-toolbox).  Then, run `npm run services`
 to start docker containers for each of the above services.
 
 If you have these services available on non-standard ports or elsewhere on your
@@ -75,7 +74,7 @@ tests if all of the unit tests pass.
 If you don't feel like dealing with the hassle of setting up the servers, just
 the unit tests can be run with:
 
-    make unit
+    npm run unit
 
 ### Writing tests
 
