@@ -6,21 +6,20 @@ const expect = require('chai').expect
 const sinon = require('sinon')
 
 describe('AdaptiveSampler', () => {
-  let fakeTransaction = null
   let sampler = null
   const shared = {
     'should count the number of traces sampled': () => {
       expect(sampler.sampled).to.equal(0)
-      expect(sampler.shouldSample(fakeTransaction)).to.be.true
+      expect(sampler.shouldSample(0.1234)).to.be.true
       expect(sampler.sampled).to.equal(1)
     },
 
     'should not sample transactions with priorities lower than the min': () => {
       expect(sampler.sampled).to.equal(0)
-      sampler._minSampledPriority = 0.5
-      expect(sampler.shouldSample(fakeTransaction)).to.be.false
+      sampler._samplingThreshold = 0.5
+      expect(sampler.shouldSample(0)).to.be.false
       expect(sampler.sampled).to.equal(0)
-      expect(sampler.shouldSample({priority: 1})).to.be.true
+      expect(sampler.shouldSample(1)).to.be.true
       expect(sampler.sampled).to.equal(1)
     },
 
@@ -28,19 +27,19 @@ describe('AdaptiveSampler', () => {
       sampler._reset(sampler.samplingTarget)
       sampler._seen = 2 * sampler.samplingTarget
       sampler._adjustStats(sampler.samplingTarget)
-      expect(sampler.minimumPriority).to.equal(0.5)
+      expect(sampler.samplingThreshold).to.equal(0.5)
     },
 
     'should only take the first 10 on the first harvest': () => {
-      expect(sampler.minimumPriority).to.equal(0)
+      expect(sampler.samplingThreshold).to.equal(0)
 
       // Change this to maxSampled if we change the way the back off works.
       for (let i = 0; i <= 2 * sampler.samplingTarget; ++i) {
-        sampler.shouldSample({priority: 0.99999999})
+        sampler.shouldSample(0.99999999)
       }
 
       expect(sampler.sampled).to.equal(10)
-      expect(sampler.minimumPriority).to.equal(1)
+      expect(sampler.samplingThreshold).to.equal(1)
     },
 
     'should backoff on sampling after reaching the sampled target': () => {
@@ -70,10 +69,10 @@ describe('AdaptiveSampler', () => {
       // Change this to maxSampled if we change the way the back off works.
       for (let i = 0; i <= 2 * sampler.samplingTarget; ++i) {
         const expected = expectedMSP[i]
-        expect(sampler.minimumPriority)
+        expect(sampler.samplingThreshold)
           .to.be.within(expected - epsilon, expected + epsilon)
 
-        sampler.shouldSample({priority: Infinity})
+        sampler.shouldSample(Infinity)
       }
     }
   }
@@ -90,13 +89,6 @@ describe('AdaptiveSampler', () => {
         }
       })
       sampler = agent.transactionSampler
-      fakeTransaction = {
-        priority: 0,
-        sampled: null,
-        timer: {
-          start: Date.now()
-        }
-      }
     })
 
     afterEach(() => {
@@ -133,13 +125,6 @@ describe('AdaptiveSampler', () => {
         period: 100,
         target: 10
       })
-      fakeTransaction = {
-        priority: 0,
-        sampled: null,
-        timer: {
-          start: Date.now()
-        }
-      }
     })
 
     afterEach(() => {
