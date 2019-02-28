@@ -605,7 +605,7 @@ describe('the agent configuration', function() {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
-        NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
@@ -624,7 +624,7 @@ describe('the agent configuration', function() {
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {
-        expect(tc.application_id).to.equal(null)
+        expect(tc.primary_application_id).to.equal(null)
         expect(tc.account_id).to.equal(null)
         expect(tc.trusted_account_key).to.equal(null)
       })
@@ -653,13 +653,13 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up application_id', () => {
+    it('should pick up primary_application_id', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
-        NEW_RELIC_APPLICATION_ID: '5678'
+        NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
       }, (tc) => {
-        expect(tc.application_id).to.equal('5678')
+        expect(tc.primary_application_id).to.equal('5678')
       })
     })
 

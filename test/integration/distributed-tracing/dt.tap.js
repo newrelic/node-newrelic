@@ -24,20 +24,17 @@ tap.test('distributed tracing full integration', (t) => {
       enabled: true
     },
     cross_application_tracer: {enabled: false},
-    account_id: ACCOUNT_ID,
-    primary_application_id: APP_ID,
-    trusted_account_key: ACCOUNT_ID,
     encoding_key: 'some key',
   }
   const agent = helper.instrumentMockedAgent(config)
+  agent.config.primary_application_id = APP_ID
+  agent.config.account_id = ACCOUNT_ID
+  agent.config.trusted_account_key = ACCOUNT_ID
 
   t.tearDown(() => {
     helper.unloadAgent(agent)
   })
 
-  agent.config.account_id = ACCOUNT_ID
-  agent.config.application_id = APP_ID
-  agent.config.trusted_account_key = ACCOUNT_ID
   // require http after creating the agent
   const http = require('http')
   const api = new API(agent)
@@ -270,12 +267,11 @@ tap.test('distributed tracing', (t) => {
     agent = helper.instrumentMockedAgent({
       distributed_tracing: {enabled: true},
       cross_application_tracer: {enabled: true},
-      primary_application_id: APP_ID,
-      trusted_account_key: ACCOUNT_ID
     })
+    agent.config.primary_application_id = APP_ID
+    agent.config.account_id = ACCOUNT_ID
+    agent.config.trusted_account_key = ACCOUNT_ID
     agent.config.encoding_key = 'foobar'
-
-    agent.config.account_id = ACCOUNT_ID // Can't be set through config object.
 
     const http = require('http')
     const api = new API(agent)
