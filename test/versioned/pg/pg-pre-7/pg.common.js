@@ -193,7 +193,7 @@ module.exports = function runTests(name, clientFactory) {
     t.ok(attributes['peer.hostname'])
     t.ok(attributes['peer.address'])
     t.ok(attributes['db.statement'])
-    t.ok(dbSpan.instrinsics.component)
+    t.ok(dbSpan.intrinsics.component)
     t.ok(dbSpan.intrinsics.category)
     t.ok(dbSpan.intrinsics['span.kind'])
   }
@@ -304,7 +304,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("simple query using query.on() events", function(t) {
-      t.plan(35)
+      t.plan(36)
       var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
@@ -360,7 +360,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("simple query using query.addListener() events", function(t) {
-      t.plan(35)
+      t.plan(36)
       var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
@@ -414,7 +414,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(39)
+      t.plan(40)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -459,7 +459,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('using Pool constructor', function(t) {
-      t.plan(39)
+      t.plan(40)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -600,7 +600,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("should add datastore instance parameters to db spans", function(t) {
-      t.plan(13)
+      t.plan(14)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.distributed_tracing.enabled = true
