@@ -31,7 +31,8 @@ function instrument(shim, AWS) {
             name,
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
-            database_name: args[0].TableName || 'Unknown'
+            product: shim.DYNAMODB,
+            collection: args[0].TableName
           },
           callback: shim.LAST,
           opaque: true

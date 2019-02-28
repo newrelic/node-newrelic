@@ -115,7 +115,8 @@ function finish(t, tx) {
     t.matches(attrs, {
       'host': String,
       'port_path_or_id': String,
-      'database_name': String,
+      'component': 'DynamoDB',
+      'collection': String,
       'aws.operation': TESTS[i].method,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
