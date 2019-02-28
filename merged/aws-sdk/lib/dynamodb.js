@@ -27,8 +27,8 @@ function instrument(shim, AWS) {
       OPERATIONS,
       function wrapMethod(shim, original, name, args) {
         return {
+          name,
           parameters: {
-            name,
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
             database_name: args[0].TableName || 'Unknown'
