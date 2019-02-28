@@ -605,7 +605,7 @@ describe('the agent configuration', function() {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
-        NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
@@ -624,7 +624,7 @@ describe('the agent configuration', function() {
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {
-        expect(tc.application_id).to.equal(null)
+        expect(tc.primary_application_id).to.equal(null)
         expect(tc.account_id).to.equal(null)
         expect(tc.trusted_account_key).to.equal(null)
       })
@@ -653,13 +653,13 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up application_id', () => {
+    it('should pick up primary_application_id', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
-        NEW_RELIC_APPLICATION_ID: '5678'
+        NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
       }, (tc) => {
-        expect(tc.application_id).to.equal('5678')
+        expect(tc.primary_application_id).to.equal('5678')
       })
     })
 
@@ -674,6 +674,32 @@ describe('the agent configuration', function() {
     })
 
     describe('via configuration input', () => {
+      it('should set DT config settings while in serverless_mode', () => {
+        const config = Config.initialize({
+          account_id: '1234',
+          primary_application_id: '2345',
+          trusted_account_key: '3456',
+          serverless_mode: {enabled: true},
+          feature_flag: {serverless_mode: true}
+        })
+
+        expect(config.account_id).to.equal('1234')
+        expect(config.primary_application_id).to.equal('2345')
+        expect(config.trusted_account_key).to.equal('3456')
+      })
+
+      it('should not set DT config settings while not in serverless_mode', () => {
+        const config = Config.initialize({
+          account_id: '1234',
+          primary_application_id: '2345',
+          trusted_account_key: '3456',
+        })
+
+        expect(config.account_id).to.be.null
+        expect(config.primary_application_id).to.be.null
+        expect(config.trusted_account_key).to.be.null
+      })
+
       it('should default logging to disabled', () => {
         const config = Config.initialize({
           serverless_mode: {enabled: true},
@@ -813,6 +839,18 @@ describe('the agent configuration', function() {
 
     it('should have an apdexT of 0.1', function() {
       expect(configuration.apdex_t).equal(0.1)
+    })
+
+    it('should have a null account_id', function() {
+      expect(configuration.account_id).to.be.null
+    })
+
+    it('should have a null primary_application_id', function() {
+      expect(configuration.primary_application_id).to.be.null
+    })
+
+    it('should have a null trusted_account_key', function() {
+      expect(configuration.trusted_account_key).to.be.null
     })
 
     it('should have the default excluded request attributes', function() {
