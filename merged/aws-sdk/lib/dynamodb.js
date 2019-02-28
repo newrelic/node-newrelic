@@ -29,8 +29,8 @@ function instrument(shim, AWS) {
         const params = args[0]
 
         return {
+          name,
           parameters: {
-            name,
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
             product: shim.DYNAMODB,

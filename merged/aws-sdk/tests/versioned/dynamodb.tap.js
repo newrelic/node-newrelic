@@ -111,13 +111,19 @@ function finish(t, tx) {
   t.equal(segments.length, 8, 'should have 8 aws datastore segments')
 
   segments.forEach((segment, i) => {
+    const operation = TESTS[i].method
+    t.equal(
+      segment.name,
+      `Datastore/operation/DynamoDB/${operation}`,
+      'should have operation in segment name'
+    )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     t.matches(attrs, {
       'host': String,
       'port_path_or_id': String,
       'component': 'DynamoDB',
       'collection': String,
-      'aws.operation': TESTS[i].method,
+      'aws.operation': operation,
       'aws.requestId': String,
       'aws.region': 'us-east-1',
       'aws.service': 'DynamoDB'
