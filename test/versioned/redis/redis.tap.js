@@ -207,7 +207,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
   })
 
   t.test('should add datastore instance attributes to trace segments', function(t) {
-    t.plan(3)
+    t.plan(4)
 
     // Enable.
     agent.config.datastore_tracer.instance_reporting.enabled = true
@@ -232,6 +232,10 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         t.equals(
           attributes.database_name, String(DB_INDEX),
           'should have database id as attribute'
+        )
+        t.equals(
+          attributes.product, 'Redis',
+          'should have product attribute'
         )
       })
     })

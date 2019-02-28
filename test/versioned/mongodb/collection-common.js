@@ -137,6 +137,10 @@ function collectionTest(name, run) {
                   attributes.database_name,
                   'should have database name attribute'
                 )
+                t.ok(
+                  attributes.product,
+                  'should have product attribute'
+                )
               }
               current = current.children[0]
             }
@@ -169,6 +173,10 @@ function collectionTest(name, run) {
                 t.notOk(
                   attributes.database_name,
                   'should not have database name attribute'
+                )
+                t.ok(
+                  attributes.product,
+                  'should have product attribute'
                 )
               }
               current = current.children[0]

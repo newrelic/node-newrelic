@@ -181,6 +181,7 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
                 '3306',
                 'set port'
               )
+              t.equal(attributes.product, 'MySQL', 'should set product attribute')
               withRetry.release(client)
               agent.getTransaction().end()
               t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
@@ -379,6 +380,7 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
                   "3306",
                   'should set port parameter'
                 )
+                t.equal(attributes.product, 'MySQL', 'should set product attribute')
               }
               client.query('drop test_db;', function() {
                 withRetry.release(client)

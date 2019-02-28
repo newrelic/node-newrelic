@@ -173,6 +173,11 @@ module.exports = function runTests(name, clientFactory) {
       params.postgres_db,
       'should add the database name parameter'
     )
+    t.equals(
+      attributes.product,
+      'Postgres',
+      'should add the product attribute'
+    )
   }
 
   function verifySpanEvents(t, agent) {
@@ -188,6 +193,7 @@ module.exports = function runTests(name, clientFactory) {
     t.ok(attributes['peer.hostname'])
     t.ok(attributes['peer.address'])
     t.ok(attributes['db.statement'])
+    t.ok(dbSpan.instrinsics.component)
     t.ok(dbSpan.intrinsics.category)
     t.ok(dbSpan.intrinsics['span.kind'])
   }

@@ -172,6 +172,11 @@ module.exports = function runTests(name, clientFactory) {
       params.postgres_db,
       'should add the database name parameter'
     )
+    t.equals(
+      attributes.product,
+      'Postgres',
+      'should add the product attribute'
+    )
   }
 
   function verifySlowQueries(t, agent) {

@@ -155,7 +155,6 @@ describe('SpanEvent', () => {
           host: 'my-db-host',
           port_path_or_id: '/path/to/db.sock',
           database_name: 'my-database',
-          product: 'MyDB',
           collection: 'my-collection'
         }
       })
@@ -195,7 +194,7 @@ describe('SpanEvent', () => {
           expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
           expect(span.intrinsics).to.have.property('duration').within(0.03, 0.7)
           // Should have (most) type-specific intrinsics
-          expect(span.intrinsics).to.have.property('component', 'MyDB')
+          expect(span.intrinsics).to.have.property('component', 'TestStore')
           expect(span.intrinsics).to.have.property('span.kind', 'client')
 
           expect(span).to.have.property('attributes')

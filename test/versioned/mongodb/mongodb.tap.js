@@ -116,6 +116,7 @@ function verifyTrace(t, segment, operation, host, port, done) {
       DB_NAME,
       'should have correct database_name parameter'
     )
+    t.equal(attributes.product, 'MongoDB', 'should have correct product attribute')
     t.ok(op_segment.children.length > 0, 'should have at least one child')
     t.ok(op_segment._isEnded(), 'should have ended')
   } catch (error) {

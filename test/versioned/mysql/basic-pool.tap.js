@@ -140,6 +140,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           String(config.port),
           'set port'
         )
+        t.equal(attributes.product, 'MySQL', 'set product attribute')
         txn.end()
         t.end()
       })
@@ -168,6 +169,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           DBNAME,
           'should set database name'
         )
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
         agent.config.datastore_tracer.instance_reporting.enabled = true
         txn.end()
         t.end()
@@ -199,6 +201,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           attributes.database_name,
           'should have no database name parameter'
         )
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
         agent.config.datastore_tracer.database_name_reporting.enabled = true
         txn.end()
         t.end()
@@ -232,6 +235,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           'set database name'
         )
         t.equal(attributes.port_path_or_id, String(defaultConfig.port), 'set port')
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
         txn.end()
         defaultPool.end(t.end)
       })
@@ -267,6 +271,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           "3306",
           'should set port'
         )
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
         txn.end()
         defaultPool.end(t.end)
       })
@@ -419,6 +424,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
               DBNAME,
               'set database name'
             )
+            t.equal(attributes.product, 'MySQL', 'should set product attribute')
             txn.end()
             socketPool.end(t.end)
           })
