@@ -22,7 +22,7 @@ var COLLECTION = 'test_1_3_19_plus'
 var MONGO_HOST = null
 var MONGO_PORT = String(params.mongodb_port)
 var METRICS_VERIFIER_COUNT = 5
-var TRACE_VERIFIER_COUNT = 10
+var TRACE_VERIFIER_COUNT = 11
 
 /* eslint-disable max-params */
 function addMetricsVerifier(t, agent, operation, calls, host, port) {
