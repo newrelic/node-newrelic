@@ -401,6 +401,7 @@ function verifyMongoSegments(t, agent, transaction, names) {
       t.equal(attributes.database_name, dbName, 'should have correct db name')
       t.equal(attributes.host, MONGO_HOST, 'should have correct host name')
       t.equal(attributes.port_path_or_id, MONGO_PORT, 'should have correct port')
+      t.equal(attributes.product, 'MongoDB', 'should have correct product attribute')
     }
   }
 

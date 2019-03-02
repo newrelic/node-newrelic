@@ -172,6 +172,11 @@ module.exports = function runTests(name, clientFactory) {
       params.postgres_db,
       'should add the database name parameter'
     )
+    t.equals(
+      attributes.product,
+      'Postgres',
+      'should add the product attribute'
+    )
   }
 
   function verifySlowQueries(t, agent) {
@@ -280,7 +285,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(38)
+      t.plan(39)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -320,7 +325,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('using Pool constructor', function(t) {
-      t.plan(39)
+      t.plan(40)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
