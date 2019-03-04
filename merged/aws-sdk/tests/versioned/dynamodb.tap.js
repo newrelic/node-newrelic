@@ -121,7 +121,7 @@ function finish(t, tx) {
     t.matches(attrs, {
       'host': String,
       'port_path_or_id': String,
-      'component': 'DynamoDB',
+      'product': 'DynamoDB',
       'collection': String,
       'aws.operation': operation,
       'aws.requestId': String,
