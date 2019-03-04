@@ -26,12 +26,14 @@ function instrument(shim, AWS) {
       ddb,
       OPERATIONS,
       function wrapMethod(shim, original, name, args) {
+        const params = args[0]
+
         return {
           name,
           parameters: {
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
-            database_name: args[0].TableName || 'Unknown'
+            collection: params && params.TableName || 'Unknown'
           },
           callback: shim.LAST,
           opaque: true
