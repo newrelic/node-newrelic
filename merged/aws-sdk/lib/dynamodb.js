@@ -33,7 +33,6 @@ function instrument(shim, AWS) {
           parameters: {
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
-            product: shim.DYNAMODB,
             collection: params && params.TableName || 'Unknown'
           },
           callback: shim.LAST,
