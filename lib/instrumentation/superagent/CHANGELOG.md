@@ -1,3 +1,8 @@
+### 1.0.3 (2019-03-04):
+
+* Added missing `LICENSE` file.
+
+  Thanks @jreidgreer for the catch!
 
 ### 1.0.2 (2019-01-07):
 
