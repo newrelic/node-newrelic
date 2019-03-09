@@ -552,6 +552,33 @@ describe('Trace', function() {
       expect(trace.getExclusiveDurationInMillis()).equal(5)
     })
 
+    it('should accurately sum overlapping subtrees', function() {
+      trace.setDurationInMillis(42)
+
+      var now = Date.now()
+
+      // create a long child on its own
+      var child1 = trace.add('Custom/Test20/Child1')
+      child1.setDurationInMillis(33, now)
+
+      // add another, short child as a sibling
+      var child2 = child1.add('Custom/Test20/Child2')
+      child2.setDurationInMillis(5, now)
+
+      // add two disjoint children of the second segment encompassed by the first segment
+      var child3 = child2.add('Custom/Test20/Child3')
+      child3.setDurationInMillis(11, now)
+
+      var child4 = child2.add('Custom/Test20/Child3')
+      child4.setDurationInMillis(11, now + 16)
+
+      expect(trace.getExclusiveDurationInMillis()).equal(9)
+      expect(child4.getExclusiveDurationInMillis()).equal(11)
+      expect(child3.getExclusiveDurationInMillis()).equal(11)
+      expect(child2.getExclusiveDurationInMillis()).equal(0)
+      expect(child1.getExclusiveDurationInMillis()).equal(11)
+    })
+
     it('should accurately sum partially overlapping segments', function() {
       trace.setDurationInMillis(42)
 
