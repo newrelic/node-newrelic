@@ -11,8 +11,24 @@ const helper = require('../../lib/agent_helper')
 // 125000 is even working locally but rounding up for safety.
 const DANGEROUS_SEGMENT_WIDTH = 126000
 
+const distributedTracingConfig = {
+  distributed_tracing: {
+    enabled: true
+  },
+  cross_application_tracer: {enabled: false},
+  account_id: '1337',
+  primary_application_id: '7331',
+  trusted_account_key: '1337',
+  encoding_key: 'some key',
+}
+
+/**
+ * NOTE: A sucessful run of this test is very long due to data processing.
+ * Must be run with tap file timeout extended. For example --timeout=120
+ */
 test('should not exceed stack size for extremely wide segment trees', function(t) {
-  const agent = helper.loadMockedAgent()
+  // Trigger DT code paths on transaction end, as well
+  const agent = helper.loadMockedAgent(distributedTracingConfig)
   t.tearDown(function() {
     helper.unloadAgent(agent)
   })
@@ -20,13 +36,13 @@ test('should not exceed stack size for extremely wide segment trees', function(t
   helper.runInTransaction(agent, function(transaction) {
     const root = transaction.trace.root
 
-    for (let index = 0; index < DANGEROUS_SEGMENT_WIDTH; index++) {
-      root.add('segment: ' + index)
-    }
+    // Avoid special casing of root that can result in avoiding
+    // bugs deeper in the tree with wide segment trees
+    const child = root.add('child1')
 
-    // We don't care about processing.
-    // Ignore to avoid data creation and speed up passing test
-    transaction.ignore = true
+    for (let index = 0; index < DANGEROUS_SEGMENT_WIDTH; index++) {
+      child.add('segment: ' + index)
+    }
 
     t.doesNotThrow(() => {
       transaction.end()
