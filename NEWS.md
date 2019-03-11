@@ -1,3 +1,9 @@
+### 5.6.1 (2019-03-11):
+
+* Updated log message for not adding attributes and change the log level to debug.
+
+* Fixed an issue where exclusive time would be improperly calculated in some cases.
+
 ### 5.6.0 (2019-03-04):
 
 * Added `product` attribute to existing datastore instrumentations.
