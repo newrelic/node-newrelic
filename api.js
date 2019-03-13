@@ -16,6 +16,11 @@ const AwsLambda = require('./lib/serverless/aws-lambda')
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 const NAMES = require('./lib/metrics/names')
+const VALID_ATTR_TYPES = new Set([
+  'string',
+  'number',
+  'boolean'
+])
 
 /*
  *
@@ -1069,8 +1074,8 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
 
   // Filter all object type valued attributes out
   const filteredAttributes = Object.create(null)
-  Object.keys(attributes).forEach(attributeKey => {
-    if (typeof attributes[attributeKey] === 'object') {
+  Object.keys(attributes).forEach((attributeKey) => {
+    if (!VALID_ATTR_TYPES.has(typeof attributes[attributeKey])) {
       logger.info(
         `Omitting attribute ${attributeKey} from ${eventType} custom event, type must ` +
         'be boolean, number, or string'
