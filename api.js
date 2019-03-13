@@ -1067,6 +1067,19 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
     return
   }
 
+  // Filter all object type valued attributes out
+  const filteredAttributes = Object.create(null)
+  Object.keys(attributes).forEach(attributeKey => {
+    if (typeof attributes[attributeKey] === 'object') {
+      logger.info(
+        `Omitting attribute ${attributeKey} from ${eventType} custom event, type must ` +
+        'be boolean, number, or string'
+      )
+      return
+    }
+    filteredAttributes[attributeKey] = attributes[attributeKey]
+  })
+
   var instrinics = {
     type: eventType,
     timestamp: Date.now()
@@ -1074,7 +1087,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
 
   var tx = this.agent.getTransaction()
   var priority = tx && tx.priority || Math.random()
-  this.agent.customEvents.add([instrinics, attributes], priority)
+  this.agent.customEvents.add([instrinics, filteredAttributes], priority)
 }
 
 /**
