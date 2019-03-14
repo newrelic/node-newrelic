@@ -66,7 +66,26 @@ describe('The custom events API', function() {
     }
     api.recordCustomEvent('EventName', data)
     var myEvent = popTopCustomEvent(agent)
-    expect(myEvent[1]).to.equal(data)
+    expect(myEvent[1]).to.deep.equal(data)
+  })
+
+  it('filters object type values from user attributes', function() {
+    var data = {
+      string: 'value',
+      object: {},
+      array: [],
+      undef: undefined,
+      function: function() {},
+      symbol: Symbol('test')
+    }
+    api.recordCustomEvent('EventName', data)
+    var myEvent = popTopCustomEvent(agent)
+    expect(myEvent[1].string).to.equal('value')
+    expect(myEvent[1]).to.not.have.property('object')
+    expect(myEvent[1]).to.not.have.property('array')
+    expect(myEvent[1]).to.not.have.property('function')
+    expect(myEvent[1]).to.not.have.property('undef')
+    expect(myEvent[1]).to.not.have.property('symbol')
   })
 
   it('does not add events with invalid names', function() {
