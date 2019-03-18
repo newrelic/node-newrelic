@@ -63,7 +63,9 @@ describe('Attributes', () => {
         fourth: 4,
         fifth: true,
         sixth: undefined,
-        seventh: null
+        seventh: null,
+        eighth: Symbol('test'),
+        ninth: function(){}
       }
 
       inst.addAttributes(
@@ -77,6 +79,8 @@ describe('Attributes', () => {
       expect(res.third).to.be.undefined
       expect(res.sixth).to.be.undefined
       expect(res.seventh).to.be.undefined
+      expect(res.eighth).to.be.undefined
+      expect(res.ninth).to.be.undefined
     })
   })
 
