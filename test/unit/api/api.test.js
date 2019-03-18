@@ -1136,6 +1136,34 @@ describe('the New Relic agent API', function() {
       expect(params.userAttributes.present).equal('yep')
     })
 
+    it("should omit improper types of attributes", function() {
+      expect(agent.errors.errors.length).equal(0)
+      api.noticeError(
+        new TypeError('this test is bogus, man'),
+        {
+          string : 'yep',
+          object: {},
+          function: function(){},
+          number: 1234,
+          symbol: Symbol('test'),
+          undef: undefined,
+          array: [],
+          boolean: true
+        }
+      )
+      expect(agent.errors.errors.length).equal(1)
+
+      var params = agent.errors.errors[0][4]
+      expect(params.userAttributes.string).equal('yep')
+      expect(params.userAttributes.number).equal(1234)
+      expect(params.userAttributes.boolean).equal(true)
+      expect(params.userAttributes).to.not.have.property('object')
+      expect(params.userAttributes).to.not.have.property('array')
+      expect(params.userAttributes).to.not.have.property('function')
+      expect(params.userAttributes).to.not.have.property('undef')
+      expect(params.userAttributes).to.not.have.property('symbol')
+    })
+
     it('should respect attribute filter rules', function() {
       agent.config.attributes.exclude.push('unwanted')
       agent.config.emit('attributes.exclude')

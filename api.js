@@ -9,6 +9,7 @@ const hashes = require('./lib/util/hashes')
 const properties = require('./lib/util/properties')
 const stringify = require('json-stringify-safe')
 const shimmer = require('./lib/shimmer')
+const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
 const AwsLambda = require('./lib/serverless/aws-lambda')
@@ -16,12 +17,6 @@ const AwsLambda = require('./lib/serverless/aws-lambda')
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 const NAMES = require('./lib/metrics/names')
-const VALID_ATTR_TYPES = new Set([
-  'string',
-  'number',
-  'boolean'
-])
-
 /*
  *
  * CONSTANTS
@@ -370,7 +365,13 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
   }
   const transaction = this.agent.tracer.getTransaction()
 
-  this.agent.errors.addUserError(transaction, error, customAttributes)
+  // Filter all object type valued attributes out
+  let filteredAttributes = customAttributes
+  if (customAttributes) {
+    filteredAttributes = _filterAttributes(customAttributes, 'noticeError')
+  }
+
+  this.agent.errors.addUserError(transaction, error, filteredAttributes)
 }
 
 /**
@@ -1073,17 +1074,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   }
 
   // Filter all object type valued attributes out
-  const filteredAttributes = Object.create(null)
-  Object.keys(attributes).forEach((attributeKey) => {
-    if (!VALID_ATTR_TYPES.has(typeof attributes[attributeKey])) {
-      logger.info(
-        `Omitting attribute ${attributeKey} from ${eventType} custom event, type must ` +
-        'be boolean, number, or string'
-      )
-      return
-    }
-    filteredAttributes[attributeKey] = attributes[attributeKey]
-  })
+  const filteredAttributes = _filterAttributes(attributes, `${eventType} custom event`)
 
   var instrinics = {
     type: eventType,
@@ -1406,6 +1397,21 @@ API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
   metric.incrementCallCount()
 
   return this.awsLambda.patchLambdaHandler(handler)
+}
+
+function _filterAttributes(attributes, name) {
+  const filteredAttributes = Object.create(null)
+  Object.keys(attributes).forEach((attributeKey) => {
+    if (!isValidType(attributes[attributeKey])) {
+      logger.info(
+        `Omitting attribute ${attributeKey} from ${name} call, type must ` +
+        'be boolean, number, or string'
+      )
+      return
+    }
+    filteredAttributes[attributeKey] = attributes[attributeKey]
+  })
+  return filteredAttributes
 }
 
 module.exports = API
