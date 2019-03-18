@@ -48,9 +48,7 @@ describe('Synchronous agent harvests', () => {
     Harvest.prototype.getPayloads = oldGetPayloads
     agent.collector.populateDataSync = oldPopData
   })
-
 })
-
 
 describe('Agent harvests', () => {
   let agent = null
