@@ -125,7 +125,6 @@ describe('ServerlessCollector API', () => {
       expect(Object.keys(api.payload).length).to.equal(0)
       api.constructor.prototype._doFlush = oldDoFlush
     })
-
   })
 
   describe('#analyticsEvents', () => {
