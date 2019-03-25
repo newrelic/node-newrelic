@@ -1,3 +1,18 @@
+### 5.6.2 (2019-03-25):
+
+* Agent now respects attribute type restrictions on trace/segment attributes, as
+  well as error event/trace attributes.
+
+* Fixes potential for `RangeError: Maximum call stack size exceeded` error on
+  Transaction/Trace end.
+
+* Custom events no longer accept attributes with invalid types.
+
+  The only attribute types accepted by the backend are `boolean`, `string`, and
+  `number`; any attribute assigned to a custom event outside these types would be
+  dropped on ingest. The agent now filters these attributes out, and logs out a
+  helpful message detailing the issue.
+
 ### 5.6.1 (2019-03-11):
 
 * Updated log message for not adding attributes and change the log level to debug.
