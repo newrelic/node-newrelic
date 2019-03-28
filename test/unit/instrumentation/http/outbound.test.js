@@ -63,6 +63,48 @@ describe('instrumentOutbound', function() {
     })
   })
 
+  it('should omit query parameters from path if attributes.enabled is false', function() {
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: false
+      }
+    })
+    var req = new events.EventEmitter()
+    helper.runInTransaction(agent, function(transaction) {
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({})
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
+    })
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent()
+  })
+
+  it('should omit query parameters from path if high_security is true', function() {
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent({
+      high_security: true
+    })
+    var req = new events.EventEmitter()
+    helper.runInTransaction(agent, function(transaction) {
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
+        'url': `http://${HOSTNAME}:${PORT}/asdf`,
+      })
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
+    })
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent()
+  })
+
   it('should strip query parameters from path in transaction trace segment', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
