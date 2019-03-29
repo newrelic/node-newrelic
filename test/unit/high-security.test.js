@@ -52,7 +52,7 @@ describe('high security mode', function() {
 
       it('should not change attributes settings', function() {
         check('attributes.include', [], ['foobar'])
-        check('attributes.exclude', [], ['fizzbang'])
+        check('attributes.exclude', [], ['fizzbang', 'request.parameters.*'])
       })
 
       it('should not change transaction_tracer settings', function() {
@@ -153,7 +153,7 @@ describe('high security mode', function() {
         // Should not touch `enabled` setting or exclude.
         check('attributes.enabled', true, true)
         check('attributes.enabled', false, false)
-        check('attributes.exclude', ['fizbang'], ['fizbang'])
+        check('attributes.exclude', ['fizbang'], ['fizbang', 'request.parameters.*'])
 
         check('attributes.include', ['foobar'], [])
       })
