@@ -1565,6 +1565,7 @@ describe('the agent configuration', function() {
       expect(config.transaction_tracer.record_sql).to.equal('off')
       expect(agent._resetQueries.callCount).to.equal(1)
       expect(config.attributes.include_enabled).to.equal(false)
+      expect(config.attributes.exclude).to.deep.equal(['request.parameters.*'])
       expect(config.strip_exception_messages.enabled).to.equal(true)
       expect(agent._resetErrors.callCount).to.equal(1)
       expect(config.api.custom_events_enabled).to.equal(false)

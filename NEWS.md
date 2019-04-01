@@ -1,3 +1,11 @@
+### 5.6.3 (2019-04-01):
+
+* The agent will now accurately filter out request parameters while operating under
+  CSP or HSM.
+
+  You can find more information about this change here:
+  https://docs.newrelic.com/docs/using-new-relic/new-relic-security/security-bulletins/security-bulletin-nr19-02
+
 ### 5.6.2 (2019-03-25):
 
 * Agent now respects attribute type restrictions on trace/segment attributes, as
