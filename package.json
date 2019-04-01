@@ -1,6 +1,6 @@
 {
   "name": "@ruguoapp/newrelic",
-  "version": "5.6.1-jike.alhpa.1",
+  "version": "5.6.1-jike-alpha.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
