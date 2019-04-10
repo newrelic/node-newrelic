@@ -67,32 +67,6 @@ describe('the New Relic agent', function() {
     expect(agent.config.agent_enabled).equal(false)
   })
 
-  describe('when in serverless_mode', () => {
-    let agent = null
-
-    before(() => {
-      agent = helper.loadMockedAgent({
-        serverless_mode: {
-          enabled: true
-        },
-        feature_flag: {
-          serverless_mode: true
-        }
-      })
-    })
-
-    after(() => {
-      helper.unloadAgent(agent)
-    })
-
-    it('should set all sampling limits to Infinity', () => {
-      expect(agent.events.limit).to.equal(Infinity)
-      expect(agent.customEvents.limit).to.equal(Infinity)
-      expect(agent.spans.limit).to.equal(Infinity)
-      expect(agent.errors.limit).to.equal(Infinity)
-    })
-  })
-
   describe('when configured', function() {
     var agent
 
