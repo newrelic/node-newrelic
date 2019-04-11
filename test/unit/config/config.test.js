@@ -617,12 +617,16 @@ describe('the agent configuration', function() {
   describe('with serverless_mode disabled', () => {
     it('should clear serverless_mode dt config options', () => {
       const env = {
+        NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
+        NEW_RELIC_APPLICATION_ID: 'defined',
         NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {
+        expect(tc.primary_application_id).to.equal(null)
         expect(tc.account_id).to.equal(null)
+        expect(tc.trusted_account_key).to.equal(null)
       })
     })
   })
@@ -684,10 +688,14 @@ describe('the agent configuration', function() {
 
       it('should not set DT config settings while not in serverless_mode', () => {
         const config = Config.initialize({
-          account_id: '1234'
+          account_id: '1234',
+          primary_application_id: '2345',
+          trusted_account_key: '3456',
         })
 
         expect(config.account_id).to.be.null
+        expect(config.primary_application_id).to.be.null
+        expect(config.trusted_account_key).to.be.null
       })
 
       it('should default logging to disabled', () => {
