@@ -678,14 +678,12 @@ describe('the agent configuration', function() {
         const config = Config.initialize({
           account_id: '1234',
           primary_application_id: '2345',
-          trusted_account_key: '3456',
           serverless_mode: {enabled: true},
           feature_flag: {serverless_mode: true}
         })
 
         expect(config.account_id).to.equal('1234')
-        expect(config.primary_application_id).to.equal('2345')
-        expect(config.trusted_account_key).to.equal('3456')
+        expect(config.trusted_account_key).to.equal('1234')
       })
 
       it('should not set DT config settings while not in serverless_mode', () => {
