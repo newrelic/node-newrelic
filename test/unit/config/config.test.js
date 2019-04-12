@@ -587,18 +587,18 @@ describe('the agent configuration', function() {
   })
 
   describe('with both distributed_tracing and serverless_mode defined', () => {
-    it('blows up if missing DT config environment variables', () => {
-      expect(() => {
-        Config.initialize({
-          distributed_tracing: {enabled: true},
-          serverless_mode: {
-            enabled: true
-          },
-          feature_flag: {
-            serverless_mode: true
-          }
-        })
-      }).throws()
+    it('disables DT if missing required config values', () => {
+      const config = Config.initialize({
+        distributed_tracing: {enabled: true},
+        serverless_mode: {
+          enabled: true
+        },
+        feature_flag: {
+          serverless_mode: true
+        },
+        account_id: null
+      })
+      expect(config.distributed_tracing.enabled).to.be.false
     })
 
     it('works if all required env vars are defined', () => {
