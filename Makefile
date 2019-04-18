@@ -89,7 +89,7 @@ docker:
 	fi; \
 
 integration: node_modules sub_node_modules ca-gen $(CERTIFICATE) docker
-	time $(TAP) --no-esm $(INTEGRATION) --timeout=120
+	time $(TAP) $(INTEGRATION) --timeout=120
 
 versioned: node_modules ca-gen $(CERTIFICATE) docker
 	time ./bin/run-versioned-tests.sh
