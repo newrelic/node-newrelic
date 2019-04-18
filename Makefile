@@ -96,13 +96,13 @@ versioned: node_modules ca-gen $(CERTIFICATE) docker
 
 prerelease: node_modules ca-gen $(CERTIFICATE) docker
 	@node test/bin/install_sub_deps prerelease
-	time $(TAP) --no-esm $(PRERELEASE)
+	time $(TAP) $(PRERELEASE)
 
 smoke: clean
 	npm install --production --loglevel warn
 	npm install tap
 	@cd test/smoke && npm install
-	time $(TAP) --no-esm $(SMOKE)
+	time $(TAP) $(SMOKE)
 
 notes:
 	find . -name node_modules -prune -o \
