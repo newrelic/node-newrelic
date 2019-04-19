@@ -848,6 +848,69 @@ describe('WebFrameworkShim', function() {
         })
       })
 
+      describe(
+        'when middleware returns promise and spec.appendPath is false',
+        () => {
+          let unwrappedTimeout = null
+          let middleware = null
+          let wrapped = null
+
+          beforeEach(() => {
+            unwrappedTimeout = shim.unwrap(setTimeout)
+            middleware = (_req, err, next) => {
+              return new Promise((resolve, reject) => {
+                unwrappedTimeout(() => {
+                  try {
+                    expect(txInfo.transaction.nameState.getPath()).to.equal('/')
+                    if (next) {
+                      return next().then(() => {
+                        expect(txInfo.transaction.nameState.getPath())
+                          .to.equal('/foo/bar')
+                        resolve()
+                      }, () => {
+                        expect(txInfo.transaction.nameState.getPath()).to.equal('/')
+                        resolve()
+                      })
+                    }
+                    if (err) {
+                      throw err
+                    } else {
+                      resolve()
+                    }
+                  } catch (e) {
+                    reject(err)
+                  }
+                }, 20)
+              })
+            }
+
+            wrapped = shim.recordMiddleware(middleware, {
+              route: '/foo/bar',
+              appendPath: false,
+              next: shim.LAST,
+              promise: true
+            })
+          })
+          it('should not append path', () => {
+            return helper.runInTransaction(agent, (tx) => {
+              tx.nameState.appendPath('/')
+              txInfo.transaction = tx
+              return wrapped(req, null, () => {
+                expect(tx.nameState.getPath()).to.equal('/')
+                return new Promise((resolve) => {
+                  const _tx = agent.tracer.getTransaction()
+                  expect(_tx).to.equal(tx)
+                  expect(_tx.nameState.getPath()).to.equal('/')
+                  resolve()
+                })
+              })
+            })
+          })
+        }
+      )
+
+
+
       describe('when wrapping errorware', function() {
         it('should mark the error as handled', function() {
           var wrapped = shim.recordMiddleware(function() {
