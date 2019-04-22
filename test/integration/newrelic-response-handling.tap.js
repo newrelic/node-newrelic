@@ -181,7 +181,6 @@ function createStatusCodeTest(testCase) {
 
           subTest.ok(startEndpoints.preconnect.isDone(), 'requested preconnect')
           subTest.ok(startEndpoints.connect.isDone(), 'requested connect')
-          subTest.ok(startEndpoints.settings.isDone(), 'requested settings')
         }
 
         function verifyHarvestErrorExpected(error) {
@@ -209,7 +208,6 @@ function createStatusCodeTest(testCase) {
 
             subTest.ok(restartEndpoints.preconnect.isDone(), 'requested preconnect')
             subTest.ok(restartEndpoints.connect.isDone(), 'requested connect')
-            subTest.ok(restartEndpoints.settings.isDone(), 'requested settings')
           } else {
             subTest.notOk(disconnected, 'should not have disconnected')
             subTest.notOk(connecting, 'should not have reconnected')
@@ -273,8 +271,7 @@ function createTestData(agent, callback) {
 function setupConnectionEndpoints() {
   return {
     preconnect: nockRequest('preconnect').reply(200, {return_value: TEST_DOMAIN}),
-    connect: nockRequest('connect').reply(200, {return_value: {agent_run_id: RUN_ID}}),
-    settings: nockRequest('agent_settings', RUN_ID).reply(200, {return_value: []})
+    connect: nockRequest('connect').reply(200, {return_value: {agent_run_id: RUN_ID}})
   }
 }
 
