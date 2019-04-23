@@ -1,3 +1,11 @@
+### 4.13.1 (2019-04-23):
+
+* Fixed bug where agent would stop sending data to New Relic servers when a connectivity
+  issue was encountered.
+
+* The agent will no longer crash the process in the event of unexpected calls to the
+  harvest callback.
+
 ### 4.13.0 (2018-12-20):
 
 * Fixed clearing of active harvest via _stopHarvester()
