@@ -2,6 +2,7 @@
 
 const tap = require('tap')
 const nock = require('nock')
+const sinon = require('sinon')
 const helper = require('../lib/agent_helper')
 const testCases = require('../lib/cross_agent_tests/response_code_handling.json')
 
@@ -125,6 +126,8 @@ function createStatusCodeTest(testCase) {
           // Clear agent start scheduled harvest to only allow manually triggered harvest
           agent._stopHarvester()
 
+          const scheduleHarvestSpy = sinon.spy(agent, '_scheduleHarvester')
+
           verifyAgentStart(error)
 
           // Watch state changes once agent already started
@@ -157,9 +160,19 @@ function createStatusCodeTest(testCase) {
 
             verifyDataRetention()
 
+            verifyNewHarvestScheduled(scheduleHarvestSpy)
+
             subTest.done()
           })
         })
+
+        function verifyNewHarvestScheduled(scheduleHarvestSpy) {
+          // disconnect case should not schedule a harvest
+          const expectedHarvests = testCase.disconnect ? 0 : 1
+          const actualHarvests = scheduleHarvestSpy.callCount
+
+          tap.equal(actualHarvests, expectedHarvests, 'wrong # harvests scheduled')
+        }
 
         function verifyAgentStart(error) {
           if (error) {
@@ -168,24 +181,19 @@ function createStatusCodeTest(testCase) {
 
           subTest.ok(startEndpoints.preconnect.isDone(), 'requested preconnect')
           subTest.ok(startEndpoints.connect.isDone(), 'requested connect')
-          subTest.ok(startEndpoints.settings.isDone(), 'requested settings')
         }
 
         function verifyHarvestErrorExpected(error) {
-          if (testCase.restart || testCase.disconnect) {
-            subTest.notOk(error, 'restart and disconnect overrule errors')
-          } else {
-            subTest.ok(error, 'should have error from other harvest endpoints')
+          subTest.ok(error, 'should have error from other harvest endpoints')
 
-            const isNockError = error.message.includes('Nock: No match for request')
-            if (!isNockError) {
-              console.error(error)
-            }
-            subTest.ok(isNockError, 'should be nock specific error')
+          subTest.match(
+            error.message,
+            /Nock: No match for request/,
+            'should be nock error'
+          )
 
-            const isEndpointUnderTest = error.message.includes(`method=${endpointName}`)
-            subTest.notOk(isEndpointUnderTest, 'should not fail for endpoint under test')
-          }
+          const isEndpointUnderTest = error.message.includes(`method=${endpointName}`)
+          subTest.notOk(isEndpointUnderTest, 'should not fail for endpoint under test')
         }
 
         function verifyRunBehavior() {
@@ -200,7 +208,6 @@ function createStatusCodeTest(testCase) {
 
             subTest.ok(restartEndpoints.preconnect.isDone(), 'requested preconnect')
             subTest.ok(restartEndpoints.connect.isDone(), 'requested connect')
-            subTest.ok(restartEndpoints.settings.isDone(), 'requested settings')
           } else {
             subTest.notOk(disconnected, 'should not have disconnected')
             subTest.notOk(connecting, 'should not have reconnected')
@@ -264,8 +271,7 @@ function createTestData(agent, callback) {
 function setupConnectionEndpoints() {
   return {
     preconnect: nockRequest('preconnect').reply(200, {return_value: TEST_DOMAIN}),
-    connect: nockRequest('connect').reply(200, {return_value: {agent_run_id: RUN_ID}}),
-    settings: nockRequest('agent_settings', RUN_ID).reply(200, {return_value: []})
+    connect: nockRequest('connect').reply(200, {return_value: {agent_run_id: RUN_ID}})
   }
 }
 

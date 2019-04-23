@@ -215,6 +215,11 @@ test('built-in http instrumentation should not swallow errors', function(t) {
       res.end()
     })
 
+    // Node 8.16 registers a domain listener inside the request
+    if (process.domain) {
+      delete process.domain
+    }
+
     // this is gonna blow up
     var x = x.dieshere.ohno
   }
