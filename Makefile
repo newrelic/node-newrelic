@@ -100,7 +100,7 @@ prerelease: node_modules ca-gen $(CERTIFICATE) docker
 
 smoke: clean
 	npm install --production --loglevel warn
-	npm install tap@12.0.0
+	npm install tap@12.4.0
 	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 
