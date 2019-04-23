@@ -113,7 +113,7 @@
     "clean": "./bin/clean.sh",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "npm ci && jsdoc -c ./jsdoc-conf.json --private -r .",
-    "integration": "npm run prepare-test && npm run sub-install && time tap --no-esm test/integration/**/*.tap.js --timeout=120",
+    "integration": "npm run prepare-test && npm run sub-install && time tap --no-esm test/integration/*.tap.js test/integration/*/*.tap.js test/integration/*/*/*.tap.js --timeout=120",
     "prepare-test": "npm ci && npm run ca-gen && npm run ssl && npm run docker-env",
     "lint": "eslint ./*.js lib",
     "public-docs": "npm ci && jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js && cp examples/shim/*.png out/",
