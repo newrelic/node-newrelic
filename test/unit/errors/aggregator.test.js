@@ -559,8 +559,8 @@ describe('Errors', function() {
         expect(errorJSON[0]).equal(0)
       })
 
-      it('should have the URL\'s scope', function() {
-        expect(errorJSON[1]).equal('WebTransaction/NormalizedUri/*')
+      it('should be scoped to the transaction', function() {
+        expect(errorJSON[1]).equal('WebTransaction/WebFrameworkUri/(not implemented)')
       })
 
       it('should have an HTTP status code message', function() {
