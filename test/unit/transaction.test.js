@@ -441,14 +441,31 @@ describe('Transaction', function() {
         expect(trans.name).equal('WebTransaction/Expressjs/GET/(not found)')
       })
 
-      it('produces a regular name when status is 501', function() {
-        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
-        expect(trans.name).equal('WebTransaction/NormalizedUri/*')
+      it('passes through status code when status is 405', function() {
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+        expect(trans.statusCode).equal(405)
       })
 
-      it('produces a regular partial name when status is 501', function() {
+      it('produces a `method not allowed` partial name when status is 405', function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+        expect(trans._partialName).equal('Expressjs/GET/(method not allowed)')
+      })
+
+      it('produces a `method not allowed` name when status is 405', function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+        expect(trans.name).equal('WebTransaction/Expressjs/GET/(method not allowed)')
+      })
+
+      it('produces a name based on 501 status code message', function() {
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
-        expect(trans._partialName).equal('NormalizedUri/*')
+        expect(trans.name).equal('WebTransaction/WebFrameworkUri/(not implemented)')
+      })
+
+      it('produces a regular partial name based on 501 status code message', function() {
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+        expect(trans._partialName).equal('WebFrameworkUri/(not implemented)')
       })
 
       it('passes through status code when status is 501', function() {
