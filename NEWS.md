@@ -1,3 +1,14 @@
+### 5.7.0 (2019-04-24):
+
+* Added `getStatusName` to `NameState`.
+
+  Now web transactions will be named after known status code messages (404, 405,
+  and 501).
+
+* Broke apart `integration` script test globs.
+
+* Added `appendPath` option to MiddlewareSpec.
+
 ### 5.6.4 (2019-04-16):
 
 * Refactored config to log warning and disable distributed tracing if enabled in
