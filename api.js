@@ -1197,6 +1197,35 @@ function instrumentDatastore(moduleName, onRequire, onError) {
   shimmer.registerInstrumentation(opts)
 }
 
+API.prototype.instrumentLoadedModule =
+function instrumentLoadedModule(moduleName, module) {
+    var metric = this.agent.metrics.getOrCreateMetric(
+      NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
+    )
+    metric.incrementCallCount()
+
+    if(!shimmer.registeredInstrumentations[moduleName]) {
+      logger.warn("No instrumentation registered for '%s'.", moduleName)
+      return false
+    }
+
+    const instrumentation = shimmer.registeredInstrumentations[moduleName];
+    if(!instrumentation.onRequire) {
+      logger.warn("No onRequire function registered for '%s'.", moduleName)
+      return false
+    }
+
+    const resolvedName = null;  //@TODO: normally the fully resolved module path -- do we need this?
+                                //       the shim uses it to get to a module root and then shim.require
+                                //       uses that module route.
+
+    const shim = shimmer.createShimFromType(instrumentation.type, this.agent, moduleName, resolvedName);
+
+    instrumentation.onRequire(shim, module, moduleName)
+
+    return true
+}
+
 /**
  * Registers an instrumentation function.
  *
