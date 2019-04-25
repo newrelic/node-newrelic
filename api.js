@@ -1199,29 +1199,28 @@ function instrumentDatastore(moduleName, onRequire, onError) {
 }
 
 API.prototype.instrumentLoadedModule =
-function instrumentLoadedModule(moduleName, module, instrumentationName) {
-    instrumentationName = instrumentationName ? instrumentationName : moduleName
+function instrumentLoadedModule(moduleName, module) {
     var metric = this.agent.metrics.getOrCreateMetric(
       NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
     )
     metric.incrementCallCount()
 
-    if(!shimmer.registeredInstrumentations[instrumentationName]) {
-      logger.warn("No instrumentation registered for '%s'.", instrumentationName)
+    if(!shimmer.registeredInstrumentations[moduleName]) {
+      logger.warn("No instrumentation registered for '%s'.", moduleName)
       return false
     }
 
-    const instrumentation = shimmer.registeredInstrumentations[instrumentationName];
+    const instrumentation = shimmer.registeredInstrumentations[moduleName];
     if(!instrumentation.onRequire) {
-      logger.warn("No onRequire function registered for '%s'.", instrumentationName)
+      logger.warn("No onRequire function registered for '%s'.", moduleName)
       return false
     }
 
     const resolvedName = require.resolve(moduleName)
 
-    const shim = shims.createShimFromType(instrumentation.type, this.agent, instrumentationName, resolvedName);
+    const shim = shims.createShimFromType(instrumentation.type, this.agent, moduleName, resolvedName);
 
-    instrumentation.onRequire(shim, module, instrumentationName)
+    instrumentation.onRequire(shim, module, moduleName)
 
     return true
 }
