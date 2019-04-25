@@ -1205,14 +1205,16 @@ function instrumentLoadedModule(moduleName, module) {
     )
     metric.incrementCallCount()
 
-    if(!shimmer.registeredInstrumentations[moduleName]) {
-      logger.warn("No instrumentation registered for '%s'.", moduleName)
+    const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
+    if(!shimmer.registeredInstrumentations[instrumentationName]) {
+      logger.warn("No instrumentation registered for '%s'.", instrumentationName)
       return false
     }
 
-    const instrumentation = shimmer.registeredInstrumentations[moduleName];
+
+    const instrumentation = shimmer.registeredInstrumentations[instrumentationName];
     if(!instrumentation.onRequire) {
-      logger.warn("No onRequire function registered for '%s'.", moduleName)
+      logger.warn("No onRequire function registered for '%s'.", instrumentationName)
       return false
     }
 
