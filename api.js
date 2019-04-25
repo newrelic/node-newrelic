@@ -9,6 +9,7 @@ const hashes = require('./lib/util/hashes')
 const properties = require('./lib/util/properties')
 const stringify = require('json-stringify-safe')
 const shimmer = require('./lib/shimmer')
+const shims = require('./lib/shim')
 const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
@@ -1215,11 +1216,9 @@ function instrumentLoadedModule(moduleName, module) {
       return false
     }
 
-    const resolvedName = null;  //@TODO: normally the fully resolved module path -- do we need this?
-                                //       the shim uses it to get to a module root and then shim.require
-                                //       uses that module route.
+    const resolvedName = require.resolve(moduleName)
 
-    const shim = shimmer.createShimFromType(instrumentation.type, this.agent, moduleName, resolvedName);
+    const shim = shims.createShimFromType(instrumentation.type, this.agent, moduleName, resolvedName);
 
     instrumentation.onRequire(shim, module, moduleName)
 
