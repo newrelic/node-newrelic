@@ -1,16 +1,16 @@
 const test  = require('tap').test
-const amqplib = require('amqplib')
+const amqplib = require('mongodb')
 const Shim = require('../../../lib/shim/shim')
 const API    = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 
 
 
-test('module that uses shim.require can be instrumented without an error', function testHelloWorld(t) {
+test('instrumentation that uses shim.require (mongodb) can run without an error', function testHelloWorld(t) {
     const agent = agentHelper.instrumentMockedAgent()
     const shimHelper = new Shim(agent, 'fake')
     const api = new API(agent)
 
-    api.instrumentLoadedModule('amqplib', amqplib)
+    api.instrumentLoadedModule('mongodb', amqplib)
     t.end()
 })
