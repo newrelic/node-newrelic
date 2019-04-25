@@ -1230,7 +1230,6 @@ function instrumentLoadedModule(moduleName, module) {
     return false
   }
 
-
   const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
   if (!instrumentation.onRequire) {
     logger.warn("No onRequire function registered for '%s'.", instrumentationName)
@@ -1240,7 +1239,11 @@ function instrumentLoadedModule(moduleName, module) {
   const resolvedName = require.resolve(moduleName)
 
   const shim = shims.createShimFromType(
-    instrumentation.type, this.agent, moduleName, resolvedName)
+    instrumentation.type,
+    this.agent,
+    moduleName,
+    resolvedName
+  )
 
   instrumentation.onRequire(shim, module, moduleName)
 

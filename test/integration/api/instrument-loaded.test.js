@@ -1,17 +1,14 @@
-const test  = require('tap').test
+'use strict'
+const {test} = require('tap')
 const mongodb = require('mongodb')
-const Shim = require('../../../lib/shim/shim')
-const API    = require('../../../api')
+const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 
+test('ensures instrumentation with shim.require can run without an error', (t) => {
+  const agent = agentHelper.instrumentMockedAgent()
+  const api = new API(agent)
 
-
-test('instrumentation that uses shim.require (mongodb) can run without an error', function testLoadMongodb(t) {
-    const agent = agentHelper.instrumentMockedAgent()
-    const shimHelper = new Shim(agent, 'fake')
-    const api = new API(agent)
-
-    api.instrumentLoadedModule('mongodb', mongodb)
-    t.type(mongodb, 'function')
-    t.end()
+  api.instrumentLoadedModule('mongodb', mongodb)
+  t.type(mongodb, 'function')
+  t.end()
 })
