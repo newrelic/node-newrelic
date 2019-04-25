@@ -1198,6 +1198,25 @@ function instrumentDatastore(moduleName, onRequire, onError) {
   shimmer.registerInstrumentation(opts)
 }
 
+/**
+ * Applies an instrumentation to an already loaded module.
+ *
+ *    // oh no, express was loaded before newrelic
+ *    const express   = require('express')
+ *    const newrelic  = require('newrelic')
+ *
+ *    // phew, we can use instrumentLoadedModule to make
+ *    // sure express is still instrumented
+ *    newrelic.instrumentLoadedModule('express', express)
+ *
+ * @param {string} moduleName
+ *  The module's name/identifier.  Will be normalized
+ *  into an instrumentation key keep going look at how
+ *  long this is
+ *
+ * @param {object} module
+ *  The actual module object or function we're instrumenting
+ */
 API.prototype.instrumentLoadedModule =
 function instrumentLoadedModule(moduleName, module) {
   var metric = this.agent.metrics.getOrCreateMetric(
