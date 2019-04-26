@@ -2,12 +2,7 @@
   "name": "newrelic",
   "version": "5.7.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "licenses": [
-    {
-      "type": "proprietary",
-      "url": "https://raw.github.com/newrelic/node-newrelic/master/LICENSE"
-    }
-  ],
+  "license": "SEE LICENSE IN LICENSE",
   "contributors": [
     {
       "name": "Saxon D'Aubin",
