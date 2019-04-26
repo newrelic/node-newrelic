@@ -1211,8 +1211,7 @@ function instrumentDatastore(moduleName, onRequire, onError) {
  *
  * @param {string} moduleName
  *  The module's name/identifier.  Will be normalized
- *  into an instrumentation key keep going look at how
- *  long this is
+ *  into an instrumentation key.
  *
  * @param {object} module
  *  The actual module object or function we're instrumenting
