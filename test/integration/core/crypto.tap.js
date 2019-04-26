@@ -67,9 +67,9 @@ test('randomFill', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
     var buf = Buffer.alloc(10)
-    crypto.randomFill(buf, function(err, buf) {
+    crypto.randomFill(buf, function(err, buffer) {
       t.notOk(err, 'should not error')
-      t.ok(buf.length, 10)
+      t.ok(buffer.length, 10)
       verifySegments(t, agent, 'crypto.randomFill')
     })
   })

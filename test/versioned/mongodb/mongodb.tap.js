@@ -552,10 +552,10 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
             collection.insert(it0rm, function(error) {
               if (error) t.fail(error)
 
-              runWithTransaction(t, function(agent, collection, transaction) {
+              runWithTransaction(t, function(agent, collect, transaction) {
                 addMetricsVerifier(t, agent, 'findAndRemove')
 
-                collection.findAndRemove(
+                collect.findAndRemove(
                   { bornToDie: {$exists: true} },
                   [['id', 1]],
                   cb
@@ -589,8 +589,8 @@ tap.test('agent instrumentation of node-mongodb-native', function(t) {
             collection.insert(it0rm, function(error) {
               if (error) t.fail(error)
 
-              runWithoutTransaction(t, function(agent, collection) {
-                collection.findAndRemove(
+              runWithoutTransaction(t, function(agent, collect) {
+                collect.findAndRemove(
                   { bornToDie: {$exists: true} },
                   [['id', 1]],
                   cb

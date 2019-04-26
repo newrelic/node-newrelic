@@ -193,7 +193,7 @@ test('pricing system-info docker', function(t) {
       }
     }
   })
-  var fetchSystemInfo = proxyquire('../../../lib/system-info', {
+  var fetchSystemInfoProxy = proxyquire('../../../lib/system-info', {
     './utilization': mockUtilization
   })
 
@@ -210,7 +210,7 @@ test('pricing system-info docker', function(t) {
     helper.unloadAgent(agent)
   })
 
-  fetchSystemInfo(agent, function cb_fetchSystemInfo(err, systemInfo) {
+  fetchSystemInfoProxy(agent, function cb_fetchSystemInfo(err, systemInfo) {
     var expectedData = {
       id: '47cbd16b77c50cbf71401c069cd2189f0e659af17d5a2daca3bddf59d8a870b2'
     }

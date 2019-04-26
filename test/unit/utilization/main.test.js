@@ -31,25 +31,25 @@ describe('getVendors', function() {
     let kubernetesCalled = false
 
     var getVendors = proxyquire('../../../lib/utilization', {
-      './aws-info': function(agent, cb) {
+      './aws-info': function(agentArg, cb) {
         awsCalled = true
         cb()
       },
-      './azure-info': function(agent, cb) {
+      './azure-info': function(agentArg, cb) {
         azureCalled = true
         cb()
       },
-      './gcp-info': function(agent, cb) {
+      './gcp-info': function(agentArg, cb) {
         gcpCalled = true
         cb()
       },
       './docker-info': {
-        getVendorInfo: function(agent, cb) {
+        getVendorInfo: function(agentArg, cb) {
           dockerCalled = true
           cb()
         }
       },
-      './kubernetes-info': (agent, cb) => {
+      './kubernetes-info': (agentArg, cb) => {
         kubernetesCalled = true
         cb()
       }
@@ -68,11 +68,11 @@ describe('getVendors', function() {
 
   it('returns multiple vendors if available', function(done) {
     var getVendors = proxyquire('../../../lib/utilization', {
-      './aws-info': function(agent, cb) {
+      './aws-info': function(agentArg, cb) {
         cb(null, 'aws info')
       },
       './docker-info': {
-        getVendorInfo: function(agent, cb) {
+        getVendorInfo: function(agentArg, cb) {
           cb(null, 'docker info')
         }
       }

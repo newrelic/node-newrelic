@@ -13,6 +13,10 @@ module.exports.mockAWSInfo = function() {
 
   var awsRedirect = nock(awsHost)
   for (var awsPath in awsResponses) {
-    awsRedirect.get('/2008-02-01/meta-data/' + awsPath).reply(200, awsResponses[awsPath])
+    if (Object.hasOwnProperty.call(awsResponses, awsPath)) {
+      awsRedirect.get(
+        '/2008-02-01/meta-data/' + awsPath).reply(200, awsResponses[awsPath]
+      )
+    }
   }
 }

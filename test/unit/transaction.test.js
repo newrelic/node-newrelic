@@ -733,7 +733,6 @@ describe('Transaction', function() {
         expect(transaction.getResponseTimeInMillis()).to.equal(
           transaction.timer.getDurationInMillis()
         )
-
       })
     })
 
@@ -751,7 +750,6 @@ describe('Transaction', function() {
         expect(transaction.getResponseTimeInMillis()).to.equal(
           transaction.trace.getDurationInMillis()
         )
-
       })
     })
   })

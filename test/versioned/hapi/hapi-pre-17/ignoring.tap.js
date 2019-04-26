@@ -44,7 +44,7 @@ tap.test('ignoring a Hapi route', function(t) {
   server.route({
     method: 'GET',
     path: '/order/{id}',
-    handler: function(request, reply) {
+    handler: function(req, reply) {
       api.setIgnoreTransaction(true)
       reply({status: 'cartcartcart'}).code(400)
     }

@@ -13,7 +13,7 @@ suite.add({
   name: 'isEmpty (object instance)',
   before: function() {testObj = {}},
   fn: function testIsEmptyObjectPrototype() {
-     properties.isEmpty(testObj)
+    properties.isEmpty(testObj)
   }
 })
 
@@ -21,7 +21,7 @@ suite.add({
   name: 'isEmpty (null prototype)',
   before: function() {testObj = Object.create(null)},
   fn: function testIsEmptyNullPrototype() {
-     properties.isEmpty(testObj)
+    properties.isEmpty(testObj)
   }
 })
 

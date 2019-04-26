@@ -1,12 +1,11 @@
 'use strict'
 
-var helper = require('../lib/agent_helper')
 var benchmark = require('../lib/benchmark')
 
 var suite = benchmark.createBenchmark({
   name: 'async hooks',
   async: true,
-  fn: test
+  fn: runBenchmark
 })
 
 var asyncHooks = require('async_hooks')
@@ -48,7 +47,7 @@ tests.forEach((test) => suite.add(test))
 
 suite.run()
 
-function test(agent, cb) {
+function runBenchmark(agent, cb) {
   var p = Promise.resolve()
   for (var i = 0; i < 300; ++i) {
     p = p.then(function noop() {})

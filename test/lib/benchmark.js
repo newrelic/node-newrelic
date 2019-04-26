@@ -76,7 +76,7 @@ class Benchmark {
 
         execute()
 
-        function execute(callback) {
+        function execute(cb) {
           var prevCpu = process.cpuUsage()
           if (test.async) {
             testFn(agent, after)
@@ -93,8 +93,8 @@ class Benchmark {
               test.after()
             }
 
-            if (typeof callback === 'function') {
-              return callback(afterCallback)
+            if (typeof cb === 'function') {
+              return cb(afterCallback)
             }
 
             afterCallback()

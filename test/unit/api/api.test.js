@@ -1143,7 +1143,7 @@ describe('the New Relic agent API', function() {
         {
           string : 'yep',
           object: {},
-          function: function(){},
+          function: function() {},
           number: 1234,
           symbol: Symbol('test'),
           undef: undefined,

@@ -910,7 +910,6 @@ describe('WebFrameworkShim', function() {
       )
 
 
-
       describe('when wrapping errorware', function() {
         it('should mark the error as handled', function() {
           var wrapped = shim.recordMiddleware(function() {

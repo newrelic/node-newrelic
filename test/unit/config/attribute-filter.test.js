@@ -5,7 +5,6 @@ const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
 const {expect} = require('chai')
 
 const DESTS = AttributeFilter.DESTINATIONS
-const TRANSACTION_SCOPE = 'transaction'
 
 describe('AttributeFilter', function() {
   describe('constructor', function() {

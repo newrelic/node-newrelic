@@ -712,9 +712,9 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
   t.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
 
-  function callback(parent, args) {
+  function callback(parent, callbackArgs) {
     var segment = tracer.getSegment()
-    t.deepEqual(args, [1, 2, 3])
+    t.deepEqual(callbackArgs, [1, 2, 3])
     t.equal(this, inner)
 
     if (parent) {
@@ -728,8 +728,8 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
   function takesCallback(name) {
     var segment = tracer.getSegment()
-    var args = [].slice.call(arguments, 1, -1)
-    var callback = arguments[arguments.length - 1]
+    var cbArgs = [].slice.call(arguments, 1, -1)
+    var cb = arguments[arguments.length - 1]
 
     if (name) {
       t.equal(segment.name, name)
@@ -745,7 +745,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
         t.equal(segment.children.length, 0)
       }
 
-      t.equal(callback.call(inner, segment, args), innerReturn)
+      t.equal(cb.call(inner, segment, cbArgs), innerReturn)
 
       if (segment) {
         t.equal(segment.children.length, 1)
@@ -803,7 +803,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
     return innerReturn
   }
 
-  function takesCallback(callback, name) {
+  function takesCallback(cb, name) {
     var segment = tracer.getSegment()
     var args = [].slice.call(arguments, 2)
 
@@ -821,7 +821,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
         t.equal(segment.children.length, 0)
       }
 
-      t.equal(callback.call(inner, segment, args), innerReturn)
+      t.equal(cb.call(inner, segment, args), innerReturn)
 
       if (segment) {
         t.equal(segment.children.length, 1)
