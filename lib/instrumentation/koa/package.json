@@ -30,6 +30,6 @@
     "methods": "^1.1.2"
   },
   "peerDependencies": {
-    "newrelic": ">=3.3.1"
+    "newrelic": ">=5.7.0"
   }
 }
