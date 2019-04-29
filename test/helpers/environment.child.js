@@ -1,2 +1,3 @@
-require('../..'); // require newrelic
+'use strict'
+require('../..') // require newrelic
 process.exit(0)

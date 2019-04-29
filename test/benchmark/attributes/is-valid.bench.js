@@ -6,7 +6,7 @@ const benchmark = require('../../lib/benchmark')
 const types = {
   symbol: Symbol('test'),
   object: {},
-  function: function(){},
+  function: function() {},
   undef: undefined,
   string: 'test',
   number: 1234,

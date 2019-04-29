@@ -91,10 +91,10 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
         )
       })
 
-      db.open(function(err, db) {
+      db.open(function(err, dbHandle) {
         if (err) return t.fail(err)
 
-        db.createCollection(COLLECTION, {safe: true}, function(err, collection) {
+        dbHandle.createCollection(COLLECTION, {safe: true}, function(err, collection) {
           if (err) return t.fail(err)
           t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
 
@@ -145,7 +145,7 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
                 )
 
                 tx.end()
-                db.close(function(err) {
+                dbHandle.close(function(err) {
                   if (err) t.fail(err)
                   t.end()
                 })
@@ -219,10 +219,10 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
         */
       })
 
-      db.open(function(err, db) {
+      db.open(function(err, dbHandle) {
         if (err) return t.fail(err)
 
-        db.createCollection(COLLECTION_CURSOR, function(err, collection) {
+        dbHandle.createCollection(COLLECTION_CURSOR, function(err, collection) {
           if (err) return t.fail(err)
 
           helper.runInTransaction(agent, function(tx) {
@@ -240,13 +240,13 @@ tap.test('MongoDB lifecycle', {timeout: 15000}, function(t) {
                 t.equals(results[0].hamchunx, 'verbloks', 'driver should still work')
 
                 var cursor2 = collection.find({id: 2})
-                cursor2.toArray(function(err, results) {
+                cursor2.toArray(function(err, result) {
                   if (err) return t.fail(err)
 
-                  t.equals(results.length, 0, 'should be no results')
+                  t.equals(result.length, 0, 'should be no results')
 
                   tx.end()
-                  db.close(function cb_close(err) {
+                  dbHandle.close(function cb_close(err) {
                     if (err) t.fail(err)
 
                     t.end()

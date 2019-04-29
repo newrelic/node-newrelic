@@ -6,7 +6,6 @@ const tap = require('tap')
 const https = require('https')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
-const TRANSACTION_SCOPE = 'transaction'
 
 tap.test('Agent#harvest', (t) => {
   t.autoend()

@@ -65,7 +65,7 @@ describe('Attributes', () => {
         sixth: undefined,
         seventh: null,
         eighth: Symbol('test'),
-        ninth: function(){}
+        ninth: function() {}
       }
 
       inst.addAttributes(

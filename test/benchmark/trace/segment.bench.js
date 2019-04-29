@@ -13,14 +13,14 @@ const suite = benchmark.createBenchmark({
 
 var root
 
-function addChildren(root, numChildren) {
-  const queue = [root]
+function addChildren(rootSegment, numChildren) {
+  const queue = [rootSegment]
   for (var numSegments = 1; numSegments < 900; numSegments += numChildren) {
     var parent = queue.shift()
     for (var i = 0; i < numChildren; ++i) {
       var child = parent.add('child ' + (numSegments + i))
       child.timer.setDurationInMillis(
-        (.99 + Math.random()/100) * parent.timer.durationInMillis,
+        (0.99 + Math.random() / 100) * parent.timer.durationInMillis,
         parent.timer.start + 1
       )
       queue.push(child)

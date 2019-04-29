@@ -1,24 +1,24 @@
 'use strict'
 
-var mysql = require('mysql')
-  , Q     = require('q')
-  , params = require('../../params')
-  
+var mysql = require('mysql'),
+  Q     = require('q'),
+  params = require('../../params')
+
 
 /**
  * There isn't actually an exported API, as all the action is in the setup
  * itself.
  */
 module.exports = function setup(options, imports, register) {
-  var logger    = options.logger
-    , username  = options.db.user
-    , dbname    = options.db.name
-    , tablename = options.db.table
-    
+  var logger    = options.logger,
+    username  = options.db.user,
+    dbname    = options.db.name,
+    tablename = options.db.table
+
 
   function run(client, commands) {
     return commands.reduce(
-      function (last, next) { return last.then(next); },
+      function(last, next) { return last.then(next) },
       Q.resolve(client)
     )
   }
@@ -155,7 +155,10 @@ module.exports = function setup(options, imports, register) {
   })
 
   // actually run the initializer
-  var isInitialized = run(client, [ensureTable, end, connectAsTestUser, truncateTable, createSeedData, ensureData, end])
+  var isInitialized = run(
+    client,
+    [ensureTable, end, connectAsTestUser, truncateTable, createSeedData, ensureData, end]
+  )
   isInitialized.then(
     succeeded,
     function notYetBootstrapped(error) {

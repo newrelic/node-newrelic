@@ -53,5 +53,13 @@
     "quote-props": [ "off", "consistent-as-needed" ],
     "quotes": ["off", "single"],
     "wrap-iife": "error"
-  }
+  },
+  "overrides": [
+    {
+        "files": ["test/integration/*.tap.js", "test/integration/*/*.tap.js", "test/integration/core/exec-me.js"],
+        "rules": {
+            "no-console": ["off"]
+        }
+    }
+  ]
 }

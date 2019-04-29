@@ -209,6 +209,6 @@ function runTest(t, callback) {
   })
 }
 
-function makeRequest(server, path, callback) {
+function makeRequest(serv, path, callback) {
   http.request({port: port, path: path}, callback).end()
 }

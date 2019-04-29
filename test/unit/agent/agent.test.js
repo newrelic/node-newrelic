@@ -175,7 +175,7 @@ describe('the New Relic agent', function() {
     })
 
     describe('when forcing transaction ignore status', function() {
-      var agent
+      var agentInstance
 
       beforeEach(function() {
         var config = configurator.initialize({
@@ -183,11 +183,11 @@ describe('the New Relic agent', function() {
             /^\/ham_snadwich\/ignore/
           ]}
         })
-        agent = new Agent(config)
+        agentInstance = new Agent(config)
       })
 
       it('should not error when forcing an ignore', function() {
-        var transaction = new Transaction(agent)
+        var transaction = new Transaction(agentInstance)
         transaction.forceIgnore = true
         transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
         expect(transaction.ignore).equal(true)
@@ -196,7 +196,7 @@ describe('the New Relic agent', function() {
       })
 
       it('should not error when forcing a non-ignore', function() {
-        var transaction = new Transaction(agent)
+        var transaction = new Transaction(agentInstance)
         transaction.forceIgnore = false
         transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
         expect(transaction.ignore).equal(false)
@@ -205,9 +205,9 @@ describe('the New Relic agent', function() {
       })
 
       it('should ignore when finalizeNameFromUri is not called', function() {
-        var transaction = new Transaction(agent)
+        var transaction = new Transaction(agentInstance)
         transaction.forceIgnore = true
-        agent._transactionFinished(transaction)
+        agentInstance._transactionFinished(transaction)
         expect(transaction.ignore).equal(true)
       })
     })

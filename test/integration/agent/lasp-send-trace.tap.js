@@ -57,9 +57,9 @@ tap.test('LASP-enabled agent', function(t) {
     proxy()
 
     transaction.end()
-      t.ok(agent.traces.trace, 'should have a trace before connect')
+    t.ok(agent.traces.trace, 'should have a trace before connect')
 
-      agent.start(function(error) {
+    agent.start(function(error) {
       t.error(error, 'connected without error')
       t.notOk(agent.traces.trace, 'should no longer have a trace')
       agent.harvest(function(error) {

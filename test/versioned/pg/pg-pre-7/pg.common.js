@@ -7,7 +7,6 @@ const helper = require('../../../lib/agent_helper')
 const {findSegment} = require('../../../lib/metrics_helper')
 const test = tap.test
 const {getMetricHostName} = require('../../../lib/metrics_helper')
-const {DESTINATIONS} = require('../../../../lib/config/attribute-filter')
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection

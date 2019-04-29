@@ -54,14 +54,15 @@ var tests = [
       for (var i = 0; i < NUM_PROMISES - 1; ++i) {
         prom = prom.then(function() {})
       }
-      prom.catch(function(){}).then(cb)
+      prom.catch(function() {}).then(cb)
     }
   },
 
   function promiseConstructor(Promise) {
     return function runTest(agent, cb) {
       for (var i = 0; i < NUM_PROMISES; ++i) {
-        new Promise(function(res, rej) {res()})
+        /* eslint-disable no-new */
+        new Promise(function(res) {res()})
       }
       cb()
     }
@@ -72,8 +73,8 @@ var tests = [
       var promises = []
       for (var i = 0; i < NUM_PROMISES / 2; ++i) {
         promises.push(
-          new Promise(function(resolve, reject) {
-            resolve(new Promise(function(res, rej) {
+          new Promise(function(resolve) {
+            resolve(new Promise(function(res) {
               setImmediate(res)
             }))
           })
@@ -99,7 +100,7 @@ var tests = [
 
   function promiseConstructorThrow(Promise) {
     return function runTest(agent, cb) {
-      (new Promise(function(res, rej) {throw new Error('Whoops!')})).catch((e) => {})
+      (new Promise(function() {throw new Error('Whoops!')})).catch(() => {})
       cb()
     }
   }

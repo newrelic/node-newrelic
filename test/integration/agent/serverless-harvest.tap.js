@@ -9,7 +9,6 @@ const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const TEST_ARN = 'test:arn'
 const TEST_EX_ENV = 'test-AWS_Lambda_nodejs8.10'
 const PROTOCOL_VERSION = 16
-const TRANSACTION_SCOPE = 'transaction'
 
 tap.test('Serverless mode harvest', (t) => {
   t.autoend()

@@ -61,7 +61,7 @@ function runTest(t) {
  *
  * @param Callback function to set off running the tests
  */
-function oracleSetup(runTest, plan) {
+function oracleSetup(testRunner, plan) {
   return function(t) {
     if (plan) {
       t.plan(plan)
@@ -89,7 +89,7 @@ function oracleSetup(runTest, plan) {
           }
 
           client.close()
-          runTest(t)
+          testRunner(t)
         })
       })
     })

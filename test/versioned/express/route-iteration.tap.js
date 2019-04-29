@@ -40,7 +40,9 @@ function findAllRoutes(router, path) {
     return path
   }
 
-  return router.stack.map(function(router) {
-    return findAllRoutes(router.handle, path + (router.route && router.route.path || ''))
+  return router.stack.map(function(routerr) {
+    return findAllRoutes(
+      routerr.handle, path + (routerr.route && routerr.route.path || '')
+    )
   })
 }

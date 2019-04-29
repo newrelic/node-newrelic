@@ -106,16 +106,16 @@ var validators = {
     if (report.errors.length) validations.transaction_sample_data = report.errors
 
     var traces = data[1]
-    decodeTraceData(traces, function(err, traces) {
+    decodeTraceData(traces, function(err, traceList) {
       if (err) {
         validations.transaction_traces =
           [util.format('unable to inflate encoded traces. zlib says: %s', err.message)]
         return callback(null, validations)
       }
 
-      validations.transaction_traces = traces.map(function(trace) {
-        var report = env.validate(trace, schemas.trace)
-        if (report.errors.length) return report.errors
+      validations.transaction_traces = traceList.map(function(trace) {
+        var validateReport = env.validate(trace, schemas.trace)
+        if (validateReport.errors.length) return validateReport.errors
       }).filter(function(trace) { if (trace) return true })
 
       if (validations.transaction_traces.length < 1) {
@@ -145,8 +145,10 @@ var validators = {
           )
           validations.sql_param_decode_errors.push(message)
         } else {
-          var report = env.validate(extracted, schemas.sqlParams)
-          if (report.errors.length) validations.sql_params.push(report.errors)
+          var validateReport = env.validate(extracted, schemas.sqlParams)
+          if (validateReport.errors.length) {
+            validations.sql_params.push(validateReport.errors)
+          }
         }
 
         toDecode -= 1
@@ -235,10 +237,10 @@ var validators = {
 function handleGenerically(validator) {
   return function handle(req, res, validations, next) {
     validators.redirectedHost(req, validations)
-    validator(req.body, validations, function(error, validations) {
+    validator(req.body, validations, function(error, validationList) {
       if (error) return next(error)
 
-      res.send(returnData(validations, {return_value: {}}))
+      res.send(returnData(validationList, {return_value: {}}))
       return next()
     })
   }
@@ -258,12 +260,12 @@ var methods = {
 
   connect: function(req, res, validations, next) {
     validators.redirectedHost(req, validations)
-    validators.connect(req.body, validations, function(error, validations) {
+    validators.connect(req.body, validations, function(error, validationList) {
       if (error) return next(error)
 
       res.send(
         returnData(
-          validations,
+          validationList,
           {
             return_value: {
               agent_run_id: 1337,
