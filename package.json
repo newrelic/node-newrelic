@@ -101,7 +101,7 @@
   ],
   "homepage": "http://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=6.0.0 <11.0.0",
+    "node": ">=6.0.0 <13.0.0",
     "npm": ">=3.0.0"
   },
   "directories": {
