@@ -739,6 +739,36 @@ describe('WebFrameworkShim', function() {
         })
       })
 
+      describe('when the middleware is asynchronous and spec.appendPath false', () => {
+        it('should not append path and should not pop path', function(done) {
+          const spec = {
+            route: '/foo/bar',
+            appendPath: false,
+            next: shim.LAST
+          }
+
+          const wrapped = shim.recordMiddleware(function(_req, next) {
+            setTimeout(function() {
+              // verify did not append the path
+              expect(txInfo.transaction.nameState.getPath()).to.equal('/expected')
+              next()
+            }, 10)
+          }, spec)
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            tx.nameState.appendPath('/expected')
+
+            txInfo.transaction = tx
+            wrapped(req, function() {
+              // verify did not pop back to '/' from '/expected'
+              expect(tx.nameState.getPath()).to.equal('/expected')
+              done()
+            })
+          })
+        })
+      })
+
       describe('when middleware returns a promise', function() {
         var unwrappedTimeout = null
         var middleware = null
@@ -865,7 +895,7 @@ describe('WebFrameworkShim', function() {
                     if (next) {
                       return next().then(() => {
                         expect(txInfo.transaction.nameState.getPath())
-                          .to.equal('/foo/bar')
+                          .to.equal('/')
                         resolve()
                       }, () => {
                         expect(txInfo.transaction.nameState.getPath()).to.equal('/')
@@ -891,6 +921,7 @@ describe('WebFrameworkShim', function() {
               promise: true
             })
           })
+
           it('should not append path', () => {
             return helper.runInTransaction(agent, (tx) => {
               tx.nameState.appendPath('/')
