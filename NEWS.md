@@ -1,3 +1,14 @@
+### 5.8.0 (2019-05-06):
+
+* Modifies `MiddlewareSpec` route property to allow functions. Defers route
+  processing and segment naming until just before needed (each middleware
+  invocation).
+
+* Fixed outdated `license` ref in `package.json`.
+
+* Middleware instrumentation now honors `spec.appendPath` for more cases and will
+  not pop paths when it has not appended a path.
+
 ### 5.7.0 (2019-04-24):
 
 * Added `getStatusName` to `NameState`.
