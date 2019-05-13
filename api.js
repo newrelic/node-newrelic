@@ -9,6 +9,7 @@ const hashes = require('./lib/util/hashes')
 const properties = require('./lib/util/properties')
 const stringify = require('json-stringify-safe')
 const shimmer = require('./lib/shimmer')
+const shims = require('./lib/shim')
 const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
@@ -1195,6 +1196,57 @@ function instrumentDatastore(moduleName, onRequire, onError) {
 
   opts.type = MODULE_TYPE.DATASTORE
   shimmer.registerInstrumentation(opts)
+}
+
+/**
+ * Applies an instrumentation to an already loaded module.
+ *
+ *    // oh no, express was loaded before newrelic
+ *    const express   = require('express')
+ *    const newrelic  = require('newrelic')
+ *
+ *    // phew, we can use instrumentLoadedModule to make
+ *    // sure express is still instrumented
+ *    newrelic.instrumentLoadedModule('express', express)
+ *
+ * @param {string} moduleName
+ *  The module's name/identifier.  Will be normalized
+ *  into an instrumentation key.
+ *
+ * @param {object} module
+ *  The actual module object or function we're instrumenting
+ */
+API.prototype.instrumentLoadedModule =
+function instrumentLoadedModule(moduleName, module) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
+  )
+  metric.incrementCallCount()
+
+  const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
+  if (!shimmer.registeredInstrumentations[instrumentationName]) {
+    logger.warn("No instrumentation registered for '%s'.", instrumentationName)
+    return false
+  }
+
+  const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
+  if (!instrumentation.onRequire) {
+    logger.warn("No onRequire function registered for '%s'.", instrumentationName)
+    return false
+  }
+
+  const resolvedName = require.resolve(moduleName)
+
+  const shim = shims.createShimFromType(
+    instrumentation.type,
+    this.agent,
+    moduleName,
+    resolvedName
+  )
+
+  instrumentation.onRequire(shim, module, moduleName)
+
+  return true
 }
 
 /**
