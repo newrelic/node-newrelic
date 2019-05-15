@@ -60,3 +60,6 @@ typings/
 
 # VS Code configuration
 .vscode
+
+# Mac folder attributes
+.DS_Store
