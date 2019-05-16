@@ -20,9 +20,6 @@ describe('Synchronous agent harvests', () => {
       serverless_mode: {
         enabled: true
       },
-      feature_flag: {
-        serverless_mode: true
-      },
       run_id: RUN_ID,
       apdex_t: 0.005
     })

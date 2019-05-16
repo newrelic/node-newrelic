@@ -68,7 +68,6 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
   t.plan(6)
 
   var proc = startProc({
-    'NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE': 'yes',
     'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
     'NEW_RELIC_LOG_ENABLED': 'n',
     'NEW_RELIC_HOME': path.join(path.resolve('test', 'helpers'))
