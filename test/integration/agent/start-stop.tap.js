@@ -45,9 +45,6 @@ tap.test('Agent should not connect to collector in serverless mode', (t) => {
     serverless_mode: {
       enabled: true
     },
-    feature_flag: {
-      serverless_mode: true
-    },
     logging: {
       level: 'trace'
     }

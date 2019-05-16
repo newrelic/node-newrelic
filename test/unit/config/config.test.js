@@ -492,44 +492,42 @@ describe('the agent configuration', function() {
     })
 
     describe('serverless mode', () => {
-      it('should require the feature flag to be enabled', () => {
+      it('should should disable when feature flag false', () => {
         idempotentEnv({
+          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: false,
           NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         }, (tc) => {
           expect(tc.serverless_mode.enabled).to.be.false
         })
       })
-    })
 
-    it('should pick up serverless_mode', () => {
-      idempotentEnv({
-        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
-      }, (tc) => {
-        expect(tc.serverless_mode.enabled).to.be.true
-      })
-    })
-
-    it('should explicitly disable cross_application_tracer in serverless_mode', () => {
-      idempotentEnv({
-        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
-      }, (tc) => {
-        expect(tc.serverless_mode.enabled).to.be.true
-        expect(tc.cross_application_tracer.enabled).to.be.false
-      })
-    })
-
-    it('should set serverless_mode from lambda-specific env var if not set by user',
-      () => {
+      it('should pick up serverless_mode', () => {
         idempotentEnv({
-          AWS_LAMBDA_FUNCTION_NAME: 'someFunc',
-          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
         }, (tc) => {
           expect(tc.serverless_mode.enabled).to.be.true
         })
-      }
-    )
+      })
+
+      it('should explicitly disable cross_application_tracer in serverless_mode', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.cross_application_tracer.enabled).to.be.false
+        })
+      })
+
+      it('should set serverless_mode from lambda-specific env var if not set by user',
+        () => {
+          idempotentEnv({
+            AWS_LAMBDA_FUNCTION_NAME: 'someFunc'
+          }, (tc) => {
+            expect(tc.serverless_mode.enabled).to.be.true
+          })
+        }
+      )
+    })
   })
 
   describe('with both high_security and security_policies_token defined', function() {
@@ -563,22 +561,22 @@ describe('the agent configuration', function() {
 
   describe('when loading from a file', () => {
     describe('serverless mode', () => {
-      it('should be false when the feature flag is not specified', () => {
-        const conf = Config.initialize({
-          serverless_mode: {
-            enabled: true
-          }
-        })
-        expect(conf.serverless_mode.enabled).to.be.false
-      })
-
-      it('should be true when both config and feature flags are supplied', () => {
+      it('should be false when the feature flag is false', () => {
         const conf = Config.initialize({
           serverless_mode: {
             enabled: true
           },
           feature_flag: {
-            serverless_mode: true
+            serverless_mode: false
+          }
+        })
+        expect(conf.serverless_mode.enabled).to.be.false
+      })
+
+      it('should be true when config true and feature flag defaulting true', () => {
+        const conf = Config.initialize({
+          serverless_mode: {
+            enabled: true
           }
         })
         expect(conf.serverless_mode.enabled).to.be.true
@@ -593,9 +591,6 @@ describe('the agent configuration', function() {
         serverless_mode: {
           enabled: true
         },
-        feature_flag: {
-          serverless_mode: true
-        },
         account_id: null
       })
       expect(config.distributed_tracing.enabled).to.be.false
@@ -606,7 +601,6 @@ describe('the agent configuration', function() {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
         NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
@@ -620,7 +614,6 @@ describe('the agent configuration', function() {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
         NEW_RELIC_APPLICATION_ID: 'defined',
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {
@@ -637,8 +630,7 @@ describe('the agent configuration', function() {
         cross_application_tracer: {enabled: true},
         serverless_mode: {
           enabled: true
-        },
-        feature_flag: {serverless_mode: true}
+        }
       })
       expect(config.cross_application_tracer.enabled).to.be.false
     })
@@ -646,7 +638,6 @@ describe('the agent configuration', function() {
     it('should pick up trusted_account_key', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
       }, (tc) => {
         expect(tc.trusted_account_key).to.equal('1234')
@@ -656,7 +647,6 @@ describe('the agent configuration', function() {
     it('should pick up primary_application_id', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
       }, (tc) => {
         expect(tc.primary_application_id).to.equal('5678')
@@ -666,7 +656,6 @@ describe('the agent configuration', function() {
     it('should pick up account_id', () => {
       idempotentEnv({
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
         NEW_RELIC_ACCOUNT_ID: '91011'
       }, (tc) => {
         expect(tc.account_id).to.equal('91011')
@@ -678,8 +667,7 @@ describe('the agent configuration', function() {
         const config = Config.initialize({
           account_id: '1234',
           primary_application_id: '2345',
-          serverless_mode: {enabled: true},
-          feature_flag: {serverless_mode: true}
+          serverless_mode: {enabled: true}
         })
 
         expect(config.account_id).to.equal('1234')
@@ -700,8 +688,7 @@ describe('the agent configuration', function() {
 
       it('should default logging to disabled', () => {
         const config = Config.initialize({
-          serverless_mode: {enabled: true},
-          feature_flag: {serverless_mode: true}
+          serverless_mode: {enabled: true}
         })
 
         expect(config.logging.enabled).to.be.false
@@ -710,7 +697,6 @@ describe('the agent configuration', function() {
       it('should allow logging to be enabled from configuration input', () => {
         const config = Config.initialize({
           serverless_mode: {enabled: true},
-          feature_flag: {serverless_mode: true},
           logging: {enabled: true}
         })
         expect(config.logging.enabled).to.be.true
@@ -718,8 +704,7 @@ describe('the agent configuration', function() {
 
       it('should allow logging to be enabled from env ', () => {
         const inputConfig = {
-          serverless_mode: {enabled: true},
-          feature_flag: {serverless_mode: true}
+          serverless_mode: {enabled: true}
         }
 
         const envVariables = {
@@ -735,8 +720,7 @@ describe('the agent configuration', function() {
     describe('via environment variables', () => {
       it('should default logging to disabled', () => {
         idempotentEnv({
-          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
         }, (config) => {
           expect(config.logging.enabled).to.be.false
         })
@@ -745,7 +729,6 @@ describe('the agent configuration', function() {
       it('should allow logging to be enabled from env', () => {
         idempotentEnv({
           NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true,
           NEW_RELIC_LOG_ENABLED: true
         }, (config) => {
           expect(config.logging.enabled).to.be.true
@@ -754,8 +737,7 @@ describe('the agent configuration', function() {
 
       it('should allow logging to be enabled from configuration ', () => {
         const envVariables = {
-          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: true
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
         }
 
         const inputConfig = {

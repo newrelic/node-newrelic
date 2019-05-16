@@ -41,9 +41,6 @@ describe('AwsLambda.patchLambdaHandler', () => {
       },
       serverless_mode: {
         enabled: true
-      },
-      feature_flag: {
-        serverless_mode: true,
       }
     })
     awsLambda = new AwsLambda(agent)

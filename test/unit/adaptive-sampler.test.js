@@ -83,9 +83,6 @@ describe('AdaptiveSampler', () => {
       agent = helper.loadMockedAgent({
         serverless_mode: {
           enabled: true
-        },
-        feature_flag: {
-          serverless_mode: true
         }
       })
       sampler = agent.transactionSampler
