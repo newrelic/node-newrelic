@@ -86,12 +86,8 @@ describe('shimmer', function() {
 
 
       it('should clean up NR added properties', () => {
-        const nrKeys = []
-        Object.keys(instrumentedModule).forEach((key) => {
-          if (key.startsWith('__NR_')) {
-            nrKeys.push(key)
-          }
-        })
+        const nrKeys =
+          Object.keys(instrumentedModule).filter((key) => key.startsWith('__NR_'))
 
         const message = `Expected keys to be equal but found: ${nrKeys.join(', ')}`
         expect(nrKeys.length, message).to.equal(0)
