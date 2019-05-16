@@ -83,6 +83,19 @@ describe('shimmer', function() {
         require(moduleName)
         expect(counter).to.equal(1)
       })
+
+
+      it('should clean up NR added properties', () => {
+        const nrKeys = []
+        Object.keys(instrumentedModule).forEach((key) => {
+          if (key.startsWith('__NR_')) {
+            nrKeys.push(key)
+          }
+        })
+
+        const message = `Expected keys to be equal but found: ${nrKeys.join(', ')}`
+        expect(nrKeys.length, message).to.equal(0)
+      })
     }
   }
 
