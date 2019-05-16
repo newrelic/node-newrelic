@@ -787,9 +787,16 @@ describe('WebFrameworkShim', function() {
                     return next().then(function() {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
                       resolve()
-                    }, function() {
+                    }, function(err) {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/')
-                      resolve()
+
+                      if (err && err.name === 'AssertionError') {
+                        // Reject assertion errors from promises to fail the test
+                        reject(err)
+                      } else {
+                        // Resolve for errors purposely triggered for tests.
+                        resolve()
+                      }
                     })
                   }
                   if (err) {
@@ -876,6 +883,26 @@ describe('WebFrameworkShim', function() {
             })
           })
         })
+
+        it('should appropriately parent child segments in promise', () => {
+          return helper.runInTransaction(agent, (tx) => {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, null, () => {
+              return new Promise((resolve) => {
+                const _tx = agent.tracer.getTransaction()
+                expect(_tx).to.equal(tx)
+                expect(_tx.nameState.getPath()).to.equal('/')
+
+                const childSegment = _tx.agent.tracer.createSegment('childSegment')
+                expect(childSegment.parent.name)
+                  .to.equal('Nodejs/Middleware/Restify/middleware//foo/bar')
+
+                resolve()
+              })
+            })
+          })
+        })
       })
 
       describe(
@@ -897,9 +924,16 @@ describe('WebFrameworkShim', function() {
                         expect(txInfo.transaction.nameState.getPath())
                           .to.equal('/')
                         resolve()
-                      }, () => {
+                      }, (err) => {
                         expect(txInfo.transaction.nameState.getPath()).to.equal('/')
-                        resolve()
+
+                        if (err && err.name === 'AssertionError') {
+                          // Reject assertion errors from promises to fail the test
+                          reject(err)
+                        } else {
+                          // Resolve for errors purposely triggered for tests.
+                          resolve()
+                        }
                       })
                     }
                     if (err) {
