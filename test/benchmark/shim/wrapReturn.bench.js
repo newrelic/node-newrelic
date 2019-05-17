@@ -1,13 +1,13 @@
 'use strict'
 
-var shared = require('./shared')
+const shared = require('./shared')
 
 
-var s = shared.makeSuite('Shim segments')
-var suite = s.suite
-var shim = s.shim
+const s = shared.makeSuite('Shim segments')
+const suite = s.suite
+const shim = s.shim
 
-var test = null
+let test = null
 
 const testFunctions = {
   'defineProperty': function testDefProp() {
