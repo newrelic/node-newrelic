@@ -7,9 +7,12 @@ var licenses = require('./licenses')
 var path = require('path')
 var pkg = require('../../package.json')
 
-
 var MODULE_DIR = path.resolve(__dirname, '../../node_modules')
 
+const LICENSE_MESSAGE =
+  'If licenses are out of date: along with licenses.json, please ' +
+  'update LICENSE file and license info on docs site: ' +
+  'https://docs.newrelic.com/docs/licenses/license-information/agent-licenses/nodejs-agent-licenses'
 
 describe('Agent licenses', function() {
   this.timeout(5000)
@@ -40,7 +43,7 @@ describe('Agent licenses', function() {
         return obj
       }, {})
 
-      expect(depLicenses).to.deep.equal(licenses)
+      expect(depLicenses, LICENSE_MESSAGE).to.deep.equal(licenses)
       done()
     })
   })
