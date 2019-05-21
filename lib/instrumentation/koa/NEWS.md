@@ -1,3 +1,10 @@
+### 2.0.0 (2019-05-21):
+
+* `koa-router` instrumentation now names transactions after the internal `koa-router` matched route. In the case of multiple matches, the last matched route that can serve requests is used.
+
+* Added `allowedMethods` middleware coverage.
+
+* Fixed issue where `koa` middleware instrumentation did not accurately track `next` method. This could impact custom transaction naming and router framework naming, in certain situations.
 
 ### 1.0.8 (2019-01-07):
 
