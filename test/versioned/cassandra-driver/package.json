@@ -5,18 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=0.10.0"
-      },
-      "dependencies": {
-        "cassandra-driver": ">=1.0.0 <3.4.0"
-      },
-      "files": [
-        "query.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=4"
+        "node": ">=6"
       },
       "dependencies": {
         "cassandra-driver": ">=3.4.0 <4"

@@ -1,3 +1,20 @@
+### 5.9.0 (2019-05-20):
+
+* Removed older versions of Cassandra from versioned tests
+
+* For debug/test runs, shimmer will now cleanup the __NR_shim property on
+  instrumented methods. This leftover property did not result in any negative
+  behaviors but cleaning up for thoroughness and to prevent potential confusion.
+
+* `serverless_mode` feature flag is now enabled by default.
+
+* Fixes `recordMiddleware` promise parenting for certain cases where child segments
+  are created within resolving middleware `next()` promises.
+
+* Added `instrumentLoadedModule` function to the API, allowing end-users to manually
+  apply an instrumentation to a loaded module. Useful for cases where some module
+  needs to be loaded before newrelic
+
 ### 5.8.0 (2019-05-06):
 
 * Modifies `MiddlewareSpec` route property to allow functions. Defers route
