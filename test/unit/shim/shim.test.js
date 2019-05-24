@@ -477,6 +477,52 @@ describe('Shim', function() {
         expect(res.args).to.eql(['a', 'b', 'c'])
       })
 
+      it('should pass properties through', function() {
+        const original = toWrap.foo
+        original.testSymbol = Symbol('test')
+        shim.wrapReturn(toWrap, 'foo', function() {})
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // set on original
+        expect(toWrap.foo.testSymbol).to.equal(original.testSymbol)
+      })
+
+      it('should pass assignments to the wrapped method', function() {
+        const original = toWrap.foo
+        shim.wrapReturn(toWrap, 'foo', function() {})
+        toWrap.foo.testProp = 1
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // set via wrapper
+        expect(original.testProp).to.equal(1)
+      })
+
+      it('should pass defined properties to the wrapped method', function() {
+        const original = toWrap.foo
+        shim.wrapReturn(toWrap, 'foo', function() {})
+        Object.defineProperty(toWrap.foo, 'testDefProp', {value: 4})
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // set with defineProperty via wrapper
+        expect(original.testDefProp).to.equal(4)
+      })
+
+
+      it('should have the same key enumeration', function() {
+        const original = toWrap.foo
+        original.testSymbol = Symbol('test')
+        shim.wrapReturn(toWrap, 'foo', function() {})
+        toWrap.foo.testProp = 1
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // should have the same keys
+        expect(Object.keys(original)).to.deep.equal(Object.keys(toWrap.foo))
+      })
+
       it('should call the spec with returned value', function() {
         var specExecuted = false
         shim.wrapReturn(toWrap, 'foo', function(_, fn, name, ret) {
