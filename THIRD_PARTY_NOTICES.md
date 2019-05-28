@@ -23,7 +23,7 @@ can be found at https://github.com/newrelic/node-newrelic.
 
 This product includes source derived from
 [async](https://github.com/caolan/async), distributed under the
-[MIT license](https://github.com/caolan/async/blob/master/LICENSE):
+[MIT license](https://github.com/caolan/async/blob/a0b2be5a7add90d74e1337621be536ab01b584ae/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -52,7 +52,7 @@ THE SOFTWARE.
 
 This product includes source derived from
 [async](https://github.com/maxogden/concat-stream), distributed under the
-[MIT license](https://github.com/maxogden/concat-stream/blob/master/LICENSE):
+[MIT license](https://github.com/maxogden/concat-stream/blob/ceaa101bd2e19c5878a98dd6cb875108f49bf5c5/LICENSE):
 
 ```
 The MIT License
@@ -104,7 +104,7 @@ THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 This product includes source derived from
 [json-stringify-safe](https://github.com/moll/json-stringify-safe), distributed under the
-[ISC license](https://github.com/moll/json-stringify-safe/blob/master/LICENSE):
+[ISC license](https://github.com/moll/json-stringify-safe/blob/5930d6e51c58cf3a134f36301b029408bcfd09e5/LICENSE):
 
 ```
 The ISC License
@@ -129,7 +129,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This product includes source derived from
 [readable-stream](https://github.com/nodejs/readable-stream), distributed under the
-[MIT license](https://github.com/nodejs/readable-stream/blob/master/LICENSE):
+[MIT license](https://github.com/nodejs/readable-stream/blob/4ba93f84cf8812ca2af793c7304a5c16de72088a/LICENSE):
 
 ```
 Node.js is licensed for use as follows:
@@ -186,7 +186,7 @@ IN THE SOFTWARE.
 
 This product includes source derived from
 [semver](https://github.com/npm/node-semver), distributed under the
-[ISC license](https://github.com/npm/node-semver/blob/master/LICENSE):
+[ISC license](https://github.com/npm/node-semver/blob/0e3bcedfb19e2f7ef64b9eb0a0f1554ed7d94be0/LICENSE):
 
 ```
 The ISC License
@@ -210,7 +210,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This product includes source derived from
 [js-fibonacci-heap](https://github.com/gwtw/js-fibonacci-heap), distributed under the
-[MIT license](https://github.com/gwtw/js-fibonacci-heap/blob/master/LICENSE):
+[MIT license](https://github.com/gwtw/js-fibonacci-heap/blob/ec31d0966f9e54b0a52f3a074fe1d2442ab69979/LICENSE):
 
 ```
 The MIT License (MIT)
