@@ -51,6 +51,7 @@ else
   docker run -d --name nr_node_mssql \
     -e 'ACCEPT_EULA=Y' \
     -e 'SA_PASSWORD=Passw0rd@123' \
+    -e 'MSSQL_PID=Developer' \
     -p 1433:1433 \
-    mcr.microsoft.com/mssql/server:2019-CTP3.0-ubuntu
+    mcr.microsoft.com/mssql/server:2017-latest-ubuntu
 fi
