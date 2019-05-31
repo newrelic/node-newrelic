@@ -44,3 +44,13 @@ if docker ps -a | grep -q "nr_node_rabbit"; then
 else
   docker run -d --name nr_node_rabbit -p 5672:5672 rabbitmq:3;
 fi
+
+if docker ps -a | grep -q "nr_node_mssql"; then
+  docker start nr_node_mssql;
+else
+  docker run -d --name nr_node_mssql \
+    -e 'ACCEPT_EULA=Y' \
+    -e 'SA_PASSWORD=Passw0rd@123' \
+    -p 1433:1433 \
+    mcr.microsoft.com/mssql/server:2019-CTP3.0-ubuntu
+fi
