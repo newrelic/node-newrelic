@@ -42,6 +42,7 @@ To run the tests you need an openssl command-line binary, and some services:
 * Cassandra
 * Memcached
 * MongoDB
+* MSSQL
 * MySQL
 * Postgres
 * Redis
