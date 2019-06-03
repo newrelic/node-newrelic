@@ -11,26 +11,16 @@ var tedious = require('tedious')
 var Connection = tedious.Connection
 var Request = tedious.Request
 
-
 var setupSql = `
-IF NOT EXISTS (SELECT * FROM master.sys.databases WHERE name = N'${params.mssql_db}')
-BEGIN
-    CREATE DATABASE ${params.mssql_db}
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'TestTable') 
-BEGIN
-    CREATE TABLE TestTable (
-        id INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
-        test NVARCHAR(100) NOT NULL
-    )
-    
-    INSERT INTO TestTable(test) VALUES('foo')
-END`;
-
-var tearDownSql = `
-  DROP TABLE TestTable
-`
+  DROP TABLE IF EXISTS dbo.TestTable;
+  CREATE TABLE TestTable
+  (
+    id   INTEGER       NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    test NVARCHAR(100) NOT NULL
+  );
+  INSERT INTO TestTable(test)
+  VALUES ('foo');
+`;
 
 function verifyMetrics(t, actualMetrics, expected) {
   var actualUnscoped = actualMetrics.unscoped
@@ -50,20 +40,24 @@ function verifyMetrics(t, actualMetrics, expected) {
   })
 }
 
+function verifySegments(t, transaction, expectedOperation) {
+  var trace = transaction.trace
+
+  t.ok(trace, 'trace should exist')
+  t.ok(trace.root, 'trace root should exist')
+  t.equal(trace.root.children.length, 1, 'a segment should exist')
+
+  var segment = trace.root.children[0]
+
+  t.equals(
+    segment.name,
+    'Datastore/statement/MSSQL/TestTable/' + expectedOperation,
+    'should register ' + expectedOperation + ' call'
+  )
+}
+
 test('tedious instrumentation', function (t) {
   var tediousConnection
-  // var agent
-  //
-  // t.beforeEach(function(done) {
-  //   agent = helper.instrumentMockedAgent()
-  //
-  //   done()
-  // })
-  //
-  // t.afterEach(function(done) {
-  //   helper.unloadAgent(agent)
-  //   done()
-  // })
 
   t.test('before all', function (t) {
     tediousConnection = new Connection({
@@ -76,6 +70,7 @@ test('tedious instrumentation', function (t) {
         type: 'default'
       },
       options: {
+        database: params.mssql_db,
         port: params.mssql_port,
         rowCollectionOnRequestCompletion: true
       }
@@ -123,6 +118,8 @@ test('tedious instrumentation', function (t) {
           'Datastore/statement/MSSQL/TestTable/select': 1
         })
 
+        verifySegments(t, transaction, 'select')
+
         t.end()
       }))
     })
@@ -153,6 +150,8 @@ test('tedious instrumentation', function (t) {
           'Datastore/operation/MSSQL/insert': 1,
           'Datastore/statement/MSSQL/TestTable/insert': 1
         })
+
+        verifySegments(t, transaction, 'insert')
 
         t.end()
       }))
@@ -195,6 +194,8 @@ test('tedious instrumentation', function (t) {
             'Datastore/statement/MSSQL/TestTable/update': 1
           })
 
+          verifySegments(t, transaction, 'update')
+
           t.end()
         })
 
@@ -204,55 +205,91 @@ test('tedious instrumentation', function (t) {
       })
     }))
   })
-  //
-  // t.test('delete', function(t) {
-  //   t.end()
-  // })
-  //
-  // t.test('stored procedure', function(t) {
-  //   t.end()
-  // })
-  //
-  // t.test('transaction', function(t) {
-  //   t.end()
-  // })
 
-  // t.test('bulk insert', function(t) {
-  //   t.end()
-  // })
+  t.test('delete', function (t) {
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
-  // t.test('obfuscated', function(t) {
-  //   t.end()
-  // })
+    var selectSql = 'SELECT TOP 1 * FROM TestTable'
+    var deleteSql = "DELETE FROM TestTable WHERE id = @id"
 
-  //
-  // t.test('cancel', function(t) {
-  //   t.end()
-  // })
-  //
-  // t.test('close', function(t) {
-  //   t.end()
-  // })
-  //
-  // t.test('reset', function(t) {
-  //   t.end()
-  // })
+    tediousConnection.execSql(new Request(selectSql, function (error, _, rows) {
+      if (error) {
+        return t.fail(error)
+      }
+
+      var id = rows[0].find(function (row) {
+        return row.metadata.colName === 'id'
+      }).value
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        var request = new Request(deleteSql, function (error) {
+          if (error) {
+            return t.fail(error)
+          }
+
+          var agentTx = agent.getTransaction()
+          t.ok(agentTx, 'transaction should be visible')
+          t.equal(transaction, agentTx, 'current transaction should match initial')
+
+          transaction.end()
+
+          verifyMetrics(t, transaction.metrics, {
+            'Datastore/all': 1,
+            'Datastore/allWeb': 1,
+            'Datastore/MSSQL/all': 1,
+            'Datastore/MSSQL/allWeb': 1,
+            'Datastore/operation/MSSQL/delete': 1,
+            'Datastore/statement/MSSQL/TestTable/delete': 1
+          })
+
+          verifySegments(t, transaction, 'delete')
+
+          t.end()
+        })
+
+        request.addParameter('id', tedious.TYPES.Int, id)
+
+        tediousConnection.execSql(request)
+      })
+    }))
+  })
+
+  t.test('stored procedure', function (t) {
+    var dropProcSql = "DROP PROCEDURE IF EXISTS test_stp;"
+    var procSql = `
+      CREATE PROCEDURE test_stp
+        @text nvarchar(50)
+    AS
+      SET NOCOUNT ON;
+    
+      INSERT INTO TestTable(test)
+      VALUES (@text);
+    
+      SELECT SCOPE_IDENTITY();`
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
+
+    tediousConnection.execSql(new Request(dropProcSql, function (error,) {
+      if (error) {
+        return t.fail(error)
+      }
+
+      tediousConnection.execSql(new Request(procSql, function (error) {
+        if (error) {
+          return t.fail(error)
+        }
+
+        t.end()
+      }))
+    }))
+  })
 
   t.test('teardown', function (t) {
     helper.unloadAgent(agent)
     if (tediousConnection && !tediousConnection.closed) {
-      tediousConnection.execSql(new Request(tearDownSql, function (error) {
-        if (error) {
-          throw error
-        }
 
-        tediousConnection.close()
-
-        t.end()
-      }))
-    } else {
-      t.end()
+      tediousConnection.close()
     }
+    t.end()
   })
 
   t.end()

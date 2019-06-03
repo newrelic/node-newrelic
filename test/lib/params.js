@@ -35,5 +35,5 @@ module.exports = {
   mssql_port: process.env.NR_NODE_TEST_MSSQL_PORT || 1433,
   mssql_user: process.env.NR_NODE_TEST_MSSQL_USER || 'sa',
   mssql_pass: process.env.NR_NODE_TEST_MSSQL_PASS || 'Passw0rd@123',
-  mssql_db: process.env.NR_NODE_TEST_MSSQL_DB || 'nr_acceptance',
+  mssql_db: process.env.NR_NODE_TEST_MSSQL_DB || 'master',
 }
