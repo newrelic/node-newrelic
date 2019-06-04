@@ -41,20 +41,24 @@ function verifyMetrics(t, actualMetrics, expected) {
   })
 }
 
-function verifyRootSegment(t, transaction, expectedSegmentName) {
+function verifySegments(t, transaction, expectedSegments) {
   var trace = transaction.trace
 
   t.ok(trace, 'trace should exist')
   t.ok(trace.root, 'trace root should exist')
   t.equal(trace.root.children.length, 1, 'a segment should exist')
 
-  var segment = trace.root.children[0]
+  var segment = trace.root
 
-  t.equals(
-    segment.name,
-    expectedSegmentName,
-    'should register ' + expectedSegmentName
-  )
+  for (var i = 0; i < expectedSegments.length; i++) {
+    var expectedSegmentName = expectedSegments[i]
+
+    segment = segment.children.find(function(childSegment) {
+      return childSegment.name === expectedSegmentName
+    })
+
+    t.ok(segment, "should have called segment called " + expectedSegmentName)
+  }
 }
 
 test('tedious instrumentation', function(t) {
@@ -119,7 +123,7 @@ test('tedious instrumentation', function(t) {
           'Datastore/statement/MSSQL/TestTable/select': 1
         })
 
-        verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/select')
+        verifySegments(t, transaction, ['Datastore/statement/MSSQL/TestTable/select'])
 
         t.end()
       }))
@@ -152,7 +156,7 @@ test('tedious instrumentation', function(t) {
           'Datastore/statement/MSSQL/TestTable/insert': 1
         })
 
-        verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/insert')
+        verifySegments(t, transaction, ['Datastore/statement/MSSQL/TestTable/insert'])
 
         t.end()
       }))
@@ -195,7 +199,7 @@ test('tedious instrumentation', function(t) {
             'Datastore/statement/MSSQL/TestTable/update': 1
           })
 
-          verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/update')
+          verifySegments(t, transaction, ['Datastore/statement/MSSQL/TestTable/update'])
 
           t.end()
         })
@@ -243,7 +247,7 @@ test('tedious instrumentation', function(t) {
             'Datastore/statement/MSSQL/TestTable/delete': 1
           })
 
-          verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/delete')
+          verifySegments(t, transaction, ['Datastore/statement/MSSQL/TestTable/delete'])
 
           t.end()
         })
@@ -299,10 +303,10 @@ test('tedious instrumentation', function(t) {
               'Datastore/statement/MSSQL/test_stp/ExecuteProcedure': 1
             })
 
-            verifyRootSegment(
+            verifySegments(
               t,
               transaction,
-              'Datastore/statement/MSSQL/test_stp/ExecuteProcedure')
+              ['Datastore/statement/MSSQL/test_stp/ExecuteProcedure'])
 
             t.end()
           })
@@ -313,6 +317,55 @@ test('tedious instrumentation', function(t) {
         })
       }))
     }))
+  })
+
+  t.test("successful transaction", function(t) {
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
+
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      tediousConnection.transaction(function userSuppliedCallback(error, endTransaction) {
+        if (error) {
+          endTransaction()
+          return t.fail(error)
+        }
+
+        var agentTx = agent.getTransaction()
+        t.ok(agentTx, 'transaction should be visible')
+        t.equal(transaction, agentTx, 'current transaction should match initial')
+
+        endTransaction(null, function() {
+          transaction.end()
+
+          verifyMetrics(t, transaction.metrics, {
+            'Datastore/all': 2,
+            'Datastore/allWeb': 2,
+            'Datastore/MSSQL/all': 2,
+            'Datastore/MSSQL/allWeb': 2,
+            'Datastore/operation/MSSQL/transaction': 1,
+            'Datastore/operation/MSSQL/commitTransaction': 1
+          })
+
+          verifySegments(
+            t,
+            transaction,
+            [
+              'Datastore/operation/MSSQL/transaction',
+              'Callback: userSuppliedCallback',
+              'Datastore/operation/MSSQL/commitTransaction'
+            ])
+
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test("nested transaction", function(t) {
+    t.end()
+  })
+
+  t.test("transaction rollback", function(t) {
+    t.end()
   })
 
   t.test('teardown', function(t) {
