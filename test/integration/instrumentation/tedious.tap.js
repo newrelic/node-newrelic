@@ -10,6 +10,7 @@ var agent = helper.instrumentMockedAgent()
 var tedious = require('tedious')
 var Connection = tedious.Connection
 var Request = tedious.Request
+var TediousTypes = tedious.TYPES
 
 var setupSql = `
   DROP TABLE IF EXISTS dbo.TestTable;
@@ -40,7 +41,7 @@ function verifyMetrics(t, actualMetrics, expected) {
   })
 }
 
-function verifySegments(t, transaction, expectedOperation) {
+function verifySegments(t, transaction, expectedSegmentName) {
   var trace = transaction.trace
 
   t.ok(trace, 'trace should exist')
@@ -51,8 +52,8 @@ function verifySegments(t, transaction, expectedOperation) {
 
   t.equals(
     segment.name,
-    'Datastore/statement/MSSQL/TestTable/' + expectedOperation,
-    'should register ' + expectedOperation + ' call'
+    expectedSegmentName,
+    'should register ' + expectedSegmentName
   )
 }
 
@@ -118,7 +119,7 @@ test('tedious instrumentation', function (t) {
           'Datastore/statement/MSSQL/TestTable/select': 1
         })
 
-        verifySegments(t, transaction, 'select')
+        verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/select')
 
         t.end()
       }))
@@ -151,7 +152,7 @@ test('tedious instrumentation', function (t) {
           'Datastore/statement/MSSQL/TestTable/insert': 1
         })
 
-        verifySegments(t, transaction, 'insert')
+        verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/insert')
 
         t.end()
       }))
@@ -194,7 +195,7 @@ test('tedious instrumentation', function (t) {
             'Datastore/statement/MSSQL/TestTable/update': 1
           })
 
-          verifySegments(t, transaction, 'update')
+          verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/update')
 
           t.end()
         })
@@ -242,7 +243,7 @@ test('tedious instrumentation', function (t) {
             'Datastore/statement/MSSQL/TestTable/delete': 1
           })
 
-          verifySegments(t, transaction, 'delete')
+          verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/delete')
 
           t.end()
         })
@@ -268,7 +269,7 @@ test('tedious instrumentation', function (t) {
       SELECT SCOPE_IDENTITY();`
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
-    tediousConnection.execSql(new Request(dropProcSql, function (error,) {
+    tediousConnection.execSql(new Request(dropProcSql, function (error) {
       if (error) {
         return t.fail(error)
       }
@@ -278,7 +279,38 @@ test('tedious instrumentation', function (t) {
           return t.fail(error)
         }
 
-        t.end()
+        helper.runInTransaction(agent, function transactionInScope(transaction) {
+          var request = new Request('test_stp', function (error) {
+            if (error) {
+              return t.fail(error)
+            }
+
+            var agentTx = agent.getTransaction()
+            t.ok(agentTx, 'transaction should be visible')
+            t.equal(transaction, agentTx, 'current transaction should match initial')
+
+            transaction.end()
+
+            verifyMetrics(t, transaction.metrics, {
+              'Datastore/all': 1,
+              'Datastore/allWeb': 1,
+              'Datastore/MSSQL/all': 1,
+              'Datastore/MSSQL/allWeb': 1,
+              'Datastore/statement/MSSQL/test_stp/ExecuteProcedure': 1
+            })
+
+            verifySegments(
+              t,
+              transaction,
+              'Datastore/statement/MSSQL/test_stp/ExecuteProcedure')
+
+            t.end()
+          })
+
+          request.addParameter('text', TediousTypes.NVarChar, 'foobar')
+
+          tediousConnection.callProcedure(request)
+        })
       }))
     }))
   })
