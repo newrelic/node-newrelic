@@ -21,12 +21,12 @@ var setupSql = `
   );
   INSERT INTO TestTable(test)
   VALUES ('foo');
-`;
+`
 
 function verifyMetrics(t, actualMetrics, expected) {
   var actualUnscoped = actualMetrics.unscoped
 
-  Object.keys(expected).forEach(function (metricName) {
+  Object.keys(expected).forEach(function(metricName) {
     var actual = actualUnscoped[metricName]
 
     t.ok(
@@ -41,7 +41,7 @@ function verifyMetrics(t, actualMetrics, expected) {
   })
 }
 
-function verifySegments(t, transaction, expectedSegmentName) {
+function verifyRootSegment(t, transaction, expectedSegmentName) {
   var trace = transaction.trace
 
   t.ok(trace, 'trace should exist')
@@ -57,10 +57,10 @@ function verifySegments(t, transaction, expectedSegmentName) {
   )
 }
 
-test('tedious instrumentation', function (t) {
+test('tedious instrumentation', function(t) {
   var tediousConnection
 
-  t.test('before all', function (t) {
+  t.test('before all', function(t) {
     tediousConnection = new Connection({
       server: params.mssql_host,
       authentication: {
@@ -77,12 +77,12 @@ test('tedious instrumentation', function (t) {
       }
     })
 
-    tediousConnection.on('connect', function (error) {
+    tediousConnection.on('connect', function(error) {
       if (error) {
         throw error
       }
 
-      tediousConnection.execSql(new Request(setupSql, function (error) {
+      tediousConnection.execSql(new Request(setupSql, function(error) {
         if (error) {
           throw error
         }
@@ -92,13 +92,13 @@ test('tedious instrumentation', function (t) {
     })
   })
 
-  t.test('select', function (t) {
+  t.test('select', function(t) {
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
       var sql = 'SELECT TOP 1 * FROM TestTable'
 
-      tediousConnection.execSql(new Request(sql, function (error, rowCount) {
+      tediousConnection.execSql(new Request(sql, function(error, rowCount) {
         if (error) {
           return t.fail(error)
         }
@@ -119,19 +119,19 @@ test('tedious instrumentation', function (t) {
           'Datastore/statement/MSSQL/TestTable/select': 1
         })
 
-        verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/select')
+        verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/select')
 
         t.end()
       }))
     })
   })
 
-  t.test('insert', function (t) {
+  t.test('insert', function(t) {
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
       var sql = "INSERT INTO TestTable(test) VALUES('bar')"
-      tediousConnection.execSql(new Request(sql, function (error, rowCount) {
+      tediousConnection.execSql(new Request(sql, function(error, rowCount) {
         if (error) {
           return t.fail(error)
         }
@@ -152,30 +152,30 @@ test('tedious instrumentation', function (t) {
           'Datastore/statement/MSSQL/TestTable/insert': 1
         })
 
-        verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/insert')
+        verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/insert')
 
         t.end()
       }))
     })
   })
 
-  t.test('update', function (t) {
+  t.test('update', function(t) {
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
     var selectSql = 'SELECT TOP 1 * FROM TestTable'
     var updateSql = "UPDATE TestTable SET test = 'foo' WHERE id = @id"
 
-    tediousConnection.execSql(new Request(selectSql, function (error, _, rows) {
+    tediousConnection.execSql(new Request(selectSql, function(error, _, rows) {
       if (error) {
         return t.fail(error)
       }
 
-      var id = rows[0].find(function (row) {
+      var id = rows[0].find(function(row) {
         return row.metadata.colName === 'id'
       }).value
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        var request = new Request(updateSql, function (error) {
+        var request = new Request(updateSql, function(error) {
           if (error) {
             return t.fail(error)
           }
@@ -195,7 +195,7 @@ test('tedious instrumentation', function (t) {
             'Datastore/statement/MSSQL/TestTable/update': 1
           })
 
-          verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/update')
+          verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/update')
 
           t.end()
         })
@@ -207,23 +207,23 @@ test('tedious instrumentation', function (t) {
     }))
   })
 
-  t.test('delete', function (t) {
+  t.test('delete', function(t) {
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
     var selectSql = 'SELECT TOP 1 * FROM TestTable'
     var deleteSql = "DELETE FROM TestTable WHERE id = @id"
 
-    tediousConnection.execSql(new Request(selectSql, function (error, _, rows) {
+    tediousConnection.execSql(new Request(selectSql, function(error, _, rows) {
       if (error) {
         return t.fail(error)
       }
 
-      var id = rows[0].find(function (row) {
+      var id = rows[0].find(function(row) {
         return row.metadata.colName === 'id'
       }).value
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        var request = new Request(deleteSql, function (error) {
+        var request = new Request(deleteSql, function(error) {
           if (error) {
             return t.fail(error)
           }
@@ -243,7 +243,7 @@ test('tedious instrumentation', function (t) {
             'Datastore/statement/MSSQL/TestTable/delete': 1
           })
 
-          verifySegments(t, transaction, 'Datastore/statement/MSSQL/TestTable/delete')
+          verifyRootSegment(t, transaction, 'Datastore/statement/MSSQL/TestTable/delete')
 
           t.end()
         })
@@ -255,7 +255,7 @@ test('tedious instrumentation', function (t) {
     }))
   })
 
-  t.test('stored procedure', function (t) {
+  t.test('stored procedure', function(t) {
     var dropProcSql = "DROP PROCEDURE IF EXISTS test_stp;"
     var procSql = `
       CREATE PROCEDURE test_stp
@@ -269,18 +269,18 @@ test('tedious instrumentation', function (t) {
       SELECT SCOPE_IDENTITY();`
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
-    tediousConnection.execSql(new Request(dropProcSql, function (error) {
+    tediousConnection.execSql(new Request(dropProcSql, function(error) {
       if (error) {
         return t.fail(error)
       }
 
-      tediousConnection.execSql(new Request(procSql, function (error) {
+      tediousConnection.execSql(new Request(procSql, function(error) {
         if (error) {
           return t.fail(error)
         }
 
         helper.runInTransaction(agent, function transactionInScope(transaction) {
-          var request = new Request('test_stp', function (error) {
+          var request = new Request('test_stp', function(error) {
             if (error) {
               return t.fail(error)
             }
@@ -299,7 +299,7 @@ test('tedious instrumentation', function (t) {
               'Datastore/statement/MSSQL/test_stp/ExecuteProcedure': 1
             })
 
-            verifySegments(
+            verifyRootSegment(
               t,
               transaction,
               'Datastore/statement/MSSQL/test_stp/ExecuteProcedure')
@@ -315,10 +315,9 @@ test('tedious instrumentation', function (t) {
     }))
   })
 
-  t.test('teardown', function (t) {
+  t.test('teardown', function(t) {
     helper.unloadAgent(agent)
     if (tediousConnection && !tediousConnection.closed) {
-
       tediousConnection.close()
     }
     t.end()
