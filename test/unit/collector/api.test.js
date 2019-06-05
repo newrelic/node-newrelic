@@ -53,16 +53,121 @@ describe('CollectorAPI', function() {
   })
 
   describe('_login', function() {
-    describe('in a LASP-enabled agent', function() {
+    describe('when high_security: true', () => {
       beforeEach(function(done) {
         agent.config.port = 8080
-        agent.config.security_policies_token = 'TEST-TEST-TEST-TEST'
+        agent.config.high_security = true
+        done()
+      })
+
+      afterEach(function(done) {
+        agent.config.high_security = false
+        done()
+      })
+
+      it('should send high_security:true in preconnect payload', (done) => {
+        const expectedPreconnectBody = [{high_security: true}]
+
+        const preconnect = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST
+            }
+          })
+
+        const connectResponse = {return_value: {agent_run_id: RUN_ID}}
+        const connect = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, connectResponse)
+
+        api._login(function test(err) {
+          // Request will only be successful if body matches expected
+          expect(err).to.be.null
+
+          preconnect.done()
+          connect.done()
+          done()
+        })
+      })
+    })
+
+    describe('when high_security: false', () => {
+      beforeEach(function(done) {
+        agent.config.port = 8080
+        agent.config.high_security = false
+        done()
+      })
+
+      afterEach(function(done) {
+        agent.config.high_security = false
+        done()
+      })
+
+      it('should send high_security:false in preconnect payload', (done) => {
+        const expectedPreconnectBody = [{high_security: false}]
+
+        const preconnect = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST
+            }
+          })
+
+        const connectResponse = {return_value: {agent_run_id: RUN_ID}}
+        const connect = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, connectResponse)
+
+        api._login(function test(err) {
+          // Request will only be successful if body matches expected
+          expect(err).to.be.null
+
+          preconnect.done()
+          connect.done()
+          done()
+        })
+      })
+    })
+
+    describe('in a LASP-enabled agent', function() {
+      const SECURITY_POLICIES_TOKEN = 'TEST-TEST-TEST-TEST'
+
+      beforeEach(function(done) {
+        agent.config.port = 8080
+        agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
         done()
       })
 
       afterEach(function(done) {
         agent.config.security_policies_token = ''
         done()
+      })
+
+      // HSM should never be true when LASP/CSP enabled but payload should still be sent.
+      it('should send token in preconnect payload with high_security:false', (done) => {
+        const expectedPreconnectBody = [{
+          security_policies_token: SECURITY_POLICIES_TOKEN,
+          high_security: false
+        }]
+
+        const preconnect = nock(URL + ':8080')
+          .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
+          .reply(200, {
+            return_value: {
+              redirect_host: HOST,
+              security_policies: {}
+            }
+          })
+
+        api._login(function test(err) {
+          // Request will only be successful if body matches expected
+          expect(err).to.be.null
+
+          preconnect.done()
+          done()
+        })
       })
 
       it('should fail if preconnect res is missing expected policies', function(done) {
@@ -406,7 +511,7 @@ describe('CollectorAPI', function() {
         agent.config.security_policies_token = ''
       })
 
-      it('should include security policies in connect response', function(done) {
+      it('should include security policies in api callback response', function(done) {
         var valid = {
           agent_run_id: RUN_ID,
           security_policies: policies
