@@ -5,6 +5,7 @@ var test = tap.test
 
 var params = require('../../lib/params')
 var helper = require('../../lib/agent_helper')
+var findSegment = require('../../lib/metrics_helper').findSegment
 var agent = helper.instrumentMockedAgent()
 
 var tedious = require('tedious')
@@ -53,9 +54,7 @@ function verifySegments(t, transaction, expectedSegments) {
   for (var i = 0; i < expectedSegments.length; i++) {
     var expectedSegmentName = expectedSegments[i]
 
-    segment = segment.children.find(function(childSegment) {
-      return childSegment.name === expectedSegmentName
-    })
+    segment = findSegment(segment, expectedSegmentName)
 
     t.ok(segment, "should have called segment called " + expectedSegmentName)
   }
@@ -266,10 +265,10 @@ test('tedious instrumentation', function(t) {
         @text nvarchar(50)
     AS
       SET NOCOUNT ON;
-    
+
       INSERT INTO TestTable(test)
       VALUES (@text);
-    
+
       SELECT SCOPE_IDENTITY();`
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
@@ -341,7 +340,7 @@ test('tedious instrumentation', function(t) {
             'Datastore/allWeb': 2,
             'Datastore/MSSQL/all': 2,
             'Datastore/MSSQL/allWeb': 2,
-            'Datastore/operation/MSSQL/transaction': 1,
+            'Datastore/operation/MSSQL/beginTransaction': 1,
             'Datastore/operation/MSSQL/commitTransaction': 1
           })
 
@@ -349,8 +348,7 @@ test('tedious instrumentation', function(t) {
             t,
             transaction,
             [
-              'Datastore/operation/MSSQL/transaction',
-              'Callback: userSuppliedCallback',
+              'Datastore/operation/MSSQL/beginTransaction',
               'Datastore/operation/MSSQL/commitTransaction'
             ])
 
@@ -361,7 +359,51 @@ test('tedious instrumentation', function(t) {
   })
 
   t.test("nested transaction", function(t) {
-    t.end()
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      tediousConnection.transaction(function userSuppliedCallback(error, endTransaction) {
+        if (error) {
+          endTransaction()
+          return t.fail(error)
+        }
+
+        tediousConnection.transaction(function nested(error) {
+          if (error) {
+            endTransaction()
+
+            return t.fail(error)
+          }
+          var agentTx = agent.getTransaction()
+          t.ok(agentTx, 'transaction should be visible')
+          t.equal(transaction, agentTx, 'current transaction should match initial')
+
+          endTransaction(null, function() {
+            transaction.end()
+
+            verifyMetrics(t, transaction.metrics, {
+              'Datastore/all': 3,
+              'Datastore/allWeb': 3,
+              'Datastore/MSSQL/all': 3,
+              'Datastore/MSSQL/allWeb': 3,
+              'Datastore/operation/MSSQL/beginTransaction': 1,
+              'Datastore/operation/MSSQL/saveTransaction': 1,
+              'Datastore/operation/MSSQL/commitTransaction': 1
+            })
+
+            verifySegments(
+              t,
+              transaction,
+              [
+                'Datastore/operation/MSSQL/beginTransaction',
+                'Datastore/operation/MSSQL/saveTransaction',
+                'Datastore/operation/MSSQL/commitTransaction'
+              ])
+
+            t.end()
+          })
+        })
+      })
+    })
   })
 
   t.test("transaction rollback", function(t) {
