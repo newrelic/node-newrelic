@@ -39,6 +39,7 @@ services:
   - cassandra
   - postgresql
   - rabbitmq
+  - docker
 before_install:
   - ./bin/travis-setup.sh
 install: if [ "$SUITE" != "smoke" ]; then npm ci; fi

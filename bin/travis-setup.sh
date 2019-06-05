@@ -50,3 +50,10 @@ fi
 
 # Always install time.
 sudo apt-get install -qq time
+
+docker run -d \
+  -e 'ACCEPT_EULA=Y' \
+  -e 'SA_PASSWORD=Passw0rd@123' \
+  -e 'MSSQL_PID=Developer' \
+  -p 1433:1433 \
+  mcr.microsoft.com/mssql/server:2017-latest-ubuntu
