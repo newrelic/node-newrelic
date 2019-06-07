@@ -458,6 +458,39 @@ test('tedious instrumentation', function(t) {
     })
   })
 
+  t.test("connection reset", function(t) {
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      tediousConnection.reset(function(error) {
+        if (error) {
+          return t.fail(error)
+        }
+
+        var agentTx = agent.getTransaction()
+        t.ok(agentTx, 'transaction should be visible')
+        t.equal(transaction, agentTx, 'current transaction should match initial')
+
+        transaction.end()
+
+        verifyMetrics(t, transaction.metrics, {
+          'Datastore/all': 1,
+          'Datastore/allWeb': 1,
+          'Datastore/MSSQL/all': 1,
+          'Datastore/MSSQL/allWeb': 1,
+          'Datastore/operation/MSSQL/reset': 1
+        })
+        verifySegments(
+          t,
+          transaction,
+          [
+            'Datastore/operation/MSSQL/reset'
+          ])
+
+        t.end()
+      })
+    })
+  })
+
   t.test('teardown', function(t) {
     helper.unloadAgent(agent)
     if (tediousConnection && !tediousConnection.closed) {
