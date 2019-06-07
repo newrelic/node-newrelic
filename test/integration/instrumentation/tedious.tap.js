@@ -60,25 +60,29 @@ function verifySegments(t, transaction, expectedSegments) {
   }
 }
 
+function createTediousConnection() {
+  return new Connection({
+    server: params.mssql_host,
+    authentication: {
+      options: {
+        userName: params.mssql_user,
+        password: params.mssql_pass
+      },
+      type: 'default'
+    },
+    options: {
+      database: params.mssql_db,
+      port: params.mssql_port,
+      rowCollectionOnRequestCompletion: true
+    }
+  })
+}
+
 test('tedious instrumentation', function(t) {
   var tediousConnection
 
   t.test('before all', function(t) {
-    tediousConnection = new Connection({
-      server: params.mssql_host,
-      authentication: {
-        options: {
-          userName: params.mssql_user,
-          password: params.mssql_pass
-        },
-        type: 'default'
-      },
-      options: {
-        database: params.mssql_db,
-        port: params.mssql_port,
-        rowCollectionOnRequestCompletion: true
-      }
-    })
+    tediousConnection = createTediousConnection()
 
     tediousConnection.on('connect', function(error) {
       if (error) {
@@ -322,7 +326,7 @@ test('tedious instrumentation', function(t) {
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
-      tediousConnection.transaction(function userSuppliedCallback(error, endTransaction) {
+      tediousConnection.transaction(function(error, endTransaction) {
         if (error) {
           endTransaction()
           return t.fail(error)
@@ -361,7 +365,7 @@ test('tedious instrumentation', function(t) {
   t.test("nested transaction", function(t) {
     t.notOk(agent.getTransaction(), 'there should be no current transaction')
     helper.runInTransaction(agent, function transactionInScope(transaction) {
-      tediousConnection.transaction(function userSuppliedCallback(error, endTransaction) {
+      tediousConnection.transaction(function(error, endTransaction) {
         if (error) {
           endTransaction()
           return t.fail(error)
@@ -407,7 +411,51 @@ test('tedious instrumentation', function(t) {
   })
 
   t.test("transaction rollback", function(t) {
-    t.end()
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
+    helper.runInTransaction(agent, function transactionInScope(transaction) {
+      tediousConnection.transaction(function(error, endTransaction) {
+        if (error) {
+          endTransaction()
+          return t.fail(error)
+        }
+
+        tediousConnection.rollbackTransaction(function(error) {
+          if (error) {
+            endTransaction()
+            return t.fail(error)
+          }
+
+          var agentTx = agent.getTransaction()
+          t.ok(agentTx, 'transaction should be visible')
+          t.equal(transaction, agentTx, 'current transaction should match initial')
+
+          endTransaction(null, function() {
+            transaction.end()
+
+            verifyMetrics(t, transaction.metrics, {
+              'Datastore/all': 3,
+              'Datastore/allWeb': 3,
+              'Datastore/MSSQL/all': 3,
+              'Datastore/MSSQL/allWeb': 3,
+              'Datastore/operation/MSSQL/beginTransaction': 1,
+              'Datastore/operation/MSSQL/rollbackTransaction': 1,
+              'Datastore/operation/MSSQL/commitTransaction': 1
+            })
+
+            verifySegments(
+              t,
+              transaction,
+              [
+                'Datastore/operation/MSSQL/beginTransaction',
+                'Datastore/operation/MSSQL/rollbackTransaction',
+                'Datastore/operation/MSSQL/commitTransaction'
+              ])
+
+            t.end()
+          })
+        })
+      })
+    })
   })
 
   t.test('teardown', function(t) {
