@@ -56,7 +56,7 @@ function verifySegments(t, transaction, expectedSegments) {
 
     segment = findSegment(segment, expectedSegmentName)
 
-    t.ok(segment, "should have called segment called " + expectedSegmentName)
+    t.ok(segment, "should have segment called " + expectedSegmentName)
   }
 }
 
@@ -487,6 +487,43 @@ test('tedious instrumentation', function(t) {
           ])
 
         t.end()
+      })
+    })
+  })
+
+  t.test("connection closed", function(t) {
+    t.notOk(agent.getTransaction(), 'there should be no current transaction')
+    var newConnection = createTediousConnection()
+
+    newConnection.on("connect", function() {
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        t.notOk(tediousConnection.closed, "connection should be open")
+
+        newConnection.on("end", function() {
+          var agentTx = agent.getTransaction()
+          t.ok(agentTx, 'transaction should be visible')
+          t.equal(transaction, agentTx, 'current transaction should match initial')
+
+          transaction.end()
+          verifyMetrics(t, transaction.metrics, {
+            'Datastore/all': 1,
+            'Datastore/allWeb': 1,
+            'Datastore/MSSQL/all': 1,
+            'Datastore/MSSQL/allWeb': 1,
+            'Datastore/operation/MSSQL/close': 1
+          })
+
+          verifySegments(
+            t,
+            transaction,
+            [
+              'Datastore/operation/MSSQL/close'
+            ])
+
+          t.end()
+        })
+
+        newConnection.close()
       })
     })
   })
