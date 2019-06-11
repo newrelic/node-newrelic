@@ -123,6 +123,61 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
     })
 
+    it('should end transactions after the returned promise resolves', (done) => {
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        transaction = agent.tracer.getTransaction()
+        return new Promise((resolve) => {
+          expect(transaction).to.exist
+          expect(transaction.type).to.equal('bg')
+          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+          expect(transaction.isActive()).to.be.true
+          return resolve('hello')
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then((value) => {
+        expect(value).to.equal('hello')
+        expect(transaction.isActive()).to.be.false
+        done()
+      }).catch((err) => {
+        done(err)
+      })
+    })
+
+    it('should not end transactions twice', (done) => {
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler((ev, ctx, cb) => {
+        transaction = agent.tracer.getTransaction()
+        let called = false
+        const oldEnd = transaction.end
+        transaction.end = function wrappedEnd() {
+          if (called) {
+            throw new Error('called end on the same transaction twice')
+          }
+          called = true
+          return oldEnd.apply(transaction, arguments)
+        }
+        return new Promise((resolve) => {
+          expect(transaction).to.exist
+          expect(transaction.type).to.equal('bg')
+          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+          expect(transaction.isActive()).to.be.true
+          cb()
+          expect(transaction.isActive()).to.be.false
+          return resolve('hello')
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then((value) => {
+        expect(value).to.equal('hello')
+        expect(transaction.isActive()).to.be.false
+        done()
+      }).catch((err) => {
+        done(err)
+      })
+    })
+
     it('should record standard background metrics', (done) => {
       agent.on('harvestStarted', confirmMetrics)
 
