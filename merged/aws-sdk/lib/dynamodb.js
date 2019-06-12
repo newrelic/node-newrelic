@@ -11,17 +11,10 @@ const OPERATIONS = [
   'scan'
 ]
 
-let dynamoProtoWrapped = false
-
 function instrument(shim, AWS) {
+  shim.setDatastore(shim.DYNAMODB)
+
   shim.wrapReturn(AWS, 'DynamoDB', function wrapDynamo(shim, fn, name, ddb) {
-    if (dynamoProtoWrapped) {
-      return
-    }
-    dynamoProtoWrapped = true
-
-    shim.setDatastore(shim.DYNAMODB)
-
     shim.recordOperation(
       ddb,
       OPERATIONS,
