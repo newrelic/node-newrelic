@@ -1,6 +1,6 @@
 'use strict'
 
-const OPERATIONS = [
+const DDB_OPERATIONS = [
   'putItem',
   'getItem',
   'updateItem',
@@ -11,18 +11,27 @@ const OPERATIONS = [
   'scan'
 ]
 
+const DOC_CLIENT_OPERATIONS = [
+  'get',
+  'put',
+  'update',
+  'delete',
+  'query',
+  'scan'
+]
+
 function instrument(shim, AWS) {
   shim.setDatastore(shim.DYNAMODB)
 
   shim.wrapReturn(AWS, 'DynamoDB', function wrapDynamo(shim, fn, name, ddb) {
     shim.recordOperation(
       ddb,
-      OPERATIONS,
-      function wrapMethod(shim, original, name, args) {
+      DDB_OPERATIONS,
+      function wrapMethod(shim, original, operationName, args) {
         const params = args[0]
 
         return {
-          name,
+          name: operationName,
           parameters: {
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
@@ -34,6 +43,35 @@ function instrument(shim, AWS) {
       }
     )
   })
+
+  // DocumentClient does defer to DynamoDB but it also does enough individual
+  // steps for the request we want to hide that instrumenting specifically and
+  // setting to opaque is required.
+  shim.wrapReturn(
+    AWS.DynamoDB,
+    'DocumentClient',
+    function wrapDocumentClient(shim, fn, name, documentClient) {
+      shim.recordOperation(
+        documentClient,
+        DOC_CLIENT_OPERATIONS,
+        function wrapOperation(shim, original, operationName, args) {
+          const params = args[0]
+          const dynamoOperation = this.serviceClientOperationsMap[operationName]
+
+          return {
+            name: dynamoOperation,
+            parameters: {
+              host: this.service.endpoint.host,
+              port_path_or_id: this.service.endpoint.port,
+              collection: params && params.TableName || 'Unknown'
+            },
+            callback: shim.LAST,
+            opaque: true
+          }
+        }
+      )
+    }
+  )
 }
 
 module.exports = {

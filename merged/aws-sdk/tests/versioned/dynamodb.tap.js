@@ -24,6 +24,7 @@ const TABLE_DEF = {
   },
   TableName: TABLE_NAME
 }
+
 const ITEM_DEF = {
   Item: {
     AlbumTitle: {S: 'Somewhat Famous'},
@@ -40,6 +41,11 @@ const ITEM = {
   },
   TableName: TABLE_NAME
 }
+
+const DELETE_TABLE = {
+  TableName: FAKE_TABLE_NAME
+}
+
 const QUERY = {
   ExpressionAttributeValues: {
     ':v1': {S: UNIQUE_ARTIST}
@@ -48,23 +54,60 @@ const QUERY = {
   TableName: TABLE_NAME
 }
 
-const TESTS = [
-  {method: 'createTable', params: TABLE_DEF},
-  {method: 'putItem', params: ITEM_DEF},
-  {method: 'getItem', params: ITEM},
-  {method: 'updateItem', params: ITEM},
-  {method: 'scan', params: {TableName: TABLE_NAME}},
-  {method: 'query', params: QUERY},
-  {method: 'deleteItem', params: ITEM},
-  {method: 'deleteTable', params: {TableName: FAKE_TABLE_NAME}}
-]
+const DOC_PUT_ITEM = {
+  Item: {
+    AlbumTitle: 'Somewhat Famous',
+    Artist: UNIQUE_ARTIST,
+    SongTitle: 'Call Me Today'
+  },
+  TableName: TABLE_NAME
+}
+
+const DOC_ITEM = {
+  Key: {
+    Artist: UNIQUE_ARTIST,
+    SongTitle: 'Call Me Today'
+  },
+  TableName: TABLE_NAME
+}
+
+const DOC_QUERY = {
+  ExpressionAttributeValues: {
+    ':v1': UNIQUE_ARTIST
+  },
+  KeyConditionExpression: 'Artist = :v1',
+  TableName: TABLE_NAME
+}
+
+let tests = null
+
+function createTests(ddb, docClient) {
+  const composedTests = [
+    {api: ddb, method: 'createTable', params: TABLE_DEF, operation: 'createTable'},
+    {api: ddb, method: 'putItem', params: ITEM_DEF, operation: 'putItem'},
+    {api: ddb, method: 'getItem', params: ITEM, operation: 'getItem'},
+    {api: ddb, method: 'updateItem', params: ITEM, operation: 'updateItem'},
+    {api: ddb, method: 'scan', params: {TableName: TABLE_NAME}, operation: 'scan'},
+    {api: ddb, method: 'query', params: QUERY, operation: 'query'},
+    {api: ddb, method: 'deleteItem', params: ITEM, operation: 'deleteItem'},
+    {api: ddb, method: 'deleteTable', params: DELETE_TABLE, operation: 'deleteTable'},
+
+    {api: docClient, method: 'put', params: DOC_PUT_ITEM, operation: 'putItem'},
+    {api: docClient, method: 'get', params: DOC_ITEM, operation: 'getItem'},
+    {api: docClient, method: 'update', params: DOC_ITEM, operation: 'updateItem'},
+    {api: docClient, method: 'scan', params: {TableName: TABLE_NAME}, operation: 'scan'},
+    {api: docClient, method: 'query', params: DOC_QUERY, operation: 'query'},
+    {api: docClient, method: 'delete', params: DOC_ITEM, operation: 'deleteItem'}
+  ]
+
+  return composedTests
+}
 
 tap.test('DynamoDB', (t) => {
   t.autoend()
 
   let helper = null
   let AWS = null
-  let ddb = null
 
   t.beforeEach((done) => {
     helper = utils.TestAgent.makeInstrumented()
@@ -73,21 +116,31 @@ tap.test('DynamoDB', (t) => {
       type: 'conglomerate',
       onRequire: require('../../lib/instrumentation')
     })
+
     AWS = require('aws-sdk')
-    ddb = new AWS.DynamoDB({region: 'us-east-1'})
+    const ddb = new AWS.DynamoDB({region: 'us-east-1'})
+    const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'})
+
+    tests = createTests(ddb, docClient)
+
     done()
   })
 
   t.afterEach((done) => {
     helper && helper.unload()
+
+    helper = null
+    AWS = null
+    tests = null
+
     done()
   })
 
   t.test('commands', (t) => {
     helper.runInTransaction((tx) => {
-      async.eachSeries(TESTS, (cfg, cb) => {
+      async.eachSeries(tests, (cfg, cb) => {
         t.comment(`Testing ${cfg.method}`)
-        ddb[cfg.method](cfg.params, (err) => {
+        cfg.api[cfg.method](cfg.params, (err) => {
           if (
             err &&
             err.code !== 'ResourceNotFoundException' &&
@@ -108,10 +161,15 @@ tap.test('DynamoDB', (t) => {
 
 function finish(t, tx) {
   const segments = common.checkAWSAttributes(t, tx.trace.root, /^Datastore/)
-  t.equal(segments.length, 8, 'should have 8 aws datastore segments')
+
+  t.equal(
+    segments.length,
+    tests.length,
+    `should have ${tests.length} aws datastore segments`
+  )
 
   segments.forEach((segment, i) => {
-    const operation = TESTS[i].method
+    const operation = tests[i].operation
     t.equal(
       segment.name,
       `Datastore/operation/DynamoDB/${operation}`,
