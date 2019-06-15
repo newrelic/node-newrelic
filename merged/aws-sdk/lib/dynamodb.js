@@ -1,6 +1,6 @@
 'use strict'
 
-const OPERATIONS = [
+const DDB_OPERATIONS = [
   'putItem',
   'getItem',
   'updateItem',
@@ -11,25 +11,29 @@ const OPERATIONS = [
   'scan'
 ]
 
-let dynamoProtoWrapped = false
+const DOC_CLIENT_OPERATIONS = [
+  'get',
+  'put',
+  'update',
+  'delete',
+  'query',
+  'scan'
+]
 
 function instrument(shim, AWS) {
+  shim.setDatastore(shim.DYNAMODB)
+
+  // DynamoDB's service API methods are dynamically generated
+  // in the constructor so we have to wrap the return.
   shim.wrapReturn(AWS, 'DynamoDB', function wrapDynamo(shim, fn, name, ddb) {
-    if (dynamoProtoWrapped) {
-      return
-    }
-    dynamoProtoWrapped = true
-
-    shim.setDatastore(shim.DYNAMODB)
-
     shim.recordOperation(
       ddb,
-      OPERATIONS,
-      function wrapMethod(shim, original, name, args) {
+      DDB_OPERATIONS,
+      function wrapMethod(shim, original, operationName, args) {
         const params = args[0]
 
         return {
-          name,
+          name: operationName,
           parameters: {
             host: this.endpoint.host,
             port_path_or_id: this.endpoint.port,
@@ -41,6 +45,31 @@ function instrument(shim, AWS) {
       }
     )
   })
+
+  // DocumentClient's API is predefined so we can instrument the prototype.
+  // DocumentClient does defer to DynamoDB but it also does enough individual
+  // steps for the request we want to hide that instrumenting specifically and
+  // setting to opaque is currently required.
+  const docClientProto = AWS.DynamoDB.DocumentClient.prototype
+  shim.recordOperation(
+    docClientProto,
+    DOC_CLIENT_OPERATIONS,
+    function wrapOperation(shim, original, operationName, args) {
+      const params = args[0]
+      const dynamoOperation = this.serviceClientOperationsMap[operationName]
+
+      return {
+        name: dynamoOperation,
+        parameters: {
+          host: this.service.endpoint.host,
+          port_path_or_id: this.service.endpoint.port,
+          collection: params && params.TableName || 'Unknown'
+        },
+        callback: shim.LAST,
+        opaque: true
+      }
+    }
+  )
 }
 
 module.exports = {
