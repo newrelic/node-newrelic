@@ -92,7 +92,6 @@ tap.test('agent instrumentation of Hapi', function(t) {
     })
 
     agent.once('transactionFinished', function(tx) {
-      console.log('---- metrics: ', agent.metrics);
       var stats = agent.metrics.getMetric('View/index/Rendering')
       t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, 'should note the view rendering')
