@@ -24,16 +24,12 @@ describe('Expected Errors', function() {
     })
     it('expected status code should not increment apdex frustrating', function() {
       helper.runInTransaction(agent, function(tx) {
-        agent.config.error_collector.expected_status = [500]
-        tx.statusCode = 500;
+        agent.config.error_collector.expected_status_codes = [500]
+        tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
         tx._setApdex(NAMES.APDEX, 1, 1)
-        // const segment = agent.tracer.createSegment('http://example.com', recordWeb)
-        // segment.start()
-        // segment.end()
         const json = apdexStats.toJSON()
         tx.end()
-
         // no errors in the frustrating column
         expect(json[2]).equals(0)
       })
