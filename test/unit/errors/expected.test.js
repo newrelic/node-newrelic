@@ -120,7 +120,7 @@ describe('Expected Errors', function() {
     it('should not increment error metric call counts, bg transaction', function() {
       helper.runInTransaction(agent, function(tx) {
         const errorAggr = agent.errors
-
+        tx.type = "BACKGROUND"
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_classes = ["Error"]
 
@@ -148,5 +148,6 @@ describe('Expected Errors', function() {
 
       })
     })
+
   })
 })
