@@ -50,11 +50,11 @@ describe('Expected Errors', function() {
 
         const errorUnexpected = agent.errors.getEvents()[0]
         expect(errorUnexpected[0]['error.message']).equals('NOT expected')
-        should.not.exist(errorUnexpected[2]['error.expected'])
+        expect(errorUnexpected[0]['error.expected']).equals(false)
 
         const errorExpected = agent.errors.getEvents()[1]
         expect(errorExpected[0]['error.message']).equals('expected')
-        expect(errorExpected[2]['error.expected']).equals(true)
+        expect(errorExpected[0]['error.expected']).equals(true)
 
         done()
       })
@@ -79,7 +79,7 @@ describe('Expected Errors', function() {
 
         const errorExpected = agent.errors.getEvents()[1]
         expect(errorExpected[0]['error.message']).equals('expected')
-        expect(errorExpected[2]['error.expected']).equals(true)
+        expect(errorExpected[0]['error.expected']).equals(true)
 
         done()
       })
