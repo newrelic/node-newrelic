@@ -117,6 +117,36 @@ describe('Expected Errors', function() {
       })
     })
 
+    it('should not generate any error metrics during expected status code', function() {
+      helper.runInTransaction(agent, function(tx) {
+        const errorAggr = agent.errors
+        agent.config.error_collector.expected_status_codes = [500]
+        tx.statusCode = 500
+        const error1 = new Error('expected')
+        const error2 = new ReferenceError('NOT expected')
+
+        tx.addException(error1, {}, 0)
+        tx.addException(error2, {}, 0)
+        tx.end()
+
+        expect(
+          agent.metrics.getOrCreateMetric(
+            NAMES.ERRORS.PREFIX + tx.getFullName()
+          ).callCount
+        ).equals(0)
+
+        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
+        // are generated during the harvest.  We can't check the metric
+        // before the harvest since its not there, but after the harvest
+        // the metric will have been sent and zeroed out.  So we'll check
+        // the actual methods called during the harvest instead
+        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(0)
+        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
+        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+
+      })
+    })
+
     it('should not increment error metric call counts, bg transaction', function() {
       helper.runInTransaction(agent, function(tx) {
         const errorAggr = agent.errors
