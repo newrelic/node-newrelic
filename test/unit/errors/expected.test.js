@@ -110,9 +110,9 @@ describe('Expected Errors', function() {
         // before the harvest since its not there, but after the harvest
         // the metric will have been sent and zeroed out.  So we'll check
         // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalErrorCount()).equals(1)
-        expect(errorAggr.getWebTransactionsErrorCount()).equals(1)
-        expect(errorAggr.getOtherTransactionsErrorCount()).equals(0)
+        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
+        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(1)
+        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
 
       })
     })
@@ -142,9 +142,9 @@ describe('Expected Errors', function() {
         // before the harvest since its not there, but after the harvest
         // the metric will have been sent and zeroed out.  So we'll check
         // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalErrorCount()).equals(1)
-        expect(errorAggr.getWebTransactionsErrorCount()).equals(0)
-        expect(errorAggr.getOtherTransactionsErrorCount()).equals(1)
+        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
+        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
+        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(1)
 
       })
     })
