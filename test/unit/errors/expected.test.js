@@ -40,7 +40,7 @@ describe('Expected Errors', function() {
     it('expected messages', function(done) {
       helper.runInTransaction(agent, function(tx) {
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_messages = ["expected"]
+        agent.config.error_collector.expected_messages = {"Error":["expected"]}
 
         var error = new Error('expected')
         tx.addException(error, {}, 0)
@@ -81,6 +81,31 @@ describe('Expected Errors', function() {
 
         const errorExpected = agent.errors.getEvents()[1]
         expect(errorExpected[0]['error.message']).equals('expected')
+        expect(errorExpected[0]['error.expected']).equals(true)
+
+        done()
+      })
+    })
+
+    it('expected messages by type', function(done) {
+      helper.runInTransaction(agent, function(tx) {
+        agent.config.error_collector.capture_events = true
+        agent.config.error_collector.expected_messages = {"ReferenceError":["expected if a ReferenceError"]}
+
+        var error = new ReferenceError('expected if a ReferenceError')
+        tx.addException(error, {}, 0)
+
+        error = new Error('expected if a ReferenceError')
+        tx.addException(error, {}, 0)
+
+        tx.end()
+
+        const errorUnexpected = agent.errors.getEvents()[0]
+        expect(errorUnexpected[0]['error.class']).equals('Error')
+        should.not.exist(errorUnexpected[2]['error.expected'])
+
+        const errorExpected = agent.errors.getEvents()[1]
+        expect(errorExpected[0]['error.class']).equals('ReferenceError')
         expect(errorExpected[0]['error.expected']).equals(true)
 
         done()
@@ -183,7 +208,7 @@ describe('Expected Errors', function() {
 
     it('should not increment error metric call counts, bg transaction', function() {
       helper.runInTransaction(agent, function(tx) {
-        agent.config.error_collector.expected_messages = ["except this error"]
+        agent.config.error_collector.expected_messages = {"Error":["except this error"]}
         let exception = new Error("except this error")
         let result = errorUtils.isExpectedException(
           tx,
