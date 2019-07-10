@@ -4,7 +4,7 @@ var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIO
 var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-17-utils')
+var utils = require('./hapi-18-utils')
 var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 tap.test('Hapi vhost support', function(t) {

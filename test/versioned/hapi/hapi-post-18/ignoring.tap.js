@@ -4,7 +4,7 @@ var test = require('tap').test
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var API = require('../../../../api')
-var utils = require('./hapi-17-utils')
+var utils = require('./hapi-18-utils')
 
 test('ignoring a Hapi route', function(t) {
   t.plan(6)

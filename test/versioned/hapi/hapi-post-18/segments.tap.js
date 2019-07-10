@@ -6,7 +6,7 @@ var http = require('http')
 var assertMetrics = require('../../../lib/metrics_helper').assertMetrics
 var assertSegments = require('../../../lib/metrics_helper').assertSegments
 var NAMES = require('../../../../lib/metrics/names')
-var utils = require('./hapi-17-utils')
+var utils = require('./hapi-18-utils')
 
 var agent
 var server

@@ -4,7 +4,7 @@ var tap = require('tap')
 var shims = require('../../../../lib/shim')
 var helper = require('../../../lib/agent_helper')
 var instrument = require('../../../../lib/instrumentation/hapi')
-var utils = require('./hapi-17-utils')
+var utils = require('./hapi-18-utils')
 
 tap.test('instrumentation of Hapi', function(t) {
   t.autoend()

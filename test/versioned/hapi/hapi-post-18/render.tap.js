@@ -6,7 +6,7 @@ var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var API = require('../../../../api')
-var utils = require('./hapi-17-utils')
+var utils = require('./hapi-18-utils')
 var fixtures = require('../fixtures')
 
 tap.test('agent instrumentation of Hapi', function(t) {
