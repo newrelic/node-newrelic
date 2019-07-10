@@ -7,7 +7,7 @@ const recordWeb = require('../../../lib/metrics/recorders/http')
 const chai = require('chai')
 const should = require('chai').should()
 const urltils = require('../../../lib/util/urltils')
-const errorUtils = require('../../../lib/util/errors')
+const errorHelper = require('../../../lib/errors/helper')
 
 const expect  = chai.expect
 
@@ -210,7 +210,7 @@ describe('Expected Errors', function() {
       helper.runInTransaction(agent, function(tx) {
         agent.config.error_collector.expected_messages = {"Error":["except this error"]}
         let exception = new Error("except this error")
-        let result = errorUtils.isExpectedException(
+        let result = errorHelper.isExpectedException(
           tx,
           exception,
           agent.config,
