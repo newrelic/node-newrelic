@@ -1,9 +1,7 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const ErrorAggregator = require('../../../lib/errors/aggregator')
 const NAMES = require('../../../lib/metrics/names.js')
-const recordWeb = require('../../../lib/metrics/recorders/http')
 const chai = require('chai')
 const should = require('chai').should()
 const urltils = require('../../../lib/util/urltils')
@@ -14,11 +12,9 @@ const expect  = chai.expect
 describe('Expected Errors', function() {
   describe('when expeced configuration is present', function() {
     var agent
-    var tracer
 
     beforeEach(function() {
       agent = helper.loadMockedAgent()
-      tracer = new ErrorAggregator(agent.config)
     })
 
     afterEach(function() {
@@ -90,7 +86,9 @@ describe('Expected Errors', function() {
     it('expected messages by type', function(done) {
       helper.runInTransaction(agent, function(tx) {
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_messages = {"ReferenceError":["expected if a ReferenceError"]}
+        agent.config.error_collector.expected_messages = {
+          "ReferenceError":["expected if a ReferenceError"]
+        }
 
         var error = new ReferenceError('expected if a ReferenceError')
         tx.addException(error, {}, 0)
@@ -140,7 +138,6 @@ describe('Expected Errors', function() {
         expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
         expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(1)
         expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
-
       })
     })
 
@@ -170,7 +167,6 @@ describe('Expected Errors', function() {
         expect(errorAggr.getTotalUnexpectedErrorCount()).equals(0)
         expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
         expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
-
       })
     })
 
@@ -202,7 +198,6 @@ describe('Expected Errors', function() {
         expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
         expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
         expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(1)
-
       })
     })
 
@@ -219,7 +214,6 @@ describe('Expected Errors', function() {
 
         expect(result).equals(true)
       })
-
     })
   })
 })
