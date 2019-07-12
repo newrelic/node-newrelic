@@ -22,6 +22,9 @@ tap.test('Should properly track module paths to enable shim.require()', function
     moduleName: customPackagePath
   })
 
+  // As of node 11, this path is being cached, and will not hit our resolve hooks for
+  // subsequent calls.  This extra require call ensures we cover the cached case.
+  require(customPackagePath)
   const mycustomPackage = require(customPackagePath)
 
   const shim = mycustomPackage.__NR_shim
