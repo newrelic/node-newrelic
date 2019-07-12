@@ -22,8 +22,8 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should update ignore_status_codes', function() {
-      helper.runInTransaction(agent, function(tx) {
-        agent.config.error_collector.ignore_status_codes = [404];
+      helper.runInTransaction(agent, function() {
+        agent.config.error_collector.ignore_status_codes = [404]
         let params = {'error_collector.ignore_status_codes':['501-505']}
         agent.config._fromServer(params, 'error_collector.ignore_status_codes')
         let expected = [404,501,502,503,504,505]
@@ -32,8 +32,8 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should update expected_status_codes', function() {
-      helper.runInTransaction(agent, function(tx) {
-        agent.config.error_collector.expected_status_codes = [404];
+      helper.runInTransaction(agent, function() {
+        agent.config.error_collector.expected_status_codes = [404]
         let params = {'error_collector.expected_status_codes':['501-505']}
         agent.config._fromServer(params, 'error_collector.expected_status_codes')
         let expected = [404,501,502,503,504,505]
@@ -42,7 +42,7 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should update expected_classes', function() {
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function() {
         agent.config.error_collector.expected_classes = ['Foo']
         let params = {'error_collector.expected_classes':['Bar']}
         agent.config._fromServer(params, 'error_collector.expected_classes')
@@ -52,7 +52,7 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should update ignore_classes', function() {
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function() {
         agent.config.error_collector.ignore_classes = ['Foo']
         let params = {'error_collector.ignore_classes':['Bar']}
         agent.config._fromServer(params, 'error_collector.ignore_classes')
@@ -62,7 +62,7 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should update expected_messages', function() {
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function() {
         agent.config.error_collector.expected_messages = {'Foo':['bar']}
         let params = {'error_collector.expected_messages':{'Zip':['zap']}}
         agent.config._fromServer(params, 'error_collector.expected_messages')
@@ -72,7 +72,7 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should update ignore_messages', function() {
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function() {
         agent.config.error_collector.ignore_messages = {'Foo':['bar']}
         let params = {'error_collector.ignore_messages':{'Zip':['zap']}}
         agent.config._fromServer(params, 'error_collector.ignore_messages')
@@ -82,7 +82,7 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer should merge if keys match', function() {
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function() {
         agent.config.error_collector.ignore_messages = {'Foo':['bar']}
         let params = {'error_collector.ignore_messages':{'Foo':['zap']}}
         agent.config._fromServer(params, 'error_collector.ignore_messages')
@@ -92,7 +92,8 @@ describe('Expected Errors', function() {
     })
 
     it('_fromServer mis configure should not explode', function() {
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function() {
+        // whoops, a mis configuration
         agent.config.error_collector.ignore_messages = {'Foo':'bar'}
         let params = {'error_collector.ignore_messages':{'Foo':['zap']}}
         agent.config._fromServer(params, 'error_collector.ignore_messages')
