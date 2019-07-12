@@ -227,7 +227,7 @@ describe('Errors', function() {
 
       tracer.add(null, error)
 
-      expect(tracer.errorCount).equal(1)
+      expect(tracer.errorCount).equal(0)
       expect(tracer.errors.length).equal(0)
 
       agent.config.error_collector.enabled = true
@@ -242,7 +242,7 @@ describe('Errors', function() {
 
       tracer.add(null, error)
 
-      expect(tracer.errorCount).equal(1)
+      expect(tracer.errorCount).equal(0)
       expect(tracer.errors.length).equal(0)
 
       agent.config.collect_errors = true
@@ -1057,17 +1057,17 @@ describe('Errors', function() {
       })
     })
 
-    describe('getTotalErrorCount()', function() {
+    describe('getTotalUnexpectedErrorCount()', function() {
       var aggregator
 
       beforeEach(function() {
         aggregator = agent.errors
       })
 
-      describe('returns total of all collected errors', function() {
+      describe('returns total of all collected non-expected errors', function() {
         it('without transaction', function() {
           aggregator.add(null, new Error('error1'))
-          expect(aggregator.getTotalErrorCount()).equal(1)
+          expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
         })
 
         it('with web transaction', function() {
@@ -1076,7 +1076,7 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end()
-          expect(aggregator.getTotalErrorCount()).equal(1)
+          expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
         })
 
         it('with background transaction', function() {
@@ -1085,22 +1085,22 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end()
-          expect(aggregator.getTotalErrorCount()).equal(1)
+          expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
         })
       })
     })
 
-    describe('getWebTransactionsErrorCount()', function() {
+    describe('getUnexpectedWebTransactionsErrorCount()', function() {
       var aggregator
 
       beforeEach(function() {
         aggregator = agent.errors
       })
 
-      describe('returns total of web transactions errors', function() {
+      describe('returns total of web transaction non-expected errors', function() {
         it('without transaction', function() {
           aggregator.add(null, new Error('error1'))
-          expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
         })
 
         it('with web transaction', function() {
@@ -1109,7 +1109,7 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end()
-          expect(aggregator.getWebTransactionsErrorCount()).equal(1)
+          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(1)
         })
 
         it('with background transaction', function() {
@@ -1118,22 +1118,35 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end()
-          expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
+        })
+
+        it('should not count when error collector disabled', () => {
+          agent.config.error_collector.enabled = false
+
+          const transaction = createWebTransaction(agent)
+          expect(transaction.isWeb()).to.be.true
+          aggregator.add(transaction, new Error('error1'))
+
+          transaction.end()
+          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
+
+          agent.config.error_collector.enabled = true
         })
       })
     })
 
-    describe('getOtherTransactionsErrorCount()', function() {
+    describe('getUnexpectedOtherTransactionsErrorCount()', function() {
       var aggregator
 
       beforeEach(function() {
         aggregator = agent.errors
       })
 
-      describe('returns total of background transactions errors', function() {
+      describe('returns total of background transaction non-expected errors', () => {
         it('without transaction', function() {
           aggregator.add(null, new Error('error1'))
-          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
+          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
         })
 
         it('with web transaction', function() {
@@ -1142,7 +1155,7 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end()
-          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
+          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
         })
 
         it('with background transaction', function() {
@@ -1151,7 +1164,20 @@ describe('Errors', function() {
           aggregator.add(transaction, new Error('error1'))
 
           transaction.end()
-          expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
+          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(1)
+        })
+
+        it('should not count when error collector disabled', () => {
+          agent.config.error_collector.enabled = false
+
+          const transaction = createBackgroundTransaction(agent)
+          expect(transaction.isWeb()).to.be.false
+          aggregator.add(transaction, new Error('error1'))
+
+          transaction.end()
+          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
+
+          agent.config.error_collector.enabled = true
         })
       })
     })
@@ -1172,9 +1198,9 @@ describe('Errors', function() {
 
       it('clears total error count', function() {
         aggregator.add(null, new Error('error1'))
-        expect(aggregator.getTotalErrorCount()).equal(1)
+        expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
         aggregator.clearErrors()
-        expect(aggregator.getTotalErrorCount()).equal(0)
+        expect(aggregator.getTotalUnexpectedErrorCount()).equal(0)
       })
 
       it('clears web tx error count', function() {
@@ -1182,9 +1208,9 @@ describe('Errors', function() {
         aggregator.add(transaction, new Error('error1'))
 
         transaction.end()
-        expect(aggregator.getWebTransactionsErrorCount()).equal(1)
+        expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(1)
         aggregator.clearErrors()
-        expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+        expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
       })
 
       it('clears background tx error count', function() {
@@ -1192,9 +1218,9 @@ describe('Errors', function() {
         aggregator.add(transaction, new Error('error1'))
 
         transaction.end()
-        expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
+        expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(1)
         aggregator.clearErrors()
-        expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
+        expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
       })
     })
   })
