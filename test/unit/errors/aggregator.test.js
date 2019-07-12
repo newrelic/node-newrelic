@@ -227,7 +227,7 @@ describe('Errors', function() {
 
       tracer.add(null, error)
 
-      expect(tracer.errorCount).equal(1)
+      expect(tracer.errorCount).equal(0)
       expect(tracer.errors.length).equal(0)
 
       agent.config.error_collector.enabled = true
@@ -242,7 +242,7 @@ describe('Errors', function() {
 
       tracer.add(null, error)
 
-      expect(tracer.errorCount).equal(1)
+      expect(tracer.errorCount).equal(0)
       expect(tracer.errors.length).equal(0)
 
       agent.config.collect_errors = true
@@ -1120,6 +1120,19 @@ describe('Errors', function() {
           transaction.end()
           expect(aggregator.getWebTransactionsErrorCount()).equal(0)
         })
+
+        it('should not count when error collector disabled', () => {
+          agent.config.error_collector.enabled = false
+
+          const transaction = createWebTransaction(agent)
+          expect(transaction.isWeb()).to.be.true
+          aggregator.add(transaction, new Error('error1'))
+
+          transaction.end()
+          expect(aggregator.getWebTransactionsErrorCount()).equal(0)
+
+          agent.config.error_collector.enabled = true
+        })
       })
     })
 
@@ -1152,6 +1165,19 @@ describe('Errors', function() {
 
           transaction.end()
           expect(aggregator.getOtherTransactionsErrorCount()).equal(1)
+        })
+
+        it('should not count when error collector disabled', () => {
+          agent.config.error_collector.enabled = false
+
+          const transaction = createBackgroundTransaction(agent)
+          expect(transaction.isWeb()).to.be.false
+          aggregator.add(transaction, new Error('error1'))
+
+          transaction.end()
+          expect(aggregator.getOtherTransactionsErrorCount()).equal(0)
+
+          agent.config.error_collector.enabled = true
         })
       })
     })
