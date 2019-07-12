@@ -1,12 +1,7 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-// const NAMES = require('../../../lib/metrics/names.js')
 const chai = require('chai')
-// const should = require('chai').should()
-// const urltils = require('../../../lib/util/urltils')
-// const errorHelper = require('../../../lib/errors/helper')
-
 const expect  = chai.expect
 
 describe('Expected Errors', function() {
