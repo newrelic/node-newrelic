@@ -202,7 +202,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
         var errors = agent.errors.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
-        t.equal(agent.errors.getWebTransactionsErrorCount(), 1,
+        t.equal(agent.errors.getUnexpectedWebTransactionsErrorCount(), 1,
           'should be 1 web transaction error')
 
         var first = errors[0]

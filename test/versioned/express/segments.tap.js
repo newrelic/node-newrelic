@@ -753,8 +753,14 @@ function runTest(t, options, callback) {
   }
 
   agent.on('transactionFinished', function(tx) {
-    var baseSegment = tx.trace.root.children[0]
-    t.equal(agent.errors.getTotalErrorCount(), errors, 'should be expected errors')
+    const baseSegment = tx.trace.root.children[0]
+
+    t.equal(
+      agent.errors.getTotalUnexpectedErrorCount(),
+      errors,
+      'should be expected errors'
+    )
+
     callback(baseSegment.children, tx)
   })
 
