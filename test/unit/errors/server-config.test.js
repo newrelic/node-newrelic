@@ -90,5 +90,15 @@ describe('Expected Errors', function() {
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
+
+    it('_fromServer mis configure should not explode', function() {
+      helper.runInTransaction(agent, function(tx) {
+        agent.config.error_collector.ignore_messages = {'Foo':'bar'}
+        let params = {'error_collector.ignore_messages':{'Foo':['zap']}}
+        agent.config._fromServer(params, 'error_collector.ignore_messages')
+        let expected = {'Foo':['zap']}  // expect this to replace
+        expect(agent.config.error_collector.ignore_messages).eql(expected)
+      })
+    })
   })
 })
