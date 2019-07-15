@@ -1,0 +1,34 @@
+{
+  "name": "hapi-v18-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=8.9"
+      },
+      "dependencies": {
+        "ejs": "2.5.5",
+        "@hapi/hapi": "^18.3.1",
+        "vision": "^5.0.0"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "errors.tap.js",
+        "ext.tap.js",
+        "hapi.tap.js",
+        "ignoring.tap.js",
+        "plugins.tap.js",
+        "render.tap.js",
+        "router.tap.js",
+        "segments.tap.js",
+        "vhost.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+    "ejs": "^2.5.5",
+    "@hapi/hapi": "^18.3.1",
+    "vision": "^5.0.0"
+  }
+}
