@@ -6,42 +6,41 @@ var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var API = require('../../../../api')
-var utils = require('./hapi-utils')
+var utils = require('./hapi-18-utils')
 var fixtures = require('../fixtures')
-
 
 tap.test('agent instrumentation of Hapi', function(t) {
   t.autoend()
 
-  var server = null
   var agent = null
+  var server = null
   var port = null
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
 
+    server = utils.getServer()
     done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    server.stop(done)
+    return server.stop()
   })
 
   t.test('for a normal request', {timeout: 5000}, function(t) {
-    server = utils.getServer()
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, reply) {
-        reply({yep: true})
+      handler: function() {
+        return { yep: true }
       }
     })
 
-    server.start(function() {
+    server.start().then(function() {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function(error, response, body) {
         t.error(error, 'should not fail to make request')
@@ -50,9 +49,11 @@ tap.test('agent instrumentation of Hapi', function(t) {
           /application\/json/.test(response.headers['content-type']),
           'got correct content type'
         )
-        t.deepEqual(JSON.parse(body), {'yep':true}, 'response survived')
+        t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
 
-        var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
+        var stats
+
+        stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
         t.equal(stats.callCount, 1, '/test was only requested once')
 
@@ -81,22 +82,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
     })
   })
 
-  t.test('using EJS templates', {timeout: 1000}, function(t) {
-    server = utils.getServer()
-    server.register(require('vision'), function() {
-      server.views({
-        path: path.join(__dirname, '../views'),
-        engines: {
-          ejs: require('ejs')
-        }
-      })
-    })
-
+  t.test('using EJS templates', {timeout: 2000}, function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, reply) {
-        reply.view('index', {title: 'yo dawg'})
+      handler: function(req, h) {
+        return h.view('index', {title: 'yo dawg'})
       }
     })
 
@@ -118,42 +109,43 @@ tap.test('agent instrumentation of Hapi', function(t) {
       }
     }
 
-    server.start(function() {
-      port = server.info.port
-      request('http://localhost:' + port + '/test', function(error, response, body) {
-        if (error) t.fail(error)
-        t.equal(response.statusCode, 200, 'response code should be 200')
-        t.equal(body, fixtures.htmlBody, 'template should still render fine')
-        t.end()
+    server.register(require('vision'))
+      .then(function() {
+        server.views({
+          path: path.join(__dirname, '../views'),
+          engines: {
+            ejs: require('ejs')
+          }
+        })
+        return server.start()
       })
-    })
+      .then(function() {
+        port = server.info.port
+        request('http://localhost:' + port + '/test', function(error, response, body) {
+          if (error) t.fail(error)
+
+          t.equal(response.statusCode, 200, 'response code should be 200')
+          t.equal(body, fixtures.htmlBody, 'template should still render fine')
+
+          t.end()
+        })
+      })
   })
 
-  t.test('should generate rum headers', {timeout: 1000}, function(t) {
+  t.test('should generate rum headers', { timeout: 1000 }, function(t) {
     var api = new API(agent)
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    server = utils.getServer()
-
-    server.register(require('vision'), function() {
-      server.views({
-        path: path.join(__dirname, '../views'),
-        engines: {
-          ejs: require('ejs')
-        }
-      })
-    })
-
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, reply) {
+      handler: function(req, h) {
         var rum = api.getBrowserTimingHeader()
         t.equal(rum.substr(0,7), '<script')
-        reply.view('index', {title: 'yo dawg', rum: rum})
+        return h.view('index', {title: 'yo dawg', rum: rum})
       }
     })
 
@@ -163,15 +155,27 @@ tap.test('agent instrumentation of Hapi', function(t) {
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
-    server.start(function() {
-      port = server.info.port
-      request('http://localhost:' + port + '/test', function(error, response, body) {
-        if (error) t.fail(error)
-        t.equal(response.statusCode, 200, 'response code should be 200')
-        t.equal(body, fixtures.htmlBody, 'template should still render fine')
-        t.end()
+    server.register(require('vision'))
+      .then(function() {
+        server.views({
+          path: path.join(__dirname, '../views'),
+          engines: {
+            ejs: require('ejs')
+          }
+        })
+        return server.start()
       })
-    })
+      .then(function() {
+        port = server.info.port
+        request('http://localhost:' + port + '/test', function(error, response, body) {
+          if (error) t.fail(error)
+
+          t.equal(response.statusCode, 200, 'response code should be 200')
+          t.equal(body, fixtures.htmlBody, 'template should still render fine')
+
+          t.end()
+        })
+      })
   })
 
   t.test('should trap errors correctly', function(t) {
@@ -191,7 +195,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
       }
     })
 
-    server.start(function() {
+    server.start().then(function() {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function(error, response, body) {
         if (error) t.fail(error)
