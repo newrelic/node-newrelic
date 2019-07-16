@@ -4,8 +4,8 @@ const helper = require('../../lib/agent_helper')
 const chai = require('chai')
 const expect  = chai.expect
 
-describe('Expected Errors', function() {
-  describe('when expeced configuration is present', function() {
+describe('Server Config', function() {
+  describe('Merging Server Config Values', function() {
     let agent
 
     beforeEach(function() {
@@ -86,14 +86,48 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('_fromServer mis configure should not explode', function() {
+    it('_fromServer misconfigure should not explode', function() {
       helper.runInTransaction(agent, function() {
-        // whoops, a mis configuration
+        // whoops, a misconfiguration
         agent.config.error_collector.ignore_messages = {'Foo':'bar'}
         let params = {'error_collector.ignore_messages':{'Foo':['zap']}}
         agent.config._fromServer(params, 'error_collector.ignore_messages')
         let expected = {'Foo':['zap']}  // expect this to replace
         expect(agent.config.error_collector.ignore_messages).eql(expected)
+      })
+    })
+
+    it('_fromServer local misconfigure should not explode', function() {
+      helper.runInTransaction(agent, function() {
+        // whoops, a misconfiguration
+        agent.config.error_collector.ignore_messages = {'Foo':'bar'}
+        let params = {'error_collector.ignore_messages':{'Foo':['zap']}}
+        agent.config._fromServer(params, 'error_collector.ignore_messages')
+        let expected = {'Foo':['zap']}  // expect this to replace
+        expect(agent.config.error_collector.ignore_messages).eql(expected)
+      })
+    })
+
+    it('_fromServer misconfiguration should be not be allowed', function() {
+      helper.runInTransaction(agent, function() {
+        // whoops, a misconfiguration
+        const badServerValues = [
+          null,
+          42,
+          'a',
+          [1,2,3,4],
+          {'Foo': null, 'Bar':['zap']},
+          {'Foo': 42, 'Bar':['zap']},
+          {'Foo': 'a', 'Bar':['zap']}
+        ]
+        badServerValues.forEach(function(value) {
+          const expected = {'Foo':['zap']}
+          agent.config.error_collector.ignore_messages = expected
+          const params = {'error_collector.ignore_messages':value}
+          agent.config._fromServer(params, 'error_collector.ignore_messages')
+          expect(agent.config.error_collector.ignore_messages).eql(expected)
+          // console.log(agent.config.error_collector.ignore_messages)
+        })
       })
     })
   })
