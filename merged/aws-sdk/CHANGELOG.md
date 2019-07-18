@@ -1,3 +1,17 @@
+### 0.3.0 (2019-07-18):
+
+* Adds support for DocumentClient API calls to be captured as Datastore segments/metrics. 
+
+  Supported calls are: `get`, `put`, `update`, `delete`, `query` and `scan`. These will be named according to the underlying DynamoDB operation that is executed. For example: `get` will be named `getItem`. DocumentClient calls not listed above will still be captured as Externals.
+
+* Fixed issue that would prevent multiple DynamoDB instances from being instrumented.
+
+* Replaced `database_name` with `collection` in DynamoDB attributes.
+
+* Moved `name` property to the root of DynamoDB segment description object.
+
+  Previously, segments were being incorrectly named `"Datastore/operation/DynamoDB/undefined"`, due to the operation name being misplaced.
+
 
 ### 0.2.0 (2019-02-19):
 
