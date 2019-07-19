@@ -169,7 +169,6 @@ describe('Server Config', function() {
           const params = {'error_collector.ignore_classes':value}
           agent.config._fromServer(params, 'error_collector.ignore_classes')
           expect(agent.config.error_collector.ignore_classes).eql(expected)
-          // console.log(agent.config.error_collector.ignore_messages)
         })
       })
     })
