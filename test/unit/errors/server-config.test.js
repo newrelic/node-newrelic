@@ -241,5 +241,17 @@ describe('Server Config', function() {
         })
       })
     })
+
+    it('_fromServer should de-duplicate arrays nested in object', function() {
+      helper.runInTransaction(agent, function() {
+        // whoops, a misconfiguration
+        agent.config.error_collector.ignore_messages = {'Foo':['zap','bar']}
+        let params = {'error_collector.ignore_messages':{'Foo':['bar']}}
+        agent.config._fromServer(params, 'error_collector.ignore_messages')
+        let expected = {'Foo':['zap','bar']}  // expect this to replace
+        expect(agent.config.error_collector.ignore_messages).eql(expected)
+      })
+    })
+
   })
 })
