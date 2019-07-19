@@ -251,6 +251,5 @@ describe('Server Config', function() {
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
-
   })
 })
