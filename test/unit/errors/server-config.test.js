@@ -169,7 +169,6 @@ describe('Server Config', function() {
           const params = {'error_collector.ignore_classes':value}
           agent.config._fromServer(params, 'error_collector.ignore_classes')
           expect(agent.config.error_collector.ignore_classes).eql(expected)
-          // console.log(agent.config.error_collector.ignore_messages)
         })
       })
     })
@@ -239,6 +238,17 @@ describe('Server Config', function() {
           agent.config._fromServer(params, 'error_collector.expected_status_codes')
           expect(agent.config.error_collector.expected_status_codes).eql(expected)
         })
+      })
+    })
+
+    it('_fromServer should de-duplicate arrays nested in object', function() {
+      helper.runInTransaction(agent, function() {
+        // whoops, a misconfiguration
+        agent.config.error_collector.ignore_messages = {'Foo':['zap','bar']}
+        let params = {'error_collector.ignore_messages':{'Foo':['bar']}}
+        agent.config._fromServer(params, 'error_collector.ignore_messages')
+        let expected = {'Foo':['zap','bar']}  // expect this to replace
+        expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
   })

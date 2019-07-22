@@ -239,6 +239,8 @@ describe('Agent harvests', () => {
     })
 
     it('should generate error metrics', (done) => {
+      agent.config.error_collector.expected_classes = ['SyntaxError']
+
       let metricBody = null
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS, (_metricBody) => {
@@ -258,6 +260,7 @@ describe('Agent harvests', () => {
         agent.errors.add(webTx, new TypeError('no method last on undefined'))
         agent.errors.add(webTx, new Error('application code error'))
         agent.errors.add(webTx, new RangeError('stack depth exceeded'))
+        agent.errors.add(webTx, new SyntaxError('☃ is not valid'))
 
         webTx.end()
         helper.runInTransaction(agent, (bgTx) => {
@@ -267,6 +270,7 @@ describe('Agent harvests', () => {
           agent.errors.add(bgTx, new TypeError('no method last on undefined'))
           agent.errors.add(bgTx, new Error('application code error'))
           agent.errors.add(bgTx, new RangeError('stack depth exceeded'))
+          agent.errors.add(bgTx, new SyntaxError('☃ is not valid'))
 
           bgTx.end()
           doHarvest()
@@ -289,6 +293,10 @@ describe('Agent harvests', () => {
           errorMetric = _findMetric(metricBody, 'Errors/allOther')
           expect(errorMetric).to.exist
           expect(errorMetric[1][0]).to.equal(3) // Call count
+
+          const expectedErrorMetric = _findMetric(metricBody, 'ErrorsExpected/all')
+          expect(expectedErrorMetric).to.exist
+          expect(expectedErrorMetric[1][0]).to.equal(2) // Count
 
           done()
         })

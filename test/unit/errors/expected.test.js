@@ -110,6 +110,30 @@ describe('Expected Errors', function() {
       })
     })
 
+    it('should increment expected error metric call counts', function() {
+      helper.runInTransaction(agent, function(tx) {
+        const errorAggr = agent.errors
+
+        agent.config.error_collector.capture_events = true
+        agent.config.error_collector.expected_classes = ["Error"]
+
+        const error1 = new Error('expected')
+        const error2 = new ReferenceError('NOT expected')
+
+        tx.addException(error1, {}, 0)
+        tx.addException(error2, {}, 0)
+        tx.end()
+
+        expect(
+          agent.metrics.getOrCreateMetric(
+            NAMES.ERRORS.PREFIX + tx.getFullName()
+          ).callCount
+        ).equals(1)
+
+        expect(errorAggr.getTotalExpectedErrorCount()).equals(1)
+      })
+    })
+
     it('should not increment error metric call counts, web transaction', function() {
       helper.runInTransaction(agent, function(tx) {
         const errorAggr = agent.errors
