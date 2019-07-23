@@ -88,11 +88,11 @@ describe('Ignored Errors', function() {
       helper.runInTransaction(agent, function(tx) {
         const errorAggr = agent.errors
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.ignore_messages = {"Error":['alpha']}
+        agent.config.error_collector.ignore_messages = {"Error":['ignored']}
 
-        const error1 = new Error('alpha')           // will ignore
-        const error2 = new Error('omega')           // will not ignore
-        const error3 = new ReferenceError('alpha')  // will ignore
+        const error1 = new Error('ignored')
+        const error2 = new Error('not ignored')
+        const error3 = new ReferenceError('not ignored')
 
         tx.addException(error1, {}, 0)
         tx.addException(error2, {}, 0)
@@ -123,12 +123,12 @@ describe('Ignored Errors', function() {
       helper.runInTransaction(agent, function(tx) {
         const errorAggr = agent.errors
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.ignore_messages = {"Error":['alpha']}
-        agent.config.error_collector.expected_messages = {"Error":['alpha']}
+        agent.config.error_collector.ignore_messages = {"Error":['ignore']}
+        agent.config.error_collector.expected_messages = {"Error":['ignore']}
 
-        const error1 = new Error('alpha')           // will ignore
-        const error2 = new Error('omega')           // will not ignore
-        const error3 = new ReferenceError('alpha')  // will ignore
+        const error1 = new Error('ignore')
+        const error2 = new Error('not ignore')
+        const error3 = new ReferenceError('not ignore')
 
         tx.addException(error1, {}, 0)
         tx.addException(error2, {}, 0)
@@ -162,9 +162,9 @@ describe('Ignored Errors', function() {
         agent.config.error_collector.ignore_status_codes = [500]
         tx.statusCode = 500
 
-        const error1 = new Error('alpha')
-        const error2 = new Error('omega')
-        const error3 = new ReferenceError('alpha')
+        const error1 = new Error('ignore')
+        const error2 = new Error('ignore me too')
+        const error3 = new ReferenceError('i will also be ignored')
 
         tx.addException(error1, {}, 0)
         tx.addException(error2, {}, 0)
@@ -199,9 +199,9 @@ describe('Ignored Errors', function() {
         agent.config.error_collector.expected_status_codes = [500]
         tx.statusCode = 500
 
-        const error1 = new Error('alpha')
-        const error2 = new Error('omega')
-        const error3 = new ReferenceError('alpha')
+        const error1 = new Error('ignore')
+        const error2 = new Error('also ignore')
+        const error3 = new ReferenceError('i will also be ignored')
 
         tx.addException(error1, {}, 0)
         tx.addException(error2, {}, 0)
