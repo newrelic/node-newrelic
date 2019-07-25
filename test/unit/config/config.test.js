@@ -352,6 +352,66 @@ describe('the agent configuration', function() {
       )
     })
 
+    it('should pick up which status codes are expected', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '401,404,502'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([401, 404, 502])
+        }
+      )
+    })
+
+    it('should pick up which status codes are expectedd when using a range', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '401, 420-421, 502'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([401, 420, 421, 502])
+        }
+      )
+    })
+
+    it('should not add codes given with invalid range', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '421-420'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([])
+        }
+      )
+    })
+
+    it('should not add codes if given out of range', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '1 - 1776'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([])
+        }
+      )
+    })
+
+    it('should allow negative status codes ', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '-7'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([-7])
+        }
+      )
+    })
+
+    it('should not add codes that parse to NaN ', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': 'abc'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([])
+        }
+      )
+    })
+
     it('should pick up whether the transaction tracer is enabled', function() {
       idempotentEnv({'NEW_RELIC_TRACER_ENABLED': false}, function(tc) {
         should.exist(tc.transaction_tracer.enabled)
