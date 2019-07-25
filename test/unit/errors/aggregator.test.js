@@ -68,7 +68,7 @@ describe('Errors', function() {
         'A'
       )
       error.add(trans, new Error())
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
       expect(params.agentAttributes).deep.equals({'request.parameters.a': 'A'})
@@ -81,7 +81,7 @@ describe('Errors', function() {
     it('records custom parameters', function() {
       trans.trace.addCustomAttribute('a', 'A')
       error.add(trans, new Error())
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
 
@@ -96,7 +96,7 @@ describe('Errors', function() {
     it('merge custom parameters', function() {
       trans.trace.addCustomAttribute('a', 'A')
       error.add(trans, new Error(), {b: 'B'})
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
 
@@ -117,7 +117,7 @@ describe('Errors', function() {
     it('overrides existing custom attributes with new custom attributes', function() {
       trans.trace.custom.a = 'A'
       error.add(trans, new Error(), {a: 'AA'})
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
 
@@ -136,7 +136,7 @@ describe('Errors', function() {
     it('does not add custom attributes in high security mode', function() {
       agent.config.high_security = true
       error.add(trans, new Error(), {a: 'AA'})
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
 
@@ -151,7 +151,7 @@ describe('Errors', function() {
     it('redacts the error message in high security mode', function() {
       agent.config.high_security = true
       error.add(trans, new Error('this should not be here'), {a: 'AA'})
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       expect(error.errors[0][2]).to.equal('')
       expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
@@ -159,7 +159,7 @@ describe('Errors', function() {
     it('redacts the error message when strip_exception_messages.enabled', function() {
       agent.config.strip_exception_messages.enabled = true
       error.add(trans, new Error('this should not be here'), {a: 'AA'})
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       expect(error.errors[0][2]).to.equal('')
       expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
@@ -179,7 +179,7 @@ describe('Errors', function() {
 
       error = agent.errors
       error.add(trans, new Error())
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
       expect(params.agentAttributes).deep.equals({
@@ -193,7 +193,7 @@ describe('Errors', function() {
 
       error = agent.errors
       error.add(trans, new Error())
-      agent.errors.onTransactionFinished(trans, agent.metrics)
+      agent.errors.onTransactionFinished(trans)
 
       var params = error.errors[0][PARAMS]
       expect(params.agentAttributes).deep.equals({})
@@ -347,25 +347,24 @@ describe('Errors', function() {
       })
 
       it('should capture errors for transactions ending in error', function() {
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics)
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 500), agent.metrics)
+        finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
+        finalizeTracer.onTransactionFinished(createTransaction(agent, 500))
 
         expect(finalizeTracer.errors.length).equal(2)
       })
 
       it('should count errors on the error tracer', function() {
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics)
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 500), agent.metrics)
+        finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
+        finalizeTracer.onTransactionFinished(createTransaction(agent, 500))
 
         expect(finalizeTracer.errorCount).equal(2)
       })
 
       it('should count named errors on the agent metrics', function() {
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics)
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 500), agent.metrics)
+        let c1 = finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
+        let c2 = finalizeTracer.onTransactionFinished(createTransaction(agent, 500))
 
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
-        expect(metric.callCount).equal(2)
+        expect((c1 + c2)).equal(2)
       })
 
       it('should increment error metrics correctly', function() {
@@ -374,10 +373,9 @@ describe('Errors', function() {
         finalizeTracer.add(transaction, new Error('error1'))
         finalizeTracer.add(transaction, new Error('error2'))
 
-        finalizeTracer.onTransactionFinished(transaction, agent.metrics)
+        let count = finalizeTracer.onTransactionFinished(transaction)
 
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
-        expect(metric.callCount).equal(2)
+        expect(count).equal(2)
       })
 
       it('should increment error metrics correctly with user errors', function() {
@@ -391,10 +389,9 @@ describe('Errors', function() {
         api.noticeError(new Error('error1'))
         api.noticeError(new Error('error2'))
 
-        finalizeTracer.onTransactionFinished(transaction, agent.metrics)
+        let count = finalizeTracer.onTransactionFinished(transaction)
 
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
-        expect(metric.callCount).equal(2)
+        expect(count).equal(2)
       })
 
       it('should ignore errors if related transaction is ignored', function() {
@@ -404,7 +401,7 @@ describe('Errors', function() {
         // add errors by various means
         finalizeTracer.add(transaction, new Error("no"))
         transaction.addException(new Error('ignored'))
-        finalizeTracer.onTransactionFinished(transaction, agent.metrics)
+        finalizeTracer.onTransactionFinished(transaction)
 
         expect(finalizeTracer.errorCount).equal(0)
 
@@ -413,35 +410,33 @@ describe('Errors', function() {
       })
 
       it('should ignore 404 errors for transactions', function() {
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 400), agent.metrics)
+        let count = finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
         // 404 errors are ignored by default
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics)
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics)
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics)
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 404), agent.metrics)
+        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
+        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
+        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
+        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
 
         expect(finalizeTracer.errorCount).equal(1)
 
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
-        expect(metric.callCount).equal(1)
+        expect(count).equal(1)
       })
 
       it('should ignore 404 errors for transactions with exceptions attached', () => {
         var notIgnored = createTransaction(agent, 400)
         notIgnored.addException(new Error('bad request'))
-        finalizeTracer.onTransactionFinished(notIgnored, agent.metrics)
+        let count = finalizeTracer.onTransactionFinished(notIgnored)
 
         // 404 errors are ignored by default, but making sure the config is set
         finalizeTracer.config.error_collector.ignore_status_codes = [404]
 
         var ignored = createTransaction(agent, 404)
         ignored.addException(new Error('ignored'))
-        finalizeTracer.onTransactionFinished(ignored, agent.metrics)
+        count += finalizeTracer.onTransactionFinished(ignored)
 
         expect(finalizeTracer.errorCount).equal(1)
 
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
-        expect(metric.callCount).equal(1)
+        expect(count).equal(1)
       })
 
       it('should collect exceptions added with noticeError() API even if the status ' +
@@ -460,14 +455,13 @@ describe('Errors', function() {
         tx.addException(new Error('should be ignored'))
         // this should go through
         api.noticeError(new Error('should go through'))
-        finalizeTracer.onTransactionFinished(tx, agent.metrics)
+        let count = finalizeTracer.onTransactionFinished(tx)
 
         expect(finalizeTracer.errorCount).equal(1)
         var collectedErrors = finalizeTracer.errors
         expect(collectedErrors[0][2]).equal('should go through')
 
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
-        expect(metric.callCount).equal(1)
+        expect(count).equal(1)
       })
     })
 
@@ -499,7 +493,7 @@ describe('Errors', function() {
         transaction.statusCode = 503 // PDX wut wut
 
         noErrorStatusTracer.add(transaction, null)
-        noErrorStatusTracer.onTransactionFinished(transaction, agent.metrics)
+        noErrorStatusTracer.onTransactionFinished(transaction)
         errorJSON = noErrorStatusTracer.errors[0]
       })
 
@@ -546,7 +540,7 @@ describe('Errors', function() {
         )
 
         agent.errors.add(transaction, null)
-        agent.errors.onTransactionFinished(transaction, agent.metrics)
+        agent.errors.onTransactionFinished(transaction)
         errorJSON = agent.errors.errors[0]
         params = errorJSON[4]
       })
@@ -595,7 +589,7 @@ describe('Errors', function() {
       transaction.url = '/test_action.json?test_param=a%20value&thing'
 
       agent.errors.add(transaction, null)
-      agent.errors.onTransactionFinished(transaction, agent.metrics)
+      agent.errors.onTransactionFinished(transaction)
 
       var errorJSON = agent.errors.errors[0]
       var params = errorJSON[4]
@@ -680,7 +674,7 @@ describe('Errors', function() {
         var exception = new TypeError('Dare to be different!')
 
         typeErrorTracer.add(transaction, exception)
-        typeErrorTracer.onTransactionFinished(transaction, agent.metrics)
+        typeErrorTracer.onTransactionFinished(transaction)
         errorJSON = typeErrorTracer.errors[0]
       })
 
@@ -729,7 +723,7 @@ describe('Errors', function() {
         transaction.url = '/test_action.json'
 
         agent.errors.add(transaction, exception)
-        agent.errors.onTransactionFinished(transaction, agent.metrics)
+        agent.errors.onTransactionFinished(transaction)
         errorJSON = agent.errors.errors[0]
         params = errorJSON[4]
       })
@@ -784,7 +778,7 @@ describe('Errors', function() {
         var exception = 'Dare to be different!'
 
         thrownTracer.add(transaction, exception)
-        thrownTracer.onTransactionFinished(transaction, agent.metrics)
+        thrownTracer.onTransactionFinished(transaction)
         errorJSON = thrownTracer.errors[0]
       })
 
@@ -832,7 +826,7 @@ describe('Errors', function() {
         transaction.url = '/test_action.json'
 
         agent.errors.add(transaction, exception)
-        agent.errors.onTransactionFinished(transaction, agent.metrics)
+        agent.errors.onTransactionFinished(transaction)
         errorJSON = agent.errors.errors[0]
         params = errorJSON[4]
       })
