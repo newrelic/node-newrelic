@@ -587,6 +587,20 @@ describe('the agent configuration', function() {
           })
         }
       )
+
+      it('should pick up ignored error classes', function() {
+        idempotentEnv({'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERRORS': 'Error, AnotherError'}, (tc) => {
+          should.exist(tc.error_collector.ignore_classes)
+          expect(tc.error_collector.ignore_classes).eql(['Error', 'AnotherError'])
+        })
+      })
+
+      it('should pick up expected error classes', function() {
+        idempotentEnv({'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERRORS': 'A, B, CdE'}, (tc) => {
+          should.exist(tc.error_collector.expected_classes)
+          expect(tc.error_collector.expected_classes).eql(['A', 'B', 'CdE'])
+        })
+      })
     })
   })
 
