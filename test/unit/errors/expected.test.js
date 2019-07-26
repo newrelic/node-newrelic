@@ -241,8 +241,8 @@ describe('Expected Errors', function() {
     })
 
     it('status code + "all expected" errors should not affect apdex', function() {
-      // when we have an error like status code, and all the collected errors
-      // are expected, we can safely assume that the error like status code
+      // when we have an error-like status code, and all the collected errors
+      // are expected, we can safely assume that the error-like status code
       // came from an expected error
       helper.runInTransaction(agent, function(tx) {
         tx.statusCode = 500
@@ -265,9 +265,9 @@ describe('Expected Errors', function() {
     })
 
     it('status code + "not all expected" errors should frustrate apdex', function() {
-      // when we have an error like status code, and some of the collected
+      // when we have an error-like status code, and some of the collected
       // errors are expected, but others are not, we have no idea which error
-      // resulted in the error like status code.  Therefore we still bump
+      // resulted in the error-like status code.  Therefore we still bump
       // apdex to frustrating.
 
       helper.runInTransaction(agent, function(tx) {
