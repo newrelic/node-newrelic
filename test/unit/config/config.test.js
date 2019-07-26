@@ -1110,6 +1110,32 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('when loading options via constructor', function() {
+    it('should properly pick up on expected_messages', function() {
+      const options = {
+        expected_messages: {
+          Error: ['oh no']
+        }
+      }
+      var config = new Config({
+        error_collector: options
+      })
+      expect(config.error_collector.expected_messages).eql(options.expected_messages)
+    })
+
+    it('should properly pick up on ignore_messages', function() {
+      const options = {
+        ignore_messages: {
+          Error: ['oh no']
+        }
+      }
+      var config = new Config({
+        error_collector: options
+      })
+      expect(config.error_collector.ignore_messages).eql(options.ignore_messages)
+    })
+  })
+
   describe('when setting log level via config constructor', function() {
     it('should have log aliases', function() {
       var config = new Config({'logging': {'level': 'verbose'}})
