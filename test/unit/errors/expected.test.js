@@ -254,7 +254,7 @@ describe('Expected Errors', function() {
 
         tx.addException(new Error('apdex is frustrating'))
         tx.addException(new ReferenceError('apdex is frustrating'))
-        expect(tx.allErrorsExpected()).equals(true)
+        expect(tx.hasOnlyExpectedErrors()).equals(true)
 
         tx._setApdex(NAMES.APDEX, 1, 1)
         const json = apdexStats.toJSON()
