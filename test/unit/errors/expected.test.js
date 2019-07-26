@@ -239,5 +239,54 @@ describe('Expected Errors', function() {
         expect(result).equals(true)
       })
     })
+
+    it('status code + "all expected" errors should not affect apdex', function() {
+      // when we have an error like status code, and all the collected errors
+      // are expected, we can safely assume that the error like status code
+      // came from an expected error
+      helper.runInTransaction(agent, function(tx) {
+        tx.statusCode = 500
+        const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
+        agent.config.error_collector.expected_messages = {
+          "Error":["apdex is frustrating"],
+          "ReferenceError":["apdex is frustrating"]
+        }
+
+        tx.addException(new Error('apdex is frustrating'))
+        tx.addException(new ReferenceError('apdex is frustrating'))
+        expect(tx.allErrorsExpected()).equals(true)
+
+        tx._setApdex(NAMES.APDEX, 1, 1)
+        const json = apdexStats.toJSON()
+        tx.end()
+        // no errors in the frustrating column
+        expect(json[2]).equals(0)
+      })
+    })
+
+    it('status code + "not all expected" errors should frustrate apdex', function() {
+      // when we have an error like status code, and some of the collected
+      // errors are expected, but others are not, we have no idea which error
+      // resulted in the error like status code.  Therefore we still bump
+      // apdex to frustrating.
+
+      helper.runInTransaction(agent, function(tx) {
+        tx.statusCode = 500
+        const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
+        agent.config.error_collector.expected_messages = {
+          "Error":["apdex is frustrating"]
+        }
+
+        tx.addException(new Error('apdex is frustrating'))
+        tx.addException(new ReferenceError('apdex is frustrating'))
+
+        tx._setApdex(NAMES.APDEX, 1, 1)
+        const json = apdexStats.toJSON()
+        tx.end()
+        // no errors in the frustrating column
+        expect(json[2]).equals(1)
+      })
+    })
+
   })
 })
