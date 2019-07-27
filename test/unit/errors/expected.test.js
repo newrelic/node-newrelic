@@ -287,6 +287,5 @@ describe('Expected Errors', function() {
         expect(json[2]).equals(1)
       })
     })
-
   })
 })
