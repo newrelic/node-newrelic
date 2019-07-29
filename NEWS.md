@@ -1,3 +1,31 @@
+### 5.11.0 (2019-07-29):
+
+* Implements Expected and Ignored Errors functionality
+
+* Bumps jsdoc and lodash dev dependency to avoid upstream vulnerability warning.
+
+* Added support for scoped package name introduced in hapi v18 (@hapi/hapi).
+
+  This will provide functionality at parity with instrumentation for hapi v17. Any
+  new features may not yet be supported.
+
+ Huge shoutout to Aori Nevo (@aorinevo) for this contribution.
+
+* Fixed bug where agent would count errors towards error metrics even if they were
+  dropped due to the error collector being disabled.
+
+* The agent will now properly track cached paths to files in loaded modules on Node
+  versions >10.
+
+  As of Node v11, the path to a file in a module being loaded will only be resolved
+  on the first load; subsequent resolution of that file will use a cached value.
+  The agent records this resolved path and uses it for relative file look ups in
+  order to deep link into modules using `Shim#require`. Since the agent couldn't
+  reliably get at the path on the subsequent calls to require, it now replicates
+  the caching logic and hold onto the resolved path for a given file.
+
+* Adds detailed logging through harvest/collector code to increase supportability.
+
 ### 5.10.0 (2019-06-11):
 
 * The agent now allows installation on node v11 and v12.
