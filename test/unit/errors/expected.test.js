@@ -247,9 +247,12 @@ describe('Expected Errors', function() {
       helper.runInTransaction(agent, function(tx) {
         tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
-        agent.config.error_collector.expected_messages = {
-          "Error":["apdex is frustrating"],
-          "ReferenceError":["apdex is frustrating"]
+        const error_collector = agent.config.error_collector
+        error_collector.expected_messages = {
+          Error: ['apdex is frustrating']
+        }
+        error_collector.ignore_messages = {
+          ReferenceError: ['apdex is frustrating']
         }
 
         tx.addException(new Error('apdex is frustrating'))
@@ -261,6 +264,20 @@ describe('Expected Errors', function() {
         tx.end()
         // no errors in the frustrating column
         expect(json[2]).equals(0)
+      })
+    })
+
+    it('status code + no errors should frustrate apdex', function() {
+      helper.runInTransaction(agent, function(tx) {
+        tx.statusCode = 500
+        const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
+        expect(tx.hasOnlyExpectedErrors()).equals(false)
+
+        tx._setApdex(NAMES.APDEX, 1, 1)
+        const json = apdexStats.toJSON()
+        tx.end()
+        // no errors in the frustrating column
+        expect(json[2]).equals(1)
       })
     })
 
