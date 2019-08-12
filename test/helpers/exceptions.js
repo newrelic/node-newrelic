@@ -31,6 +31,28 @@ const commands = {
     })
   },
 
+  runServerlessTransaction: function(err) {
+    const stubEvent = {}
+    const stubContext = {
+      done: () => {},
+      succeed: () => {},
+      fail: () => {},
+      functionName: 'testFunction',
+      functionVersion: 'TestVersion',
+      invokedFunctionArn: 'arn:test:function',
+      memoryLimitInMB: '128',
+      awsRequestId: 'testid'
+    }
+    const stubCallback = () => {}
+    process.once('uncaughtException', function() {
+      setTimeout(sendErrors, 15)
+    })
+    const handler = newrelic.setLambdaHandler(function handler() {
+      throw new Error(err)
+    })
+    handler(stubEvent, stubContext, stubCallback)
+  },
+
   checkAgent: function(err) {
     process.once('uncaughtException', function() {
       setTimeout(sendErrors, 15)
