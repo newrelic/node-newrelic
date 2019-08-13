@@ -3,11 +3,11 @@
 var http = require('http')
 var events = require('events')
 var expect = require('chai').expect
+var nock = require('nock')
 var helper = require('../../../lib/agent_helper')
 var NAMES = require('../../../../lib/metrics/names')
 var instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
 var hashes = require('../../../../lib/util/hashes')
-var nock = require('nock')
 var Segment = require('../../../../lib/transaction/trace/segment')
 
 
@@ -302,7 +302,7 @@ describe('should add data from cat header to segment', function() {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[0]
+        var segment = agent.tracer.getTransaction().trace.root.children[0].children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
@@ -319,7 +319,7 @@ describe('should add data from cat header to segment', function() {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[0]
+        var segment = agent.tracer.getTransaction().trace.root.children[0].children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')

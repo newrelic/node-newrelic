@@ -32,7 +32,7 @@ const helper = module.exports = {
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
    *
-   * @param {object} options Any configuration to override in the agent.
+   * @param {object} conf    Any configuration to override in the agent.
    *                         See agent.js for details, but so far this includes
    *                         passing in a config object and the connection stub
    *                         created in this function.
@@ -74,10 +74,10 @@ const helper = module.exports = {
    * Generate the URLs used to talk to the collector, which have a very
    * specific format. Useful with nock.
    *
-   * @param {String} method The method being invoked on the collector.
-   * @param number runID  Agent run ID (optional).
+   * @param {string} method The method being invoked on the collector.
+   * @param {number} runID  Agent run ID (optional).
    *
-   * @returns {String} URL path for the collector.
+   * @returns {string} URL path for the collector.
    */
   generateCollectorPath: (method, runID, protocolVersion) => {
     protocolVersion = protocolVersion || 17
@@ -113,7 +113,7 @@ const helper = module.exports = {
    * Builds on loadMockedAgent by patching the module loader and setting up
    * the instrumentation framework.
    *
-   * @param {object} options
+   * @param {object} conf
    *  Any configuration to override in the agent. See agent.js for details,
    *  but so far this includes passing in a config object and the connection
    *  stub created in this function.
@@ -141,7 +141,7 @@ const helper = module.exports = {
    * Shut down the agent, ensuring that any instrumentation scaffolding
    * is shut down.
    *
-   * @param Agent agent The agent to shut down.
+   * @param {Agent} agent The agent to shut down.
    */
   unloadAgent: (agent) => {
     agent.emit('unload')
@@ -173,7 +173,7 @@ const helper = module.exports = {
 
   /**
    * Create a transactional scope in which instrumentation that will only add
-   * trace segments to existing transactions will funciton.
+   * trace segments to existing transactions will function.
    *
    * If the agent hasn't been started, set to a state that can collect transactions.
    *
