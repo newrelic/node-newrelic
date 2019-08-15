@@ -735,7 +735,7 @@ function makeTrace(agent, callback) {
         'WebTransaction/NormalizedUri/*', // scope
         '/test',  // URI path
         encoded,  // compressed segment / segment data
-        transaction.id, // guid
+        '',       // FIXME: depends on RUM token in session
         null,     // reserved, always NULL
         false,    // FIXME: RUM2 session persistence, not worrying about it for now
         null,     // FIXME: xraysessionid
