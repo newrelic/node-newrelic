@@ -15,7 +15,7 @@ const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
 const EXPECTED = [
   'pid', 'host', 'language', 'app_name', 'labels', 'utilization',
   'agent_version', 'environment', 'settings', 'high_security', 'display_host',
-  'identifier', 'metadata'
+  'identifier', 'metadata', 'event_harvest_config'
 ]
 
 const _ip6_digits = '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
@@ -184,6 +184,26 @@ describe('fun facts about apps that New Relic is interested in include', () => {
       })
 
       expect(factsed.labels).deep.equal(expected)
+      done()
+    })
+  })
+
+  it('should add harvest_limits from local or default config', (done) => {
+    const expectedValue = 10
+    agent.config.transaction_events.max_samples_per_minute = expectedValue
+    agent.config.custom_insights_events.max_samples_stored = expectedValue
+    agent.config.error_collector.max_event_samples_stored = expectedValue
+
+    const expectedHarvestConfig = {
+      harvest_limits: {
+        analytic_event_data: expectedValue,
+        custom_event_data: expectedValue,
+        error_event_data: expectedValue
+      }
+    }
+
+    facts(agent, (factsResult) => {
+      expect(factsResult.event_harvest_config).deep.equal(expectedHarvestConfig)
       done()
     })
   })
