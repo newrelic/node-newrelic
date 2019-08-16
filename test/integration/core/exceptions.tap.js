@@ -4,6 +4,7 @@ const tap = require('tap')
 const cp = require('child_process')
 const path = require('path')
 const helper = require('../../lib/agent_helper')
+const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
 
 
 tap.test('Uncaught exceptions', (t) => {
@@ -65,12 +66,12 @@ tap.test('Report uncaught exceptions', (t) => {
 })
 
 tap.test('Triggers harvest while in serverless mode', (t) => {
-  t.plan(6)
+  t.plan(8)
 
   var proc = startProc({
     'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
-    'NEW_RELIC_LOG_ENABLED': 'n',
-    'NEW_RELIC_HOME': path.join(path.resolve('test', 'helpers'))
+    'NEW_RELIC_LOG_ENABLED': 'false',
+    'NEW_RELIC_HOME': helpersDir
   })
   var message = 'I am a test error'
   var messageReceived = false
@@ -89,8 +90,12 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
       t.ok(decoded.data, 'data should be present')
       const error = decoded.data.error_data[1][0]
       t.equal(error[2], message)
+      const transactionEvents = decoded.data.analytic_event_data
+      t.ok(transactionEvents, 'should have a transaction event')
+      const transactionEvent = transactionEvents[2][0]
+      t.ok(transactionEvent[0].error, 'should be errored')
+      proc.kill()
     })
-    proc.kill()
   })
 
   proc.on('exit', function() {
@@ -98,7 +103,7 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
     t.end()
   })
 
-  proc.send({name: 'checkAgent', args: message})
+  proc.send({name: 'runServerlessTransaction', args: message})
 })
 
 tap.test('Do not report domained exceptions', (t) => {
@@ -166,8 +171,7 @@ if (process.setUncaughtExceptionCaptureCallback) {
 }
 
 function startProc(env) {
-  var testDir = path.resolve(__dirname, '../../')
-  return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {
+  return cp.fork(path.join(helpersDir, 'exceptions.js'), {
     stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
     env: env
   })
