@@ -1464,20 +1464,6 @@ describe('the agent configuration', function() {
       expect(config.transaction_events.enabled).equals(false)
     })
 
-    it('should work when transaction_events.max_samples_stored is received', () => {
-      expect(function() {
-        config.onConnect({'transaction_events.max_samples_stored': 10})
-      }).not.throws()
-      expect(config.transaction_events.max_samples_stored).equals(10)
-    })
-
-    it('should work when transaction_events.max_samples_per_minute is received', () => {
-      expect(function() {
-        config.onConnect({'transaction_events.max_samples_per_minute': 1})
-      }).not.throws()
-      expect(config.transaction_events.max_samples_per_minute).equals(1)
-    })
-
     it('should not blow up when transaction_events.enabled is received', function() {
       expect(function() {
         config.onConnect({'transaction_events.enabled': false})

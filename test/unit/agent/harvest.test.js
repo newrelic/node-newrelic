@@ -61,6 +61,12 @@ describe('Agent harvests', () => {
 
   afterEach(() => {
     helper.unloadAgent(agent)
+
+    if (!nock.isDone()) {
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
+
     nock.enableNetConnect()
   })
 
@@ -532,9 +538,12 @@ describe('Agent harvests', () => {
     it('should send two payloads when there are a lot of events', (done) => {
       // Reduce the event limit to avoid `RemoteMethod` compressing the payload.
       const limit = 100
-      agent.config.onConnect({
-        'transaction_events.max_samples_per_minute': limit
-      })
+
+      // Manualy trigger config value update.
+      // TODO: Replace with harvest config, likely via agent.config.onConnect()
+      // when wired up.
+      agent.config.transaction_events.max_samples_per_minute = limit
+      agent.config.emit('transaction_events.max_samples_per_minute', limit)
 
       let eventsBodies = []
       const harvest = nock(URL)
@@ -589,9 +598,12 @@ describe('Agent harvests', () => {
     it('should replace split bodies on failure', (done) => {
       // Reduce the event limit to avoid `RemoteMethod` compressing the payload.
       const limit = 100
-      agent.config.onConnect({
-        'transaction_events.max_samples_per_minute': limit
-      })
+
+      // Manualy trigger config value update.
+      // TODO: Replace with harvest config, likely via agent.config.onConnect()
+      // when wired up.
+      agent.config.transaction_events.max_samples_per_minute = limit
+      agent.config.emit('transaction_events.max_samples_per_minute', limit)
 
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
