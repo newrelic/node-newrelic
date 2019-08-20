@@ -19,6 +19,7 @@
     "node": ">=6.0.0 <11.0.0"
   },
   "devDependencies": {
+    "@koa/router": "^8.0.0",
     "@newrelic/test-utilities": "^3.0.0",
     "coveralls": "^3.0.0",
     "eslint": "^5.8.0",
