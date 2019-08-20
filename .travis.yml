@@ -41,8 +41,7 @@ services:
   - postgresql
   - rabbitmq
 before_install:
-  - cat ./bin/travis-setup.sh
-  - cat ./bin/travis-install-mongo.sh
+  - env
   - ./bin/travis-setup.sh
 install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
 cache:

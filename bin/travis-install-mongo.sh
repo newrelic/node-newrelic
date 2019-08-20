@@ -6,6 +6,7 @@ set -xev # -x echo commands as executed
          #    take the appraoch that provide as much information as possible
          #    which human beings something describe as being verbose
 
+env
 wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB}.tgz -O /tmp/mongodb.tgz
 mkdir -p /tmp/mongodb/data
 tar -xvf /tmp/mongodb.tgz -C /tmp/mongodb
