@@ -715,5 +715,82 @@ describe('the New Relic agent', function() {
         expect(agent.transactionSampler.samplingPeriod).to.equal(100)
       })
     })
+
+    describe('when event_harvest_config updated on connect', () => {
+      describe('with a valid config', () => {
+        const validHarvestConfig = {
+          report_period_ms: 5000,
+          harvest_limits: {
+            analytic_event_data: 833,
+            custom_event_data: 833,
+            error_event_data: 8
+          }
+        }
+
+        beforeEach(() => {
+          agent.config.onConnect({event_harvest_config: validHarvestConfig})
+        })
+
+        it('should generate ReportPeriod supportability', () => {
+          const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.callCount).to.equal(validHarvestConfig.report_period_ms)
+        })
+
+        it('should generate AnalyticEventData/HarvestLimit supportability', () => {
+          const expectedMetricName =
+            'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.callCount)
+            .to.equal(validHarvestConfig.harvest_limits.analytic_event_data)
+        })
+
+        it('should generate CustomEventData/HarvestLimit supportability', () => {
+          const expectedMetricName =
+            'Supportability/EventHarvest/CustomEventData/HarvestLimit'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.callCount)
+            .to.equal(validHarvestConfig.harvest_limits.custom_event_data)
+        })
+
+        it('should generate ErrorEventData/HarvestLimit supportability', () => {
+          const expectedMetricName =
+            'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.callCount)
+            .to.equal(validHarvestConfig.harvest_limits.error_event_data)
+        })
+      })
+
+      describe('with an invalid config', () => {
+        const invalidHarvestConfig = {}
+
+        beforeEach(() => {
+          agent.config.onConnect({event_harvest_config: invalidHarvestConfig})
+        })
+
+        it('should generate MissingEventHarvestConfig supportability', () => {
+          const expectedMetricName =
+            'Supportability/Agent/Collector/MissingEventHarvestConfig'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.callCount).to.equal(1)
+        })
+      })
+    })
   })
 })

@@ -32,7 +32,9 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
     t.notOk(error, 'connected without error')
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
-    t.equal(agent.metrics.toJSON().length, 2, 'two expected metrics')
+
+    const metricJson = agent.metrics.toJSON()
+    t.ok(metricJson.length >= 2, 'Should have at least two metrics.')
 
     var payload = [
       agent.config.run_id,

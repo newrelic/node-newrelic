@@ -601,7 +601,7 @@ describe('Agent harvests', () => {
 
       // Manualy trigger config value update.
       // TODO: Replace with harvest config, likely via agent.config.onConnect()
-      // when wired up.
+      // when aggregation wired up.
       agent.config.transaction_events.max_samples_per_minute = limit
       agent.config.emit('transaction_events.max_samples_per_minute', limit)
 
