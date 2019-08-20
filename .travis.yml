@@ -33,7 +33,6 @@ matrix:
 addons:
   postgresql: "9.3"
 services:
-  - mongodb
   - memcached
   - mysql
   - redis
