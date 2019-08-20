@@ -684,6 +684,16 @@ describe('the agent configuration', function() {
       }
       expect(idempotentEnv.bind(idempotentEnv, env, () => {})).to.not.throw()
     })
+
+    it('enables DT by default', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: true
+        },
+        account_id: 1998630
+      })
+      expect(config.distributed_tracing.enabled).to.be.true
+    })
   })
 
   describe('with serverless_mode disabled', () => {
