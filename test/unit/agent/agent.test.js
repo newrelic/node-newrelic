@@ -717,6 +717,11 @@ describe('the New Relic agent', function() {
     })
 
     describe('when event_harvest_config updated on connect', () => {
+      // TODO: remove once fully integrated
+      beforeEach(() => {
+        agent.config.feature_flag = {event_harvest_config: true}
+      })
+
       describe('with a valid config', () => {
         const validHarvestConfig = {
           report_period_ms: 5000,
