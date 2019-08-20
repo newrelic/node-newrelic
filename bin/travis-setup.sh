@@ -39,8 +39,8 @@ if [ "$SUITE" = "versioned" ]; then
 
   # MongoDB is always installed in integrations and versioned.
   echo " --- installing mongodb --- "
-  # add_toolchain
-  # ./bin/travis-install-mongo.sh > /dev/null
+  add_toolchain
+  ./bin/travis-install-mongo.sh
 
   echo " --- done installing $SUITE requirements --- "
 else
