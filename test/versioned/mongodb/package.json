@@ -47,7 +47,7 @@
         "node": ">=6"
       },
       "dependencies": {
-        "mongodb": ">=3.0.0"
+        "mongodb": ">=3.0.0 < 3.3.0"
       },
       "files": [
         "collection-find.tap.js",

@@ -21,7 +21,7 @@ The agent includes a suite of unit and functional tests which should be used to
 verify your changes don't break existing functionality.
 
 Unit tests are stored in `test/`. They're written in
-[Mocha](http://visionmedia.github.io/mocha/), and have the extension
+[Mocha](https://mochajs.org), and have the extension
 `.test.js`.
 
 Generic functional tests are stored in `test/integration/`. They're written in
@@ -48,9 +48,9 @@ To run the tests you need an openssl command-line binary, and some services:
 
 If you have these all running locally on the standard ports, then you are good
 to go. However, the suggested path is to use [Docker](http://www.docker.com).
-If you use OS X or Windows, use Docker Machine, which can be installed as a part of
-[Docker Toolbox](https://www.docker.com/docker-toolbox).  Then, run `npm run services`
-to start docker containers for each of the above services.
+If you use macOS or Windows, install [Docker Desktop]
+(https://www.docker.com/products/docker-desktop). Then, run `npm run services`
+to download and launch docker containers for each of the above services.
 
 If you have these services available on non-standard ports or elsewhere on your
 network, you can use the following environment variables to tell the tests where
