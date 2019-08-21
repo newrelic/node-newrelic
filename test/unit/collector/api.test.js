@@ -48,6 +48,11 @@ describe('CollectorAPI', function() {
   })
 
   afterEach(function() {
+    if (!nock.isDone()) {
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
+
     nock.enableNetConnect()
     helper.unloadAgent(agent)
   })

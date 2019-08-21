@@ -24,6 +24,7 @@ var used = [
   'send_request_uri_attribute',
   'synthetics',
   'unreleased',
+  'event_harvest_config'
 ]
 
 describe('feature flags', function() {
