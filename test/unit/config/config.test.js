@@ -578,6 +578,25 @@ describe('the agent configuration', function() {
         })
       })
 
+      it('should enable distributed tracing in serverless_mode when account_id has been set', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.distributed_tracing.enabled).to.be.true
+        })
+      })
+
+      it('should not enable distributed tracing when account_id has not been set', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.distributed_tracing.enabled).to.be.false
+        })
+      })
+
       it('should set serverless_mode from lambda-specific env var if not set by user',
         () => {
           idempotentEnv({
@@ -662,14 +681,24 @@ describe('the agent configuration', function() {
     })
   })
 
-  describe('with both distributed_tracing and serverless_mode defined', () => {
-    it('disables DT if missing required config values', () => {
+  describe('when distributed_tracing manually set in serverless_mode', () => {
+    it('disables DT if missing required account_id', () => {
       const config = Config.initialize({
         distributed_tracing: {enabled: true},
         serverless_mode: {
           enabled: true
         },
         account_id: null
+      })
+      expect(config.distributed_tracing.enabled).to.be.false
+    })
+
+    it('disables DT when DT explicitely set to false', () => {
+      const config = Config.initialize({
+        distributed_tracing: {enabled: false},
+        serverless_mode: {
+          enabled: true
+        },
       })
       expect(config.distributed_tracing.enabled).to.be.false
     })
@@ -683,16 +712,6 @@ describe('the agent configuration', function() {
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       expect(idempotentEnv.bind(idempotentEnv, env, () => {})).to.not.throw()
-    })
-
-    it('enables DT by default', () => {
-      const config = Config.initialize({
-        serverless_mode: {
-          enabled: true
-        },
-        account_id: 1998630
-      })
-      expect(config.distributed_tracing.enabled).to.be.true
     })
   })
 
@@ -834,6 +853,40 @@ describe('the agent configuration', function() {
 
         idempotentEnv(envVariables, inputConfig, (config) => {
           expect(config.logging.enabled).to.be.true
+        })
+      })
+
+      it('should default distributed to enabled when provided with account_id', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (config) => {
+          expect(config.distributed_tracing.enabled).to.be.true
+        })
+      })
+
+      it('should allow distributed tracing to be enabled from env', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (config) => {
+          expect(config.distributed_tracing.enabled).to.be.true
+        })
+      })
+
+      it('should allow distributed tracing to be enabled from configuration ', () => {
+        const envVariables = {
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }
+
+        const inputConfig = {
+          distributed_tracing: {enabled: true}
+        }
+
+        idempotentEnv(envVariables, inputConfig, (config) => {
+          expect(config.distributed_tracing.enabled).to.be.true
         })
       })
     })
