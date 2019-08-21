@@ -923,7 +923,7 @@ describe('CollectorAPI', function() {
 
   describe('errorData', function() {
     it('requires errors to send', (done) => {
-      api.errorData(null, (err) => {
+      api.error_data(null, (err) => {
         expect(err)
           .to.be.an.instanceOf(Error)
           .and.have.property('message', 'must pass errors to send')
@@ -932,7 +932,7 @@ describe('CollectorAPI', function() {
     })
 
     it('requires a callback', function() {
-      expect(function() { api.errorData([], null) })
+      expect(function() { api.error_data([], null) })
         .to.throw('callback is required')
     })
 
@@ -957,7 +957,7 @@ describe('CollectorAPI', function() {
           ]
         ]
 
-        api.errorData(errors, function test(error, res) {
+        api.error_data(errors, function test(error, res) {
           bad = error
           command = res
 
@@ -974,8 +974,8 @@ describe('CollectorAPI', function() {
         should.not.exist(bad)
       })
 
-      it('should return empty data array', function() {
-        expect(command).to.have.property('payload').eql([])
+      it('should return retain state', function() {
+        expect(command).to.have.property('retainData').eql(false)
       })
     })
   })

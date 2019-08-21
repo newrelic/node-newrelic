@@ -67,7 +67,7 @@ test("intercepting errors with connect 2", function(t) {
     var agent = helper.instrumentMockedAgent()
     var server
     agent.once('transactionFinished', function() {
-      var errors = agent.errors.errors // FIXME: redundancy is dumb
+      var errors = agent.errors.traceAggregator.errors // FIXME: redundancy is dumb
       t.equal(errors.length, 1, "the error got traced")
 
       var error = errors[0]

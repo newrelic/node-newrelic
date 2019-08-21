@@ -15,10 +15,10 @@ const endpointDataChecks = {
     return !!agent.metrics.getMetric('myMetric')
   },
   error_event_data: function hasErrorEventData(agent) {
-    return (agent.errors.getEvents().length > 0)
+    return (agent.errors.eventAggregator.events.length > 0)
   },
   error_data: function hasErrorData(agent) {
-    return (agent.errors.getErrors().length > 0)
+    return (agent.errors.traceAggregator.errors.length > 0)
   },
   analytic_event_data: function hasTransactionEventData(agent) {
     return (agent.events.length > 0)
@@ -51,6 +51,7 @@ function createStatusCodeTest(testCase) {
     let startEndpoints = null
     let restartEndpoints = null
     let shutdown = null
+    let testClock = null
 
     let disconnected = false
     let connecting = false
@@ -59,6 +60,10 @@ function createStatusCodeTest(testCase) {
 
     statusCodeTest.beforeEach((done) => {
       nock.disableNetConnect()
+
+      testClock = sinon.useFakeTimers({
+        toFake: ['setTimeout', 'setInterval', 'Date', 'clearInterval']
+      })
 
       startEndpoints = setupConnectionEndpoints()
       disconnected = false
@@ -91,7 +96,8 @@ function createStatusCodeTest(testCase) {
     statusCodeTest.afterEach((done) => {
       helper.unloadAgent(agent)
       agent = null
-
+      testClock.restore()
+      testClock = null
       startEndpoints = null
       restartEndpoints = null
       shutdown = null
@@ -123,9 +129,6 @@ function createStatusCodeTest(testCase) {
         const mockEndpoint = nockRequest(endpointName, RUN_ID).reply(testCase.code)
 
         agent.start((error) => {
-          // Clear agent start scheduled harvest to only allow manually triggered harvest
-          agent._stopHarvester()
-
           const scheduleHarvestSpy = sinon.spy(agent, '_scheduleHarvester')
 
           verifyAgentStart(error)
@@ -147,23 +150,37 @@ function createStatusCodeTest(testCase) {
             shutdown = nockRequest('shutdown', RUN_ID).reply(200)
           }
 
-          agent.harvest((error) => {
-            // A successful harvest will schedule a new one. While unlikely, this
-            // could result in modifying agent data before the test is done.
-            agent._stopHarvester()
+          testClock.tick(60000)
 
-            verifyHarvestErrorExpected(error)
+          if (endpointName === 'error_data') {
+            agent.errors.traceAggregator.on(`finished ${endpointName} data send.`, () => {
+              checkEnd()
 
+              subTest.done()
+            })
+          } else if (endpointName === 'error_event_data') {
+            agent.errors.eventAggregator.on(`finished ${endpointName} data send.`, () => {
+              checkEnd()
+
+              subTest.done()
+            })
+          } else {
+            agent.on('harvestFinished', () => {
+              setImmediate(() => {
+                checkEnd()
+                verifyNewHarvestScheduled(scheduleHarvestSpy)
+
+                subTest.done()
+              })
+            })
+          }
+
+          function checkEnd() {
             subTest.ok(mockEndpoint.isDone(), `called ${endpointName} endpoint`)
 
             verifyRunBehavior()
-
             verifyDataRetention()
-
-            verifyNewHarvestScheduled(scheduleHarvestSpy)
-
-            subTest.done()
-          })
+          }
         })
 
         function verifyNewHarvestScheduled(scheduleHarvestSpy) {
@@ -182,19 +199,6 @@ function createStatusCodeTest(testCase) {
           subTest.ok(startEndpoints.preconnect.isDone(), 'requested preconnect')
           subTest.ok(startEndpoints.connect.isDone(), 'requested connect')
           subTest.ok(startEndpoints.settings.isDone(), 'requested settings')
-        }
-
-        function verifyHarvestErrorExpected(error) {
-          subTest.ok(error, 'should have error from other harvest endpoints')
-
-          subTest.match(
-            error.message,
-            /Nock: No match for request/,
-            'should be nock error'
-          )
-
-          const isEndpointUnderTest = error.message.includes(`method=${endpointName}`)
-          subTest.notOk(isEndpointUnderTest, 'should not fail for endpoint under test')
         }
 
         function verifyRunBehavior() {
