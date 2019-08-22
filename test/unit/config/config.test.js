@@ -578,7 +578,7 @@ describe('the agent configuration', function() {
         })
       })
 
-      it('should enable distributed tracing in serverless_mode when account_id has been set', () => {
+      it('should enable DT in serverless_mode when account_id has been set', () => {
         idempotentEnv({
           NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
           NEW_RELIC_ACCOUNT_ID: '12345'
