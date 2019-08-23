@@ -56,6 +56,9 @@ describe('fun facts about apps that New Relic is interested in include', () => {
 
   beforeEach(() => {
     agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
+
+    // TODO: remove once fully integrated
+    agent.config.feature_flag = {event_harvest_config: true}
   })
 
   afterEach(() => {

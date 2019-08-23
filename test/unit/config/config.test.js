@@ -1527,20 +1527,6 @@ describe('the agent configuration', function() {
       expect(config.transaction_events.enabled).equals(false)
     })
 
-    it('should work when transaction_events.max_samples_stored is received', () => {
-      expect(function() {
-        config.onConnect({'transaction_events.max_samples_stored': 10})
-      }).not.throws()
-      expect(config.transaction_events.max_samples_stored).equals(10)
-    })
-
-    it('should work when transaction_events.max_samples_per_minute is received', () => {
-      expect(function() {
-        config.onConnect({'transaction_events.max_samples_per_minute': 1})
-      }).not.throws()
-      expect(config.transaction_events.max_samples_per_minute).equals(1)
-    })
-
     it('should not blow up when transaction_events.enabled is received', function() {
       expect(function() {
         config.onConnect({'transaction_events.enabled': false})
@@ -1581,6 +1567,57 @@ describe('the agent configuration', function() {
         })
 
         config.onConnect({'data_report_period': 60})
+      })
+    })
+
+    describe('when event_harvest_config is set', function() {
+      it('should emit event_harvest_config when harvest interval is changed', (done) => {
+        const expectedHarvestConfig = {
+          report_period_ms: 5000,
+          harvest_limits: {
+            analytic_event_data: 833,
+            custom_event_data: 833,
+            error_event_data: 8
+          }
+        }
+
+        config.once('event_harvest_config', function(harvestconfig) {
+          expect(harvestconfig).deep.equal(expectedHarvestConfig)
+
+          done()
+        })
+
+        config.onConnect({'event_harvest_config': expectedHarvestConfig})
+      })
+
+      it('should update event_harvest_config when a sub-value changed', (done) => {
+        const originalHarvestConfig = {
+          report_period_ms: 60000,
+          harvest_limits: {
+            analytic_event_data: 10000,
+            custom_event_data: 10000,
+            error_event_data: 100
+          }
+        }
+
+        config.event_harvest_config = originalHarvestConfig
+
+        const expectedHarvestConfig = {
+          report_period_ms: 5000,
+          harvest_limits: {
+            analytic_event_data: 833,
+            custom_event_data: 833,
+            error_event_data: 8
+          }
+        }
+
+        config.once('event_harvest_config', function(harvestconfig) {
+          expect(harvestconfig).deep.equal(expectedHarvestConfig)
+
+          done()
+        })
+
+        config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
     })
 
