@@ -693,7 +693,7 @@ describe('the agent configuration', function() {
       expect(config.distributed_tracing.enabled).to.be.false
     })
 
-    it('disables DT when DT explicitely set to false', () => {
+    it('disables DT when DT set to false', () => {
       const config = Config.initialize({
         distributed_tracing: {enabled: false},
         serverless_mode: {
@@ -703,6 +703,17 @@ describe('the agent configuration', function() {
       expect(config.distributed_tracing.enabled).to.be.false
     })
 
+    it('disables DT when DT set to false and account_id is set', () => {
+      const config = Config.initialize({
+        account_id: '1234',
+        distributed_tracing: {enabled: false},
+        serverless_mode: {
+          enabled: true
+        },
+      })
+      expect(config.distributed_tracing.enabled).to.be.false
+    })
+    
     it('works if all required env vars are defined', () => {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
