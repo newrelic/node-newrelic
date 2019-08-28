@@ -2,7 +2,7 @@
 
 const tap     = require('tap')
 const request = require('request')
-const helper  = require('../../lib/agent_helper')
+const helper  = require('../../../lib/agent_helper')
 
 
 const METRIC = 'WebTransaction/Restify/GET//hello/:name'

@@ -2,7 +2,7 @@
 
 var tap     = require('tap')
 var request = require('request')
-var helper  = require('../../lib/agent_helper')
+var helper  = require('../../../lib/agent_helper')
 
 
 tap.test("restify shouldn't affect express query parsing middleware", function(t) {
