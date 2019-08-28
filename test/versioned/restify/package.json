@@ -27,7 +27,7 @@
         "node": ">=6"
       },
       "dependencies": {
-        "restify": ">=5.0.0 <7",
+        "restify": ">=8.0.0 <9",
         "express": "4.16",
         "restify-errors": "6.1"
       },
