@@ -150,20 +150,19 @@ function createStatusCodeTest(testCase) {
             shutdown = nockRequest('shutdown', RUN_ID).reply(200)
           }
 
+          subTest.notOk(
+            mockEndpoint.isDone(),
+            `${endpointName} should not have been called yet. ` +
+            'An early invocation may indicate a race condition with the test or agent.'
+          )
+
+          // Move clock forward to trigger auto harvests.
           testClock.tick(60000)
 
           if (endpointName === 'error_data') {
-            agent.errors.traceAggregator.on(`finished ${endpointName} data send.`, () => {
-              checkEnd()
-
-              subTest.done()
-            })
+            aggregatorCheckOnEnd(agent.errors.traceAggregator)
           } else if (endpointName === 'error_event_data') {
-            agent.errors.eventAggregator.on(`finished ${endpointName} data send.`, () => {
-              checkEnd()
-
-              subTest.done()
-            })
+            aggregatorCheckOnEnd(agent.errors.eventAggregator)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {
@@ -171,6 +170,35 @@ function createStatusCodeTest(testCase) {
                 verifyNewHarvestScheduled(scheduleHarvestSpy)
 
                 subTest.done()
+              })
+            })
+          }
+
+          function aggregatorCheckOnEnd(aggregator) {
+            let completedOldHarvest = false
+            let completedAggregatorHarvest = false
+
+            aggregator.on(`finished ${endpointName} data send.`, () => {
+              completedAggregatorHarvest = true
+
+              checkEnd()
+
+              if (completedOldHarvest) {
+                subTest.done()
+              }
+            })
+
+            // TODO: rip out once all endpoints converted to new aggregators
+            // This is necessary because of the side-by-side harvests
+            // Must allow setImmediate to clear current scheduled or a new harvest
+            // will get scheduled post-test.
+            agent.on('harvestFinished', () => {
+              setImmediate(() => {
+                completedOldHarvest = true
+
+                if (completedAggregatorHarvest) {
+                  subTest.done()
+                }
               })
             })
           }
