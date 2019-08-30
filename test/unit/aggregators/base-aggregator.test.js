@@ -12,7 +12,6 @@ const METHOD = 'some_method'
 describe('Base Aggregator', () => {
   let baseAggregator = null
   let fakeCollectorApi = null
-  //let expectedTransport = null
 
   beforeEach(() => {
     fakeCollectorApi = {}

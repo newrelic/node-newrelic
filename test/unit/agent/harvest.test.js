@@ -63,7 +63,9 @@ describe('Agent harvests', () => {
     helper.unloadAgent(agent)
 
     if (!nock.isDone()) {
+      /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
       nock.cleanAll()
     }
 
@@ -785,11 +787,3 @@ describe('Agent harvests', () => {
     })
   })
 })
-
-function _findMetric(payload, name) {
-  if (!payload || !payload.length || !payload[3] || !payload[3].length) {
-    return null
-  }
-
-  return payload[3].find((m) => m[0].name === name) || null
-}
