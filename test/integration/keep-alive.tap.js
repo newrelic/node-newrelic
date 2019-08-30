@@ -38,8 +38,8 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
 
       // once first request is done, create a second request
       const method2 = createRemoteMethod()
-      method2.invoke({}, [], function(err, res) {
-        t.ok(200 === res.status, "Second request success")
+      method2.invoke({}, [], function(err2, res2) {
+        t.ok(200 === res2.status, "Second request success")
         // end the test
         t.end()
       })
