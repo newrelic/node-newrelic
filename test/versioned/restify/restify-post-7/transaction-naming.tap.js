@@ -189,22 +189,6 @@ tap.test('Restify transaction naming', (t) => {
     runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
   })
 
-  // t.test('responding from middleware', (t) => {
-  //   t.plan(2)
-
-  //   server.use((req, res, next) => {
-  //     res.send()
-  //     next()
-  //   })
-
-  //   server.get('/path1', (req, res, next) => {
-  //     t.pass('should enter route middleware')
-  //     next()
-  //   })
-
-  //   runTest({t, endpoint: '/path1', expectedName: 'GET//'})
-  // })
-
   t.test('with error', (t) => {
     t.plan(1)
 
