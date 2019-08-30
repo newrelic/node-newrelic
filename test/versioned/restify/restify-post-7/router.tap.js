@@ -71,6 +71,24 @@ tap.test('Restify router', function(t) {
     _listenAndRequest(t, '/test/31337')
   })
 
+  t.test('next(true): terminates processing', function(t) {
+    t.plan(4)
+
+    server.get('/test/:id', function first(req, res, next) {
+      t.ok(agent.getTransaction(), 'transaction should be available')
+      res.send({status: 'ok'})
+      next(true)
+    }, function second(req, res, next) {
+      t.fail('should not enter this final middleware')
+    })
+
+    agent.on('transactionFinished', function(tx) {
+      t.equal(tx.name, 'WebTransaction/Restify/GET//test/:id', 'should have correct name')
+    })
+
+    _listenAndRequest(t, '/test/foobar')
+  })
+
   t.test('next(false): stop processing', function(t) {
     t.plan(4)
 
