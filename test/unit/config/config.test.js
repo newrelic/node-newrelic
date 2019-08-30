@@ -851,6 +851,16 @@ describe('the agent configuration', function() {
       }
     })
 
+    it('should not return serialized mergeServerConfig props from publicSettings',
+      function() {
+        var pub = configuration.publicSettings()
+        var result = Object.keys(pub).some((key) => {
+          return key.includes('mergeServerConfig')
+        })
+        expect(result).to.be.false
+      }
+    )
+
     it('should have no application name', function() {
       expect(configuration.app_name).eql([])
     })
