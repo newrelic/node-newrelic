@@ -49,6 +49,12 @@ describe('the agent configuration', function() {
     expect(c.agent_enabled).equal(true)
   })
 
+  it('should add config.emit to mergeServerConfig', function() {
+    var c
+    c = Config.initialize({})
+    should.exist(c.mergeServerConfig.config.emit)
+  })
+
   describe('when overriding configuration values via environment variables', function() {
     it('should pick up the application name', function() {
       idempotentEnv({'NEW_RELIC_APP_NAME': 'feeling testy,and schizophrenic'}, (tc) => {
@@ -850,6 +856,16 @@ describe('the agent configuration', function() {
         }
       }
     })
+
+    it('should not return serialized mergeServerConfig props from publicSettings',
+      function() {
+        var pub = configuration.publicSettings()
+        var result = Object.keys(pub).some((key) => {
+          return key.includes('mergeServerConfig')
+        })
+        expect(result).to.be.false
+      }
+    )
 
     it('should have no application name', function() {
       expect(configuration.app_name).eql([])
