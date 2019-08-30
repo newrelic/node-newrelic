@@ -49,12 +49,6 @@ describe('the agent configuration', function() {
     expect(c.agent_enabled).equal(true)
   })
 
-  it('should add config.emit to mergeServerConfig', function() {
-    var c
-    c = Config.initialize({})
-    should.exist(c.mergeServerConfig.config.emit)
-  })
-
   describe('when overriding configuration values via environment variables', function() {
     it('should pick up the application name', function() {
       idempotentEnv({'NEW_RELIC_APP_NAME': 'feeling testy,and schizophrenic'}, (tc) => {
