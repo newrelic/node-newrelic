@@ -9,7 +9,30 @@ env:
   global:
     - MONGODB=2.6.11
   matrix:
+      - SUITE=smoke
+    - SUITE=unit
+    - SUITE=integration
+    - SUITE=lint
+    - SUITE=security
     - SUITE=versioned
+matrix:
+  exclude:
+    - node_js: "6"
+      env: SUITE=security
+    - node_js: "6"
+      env: SUITE=lint
+    - node_js: "7"
+      env: SUITE=security
+    - node_js: "7"
+      env: SUITE=lint
+    - node_js: "8"
+      env: SUITE=security
+    - node_js: "8"
+      env: SUITE=lint
+    - node_js: "9"
+      env: SUITE=security
+    - node_js: "9"
+      env: SUITE=lint
 services:
   - memcached
   - mysql
