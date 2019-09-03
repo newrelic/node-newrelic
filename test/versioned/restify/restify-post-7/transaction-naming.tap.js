@@ -158,6 +158,30 @@ tap.test('Restify transaction naming', (t) => {
     runTest({t, endpoint: '/foobar', prefix: 'Nodejs', expectedName: 'GET/(not found)'})
   })
 
+  t.test('transaction name contains trailing slash', (t) => {
+    t.plan(2)
+
+    server.get('/path/', (req, res, next) => {
+      t.pass('should enter route')
+      res.send()
+      next()
+    })
+
+    runTest({t, endpoint: '/path/', expectedName: 'GET//path/'})
+  })
+
+  t.test('transaction name does not contain trailing slash', (t) => {
+    t.plan(2)
+
+    server.get('/path', (req, res, next) => {
+      t.pass('should enter route')
+      res.send()
+      next()
+    })
+
+    runTest({t, endpoint: '/path', expectedName: 'GET//path'})
+  })
+
   t.test('transaction name with route that has multiple handlers', (t) => {
     t.plan(3)
 

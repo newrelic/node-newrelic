@@ -71,6 +71,54 @@ tap.test('Restify router', function(t) {
     _listenAndRequest(t, '/test/31337')
   })
 
+  t.test('trailing slash differentiates routes (without slash)', function(t) {
+    t.plan(3)
+
+    server.get('/path1/', function first(req, res, next) {
+      t.fail('should not enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+    server.get('/path1', function first(req, res, next) {
+      t.ok(agent.getTransaction(),'should enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+
+    _listenAndRequest(t, '/path1')
+  })
+
+  t.test('trailing slash differentiates routes (with slash)', function(t) {
+    t.plan(3)
+
+    server.get('/path1/', function first(req, res, next) {
+      t.ok(agent.getTransaction(), 'should enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+    server.get('/path1', function first(req, res, next) {
+      t.fail('should not enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+
+    _listenAndRequest(t, '/path1/')
+  })
+
+  t.test('ignoreTrailingSlash option should ignore trailing slash', function(t) {
+    t.plan(3)
+
+    server = require('restify').createServer({ignoreTrailingSlash: true})
+
+    server.get('/path1/', function first(req, res, next) {
+      t.ok(agent.getTransaction(), 'should enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+
+    _listenAndRequest(t, '/path1')
+  })
+
   t.test('next(true): terminates processing', function(t) {
     t.plan(4)
 
@@ -130,6 +178,8 @@ tap.test('Restify router', function(t) {
     _listenAndRequest(t, '/test/foobar')
   })
 
+  //wanted to pass in second server but it times out on last test
+
   function _listenAndRequest(t, route) {
     server.listen(0, function() {
       var port = server.address().port
@@ -139,5 +189,5 @@ tap.test('Restify router', function(t) {
         t.deepEqual(body, {status : 'ok'}, 'got expected response')
       })
     })
-  }
+  } 
 })
