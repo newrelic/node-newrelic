@@ -25,6 +25,9 @@ else
 fi
 
 if [ "$SUITE" = "versioned" ]; then
+  sudo apt-get purge cassandra
+  sudo apt-get update
+  sudo apt-get install cassandra
 
   # GCC 5 is the lowest version of GCC we can use.
   if [ "$(get_version gcc)" == "4" ]; then
