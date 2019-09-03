@@ -260,17 +260,17 @@ tap.test('Restify transaction naming', (t) => {
     runTest({t, endpoint: '/foo/fizz', expectedName: 'GET//foo/:bar'})
   })
 
-  // t.test('when using a regular expression in path', (t) => {
-  //   t.plan(2)
+  t.test('when using a regular expression in path', (t) => {
+    t.plan(2)
 
-  //   server.get(/^\/foo\/(.*)/, (req, res, next) => {
-  //     t.equal(req.params[0], 'bar', 'should pass through captured param')
-  //     res.send()
-  //     next()
-  //   })
+    server.get(/^\/foo\/(.*)/, (req, res, next) => {
+      t.equal(req.params[0], 'bar', 'should pass through captured param')
+      res.send()
+      next()
+    })
 
-  //   runTest({t, endpoint: '/foo/bar', expectedName: 'GET//^\\/foo\\/(.*)/'})
-  // })
+    runTest({t, endpoint: '/foo/bar', expectedName: 'GET//^\\/foo\\/(.*)/'})
+  })
 
   t.test('when next is called after transaction state loss', (t) => {
     t.plan(5)
