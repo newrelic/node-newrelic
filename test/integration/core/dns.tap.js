@@ -130,7 +130,9 @@ test('reverse', function(t) {
         }
       }
 
-      t.deepEqual(names, expected, 'should have expected results')
+      expected.forEach((name) => {
+        t.contains(names, name, 'should have expected name')
+      })
       verifySegments(t, agent, 'dns.reverse')
     })
   })
