@@ -25,12 +25,9 @@ else
 fi
 
 if [ "$SUITE" = "versioned" ]; then
-  sudo apt-get install python openjdk-8-jre -y
-  echo "deb http://www.apache.org/dist/cassandra/debian 311x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
-  curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
-  sudo apt-get update
-  sudo apt-get install cassandra
-  sudo service cassandra start
+  echo " --- installing cassandra --- "
+  ./bin/cassandra-setup.sh
+
   # GCC 5 is the lowest version of GCC we can use.
   if [ "$(get_version gcc)" == "4" ]; then
     echo " --- upgrading GCC --- "

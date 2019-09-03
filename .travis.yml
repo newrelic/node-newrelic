@@ -9,7 +9,7 @@ env:
   global:
     - MONGODB=2.6.11
   matrix:
-      - SUITE=smoke
+    - SUITE=smoke
     - SUITE=unit
     - SUITE=integration
     - SUITE=lint
