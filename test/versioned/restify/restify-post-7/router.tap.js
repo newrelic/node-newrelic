@@ -136,7 +136,7 @@ tap.test('Restify router', function(t) {
       var url = 'http://localhost:' + port + route
       request.get(url, function(error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status : 'ok'}, 'got expected respose')
+        t.deepEqual(body, {status : 'ok'}, 'got expected response')
       })
     })
   }
