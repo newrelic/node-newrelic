@@ -33,8 +33,6 @@ matrix:
       env: SUITE=security
     - node_js: "9"
       env: SUITE=lint
-addons:
-  postgresql: "9.3"
 services:
   - memcached
   - mysql
