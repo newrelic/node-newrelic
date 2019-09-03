@@ -21,6 +21,7 @@ addons:
   apt:
     packages:
       - rabbitmq-server
+      - oracle-java9-installer
 before_install:
   - ./bin/travis-setup.sh
 install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
