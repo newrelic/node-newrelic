@@ -20,8 +20,6 @@ services:
 addons:
   apt:
     packages:
-      - oracle-java8-installer
-      - xmlstarlet
       - rabbitmq-server
 before_install:
   - ./bin/travis-setup.sh
