@@ -8,11 +8,9 @@ node_js:
 env:
   global:
     - MONGODB=2.6.11
-    - CASSANDRA_VERSION=3.11.4
   matrix:
     - SUITE=versioned
 services:
-  - cassandra
   - memcached
   - mysql
   - redis
