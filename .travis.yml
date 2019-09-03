@@ -11,12 +11,16 @@ env:
   matrix:
     - SUITE=versioned
 services:
+  - cassandra
   - memcached
   - mysql
   - redis
-  - cassandra
   - postgresql
   - rabbitmq
+addons:
+  apt:
+    packages:
+    - rabbitmq-server
 before_install:
   - ./bin/travis-setup.sh
 install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
