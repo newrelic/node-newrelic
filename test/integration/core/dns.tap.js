@@ -131,7 +131,7 @@ test('reverse', function(t) {
       }
 
       expected.forEach((name) => {
-        t.contains(names, name, 'should have expected name')
+        t.notEqual(names.indexOf(name), -1, 'should have expected name')
       })
       verifySegments(t, agent, 'dns.reverse')
     })
