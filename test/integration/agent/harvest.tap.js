@@ -5,8 +5,6 @@ const sinon = require('sinon')
 const tap = require('tap')
 const https = require('https')
 
-const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
-
 tap.test('Agent#harvest', (t) => {
   t.autoend()
 
@@ -95,55 +93,6 @@ tap.test('Agent#harvest', (t) => {
       t.deepEqual(payload[3][0][0], {name: 'TEST/discard'}, 'should have test metric')
 
       t.end()
-    })
-  })
-
-  t.test('sending errors', (t) => {
-    t.plan(6)
-
-    const spy = sinon.spy(agent.collector, 'errorData')
-    t.tearDown(() => spy.restore())
-
-    agent.on('transactionFinished', () => {
-      agent.harvest((error) => {
-        t.error(error, 'sent errors without error')
-
-        t.ok(spy.called, 'should send error data')
-
-        // Verify mapped headers are sent in errors POST
-        const errorsRequest = requestSpy.args[6][0]
-        checkHeaders(t, headersMap, errorsRequest.headers)
-
-        const payload = spy.args[0][0]
-        t.ok(payload, 'should get the payload')
-
-        const errData = payload[1][0][4]
-        t.ok(errData, 'should contain error information')
-        const attrs = errData.agentAttributes
-        t.deepEqual(
-          attrs,
-          {foo: 'bar', 'request.uri': '/nonexistent'},
-          'should have the correct attributes'
-        )
-
-        t.end()
-      })
-    })
-
-    helper.runInTransaction(agent, (tx) => {
-      tx.finalizeNameFromUri('/nonexistent', 501)
-      tx.trace.attributes.addAttribute(
-        DESTS.ERROR_EVENT,
-        'foo',
-        'bar'
-      )
-      tx.trace.attributes.addAttribute(
-        DESTS.ERROR_EVENT,
-        'request.uri',
-        '/nonexistent'
-      )
-      agent.errors.add(tx, new Error('test error'))
-      tx.end()
     })
   })
 

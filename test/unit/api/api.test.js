@@ -1086,58 +1086,58 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add the error even without a transaction", function() {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
     })
 
     it("should still add errors in high security mode", function() {
       agent.config.high_security = true
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
       agent.config.high_security = false
     })
 
     it('should not track custom attributes if custom_attributes_enabled is false', () => {
       agent.config.api.custom_attributes_enabled = false
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
-      expect(agent.errors.errors.length).equal(1)
-      const attributes = agent.errors.errors[0][4]
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
+      const attributes = agent.errors.traceAggregator.errors[0][4]
       expect(attributes.userAttributes).to.deep.equal({})
       agent.config.api.custom_attributes_enabled = true
     })
 
     it('should not track custom attributes in high security mode', () => {
       agent.config.high_security = true
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
-      expect(agent.errors.errors.length).equal(1)
-      const attributes = agent.errors.errors[0][4]
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
+      const attributes = agent.errors.traceAggregator.errors[0][4]
       expect(attributes.userAttributes).to.deep.equal({})
       agent.config.high_security = false
     })
 
     it("should not add errors when noticeErrors is disabled", function() {
       agent.config.api.notice_error_enabled = false
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       agent.config.api.notice_error_enabled = true
     })
 
     it("should track custom parameters on error without a transaction", function() {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'), {present : 'yep'})
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
 
-      var params = agent.errors.errors[0][4]
+      var params = agent.errors.traceAggregator.errors[0][4]
       expect(params.userAttributes.present).equal('yep')
     })
 
     it("should omit improper types of attributes", function() {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(
         new TypeError('this test is bogus, man'),
         {
@@ -1151,9 +1151,9 @@ describe('the New Relic agent API', function() {
           boolean: true
         }
       )
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
 
-      var params = agent.errors.errors[0][4]
+      var params = agent.errors.traceAggregator.errors[0][4]
       expect(params.userAttributes.string).equal('yep')
       expect(params.userAttributes.number).equal(1234)
       expect(params.userAttributes.boolean).equal(true)
@@ -1167,24 +1167,24 @@ describe('the New Relic agent API', function() {
     it('should respect attribute filter rules', function() {
       agent.config.attributes.exclude.push('unwanted')
       agent.config.emit('attributes.exclude')
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(
         new TypeError('this test is bogus, man'),
         {present: 'yep', unwanted: 'nope'}
       )
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
 
-      var params = agent.errors.errors[0][4]
+      var params = agent.errors.traceAggregator.errors[0][4]
       expect(params.userAttributes.present).equal('yep')
       expect(params.userAttributes.unwanted).to.be.undefined
     })
 
     it("should add the error associated to a transaction", function(done) {
-      expect(agent.errors.errors.length).to.equal(0)
+      expect(agent.errors.traceAggregator.errors.length).to.equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).to.equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1], 'transaction name').to.equal('Unknown')
         expect(caught[2], 'message').to.equal('test error')
         expect(caught[3], 'type').to.equal('TypeError')
@@ -1201,14 +1201,14 @@ describe('the New Relic agent API', function() {
     })
 
     it('should notice custom attributes associated with an error', function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       var orig = agent.config.attributes.exclude
       agent.config.attributes.exclude = ['ignored']
       agent.config.emit('attributes.exclude')
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
@@ -1228,11 +1228,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add an error-alike with a message but no stack", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('not an Error')
         expect(caught[3]).equal('Object')
@@ -1249,11 +1249,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add an error-alike with a stack but no message", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('')
         expect(caught[3]).equal('Error')
@@ -1270,10 +1270,10 @@ describe('the New Relic agent API', function() {
     })
 
     it("shouldn't throw on (or capture) a useless error object", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(0)
+        expect(agent.errors.traceAggregator.errors.length).equal(0)
         expect(transaction.ignore).equal(false)
 
         done()
@@ -1286,11 +1286,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add a string error associated to a transaction", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('busted, bro')
         expect(caught[3]).equal('Error')
@@ -1307,11 +1307,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should allow custom parameters to be added to string errors", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[2]).equal('busted, bro')
         expect(caught[4].userAttributes.a).equal(1)
         expect(caught[4].userAttributes.steak).equal('sauce')

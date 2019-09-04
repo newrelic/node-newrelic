@@ -13,6 +13,7 @@ tap.test('Uncaught exceptions', (t) => {
   var timer = setTimeout(function() {
     t.fail('child did not exit')
     proc.kill()
+    t.end()
   }, 10000)
 
   proc.on('exit', function() {
@@ -31,6 +32,7 @@ tap.test('Caught uncaught exceptions', (t) => {
   var timer = setTimeout(function() {
     t.fail('child hung')
     proc.kill()
+    t.end()
   }, 10000)
 
   proc.on('message', function(code) {

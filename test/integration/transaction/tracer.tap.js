@@ -129,7 +129,7 @@ test('bind + capture error', function testThrows(t) {
     var other = tracer.createSegment('other')
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
-      var logged = agent.errors.errors[0]
+      var logged = agent.errors.traceAggregator.errors[0]
       t.notOk(tracer.getSegment(), 'should not leak transaction into handler')
 
       t.equal(err, error, 'should have expected error')
