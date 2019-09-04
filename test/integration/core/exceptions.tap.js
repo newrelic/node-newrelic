@@ -73,6 +73,7 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
   var proc = startProc({
     'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
     'NEW_RELIC_LOG_ENABLED': 'false',
+    'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'false',
     'NEW_RELIC_HOME': helpersDir
   })
   var message = 'I am a test error'
