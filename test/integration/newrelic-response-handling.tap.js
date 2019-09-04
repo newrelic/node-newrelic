@@ -30,7 +30,7 @@ const endpointDataChecks = {
     return (agent.spans.length > 0)
   },
   custom_event_data: function hasCustomEventData(agent) {
-    return (agent.customEvents.length > 0)
+    return (agent.customEvents.events.length > 0)
   },
   sql_trace_data: function hasSqlTraceData(agent) {
     return (agent.queries.samples.size > 0)
@@ -163,6 +163,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.errors.traceAggregator)
           } else if (endpointName === 'error_event_data') {
             aggregatorCheckOnEnd(agent.errors.eventAggregator)
+          } else if (endpointName === 'custom_event_data') {
+            aggregatorCheckOnEnd(agent.customEvents)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {

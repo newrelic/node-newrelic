@@ -140,7 +140,7 @@ describe('ServerlessCollector API', () => {
   describe('#customEvents', () => {
     it('adds custom_event_data to the payload object', (done) => {
       const customEvents = {type: 'custom_event_data'}
-      api.customEvents(customEvents, () => {
+      api.custom_event_data(customEvents, () => {
         expect(api.payload.custom_event_data).to.deep.equal(customEvents)
         done()
       })
