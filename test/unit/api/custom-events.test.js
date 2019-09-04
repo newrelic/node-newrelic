@@ -194,5 +194,5 @@ function popTopCustomEvent(agent) {
 }
 
 function getCustomEvents(agent) {
-  return agent.customEvents.events.toArray()
+  return agent.customEventAggregator.events.toArray()
 }

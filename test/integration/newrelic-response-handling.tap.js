@@ -30,7 +30,8 @@ const endpointDataChecks = {
     return (agent.spans.length > 0)
   },
   custom_event_data: function hasCustomEventData(agent) {
-    return (agent.customEvents.events.length > 0)
+    // TODO... prob don't ned to grrab events
+    return (agent.customEventAggregator.length > 0)
   },
   sql_trace_data: function hasSqlTraceData(agent) {
     return (agent.queries.samples.size > 0)
@@ -164,7 +165,7 @@ function createStatusCodeTest(testCase) {
           } else if (endpointName === 'error_event_data') {
             aggregatorCheckOnEnd(agent.errors.eventAggregator)
           } else if (endpointName === 'custom_event_data') {
-            aggregatorCheckOnEnd(agent.customEvents)
+            aggregatorCheckOnEnd(agent.customEventAggregator)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {
@@ -285,7 +286,7 @@ function createTestData(agent, callback) {
 
   agent.errors.addUserError(null, new Error('Why?!!!?!!'))
 
-  agent.customEvents.add([{type: 'MyCustomEvent', timestamp: Date.now()}])
+  agent.customEventAggregator.add([{type: 'MyCustomEvent', timestamp: Date.now()}])
 
   helper.runInTransaction(agent, (transaction) => {
     const segment = transaction.trace.add("MySegment")
