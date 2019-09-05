@@ -178,8 +178,6 @@ tap.test('Restify router', function(t) {
     _listenAndRequest(t, '/test/foobar')
   })
 
-  //wanted to pass in second server but it times out on last test
-
   function _listenAndRequest(t, route) {
     server.listen(0, function() {
       var port = server.address().port
