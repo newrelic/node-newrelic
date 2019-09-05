@@ -5,10 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=6"
+        "node": ">6"
       },
       "dependencies": {
-        "restify": ">=7.0.0 <8",
+        "restify": ">=7.0.0 <9",
         "express": "4.16",
         "restify-errors": "6.1"
       },
