@@ -248,7 +248,7 @@ function runTests(conf) {
           t.ok(response, "got a response from Express")
           t.ok(body, "got back a body")
 
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.ok(errors, "errors were found")
           t.equal(errors.length, 1, "Only one error thrown.")
 
@@ -340,7 +340,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "some error", "got the expected error")
           t.ok(errors[0][4].stack_trace, "has stack trace")
@@ -377,7 +377,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 0, "there should be no errors")
 
           var metric = agent.metrics.getMetric('Apdex')
@@ -412,7 +412,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 0, "there should be no errors")
 
           var metric = agent.metrics.getMetric('Apdex')
@@ -441,7 +441,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "some error", "got the expected error")
 
@@ -475,7 +475,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "some error", "got the expected error")
           t.ok(errors[0][4].stack_trace, "has stack trace")
@@ -517,7 +517,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "HttpError 400", "got the expected error")
 
@@ -554,7 +554,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "HttpError 500", "got the expected error")
 

@@ -28,7 +28,7 @@ test('ignoring a Hapi route', function(t) {
       'only supportability metrics added to agent collection'
     )
 
-    var errors = agent.errors.errors
+    var errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
   })
 

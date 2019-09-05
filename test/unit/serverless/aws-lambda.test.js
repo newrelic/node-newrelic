@@ -750,8 +750,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmErrorCapture() {
-        expect(agent.errors.errors.length).to.equal(1)
-        const noticedError = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
         expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
         expect(noticedError[2], 'message').to.equal(errorMessage)
         expect(noticedError[3], 'type').to.equal('SyntaxError')
@@ -770,8 +770,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmErrorCapture() {
-        expect(agent.errors.errors.length).to.equal(1)
-        const noticedError = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
         expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
         expect(noticedError[2], 'message').to.equal('failed')
         expect(noticedError[3], 'type').to.equal('Error')
@@ -815,8 +815,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmErrorCapture() {
-        expect(agent.errors.errors.length).to.equal(1)
-        const noticedError = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
         expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
         expect(noticedError[2], 'message').to.equal(errorMessage)
         expect(noticedError[3], 'type').to.equal('SyntaxError')
@@ -835,8 +835,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmErrorCapture() {
-        expect(agent.errors.errors.length).to.equal(1)
-        const noticedError = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
         expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
         expect(noticedError[2], 'message').to.equal('failed')
         expect(noticedError[3], 'type').to.equal('Error')
@@ -902,8 +902,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmErrorCapture() {
-        expect(agent.errors.errors.length).to.equal(1)
-        const noticedError = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
         expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
         expect(noticedError[2], 'message').to.equal(errorMessage)
         expect(noticedError[3], 'type').to.equal('SyntaxError')
@@ -922,8 +922,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmErrorCapture() {
-        expect(agent.errors.errors.length).to.equal(1)
-        const noticedError = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
         expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
         expect(noticedError[2], 'message').to.equal('failed')
         expect(noticedError[3], 'type').to.equal('Error')

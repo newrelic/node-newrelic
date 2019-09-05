@@ -11,7 +11,7 @@ const expect  = chai.expect
 
 describe('Expected Errors', function() {
   describe('when expeced configuration is present', function() {
-    var agent
+    let agent
 
     beforeEach(function() {
       agent = helper.loadMockedAgent()
@@ -19,7 +19,9 @@ describe('Expected Errors', function() {
 
     afterEach(function() {
       helper.unloadAgent(agent)
+      agent = null
     })
+
     it('expected status code should not increment apdex frustrating', function() {
       helper.runInTransaction(agent, function(tx) {
         agent.config.error_collector.expected_status_codes = [500]
@@ -46,11 +48,11 @@ describe('Expected Errors', function() {
 
         tx.end()
 
-        const errorUnexpected = agent.errors.getEvents()[0]
+        const errorUnexpected = agent.errors.eventAggregator.getEvents()[0]
         expect(errorUnexpected[0]['error.message']).equals('NOT expected')
         expect(errorUnexpected[0]['error.expected']).equals(false)
 
-        const errorExpected = agent.errors.getEvents()[1]
+        const errorExpected = agent.errors.eventAggregator.getEvents()[1]
         expect(errorExpected[0]['error.message']).equals('expected')
         expect(errorExpected[0]['error.expected']).equals(true)
 
@@ -71,11 +73,11 @@ describe('Expected Errors', function() {
 
         tx.end()
 
-        const errorUnexpected = agent.errors.getEvents()[0]
+        const errorUnexpected = agent.errors.eventAggregator.getEvents()[0]
         expect(errorUnexpected[0]['error.message']).equals('NOT expected')
         should.not.exist(errorUnexpected[2]['error.expected'])
 
-        const errorExpected = agent.errors.getEvents()[1]
+        const errorExpected = agent.errors.eventAggregator.getEvents()[1]
         expect(errorExpected[0]['error.message']).equals('expected')
         expect(errorExpected[0]['error.expected']).equals(true)
 
@@ -98,11 +100,11 @@ describe('Expected Errors', function() {
 
         tx.end()
 
-        const errorUnexpected = agent.errors.getEvents()[0]
+        const errorUnexpected = agent.errors.eventAggregator.getEvents()[0]
         expect(errorUnexpected[0]['error.class']).equals('Error')
         should.not.exist(errorUnexpected[2]['error.expected'])
 
-        const errorExpected = agent.errors.getEvents()[1]
+        const errorExpected = agent.errors.eventAggregator.getEvents()[1]
         expect(errorExpected[0]['error.class']).equals('ReferenceError')
         expect(errorExpected[0]['error.expected']).equals(true)
 
@@ -112,8 +114,6 @@ describe('Expected Errors', function() {
 
     it('should increment expected error metric call counts', function() {
       helper.runInTransaction(agent, function(tx) {
-        const errorAggr = agent.errors
-
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_classes = ["Error"]
 
@@ -124,20 +124,18 @@ describe('Expected Errors', function() {
         tx.addException(error2, {}, 0)
         tx.end()
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(1)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        expect(errorAggr.getTotalExpectedErrorCount()).equals(1)
+        const expectedErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.EXPECTED)
+
+        expect(transactionErrorMetric.callCount).equals(1)
+        expect(expectedErrorMetric.callCount).equals(1)
       })
     })
 
     it('should not increment error metric call counts, web transaction', function() {
       helper.runInTransaction(agent, function(tx) {
-        const errorAggr = agent.errors
-
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_classes = ["Error"]
 
@@ -148,26 +146,23 @@ describe('Expected Errors', function() {
         tx.addException(error2, {}, 0)
         tx.end()
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(1)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric.callCount).equals(1)
+
+        expect(allErrorMetric.callCount).equals(1)
+        expect(webErrorMetric.callCount).equals(1)
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
     it('should not generate any error metrics during expected status code', function() {
       helper.runInTransaction(agent, function(tx) {
-        const errorAggr = agent.errors
         agent.config.error_collector.expected_status_codes = [500]
         tx.statusCode = 500
         const error1 = new Error('expected')
@@ -177,26 +172,23 @@ describe('Expected Errors', function() {
         tx.addException(error2, {}, 0)
         tx.end()
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(0)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric).to.not.exist
+
+        expect(allErrorMetric).to.not.exist
+        expect(webErrorMetric).to.not.exist
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
     it('should not increment error metric call counts, bg transaction', function() {
       helper.runInTransaction(agent, function(tx) {
-        const errorAggr = agent.errors
         tx.type = "BACKGROUND"
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_classes = ["Error"]
@@ -208,20 +200,19 @@ describe('Expected Errors', function() {
         tx.addException(error2, {}, 0)
         tx.end()
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(1)
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(1)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric.callCount).equals(1)
+
+        expect(allErrorMetric.callCount).equals(1)
+        expect(webErrorMetric).to.not.exist
+        expect(otherErrorMetric.callCount).to.equal(1)
       })
     })
 

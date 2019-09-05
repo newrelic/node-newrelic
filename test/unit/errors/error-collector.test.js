@@ -2,13 +2,16 @@
 
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
-const ErrorAggregator = require('../../../lib/errors/aggregator')
+const ErrorCollector = require('../../../lib/errors/error-collector')
+const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
+const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
+
 const Transaction = require('../../../lib/transaction')
+const Metrics = require('../../../lib/metrics')
 
 const API = require('../../../api')
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const NAMES = require('../../../lib/metrics/names')
-
 
 function createTransaction(agent, code, isWeb) {
   if (typeof isWeb === 'undefined') isWeb = true
@@ -70,11 +73,13 @@ describe('Errors', function() {
       error.add(trans, new Error())
       agent.errors.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
       expect(params.agentAttributes).deep.equals({'request.parameters.a': 'A'})
 
       // Error events
-      params = error.getEvents()[0][2]
+      const errorEvents = getErrorEvents(error)
+      params = errorEvents[0][2]
       expect(params).deep.equals({'request.parameters.a': 'A'})
     })
 
@@ -83,12 +88,14 @@ describe('Errors', function() {
       error.add(trans, new Error())
       agent.errors.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
 
       expect(params.userAttributes).deep.equals({a: 'A'})
 
       // error events
-      params = error.getEvents()[0][1]
+      const errorEvents = getErrorEvents(error)
+      params = errorEvents[0][1]
 
       expect(params).deep.equals({a: 'A'})
     })
@@ -98,7 +105,8 @@ describe('Errors', function() {
       error.add(trans, new Error(), {b: 'B'})
       agent.errors.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
 
       expect(params.userAttributes).deep.equals({
         a: 'A',
@@ -106,7 +114,8 @@ describe('Errors', function() {
       })
 
       // error events
-      params = error.getEvents()[0][1]
+      const errorEvents = getErrorEvents(error)
+      params = errorEvents[0][1]
 
       expect(params).deep.equals({
         a: 'A',
@@ -119,14 +128,16 @@ describe('Errors', function() {
       error.add(trans, new Error(), {a: 'AA'})
       agent.errors.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
 
       expect(params.userAttributes).deep.equals({
         a: 'AA'
       })
 
       // error events
-      params = error.getEvents()[0][1]
+      const errorEvents = getErrorEvents(error)
+      params = errorEvents[0][1]
 
       expect(params).deep.equals({
         a: 'AA'
@@ -138,12 +149,14 @@ describe('Errors', function() {
       error.add(trans, new Error(), {a: 'AA'})
       agent.errors.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
 
       expect(params.userAttributes).deep.equals({})
 
       // error events
-      params = error.getEvents()[0][1]
+      const errorEvents = getErrorEvents(error)
+      params = errorEvents[0][1]
 
       expect(params).deep.equals({})
     })
@@ -153,16 +166,19 @@ describe('Errors', function() {
       error.add(trans, new Error('this should not be here'), {a: 'AA'})
       agent.errors.onTransactionFinished(trans)
 
-      expect(error.errors[0][2]).to.equal('')
-      expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
+      const errorTraces = getErrorTraces(error)
+      expect(errorTraces[0][2]).to.equal('')
+      expect(errorTraces[0][4].stack_trace[0]).to.equal('Error: <redacted>')
     })
+
     it('redacts the error message when strip_exception_messages.enabled', function() {
       agent.config.strip_exception_messages.enabled = true
       error.add(trans, new Error('this should not be here'), {a: 'AA'})
       agent.errors.onTransactionFinished(trans)
 
-      expect(error.errors[0][2]).to.equal('')
-      expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
+      const errorTraces = getErrorTraces(error)
+      expect(errorTraces[0][2]).to.equal('')
+      expect(errorTraces[0][4].stack_trace[0]).to.equal('Error: <redacted>')
     })
   })
 
@@ -179,9 +195,10 @@ describe('Errors', function() {
 
       error = agent.errors
       error.add(trans, new Error())
-      agent.errors.onTransactionFinished(trans)
+      error.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
       expect(params.agentAttributes).deep.equals({
         'host.displayName': 'test-value'
       })
@@ -193,18 +210,40 @@ describe('Errors', function() {
 
       error = agent.errors
       error.add(trans, new Error())
-      agent.errors.onTransactionFinished(trans)
+      error.onTransactionFinished(trans)
 
-      var params = error.errors[0][PARAMS]
+      const errorTraces = getErrorTraces(error)
+      var params = errorTraces[0][PARAMS]
       expect(params.agentAttributes).deep.equals({})
     })
   })
 
-  describe('ErrorAggregator', function() {
-    var tracer
+  describe('ErrorCollector', function() {
+    let metrics = null
+    let errorCollector = null
 
     beforeEach(function() {
-      tracer = new ErrorAggregator(agent.config)
+      metrics = new Metrics(5, {}, {})
+
+      errorCollector = new ErrorCollector(
+        agent.config,
+        new ErrorTraceAggregator({
+          periodMs: 60,
+          transport: null,
+          limit: 20
+        }, {}),
+        new ErrorEventAggregator({
+          periodMs: 60,
+          transport: null,
+          limit: 20
+        }, {}, metrics),
+        metrics
+      )
+    })
+
+    afterEach(() => {
+      errorCollector = null
+      metrics = null
     })
 
     it('should preserve the name field on errors', function() {
@@ -214,7 +253,9 @@ describe('Errors', function() {
       testError.name = "GAMEBREAKER"
 
       api.noticeError(testError)
-      var error = agent.errors.errors[0]
+
+      const errorTraces = getErrorTraces(agent.errors)
+      var error = errorTraces[0]
       expect(error[error.length - 2]).equal(testError.name)
     })
 
@@ -222,13 +263,12 @@ describe('Errors', function() {
       var error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
 
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
+      const errorTraces = getErrorTraces(errorCollector)
+      expect(errorTraces.length).equal(0)
 
-      tracer.add(null, error)
+      errorCollector.add(null, error)
 
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
+      expect(errorTraces.length).equal(0)
 
       agent.config.error_collector.enabled = true
     })
@@ -237,13 +277,12 @@ describe('Errors', function() {
       var error = new Error('this error will never be seen')
       agent.config.collect_errors = false
 
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
+      const errorTraces = getErrorTraces(errorCollector)
+      expect(errorTraces.length).equal(0)
 
-      tracer.add(null, error)
+      errorCollector.add(null, error)
 
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
+      expect(errorTraces.length).equal(0)
 
       agent.config.collect_errors = true
     })
@@ -253,8 +292,8 @@ describe('Errors', function() {
       var first = new Transaction(agent)
       var second = new Transaction(agent)
 
-      expect(agent.errors.errorCount).equal(0)
-      expect(agent.errors.errors.length).equal(0)
+      const errorTraces = getErrorTraces(agent.errors)
+      expect(errorTraces.length).equal(0)
 
       agent.errors.add(first, error)
       expect(first.exceptions.length).equal(1)
@@ -263,48 +302,34 @@ describe('Errors', function() {
       expect(second.exceptions.length).equal(1)
 
       first.end()
-      expect(agent.errors.errorCount).equal(1)
+      expect(errorTraces.length).equal(1)
 
       second.end()
-      expect(agent.errors.errorCount).equal(2)
+      expect(errorTraces.length).equal(2)
     })
 
     it('should not gather the same error twice in the same transaction', function() {
-      var error = new Error('this happened once')
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
+      const error = new Error('this happened once')
 
-      tracer.add(null, error)
-      tracer.add(null, error)
+      const errorTraces = getErrorTraces(errorCollector)
+      expect(errorTraces.length).equal(0)
 
-      expect(tracer.errorCount).equal(1)
-      expect(tracer.errors.length).equal(1)
+      errorCollector.add(null, error)
+      errorCollector.add(null, error)
+      expect(errorTraces.length).equal(1)
     })
 
     it('should not break on read only objects', function() {
       var error = new Error('this happened once')
       Object.freeze(error)
-      expect(tracer.errorCount).equal(0)
-      expect(tracer.errors.length).equal(0)
 
-      tracer.add(null, error)
-      tracer.add(null, error)
+      const errorTraces = getErrorTraces(errorCollector)
+      expect(errorTraces.length).equal(0)
 
-      expect(tracer.errorCount).equal(1)
-      expect(tracer.errors.length).equal(1)
-    })
+      errorCollector.add(null, error)
+      errorCollector.add(null, error)
 
-    it('should retain a maximum of 20 errors to send', function() {
-      for (var i = 0; i < 5; i++) tracer.add(null, new Error('filling the queue'))
-      expect(tracer.errors.length).equal(5)
-
-      for (i = 0; i < 5; i++) tracer.add(null, new Error('more filling the queue'))
-      expect(tracer.errors.length).equal(10)
-
-      // this will take the tracer 3 over the limit of 20
-      for (i = 0; i < 13; i++) tracer.add(null, new Error('overfilling the queue'))
-      expect(tracer.errorCount).equal(23)
-      expect(tracer.errors.length).equal(20)
+      expect(errorTraces.length).equal(1)
     })
 
     describe('add()', function() {
@@ -323,64 +348,36 @@ describe('Errors', function() {
       })
     })
 
-    describe('getErrors', function() {
-      it('returns collected errors', function() {
-        agent.errors.add(null, new Error('some error'))
-        var errors = agent.errors.getErrors()
-        expect(errors).length(1)
-      })
-    })
-
-    describe('getEvents', function() {
-      it('returns collected error events', function() {
-        agent.errors.add(null, new Error('some error'))
-        var events = agent.errors.getEvents()
-        expect(events).length(1)
-      })
-    })
-
     describe('when finalizing transactions', function() {
-      var finalizeTracer = null
+      let finalizeCollector = null
 
       beforeEach(function() {
-        finalizeTracer = agent.errors
+        finalizeCollector = agent.errors
       })
 
       it('should capture errors for transactions ending in error', function() {
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 500))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 400))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 500))
 
-        expect(finalizeTracer.errors.length).equal(2)
+        const errorTraces = getErrorTraces(finalizeCollector)
+        expect(errorTraces.length).equal(2)
       })
 
-      it('should count errors on the error tracer', function() {
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
-        finalizeTracer.onTransactionFinished(createTransaction(agent, 500))
+      it('should generate transaction error metric', function() {
+        const transaction = createTransaction(agent, 200)
 
-        expect(finalizeTracer.errorCount).equal(2)
+        finalizeCollector.add(transaction, new Error('error1'))
+        finalizeCollector.add(transaction, new Error('error2'))
+
+        finalizeCollector.onTransactionFinished(transaction)
+
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        expect(metric.callCount).to.equal(2)
       })
 
-      it('should count named errors on the agent metrics', function() {
-        let c1 = finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
-        let c2 = finalizeTracer.onTransactionFinished(createTransaction(agent, 500))
-
-        expect((c1 + c2)).equal(2)
-      })
-
-      it('should increment error metrics correctly', function() {
-        var transaction = createTransaction(agent, 200)
-
-        finalizeTracer.add(transaction, new Error('error1'))
-        finalizeTracer.add(transaction, new Error('error2'))
-
-        let count = finalizeTracer.onTransactionFinished(transaction)
-
-        expect(count).equal(2)
-      })
-
-      it('should increment error metrics correctly with user errors', function() {
-        var api = new API(agent)
-        var transaction = createTransaction(agent, 200)
+      it('should generate transaction error metric when added from API', function() {
+        const api = new API(agent)
+        const transaction = createTransaction(agent, 200)
 
         agent.tracer.getTransaction = function() {
           return transaction
@@ -389,54 +386,83 @@ describe('Errors', function() {
         api.noticeError(new Error('error1'))
         api.noticeError(new Error('error2'))
 
-        let count = finalizeTracer.onTransactionFinished(transaction)
+        finalizeCollector.onTransactionFinished(transaction)
 
-        expect(count).equal(2)
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        expect(metric.callCount).to.equal(2)
+      })
+
+      it('should not generate transaction error metric for ignored error', function() {
+        agent.config.error_collector.ignore_classes = ['Error']
+        const transaction = createTransaction(agent, 200)
+
+        finalizeCollector.add(transaction, new Error('error1'))
+        finalizeCollector.add(transaction, new Error('error2'))
+
+        finalizeCollector.onTransactionFinished(transaction)
+
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        expect(metric).to.not.exist
+      })
+
+      it('should not generate transaction error metric for expected error', function() {
+        agent.config.error_collector.expected_classes = ['Error']
+        const transaction = createTransaction(agent, 200)
+
+        finalizeCollector.add(transaction, new Error('error1'))
+        finalizeCollector.add(transaction, new Error('error2'))
+
+        finalizeCollector.onTransactionFinished(transaction)
+
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        expect(metric).to.not.exist
       })
 
       it('should ignore errors if related transaction is ignored', function() {
-        var transaction = createTransaction(agent, 500)
+        const transaction = createTransaction(agent, 500)
         transaction.ignore = true
 
         // add errors by various means
-        finalizeTracer.add(transaction, new Error("no"))
+        finalizeCollector.add(transaction, new Error("no"))
         transaction.addException(new Error('ignored'))
-        finalizeTracer.onTransactionFinished(transaction)
+        finalizeCollector.onTransactionFinished(transaction)
 
-        expect(finalizeTracer.errorCount).equal(0)
-
-        var metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
         expect(metric).to.be.undefined
       })
 
       it('should ignore 404 errors for transactions', function() {
-        let count = finalizeTracer.onTransactionFinished(createTransaction(agent, 400))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 400))
         // 404 errors are ignored by default
-        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
-        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
-        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
-        count += finalizeTracer.onTransactionFinished(createTransaction(agent, 404))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 404))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 404))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 404))
+        finalizeCollector.onTransactionFinished(createTransaction(agent, 404))
 
-        expect(finalizeTracer.errorCount).equal(1)
+        const errorTraces = getErrorTraces(finalizeCollector)
+        expect(errorTraces.length).equal(1)
 
-        expect(count).equal(1)
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        expect(metric.callCount).to.equal(1)
       })
 
       it('should ignore 404 errors for transactions with exceptions attached', () => {
         var notIgnored = createTransaction(agent, 400)
         notIgnored.addException(new Error('bad request'))
-        let count = finalizeTracer.onTransactionFinished(notIgnored)
+        finalizeCollector.onTransactionFinished(notIgnored)
 
         // 404 errors are ignored by default, but making sure the config is set
-        finalizeTracer.config.error_collector.ignore_status_codes = [404]
+        finalizeCollector.config.error_collector.ignore_status_codes = [404]
 
         var ignored = createTransaction(agent, 404)
         ignored.addException(new Error('ignored'))
-        count += finalizeTracer.onTransactionFinished(ignored)
+        finalizeCollector.onTransactionFinished(ignored)
 
-        expect(finalizeTracer.errorCount).equal(1)
+        const errorTraces = getErrorTraces(finalizeCollector)
+        expect(errorTraces.length).equal(1)
 
-        expect(count).equal(1)
+        const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+        expect(metric.callCount).to.equal(1)
       })
 
       it('should collect exceptions added with noticeError() API even if the status ' +
@@ -449,26 +475,26 @@ describe('Errors', function() {
         }
 
         // 404 errors are ignored by default, but making sure the config is set
-        finalizeTracer.config.error_collector.ignore_status_codes = [404]
+        finalizeCollector.config.error_collector.ignore_status_codes = [404]
 
         // this should be ignored
         tx.addException(new Error('should be ignored'))
         // this should go through
         api.noticeError(new Error('should go through'))
-        let count = finalizeTracer.onTransactionFinished(tx)
+        finalizeCollector.onTransactionFinished(tx)
 
-        expect(finalizeTracer.errorCount).equal(1)
-        var collectedErrors = finalizeTracer.errors
-        expect(collectedErrors[0][2]).equal('should go through')
-
-        expect(count).equal(1)
+        const errorTraces = getErrorTraces(finalizeCollector)
+        expect(errorTraces.length).equal(1)
+        expect(errorTraces[0][2]).equal('should go through')
       })
     })
 
     describe('with no exception and no transaction', function() {
       it('should have no errors', function() {
         agent.errors.add(null, null)
-        expect(agent.errors.errors.length).equal(0)
+
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(0)
       })
     })
 
@@ -478,7 +504,8 @@ describe('Errors', function() {
       })
 
       it('should have no errors', function() {
-        expect(agent.errors.errors.length).equal(0)
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(0)
       })
     })
 
@@ -494,11 +521,14 @@ describe('Errors', function() {
 
         noErrorStatusTracer.add(transaction, null)
         noErrorStatusTracer.onTransactionFinished(transaction)
-        errorJSON = noErrorStatusTracer.errors[0]
+
+        const errorTraces = getErrorTraces(noErrorStatusTracer)
+        errorJSON = errorTraces[0]
       })
 
       it('should have one error', function() {
-        expect(noErrorStatusTracer.errors.length).equal(1)
+        const errorTraces = getErrorTraces(noErrorStatusTracer)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -541,12 +571,15 @@ describe('Errors', function() {
 
         agent.errors.add(transaction, null)
         agent.errors.onTransactionFinished(transaction)
-        errorJSON = agent.errors.errors[0]
+
+        const errorTraces = getErrorTraces(agent.errors)
+        errorJSON = errorTraces[0]
         params = errorJSON[4]
       })
 
       it('should have one error', function() {
-        expect(agent.errors.errors.length).equal(1)
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -591,7 +624,8 @@ describe('Errors', function() {
       agent.errors.add(transaction, null)
       agent.errors.onTransactionFinished(transaction)
 
-      var errorJSON = agent.errors.errors[0]
+      const errorTraces = getErrorTraces(agent.errors)
+      var errorJSON = errorTraces[0]
       var params = errorJSON[4]
 
       expect(params).to.not.have.property('request_params')
@@ -615,7 +649,8 @@ describe('Errors', function() {
       agent.errors.add(transaction, null)
       agent._transactionFinished(transaction)
 
-      var errorJSON = agent.errors.errors[0]
+      const errorTraces = getErrorTraces(agent.errors)
+      var errorJSON = errorTraces[0]
       var params = errorJSON[4]
 
       expect(params.agentAttributes).to.eql({test_param: 'a value'})
@@ -632,11 +667,14 @@ describe('Errors', function() {
         var exception = new Error('Dare to be the same!')
 
         typeErrorTracer.add(null, exception)
-        errorJSON = typeErrorTracer.errors[0]
+
+        const errorTraces = getErrorTraces(agent.errors)
+        errorJSON = errorTraces[0]
       })
 
       it('should have one error', function() {
-        expect(typeErrorTracer.errors.length).equal(1)
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -675,11 +713,14 @@ describe('Errors', function() {
 
         typeErrorTracer.add(transaction, exception)
         typeErrorTracer.onTransactionFinished(transaction)
-        errorJSON = typeErrorTracer.errors[0]
+
+        const errorTraces = getErrorTraces(typeErrorTracer)
+        errorJSON = errorTraces[0]
       })
 
       it('should have one error', function() {
-        expect(typeErrorTracer.errors.length).equal(1)
+        const errorTraces = getErrorTraces(typeErrorTracer)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -724,12 +765,15 @@ describe('Errors', function() {
 
         agent.errors.add(transaction, exception)
         agent.errors.onTransactionFinished(transaction)
-        errorJSON = agent.errors.errors[0]
+
+        const errorTraces = getErrorTraces(agent.errors)
+        errorJSON = errorTraces[0]
         params = errorJSON[4]
       })
 
       it('should have one error', function() {
-        expect(agent.errors.errors.length).equal(1)
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -779,11 +823,14 @@ describe('Errors', function() {
 
         thrownTracer.add(transaction, exception)
         thrownTracer.onTransactionFinished(transaction)
-        errorJSON = thrownTracer.errors[0]
+
+        const errorTraces = getErrorTraces(thrownTracer)
+        errorJSON = errorTraces[0]
       })
 
       it('should have one error', function() {
-        expect(thrownTracer.errors.length).equal(1)
+        const errorTraces = getErrorTraces(thrownTracer)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -827,12 +874,15 @@ describe('Errors', function() {
 
         agent.errors.add(transaction, exception)
         agent.errors.onTransactionFinished(transaction)
-        errorJSON = agent.errors.errors[0]
+
+        const errorTraces = getErrorTraces(agent.errors)
+        errorJSON = errorTraces[0]
         params = errorJSON[4]
       })
 
       it('should have one error', function() {
-        expect(agent.errors.errors.length).equal(1)
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(1)
       })
 
       it('should not care what time it was traced', function() {
@@ -874,7 +924,7 @@ describe('Errors', function() {
 
 
       beforeEach(function() {
-        tracer = agent.errors
+        errorCollector = agent.errors
 
         var transaction = new Transaction(agent)
         var exception = new Error('500 test error')
@@ -884,7 +934,7 @@ describe('Errors', function() {
         transaction.name = 'WebTransaction/Uri/test-request/zxrkbl'
         transaction.statusCode = 500
         transaction.end()
-        error = tracer.errors[0]
+        error = getErrorTraces(errorCollector)[0]
       })
 
       it('should associate errors with the transaction\'s name', function() {
@@ -918,14 +968,14 @@ describe('Errors', function() {
       var error
 
       beforeEach(function() {
-        tracer = agent.errors
+        errorCollector = agent.errors
 
         var transaction = new Transaction(agent)
         transaction.url = '/test-request/zxrkbl'
         transaction.name = 'WebTransaction/Uri/test-request/zxrkbl'
         transaction.statusCode = 503
         transaction.end()
-        error = tracer.errors[0]
+        error = getErrorTraces(errorCollector)[0]
       })
 
       it('should associate errors with the transaction\'s name', function() {
@@ -964,7 +1014,8 @@ describe('Errors', function() {
           mochaHandlers = helper.onlyDomains()
 
           process.once('uncaughtException', function() {
-            json = agent.errors.errors[0]
+            const errorTraces = getErrorTraces(agent.errors)
+            json = errorTraces[0]
 
             return done()
           })
@@ -992,7 +1043,8 @@ describe('Errors', function() {
       })
 
       it('should find a single error', function() {
-        expect(agent.errors.errors.length).equal(1)
+        const errorTraces = getErrorTraces(agent.errors)
+        expect(errorTraces.length).equal(1)
       })
 
       describe('and an error is traced', function() {
@@ -1038,145 +1090,199 @@ describe('Errors', function() {
     })
 
     it('should copy parameters from background transactions', function(done) {
-      var errorTracer = agent.errors
-      var api = new API(agent)
+      const api = new API(agent)
 
       api.startBackgroundTransaction('job', function() {
         api.addCustomAttribute('jobType', 'timer')
         api.noticeError(new Error('record an error'))
         agent.getTransaction().end()
-        expect(errorTracer.errors.length).equal(1)
-        expect(errorTracer.errors[0][2]).equal('record an error')
+
+        const errorTraces = getErrorTraces(agent.errors)
+
+        expect(errorTraces.length).equal(1)
+        expect(errorTraces[0][2]).equal('record an error')
         done()
       })
     })
 
-    describe('getTotalUnexpectedErrorCount()', function() {
-      var aggregator
+    it('should generate expected error metric for expected errors', function() {
+      agent.config.error_collector.expected_classes = ['Error']
+      const transaction = createTransaction(agent, 200)
 
-      beforeEach(function() {
-        aggregator = agent.errors
-      })
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
 
-      describe('returns total of all collected non-expected errors', function() {
-        it('without transaction', function() {
-          aggregator.add(null, new Error('error1'))
-          expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
-        })
+      errorCollector.onTransactionFinished(transaction)
 
-        it('with web transaction', function() {
-          var transaction = createWebTransaction(agent)
-          expect(transaction.isWeb()).to.be.true
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
-        })
-
-        it('with background transaction', function() {
-          var transaction = createBackgroundTransaction(agent)
-          expect(transaction.isWeb()).to.be.false
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
-        })
-      })
+      const metric = metrics.getMetric(NAMES.ERRORS.EXPECTED)
+      expect(metric.callCount).to.equal(2)
     })
 
-    describe('getUnexpectedWebTransactionsErrorCount()', function() {
-      var aggregator
+    it('should not generate expected error metric for unexpected errors', function() {
+      const transaction = createTransaction(agent, 200)
 
-      beforeEach(function() {
-        aggregator = agent.errors
-      })
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
 
-      describe('returns total of web transaction non-expected errors', function() {
-        it('without transaction', function() {
-          aggregator.add(null, new Error('error1'))
-          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
-        })
+      errorCollector.onTransactionFinished(transaction)
 
-        it('with web transaction', function() {
-          var transaction = createWebTransaction(agent)
-          expect(transaction.isWeb()).to.be.true
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(1)
-        })
-
-        it('with background transaction', function() {
-          var transaction = createBackgroundTransaction(agent)
-          expect(transaction.isWeb()).to.be.false
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
-        })
-
-        it('should not count when error collector disabled', () => {
-          agent.config.error_collector.enabled = false
-
-          const transaction = createWebTransaction(agent)
-          expect(transaction.isWeb()).to.be.true
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
-
-          agent.config.error_collector.enabled = true
-        })
-      })
+      const metric = agent.metrics.getMetric(NAMES.ERRORS.EXPECTED)
+      expect(metric).to.not.exist
     })
 
-    describe('getUnexpectedOtherTransactionsErrorCount()', function() {
-      var aggregator
+    it('should not generate expected error metric for ignored errors', function() {
+      agent.config.error_collector.expected_classes = ['Error']
+      agent.config.error_collector.ignore_classes = ['Error'] // takes prescedence
+      const transaction = createTransaction(agent, 200)
 
-      beforeEach(function() {
-        aggregator = agent.errors
-      })
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
 
-      describe('returns total of background transaction non-expected errors', () => {
-        it('without transaction', function() {
-          aggregator.add(null, new Error('error1'))
-          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
-        })
+      errorCollector.onTransactionFinished(transaction)
 
-        it('with web transaction', function() {
-          var transaction = createWebTransaction(agent)
-          expect(transaction.isWeb()).to.be.true
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
-        })
-
-        it('with background transaction', function() {
-          var transaction = createBackgroundTransaction(agent)
-          expect(transaction.isWeb()).to.be.false
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(1)
-        })
-
-        it('should not count when error collector disabled', () => {
-          agent.config.error_collector.enabled = false
-
-          const transaction = createBackgroundTransaction(agent)
-          expect(transaction.isWeb()).to.be.false
-          aggregator.add(transaction, new Error('error1'))
-
-          transaction.end()
-          expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
-
-          agent.config.error_collector.enabled = true
-        })
-      })
+      const metric = agent.metrics.getMetric(NAMES.ERRORS.EXPECTED)
+      expect(metric).to.not.exist
     })
 
-    describe('clearErrors()', function() {
+    it('should generate all error metric for unexpected errors', function() {
+      const transaction = createTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.ALL)
+      expect(metric.callCount).to.equal(2)
+    })
+
+    it('should not generate all error metric for expected errors', function() {
+      agent.config.error_collector.expected_classes = ['Error']
+      const transaction = createTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.ALL)
+      expect(metric).to.not.exist
+    })
+
+    it('should not generate all error metric for ignored errors', function() {
+      agent.config.error_collector.ignore_classes = ['Error']
+      const transaction = createTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.ALL)
+      expect(metric).to.not.exist
+    })
+
+    it('should generate web error metric for unexpected web errors', function() {
+      const transaction = createWebTransaction(agent)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.WEB)
+      expect(metric.callCount).to.equal(2)
+    })
+
+    it('should not generate web error metric for expected web errors', function() {
+      agent.config.error_collector.expected_classes = ['Error']
+      const transaction = createTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.WEB)
+      expect(metric).to.not.exist
+    })
+
+    it('should not generate web error metric for ignored web errors', function() {
+      agent.config.error_collector.ignore_classes = ['Error']
+      const transaction = createTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.WEB)
+      expect(metric).to.not.exist
+    })
+
+    it('should not generate web error metric for unexpected non-web errors', function() {
+      const transaction = createBackgroundTransaction(agent)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.WEB)
+      expect(metric).to.not.exist
+    })
+
+    it('should generate other error metric for unexpected non-web errors', function() {
+      const transaction = createBackgroundTransaction(agent)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.OTHER)
+      expect(metric.callCount).to.equal(2)
+    })
+
+    it('should not generate other error metric for expected non-web errors', function() {
+      agent.config.error_collector.expected_classes = ['Error']
+      const transaction = createBackgroundTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.OTHER)
+      expect(metric).to.not.exist
+    })
+
+    it('should not generate other error metric for ignored non-web errors', function() {
+      agent.config.error_collector.ignore_classes = ['Error']
+      const transaction = createBackgroundTransaction(agent, 200)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.OTHER)
+      expect(metric).to.not.exist
+    })
+
+    it('should not generate other error metric for unexpected web errors', function() {
+      const transaction = createWebTransaction(agent)
+
+      errorCollector.add(transaction, new Error('error1'))
+      errorCollector.add(transaction, new Error('error2'))
+
+      errorCollector.onTransactionFinished(transaction)
+
+      const metric = metrics.getMetric(NAMES.ERRORS.OTHER)
+      expect(metric).to.not.exist
+    })
+
+    describe('clearAll()', function() {
       var aggregator
 
       beforeEach(function() {
@@ -1185,36 +1291,14 @@ describe('Errors', function() {
 
       it('clears collected errors', function() {
         aggregator.add(null, new Error('error1'))
-        expect(aggregator.getErrors()).length(1)
-        aggregator.clearErrors()
-        expect(aggregator.getErrors()).length(0)
-      })
 
-      it('clears total error count', function() {
-        aggregator.add(null, new Error('error1'))
-        expect(aggregator.getTotalUnexpectedErrorCount()).equal(1)
-        aggregator.clearErrors()
-        expect(aggregator.getTotalUnexpectedErrorCount()).equal(0)
-      })
+        expect(getErrorTraces(aggregator)).length(1)
+        expect(getErrorEvents(aggregator)).length(1)
 
-      it('clears web tx error count', function() {
-        var transaction = createWebTransaction(agent)
-        aggregator.add(transaction, new Error('error1'))
+        aggregator.clearAll()
 
-        transaction.end()
-        expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(1)
-        aggregator.clearErrors()
-        expect(aggregator.getUnexpectedWebTransactionsErrorCount()).equal(0)
-      })
-
-      it('clears background tx error count', function() {
-        var transaction = createBackgroundTransaction(agent)
-        aggregator.add(transaction, new Error('error1'))
-
-        transaction.end()
-        expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(1)
-        aggregator.clearErrors()
-        expect(aggregator.getUnexpectedOtherTransactionsErrorCount()).equal(0)
+        expect(getErrorTraces(aggregator)).length(0)
+        expect(getErrorEvents(aggregator)).length(0)
       })
     })
   })
@@ -1231,7 +1315,8 @@ describe('Errors', function() {
         var error = new Error('some error')
         aggregator.add(null, error)
 
-        expect(aggregator.errors).length(1)
+        const errorTraces = getErrorTraces(aggregator)
+        expect(errorTraces).length(1)
 
         var attributes = getFirstErrorIntrinsicAttributes(aggregator)
         expect(attributes).to.be.a('Object')
@@ -1256,7 +1341,7 @@ describe('Errors', function() {
         aggregator.add(transaction)
 
         transaction.end()
-        var collectedError = aggregator.errors[0]
+        var collectedError = getErrorTraces(aggregator)[0]
         expect(collectedError).to.exist
       })
 
@@ -1389,7 +1474,7 @@ describe('Errors', function() {
     it('should omit the error message when in high security mode', function() {
       agent.config.high_security = true
       agent.errors.add(null, new Error('some error'))
-      var events = agent.errors.getEvents()
+      var events = getErrorEvents(agent.errors)
       expect(events[0][0]['error.message']).to.equal('')
       agent.config.high_security = false
     })
@@ -1402,7 +1487,7 @@ describe('Errors', function() {
         agent.errors.add(null, new Error('some error'))
       }
 
-      var events = agent.errors.getEvents()
+      var events = getErrorEvents(agent.errors)
       expect(events).length(10)
     })
 
@@ -1412,8 +1497,6 @@ describe('Errors', function() {
           var error = new Error('some error')
           var nowSeconds = Date.now() / 1000
           aggregator.add(null, error)
-
-          expect(aggregator.errors).length(1)
 
           var attributes = getFirstEventIntrinsicAttributes(aggregator)
           expect(attributes).to.be.a('Object')
@@ -1471,8 +1554,6 @@ describe('Errors', function() {
           var nowSeconds = Date.now() / 1000
           api.noticeError(error)
 
-          expect(aggregator.errors).length(1)
-
           var attributes = getFirstEventIntrinsicAttributes(aggregator)
           expect(attributes).to.be.a('Object')
           expect(attributes.type).equal('TransactionError')
@@ -1514,7 +1595,9 @@ describe('Errors', function() {
         aggregator.add(transaction)
 
         transaction.end()
-        var collectedError = aggregator.errors[0]
+
+        const errorEvents = getErrorEvents(aggregator)
+        var collectedError = errorEvents[0]
         expect(collectedError).to.exist
       })
 
@@ -1701,6 +1784,14 @@ describe('Errors', function() {
   })
 })
 
+function getErrorTraces(errorCollector) {
+  return errorCollector.traceAggregator.errors
+}
+
+function getErrorEvents(errorCollector) {
+  return errorCollector.eventAggregator.getEvents()
+}
+
 function getFirstErrorIntrinsicAttributes(aggregator) {
   return getFirstError(aggregator)[4].intrinsics
 }
@@ -1710,7 +1801,7 @@ function getFirstErrorCustomAttributes(aggregator) {
 }
 
 function getFirstError(aggregator) {
-  var errors = aggregator.errors
+  var errors = getErrorTraces(aggregator)
   expect(errors.length).equal(1)
   return errors[0]
 }
@@ -1728,7 +1819,7 @@ function getFirstEventAgentAttributes(aggregator) {
 }
 
 function getFirstEvent(aggregator) {
-  var events = aggregator.getEvents()
+  var events = getErrorEvents(aggregator)
   expect(events.length).equal(1)
   return events[0]
 }

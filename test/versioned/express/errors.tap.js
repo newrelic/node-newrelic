@@ -246,7 +246,7 @@ function runTests(flags) {
     var errors
 
     agent.on('transactionFinished', function() {
-      errors = agent.errors.errors
+      errors = agent.errors.traceAggregator.errors
       if (statusCode) {
         callback(errors, statusCode)
       }

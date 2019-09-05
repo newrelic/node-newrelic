@@ -203,11 +203,9 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.ok(response, 'got a response from Hapi')
         t.ok(body, 'got back a body')
 
-        var errors = agent.errors.errors
+        var errors = agent.errors.traceAggregator.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
-        t.equal(agent.errors.getUnexpectedWebTransactionsErrorCount(), 1,
-          'should be 1 web transaction error')
 
         var first = errors[0]
         t.ok(first, 'have the first error')

@@ -756,9 +756,9 @@ function runTest(t, options, callback) {
     const baseSegment = tx.trace.root.children[0]
 
     t.equal(
-      agent.errors.getTotalUnexpectedErrorCount(),
+      agent.errors.traceAggregator.errors.length,
       errors,
-      'should be expected errors'
+      'should have errors'
     )
 
     callback(baseSegment.children, tx)

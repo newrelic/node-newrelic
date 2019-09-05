@@ -11,6 +11,8 @@ describe('errors', function() {
     agent = helper.loadMockedAgent()
     agent.config.attributes.enabled = true
     agent.config.run_id = 1
+
+    agent.errors.reconfigure(agent.config)
   })
   afterEach(function() {
     helper.unloadAgent(agent)
@@ -19,7 +21,7 @@ describe('errors', function() {
     var error = new Error('test')
     error.stack = 'test stack'
     agent.errors.add(null, error)
-    var payload = [agent.config.run_id, agent.errors.errors]
+    var payload = agent.errors.traceAggregator.toPayload()
     RemoteMethod.prototype.serialize(payload, function serializeErrors(err, errors) {
       expect(err).equals(null)
       expect(errors).deep.equals(
