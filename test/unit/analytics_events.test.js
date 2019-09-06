@@ -240,5 +240,5 @@ describe('Analytics events', function() {
 })
 
 function getTransactionEvents(agent) {
-  return agent.events.getEvents()
+  return agent.transactionEventAggregator.getEvents()
 }

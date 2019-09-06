@@ -91,7 +91,7 @@ test('cross application tracing full integration', function(t) {
     var txCount = 0
 
     agent.on('transactionFinished', function(trans) {
-      var event = agent.events.getEvents().filter(function(evt) {
+      var event = agent.transactionEventAggregator.getEvents().filter(function(evt) {
         return evt[0]['nr.guid'] === trans.id
       })[0]
       transInspector[txCount](trans, event)

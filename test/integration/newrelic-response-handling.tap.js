@@ -21,7 +21,7 @@ const endpointDataChecks = {
     return (agent.errors.traceAggregator.errors.length > 0)
   },
   analytic_event_data: function hasTransactionEventData(agent) {
-    return (agent.events.length > 0)
+    return (agent.transactionEventAggregator.length > 0)
   },
   transaction_sample_data: function hasTransactionTraceData(agent) {
     return !!agent.traces.trace
@@ -164,7 +164,7 @@ function createStatusCodeTest(testCase) {
           } else if (endpointName === 'error_event_data') {
             aggregatorCheckOnEnd(agent.errors.eventAggregator)
           } else if (endpointName === 'analytic_event_data') {
-            aggregatorCheckOnEnd(agent.events)
+            aggregatorCheckOnEnd(agent.transactionEventAggregator)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {
