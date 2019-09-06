@@ -160,7 +160,7 @@ describe('ServerlessCollector API', () => {
   describe('#spanEvents', () => {
     it('adds span_event_data to the payload object', (done) => {
       const spanEvents = {type: 'span_event_data'}
-      api.spanEvents(spanEvents, () => {
+      api.span_event_data(spanEvents, () => {
         expect(api.payload.span_event_data).to.deep.equal(spanEvents)
         done()
       })

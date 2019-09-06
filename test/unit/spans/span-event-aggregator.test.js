@@ -25,6 +25,12 @@ describe('SpanAggregator', () => {
     helper.unloadAgent(agent)
   })
 
+  it('should set the correct default method', () => {
+    const method = spanEventAggregator.method
+
+    expect(method).to.equal('span_event_data')
+  })
+
   it('should add a span event from the given segment', (done) => {
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
@@ -32,6 +38,7 @@ describe('SpanAggregator', () => {
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
+
         expect(spanEventAggregator).to.have.length(0)
         spanEventAggregator.addSegment(segment, 'p')
         expect(spanEventAggregator).to.have.length(1)
@@ -111,5 +118,38 @@ describe('SpanAggregator', () => {
         done()
       }, 10)
     })
-  })  
+  })
+
+  it('toPayload() should return json format of data', (done) => {
+    const rawEvent = [{type: 'Span'}, {stuff: 'stuff'}]
+    void rawEvent
+
+    helper.runInTransaction(agent, (tx) => {
+      tx.priority = 1
+      tx.sample = true
+
+      setTimeout(() => {
+        const segment = agent.tracer.getSegment()
+
+        spanEventAggregator.addSegment(segment)
+
+        var payload = spanEventAggregator.toPayload()
+
+        const [runId, metrics, events] = payload
+
+        expect(runId).to.equal(RUN_ID)
+
+        expect(metrics).to.have.property('reservoir_size')
+        expect(metrics).to.have.property('events_seen')
+        expect(metrics.reservoir_size).to.equal(LIMIT)
+        expect(metrics.events_seen).to.equal(1)
+
+        expect(events[0]).to.exist
+        expect(events[0]).to.have.property('intrinsics')
+        expect(events[0].intrinsics.type).to.equal('Span')
+
+        done()
+      }, 10)
+    })
+  })
 })
