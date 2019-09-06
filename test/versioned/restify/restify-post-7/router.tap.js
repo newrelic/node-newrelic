@@ -126,7 +126,7 @@ tap.test('Restify router', function(t) {
       t.ok(agent.getTransaction(), 'transaction should be available')
       res.send({status: 'ok'})
       next(true)
-    }, function second(req, res, next) {
+    }, function second() {
       t.fail('should not enter this final middleware')
     })
 
