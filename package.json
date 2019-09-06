@@ -166,7 +166,7 @@
     "q": "*",
     "redis": "^1.0.0",
     "request": "^2.88.0",
-    "restify": "^6.0",
+    "restify": "^4",
     "rimraf": "^2.6.3",
     "should": "*",
     "sinon": "^4.5.0",
