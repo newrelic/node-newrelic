@@ -120,7 +120,11 @@ tap.test('Agent#harvest', (t) => {
       t.ok(spy.called, 'should send sample trace data')
 
       // Verify mapped headers are sent in traces POST
-      const tracesRequest = requestSpy.args[6][0]
+      const tracesRequestArg = requestSpy.args.filter((input) => {
+        return input[0].path.includes('transaction_sample_data')
+      })
+
+      const tracesRequest = tracesRequestArg[0][0]
       checkHeaders(t, headersMap, tracesRequest.headers)
 
       const payload = spy.args[0][0]
@@ -160,7 +164,10 @@ tap.test('Agent#harvest', (t) => {
         t.ok(spy.called, 'should send span event data')
 
         // Verify mapped headers are sent in spans POST
-        const spansRequest = requestSpy.args[6][0]
+        const spansRequestArg = requestSpy.args.filter((input) => {
+          return input[0].path.includes('span_event_data')
+        })
+        const spansRequest = spansRequestArg[0][0]
         checkHeaders(t, headersMap, spansRequest.headers)
 
         const payload = spy.args[0][0]

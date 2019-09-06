@@ -102,7 +102,7 @@ tap.test('distributed tracing full integration', (t) => {
 
     const testsToCheck = []
     agent.on('transactionFinished', (trans) => {
-      const event = agent.events.toArray().filter((evt) => {
+      const event = agent.events.getEvents().filter((evt) => {
         return evt[0].guid === trans.id
       })[0]
       testsToCheck.push(transInspector[txCount].bind(this, trans, event))

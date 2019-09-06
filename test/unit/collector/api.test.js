@@ -1049,7 +1049,7 @@ describe('CollectorAPI', function() {
 
   describe('analyticsEvents', function() {
     it('requires errors to send', (done) => {
-      api.analyticsEvents(null, (err) => {
+      api.analytic_event_data(null, (err) => {
         expect(err)
           .to.be.an.instanceOf(Error)
           .and.have.property('message', 'must pass events to send')
@@ -1058,7 +1058,7 @@ describe('CollectorAPI', function() {
     })
 
     it('requires a callback', function() {
-      expect(function() { api.analyticsEvents([], null) })
+      expect(function() { api.analytic_event_data([], null) })
         .to.throw('callback is required')
     })
 
@@ -1088,7 +1088,7 @@ describe('CollectorAPI', function() {
           }]
         ]
 
-        api.analyticsEvents(errors, function test(error, res) {
+        api.analytic_event_data(errors, function test(error, res) {
           bad = error
           command = res
 
@@ -1105,8 +1105,8 @@ describe('CollectorAPI', function() {
         should.not.exist(bad)
       })
 
-      it('should return empty data array', function() {
-        expect(command).to.have.property('payload').eql([])
+      it('should return retain state', function() {
+        expect(command).to.have.property('retainData').eql(false)
       })
     })
   })
