@@ -4,8 +4,6 @@ const tap = require('tap')
 const read = require('fs').readFileSync
 const join = require('path').join
 const https = require('https')
-// const url = require('url')
-// const collector = require('../lib/fake-collector')
 const RemoteMethod = require('../../lib/collector/remote-method')
 
 tap.test("RemoteMethod makes two requests with one connection", (t) => {
@@ -29,7 +27,7 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
   })
 
   // start the server, and then start making requests
-  server.listen(8765, function(err) {
+  server.listen(8765, function() {
     // once we start a server, use a RemoteMethod
     // object to make a request
     const method = createRemoteMethod()
@@ -52,12 +50,12 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
   // setup a connection listener for the server
   // if we see more than one, keep alive isn't
   // working.
-  server.on('connection', function(socket) {
+  server.on('connection', function() {
     connections++
     if (2 === connections) {
       t.fail("RemoteMethod made second connection despite keep-alive.")
     }
-  });
+  })
 })
 
 function createRemoteMethod() {
