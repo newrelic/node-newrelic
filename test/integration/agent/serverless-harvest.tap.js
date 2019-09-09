@@ -172,7 +172,6 @@ tap.test('Serverless mode harvest', (t) => {
         findPayload(logSpy.args[0])[2],
         'transaction_sample_data',
         function checkData(payload) {
-          console.log(payload)
           t.ok(payload, 'should have trace payload')
           t.type(payload[1][0], 'Array', 'should have trace')
           t.type(payload[1][0][4], 'string', 'should have encoded trace')

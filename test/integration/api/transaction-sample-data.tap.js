@@ -49,7 +49,7 @@ tap.test('Collector API should send errors to newrelic.com', function(t) {
         [encoded]
       ]
 
-      api.transactionSampleData(payload, function(error, command) {
+      api.transaction_sample_data(payload, function(error, command) {
         t.error(error, 'sent transaction trace without error')
         t.notOk(command.returned, 'return value is null')
 

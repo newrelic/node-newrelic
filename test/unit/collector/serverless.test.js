@@ -83,10 +83,10 @@ describe('ServerlessCollector API', () => {
     })
   })
 
-  describe('#transactionSampleData', () => {
+  describe('#transaction_sample_data', () => {
     it('adds transaction_sample_data to the payload object', (done) => {
       const transactionSampleData = {type: 'transaction_sample_data'}
-      api.transactionSampleData(transactionSampleData, () => {
+      api.transaction_sample_data(transactionSampleData, () => {
         expect(api.payload.transaction_sample_data).to.deep.equal(transactionSampleData)
         done()
       })
