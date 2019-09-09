@@ -96,42 +96,6 @@ tap.test('Agent#harvest', (t) => {
     })
   })
 
-  t.test('sending traces', (t) => {
-    t.plan(7)
-
-    const spy = sinon.spy(agent.collector, 'transactionSampleData')
-    t.tearDown(() => spy.restore())
-
-    var transaction
-    var proxy = agent.tracer.transactionProxy(() => {
-      transaction = agent.getTransaction()
-      transaction.finalizeNameFromUri('/nonexistent', 200)
-    })
-    proxy()
-
-    // ensure it's slow enough to get traced
-    transaction.trace.setDurationInMillis(5001)
-    transaction.end()
-    t.ok(agent.traces.trace, 'have a slow trace to send')
-
-    agent.harvest((error) => {
-      t.error(error, 'trace sent correctly')
-
-      t.ok(spy.called, 'should send sample trace data')
-
-      // Verify mapped headers are sent in traces POST
-      const tracesRequest = requestSpy.args[6][0]
-      checkHeaders(t, headersMap, tracesRequest.headers)
-
-      const payload = spy.args[0][0]
-      t.ok(payload, 'should have trace payload')
-      t.type(payload[1][0], 'Array', 'should have trace')
-      t.type(payload[1][0][4], 'string', 'should have encoded trace')
-
-      t.end()
-    })
-  })
-
   t.test('sending span events', (t) => {
     t.plan(7)
 

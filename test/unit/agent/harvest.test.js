@@ -182,106 +182,6 @@ describe('Agent harvests', () => {
     })
   })
 
-  describe('sending to transaction_sample_data endpoint', () => {
-    let tx = null
-
-    beforeEach((done) => {
-      helper.runInTransaction(agent, (transaction) => {
-        tx = transaction
-        setTimeout(() => {
-          tx.end()
-          done()
-        }, 50)
-      })
-    })
-
-    it('should send when there is a trace', (done) => {
-      let traceBody = null
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.TRACES, (b) => traceBody = b).reply(200, EMPTY_RESPONSE)
-
-      expect(agent.traces.trace).to.exist
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-        expect(agent.traces.trace).to.not.exist
-
-        expect(traceBody).to.be.an.instanceOf(Array).of.length(2)
-        expect(traceBody[0]).to.equal(RUN_ID)
-        expect(traceBody[1]).to.be.an.instanceOf(Array).of.length(1)
-
-        const trace = traceBody[1][0]
-        expect(trace[0]).to.equal(tx.trace.root.timer.start)
-        expect(trace[1]).to.be.closeTo(tx.trace.root.timer.getDurationInMillis(), 5)
-
-        done()
-      })
-
-      expect(agent.traces.trace).to.not.exist
-    })
-
-    it('should not send if `collect_traces` is false', (done) => {
-      agent.config.collect_traces = false
-
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
-
-      expect(agent.traces.trace).to.exist
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-
-        done()
-      })
-
-      expect(agent.traces.trace).to.not.exist
-    })
-
-    it('should not send if `transaction_tracer.enabled` is false', (done) => {
-      agent.config.transaction_tracer.enabled = false
-
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
-
-      expect(agent.traces.trace).to.exist
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-
-        done()
-      })
-
-      expect(agent.traces.trace).to.not.exist
-    })
-
-    it('should put data back on failure', (done) => {
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.TRACES).reply(500, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.EVENTS).reply(500, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
-
-      expect(agent.traces.trace).to.exist
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-
-        expect(agent.traces.trace).to.exist
-
-        done()
-      })
-
-      expect(agent.traces.trace).to.not.exist
-    })
-  })
-
   describe('sending to analytic_event_data endpoint', () => {
     let tx = null
 
@@ -605,7 +505,6 @@ describe('Agent harvests', () => {
       harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.QUERIES, (b) => traceBody = b).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.TRACES).reply(200, EMPTY_RESPONSE)
 
       expect(agent.queries.samples).to.have.property('size', 1)
 
@@ -634,7 +533,6 @@ describe('Agent harvests', () => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.TRACES).reply(200, EMPTY_RESPONSE)
 
       expect(agent.queries.samples).to.have.property('size', 1)
 
@@ -652,7 +550,6 @@ describe('Agent harvests', () => {
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.TRACES).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.EVENTS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.QUERIES).reply(500, EMPTY_RESPONSE)
 

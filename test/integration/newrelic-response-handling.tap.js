@@ -163,6 +163,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.errors.traceAggregator)
           } else if (endpointName === 'error_event_data') {
             aggregatorCheckOnEnd(agent.errors.eventAggregator)
+          } else if (endpointName === 'transaction_sample_data') {
+            aggregatorCheckOnEnd(agent.traces)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {
