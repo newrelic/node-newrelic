@@ -30,22 +30,20 @@ describe('Ignored Errors', function() {
         tx.addException(error2, {}, 0)
         tx.end()
 
-        expect(errorAggr.getErrors().length).equals(1)
+        expect(errorAggr.traceAggregator.errors.length).equals(1)
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(1)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric.callCount).equals(1)
+
+        expect(allErrorMetric.callCount).equals(1)
+        expect(webErrorMetric.callCount).equals(1)
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
@@ -63,24 +61,20 @@ describe('Ignored Errors', function() {
         tx.addException(error2, {}, 0)
         tx.end()
 
-        // console.log(errorAggr.getErrors().length)
-        expect(errorAggr.getErrors().length).equals(1)
+        expect(errorAggr.traceAggregator.errors.length).equals(1)
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(1)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
 
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(1)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        expect(transactionErrorMetric.callCount).equals(1)
+
+        expect(allErrorMetric.callCount).equals(1)
+        expect(webErrorMetric.callCount).equals(1)
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
@@ -100,22 +94,20 @@ describe('Ignored Errors', function() {
 
         tx.end()
 
-        expect(errorAggr.getErrors().length).equals(2)
+        expect(errorAggr.traceAggregator.errors.length).equals(2)
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(2)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(2)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(2)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric.callCount).equals(2)
+
+        expect(allErrorMetric.callCount).equals(2)
+        expect(webErrorMetric.callCount).equals(2)
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
@@ -136,22 +128,20 @@ describe('Ignored Errors', function() {
 
         tx.end()
 
-        expect(errorAggr.getErrors().length).equals(2)
+        expect(errorAggr.traceAggregator.errors.length).equals(2)
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(2)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(2)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(2)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric.callCount).equals(2)
+
+        expect(allErrorMetric.callCount).equals(2)
+        expect(webErrorMetric.callCount).equals(2)
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
@@ -172,22 +162,20 @@ describe('Ignored Errors', function() {
 
         tx.end()
 
-        expect(errorAggr.getErrors().length).equals(0)
+        expect(errorAggr.traceAggregator.errors.length).equals(0)
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(0)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric).to.not.exist
+
+        expect(allErrorMetric).to.not.exist
+        expect(webErrorMetric).to.not.exist
+        expect(otherErrorMetric).to.not.exist
       })
     })
 
@@ -209,22 +197,20 @@ describe('Ignored Errors', function() {
 
         tx.end()
 
-        expect(errorAggr.getErrors().length).equals(0)
+        expect(errorAggr.traceAggregator.errors.length).equals(0)
 
-        expect(
-          agent.metrics.getOrCreateMetric(
-            NAMES.ERRORS.PREFIX + tx.getFullName()
-          ).callCount
-        ).equals(0)
+        const transactionErrorMetric
+          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
-        // NAMES.ERRORS.ALL, NAMES.ERRORS.WEB, and NAMES.ERRORS.OTHER
-        // are generated during the harvest.  We can't check the metric
-        // before the harvest since its not there, but after the harvest
-        // the metric will have been sent and zeroed out.  So we'll check
-        // the actual methods called during the harvest instead
-        expect(errorAggr.getTotalUnexpectedErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedWebTransactionsErrorCount()).equals(0)
-        expect(errorAggr.getUnexpectedOtherTransactionsErrorCount()).equals(0)
+        const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+        const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+        const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+        expect(transactionErrorMetric).to.not.exist
+
+        expect(allErrorMetric).to.not.exist
+        expect(webErrorMetric).to.not.exist
+        expect(otherErrorMetric).to.not.exist
       })
     })
   })

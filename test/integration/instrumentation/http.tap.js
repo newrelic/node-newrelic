@@ -236,7 +236,7 @@ test('built-in http instrumentation should not swallow errors', function(t) {
     http.get(options, function(res) {
       t.equal(res.statusCode, 501, 'should get expected (error) status code')
 
-      var errors = agent.errors.errors
+      var errors = agent.errors.traceAggregator.errors
       t.ok(errors, 'should find error')
       t.equal(errors.length, 2, 'should be 2 errors')
 

@@ -1,32 +1,27 @@
 'use strict'
 
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
+var test    = require('tap').test
+var request = require('request').defaults({json: true})
+var helper  = require('../../../lib/agent_helper')
+var API     = require('../../../../api')
 
 
-test("ignoring an Express route", function(t) {
+test("Restify router introspection", function(t) {
   t.plan(7)
 
-  const agent = helper.instrumentMockedAgent()
+  const agent  = helper.instrumentMockedAgent()
+  const api    = new API(agent)
+  const server = require('restify').createServer()
 
-  var api = new API(agent)
-  var express = require('express')
-  var app = express()
-  var server = require('http').createServer(app)
-
-
-  t.tearDown(function cb_tearDown() {
-    server.close(function cb_close() {
+  t.tearDown(function() {
+    server.close(function() {
       helper.unloadAgent(agent)
     })
   })
 
   agent.on('transactionFinished', function(transaction) {
     t.equal(
-      transaction.name,
-      'WebTransaction/Expressjs/GET//polling/:id',
+      transaction.name, 'WebTransaction/Restify/GET//polling/:id',
       "transaction has expected name even on error"
     )
 
@@ -43,17 +38,17 @@ test("ignoring an Express route", function(t) {
     t.equal(errors.length, 0, "no errors noticed")
   })
 
-  app.get('/polling/:id', function(req, res) {
+  server.get('/polling/:id', function(req, res, next) {
     api.setIgnoreTransaction(true)
 
-    res.status(400).send({status : 'pollpollpoll'})
-    res.end()
+    res.send(400, {status : 'pollpollpoll'})
+    next()
   })
 
   server.listen(0, function() {
     var port = server.address().port
     var url = 'http://localhost:' + port + '/polling/31337'
-    request.get(url, {json : true}, function(error, res, body) {
+    request.get(url, function(error, res, body) {
       t.equal(res.statusCode, 400, "got expected error")
       t.deepEqual(body, {status : 'pollpollpoll'}, "got expected response")
     })

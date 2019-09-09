@@ -378,7 +378,7 @@ describe('built-in http module instrumentation', function() {
       it('should trace errors in top-level handlers', function(done) {
         var server
         process.once('uncaughtException', function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           expect(errors).to.have.property('length', 1)
 
           server.close()
@@ -401,7 +401,7 @@ describe('built-in http module instrumentation', function() {
       it('should trace errors in listeners', function(done) {
         var server
         process.once('uncaughtException', function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           expect(errors.length).equal(1)
 
           server.close()

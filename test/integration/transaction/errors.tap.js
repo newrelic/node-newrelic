@@ -31,7 +31,7 @@ test('errors in web transactions should gather the query params', function(t) {
   })
 
   agent.on('transactionFinished', function() {
-    var error = agent.errors.errors[0]
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
     t.equal(error[3], 'Error', 'should have gathered the type of the error')
@@ -111,7 +111,7 @@ test('multiple errors in web transactions should gather the query params', funct
   })
 
   agent.on('transactionFinished', function() {
-    agent.errors.errors.forEach(function(error) {
+    agent.errors.traceAggregator.errors.forEach(function(error) {
       t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
       t.notEqual(names.indexOf(error[2]), -1, 'should have gathered the errors message')
@@ -198,7 +198,7 @@ test('errors in web transactions should gather and merge custom params', functio
   })
 
   agent.on('transactionFinished', function() {
-    var error = agent.errors.errors[0]
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
     t.equal(error[3], 'Error', 'should have gathered the type of the error')
@@ -294,7 +294,7 @@ test('multiple errors in web tx should gather and merge custom params', function
   })
 
   agent.on('transactionFinished', function() {
-    agent.errors.errors.forEach(function(error) {
+    agent.errors.traceAggregator.errors.forEach(function(error) {
       var expectedParams
       if (errorData[0].name && errorData[0].name === error[2]) {
         expectedParams = errorData[0].customParams
@@ -358,7 +358,7 @@ test('errors in background transactions are collected with correct data', functi
   agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function() {
-    var error = agent.errors.errors[0]
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
     t.equal(error[3], 'Error', 'should have gathered the type of the error')

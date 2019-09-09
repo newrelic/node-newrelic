@@ -85,10 +85,12 @@ const commands = {
 }
 
 function sendErrors() {
-  process.send({
-    count: newrelic.agent.errors.errorCount,
-    messages: newrelic.agent.errors.errors.map(function(e) { return e[2] })
-  })
+  const errData = {
+    count: newrelic.agent.errors.traceAggregator.errors.length,
+    messages: newrelic.agent.errors.traceAggregator.errors.map((e) => { return e[2] })
+  }
+
+  process.send(errData)
 }
 
 process.on('message', function(msg) {

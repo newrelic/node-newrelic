@@ -48,7 +48,7 @@ describe('Error events', function() {
         var error = new Error('some error')
         tx.addException(error, {}, 0)
         tx.end()
-        const attributes = agent.errors.getEvents()[0][0]
+        const attributes = agent.errors.eventAggregator.getEvents()[0][0]
         expect(attributes.type).to.equal('TransactionError')
         expect(attributes.traceId).to.equal(tx.id)
         expect(attributes.guid).to.equal(tx.id)
@@ -72,7 +72,7 @@ describe('Error events', function() {
         var error = new Error('some error')
         tx.addException(error, {}, 0)
         tx.end()
-        const attributes = agent.errors.getEvents()[0][0]
+        const attributes = agent.errors.eventAggregator.getEvents()[0][0]
         expect(attributes.type).to.equal('TransactionError')
         expect(attributes.traceId).to.equal(tx.id)
         expect(attributes.guid).to.equal(tx.id)

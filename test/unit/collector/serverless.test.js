@@ -73,10 +73,10 @@ describe('ServerlessCollector API', () => {
     })
   })
 
-  describe('#errorData', () => {
+  describe('#error_data', () => {
     it('adds error_data to the payload object', (done) => {
       const errorData = {type: 'error_data'}
-      api.errorData(errorData, () => {
+      api.error_data(errorData, () => {
         expect(api.payload.error_data).to.deep.equal(errorData)
         done()
       })
@@ -147,10 +147,10 @@ describe('ServerlessCollector API', () => {
     })
   })
 
-  describe('#errorEvents', () => {
+  describe('#error_event_data', () => {
     it('adds error_event_data to the payload object', (done) => {
       const errorEvents = {type: 'error_event_data'}
-      api.errorEvents(errorEvents, () => {
+      api.error_event_data(errorEvents, () => {
         expect(api.payload.error_event_data).to.deep.equal(errorEvents)
         done()
       })
