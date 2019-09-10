@@ -1,6 +1,6 @@
 'use strict'
 
-const helper = require('../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 const tap = require('tap')
 const semver = require('semver')
 

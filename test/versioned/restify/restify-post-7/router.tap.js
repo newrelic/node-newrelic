@@ -2,7 +2,7 @@
 
 var tap = require('tap')
 var request = require('request').defaults({json: true})
-var helper  = require('../../lib/agent_helper')
+var helper  = require('../../../lib/agent_helper')
 
 
 tap.test('Restify router', function(t) {
@@ -71,19 +71,63 @@ tap.test('Restify router', function(t) {
     _listenAndRequest(t, '/test/31337')
   })
 
-  t.test('next(true): continue processing', function(t) {
-    t.plan(6)
+  t.test('trailing slash differentiates routes (without slash)', function(t) {
+    t.plan(3)
+
+    server.get('/path1/', function first(req, res, next) {
+      t.fail('should not enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+    server.get('/path1', function first(req, res, next) {
+      t.ok(agent.getTransaction(),'should enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+
+    _listenAndRequest(t, '/path1')
+  })
+
+  t.test('trailing slash differentiates routes (with slash)', function(t) {
+    t.plan(3)
+
+    server.get('/path1/', function first(req, res, next) {
+      t.ok(agent.getTransaction(), 'should enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+    server.get('/path1', function first(req, res, next) {
+      t.fail('should not enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+
+    _listenAndRequest(t, '/path1/')
+  })
+
+  t.test('ignoreTrailingSlash option should ignore trailing slash', function(t) {
+    t.plan(3)
+
+    server = require('restify').createServer({ignoreTrailingSlash: true})
+
+    server.get('/path1/', function first(req, res, next) {
+      t.ok(agent.getTransaction(), 'should enter this route')
+      res.send({status: 'ok'})
+      next()
+    })
+
+    _listenAndRequest(t, '/path1')
+  })
+
+  t.test('next(true): terminates processing', function(t) {
+    t.plan(4)
 
     server.get('/test/:id', function first(req, res, next) {
       t.ok(agent.getTransaction(), 'transaction should be available')
-      next(true)
-    }, function second(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available')
-      next(true)
-    }, function final(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available')
       res.send({status: 'ok'})
-      next()
+      next(true)
+    }, function second() {
+      t.fail('should not enter this final middleware')
     })
 
     agent.on('transactionFinished', function(tx) {
@@ -140,8 +184,8 @@ tap.test('Restify router', function(t) {
       var url = 'http://localhost:' + port + route
       request.get(url, function(error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status : 'ok'}, 'got expected respose')
+        t.deepEqual(body, {status : 'ok'}, 'got expected response')
       })
     })
-  }
+  } 
 })

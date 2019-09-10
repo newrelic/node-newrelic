@@ -91,20 +91,6 @@ describe('Agent harvests', () => {
   })
 
   describe('sending to metric_data endpoint', () => {
-    it('should be the only endpoint hit for an empty harvest', (done) => {
-      // Triggering a harvest causes supportability metrics to be generated for
-      // how many custom, transaction, and error events were seen during the
-      // harvest period.
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-        done()
-      })
-    })
-
     it('should send when there are metrics', (done) => {
       let body = null
       const harvest = nock(URL)
@@ -277,97 +263,6 @@ describe('Agent harvests', () => {
     })
   })
 
-  describe('sending to custom_event_data endpoint', () => {
-    beforeEach(() => {
-      agent.customEvents.add([
-        {type: 'MyCustomEvent', timestamp: Date.now()},
-        {foo: 'bar'}
-      ], 42)
-    })
-
-    it('should send when there is an event', (done) => {
-      let eventsBody = null
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-      harvest
-        .post(ENDPOINTS.CUSTOM_EVENTS, (b) => eventsBody = b)
-        .reply(200, EMPTY_RESPONSE)
-
-      expect(agent.customEvents).to.have.length(1)
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-
-        expect(eventsBody).to.be.an.instanceOf(Array).of.length(2)
-        expect(eventsBody[0]).to.equal(RUN_ID)
-        expect(eventsBody[1]).to.be.an.instanceOf(Array).of.length(1)
-
-        const event = eventsBody[1][0]
-        expect(event).to.be.an.instanceOf(Array).of.length(2)
-        expect(event[0]).to.have.property('type', 'MyCustomEvent')
-        expect(event[0]).to.have.property('timestamp').closeTo(Date.now(), 100)
-        expect(event[1]).to.deep.equal({foo: 'bar'})
-
-        done()
-      })
-
-      expect(agent.customEvents).to.have.length(0)
-    })
-
-    it('should not send if `custom_insights_events.enabled` is false', (done) => {
-      agent.config.custom_insights_events.enabled = false
-
-      expect(agent.customEvents).to.have.length(1)
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-
-        expect(agent.customEvents).to.have.length(0)
-
-        done()
-      })
-
-      expect(agent.customEvents).to.have.length(0)
-    })
-
-    it('should put data back on failure', (done) => {
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.CUSTOM_EVENTS).reply(500, EMPTY_RESPONSE)
-
-      expect(agent.customEvents).to.have.length(1)
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-        expect(agent.customEvents).to.have.length(1)
-
-        done()
-      })
-
-      expect(agent.customEvents).to.have.length(0)
-    })
-
-    it('should not put data back on 413', (done) => {
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-      harvest.post(ENDPOINTS.CUSTOM_EVENTS).reply(413, EMPTY_RESPONSE)
-
-      expect(agent.customEvents).to.have.length(1)
-
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-        expect(agent.customEvents).to.have.length(0)
-
-        done()
-      })
-
-      expect(agent.customEvents).to.have.length(0)
-    })
-  })
-
   describe('sending to sql_trace_data endpoint', () => {
     let tx = null
 
@@ -505,14 +400,10 @@ describe('Agent harvests', () => {
     it('should not send if `span_events.enabled` is false', (done) => {
       agent.config.span_events.enabled = false
 
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-
       expect(agent.spans).to.have.length(1)
 
       agent.harvest((err) => {
         expect(err).to.not.exist
-        harvest.done()
         expect(agent.spans).to.have.length(0)
 
         done()
@@ -524,14 +415,10 @@ describe('Agent harvests', () => {
     it('should not send if `distributed_tracing` is false', (done) => {
       agent.config.distributed_tracing.enabled = false
 
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-
       expect(agent.spans).to.have.length(1)
 
       agent.harvest((err) => {
         expect(err).to.not.exist
-        harvest.done()
         expect(agent.spans).to.have.length(0)
 
         done()

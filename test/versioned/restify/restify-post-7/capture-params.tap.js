@@ -1,10 +1,10 @@
 'use strict'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var test    = require('tap').test
 var request = require('request').defaults({json: true})
-var helper  = require('../../lib/agent_helper')
-var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
+var helper  = require('../../../lib/agent_helper')
+var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 
 test("Restify capture params introspection", function(t) {

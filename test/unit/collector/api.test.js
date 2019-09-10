@@ -551,7 +551,9 @@ describe('CollectorAPI', function() {
         agent.config.api.custom_events_enabled = true
 
         agent.queries = 'will be overwritten'
-        agent.customEvents = 'will be overwritten'
+
+        agent.customEventAggregator.add(['will be overwritten'])
+        expect(agent.customEventAggregator.length).to.equal(1)
 
         var valid = {
           agent_run_id: RUN_ID,
@@ -574,7 +576,8 @@ describe('CollectorAPI', function() {
         api.connect(function test(error, res) {
           expect(res).property('payload').to.deep.equal(valid)
           expect(agent.queries).to.not.equal('will be overwritten')
-          expect(agent.customEvents).to.not.equal('will be overwritten')
+
+          expect(agent.customEventAggregator.length).to.equal(0)
 
           redirection.done()
           connection.done()
@@ -1070,11 +1073,11 @@ describe('CollectorAPI', function() {
 
       before(function(done) {
         api._agent.config.run_id = RUN_ID
-        var shutdown = nock(URL)
+        var endpoint = nock(URL)
           .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
           .reply(200, response)
 
-        var errors = [
+        var transactionEvents = [
           RUN_ID,
           [{
             'webDuration': 1.0,
@@ -1088,11 +1091,11 @@ describe('CollectorAPI', function() {
           }]
         ]
 
-        api.analytic_event_data(errors, function test(error, res) {
+        api.analytic_event_data(transactionEvents, function test(error, res) {
           bad = error
           command = res
 
-          shutdown.done()
+          endpoint.done()
           done()
         })
       })
