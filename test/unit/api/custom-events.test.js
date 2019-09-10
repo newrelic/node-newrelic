@@ -5,13 +5,18 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper.js')
 var API    = require('../../../api.js')
 
+const MAX_CUSTOM_EVENTS = 2
 
 describe('The custom events API', function() {
   var agent
   var api
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    agent = helper.loadMockedAgent({
+      custom_insights_events: {
+        max_samples_stored: MAX_CUSTOM_EVENTS
+      }
+    })
     api = new API(agent)
   })
 
@@ -40,13 +45,13 @@ describe('The custom events API', function() {
   it('does not collect events when high security mode is on', function() {
     agent.config.high_security = true
     api.recordCustomEvent('EventName', {key: 'value'})
-    expect(agent.customEvents.toArray().length).to.equal(0)
+    expect(getCustomEvents(agent).length).to.equal(0)
   })
 
   it('does not collect events when the endpoint is disabled in the config', function() {
     agent.config.api.custom_events_enabled = false
     api.recordCustomEvent('EventName', {key: 'value'})
-    expect(agent.customEvents.toArray().length).to.equal(0)
+    expect(getCustomEvents(agent).length).to.equal(0)
   })
 
   it('creates the proper intrinsic values when recorded', function() {
@@ -103,11 +108,10 @@ describe('The custom events API', function() {
   })
 
   it('should sample after the limit of events', function() {
-    agent.customEvents.limit = 2
     api.recordCustomEvent('MaybeBumped', {a: 1})
     api.recordCustomEvent('MaybeBumped', {b: 2})
     api.recordCustomEvent('MaybeBumped', {c: 3})
-    expect(agent.customEvents.toArray()).to.have.length(2)
+    expect(getCustomEvents(agent)).to.have.length(MAX_CUSTOM_EVENTS)
   })
 
   it('should not throw an exception with too few arguments', function() {
@@ -186,5 +190,9 @@ describe('The custom events API', function() {
 })
 
 function popTopCustomEvent(agent) {
-  return agent.customEvents.toArray().pop()
+  return getCustomEvents(agent).pop()
+}
+
+function getCustomEvents(agent) {
+  return agent.customEventAggregator.events.toArray()
 }
