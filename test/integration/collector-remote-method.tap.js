@@ -76,7 +76,7 @@ tap.test('remote method to preconnect', (t) => {
   function createRemoteMethod() {
     const config = {
       host: 'ssl.lvh.me',
-      port: 8765,
+      port: 9876,
       ssl: true,
       max_payload_size_in_bytes: 1000000
     }
@@ -90,15 +90,16 @@ tap.test('remote method to preconnect', (t) => {
   }
 
   function startMockCollector(t, startedCallback) {
+    const port = 9876
     const opts = {
-      port: 8765
+      port: port
     }
 
     opts.key = read(join(__dirname, '../lib/test-key.key'))
     opts.cert = read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
     const server = https.createServer(opts, responder)
 
-    server.listen(8765, (err) => {
+    server.listen(port, (err) => {
       startedCallback(err, this)
     })
 
