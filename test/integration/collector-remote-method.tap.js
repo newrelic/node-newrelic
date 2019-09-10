@@ -24,6 +24,9 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const method = new RemoteMethod('preconnect', config)
 
   collector({port: 8765}, (error, server) => {
+    // set a reasonable server timeout for cleanup
+    // of the server's keep-alive connections
+    server.server.setTimeout(5000)
     if (error) {
       t.fail(error)
       return t.end()
@@ -98,6 +101,10 @@ tap.test('remote method to preconnect', (t) => {
     opts.key = read(join(__dirname, '../lib/test-key.key'))
     opts.cert = read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
     const server = https.createServer(opts, responder)
+
+    // set a reasonable server timeout for cleanup
+    // of the server's keep-alive connections
+    server.setTimeout(5000);
 
     server.listen(port, (err) => {
       startedCallback(err, this)
