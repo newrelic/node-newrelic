@@ -1,20 +1,9 @@
 'use strict'
 
-const net = require('net')
 const tap = require('tap')
-const join = require('path').join
-const https = require('https')
-const proxySetup = require('@newrelic/proxy')
-const read = require('fs').readFileSync
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
-
-let port = 0
-const SSL_CONFIG = {
-  key: read(join(__dirname, '../lib/test-key.key')),
-  cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
-}
 
 tap.test('no proxy set should not use proxy agent', (t) => {
   const config = configurator.initialize({

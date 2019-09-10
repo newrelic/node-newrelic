@@ -1,6 +1,5 @@
 'use strict'
 
-const net = require('net')
 const tap = require('tap')
 const join = require('path').join
 const https = require('https')
