@@ -4,6 +4,8 @@ const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
+const sinon = require('sinon')
+const logger = require('../../../lib/logger')
 
 const RUN_ID = 1337
 const LIMIT = 1000
@@ -48,10 +50,10 @@ describe('SpanAggregator', () => {
         expect(event).to.have.property('intrinsics')
         expect(event.intrinsics).to.have.property('name', segment.name)
         expect(event.intrinsics).to.have.property('parentId', 'p')
-
+        console.log(spanEventAggregator._metrics) // need to test metric counter?
         done()
       }, 10)
-    })    
+    })
   })
 
   it('should default the parent id', (done) => {
@@ -121,9 +123,6 @@ describe('SpanAggregator', () => {
   })
 
   it('toPayload() should return json format of data', (done) => {
-    const rawEvent = [{type: 'Span'}, {stuff: 'stuff'}]
-    void rawEvent
-
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 1
       tx.sample = true
@@ -151,5 +150,47 @@ describe('SpanAggregator', () => {
         done()
       }, 10)
     })
+  })
+
+  it('should log span trace data when traceEnabled', () => {
+    let ct = 0
+    const fakeLogger = {
+      traceEnabled: () => true,
+      trace: () => ++ct,
+      debug: () => {}
+    }
+
+    sinon.stub(logger, 'child').callsFake(() => fakeLogger)
+
+    const spanEventAgg = new SpanEventAggregator({
+      runId: RUN_ID,
+      limit: LIMIT
+    }, {}, new Metrics(5, {}, {}))
+
+    spanEventAgg.send()
+    logger.child.restore()
+
+    expect(ct).to.equal(1)
+  })
+
+  it('should not log span trace data when !traceEnabled', () => {
+    let ct = 0
+    const fakeLogger = {
+      traceEnabled: () => false,
+      trace: () => ++ct,
+      debug: () => {}
+    }
+
+    sinon.stub(logger, 'child').callsFake(() => fakeLogger)
+
+    const spanEventAgg = new SpanEventAggregator({
+      runId: RUN_ID,
+      limit: LIMIT
+    }, {}, new Metrics(5, {}, {}))
+
+    spanEventAgg.send()
+    logger.child.restore()
+
+    expect(ct).to.equal(0)
   })
 })

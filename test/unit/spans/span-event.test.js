@@ -220,5 +220,33 @@ describe('SpanEvent', () => {
         })
       })
     })
+
+    it('should serialize intrinsics to proper format with toJSON method',
+      (done) => {
+        helper.runInTransaction(agent, (tx) => {
+          tx.priority = 42
+          tx.sample = true
+    
+          setTimeout(() => {
+            const seg = agent.tracer.getSegment()
+            const span = SpanEvent.fromSegment(seg, 'parent')
+            
+            const payload = span.toJSON()
+
+            expect(payload[0]).to.have.property('type', 'Span')
+            expect(payload[0]).to.have.property('traceId', tx.id)
+            expect(payload[0]).to.have.property('guid', seg.id)
+            expect(payload[0]).to.have.property('parentId', 'parent')
+            expect(payload[0]).to.have.property('transactionId', tx.id)
+            expect(payload[0]).to.have.property('priority', 42)
+            expect(payload[0]).to.have.property('name')
+            expect(payload[0]).to.have.property('category', 'generic')
+            expect(payload[0]).to.have.property('timestamp')
+            expect(payload[0]).to.have.property('duration')
+
+            done()
+          }, 10)
+        })
+      })
   })
 })
