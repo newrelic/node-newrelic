@@ -21,6 +21,10 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
   })
   server.keepAliveTimeout = 2000
 
+  // set a reasonable server timeout for cleanup
+  // of the server's keep-alive connections
+  server.setTimeout(5000)
+
   // close server when test ends
   t.tearDown(() => {
     server.close()
