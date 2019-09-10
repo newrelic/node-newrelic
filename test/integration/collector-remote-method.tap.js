@@ -104,7 +104,7 @@ tap.test('remote method to preconnect', (t) => {
 
     // set a reasonable server timeout for cleanup
     // of the server's keep-alive connections
-    server.setTimeout(5000);
+    server.setTimeout(5000)
 
     server.listen(port, (err) => {
       startedCallback(err, this)
