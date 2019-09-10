@@ -8,7 +8,18 @@
         "node": ">=6"
       },
       "dependencies": {
-        "aws-sdk": ">=2.300.0"
+        "aws-sdk": ">=2.300.0 < 2.525.0"
+      },
+      "files": [
+        "aws-sdk.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=6"
+      },
+      "dependencies": {
+        "aws-sdk": ">2.525.0"
       },
       "files": [
         "aws-sdk.tap.js"
