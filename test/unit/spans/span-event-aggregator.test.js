@@ -50,7 +50,7 @@ describe('SpanAggregator', () => {
         expect(event).to.have.property('intrinsics')
         expect(event.intrinsics).to.have.property('name', segment.name)
         expect(event.intrinsics).to.have.property('parentId', 'p')
-        console.log(spanEventAggregator._metrics) // need to test metric counter?
+
         done()
       }, 10)
     })
