@@ -7,13 +7,19 @@ var Transaction = require('../../lib/transaction')
 var DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
 var expect = chai.expect
 
+const LIMIT = 10
 
 describe('Analytics events', function() {
   var agent = null
   var trans = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    agent = helper.loadMockedAgent({
+      transaction_events: {
+        max_samples_per_minute: LIMIT,
+        max_samples_stored: LIMIT
+      }
+    })
     agent.config.attributes.enabled = true
   })
 
@@ -32,7 +38,10 @@ describe('Analytics events', function() {
 
       var first = 0
       var agentAttrs = 2
-      expect(agent.events.toArray()[first][agentAttrs]).to.have.property('test', 'TEST')
+
+      const events = getTransactionEvents(agent)
+      const firstEvent = events[first]
+      expect(firstEvent[agentAttrs]).to.have.property('test', 'TEST')
     })
   })
 
@@ -47,7 +56,10 @@ describe('Analytics events', function() {
 
       var first = 0
       var agentAttrs = 2
-      expect(agent.events.toArray()[first][agentAttrs]).deep.equals({
+
+      const events = getTransactionEvents(agent)
+      const firstEvent = events[first]
+      expect(firstEvent[agentAttrs]).deep.equals({
         'host.displayName': 'test-value'
       })
     })
@@ -89,9 +101,12 @@ describe('Analytics events', function() {
 
     it('should generate an event from transaction', function() {
       trans.end()
-      expect(agent.events.toArray().length).to.equal(1)
 
-      var event = agent.events.toArray()[0]
+      const events = getTransactionEvents(agent)
+
+      expect(events.length).to.equal(1)
+
+      var event = events[0]
       expect(event).to.be.a('Array')
       var eventValues = event[0]
       expect(eventValues).to.be.a('object')
@@ -108,9 +123,11 @@ describe('Analytics events', function() {
     it('should flag errored transactions', function() {
       trans.addException(new Error('wuh oh'))
       trans.end()
-      expect(agent.events.toArray().length).to.equal(1)
 
-      var event = agent.events.toArray()[0]
+      const events = getTransactionEvents(agent)
+      expect(events.length).to.equal(1)
+
+      var event = events[0]
       expect(event).to.be.a('Array')
       var eventValues = event[0]
       expect(eventValues).to.be.a('object')
@@ -133,9 +150,12 @@ describe('Analytics events', function() {
       trans.isDistributedTrace = null
       trans.acceptDistributedTracePayload(payload)
       trans.end()
-      expect(agent.events.toArray().length).to.equal(1)
 
-      var attributes = agent.events.toArray()[0][0]
+      const events = getTransactionEvents(agent)
+
+      expect(events.length).to.equal(1)
+
+      var attributes = events[0][0]
       expect(attributes.traceId).to.equal(trans.id)
       expect(attributes.guid).to.equal(trans.id)
       expect(attributes.priority).to.equal(trans.priority)
@@ -153,9 +173,12 @@ describe('Analytics events', function() {
       agent.config.distributed_tracing.enabled = true
       trans = new Transaction(agent)
       trans.end()
-      expect(agent.events.toArray().length).to.equal(1)
 
-      var attributes = agent.events.toArray()[0][0]
+      const events = getTransactionEvents(agent)
+
+      expect(events.length).to.equal(1)
+
+      var attributes = events[0][0]
       expect(attributes.traceId).to.equal(trans.id)
       expect(attributes.guid).to.equal(trans.id)
       expect(attributes.priority).to.equal(trans.priority)
@@ -167,9 +190,12 @@ describe('Analytics events', function() {
 
     it('should contain user and agent attributes', function() {
       trans.end()
-      expect(agent.events.toArray().length).to.equal(1)
 
-      var event = agent.events.toArray()[0]
+      const events = getTransactionEvents(agent)
+
+      expect(events.length).to.equal(1)
+
+      var event = events[0]
       expect(event[0]).to.be.an('Object')
       expect(event[1]).to.be.an('Object')
       expect(event[2]).to.be.an('Object')
@@ -178,7 +204,9 @@ describe('Analytics events', function() {
     it('should contain custom attributes', function() {
       trans.trace.addCustomAttribute('a', 'b')
       trans.end()
-      var event = agent.events.toArray()[0]
+
+      const events = getTransactionEvents(agent)
+      var event = events[0]
       expect(event[1].a).to.equal('b')
     })
 
@@ -192,7 +220,9 @@ describe('Analytics events', function() {
       }
 
       trans.end()
-      var event = agent.events.toArray()[0]
+
+      const events = getTransactionEvents(agent)
+      var event = events[0]
       var attributes = event[0]
       expect(attributes['nr.syntheticsResourceId']).equal('resId')
       expect(attributes['nr.syntheticsJobId']).equal('jobId')
@@ -200,13 +230,15 @@ describe('Analytics events', function() {
     })
 
     it('not spill over reservoir size', function() {
-      agent.events.limit = 10
-
       for (var i = 0; i < 20; i++) {
         agent._addEventFromTransaction(trans)
       }
 
-      expect(agent.events.toArray().length).equals(10)
+      expect(getTransactionEvents(agent).length).equals(LIMIT)
     })
   })
 })
+
+function getTransactionEvents(agent) {
+  return agent.transactionEventAggregator.getEvents()
+}

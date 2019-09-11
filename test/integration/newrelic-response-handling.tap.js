@@ -21,7 +21,7 @@ const endpointDataChecks = {
     return (agent.errors.traceAggregator.errors.length > 0)
   },
   analytic_event_data: function hasTransactionEventData(agent) {
-    return (agent.events.length > 0)
+    return (agent.transactionEventAggregator.length > 0)
   },
   transaction_sample_data: function hasTransactionTraceData(agent) {
     return !!agent.traces.trace
@@ -166,6 +166,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.errors.eventAggregator)
           } else if (endpointName === 'transaction_sample_data') {
             aggregatorCheckOnEnd(agent.traces)
+          } else if (endpointName === 'analytic_event_data') {
+            aggregatorCheckOnEnd(agent.transactionEventAggregator)
           } else if (endpointName === 'custom_event_data') {
             aggregatorCheckOnEnd(agent.customEventAggregator)
           } else {
