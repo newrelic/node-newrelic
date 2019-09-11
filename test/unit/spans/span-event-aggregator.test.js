@@ -79,11 +79,20 @@ describe('SpanAggregator', () => {
     })
   })
   
-  it('should indicate if the segment is accepted', (done) => {
+  it.only('should indicate if the segment is accepted', (done) => {
+    const METRIC_NAMES = {
+      SEEN: '/SEEN',
+      SENT: '/SENT',
+      DROPPED: '/DROPPED'
+    }
+
+    const metrics = new Metrics(5, {}, {})
+
     spanEventAggregator = new SpanEventAggregator({
       runId: RUN_ID,
-      limit: 1
-    }, {}, new Metrics(5, {}, {}))
+      limit: 1,
+      metricNames: METRIC_NAMES
+    }, {}, metrics)
 
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
@@ -113,6 +122,10 @@ describe('SpanAggregator', () => {
         expect(spanEventAggregator).to.have.length(1)
         expect(spanEventAggregator).to.have.property('seen', 3)
         const event2 = spanEventAggregator.getEvents()[0]
+
+        const metric = metrics.getMetric(METRIC_NAMES.SEEN)
+
+        expect(metric.callCount).to.equal(3)
 
         // Shouldn't change the event in the aggregator.
         expect(event1).to.equal(event2)
