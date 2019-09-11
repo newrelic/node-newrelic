@@ -1052,7 +1052,7 @@ describe('CollectorAPI', function() {
 
   describe('analyticsEvents', function() {
     it('requires errors to send', (done) => {
-      api.analyticsEvents(null, (err) => {
+      api.analytic_event_data(null, (err) => {
         expect(err)
           .to.be.an.instanceOf(Error)
           .and.have.property('message', 'must pass events to send')
@@ -1061,7 +1061,7 @@ describe('CollectorAPI', function() {
     })
 
     it('requires a callback', function() {
-      expect(function() { api.analyticsEvents([], null) })
+      expect(function() { api.analytic_event_data([], null) })
         .to.throw('callback is required')
     })
 
@@ -1073,11 +1073,11 @@ describe('CollectorAPI', function() {
 
       before(function(done) {
         api._agent.config.run_id = RUN_ID
-        var shutdown = nock(URL)
+        var endpoint = nock(URL)
           .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
           .reply(200, response)
 
-        var errors = [
+        var transactionEvents = [
           RUN_ID,
           [{
             'webDuration': 1.0,
@@ -1091,11 +1091,11 @@ describe('CollectorAPI', function() {
           }]
         ]
 
-        api.analyticsEvents(errors, function test(error, res) {
+        api.analytic_event_data(transactionEvents, function test(error, res) {
           bad = error
           command = res
 
-          shutdown.done()
+          endpoint.done()
           done()
         })
       })
@@ -1108,8 +1108,8 @@ describe('CollectorAPI', function() {
         should.not.exist(bad)
       })
 
-      it('should return empty data array', function() {
-        expect(command).to.have.property('payload').eql([])
+      it('should return retain state', function() {
+        expect(command).to.have.property('retainData').eql(false)
       })
     })
   })

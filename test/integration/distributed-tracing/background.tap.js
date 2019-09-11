@@ -117,7 +117,7 @@ tap.test('background transactions should not blow up with DT', (t) => {
   ]
   let count = 0
   agent.on('transactionFinished', function(trans) {
-    const event = agent.events.toArray().filter(function(evt) {
+    const event = agent.transactionEventAggregator.getEvents().filter(function(evt) {
       return evt[0].guid === trans.id
     })[0]
     finishedHandlers[count](trans, event)
