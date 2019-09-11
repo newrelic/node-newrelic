@@ -79,7 +79,7 @@ describe('SpanAggregator', () => {
     })
   })
   
-  it.only('should indicate if the segment is accepted', (done) => {
+  it('should indicate if the segment is accepted', (done) => {
     const METRIC_NAMES = {
       SEEN: '/SEEN',
       SENT: '/SENT',

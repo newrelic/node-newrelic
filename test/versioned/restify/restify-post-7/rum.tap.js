@@ -2,8 +2,8 @@
 
 var tap    = require('tap')
 var request = require('request').defaults({json: true})
-var helper  = require('../../lib/agent_helper')
-var API     = require('../../../api')
+var helper  = require('../../../lib/agent_helper')
+var API     = require('../../../../api')
 
 
 tap.test("Restify router introspection", function(t) {

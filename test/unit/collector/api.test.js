@@ -551,7 +551,9 @@ describe('CollectorAPI', function() {
         agent.config.api.custom_events_enabled = true
 
         agent.queries = 'will be overwritten'
-        agent.customEvents = 'will be overwritten'
+
+        agent.customEventAggregator.add(['will be overwritten'])
+        expect(agent.customEventAggregator.length).to.equal(1)
 
         var valid = {
           agent_run_id: RUN_ID,
@@ -574,7 +576,8 @@ describe('CollectorAPI', function() {
         api.connect(function test(error, res) {
           expect(res).property('payload').to.deep.equal(valid)
           expect(agent.queries).to.not.equal('will be overwritten')
-          expect(agent.customEvents).to.not.equal('will be overwritten')
+
+          expect(agent.customEventAggregator.length).to.equal(0)
 
           redirection.done()
           connection.done()

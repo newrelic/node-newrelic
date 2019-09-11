@@ -33,15 +33,16 @@ matrix:
       env: SUITE=security
     - node_js: "9"
       env: SUITE=lint
-addons:
-  postgresql: "9.3"
 services:
   - memcached
   - mysql
   - redis
-  - cassandra
   - postgresql
   - rabbitmq
+addons:
+  apt:
+    packages:
+      - rabbitmq-server
 before_install:
   - ./bin/travis-setup.sh
 install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
