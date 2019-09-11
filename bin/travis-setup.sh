@@ -25,6 +25,8 @@ else
 fi
 
 if [ "$SUITE" = "versioned" ]; then
+  echo " --- installing cassandra --- "
+  ./bin/cassandra-setup.sh
 
   # GCC 5 is the lowest version of GCC we can use.
   if [ "$(get_version gcc)" == "4" ]; then
