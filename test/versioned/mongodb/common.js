@@ -83,7 +83,10 @@ function getPort() {
 
 function checkMetrics(t, agent, host, port, metrics) {
   var unscopedMetrics = agent.metrics.unscoped
-  var unscopedNames = Object.keys(unscopedMetrics)
+  var unscopedDatastoreNames = Object.keys(unscopedMetrics).filter((input) => {
+    return input.includes('Datastore')
+  })
+
   var scoped = agent.metrics.scoped[TRANSACTION_NAME]
   var total = 0
 
@@ -124,7 +127,7 @@ function checkMetrics(t, agent, host, port, metrics) {
 
   var expectedUnscopedCount = 5 + (2 * metrics.length)
   t.equal(
-    unscopedNames.length, expectedUnscopedCount,
+    unscopedDatastoreNames.length, expectedUnscopedCount,
     'should have ' + expectedUnscopedCount + ' unscoped metrics'
   )
   var expectedUnscopedMetrics = [

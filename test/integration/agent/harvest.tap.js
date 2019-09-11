@@ -120,7 +120,11 @@ tap.test('Agent#harvest', (t) => {
       t.ok(spy.called, 'should send sample trace data')
 
       // Verify mapped headers are sent in traces POST
-      const tracesRequest = requestSpy.args[6][0]
+      const tracesRequestArg = requestSpy.args.filter((input) => {
+        return input[0].path.includes('transaction_sample_data')
+      })
+
+      const tracesRequest = tracesRequestArg[0][0]
       checkHeaders(t, headersMap, tracesRequest.headers)
 
       const payload = spy.args[0][0]

@@ -93,7 +93,7 @@ describe('distributed tracing', function() {
           var toCheck
           switch (type) {
             case 'Transaction':
-              toCheck = agent.events.toArray()
+              toCheck = agent.transactionEventAggregator.getEvents()
               break
             case 'TransactionError':
               toCheck = agent.errors.eventAggregator.getEvents()

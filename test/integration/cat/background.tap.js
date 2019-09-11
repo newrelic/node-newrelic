@@ -95,7 +95,7 @@ test('background transactions should not blow up with CAT', function(t) {
   ]
   var count = 0
   agent.on('transactionFinished', function(trans) {
-    var event = agent.events.toArray().filter(function(evt) {
+    var event = agent.transactionEventAggregator.getEvents().filter(function(evt) {
       return evt[0]['nr.guid'] === trans.id
     })[0]
     finishedHandlers[count](trans, event)
