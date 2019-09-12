@@ -180,7 +180,7 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySpanEvents(t, agent) {
-    const dbSpan = agent.spans.getEvents()
+    const dbSpan = agent.spanEventAggregator.getEvents()
       .find(span => span.intrinsics.name.startsWith('Datastore'))
     const attributes = dbSpan.attributes
 

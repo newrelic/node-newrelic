@@ -66,7 +66,7 @@ describe('Transaction', function() {
 
     it('should produce span events when finalizing', function(done) {
       agent.once('transactionFinished', function() {
-        expect(agent.spans.length).to.equal(1)
+        expect(agent.spanEventAggregator.length).to.equal(1)
 
         return done()
       })
@@ -80,7 +80,7 @@ describe('Transaction', function() {
 
     it('should not produce span events when ignored', function(done) {
       agent.once('transactionFinished', function() {
-        expect(agent.spans.length).to.equal(0)
+        expect(agent.spanEventAggregator.length).to.equal(0)
 
         return done()
       })
