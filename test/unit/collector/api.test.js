@@ -1175,24 +1175,23 @@ describe('CollectorAPI', function() {
     })
   })
 
-  describe('transactionSampleData', function() {
+  describe('transaction_sample_data', function() {
     it('requires slow trace data to send', (done) => {
-      api.transactionSampleData(null, (err) => {
+      api.transaction_sample_data(null, (err) => {
         expect(err)
           .to.be.an.instanceOf(Error)
-          .and.have.property('message', 'must pass slow trace data to send')
+          .and.have.property('message', 'must pass traces to send')
         done()
       })
     })
 
     it('requires a callback', function() {
-      expect(function() { api.transactionSampleData([], null) })
+      expect(function() { api.transaction_sample_data([], null) })
         .to.throw('callback is required')
     })
 
     describe('on the happy path', function() {
       let bad = null
-      let command = null
 
       var response = {return_value: []}
 
@@ -1205,9 +1204,8 @@ describe('CollectorAPI', function() {
         // imagine this is a serialized transaction trace
         var trace = []
 
-        api.transactionSampleData([trace], function test(error, res) {
+        api.transaction_sample_data([trace], function test(error) {
           bad = error
-          command = res
 
           shutdown.done()
           done()
@@ -1220,10 +1218,6 @@ describe('CollectorAPI', function() {
 
       it('should not error out', function() {
         should.not.exist(bad)
-      })
-
-      it('should return empty data array', function() {
-        expect(command).to.have.property('payload').eql([])
       })
     })
   })

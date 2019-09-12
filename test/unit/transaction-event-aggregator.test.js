@@ -49,7 +49,7 @@ describe('Transaction Event Aggregator', () => {
 
     eventAggregator.add(rawEvent)
 
-    const payload = eventAggregator.toPayload()
+    const payload = eventAggregator.toPayloadSync()
     expect(payload.length).to.equal(3)
 
     const [runId, eventMetrics, eventData] = payload

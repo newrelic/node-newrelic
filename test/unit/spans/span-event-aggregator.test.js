@@ -145,7 +145,7 @@ describe('SpanAggregator', () => {
 
         spanEventAggregator.addSegment(segment)
 
-        var payload = spanEventAggregator.toPayload()
+        var payload = spanEventAggregator.toPayloadSync()
 
         const [runId, metrics, events] = payload
 

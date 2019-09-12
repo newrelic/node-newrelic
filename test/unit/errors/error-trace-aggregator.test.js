@@ -46,11 +46,11 @@ describe('Error Trace Aggregator', () => {
     expect(rawErrorTrace).to.equal(firstError)
   })
 
-  it('toPayload() should return json format of data', () => {
+  it('toPayloadSync() should return json format of data', () => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
-    const payload = errorTraceAggregator.toPayload()
+    const payload = errorTraceAggregator.toPayloadSync()
     expect(payload.length).to.equal(2)
 
     const [runId, errorTraceData] = payload
@@ -58,6 +58,21 @@ describe('Error Trace Aggregator', () => {
 
     const expectedTraceData = [rawErrorTrace]
     expect(errorTraceData).to.deep.equal(expectedTraceData)
+  })
+
+  it('toPayload() should return json format of data', () => {
+    const rawErrorTrace = [0, 'name', 'message', 'type', {}]
+    errorTraceAggregator.add(rawErrorTrace)
+
+    errorTraceAggregator.toPayload((err, payload) => {
+      expect(payload.length).to.equal(2)
+
+      const [runId, errorTraceData] = payload
+      expect(runId).to.equal(RUN_ID)
+
+      const expectedTraceData = [rawErrorTrace]
+      expect(errorTraceData).to.deep.equal(expectedTraceData)
+    })
   })
 
   it('merge() should merge passed-in data in order', () => {

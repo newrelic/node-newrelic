@@ -29,12 +29,12 @@ describe('Custom Event Aggregator', () => {
     expect(method).to.equal(EXPECTED_METHOD)
   })
 
-  it('toPayload() should return json format of data', () => {
+  it('toPayloadSync() should return json format of data', () => {
     const rawEvent = [{type: 'Custom'}, {foo: 'bar'}]
 
     eventAggregator.add(rawEvent)
 
-    const payload = eventAggregator.toPayload()
+    const payload = eventAggregator.toPayloadSync()
     expect(payload.length).to.equal(2)
 
     const [runId, eventData] = payload

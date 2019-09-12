@@ -119,7 +119,8 @@ describe('Base Aggregator', () => {
   describe('send()', () => {
     it('should emit proper message with method for starting send', () => {
       baseAggregator.getData = () => null
-      baseAggregator.toPayload = () => null
+      baseAggregator.toPayloadSync = () => null
+      baseAggregator.clear = () => {}
 
       const expectedStartEmit = `starting ${METHOD} data send.`
 
@@ -140,7 +141,7 @@ describe('Base Aggregator', () => {
 
       // Pretend there's data to clear
       baseAggregator.getData = () => ['data']
-      baseAggregator.toPayload = () => ['data']
+      baseAggregator.toPayloadSync = () => ['data']
 
       baseAggregator.send()
 
@@ -155,7 +156,7 @@ describe('Base Aggregator', () => {
 
       // Pretend there's data to clear
       baseAggregator.getData = () => ['rawData']
-      baseAggregator.toPayload = () => expectedPayload
+      baseAggregator.toPayloadSync = () => expectedPayload
 
       let invokedPayload = null
 
@@ -172,7 +173,8 @@ describe('Base Aggregator', () => {
     it('should not call transport for no data', () => {
       // Pretend there's data to clear
       baseAggregator.getData = () => null
-      baseAggregator.toPayload = () => null
+      baseAggregator.toPayloadSync = () => null
+      baseAggregator.clear = () => {}
 
       let transportInvocations = 0
       fakeCollectorApi[METHOD] = () => {
@@ -192,7 +194,7 @@ describe('Base Aggregator', () => {
 
       // Pretend there's data to clear
       baseAggregator.getData = () => expectedData
-      baseAggregator.toPayload = () => ['payloadData']
+      baseAggregator.toPayloadSync = () => ['payloadData']
 
       let mergeData = null
       baseAggregator.merge = (data) => {
@@ -216,7 +218,61 @@ describe('Base Aggregator', () => {
 
       // Pretend there's data to clear
       baseAggregator.getData = () => expectedData
-      baseAggregator.toPayload = () => ['payloadData']
+      baseAggregator.toPayloadSync = () => ['payloadData']
+
+      let mergeInvocations = 0
+      baseAggregator.merge = () => {
+        mergeInvocations++
+      }
+
+      fakeCollectorApi[METHOD] = (payload, callback) => {
+        callback(null, { retainData: false})
+      }
+
+      baseAggregator.send()
+
+      expect(mergeInvocations).to.equal(0)
+    })
+
+    it('should default to the sync method in the async case with no override', () => {
+      // stub to allow invocation
+      baseAggregator.clear = () => {}
+
+      const expectedData = ['payloadData']
+
+      // Pretend there's data to clear
+      baseAggregator.getData = () => expectedData
+      baseAggregator.toPayloadSync = () => ['payloadData']
+
+      // Set the aggregator up as async
+      baseAggregator.isAsync = true
+
+      let mergeInvocations = 0
+      baseAggregator.merge = () => {
+        mergeInvocations++
+      }
+
+      fakeCollectorApi[METHOD] = (payload, callback) => {
+        callback(null, { retainData: false})
+      }
+
+      baseAggregator.send()
+
+      expect(mergeInvocations).to.equal(0)
+    })
+
+    it('should allow for async payload override', () => {
+      // stub to allow invocation
+      baseAggregator.clear = () => {}
+
+      const expectedData = ['payloadData']
+
+      // Pretend there's data to clear
+      baseAggregator.getData = () => expectedData
+      baseAggregator.toPayload = (cb) => cb(null, ['payloadData'])
+
+      // Set the aggregator up as async
+      baseAggregator.isAsync = true
 
       let mergeInvocations = 0
       baseAggregator.merge = () => {
@@ -236,7 +292,7 @@ describe('Base Aggregator', () => {
       // stub to allow invocation
       baseAggregator.clear = () => {}
       baseAggregator.getData = () => ['data']
-      baseAggregator.toPayload = () => ['data']
+      baseAggregator.toPayloadSync = () => ['data']
 
       const expectedStartEmit = `finished ${METHOD} data send.`
 

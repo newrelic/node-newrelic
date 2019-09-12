@@ -21,7 +21,7 @@ describe('errors', function() {
     var error = new Error('test')
     error.stack = 'test stack'
     agent.errors.add(null, error)
-    var payload = agent.errors.traceAggregator.toPayload()
+    var payload = agent.errors.traceAggregator.toPayloadSync()
     RemoteMethod.prototype.serialize(payload, function serializeErrors(err, errors) {
       expect(err).equals(null)
       expect(errors).deep.equals(
