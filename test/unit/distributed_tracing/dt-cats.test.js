@@ -99,7 +99,7 @@ describe('distributed tracing', function() {
               toCheck = agent.errors.eventAggregator.getEvents()
               break
             case 'Span':
-              toCheck = agent.spans.getEvents()
+              toCheck = agent.spanEventAggregator.getEvents()
               break
           }
           const exact = Object.assign(

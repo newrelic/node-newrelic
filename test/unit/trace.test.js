@@ -256,7 +256,7 @@ describe('Trace', function() {
     transaction.end()
     trace.generateSpanEvents()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     var nested = events[0]
     var testSpan = events[1]
     expect(nested).to.have.property('intrinsics')
@@ -298,7 +298,7 @@ describe('Trace', function() {
     trace.root.end()
     transaction.end()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
@@ -318,7 +318,7 @@ describe('Trace', function() {
     trace.root.end()
     transaction.end()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
@@ -341,7 +341,7 @@ describe('Trace', function() {
     transaction.sampled = false
     transaction.end()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 

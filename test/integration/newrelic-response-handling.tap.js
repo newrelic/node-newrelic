@@ -27,7 +27,7 @@ const endpointDataChecks = {
     return !!agent.traces.trace
   },
   span_event_data: function hasSpanEventData(agent) {
-    return (agent.spans.length > 0)
+    return (agent.spanEventAggregator.length > 0)
   },
   custom_event_data: function hasCustomEventData(agent) {
     // TODO... prob don't ned to grrab events
@@ -164,6 +164,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.errors.traceAggregator)
           } else if (endpointName === 'error_event_data') {
             aggregatorCheckOnEnd(agent.errors.eventAggregator)
+          } else if (endpointName === 'span_event_data') {
+            aggregatorCheckOnEnd(agent.spanEventAggregator)
           } else if (endpointName === 'analytic_event_data') {
             aggregatorCheckOnEnd(agent.transactionEventAggregator)
           } else if (endpointName === 'custom_event_data') {
