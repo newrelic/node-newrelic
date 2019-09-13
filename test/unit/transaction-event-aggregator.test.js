@@ -49,7 +49,7 @@ describe('Transaction Event Aggregator', () => {
 
     eventAggregator.add(rawEvent)
 
-    const payload = eventAggregator.toPayloadSync()
+    const payload = eventAggregator._toPayloadSync()
     expect(payload.length).to.equal(3)
 
     const [runId, eventMetrics, eventData] = payload
@@ -122,7 +122,7 @@ describe('Transaction Event Aggregator', () => {
       })
 
       it('should call merge with original data when transport indicates retain', () => {
-        const originalData = eventAggregator.getData()
+        const originalData = eventAggregator._getMergeData()
 
         fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
           callback(null, {retainData: true})
@@ -130,7 +130,7 @@ describe('Transaction Event Aggregator', () => {
 
         eventAggregator.send()
 
-        const currentData = eventAggregator.getData()
+        const currentData = eventAggregator._getMergeData()
         expect(currentData.length).to.equal(originalData.length)
 
         const originalEvents = originalData.toArray().sort(sortEventsByNum)
@@ -146,7 +146,7 @@ describe('Transaction Event Aggregator', () => {
 
         eventAggregator.send()
 
-        const currentData = eventAggregator.getData()
+        const currentData = eventAggregator._getMergeData()
 
         expect(currentData.length).to.equal(0)
       })
@@ -169,7 +169,7 @@ describe('Transaction Event Aggregator', () => {
 
         const eventsToRetain = payloadToRetain[2].sort(sortEventsByNum)
 
-        const currentData = eventAggregator.getData()
+        const currentData = eventAggregator._getMergeData()
         expect(currentData.length).to.equal(eventsToRetain.length)
 
         const currentEvents = currentData.toArray().sort(sortEventsByNum)

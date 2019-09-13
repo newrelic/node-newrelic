@@ -32,7 +32,7 @@ tap.test('ignoring a Hapi route', function(t) {
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
-    var metrics = agent.metrics.unscoped
+    var metrics = agent.metrics._metrics.unscoped
     t.equal(Object.keys(metrics).length, 1,
       'only supportability metrics added to agent collection'
     )

@@ -154,11 +154,11 @@ describe('Transaction', function() {
   describe('with associated metrics', function() {
     it('should manage its own independent of the agent', function() {
       expect(trans.metrics).instanceOf(Metrics)
-      expect(trans.metrics).not.equal(agent.metrics)
+      expect(trans.metrics).not.equal(getMetrics(agent))
     })
 
     it('should have the same apdex threshold as the agent', function() {
-      expect(agent.metrics.apdexT).equal(trans.metrics.apdexT)
+      expect(getMetrics(agent).apdexT).equal(trans.metrics.apdexT)
     })
 
     it('should have the same metrics mapper as the agent', function() {
@@ -1180,3 +1180,7 @@ describe('Transaction', function() {
     })
   })
 })
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
+}

@@ -75,9 +75,9 @@ describe('Agent harvests', () => {
     expect(() => agent.harvest()).to.throw('callback required!')
   })
 
-  it('has a start time congruent with reality', () => {
-    expect(agent.metrics.started).to.be.closeTo(Date.now(), 500)
-  })
+  // it('has a start time congruent with reality', () => {
+  //   expect(agent.metrics.started).to.be.closeTo(Date.now(), 500)
+  // })
 
   it('should bail immediately if not connected', (done) => {
     agent.config.run_id = null
@@ -90,82 +90,82 @@ describe('Agent harvests', () => {
     })
   })
 
-  describe('sending to metric_data endpoint', () => {
-    it('should send when there are metrics', (done) => {
-      let body = null
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS, (_body) => {
-        body = _body
-        return true
-      }).reply(200, EMPTY_RESPONSE)
+  // describe('sending to metric_data endpoint', () => {
+  //   it('should send when there are metrics', (done) => {
+  //     let body = null
+  //     const harvest = nock(URL)
+  //     harvest.post(ENDPOINTS.METRICS, (_body) => {
+  //       body = _body
+  //       return true
+  //     }).reply(200, EMPTY_RESPONSE)
 
-      agent.metrics.measureMilliseconds('Test/bogus', null, 1)
+  //     agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
-      expect(agent.metrics.empty).to.be.false
+  //     expect(agent.metrics.empty).to.be.false
 
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
+  //     agent.harvest((err) => {
+  //       expect(err).to.not.exist
+  //       harvest.done()
 
-        expect(body).to.be.an.instanceOf(Array).of.length(4)
-        expect(body[0]).to.equal(RUN_ID)
-        expect(body[1]).to.be.closeTo(agent.metrics.started / 1000, 250)
-        expect(body[2]).to.be.closeTo(Date.now() / 1000, 250)
-        expect(body[3]).to.be.an.instanceOf(Array).with.length.above(0)
+  //       expect(body).to.be.an.instanceOf(Array).of.length(4)
+  //       expect(body[0]).to.equal(RUN_ID)
+  //       expect(body[1]).to.be.closeTo(agent.metrics.started / 1000, 250)
+  //       expect(body[2]).to.be.closeTo(Date.now() / 1000, 250)
+  //       expect(body[3]).to.be.an.instanceOf(Array).with.length.above(0)
 
-        const metrics = body[3][0]
-        expect(metrics).to.be.an.instanceOf(Array).of.length(2)
-        expect(metrics[0]).to.have.property('name', 'Test/bogus')
-        expect(metrics[1]).to.be.an.instanceOf(Array).of.length(6)
+  //       const metrics = body[3][0]
+  //       expect(metrics).to.be.an.instanceOf(Array).of.length(2)
+  //       expect(metrics[0]).to.have.property('name', 'Test/bogus')
+  //       expect(metrics[1]).to.be.an.instanceOf(Array).of.length(6)
 
-        done()
-      })
+  //       done()
+  //     })
 
-      // Should clear the stored metrics immediately.
-      expect(agent.metrics.empty).to.be.true
-    })
+  //     // Should clear the stored metrics immediately.
+  //     expect(agent.metrics.empty).to.be.true
+  //   })
 
-    it('should add returned rules to the metric mapper', (done) => {
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, {
-        return_value: [
-          [{name: 'Custom/Test/events', scope: 'TEST'}, 42]
-        ]
-      })
+  //   it('should add returned rules to the metric mapper', (done) => {
+  //     const harvest = nock(URL)
+  //     harvest.post(ENDPOINTS.METRICS).reply(200, {
+  //       return_value: [
+  //         [{name: 'Custom/Test/events', scope: 'TEST'}, 42]
+  //       ]
+  //     })
 
-      agent.metrics.measureMilliseconds('Test/bogus', null, 1)
+  //     agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
-        expect(agent.mapper.map('Custom/Test/events', 'TEST')).to.equal(42)
-        done()
-      })
-    })
+  //     agent.harvest((err) => {
+  //       expect(err).to.not.exist
+  //       harvest.done()
+  //       expect(agent.mapper.map('Custom/Test/events', 'TEST')).to.equal(42)
+  //       done()
+  //     })
+  //   })
 
-    it('should put data back on failure', (done) => {
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+  //   it('should put data back on failure', (done) => {
+  //     const harvest = nock(URL)
+  //     harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
 
-      agent.metrics.measureMilliseconds('Test/bogus', null, 1)
+  //     agent.metrics.measureMilliseconds('Test/bogus', null, 1)
 
-      expect(agent.metrics.empty).to.be.false
+  //     expect(agent.metrics.empty).to.be.false
 
-      agent.harvest((err) => {
-        expect(err).to.not.exist
-        harvest.done()
+  //     agent.harvest((err) => {
+  //       expect(err).to.not.exist
+  //       harvest.done()
 
-        expect(agent.metrics.empty).to.be.false
-        const metric = agent.metrics.getMetric('Test/bogus')
-        expect(metric).to.exist.and.have.property('callCount', 1)
+  //       expect(agent.metrics.empty).to.be.false
+  //       const metric = agent.metrics.getMetric('Test/bogus')
+  //       expect(metric).to.exist.and.have.property('callCount', 1)
 
-        done()
-      })
+  //       done()
+  //     })
 
-      // Should clear the stored metrics immediately.
-      expect(agent.metrics.empty).to.be.true
-    })
-  })
+  //     // Should clear the stored metrics immediately.
+  //     expect(agent.metrics.empty).to.be.true
+  //   })
+  // })
 
   describe('sending to sql_trace_data endpoint', () => {
     let tx = null
@@ -194,7 +194,6 @@ describe('Agent harvests', () => {
     it('should send when there is a sql trace', (done) => {
       let traceBody = null
       const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.QUERIES, (b) => traceBody = b).reply(200, EMPTY_RESPONSE)
       expect(agent.queries.samples).to.have.property('size', 1)
 
@@ -220,14 +219,11 @@ describe('Agent harvests', () => {
     it('should not send if `slow_sql.enabled` is false', (done) => {
       agent.config.slow_sql.enabled = false
 
-      const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
-
       expect(agent.queries.samples).to.have.property('size', 1)
 
       agent.harvest((err) => {
         expect(err).to.not.exist
-        harvest.done()
+
         expect(agent.queries.samples).to.have.property('size', 0)
 
         done()
@@ -238,7 +234,6 @@ describe('Agent harvests', () => {
 
     it('should put data back on failure', (done) => {
       const harvest = nock(URL)
-      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
       harvest.post(ENDPOINTS.QUERIES).reply(500, EMPTY_RESPONSE)
 
       expect(agent.queries.samples).to.have.property('size', 1)

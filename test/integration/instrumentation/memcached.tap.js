@@ -659,7 +659,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           )
 
           var datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
-          t.notOk(agent.metrics.unscoped[datastoreInstanceMetric],
+          t.notOk(getMetrics(agent).unscoped[datastoreInstanceMetric],
             'should not have datastore instance metric')
         })
       })
@@ -687,7 +687,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
           )
 
           var datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
-          t.notOk(agent.metrics.unscoped[datastoreInstanceMetric],
+          t.notOk(getMetrics(agent).unscoped[datastoreInstanceMetric],
             'should not have datastore instance metric')
         })
       })
@@ -835,4 +835,8 @@ function verifyMetrics(t, metrics, expected) {
       'metric ' + name + ' should have correct callCount'
     )
   })
+}
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
 }

@@ -78,7 +78,7 @@ describe('SpanAggregator', () => {
       }, 10)
     })
   })
-  
+
   it('should indicate if the segment is accepted', (done) => {
     const METRIC_NAMES = {
       SEEN: '/SEEN',
@@ -135,7 +135,7 @@ describe('SpanAggregator', () => {
     })
   })
 
-  it('toPayload() should return json format of data', (done) => {
+  it('_toPayloadSync() should return json format of data', (done) => {
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 1
       tx.sample = true
@@ -145,7 +145,7 @@ describe('SpanAggregator', () => {
 
         spanEventAggregator.addSegment(segment)
 
-        var payload = spanEventAggregator.toPayloadSync()
+        var payload = spanEventAggregator._toPayloadSync()
 
         const [runId, metrics, events] = payload
 

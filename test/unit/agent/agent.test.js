@@ -485,10 +485,10 @@ describe('the New Relic agent', function() {
 
     describe('when calling out to the collector', function() {
       it('should update the metric apdexT value when config changes', (done) => {
-        expect(agent.metrics.apdexT).equal(0.1)
+        expect(agent.metrics._apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
-          should.exist(agent.metrics.apdexT)
-          expect(agent.metrics.apdexT).equal(0.666)
+          should.exist(agent.metrics._apdexT)
+          expect(agent.metrics._apdexT).equal(0.666)
 
           done()
         })
@@ -533,7 +533,7 @@ describe('the New Relic agent', function() {
           expect(agent._state).equal('started')
           expect(agent.config.run_id).equal(404)
           expect(agent.config.data_report_period).equal(69)
-          expect(agent.metrics.apdexT).equal(0.742)
+          expect(agent.metrics._apdexT).equal(0.742)
           expect(agent.urlNormalizer.rules).deep.equal([])
 
           agent.stop(function cb_stop() {
@@ -591,11 +591,11 @@ describe('the New Relic agent', function() {
       var APDEX_T = 0.9876
 
       it('should update the current metrics collection\'s apdexT', function() {
-        expect(agent.metrics.apdexT).not.equal(APDEX_T)
+        expect(agent.metrics._apdexT).not.equal(APDEX_T)
 
         agent._apdexTChange(APDEX_T)
 
-        expect(agent.metrics.apdexT).equal(APDEX_T)
+        expect(agent.metrics._apdexT).equal(APDEX_T)
       })
     })
 

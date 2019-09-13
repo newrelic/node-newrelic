@@ -172,6 +172,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.transactionEventAggregator)
           } else if (endpointName === 'custom_event_data') {
             aggregatorCheckOnEnd(agent.customEventAggregator)
+          } else if (endpointName === 'metric_data') {
+            aggregatorCheckOnEnd(agent.metrics)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {

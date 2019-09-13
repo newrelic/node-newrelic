@@ -63,7 +63,7 @@ function makeTest(testCase, getInfo) {
 
 function checkMetrics(t, agent, expectedMetrics) {
   if (!expectedMetrics) {
-    t.equal(agent.metrics.toJSON().length, 0, 'should not have any metrics')
+    t.equal(agent.metrics._metrics.toJSON().length, 0, 'should not have any metrics')
     return
   }
 

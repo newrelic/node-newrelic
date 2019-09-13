@@ -85,7 +85,7 @@ tap.test('Serverless mode harvest', (t) => {
     t.plan(5)
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
 
-    const metrics = agent.metrics.toJSON()
+    const metrics = agent.metrics._metrics.toJSON()
     t.ok(findMetric(metrics, 'TEST/discard'), 'the test metric should be present')
 
     let error
