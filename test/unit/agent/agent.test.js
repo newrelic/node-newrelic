@@ -212,6 +212,47 @@ describe('the New Relic agent', function() {
       })
     })
 
+    describe('aggregator methods', function() {
+      beforeEach(function() {
+        agent.config.distributed_tracing.enabled = true // for span events
+
+        agent.startAggregators()
+      })
+
+      describe('#stopAggregators', function() {
+        it('should stop all the aggregators', function() {
+          expect(agent.traces.sendTimer).to.not.be.null
+          expect(agent.errors.traceAggregator.sendTimer).to.not.be.null
+          expect(agent.errors.eventAggregator.sendTimer).to.not.be.null
+          expect(agent.spanEventAggregator.sendTimer).to.not.be.null
+          expect(agent.transactionEventAggregator.sendTimer).to.not.be.null
+          expect(agent.customEventAggregator.sendTimer).to.not.be.null
+        })
+      })
+
+      describe('#stopAggregators', function() {
+        it('should stop all the aggregators', function() {
+          agent.stopAggregators()
+          expect(agent.traces.sendTimer).to.be.null
+          expect(agent.errors.traceAggregator.sendTimer).to.be.null
+          expect(agent.errors.eventAggregator.sendTimer).to.be.null
+          expect(agent.spanEventAggregator.sendTimer).to.be.null
+          expect(agent.transactionEventAggregator.sendTimer).to.be.null
+          expect(agent.customEventAggregator.sendTimer).to.be.null
+        })
+      })
+      describe('#onConnect', function() {
+        it('should reconfigure all the aggregators', function() {
+          // mock out the base reconfigure method
+          const proto = agent.traces.__proto__.__proto__.__proto__
+          const mock = sinon.mock(proto)
+          mock.expects('reconfigure').exactly(6)
+          agent.onConnect()
+          mock.verify()
+        })
+      })
+    })
+
     describe('when starting', function() {
       it('should require a callback', function() {
         expect(function() { agent.start() }).throws('callback required!')

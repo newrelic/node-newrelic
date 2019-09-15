@@ -293,4 +293,34 @@ describe('Event Aggregator', () => {
 
     expect(eventAggregator.length).to.equal(0)
   })
+
+  it('reconfigure() should update underlying container limits on resize', () => {
+    const fakeConfig = {
+      event_harvest_config: {
+        report_period_ms: 3000,
+        harvest_limits: {}
+      }
+    }
+    const METHOD = eventAggregator.method
+    fakeConfig.event_harvest_config.harvest_limits[METHOD] = LIMIT - 1
+
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+    eventAggregator.reconfigure(fakeConfig)
+    expect(eventAggregator._items.limit).to.equal(LIMIT - 1)
+  })
+
+  it('reconfigure() should not update underlying container on no resize', () => {
+    const fakeConfig = {
+      event_harvest_config: {
+        report_period_ms: 3000,
+        harvest_limits: {}
+      }
+    }
+    const METHOD = eventAggregator.method
+    fakeConfig.event_harvest_config.harvest_limits[METHOD] = LIMIT
+
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+    eventAggregator.reconfigure(fakeConfig)
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+  })
 })
