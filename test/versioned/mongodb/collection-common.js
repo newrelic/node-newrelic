@@ -236,7 +236,7 @@ function collectionTest(name, run) {
             t.error(err)
             transaction.end()
             var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
-            var badMetrics = Object.keys(agent.metrics.unscoped).filter(function(m) {
+            var badMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(function(m) {
               return re.test(m)
             })
             t.notOk(badMetrics.length, 'should not use domain path as host name')
