@@ -533,16 +533,18 @@ describe('the New Relic agent', function() {
     })
 
     describe('when calling out to the collector', function() {
-      it('should update the metric apdexT value when config changes', (done) => {
+      it('should update the metric apdexT value after connect', (done) => {
         expect(agent.metrics._apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
           should.exist(agent.metrics._apdexT)
           expect(agent.metrics._apdexT).equal(0.666)
+          expect(agent.metrics._metrics.apdexT).equal(0.666)
 
           done()
         })
 
-        agent.config.emit('apdex_t', 0.666)
+        agent.config.apdex_t = 0.666
+        agent.onConnect()
       })
 
       it('should reset the config and metrics normalizer on connection', (done) => {
@@ -633,18 +635,6 @@ describe('the New Relic agent', function() {
         })
 
         trans.end()
-      })
-    })
-
-    describe('when apdex_t changes', function() {
-      var APDEX_T = 0.9876
-
-      it('should update the current metrics collection\'s apdexT', function() {
-        expect(agent.metrics._apdexT).not.equal(APDEX_T)
-
-        agent._apdexTChange(APDEX_T)
-
-        expect(agent.metrics._apdexT).equal(APDEX_T)
       })
     })
 
