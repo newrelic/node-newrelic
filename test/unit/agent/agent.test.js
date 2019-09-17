@@ -246,6 +246,13 @@ describe('the New Relic agent', function() {
           // mock out the base reconfigure method
           const proto = agent.traces.__proto__.__proto__.__proto__
           const mock = sinon.mock(proto)
+          agent.config.feature_flag.event_harvest_config = true
+          agent.config.event_harvest_config = {
+            report_period_ms: 5000,
+            harvest_limits: {
+              span_event_data: 1
+            }
+          }
           mock.expects('reconfigure').exactly(6)
           agent.onConnect()
           mock.verify()
@@ -775,6 +782,7 @@ describe('the New Relic agent', function() {
 
         beforeEach(() => {
           agent.config.onConnect({event_harvest_config: validHarvestConfig})
+          agent.onConnect()
         })
 
         it('should generate ReportPeriod supportability', () => {
@@ -817,24 +825,6 @@ describe('the New Relic agent', function() {
           expect(metric).to.exist
           expect(metric.callCount)
             .to.equal(validHarvestConfig.harvest_limits.error_event_data)
-        })
-      })
-
-      describe('with an invalid config', () => {
-        const invalidHarvestConfig = {}
-
-        beforeEach(() => {
-          agent.config.onConnect({event_harvest_config: invalidHarvestConfig})
-        })
-
-        it('should generate MissingEventHarvestConfig supportability', () => {
-          const expectedMetricName =
-            'Supportability/Agent/Collector/MissingEventHarvestConfig'
-
-          const metric = agent.metrics.getMetric(expectedMetricName)
-
-          expect(metric).to.exist
-          expect(metric.callCount).to.equal(1)
         })
       })
     })

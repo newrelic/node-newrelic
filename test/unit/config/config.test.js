@@ -1608,6 +1608,7 @@ describe('the agent configuration', function() {
           done()
         })
 
+        config.feature_flag.event_harvest_config = true
         config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
 
@@ -1638,6 +1639,7 @@ describe('the agent configuration', function() {
           done()
         })
 
+        config.feature_flag.event_harvest_config = true
         config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
     })

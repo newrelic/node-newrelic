@@ -319,44 +319,4 @@ describe('Base Aggregator', () => {
 
     expect(baseAggregator.runId).to.equal(expectedRunId)
   })
-
-  it('reconfigure() should update the period and limit when present', () => {
-    const expectedRunId = 'new run id'
-    const fakeConfig = {
-      run_id: expectedRunId,
-      event_harvest_config: {
-        report_period_ms: 3000,
-        harvest_limits: {}
-      }
-    }
-    fakeConfig.event_harvest_config.harvest_limits[METHOD] = 2000
-
-    expect(baseAggregator.periodMs).to.equal(PERIOD_MS)
-    expect(baseAggregator.limit).to.equal(LIMIT)
-
-    baseAggregator.reconfigure(fakeConfig)
-
-    expect(baseAggregator.periodMs).to.equal(3000)
-    expect(baseAggregator.limit).to.equal(2000)
-  })
-
-  it('reconfigure() should not update when method is missing from new limits', () => {
-    const expectedRunId = 'new run id'
-    const fakeConfig = {
-      run_id: expectedRunId,
-      event_harvest_config: {
-        report_period_ms: 3000,
-        harvest_limits: {}
-      }
-    }
-    fakeConfig.event_harvest_config.harvest_limits[METHOD + '1'] = 2000
-
-    expect(baseAggregator.periodMs).to.equal(PERIOD_MS)
-    expect(baseAggregator.limit).to.equal(LIMIT)
-
-    baseAggregator.reconfigure(fakeConfig)
-
-    expect(baseAggregator.periodMs).to.equal(PERIOD_MS)
-    expect(baseAggregator.limit).to.equal(LIMIT)
-  })
 })
