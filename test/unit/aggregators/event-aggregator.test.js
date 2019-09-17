@@ -293,4 +293,52 @@ describe('Event Aggregator', () => {
 
     expect(eventAggregator.length).to.equal(0)
   })
+
+  it('reconfigure() should update underlying container limits on resize', () => {
+    const fakeConfig = {
+      getAggregatorConfig: function() {
+        return {
+          periodMs: 3000,
+          limit: LIMIT - 1
+        }
+      }
+    }
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+    eventAggregator.reconfigure(fakeConfig)
+    expect(eventAggregator._items.limit).to.equal(LIMIT - 1)
+  })
+
+  it('reconfigure() should not update underlying container on no resize', () => {
+    const fakeConfig = {
+      getAggregatorConfig: function() {
+        return {
+          periodMs: 3000,
+          limit: LIMIT
+        }
+      }
+    }
+
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+    eventAggregator.reconfigure(fakeConfig)
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+  })
+
+  it('reconfigure() should update the period and limit when present', () => {
+    const fakeConfig = {
+      getAggregatorConfig: function() {
+        return {
+          periodMs: 3000,
+          limit: 2000
+        }
+      }
+    }
+
+    expect(eventAggregator.periodMs).to.be.undefined
+    expect(eventAggregator.limit).to.equal(LIMIT)
+
+    eventAggregator.reconfigure(fakeConfig)
+
+    expect(eventAggregator.periodMs).to.equal(3000)
+    expect(eventAggregator.limit).to.equal(2000)
+  })
 })
