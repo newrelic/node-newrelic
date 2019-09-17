@@ -1,9 +1,7 @@
 language: node_js
 node_js:
   - "6"
-  - "7"
   - "8"
-  - "9"
   - "10"
 env:
   global:
@@ -21,17 +19,9 @@ matrix:
       env: SUITE=security
     - node_js: "6"
       env: SUITE=lint
-    - node_js: "7"
-      env: SUITE=security
-    - node_js: "7"
-      env: SUITE=lint
     - node_js: "8"
       env: SUITE=security
     - node_js: "8"
-      env: SUITE=lint
-    - node_js: "9"
-      env: SUITE=security
-    - node_js: "9"
       env: SUITE=lint
 services:
   - memcached

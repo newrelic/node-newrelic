@@ -60,9 +60,9 @@ describe('#isHarvestConfigValid', () => {
     })
   })
 
-  describe('with invalid analytic_event_data', () => {
+  describe('with empty harvest_limits', () => {
     const invalidConfig = getValidHarvestConfig()
-    invalidConfig.harvest_limits.analytic_event_data = null
+    invalidConfig.harvest_limits = {}
 
     it('should be invalid', () => {
       const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
@@ -70,23 +70,51 @@ describe('#isHarvestConfigValid', () => {
     })
   })
 
-  describe('with invalid custom_event_data', () => {
-    const invalidConfig = getValidHarvestConfig()
-    invalidConfig.harvest_limits.custom_event_data = null
+  describe('with valid analytic_event_data', () => {
+    const validConfig = getValidHarvestConfig()
+    validConfig.harvest_limits.error_event_data = null
+    validConfig.harvest_limits.custom_event_data = null
+    validConfig.harvest_limits.span_event_data = null
 
-    it('should be invalid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
-      expect(isValidConfig).to.be.false
+    it('should be valid', () => {
+      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+      expect(isValidConfig).to.be.true
     })
   })
 
-  describe('with invalid error_event_data', () => {
-    const invalidConfig = getValidHarvestConfig()
-    invalidConfig.harvest_limits.error_event_data = null
+  describe('with valid custom_event_data', () => {
+    const validConfig = getValidHarvestConfig()
+    validConfig.harvest_limits.error_event_data = null
+    validConfig.harvest_limits.analytic_event_data = null
+    validConfig.harvest_limits.span_event_data = null
 
-    it('should be invalid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
-      expect(isValidConfig).to.be.false
+    it('should be valid', () => {
+      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+      expect(isValidConfig).to.be.true
+    })
+  })
+
+  describe('with valid error_event_data', () => {
+    const validConfig = getValidHarvestConfig()
+    validConfig.harvest_limits.custom_event_data = null
+    validConfig.harvest_limits.analytic_event_data = null
+    validConfig.harvest_limits.span_event_data = null
+
+    it('should be valid', () => {
+      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+      expect(isValidConfig).to.be.true
+    })
+  })
+
+  describe('with valid span_event_data', () => {
+    const validConfig = getValidHarvestConfig()
+    validConfig.harvest_limits.error_event_data = null
+    validConfig.harvest_limits.custom_event_data = null
+    validConfig.harvest_limits.analytic_event_data = null
+
+    it('should be valid', () => {
+      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+      expect(isValidConfig).to.be.true
     })
   })
 })
@@ -97,7 +125,8 @@ function getValidHarvestConfig() {
     harvest_limits: {
       analytic_event_data: 833,
       custom_event_data: 833,
-      error_event_data: 8
+      error_event_data: 8,
+      span_event_data: 300
     }
   }
 

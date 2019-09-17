@@ -212,6 +212,55 @@ describe('the New Relic agent', function() {
       })
     })
 
+    describe('aggregator methods', function() {
+      beforeEach(function() {
+        agent.config.distributed_tracing.enabled = true // for span events
+
+        agent.startAggregators()
+      })
+
+      describe('#stopAggregators', function() {
+        it('should stop all the aggregators', function() {
+          expect(agent.traces.sendTimer).to.not.be.null
+          expect(agent.errors.traceAggregator.sendTimer).to.not.be.null
+          expect(agent.errors.eventAggregator.sendTimer).to.not.be.null
+          expect(agent.spanEventAggregator.sendTimer).to.not.be.null
+          expect(agent.transactionEventAggregator.sendTimer).to.not.be.null
+          expect(agent.customEventAggregator.sendTimer).to.not.be.null
+        })
+      })
+
+      describe('#stopAggregators', function() {
+        it('should stop all the aggregators', function() {
+          agent.stopAggregators()
+          expect(agent.traces.sendTimer).to.be.null
+          expect(agent.errors.traceAggregator.sendTimer).to.be.null
+          expect(agent.errors.eventAggregator.sendTimer).to.be.null
+          expect(agent.spanEventAggregator.sendTimer).to.be.null
+          expect(agent.transactionEventAggregator.sendTimer).to.be.null
+          expect(agent.customEventAggregator.sendTimer).to.be.null
+        })
+      })
+      describe('#onConnect', function() {
+        const EXPECTED_AGG_COUNT = 7
+        it('should reconfigure all the aggregators', function() {
+          // mock out the base reconfigure method
+          const proto = agent.traces.__proto__.__proto__.__proto__
+          const mock = sinon.mock(proto)
+          agent.config.feature_flag.event_harvest_config = true
+          agent.config.event_harvest_config = {
+            report_period_ms: 5000,
+            harvest_limits: {
+              span_event_data: 1
+            }
+          }
+          mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
+          agent.onConnect()
+          mock.verify()
+        })
+      })
+    })
+
     describe('when starting', function() {
       it('should require a callback', function() {
         expect(function() { agent.start() }).throws('callback required!')
@@ -734,6 +783,7 @@ describe('the New Relic agent', function() {
 
         beforeEach(() => {
           agent.config.onConnect({event_harvest_config: validHarvestConfig})
+          agent.onConnect()
         })
 
         it('should generate ReportPeriod supportability', () => {
@@ -752,7 +802,7 @@ describe('the New Relic agent', function() {
           const metric = agent.metrics.getMetric(expectedMetricName)
 
           expect(metric).to.exist
-          expect(metric.callCount)
+          expect(metric.total)
             .to.equal(validHarvestConfig.harvest_limits.analytic_event_data)
         })
 
@@ -763,7 +813,7 @@ describe('the New Relic agent', function() {
           const metric = agent.metrics.getMetric(expectedMetricName)
 
           expect(metric).to.exist
-          expect(metric.callCount)
+          expect(metric.total)
             .to.equal(validHarvestConfig.harvest_limits.custom_event_data)
         })
 
@@ -774,26 +824,8 @@ describe('the New Relic agent', function() {
           const metric = agent.metrics.getMetric(expectedMetricName)
 
           expect(metric).to.exist
-          expect(metric.callCount)
+          expect(metric.total)
             .to.equal(validHarvestConfig.harvest_limits.error_event_data)
-        })
-      })
-
-      describe('with an invalid config', () => {
-        const invalidHarvestConfig = {}
-
-        beforeEach(() => {
-          agent.config.onConnect({event_harvest_config: invalidHarvestConfig})
-        })
-
-        it('should generate MissingEventHarvestConfig supportability', () => {
-          const expectedMetricName =
-            'Supportability/Agent/Collector/MissingEventHarvestConfig'
-
-          const metric = agent.metrics.getMetric(expectedMetricName)
-
-          expect(metric).to.exist
-          expect(metric.callCount).to.equal(1)
         })
       })
     })
