@@ -24,6 +24,9 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const method = new RemoteMethod('preconnect', config)
 
   collector({port: 8765}, (error, server) => {
+    // set a reasonable server timeout for cleanup
+    // of the server's keep-alive connections
+    server.server.setTimeout(5000)
     if (error) {
       t.fail(error)
       return t.end()
@@ -76,7 +79,7 @@ tap.test('remote method to preconnect', (t) => {
   function createRemoteMethod() {
     const config = {
       host: 'ssl.lvh.me',
-      port: 8765,
+      port: 9876,
       ssl: true,
       max_payload_size_in_bytes: 1000000
     }
@@ -90,15 +93,20 @@ tap.test('remote method to preconnect', (t) => {
   }
 
   function startMockCollector(t, startedCallback) {
+    const port = 9876
     const opts = {
-      port: 8765
+      port: port
     }
 
     opts.key = read(join(__dirname, '../lib/test-key.key'))
     opts.cert = read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
     const server = https.createServer(opts, responder)
 
-    server.listen(8765, (err) => {
+    // set a reasonable server timeout for cleanup
+    // of the server's keep-alive connections
+    server.setTimeout(5000)
+
+    server.listen(port, (err) => {
       startedCallback(err, this)
     })
 
