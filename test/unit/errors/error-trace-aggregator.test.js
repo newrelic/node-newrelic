@@ -35,11 +35,11 @@ describe('Error Trace Aggregator', () => {
     expect(rawErrorTrace).to.equal(firstError)
   })
 
-  it('getData() should return errors', () => {
+  it('_getMergeData() should return errors', () => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
-    const data = errorTraceAggregator.getData()
+    const data = errorTraceAggregator._getMergeData()
     expect(data.length).to.equal(1)
 
     const firstError = data[0]
@@ -50,7 +50,7 @@ describe('Error Trace Aggregator', () => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
-    const payload = errorTraceAggregator.toPayloadSync()
+    const payload = errorTraceAggregator._toPayloadSync()
     expect(payload.length).to.equal(2)
 
     const [runId, errorTraceData] = payload
@@ -64,7 +64,7 @@ describe('Error Trace Aggregator', () => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
-    errorTraceAggregator.toPayload((err, payload) => {
+    errorTraceAggregator._toPayload((err, payload) => {
       expect(payload.length).to.equal(2)
 
       const [runId, errorTraceData] = payload
@@ -75,7 +75,7 @@ describe('Error Trace Aggregator', () => {
     })
   })
 
-  it('merge() should merge passed-in data in order', () => {
+  it('_merge() should merge passed-in data in order', () => {
     const rawErrorTrace = [0, 'name1', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
@@ -84,7 +84,7 @@ describe('Error Trace Aggregator', () => {
       [0, 'name3', 'message', 'type', {}]
     ]
 
-    errorTraceAggregator.merge(mergeData)
+    errorTraceAggregator._merge(mergeData)
 
     expect(errorTraceAggregator.errors.length).to.equal(3)
 
@@ -94,7 +94,7 @@ describe('Error Trace Aggregator', () => {
     expect(error3[1]).to.equal('name3')
   })
 
-  it('merge() should not merge past limit', () => {
+  it('_merge() should not merge past limit', () => {
     const rawErrorTrace = [0, 'name1', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
@@ -106,7 +106,7 @@ describe('Error Trace Aggregator', () => {
       [0, 'name6', 'message', 'type', {}]
     ]
 
-    errorTraceAggregator.merge(mergeData)
+    errorTraceAggregator._merge(mergeData)
 
     expect(errorTraceAggregator.errors.length).to.equal(LIMIT)
 

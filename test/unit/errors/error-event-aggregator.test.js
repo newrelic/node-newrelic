@@ -37,7 +37,7 @@ describe('Error Event Aggregator', () => {
 
     errorEventAggregator.add(rawErrorEvent)
 
-    const payload = errorEventAggregator.toPayloadSync()
+    const payload = errorEventAggregator._toPayloadSync()
     expect(payload.length).to.equal(3)
 
     const [runId, eventMetrics, errorEventData] = payload

@@ -118,8 +118,8 @@ describe('Base Aggregator', () => {
 
   describe('send()', () => {
     it('should emit proper message with method for starting send', () => {
-      baseAggregator.getData = () => null
-      baseAggregator.toPayloadSync = () => null
+      baseAggregator._getMergeData = () => null
+      baseAggregator._toPayloadSync = () => null
       baseAggregator.clear = () => {}
 
       const expectedStartEmit = `starting ${METHOD} data send.`
@@ -140,8 +140,8 @@ describe('Base Aggregator', () => {
       baseAggregator.clear = () => clearInvocations++
 
       // Pretend there's data to clear
-      baseAggregator.getData = () => ['data']
-      baseAggregator.toPayloadSync = () => ['data']
+      baseAggregator._getMergeData = () => ['data']
+      baseAggregator._toPayloadSync = () => ['data']
 
       baseAggregator.send()
 
@@ -155,8 +155,8 @@ describe('Base Aggregator', () => {
       const expectedPayload = ['payloadData']
 
       // Pretend there's data to clear
-      baseAggregator.getData = () => ['rawData']
-      baseAggregator.toPayloadSync = () => expectedPayload
+      baseAggregator._getMergeData = () => ['rawData']
+      baseAggregator._toPayloadSync = () => expectedPayload
 
       let invokedPayload = null
 
@@ -172,8 +172,8 @@ describe('Base Aggregator', () => {
 
     it('should not call transport for no data', () => {
       // Pretend there's data to clear
-      baseAggregator.getData = () => null
-      baseAggregator.toPayloadSync = () => null
+      baseAggregator._getMergeData = () => null
+      baseAggregator._toPayloadSync = () => null
       baseAggregator.clear = () => {}
 
       let transportInvocations = 0
@@ -193,11 +193,11 @@ describe('Base Aggregator', () => {
       const expectedData = ['payloadData']
 
       // Pretend there's data to clear
-      baseAggregator.getData = () => expectedData
-      baseAggregator.toPayloadSync = () => ['payloadData']
+      baseAggregator._getMergeData = () => expectedData
+      baseAggregator._toPayloadSync = () => ['payloadData']
 
       let mergeData = null
-      baseAggregator.merge = (data) => {
+      baseAggregator._merge = (data) => {
         mergeData = data
       }
 
@@ -217,11 +217,11 @@ describe('Base Aggregator', () => {
       const expectedData = ['payloadData']
 
       // Pretend there's data to clear
-      baseAggregator.getData = () => expectedData
-      baseAggregator.toPayloadSync = () => ['payloadData']
+      baseAggregator._getMergeData = () => expectedData
+      baseAggregator._toPayloadSync = () => ['payloadData']
 
       let mergeInvocations = 0
-      baseAggregator.merge = () => {
+      baseAggregator._merge = () => {
         mergeInvocations++
       }
 
@@ -241,14 +241,14 @@ describe('Base Aggregator', () => {
       const expectedData = ['payloadData']
 
       // Pretend there's data to clear
-      baseAggregator.getData = () => expectedData
-      baseAggregator.toPayloadSync = () => ['payloadData']
+      baseAggregator._getMergeData = () => expectedData
+      baseAggregator._toPayloadSync = () => ['payloadData']
 
       // Set the aggregator up as async
       baseAggregator.isAsync = true
 
       let mergeInvocations = 0
-      baseAggregator.merge = () => {
+      baseAggregator._merge = () => {
         mergeInvocations++
       }
 
@@ -268,14 +268,14 @@ describe('Base Aggregator', () => {
       const expectedData = ['payloadData']
 
       // Pretend there's data to clear
-      baseAggregator.getData = () => expectedData
+      baseAggregator._getMergeData = () => expectedData
       baseAggregator.toPayload = (cb) => cb(null, ['payloadData'])
 
       // Set the aggregator up as async
       baseAggregator.isAsync = true
 
       let mergeInvocations = 0
-      baseAggregator.merge = () => {
+      baseAggregator._merge = () => {
         mergeInvocations++
       }
 
@@ -291,8 +291,8 @@ describe('Base Aggregator', () => {
     it('should emit proper message with method for finishing send', () => {
       // stub to allow invocation
       baseAggregator.clear = () => {}
-      baseAggregator.getData = () => ['data']
-      baseAggregator.toPayloadSync = () => ['data']
+      baseAggregator._getMergeData = () => ['data']
+      baseAggregator._toPayloadSync = () => ['data']
 
       const expectedStartEmit = `finished ${METHOD} data send.`
 

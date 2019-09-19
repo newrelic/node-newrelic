@@ -242,6 +242,7 @@ describe('the New Relic agent', function() {
         })
       })
       describe('#onConnect', function() {
+        const EXPECTED_AGG_COUNT = 7
         it('should reconfigure all the aggregators', function() {
           // mock out the base reconfigure method
           const proto = agent.traces.__proto__.__proto__.__proto__
@@ -253,7 +254,7 @@ describe('the New Relic agent', function() {
               span_event_data: 1
             }
           }
-          mock.expects('reconfigure').exactly(6)
+          mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
           agent.onConnect()
           mock.verify()
         })
@@ -532,16 +533,18 @@ describe('the New Relic agent', function() {
     })
 
     describe('when calling out to the collector', function() {
-      it('should update the metric apdexT value when config changes', (done) => {
-        expect(agent.metrics.apdexT).equal(0.1)
+      it('should update the metric apdexT value after connect', (done) => {
+        expect(agent.metrics._apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
-          should.exist(agent.metrics.apdexT)
-          expect(agent.metrics.apdexT).equal(0.666)
+          should.exist(agent.metrics._apdexT)
+          expect(agent.metrics._apdexT).equal(0.666)
+          expect(agent.metrics._metrics.apdexT).equal(0.666)
 
           done()
         })
 
-        agent.config.emit('apdex_t', 0.666)
+        agent.config.apdex_t = 0.666
+        agent.onConnect()
       })
 
       it('should reset the config and metrics normalizer on connection', (done) => {
@@ -581,7 +584,7 @@ describe('the New Relic agent', function() {
           expect(agent._state).equal('started')
           expect(agent.config.run_id).equal(404)
           expect(agent.config.data_report_period).equal(69)
-          expect(agent.metrics.apdexT).equal(0.742)
+          expect(agent.metrics._apdexT).equal(0.742)
           expect(agent.urlNormalizer.rules).deep.equal([])
 
           agent.stop(function cb_stop() {
@@ -632,18 +635,6 @@ describe('the New Relic agent', function() {
         })
 
         trans.end()
-      })
-    })
-
-    describe('when apdex_t changes', function() {
-      var APDEX_T = 0.9876
-
-      it('should update the current metrics collection\'s apdexT', function() {
-        expect(agent.metrics.apdexT).not.equal(APDEX_T)
-
-        agent._apdexTChange(APDEX_T)
-
-        expect(agent.metrics.apdexT).equal(APDEX_T)
       })
     })
 

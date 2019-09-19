@@ -172,6 +172,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.transactionEventAggregator)
           } else if (endpointName === 'custom_event_data') {
             aggregatorCheckOnEnd(agent.customEventAggregator)
+          } else if (endpointName === 'metric_data') {
+            aggregatorCheckOnEnd(agent.metrics)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {
@@ -188,13 +190,18 @@ function createStatusCodeTest(testCase) {
             let completedAggregatorHarvest = false
 
             aggregator.on(`finished ${endpointName} data send.`, () => {
-              completedAggregatorHarvest = true
+              // Since mocking setImmediate doesn't currently work w/o exploding,
+              // we need to allow non-interval work to clear (async payload generation)
+              // for certain aggregators to ensure they are done before the next test.
+              setImmediate(() => {
+                completedAggregatorHarvest = true
 
-              checkEnd()
+                checkEnd()
 
-              if (completedOldHarvest) {
-                subTest.done()
-              }
+                if (completedOldHarvest) {
+                  subTest.done()
+                }
+              })
             })
 
             // TODO: rip out once all endpoints converted to new aggregators
