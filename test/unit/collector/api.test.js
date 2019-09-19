@@ -1,20 +1,19 @@
 'use strict'
 
-var nock = require('nock')
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
-var should = chai.should()
-var API = require('../../../lib/collector/api')
-var securityPolicies = require('../../lib/fixtures').securityPolicies
+const nock = require('nock')
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../../lib/agent_helper')
+const should = chai.should()
+const API = require('../../../lib/collector/api')
+const securityPolicies = require('../../lib/fixtures').securityPolicies
 
+const HOST = 'collector.newrelic.com'
+const PORT = 443
+const URL = 'https://' + HOST
+const RUN_ID = 1337
 
-var HOST = 'collector.newrelic.com'
-var PORT = 443
-var URL = 'https://' + HOST
-var RUN_ID = 1337
-
-var timeout = global.setTimeout
+const timeout = global.setTimeout
 function fast() { global.setTimeout = function(cb) {return timeout(cb, 0)} }
 function slow() { global.setTimeout = timeout }
 
@@ -550,8 +549,6 @@ describe('CollectorAPI', function() {
         agent.config.transaction_tracer.record_sql = 'raw'
         agent.config.api.custom_events_enabled = true
 
-        agent.queries = 'will be overwritten'
-
         agent.customEventAggregator.add(['will be overwritten'])
         expect(agent.customEventAggregator.length).to.equal(1)
 
@@ -576,7 +573,6 @@ describe('CollectorAPI', function() {
         api.connect(function test(error, res) {
           expect(res).property('payload').to.deep.equal(valid)
           expect(agent.queries).to.not.equal('will be overwritten')
-
           expect(agent.customEventAggregator.length).to.equal(0)
 
           redirection.done()
@@ -590,7 +586,6 @@ describe('CollectorAPI', function() {
       describe('succeeds immediately, the same as _login', function() {
         var bad
         var ssc
-
 
         var valid = {
           agent_run_id: RUN_ID
@@ -985,9 +980,9 @@ describe('CollectorAPI', function() {
     })
   })
 
-  describe('queryData', function() {
+  describe('sql_trace_data', function() {
     it('requires queries to send', (done) => {
-      api.queryData(null, (err) => {
+      api.sql_trace_data(null, (err) => {
         expect(err)
           .to.be.an.instanceOf(Error)
           .and.have.property('message', 'must pass queries to send')
@@ -996,13 +991,12 @@ describe('CollectorAPI', function() {
     })
 
     it('requires a callback', function() {
-      expect(function() { api.queryData([], null) })
+      expect(function() { api.sql_trace_data([], null) })
         .to.throw('callback is required')
     })
 
     describe('on the happy path', function() {
       let bad = null
-      let command = null
 
       var response = {return_value: []}
 
@@ -1027,9 +1021,8 @@ describe('CollectorAPI', function() {
           ]
         ]
 
-        api.queryData(queries, function test(error, res) {
+        api.sql_trace_data(queries, function test(error, res) {
           bad = error
-          command = res
 
           shutdown.done()
           done()
@@ -1042,10 +1035,6 @@ describe('CollectorAPI', function() {
 
       it('should not error out', function() {
         should.not.exist(bad)
-      })
-
-      it('should return empty data array', function() {
-        expect(command).to.have.property('payload').eql([])
       })
     })
   })

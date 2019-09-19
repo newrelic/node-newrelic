@@ -1,14 +1,14 @@
 'use strict'
 
-var assert = require('chai').assert
-var Config = require('../../lib/config')
-var expect = require('chai').expect
-var QueryTracer = require('../../lib/db/tracer')
-var codec = require('../../lib/util/codec')
+const assert = require('chai').assert
+const Config = require('../../../lib/config')
+const expect = require('chai').expect
+const QueryTraceAggregator = require('../../../lib/db/query-trace-aggregator')
+const codec = require('../../../lib/util/codec')
 
-var FAKE_STACK = 'Error\nfake stack'
+const FAKE_STACK = 'Error\nfake stack'
 
-describe('Query Tracer', function testQueryTracer() {
+describe('Query Trace Aggregator', function testQueryTracer() {
   describe('when slow_sql.enabled is false', function testDisabled() {
     it('should not record anything when transaction_tracer.record_sql === "off"', testOff)
     it('should treat unknown value in transaction_tracer.record_sql as off', testUnknown)
@@ -17,34 +17,46 @@ describe('Query Tracer', function testQueryTracer() {
     it('should not record if below threshold', testThreshold)
 
     function testOff() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: false},
-        transaction_tracer: {record_sql: 'off', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: false},
+          transaction_tracer: {record_sql: 'off', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testUnknown() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: false},
-        transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: false},
+          transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testObfuscated() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: false},
-        transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: false},
+          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
@@ -53,12 +65,16 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testRaw() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: false},
-        transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: false},
+          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
@@ -67,12 +83,16 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testThreshold() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: false},
-        transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: false},
+          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 100)
+      const segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {
         sql: 'select * from foo where a=2'
@@ -88,10 +108,14 @@ describe('Query Tracer', function testQueryTracer() {
     it('should not record if below threshold', testThreshold)
 
     function testOff() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'off', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'off', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      var queries = new QueryTraceAggregator(opts)
 
       var segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
@@ -99,23 +123,31 @@ describe('Query Tracer', function testQueryTracer() {
     }
 
     function testUnknown() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
 
     function testObfuscated() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
         sql_obfuscated: 'select * from foo where a=?'
@@ -124,17 +156,21 @@ describe('Query Tracer', function testQueryTracer() {
       expect(queries.samples).to.have.property('size', 1)
       expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
 
-      var sample = queries.samples.get('select*fromfoowherea=?')
+      const sample = queries.samples.get('select*fromfoowherea=?')
       verifySample(sample, 1, segment)
     }
 
     function testRaw() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       assert.deepEqual(segment.getAttributes(), {
         backtrace: 'fake stack',
         sql: 'select * from foo where a=2'
@@ -143,17 +179,21 @@ describe('Query Tracer', function testQueryTracer() {
       expect(queries.samples).to.have.property('size', 1)
       expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
 
-      var sample = queries.samples.get('select*fromfoowherea=?')
+      const sample = queries.samples.get('select*fromfoowherea=?')
       verifySample(sample, 1, segment)
     }
 
     function testThreshold() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 100)
+      const segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {
         sql: 'select * from foo where a=2'
@@ -166,10 +206,14 @@ describe('Query Tracer', function testQueryTracer() {
       var queries
 
       beforeEach(function() {
-        queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        queries = new QueryTraceAggregator(opts)
       })
 
       describe('and `simple_compression` is `false`', function() {
@@ -354,10 +398,14 @@ describe('Query Tracer', function testQueryTracer() {
 
     describe('webTransaction when record_sql is "obfuscated"', function() {
       it('should record work when empty', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -367,10 +415,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')
 
@@ -402,10 +454,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc')
@@ -442,10 +498,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }        
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc', 'drop table users')
@@ -510,10 +570,14 @@ describe('Query Tracer', function testQueryTracer() {
 
     describe('backgroundTransaction when record_sql is "raw"', function testBackground() {
       it('should record work when empty', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -523,10 +587,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
 
@@ -558,10 +626,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -598,10 +670,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -666,10 +742,14 @@ describe('Query Tracer', function testQueryTracer() {
 
     describe('background when record_sql is "obfuscated"', function testBackground() {
       it('should record work when empty', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -679,10 +759,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a single query', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
 
@@ -714,10 +798,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple similar queries', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -754,10 +842,14 @@ describe('Query Tracer', function testQueryTracer() {
       })
 
       it('should record work with a multiple unique queries', function testRaw(done) {
-        var queries = new QueryTracer(new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-        }))
+        const opts = {
+          config: new Config({
+            slow_sql: {enabled: true},
+            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          }),
+          method: 'sql_trace_data',
+        }
+        var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -823,10 +915,14 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('limiting to n slowest', function testRemoveShortest() {
     it('should limit to this.config.max_samples', function testMaxSamples() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true, max_samples: 2},
-        transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true, max_samples: 2},
+          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      var queries = new QueryTraceAggregator(opts)
 
       addQuery(queries, 600, null)
       addQuery(queries, 550, null, 'create table users')
@@ -845,28 +941,36 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('merging query tracers', function testMerging() {
     it('should merge queries correctly', function testMerge() {
-      var queries = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      }))
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
 
-      var queries2 = new QueryTracer(new Config({
-        slow_sql: {enabled: true},
-        transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
-      }))
+      const opts2 = {
+        config: new Config({
+          slow_sql: {enabled: true},
+          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries2 = new QueryTraceAggregator(opts2)
 
       addQuery(queries, 600, null)
       addQuery(queries, 650, null, 'create table users')
       addQuery(queries2, 800, null)
       addQuery(queries2, 500, null, 'create table users')
 
-      queries.merge(queries2)
+      queries.merge(queries2.samples)
 
       expect(queries.samples).to.have.property('size', 2)
       expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
       expect(queries.samples.has('createtableusers')).to.be.true
 
-      var select = queries.samples.get('select*fromfoowherea=?')
+      const select = queries.samples.get('select*fromfoowherea=?')
 
       assert.equal(select.callCount, 2, 'should have correct callCount')
       assert.equal(select.max, 800, 'max should be set')
@@ -874,7 +978,7 @@ describe('Query Tracer', function testQueryTracer() {
       assert.equal(select.total, 1400, 'total should be set')
       assert.equal(select.trace.duration, 800, 'trace should be set')
 
-      var create = queries.samples.get('createtableusers')
+      const create = queries.samples.get('createtableusers')
 
       assert.equal(create.callCount, 2, 'should have correct callCount')
       assert.equal(create.max, 650, 'max should be set')
@@ -889,7 +993,7 @@ function addQuery(queries, duration, url, query) {
   var transaction = new FakeTransaction(url)
   var segment = new FakeSegment(transaction, duration)
 
-  queries.addQuery(segment, 'mysql', query || 'select * from foo where a=2', FAKE_STACK)
+  queries.add(segment, 'mysql', query || 'select * from foo where a=2', FAKE_STACK)
 
   return segment
 }

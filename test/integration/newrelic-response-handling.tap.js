@@ -159,7 +159,7 @@ function createStatusCodeTest(testCase) {
 
           // Move clock forward to trigger auto harvests.
           testClock.tick(60000)
-
+          
           if (endpointName === 'error_data') {
             aggregatorCheckOnEnd(agent.errors.traceAggregator)
           } else if (endpointName === 'error_event_data') {
@@ -172,6 +172,8 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.transactionEventAggregator)
           } else if (endpointName === 'custom_event_data') {
             aggregatorCheckOnEnd(agent.customEventAggregator)
+          } else if (endpointName === 'sql_trace_data') {
+            aggregatorCheckOnEnd(agent.queries)
           } else {
             agent.on('harvestFinished', () => {
               setImmediate(() => {
@@ -297,7 +299,7 @@ function createTestData(agent, callback) {
   helper.runInTransaction(agent, (transaction) => {
     const segment = transaction.trace.add("MySegment")
     segment.overwriteDurationInMillis(1)
-    agent.queries.addQuery(
+    agent.queries.add(
       segment,
       'mysql',
       'select * from foo',
