@@ -18,7 +18,8 @@
         "restify.tap.js",
         "rum.tap.js",
         "router.tap.js",
-        "transaction-naming.tap.js"
+        "transaction-naming.tap.js",
+        "with-express.tap.js"
       ]
     },
     {
@@ -36,7 +37,8 @@
         "restify.tap.js",
         "rum.tap.js",
         "router.tap.js",
-        "transaction-naming.tap.js"
+        "transaction-naming.tap.js",
+        "with-express.tap.js"
       ]
     }
   ],
