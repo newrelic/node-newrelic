@@ -1021,7 +1021,7 @@ describe('CollectorAPI', function() {
           ]
         ]
 
-        api.sql_trace_data(queries, function test(error, res) {
+        api.sql_trace_data(queries, function test(error) {
           bad = error
 
           shutdown.done()
@@ -1105,7 +1105,7 @@ describe('CollectorAPI', function() {
 
   describe('metricData', function() {
     it('requires metrics to send', (done) => {
-      api.metricData(null, (err) => {
+      api.metric_data(null, (err) => {
         expect(err)
           .to.be.an.instanceOf(Error)
           .and.have.property('message', 'must pass metrics to send')
@@ -1114,7 +1114,7 @@ describe('CollectorAPI', function() {
     })
 
     it('requires a callback', function() {
-      expect(function() { api.metricData([], null) })
+      expect(function() { api.metric_data([], null) })
         .to.throw('callback is required')
     })
 
@@ -1141,7 +1141,7 @@ describe('CollectorAPI', function() {
           }
         }
 
-        api.metricData(metrics, function test(error, res) {
+        api.metric_data(metrics, function test(error, res) {
           bad = error
           command = res
 
@@ -1159,7 +1159,7 @@ describe('CollectorAPI', function() {
       })
 
       it('should return empty data array', function() {
-        expect(command).to.have.property('payload').eql([])
+        expect(command).to.have.property('retainData', false)
       })
     })
   })

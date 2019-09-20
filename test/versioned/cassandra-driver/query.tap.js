@@ -170,7 +170,8 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
       })
 
       function checkMetric(name, count, scoped) {
-        var metric = agent.metrics[scoped ? 'scoped' : 'unscoped'][name]
+        const agentMetrics = agent.metrics._metrics
+        var metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][name]
         t.ok(metric, 'metric "' + name + '" should exist')
         if (!metric) {
           return

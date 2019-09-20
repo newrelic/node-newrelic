@@ -34,7 +34,7 @@ describe('Custom Event Aggregator', () => {
 
     eventAggregator.add(rawEvent)
 
-    const payload = eventAggregator.toPayloadSync()
+    const payload = eventAggregator._toPayloadSync()
     expect(payload.length).to.equal(2)
 
     const [runId, eventData] = payload

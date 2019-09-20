@@ -964,7 +964,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       addQuery(queries2, 800, null)
       addQuery(queries2, 500, null, 'create table users')
 
-      queries.merge(queries2.samples)
+      queries._merge(queries2.samples)
 
       expect(queries.samples).to.have.property('size', 2)
       expect(queries.samples.has('select*fromfoowherea=?')).to.be.true

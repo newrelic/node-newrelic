@@ -188,7 +188,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(stubEvent, stubContext, stubCallback)
 
       function confirmMetrics() {
-        const unscopedMetrics = agent.metrics.unscoped
+        const unscopedMetrics = getMetrics(agent).unscoped
         expect(unscopedMetrics).exist
 
         const otherTransactionAll = 'OtherTransaction/all'
@@ -440,7 +440,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
       function confirmMetrics() {
-        const unscopedMetrics = agent.metrics.unscoped
+        const unscopedMetrics = getMetrics(agent).unscoped
         expect(unscopedMetrics).exist
 
         expect(unscopedMetrics.HttpDispatcher, 'HttpDispatcher')
@@ -936,4 +936,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
     })
   })
 })
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
+}
 

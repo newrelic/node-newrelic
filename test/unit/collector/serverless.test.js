@@ -65,7 +65,7 @@ describe('ServerlessCollector API', () => {
   describe('#metricData', () => {
     it('adds metric_data to the payload object', (done) => {
       const metricData = {type: 'metric_data'}
-      api.metricData(metricData, () => {
+      api.metric_data(metricData, () => {
         expect(api.payload.metric_data).to.deep.equal(metricData)
         done()
       })
@@ -89,22 +89,6 @@ describe('ServerlessCollector API', () => {
         expect(api.payload.transaction_sample_data).to.deep.equal(transactionSampleData)
         done()
       })
-    })
-  })
-
-  describe('#populateDataSync', () => {
-    it('assigns the data passed in as the payload to flush synchronously', () => {
-      expect(Object.keys(api.payload).length).to.equal(0)
-      api.populateDataSync({
-        test: "value",
-        metrics: "hello",
-        analyticsEvents: null,
-        cool_stuff: "camelCase"
-      })
-      expect(api.payload.test).to.be.undefined
-      expect(api.payload.cool_stuff).to.be.undefined
-      expect(api.payload.metric_data).to.equal("hello")
-      expect(api.payload.analytic_event_data).to.be.undefined
     })
   })
 

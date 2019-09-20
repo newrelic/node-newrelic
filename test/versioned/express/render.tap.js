@@ -150,7 +150,7 @@ function runTests(conf) {
           t.ok(stats, "found HTTP dispatcher statistics")
           t.equal(stats.callCount, 1, "only one HTTP-dispatched request was made")
 
-          var serialized = JSON.stringify(agent.metrics)
+          var serialized = JSON.stringify(agent.metrics._toPayloadSync())
           t.ok(
             serialized.match(/WebTransaction\/Expressjs\/GET\/\/test/),
             "serialized metrics as expected"

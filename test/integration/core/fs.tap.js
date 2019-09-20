@@ -47,7 +47,8 @@ function test(title, options, callback) {
 
 function checkMetric(names, agent, scope) {
   var res = true
-  var metrics = scope ? agent.metrics.scoped[scope] : agent.metrics.unscoped
+  const agentMetrics = getMetrics(agent)
+  var metrics = scope ? agentMetrics.scoped[scope] : agentMetrics.unscoped
   names.forEach(function cb_forEach(name) {
     res = res && metrics[NAMES.FS.PREFIX + name]
   })
@@ -948,4 +949,8 @@ function setupAgent(t) {
   })
 
   return agent
+}
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
 }

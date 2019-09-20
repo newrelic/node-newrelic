@@ -155,7 +155,7 @@ const helper = module.exports = {
 
     // Stop any already scheduled harvests.
     agent._stopHarvester()
-    agent.errors.stop()
+    agent.stopAggregators()
 
     if (agent === _agent) {
       global.__NR_agent = null

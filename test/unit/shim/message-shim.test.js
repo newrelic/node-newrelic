@@ -349,7 +349,7 @@ describe('MessageShim', function() {
       })
 
       it('should create message broker metrics', function() {
-        var unscoped = agent.metrics.unscoped
+        var unscoped = getMetrics(agent).unscoped
         var scoped = transaction.metrics.unscoped
         expect(unscoped).to.have.property(
           'MessageBroker/RabbitMQ/Exchange/Produce/Named/my-queue'
@@ -620,7 +620,7 @@ describe('MessageShim', function() {
         })
 
         agent.on('transactionFinished', function() {
-          var metrics = agent.metrics
+          var metrics = getMetrics(agent)
           expect(metrics.unscoped).to.have.property(
             'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar'
           )
@@ -768,7 +768,7 @@ describe('MessageShim', function() {
       })
 
       it('should create message broker metrics', function() {
-        var unscoped = agent.metrics.unscoped
+        var unscoped = getMetrics(agent).unscoped
         var scoped = transaction.metrics.unscoped
         expect(unscoped).to.have.property(
           'MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'
@@ -982,7 +982,7 @@ describe('MessageShim', function() {
 
         wrapped('my.queue', function consumer() {
           setTimeout(function() {
-            var metrics = agent.metrics
+            var metrics = getMetrics(agent)
             metricNames.forEach(function(name) {
               expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
             })
@@ -1008,7 +1008,7 @@ describe('MessageShim', function() {
 
         func('my.exchange', function consumer() {
           setTimeout(function() {
-            var metrics = agent.metrics
+            var metrics = getMetrics(agent)
             metricNames.forEach(function(name) {
               expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
             })
@@ -1032,7 +1032,7 @@ describe('MessageShim', function() {
 
         wrapped('my.queue', function consumer() {
           setTimeout(function() {
-            var metrics = agent.metrics
+            var metrics = getMetrics(agent)
             metricNames.forEach(function(name) {
               expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
             })
@@ -1142,4 +1142,8 @@ function testNonWritable(obj, key, value) {
     expect(obj).to.have.property(key)
       .that.is.not.equal('testNonWritable test value')
   }
+}
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
 }

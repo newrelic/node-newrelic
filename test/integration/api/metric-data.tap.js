@@ -33,24 +33,23 @@ test('Collector API should send metrics to staging-collector.newrelic.com', func
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
 
-    const metricJson = agent.metrics.toJSON()
+    const metrics = agent.metrics._metrics
+
+    const metricJson = metrics.toJSON()
     t.ok(metricJson.length >= 2, 'Should have at least two metrics.')
 
     var payload = [
       agent.config.run_id,
-      agent.metrics.started  / 1000,
+      metrics.started  / 1000,
       Date.now() / 1000,
-      agent.metrics
+      metrics
     ]
 
-    api.metricData(payload, function(error, command) {
+    api.metric_data(payload, function(error, command) {
       t.notOk(error, 'sent metrics without error')
       t.ok(command, 'got a response')
 
-      t.equal(command.payload, null, 'got back no mappings')
-      t.doesNotThrow(function() {
-        agent.mapper.load(command.returned)
-      }, 'was able to load mapping')
+      t.deepEqual(command, {retainData: false})
 
       t.end()
     })

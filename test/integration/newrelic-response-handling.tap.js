@@ -130,8 +130,6 @@ function createStatusCodeTest(testCase) {
         const mockEndpoint = nockRequest(endpointName, RUN_ID).reply(testCase.code)
 
         agent.start((error) => {
-          const scheduleHarvestSpy = sinon.spy(agent, '_scheduleHarvester')
-
           verifyAgentStart(error)
 
           // Watch state changes once agent already started
@@ -174,42 +172,21 @@ function createStatusCodeTest(testCase) {
             aggregatorCheckOnEnd(agent.customEventAggregator)
           } else if (endpointName === 'sql_trace_data') {
             aggregatorCheckOnEnd(agent.queries)
+          } else if (endpointName === 'metric_data') {
+            aggregatorCheckOnEnd(agent.metrics)
           } else {
-            agent.on('harvestFinished', () => {
-              setImmediate(() => {
-                checkEnd()
-                verifyNewHarvestScheduled(scheduleHarvestSpy)
-
-                subTest.done()
-              })
-            })
+            throw new Error('Invalid endpoint')
           }
 
           function aggregatorCheckOnEnd(aggregator) {
-            let completedOldHarvest = false
-            let completedAggregatorHarvest = false
-
             aggregator.on(`finished ${endpointName} data send.`, () => {
-              completedAggregatorHarvest = true
-
-              checkEnd()
-
-              if (completedOldHarvest) {
-                subTest.done()
-              }
-            })
-
-            // TODO: rip out once all endpoints converted to new aggregators
-            // This is necessary because of the side-by-side harvests
-            // Must allow setImmediate to clear current scheduled or a new harvest
-            // will get scheduled post-test.
-            agent.on('harvestFinished', () => {
+              // Since mocking setImmediate doesn't currently work w/o exploding,
+              // we need to allow non-interval work to clear (async payload generation)
+              // for certain aggregators to ensure they are done before the next test.
               setImmediate(() => {
-                completedOldHarvest = true
+                checkEnd()
 
-                if (completedAggregatorHarvest) {
-                  subTest.done()
-                }
+                subTest.done()
               })
             })
           }
@@ -221,14 +198,6 @@ function createStatusCodeTest(testCase) {
             verifyDataRetention()
           }
         })
-
-        function verifyNewHarvestScheduled(scheduleHarvestSpy) {
-          // disconnect case should not schedule a harvest
-          const expectedHarvests = testCase.disconnect ? 0 : 1
-          const actualHarvests = scheduleHarvestSpy.callCount
-
-          tap.equal(actualHarvests, expectedHarvests, 'wrong # harvests scheduled')
-        }
 
         function verifyAgentStart(error) {
           if (error) {

@@ -58,7 +58,7 @@ function makeTest(testCase) {
         // update this test depending on the format of that.
         t.bailout('Docker expected metrics found but can not be handled.')
       } else {
-        t.equal(agent.metrics.toJSON().length, 0, 'should have no metrics')
+        t.equal(agent.metrics._metrics.toJSON().length, 0, 'should have no metrics')
       }
 
       t.end()

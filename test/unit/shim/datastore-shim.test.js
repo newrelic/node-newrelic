@@ -493,7 +493,7 @@ describe('DatastoreShim', function() {
       })
 
       it('should create datastore metrics', function() {
-        var metrics = agent.metrics.unscoped
+        var metrics = getMetrics(agent).unscoped
         expect(metrics).to.have.property('Datastore/all')
         expect(metrics).to.have.property('Datastore/allWeb')
         expect(metrics).to.have.property('Datastore/Cassandra/all')
@@ -930,3 +930,7 @@ describe('DatastoreShim', function() {
     })
   })
 })
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
+}

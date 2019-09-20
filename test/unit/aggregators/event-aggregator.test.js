@@ -133,7 +133,7 @@ describe('Event Aggregator', () => {
     })
   })
 
-  describe('merge()', () => {
+  describe('_merge()', () => {
     it('should merge passed-in data with priorities', () => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
@@ -142,7 +142,7 @@ describe('Event Aggregator', () => {
       mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
       mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(3)
     })
@@ -159,7 +159,7 @@ describe('Event Aggregator', () => {
 
       mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(LIMIT)
     })
@@ -172,7 +172,7 @@ describe('Event Aggregator', () => {
       mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
       mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(3)
 
@@ -192,7 +192,7 @@ describe('Event Aggregator', () => {
 
       mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(LIMIT)
 
@@ -208,7 +208,7 @@ describe('Event Aggregator', () => {
       mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
       mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(3)
 
@@ -228,7 +228,7 @@ describe('Event Aggregator', () => {
 
       mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(LIMIT)
 
@@ -248,7 +248,7 @@ describe('Event Aggregator', () => {
 
       mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(LIMIT)
 
@@ -264,7 +264,7 @@ describe('Event Aggregator', () => {
       mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
       mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
 
-      eventAggregator.merge(mergePriorityData)
+      eventAggregator._merge(mergePriorityData)
 
       expect(eventAggregator.length).to.equal(3)
 
@@ -273,11 +273,11 @@ describe('Event Aggregator', () => {
     })
   })
 
-  it('getData() should return events in priority collection', () => {
+  it('_getMergeData() should return events in priority collection', () => {
     const rawEvent = [{type: 'some-event'}, {}, {}]
     eventAggregator.add(rawEvent)
 
-    const data = eventAggregator.getData()
+    const data = eventAggregator._getMergeData()
     expect(data.length).to.equal(1)
 
     expect(data.getMinimumPriority()).to.equal(0)
@@ -292,5 +292,53 @@ describe('Event Aggregator', () => {
     eventAggregator.clear()
 
     expect(eventAggregator.length).to.equal(0)
+  })
+
+  it('reconfigure() should update underlying container limits on resize', () => {
+    const fakeConfig = {
+      getAggregatorConfig: function() {
+        return {
+          periodMs: 3000,
+          limit: LIMIT - 1
+        }
+      }
+    }
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+    eventAggregator.reconfigure(fakeConfig)
+    expect(eventAggregator._items.limit).to.equal(LIMIT - 1)
+  })
+
+  it('reconfigure() should not update underlying container on no resize', () => {
+    const fakeConfig = {
+      getAggregatorConfig: function() {
+        return {
+          periodMs: 3000,
+          limit: LIMIT
+        }
+      }
+    }
+
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+    eventAggregator.reconfigure(fakeConfig)
+    expect(eventAggregator._items.limit).to.equal(LIMIT)
+  })
+
+  it('reconfigure() should update the period and limit when present', () => {
+    const fakeConfig = {
+      getAggregatorConfig: function() {
+        return {
+          periodMs: 3000,
+          limit: 2000
+        }
+      }
+    }
+
+    expect(eventAggregator.periodMs).to.be.undefined
+    expect(eventAggregator.limit).to.equal(LIMIT)
+
+    eventAggregator.reconfigure(fakeConfig)
+
+    expect(eventAggregator.periodMs).to.equal(3000)
+    expect(eventAggregator.limit).to.equal(2000)
   })
 })
