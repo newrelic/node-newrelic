@@ -299,15 +299,18 @@ function bootstrap(options, callback) {
     )
   })
 
-  server.use(restify.queryParser({mapParams: false}))
-  server.use(restify.bodyParser({mapParams: false}))
+  server.use(restify.plugins.queryParser({mapParams: false}))
+  server.use(restify.plugins.bodyParser({mapParams: false}))
 
   restify.defaultResponseHeaders = function() {
     // LOL -- the collector *always* leaves the content-type set to text/plain
     this.header('Content-Type', 'text/plain')
   }
 
-  server.on('after', restify.auditLogger({log: logger}))
+  server.on('after', restify.plugins.auditLogger({
+    log: logger,
+    event: 'after'
+  }))
 
   server.post('/agent_listener/invoke_raw_method', function(req, res, next) {
     var validations = {}
@@ -321,6 +324,17 @@ function bootstrap(options, callback) {
     } else {
       methods[req.query.method](req, res, validations, next)
     }
+  })
+
+  server.pre(function(req, res, next) {
+    // Restify will short-circuit with UnsupportedMediaTypeError for non-gzip encodings.
+    // It will try its best when there is no encoding, so we force that here to
+    // handle our identity case.
+    if (req.headers["content-encoding"] !== 'gzip') {
+      req.headers["content-encoding"] = undefined
+    }
+
+    return next()
   })
 
   server.listen(options.port, function() {
