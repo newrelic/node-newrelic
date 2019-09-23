@@ -1,6 +1,5 @@
 'use strict'
 const zlib = require('zlib')
-
 const nock = require('nock')
 const chai = require('chai')
 const expect = chai.expect

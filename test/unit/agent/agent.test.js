@@ -242,7 +242,7 @@ describe('the New Relic agent', function() {
         })
       })
       describe('#onConnect', function() {
-        const EXPECTED_AGG_COUNT = 7
+        const EXPECTED_AGG_COUNT = 8
         it('should reconfigure all the aggregators', function() {
           // mock out the base reconfigure method
           const proto = agent.traces.__proto__.__proto__.__proto__
@@ -399,6 +399,50 @@ describe('the New Relic agent', function() {
           setTimeout(() => {
             global.setInterval = origInterval
 
+            redirect.done()
+            awsRedirect.done()
+            connect.done()
+            settings.done()
+            done()
+          }, 15)
+        })
+      })
+
+      it('should start aggregators after initial harvest', (done) => {
+        var origInterval = global.setInterval
+        global.setInterval = (callback) => {
+          return Object.assign({unref: () => {}}, setImmediate(callback))
+        }
+
+        let aggregatorsStarted = false
+
+        agent.config.no_immediate_harvest = false
+
+        agent.startAggregators = () => {
+          aggregatorsStarted = true
+        }
+
+        var redirect = nock(URL)
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: 'collector.newrelic.com',
+              security_policies: {}
+            }
+          })
+        var connect = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: {agent_run_id: RUN_ID}})
+        var settings = nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value: []})
+
+        agent.start(() => {
+          setTimeout(() => {
+            global.setInterval = origInterval
+
+            expect(aggregatorsStarted).to.be.true
+            
             redirect.done()
             awsRedirect.done()
             connect.done()

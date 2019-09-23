@@ -34,7 +34,7 @@ describe('SQL trace', function() {
         const payload = tx.createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx.acceptDistributedTracePayload(payload)
-        agent.queries.addQuery(
+        agent.queries.add(
           tx.trace.root,
           'postgres',
           'select pg_sleep(1)',
@@ -60,7 +60,7 @@ describe('SQL trace', function() {
     it('should serialize properly using prepareJSONSync', function() {
       helper.runInTransaction(agent, function(tx) {
         const query = 'select pg_sleep(1)'
-        agent.queries.addQuery(
+        agent.queries.add(
           tx.trace.root,
           'postgres',
           query,
@@ -86,7 +86,7 @@ describe('SQL trace', function() {
       agent.config.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function(tx) {
-        agent.queries.addQuery(
+        agent.queries.add(
           tx.trace.root,
           'postgres',
           'select pg_sleep(1)',
