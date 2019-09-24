@@ -247,7 +247,7 @@ describe('the New Relic agent', function() {
           // mock out the base reconfigure method
           const proto = agent.traces.__proto__.__proto__.__proto__
           const mock = sinon.mock(proto)
-          agent.config.feature_flag.event_harvest_config = true
+
           agent.config.event_harvest_config = {
             report_period_ms: 5000,
             harvest_limits: {
@@ -442,7 +442,7 @@ describe('the New Relic agent', function() {
             global.setInterval = origInterval
 
             expect(aggregatorsStarted).to.be.true
-            
+
             redirect.done()
             awsRedirect.done()
             connect.done()
@@ -800,11 +800,6 @@ describe('the New Relic agent', function() {
     })
 
     describe('when event_harvest_config updated on connect', () => {
-      // TODO: remove once fully integrated
-      beforeEach(() => {
-        agent.config.feature_flag = {event_harvest_config: true}
-      })
-
       describe('with a valid config', () => {
         const validHarvestConfig = {
           report_period_ms: 5000,
