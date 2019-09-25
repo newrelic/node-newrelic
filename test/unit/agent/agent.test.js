@@ -821,7 +821,7 @@ describe('the New Relic agent', function() {
           const metric = agent.metrics.getMetric(expectedMetricName)
 
           expect(metric).to.exist
-          expect(metric.callCount).to.equal(validHarvestConfig.report_period_ms)
+          expect(metric.total).to.equal(validHarvestConfig.report_period_ms)
         })
 
         it('should generate AnalyticEventData/HarvestLimit supportability', () => {
