@@ -59,6 +59,12 @@ describe('Transaction Event Aggregator', () => {
     expect(eventData).to.deep.equal([rawEvent])
   })
 
+  it('toPayload() should return nothing with no event data', () => {
+    const payload = eventAggregator._toPayloadSync()
+
+    expect(payload).to.not.exist
+  })
+
   describe('when data over split threshold', () => {
     beforeEach(() => {
       eventAggregator.add([{type: 'Transaction', error: false}, {num: 1}])
