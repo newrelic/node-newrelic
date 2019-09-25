@@ -23,8 +23,7 @@ var used = [
   'reverse_naming_rules',
   'send_request_uri_attribute',
   'synthetics',
-  'unreleased',
-  'event_harvest_config'
+  'unreleased'
 ]
 
 describe('feature flags', function() {

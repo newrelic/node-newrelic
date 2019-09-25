@@ -713,7 +713,7 @@ describe('the agent configuration', function() {
       })
       expect(config.distributed_tracing.enabled).to.be.false
     })
-    
+
     it('works if all required env vars are defined', () => {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
@@ -1608,7 +1608,6 @@ describe('the agent configuration', function() {
           done()
         })
 
-        config.feature_flag.event_harvest_config = true
         config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
 
@@ -1639,7 +1638,6 @@ describe('the agent configuration', function() {
           done()
         })
 
-        config.feature_flag.event_harvest_config = true
         config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
     })
