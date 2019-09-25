@@ -9,6 +9,29 @@ const codec = require('../../../lib/util/codec')
 const FAKE_STACK = 'Error\nfake stack'
 
 describe('Query Trace Aggregator', function testQueryTracer() {
+  describe('when no queries in payload', function testNoPayload() {
+    it('_toPayload should exec callback with null data', () => {
+      const opts = {
+        config: new Config({
+          slow_sql: {enabled: false},
+          transaction_tracer: {record_sql: 'off', explain_threshold: 500}
+        }),
+        method: 'sql_trace_data',
+      }
+      const queries = new QueryTraceAggregator(opts)
+
+      let cbCalledWithNull = false
+
+      const cb = (err, data) => {
+        if (data === null) cbCalledWithNull = true
+      }
+
+      queries._toPayload(cb)
+
+      expect(cbCalledWithNull).to.be.true
+    })
+  })
+
   describe('when slow_sql.enabled is false', function testDisabled() {
     it('should not record anything when transaction_tracer.record_sql === "off"', testOff)
     it('should treat unknown value in transaction_tracer.record_sql as off', testUnknown)

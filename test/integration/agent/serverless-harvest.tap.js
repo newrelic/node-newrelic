@@ -4,6 +4,7 @@ const fs = require('fs')
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 const sinon = require('sinon')
+const API = require('../../../api')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const TEST_ARN = 'test:arn'
@@ -112,7 +113,7 @@ tap.test('Serverless mode harvest', (t) => {
     )
   })
 
-  t.test('sending errors', (t) => {
+  t.test('sending error traces', (t) => {
     t.plan(4)
 
     helper.runInTransaction(agent, (tx) => {
@@ -242,6 +243,164 @@ tap.test('Serverless mode harvest', (t) => {
         }
       )
     }
+  })
+
+  t.test('sending error events', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      tx.finalizeNameFromUri('/nonexistent', 501)
+      tx.trace.attributes.addAttribute(
+        DESTS.ERROR_EVENT,
+        'foo',
+        'bar'
+      )
+      tx.trace.attributes.addAttribute(
+        DESTS.ERROR_EVENT,
+        'request.uri',
+        '/nonexistent'
+      )
+      agent.errors.add(tx, new Error('test error'))
+
+      tx.end()
+      agent.once('harvestFinished', () => {
+        const rawPayload = findPayload(logSpy.args[0])
+        const encodedData = rawPayload[2]
+
+        checkCompressedPayload(
+          t,
+          encodedData,
+          'error_event_data',
+          function checkData(payload) {
+            t.ok(payload, 'should have a payload')
+
+            const [runId, eventMetrics, eventData] = payload
+
+            // runid should be null/undefined
+            t.notOk(runId)
+
+            t.equal(eventMetrics.events_seen, 1)
+
+            const expectedSize = agent.config.error_collector.max_event_samples_stored
+            t.equal(eventMetrics.reservoir_size, expectedSize)
+
+            const errorEvent = eventData[0]
+            const [intrinsicAttr, /* skip user */, agentAttr] = errorEvent
+
+            t.equal(intrinsicAttr.type, 'TransactionError')
+
+            t.deepEqual(
+              agentAttr,
+              {foo: 'bar', 'request.uri': '/nonexistent'},
+              'should have the correct attributes'
+            )
+            t.end()
+          }
+        )
+      })
+      agent.harvestSync()
+    })
+  })
+
+  t.test('sending custom events', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      tx.finalizeNameFromUri('/nonexistent', 501)
+
+      const expectedEventType = 'myEvent'
+      const expectedAttributes = {foo: 'bar'}
+
+      const api = new API(agent)
+      api.recordCustomEvent(expectedEventType, expectedAttributes)
+
+      tx.end()
+      agent.once('harvestFinished', () => {
+        const rawPayload = findPayload(logSpy.args[0])
+        const encodedData = rawPayload[2]
+
+        checkCompressedPayload(
+          t,
+          encodedData,
+          'custom_event_data',
+          function checkData(payload) {
+            t.ok(payload, 'should have a payload')
+
+            const [runId, eventData] = payload
+
+            // runid should be null/undefined
+            t.notOk(runId)
+
+            const customEvent = eventData[0]
+            const [intrinsicAttr, userAttr] = customEvent
+
+            t.equal(intrinsicAttr.type, expectedEventType)
+
+            t.deepEqual(
+              userAttr,
+              expectedAttributes,
+              'should have the correct attributes'
+            )
+            t.end()
+          }
+        )
+      })
+      agent.harvestSync()
+    })
+  })
+
+  t.test('sending sql traces', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      const expectedUrl = '/nonexistent'
+
+      tx.finalizeNameFromUri(expectedUrl, 501)
+
+      agent.config.transaction_tracer.record_sql = 'raw'
+      agent.config.transaction_tracer.explain_threshold = 0
+      agent.config.slow_sql.enabled = true
+
+      const expectedSql = 'select pg_sleep(1)'
+
+      agent.queries.add(
+        tx.trace.root,
+        'postgres',
+        expectedSql,
+        'FAKE STACK'
+      )
+
+      tx.end()
+      agent.once('harvestFinished', () => {
+        const rawPayload = findPayload(logSpy.args[0])
+        const encodedData = rawPayload[2]
+
+        checkCompressedPayload(
+          t,
+          encodedData,
+          'sql_trace_data',
+          function checkData(payload) {
+            t.ok(payload, 'should have a payload')
+
+            const [runId, samples] = payload
+
+            // runid should be null/undefined
+            t.notOk(runId)
+
+            const sample = samples[0]
+
+            const transactionUrl = sample[1]
+            const sql = sample[3]
+            const count = sample[5]
+            const encodedParams = sample[9]
+
+            t.equal(transactionUrl, expectedUrl)
+            t.equal(sql, expectedSql)
+            t.equal(count, 1)
+
+            // won't have anything interesting added this way
+            t.ok(encodedParams)
+
+            t.end()
+          }
+        )
+      })
+      agent.harvestSync()
+    })
   })
 })
 

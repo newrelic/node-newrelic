@@ -42,4 +42,10 @@ describe('Custom Event Aggregator', () => {
     expect(runId).to.equal(RUN_ID)
     expect(eventData).to.deep.equal([rawEvent])
   })
+
+  it('toPayloadSync() should return nothing with no event data', () => {
+    const payload = eventAggregator._toPayloadSync()
+    
+    expect(payload).to.not.exist
+  })
 })

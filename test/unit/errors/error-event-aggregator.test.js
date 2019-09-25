@@ -46,4 +46,10 @@ describe('Error Event Aggregator', () => {
     expect(eventMetrics).to.deep.equal(expectedMetrics)
     expect(errorEventData).to.deep.equal([rawErrorEvent])
   })
+
+  it('toPayload() should return nothing with no error event data', () => {
+    const payload = errorEventAggregator._toPayloadSync()
+
+    expect(payload).to.not.exist
+  })
 })
