@@ -198,7 +198,8 @@ describe('fun facts about apps that New Relic is interested in include', () => {
       harvest_limits: {
         analytic_event_data: expectedValue,
         custom_event_data: expectedValue,
-        error_event_data: expectedValue
+        error_event_data: expectedValue,
+        span_event_data: 1000 // not configurable, set as constant
       }
     }
 
