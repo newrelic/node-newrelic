@@ -7,7 +7,7 @@
 * Maximum event limits are now enforced by the server. This includes
   a new maximum of 10000 transaction events per minute.
 
-* Harvesting is now done with individually scheduled harvesters per data type.
+* Harvesting is now completed by individually scheduled harvesters per data type.
 
 * Bumps tap version to move beyond handlebars audit warning.
 
