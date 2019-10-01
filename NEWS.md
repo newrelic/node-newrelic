@@ -1,3 +1,29 @@
+### 5.12.0 (2019-10-01):
+
+* Now supports Restify 7 and 8.
+
+* Distributed Tracing is now enabled by default in serverless mode.
+
+* Harvest limits for events are now controlled by server configuration.
+
+* Bumps tap version to move beyond handlebars audit warning.
+
+* Bumps `restify` dev dependency past audit warning.
+
+* HTTPS connections to New Relic now use a keep alive HTTP-Agent.
+
+* Drops old odd-numbered node versions that are no longer supported by node from
+  travis testing.
+
+* Fixed bug where segment reference on the outbound request was enumerable.
+
+* Fixed bug where incorrect config information was sent to New Relic.
+
+* Updated Mocha and Docker links in CONTRIBUTING.md.
+
+* The agent will now end/serialize transactions in the event of an uncaught
+  exception while operating in serverless mode.
+
 ### 5.11.0 (2019-07-29):
 
 * Implements Expected and Ignored Errors functionality
