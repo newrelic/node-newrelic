@@ -8,27 +8,29 @@ var proxyquire = require('proxyquire')
 describe('getVendors', function() {
   var agent
 
-  before(function() {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
     agent.config.utilization = {
       detect_aws: true,
       detect_azure: true,
       detect_gcp: true,
       detect_docker: true,
-      detect_kubernetes: true
+      detect_kubernetes: true,
+      detect_pcf: true
     }
   })
 
-  after(function() {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
   it('calls all vendors', function(done) {
-    var awsCalled = false
-    var azureCalled = false
-    var gcpCalled = false
-    var dockerCalled = false
+    let awsCalled = false
+    let azureCalled = false
+    let gcpCalled = false
+    let dockerCalled = false
     let kubernetesCalled = false
+    let pcfCalled = false
 
     var getVendors = proxyquire('../../../lib/utilization', {
       './aws-info': function(agentArg, cb) {
@@ -52,6 +54,10 @@ describe('getVendors', function() {
       './kubernetes-info': (agentArg, cb) => {
         kubernetesCalled = true
         cb()
+      },
+      './pcf-info': (agentArg, cb) => {
+        pcfCalled = true
+        cb()
       }
     }).getVendors
 
@@ -62,6 +68,7 @@ describe('getVendors', function() {
       expect(gcpCalled).to.be.true
       expect(dockerCalled).to.be.true
       expect(kubernetesCalled).to.be.true
+      expect(pcfCalled).to.be.true
       done()
     })
   })
