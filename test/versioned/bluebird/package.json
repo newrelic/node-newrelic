@@ -20,7 +20,7 @@
         "node": ">=6"
       },
       "dependencies": {
-        "bluebird": ">=3"
+        "bluebird": ">=3 <3.7"
       },
       "files": [
         "methods.tap.js"
