@@ -143,15 +143,10 @@ test('when.defer', function(t) {
 })
 
 test('when debug API', function(t) {
-  const originalThrew = tap.threw
-  // Prevent tap from failing test and remove extra prop
-  tap.threw = (err) => {
-    delete err.tapCaught
-  }
-
-  t.teardown(() => {
-    tap.threw = originalThrew
-  })
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   t.plan(2)
   setupAgent(t)
@@ -175,18 +170,20 @@ test('when debug API', function(t) {
     t.plan(2)
     helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
 
+    // avoid async hook domain emit so `when` can behave normally.
+    // seems like *should not* have negative consequences but it may.
+    // https://github.com/isaacs/async-hook-domain/issues/3
     const asyncHookDomainEmit = process.emit
     process.emit = (event, ...args) => {
-      // avoid async hook domain emit so `when` can behave normally.
-      // seems like *should not* have negative consequences but it may.
-      // https://github.com/isaacs/async-hook-domain/issues/3
       return originalEmit.call(process, event, ...args)
     }
 
+    t.tearDown(() => {
+      process.emit = asyncHookDomainEmit
+    })
+
     when.Promise.onPotentiallyUnhandledRejectionHandled = function testOPURH(e) {
       t.equal(e.value, error, 'should have passed error through')
-
-      process.emit = asyncHookDomainEmit
       t.end()
     }
 

@@ -422,6 +422,25 @@ const helper = module.exports = {
     emitter.removeAllListeners(evnt)
   },
 
+  /* Tap will prevent certain uncaughtException behaviors from occuring
+   * and adds extra properties. This bypasses that. Once we are node 10+
+   * we may be able to avoid this through tap having an expected unhandled
+   * api call that works in node 10+ (due to async hooks working better).
+   * t.expectUncaughtException(fn, [expectedError], message, extra)
+   * https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+   */
+  temporarilyOverrideTapUncaughtBehavior: (tap, t) => {
+    const originalThrew = tap.threw
+    // Prevent tap from failing test and remove extra prop
+    tap.threw = (err) => {
+      delete err.tapCaught
+    }
+
+    t.teardown(() => {
+      tap.threw = originalThrew
+    })
+  },
+
   runOutOfContext: function(fn) {
     tasks.push(fn)
   },

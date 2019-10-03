@@ -185,15 +185,10 @@ test(
 )
 
 test('built-in http instrumentation should not swallow errors', function(t) {
-  const originalThrew = tap.threw
-  // Prevent tap from failing test and remove extra prop
-  tap.threw = (err) => {
-    delete err.tapCaught
-  }
-
-  t.teardown(() => {
-    tap.threw = originalThrew
-  })
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   t.plan(8)
 
@@ -206,8 +201,8 @@ test('built-in http instrumentation should not swallow errors', function(t) {
     helper.unloadAgent(agent)
   })
 
-  // Remove tap's uncaughtException handler for this test because we are
-  // testing an unhandled exception case.
+  // These don't really do anything with newest tap but leaving
+  // for now in cases changes in future.
   helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
   helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
