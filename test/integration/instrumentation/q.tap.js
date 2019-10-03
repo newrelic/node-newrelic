@@ -1,7 +1,8 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
 
 function QContext(t, agent) {
   this.agent = agent
@@ -70,6 +71,16 @@ test('q.then', function testQNInvoke(t) {
 })
 
 test('q.then rejections', function testQNInvoke(t) {
+  const originalThrew = tap.threw
+  // Prevent tap from failing test and remove extra prop
+  tap.threw = (err) => {
+    delete err.tapCaught
+  }
+
+  t.teardown(() => {
+    tap.threw = originalThrew
+  })
+
   t.plan(4)
 
   var agent = setupAgent(t)

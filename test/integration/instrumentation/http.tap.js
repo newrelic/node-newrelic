@@ -185,6 +185,16 @@ test(
 )
 
 test('built-in http instrumentation should not swallow errors', function(t) {
+  const originalThrew = tap.threw
+  // Prevent tap from failing test and remove extra prop
+  tap.threw = (err) => {
+    delete err.tapCaught
+  }
+
+  t.teardown(() => {
+    tap.threw = originalThrew
+  })
+
   t.plan(8)
 
   const agent = helper.instrumentMockedAgent()

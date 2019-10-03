@@ -1,11 +1,16 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
-var testPromiseSegments = require('./promises/segments')
-var testTransactionState = require('./promises/transaction-state')
+const helper = require('../../lib/agent_helper')
+const testPromiseSegments = require('./promises/segments')
+const testTransactionState = require('./promises/transaction-state')
 
-var runMultiple = testTransactionState.runMultiple
+// grab process emit before tap / async-hooks-domain can mess with it
+const originalEmit = process.emit
+
+const tap = require('tap')
+const test = tap.test
+
+const runMultiple = testTransactionState.runMultiple
 
 
 test('Promise constructor retains all properties', function(t) {
@@ -138,6 +143,16 @@ test('when.defer', function(t) {
 })
 
 test('when debug API', function(t) {
+  const originalThrew = tap.threw
+  // Prevent tap from failing test and remove extra prop
+  tap.threw = (err) => {
+    delete err.tapCaught
+  }
+
+  t.teardown(() => {
+    tap.threw = originalThrew
+  })
+
   t.plan(2)
   setupAgent(t)
   var when = require('when')
@@ -160,8 +175,18 @@ test('when debug API', function(t) {
     t.plan(2)
     helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
 
+    const asyncHookDomainEmit = process.emit
+    process.emit = (event, ...args) => {
+      // avoid async hook domain emit so `when` can behave normally.
+      // seems like *should not* have negative consequences but it may.
+      // https://github.com/isaacs/async-hook-domain/issues/3
+      return originalEmit.call(process, event, ...args)
+    }
+
     when.Promise.onPotentiallyUnhandledRejectionHandled = function testOPURH(e) {
       t.equal(e.value, error, 'should have passed error through')
+
+      process.emit = asyncHookDomainEmit
       t.end()
     }
 

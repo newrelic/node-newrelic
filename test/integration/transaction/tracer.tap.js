@@ -108,12 +108,24 @@ test('bind + throw', function testThrows(t) {
 })
 
 test('bind + capture error', function testThrows(t) {
+  const originalThrew = tap.threw
+  // Prevent tap from failing test and remove extra prop
+  tap.threw = (err) => {
+    delete err.tapCaught
+  }
+
+  t.teardown(() => {
+    tap.threw = originalThrew
+  })
+
   var agent = helper.loadTestAgent(t)
   var tracer = agent.tracer
   var error = new Error('oh no!!')
   var name = 'some custom transaction name'
   t.plan(8)
 
+  // These don't really do anything with newest tap but leaving
+  // for now in cases changes in future.
   helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
   helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
