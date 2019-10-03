@@ -122,7 +122,9 @@
     "unit": "rm -f newrelic_agent.log && mocha -r nock -c test/unit --recursive",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
-    "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
+    "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
@@ -136,7 +138,8 @@
     "https-proxy-agent": "^2.2.1",
     "json-stringify-safe": "^5.0.0",
     "readable-stream": "^3.1.1",
-    "semver": "^5.3.0"
+    "semver": "^5.3.0",
+    "snyk": "^1.230.5"
   },
   "optionalDependencies": {
     "@newrelic/native-metrics": "^4.0.0"
@@ -178,5 +181,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/newrelic/node-newrelic.git"
-  }
+  },
+  "snyk": true
 }
