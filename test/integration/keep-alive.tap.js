@@ -6,12 +6,13 @@ const join = require('path').join
 const https = require('https')
 const RemoteMethod = require('../../lib/collector/remote-method')
 
+const MAX_PORT_ATTEMPTS = 5
+
 tap.test("RemoteMethod makes two requests with one connection", (t) => {
   t.ok(true, "Setup Test")
 
   // create a basic https server using our standard test certs
   let opts = {
-    port: 8765,
     key: read(join(__dirname, '../lib/test-key.key')),
     cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
   }
@@ -23,23 +24,52 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
 
   // set a reasonable server timeout for cleanup
   // of the server's keep-alive connections
-  server.setTimeout(5000)
+  server.setTimeout(5000, (socket) => {
+    socket.end()
+    server.close()
+  })
 
   // close server when test ends
   t.tearDown(() => {
     server.close()
   })
 
-  // start the server, and then start making requests
-  server.listen(8765, function() {
+  let attempts = 0
+  server.on('error', (e) => {
+    // server port not guranteed to be not in use
+    if (e.code === 'EADDRINUSE') {
+      if (attempts >= MAX_PORT_ATTEMPTS) {
+        console.log('Exceeded max attempts (%s), bailing out.', MAX_PORT_ATTEMPTS)
+        throw new Error('Unable to get unused port')
+      }
+
+      attempts++
+
+      console.log('Address in use, retrying...')
+      setTimeout(() => {
+        server.close()
+
+        // start the server using a random port
+        server.listen()
+      }, 1000)
+    }
+  })
+
+  // start the server using a random port
+  server.listen()
+
+  // make requests once successfully running
+  server.on('listening', () => {
+    const port = server.address().port
+
     // once we start a server, use a RemoteMethod
     // object to make a request
-    const method = createRemoteMethod()
+    const method = createRemoteMethod(port)
     method.invoke({}, [], function(err, res) {
       t.ok(200 === res.status, "First request success")
 
       // once first request is done, create a second request
-      const method2 = createRemoteMethod()
+      const method2 = createRemoteMethod(port)
       method2.invoke({}, [], function(err2, res2) {
         t.ok(200 === res2.status, "Second request success")
         // end the test
@@ -47,7 +77,6 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
       })
     })
   })
-
 
   let connections = 0
 
@@ -62,10 +91,10 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
   })
 })
 
-function createRemoteMethod() {
+function createRemoteMethod(port) {
   const config = {
     host: 'ssl.lvh.me',
-    port: 8765,
+    port: port,
     ssl: true,
     max_payload_size_in_bytes: 1000000
   }
