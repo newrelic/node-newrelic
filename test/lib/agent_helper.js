@@ -436,7 +436,13 @@ const helper = module.exports = {
       delete err.tapCaught
     }
 
+    const originalTestThrew = t.threw
+    t.threw = (err) => {
+      delete err.tapCaught
+    }
+
     t.teardown(() => {
+      t.threw = originalTestThrew
       tap.threw = originalThrew
     })
   },
