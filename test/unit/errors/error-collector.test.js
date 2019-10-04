@@ -1725,7 +1725,8 @@ describe('Errors', function() {
             process.nextTick(function() {
               var attributes = getFirstEventIntrinsicAttributes(agent.errors)
               expect(attributes.port).equal(tx.port)
-              done()
+
+              server.close(done)
             })
           })
         })
