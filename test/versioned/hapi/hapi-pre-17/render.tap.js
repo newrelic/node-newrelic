@@ -170,6 +170,9 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('should trap errors correctly', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server = utils.getServer({ options: {debug: false} })
 
     server.route({

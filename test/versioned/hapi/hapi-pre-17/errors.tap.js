@@ -58,6 +58,9 @@ tap.test('Hapi v16 error handling', function(t) {
   })
 
   t.test('reports error when thrown from a route', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server.route({
       method: 'GET',
       path: '/test',
@@ -75,6 +78,9 @@ tap.test('Hapi v16 error handling', function(t) {
   })
 
   t.test('reports error when thrown from a middleware', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server.ext('onRequest', function() {
       throw new Error('some error')
     })

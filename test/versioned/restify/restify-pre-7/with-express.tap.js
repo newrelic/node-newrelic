@@ -1,9 +1,10 @@
 'use strict'
 
-var tap     = require('tap')
-var request = require('request')
-var helper  = require('../../../lib/agent_helper')
+const tap     = require('tap')
+const request = require('request')
+const helper  = require('../../../lib/agent_helper')
 
+const MAX_PORT_ATTEMPTS = 5
 
 tap.test("restify shouldn't affect express query parsing middleware", function(t) {
   t.plan(2)
@@ -19,11 +20,43 @@ tap.test("restify shouldn't affect express query parsing middleware", function(t
     t.deepEqual(req.query, {test: 'success'}, 'express req.query property is correct')
     res.sendStatus(200)
   })
-  server.listen(8765)
 
-  request.get('http://localhost:8765/?test=success', function(err, response) {
-    if (err) return t.fail(err)
-    t.equal(200, response.statusCode)
+  let attempts = 0
+  server.on('error', (e) => {
+    // server port not guranteed to be not in use
+    if (e.code === 'EADDRINUSE') {
+      if (attempts >= MAX_PORT_ATTEMPTS) {
+        // eslint-disable-next-line no-console
+        console.log('Exceeded max attempts (%s), bailing out.', MAX_PORT_ATTEMPTS)
+        throw new Error('Unable to get unused port')
+      }
+
+      attempts++
+
+      // eslint-disable-next-line no-console
+      console.log('Address in use, retrying...')
+      setTimeout(() => {
+        server.close()
+
+        // start the server using a random port
+        server.listen()
+      }, 1000)
+    }
+  })
+
+  // start the server using a random port
+  server.listen()
+
+  server.on('listening', () => {
+    const port = server.address().port
+
+    request.get(`http://localhost:${port}/?test=success`, function(err, response) {
+      if (err) {
+        return t.fail(err)
+      }
+
+      t.equal(200, response.statusCode)
+    })
   })
 
   t.tearDown(function cb_tearDown() {

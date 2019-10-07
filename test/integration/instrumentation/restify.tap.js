@@ -11,8 +11,8 @@ var assertMetrics = require('../../lib/metrics_helper').assertMetrics
  * CONSTANTS
  *
  */
-var METRIC = 'WebTransaction/Restify/GET//hello/:name'
-
+const METRIC = 'WebTransaction/Restify/GET//hello/:name'
+const MAX_PORT_ATTEMPTS = 5
 
 tap.test('should not crash when Restify handles a connection', function(t) {
   t.plan(7)
@@ -32,10 +32,36 @@ tap.test('should not crash when Restify handles a connection', function(t) {
     next()
   })
 
-  server.listen(8765, function() {
+  let attempts = 0
+  server.on('error', (e) => {
+    // server port not guranteed to be not in use
+    if (e.code === 'EADDRINUSE') {
+      if (attempts >= MAX_PORT_ATTEMPTS) {
+        console.log('Exceeded max attempts (%s), bailing out.', MAX_PORT_ATTEMPTS)
+        throw new Error('Unable to get unused port')
+      }
+
+      attempts++
+
+      console.log('Address in use, retrying...')
+      setTimeout(() => {
+        server.close()
+
+        // start the server using a random port
+        server.listen()
+      }, 1000)
+    }
+  })
+
+  // start the server using a random port
+  server.listen()
+
+  server.on('listening', function() {
     t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-    request.get('http://localhost:8765/hello/friend', function(error, response, body) {
+    const port = server.address().port
+
+    request.get(`http://localhost:${port}/hello/friend`, function(error, response, body) {
       if (error) return t.fail(error)
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 

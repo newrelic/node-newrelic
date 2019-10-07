@@ -108,12 +108,19 @@ test('bind + throw', function testThrows(t) {
 })
 
 test('bind + capture error', function testThrows(t) {
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
   var agent = helper.loadTestAgent(t)
   var tracer = agent.tracer
   var error = new Error('oh no!!')
   var name = 'some custom transaction name'
   t.plan(8)
 
+  // These don't really do anything with newest tap but leaving
+  // for now in cases changes in future.
   helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
   helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
