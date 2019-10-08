@@ -1407,6 +1407,7 @@ function _doShutdown(api, options, callback) {
     agent.on('started', function shutdownHarvest() {
       agent.forceHarvestAll(afterHarvest)
     })
+
     agent.on('errored', function logShutdownError(error) {
       agent.stop(callback)
       if (error) {
