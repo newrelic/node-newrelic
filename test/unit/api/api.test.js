@@ -1414,27 +1414,27 @@ describe('the New Relic agent API', function() {
     })
 
     describe('when `options.collectPendingData` is `true`', () => {
-      it('calls harvest when state is `started`', () => {
+      it('calls forceHarvestAll when state is `started`', () => {
         var mock = sinon.mock(agent)
         agent.setState('started')
-        mock.expects('harvest').once()
+        mock.expects('forceHarvestAll').once()
         api.shutdown({collectPendingData: true})
         mock.verify()
       })
 
-      it('calls harvest when state is not "started" and changes to "started"', () => {
+      it('calls forceHarvestAll when state changes to "started"', () => {
         var mock = sinon.mock(agent)
         agent.setState('starting')
-        mock.expects('harvest').once()
+        mock.expects('forceHarvestAll').once()
         api.shutdown({collectPendingData: true})
         agent.setState('started')
         mock.verify()
       })
 
-      it('does not call harvest when state is not "started" and not changed', () => {
+      it('does not call forceHarvestAll when state is not "started"', () => {
         var mock = sinon.mock(agent)
         agent.setState('starting')
-        mock.expects('harvest').never()
+        mock.expects('forceHarvestAll').never()
         api.shutdown({collectPendingData: true})
         mock.verify()
       })
@@ -1487,29 +1487,29 @@ describe('the New Relic agent API', function() {
       })
     })
 
-    it('calls harvest when a timeout is given and not reached', function() {
+    it('calls forceHarvestAll when a timeout is given and not reached', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      mock.expects('harvest').once()
+      mock.expects('forceHarvestAll').once()
       api.shutdown({collectPendingData: true, timeout: 1000})
       agent.setState('started')
       mock.verify()
     })
 
-    it('calls stop when timeout is reached and does not harvest', function() {
+    it('calls stop when timeout is reached and does not forceHarvestAll', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      mock.expects('harvest').never()
+      mock.expects('forceHarvestAll').never()
       mock.expects('stop').once()
       api.shutdown({collectPendingData: true, timeout: 1000}, function() {
         mock.verify()
       })
     })
 
-    it('calls harvest when timeout is not a number', function() {
+    it('calls forceHarvestAll when timeout is not a number', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      mock.expects('harvest').once()
+      mock.expects('forceHarvestAll').once()
       api.shutdown({collectPendingData: true, timeout: "xyz"}, function() {
         mock.verify()
       })
@@ -1530,8 +1530,8 @@ describe('the New Relic agent API', function() {
     it('calls stop after harvest', function() {
       var mock = sinon.mock(agent)
 
-      agent.harvest = function(cb) {
-        process.nextTick(cb)
+      agent.forceHarvestAll = function(cb) {
+        setImmediate(cb)
       }
 
       mock.expects('stop').once()
@@ -1543,8 +1543,8 @@ describe('the New Relic agent API', function() {
     it('calls stop when harvest errors', function() {
       var mock = sinon.mock(agent)
 
-      agent.harvest = function(cb) {
-        process.nextTick(function() {
+      agent.forceHarvestAll = function(cb) {
+        setImmediate(function() {
           cb(new Error('some error'))
         })
       }
