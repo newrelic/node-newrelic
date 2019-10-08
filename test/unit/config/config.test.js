@@ -176,6 +176,13 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up on diagnostics code injection', function() {
+      idempotentEnv({'NEW_RELIC_DIAGNOSTICS_CODE_INJECTOR_ENABLED': true}, function(tc) {
+        should.exist(tc.diagnostics.code_injector.enabled)
+        expect(tc.diagnostics.code_injector.enabled).to.equal(true)
+      })
+    })
+
     it('should pick up the billing hostname', function() {
       idempotentEnv({'NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS': 123}, function(tc) {
         should.exist(tc.utilization.logical_processors)
