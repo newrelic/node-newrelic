@@ -1405,7 +1405,7 @@ function _doShutdown(api, options, callback) {
     }
 
     agent.on('started', function shutdownHarvest() {
-      agent.harvest(afterHarvest)
+      agent.forceHarvestAll(afterHarvest)
     })
     agent.on('errored', function logShutdownError(error) {
       agent.stop(callback)
@@ -1417,7 +1417,7 @@ function _doShutdown(api, options, callback) {
       }
     })
   } else if (options.collectPendingData) {
-    agent.harvest(afterHarvest)
+    agent.forceHarvestAll(afterHarvest)
   } else {
     agent.stop(callback)
   }
