@@ -595,7 +595,6 @@ describe('the New Relic agent', function() {
         var config = {
           agent_run_id: 404,
           apdex_t: 0.742,
-          data_report_period: 69,
           url_rules: []
         }
 
@@ -627,7 +626,6 @@ describe('the New Relic agent', function() {
 
           expect(agent._state).equal('started')
           expect(agent.config.run_id).equal(404)
-          expect(agent.config.data_report_period).equal(69)
           expect(agent.metrics._apdexT).equal(0.742)
           expect(agent.urlNormalizer.rules).deep.equal([])
 

@@ -1580,28 +1580,6 @@ describe('the agent configuration', function() {
       expect(config.serverless_mode.enabled).to.be.false
     })
 
-    describe('when data_report_period is set', function() {
-      it('should emit data_report_period when harvest interval is changed', (done) => {
-        config.once('data_report_period', function(harvestInterval) {
-          expect(harvestInterval).equal(45)
-
-          done()
-        })
-
-        config.onConnect({'data_report_period': 45})
-      })
-
-      it('should update data_report_period only when it is changed', function() {
-        expect(config.data_report_period).equal(60)
-
-        config.once('data_report_period', function() {
-          throw new Error('should never get here')
-        })
-
-        config.onConnect({'data_report_period': 60})
-      })
-    })
-
     describe('when event_harvest_config is set', function() {
       it('should emit event_harvest_config when harvest interval is changed', (done) => {
         const expectedHarvestConfig = {
