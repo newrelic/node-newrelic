@@ -176,6 +176,13 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up on diagnostics code injection', function() {
+      idempotentEnv({'NEW_RELIC_DIAGNOSTICS_CODE_INJECTOR_ENABLED': true}, function(tc) {
+        should.exist(tc.diagnostics.code_injector.enabled)
+        expect(tc.diagnostics.code_injector.enabled).to.equal(true)
+      })
+    })
+
     it('should pick up the billing hostname', function() {
       idempotentEnv({'NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS': 123}, function(tc) {
         should.exist(tc.utilization.logical_processors)
@@ -597,6 +604,17 @@ describe('the agent configuration', function() {
         })
       })
 
+      it('should default primary_application_id to Unknown when not set', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.distributed_tracing.enabled).to.be.true
+          expect(tc.primary_application_id).to.equal('Unknown')
+        })
+      })
+
       it('should set serverless_mode from lambda-specific env var if not set by user',
         () => {
           idempotentEnv({
@@ -731,7 +749,7 @@ describe('the agent configuration', function() {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
-        NEW_RELIC_APPLICATION_ID: 'defined',
+        NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
         NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
       }
       idempotentEnv(env, (tc) => {

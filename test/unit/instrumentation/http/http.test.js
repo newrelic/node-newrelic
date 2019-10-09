@@ -376,13 +376,17 @@ describe('built-in http module instrumentation', function() {
 
     describe('for http.createServer', function() {
       it('should trace errors in top-level handlers', function(done) {
-        var server
+        let server
+        let request
+
         process.once('uncaughtException', function() {
           var errors = agent.errors.traceAggregator.errors
           expect(errors).to.have.property('length', 1)
 
-          server.close()
-          return done()
+          // abort request to close connection and
+          // allow server to close fast instead of after timeout
+          request.abort()
+          server.close(done)
         })
 
         server = http.createServer(function cb_createServer() {
@@ -390,8 +394,13 @@ describe('built-in http module instrumentation', function() {
         })
 
         server.listen(8182, function() {
-          http.get({host: 'localhost', port: 8182}, function() {
+          request = http.get({host: 'localhost', port: 8182}, function() {
             done('actually got response')
+          })
+
+          request.on('error', function swallowError(err) {
+            // eslint-disable-next-line no-console
+            console.log('swallowed error: ', err)
           })
         })
       })
@@ -404,8 +413,7 @@ describe('built-in http module instrumentation', function() {
           var errors = agent.errors.traceAggregator.errors
           expect(errors.length).equal(1)
 
-          server.close()
-          return done()
+          server.close(done)
         })
 
         server = http.createServer(function cb_createServer(request, response) {
