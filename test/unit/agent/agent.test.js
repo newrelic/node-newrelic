@@ -498,28 +498,6 @@ describe('the New Relic agent', function() {
         expect(function() { agent.stop() }).throws('callback required!')
       })
 
-      it('should not error if no harvester handle is set', function() {
-        agent.harvesterHandle = undefined
-        agent.collector.shutdown = nop
-
-        expect(function() { agent.stop(nop) }).not.throws()
-      })
-
-      it('should not error if a harvester handle is set', function() {
-        agent.harvesterHandle = setInterval(function() { throw new Error('nope') }, 5)
-        agent.collector.shutdown = nop
-
-        expect(function() { agent.stop(nop) }).not.throws()
-      })
-
-      it('should clear harvester handle is set', function() {
-        agent.harvesterHandle = setInterval(function() { throw new Error('nope') }, 5)
-        agent.collector.shutdown = nop
-
-        agent.stop(nop)
-        should.not.exist(agent.harvesterHandle)
-      })
-
       it('should stop sampler', function() {
         sampler.start(agent)
         agent.collector.shutdown = nop
@@ -595,7 +573,6 @@ describe('the New Relic agent', function() {
         var config = {
           agent_run_id: 404,
           apdex_t: 0.742,
-          data_report_period: 69,
           url_rules: []
         }
 
@@ -627,7 +604,6 @@ describe('the New Relic agent', function() {
 
           expect(agent._state).equal('started')
           expect(agent.config.run_id).equal(404)
-          expect(agent.config.data_report_period).equal(69)
           expect(agent.metrics._apdexT).equal(0.742)
           expect(agent.urlNormalizer.rules).deep.equal([])
 
@@ -717,71 +693,6 @@ describe('the New Relic agent', function() {
         mock.expects('record').never()
 
         transaction.end()
-      })
-    })
-
-    describe('when tweaking the harvest cycle', function() {
-      afterEach(function() {
-        agent._stopHarvester()
-      })
-
-      it('should begin with no harvester active', function() {
-        expect(agent.harvesterHandle).to.not.exist
-      })
-
-      it('should start a harvester without throwing', function() {
-        expect(function() { agent._scheduleHarvester(10) }).not.throws()
-        expect(agent.harvesterHandle).to.exist
-      })
-
-      it('should stop an unstarted harvester without throwing', function() {
-        expect(function() { agent._scheduleHarvester(10) }).not.throws()
-      })
-
-      it('should stop a started harvester', function() {
-        agent._scheduleHarvester(10)
-        agent._stopHarvester()
-        expect(agent.harvesterHandle).to.not.exist
-      })
-
-      it('should restart an unstarted harvester without throwing', function() {
-        expect(function() { agent._restartHarvester(10) }).not.throws()
-        expect(agent.harvesterHandle).to.exist
-      })
-
-      it('should restart a started harvester', function() {
-        agent._scheduleHarvester(10)
-        var before = agent.harvesterHandle
-        expect(before).to.exist
-        agent._restartHarvester(10)
-        expect(agent.harvesterHandle).not.equal(before)
-      })
-
-      it('should not alter interval when harvester\'s not running', function(done) {
-        expect(agent.harvesterHandle).to.not.exist
-        agent._harvesterIntervalChange(13, function() {
-          expect(agent.harvesterHandle).to.not.exist
-
-          done()
-        })
-      })
-
-      it('should not crash when no callback is passed on interval change', function() {
-        agent.harvesterHandle = setInterval(function() {}, 2 << 40)
-        expect(function() { agent._harvesterIntervalChange(69) }).not.throws()
-      })
-
-      it('should alter interval when harvester\'s not running', function(done) {
-        agent._scheduleHarvester(10)
-        var before = agent.harvesterHandle
-        expect(before).to.exist
-
-        agent._harvesterIntervalChange(13, function(error) {
-          expect(error.message).equal('Not connected to New Relic!')
-          expect(agent.harvesterHandle).not.equal(before)
-
-          done()
-        })
       })
     })
 

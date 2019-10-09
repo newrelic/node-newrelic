@@ -130,28 +130,29 @@ describe('TraceSegment', function() {
     expect(agent.totalActiveSegments).to.equal(0)
     expect(agent.segmentsCreatedInHarvest).to.equal(0)
 
-    var tx = new Transaction(agent)
+    const tx = new Transaction(agent)
     expect(agent.totalActiveSegments).to.equal(1)
     expect(agent.segmentsCreatedInHarvest).to.equal(1)
     expect(tx.numSegments).to.equal(1)
     expect(agent.activeTransactions).to.equal(1)
 
-    var segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
+    const segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
     expect(agent.totalActiveSegments).to.equal(2)
     expect(agent.segmentsCreatedInHarvest).to.equal(2)
     expect(tx.numSegments).to.equal(2)
     tx.end()
 
+    expect(agent.activeTransactions).to.equal(0)
+
     setTimeout(function() {
       expect(agent.totalActiveSegments).to.equal(0)
       expect(agent.segmentsClearedInHarvest).to.equal(2)
-      agent.harvest(function() {
-        agent.harvest(function() {
-          expect(agent.totalActiveSegments).to.equal(0)
-          expect(agent.segmentsClearedInHarvest).to.equal(0)
-          expect(agent.segmentsCreatedInHarvest).to.equal(0)
-          done()
-        })
+
+      agent.forceHarvestAll(() => {
+        expect(agent.totalActiveSegments).to.equal(0)
+        expect(agent.segmentsClearedInHarvest).to.equal(0)
+        expect(agent.segmentsCreatedInHarvest).to.equal(0)
+        done()
       })
     }, 10)
   })
