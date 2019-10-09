@@ -125,41 +125,36 @@ describe('TraceSegment', function() {
     }, 10)
   })
 
-  // TODO: remove or relpace entity stat tracking solution.
-  // These are commented out for now.
   it('properly tracks the number of active or harvested segments', function(done) {
     expect(agent.activeTransactions).to.equal(0)
-    // expect(agent.totalActiveSegments).to.equal(0)
-    // expect(agent.segmentsCreatedInHarvest).to.equal(0)
+    expect(agent.totalActiveSegments).to.equal(0)
+    expect(agent.segmentsCreatedInHarvest).to.equal(0)
 
-    var tx = new Transaction(agent)
-    // expect(agent.totalActiveSegments).to.equal(1)
-    // expect(agent.segmentsCreatedInHarvest).to.equal(1)
+    const tx = new Transaction(agent)
+    expect(agent.totalActiveSegments).to.equal(1)
+    expect(agent.segmentsCreatedInHarvest).to.equal(1)
     expect(tx.numSegments).to.equal(1)
     expect(agent.activeTransactions).to.equal(1)
 
-    var segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
-    // expect(agent.totalActiveSegments).to.equal(2)
-    // expect(agent.segmentsCreatedInHarvest).to.equal(2)
+    const segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
+    expect(agent.totalActiveSegments).to.equal(2)
+    expect(agent.segmentsCreatedInHarvest).to.equal(2)
     expect(tx.numSegments).to.equal(2)
     tx.end()
 
     expect(agent.activeTransactions).to.equal(0)
 
-    done()
+    setTimeout(function() {
+      expect(agent.totalActiveSegments).to.equal(0)
+      expect(agent.segmentsClearedInHarvest).to.equal(2)
 
-    // setTimeout(function() {
-    //   expect(agent.totalActiveSegments).to.equal(0)
-    //   expect(agent.segmentsClearedInHarvest).to.equal(2)
-    //   agent.harvest(function() {
-    //     agent.harvest(function() {
-    //       expect(agent.totalActiveSegments).to.equal(0)
-    //       expect(agent.segmentsClearedInHarvest).to.equal(0)
-    //       expect(agent.segmentsCreatedInHarvest).to.equal(0)
-    //       done()
-    //     })
-    //   })
-    // }, 10)
+      agent.forceHarvestAll(() => {
+        expect(agent.totalActiveSegments).to.equal(0)
+        expect(agent.segmentsClearedInHarvest).to.equal(0)
+        expect(agent.segmentsCreatedInHarvest).to.equal(0)
+        done()
+      })
+    }, 10)
   })
 
   it('toJSON should not modify attributes', () => {
