@@ -133,7 +133,9 @@
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^2.1.4",
     "concat-stream": "^2.0.0",
-    "https-proxy-agent": "^2.2.1",
+    "escodegen": "^1.11.1",
+    "esprima": "^4.0.1",
+    "https-proxy-agent": "^3.0.0",
     "json-stringify-safe": "^5.0.0",
     "readable-stream": "^3.1.1",
     "semver": "^5.3.0"
