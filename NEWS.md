@@ -1,3 +1,52 @@
+### 5.13.1 (2019-10-10):
+
+* Added back generation of entity stats logging and uninstrumented support metric
+  generation on metric harvests.
+
+* Removed legacy harvest code from main agent.
+
+* Updated `https-proxy-agent` to v3.
+
+ Shoutout to @asturur for the contribution.
+
+* Added diagnostic code injector.
+
+  The agent may now be configured to make transaction state checks via code
+  injection. This may be turned on by setting `code_injector.diagnostics.enabled`
+  to `true`. While this option is enabled, code around async boundaries will be added
+  to track transactions, and log a message when they are not properly reinstated.
+
+* Fixed bug where `API.shutdown()` would not properly harvest when configured to.
+
+* `primary_application_id` now defaults to 'Unknown' in serverless mode to allow
+  Distributed Tracing to function correctly when `NEW_RELIC_PRIMARY_APPLICATION_ID`
+  is not defined.
+
+* Upgraded `tap` to latest version
+
+* Upgraded `mocha` to latest version.
+
+* Adds `--exit` flag to mocha test runs to prevent infinite runs on CI.
+
+* Fixed bug where multiple agent restarts would cause the number of 'stopped'
+  listeners to exceed limit.
+
+* Fixed inconsistent async return from collector API.
+
+  This could result in an infinite loop due to attempting to merge before clearing.
+  *This bug should not have impacted normal agent runs but was uncovered for certain
+  test cases.*
+
+* Fixed tests that leave work scheduled on the event loop.
+
+* Fixed issue that could result in vendor utilization detection failure.
+  As a part of this fix, the request that hits the timeout will immediately abort
+  instead of hanging around for the default timeout.
+
+### 5.13.0 (2019-10-01):
+
+* Same as 5.12.0
+
 ### 5.12.0 (2019-10-01):
 
 * Now supports Restify 7 and 8.
