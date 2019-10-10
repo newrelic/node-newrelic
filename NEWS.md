@@ -5,9 +5,9 @@
 
 * Removed legacy harvest code from main agent.
 
-* Updated `https-proxy-agent` to v3.
+* Updated `https-proxy-agent` to v3 for security fix.
 
- Shoutout to @asturur for the contribution.
+  Shoutout to @asturur for the contribution.
 
 * Added diagnostic code injector.
 
