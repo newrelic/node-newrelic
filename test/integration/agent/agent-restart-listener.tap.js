@@ -25,22 +25,32 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
   const agent = new Agent(config)
 
   agent.start((error, returned) => {
-    console.log('Listeners:')
-    console.log('started: ', agent.listenerCount('started'))
-    console.log('stopped: ', agent.listenerCount('stopped'))
-    console.log('disconnected: ', agent.listenerCount('disconnected'))
     t.notOk(error, 'connected without error')
     t.ok(returned, 'got boot configuration')
     t.ok(returned.agent_run_id, 'got run ID')
 
     const initialStoppedListeners = agent.listenerCount('stopped')
+    const initialErroredListeners = agent.listenerCount('errored')
+    const initialDisconnectedListeners = agent.listenerCount('disconnected')
 
     agent.collector.restart(() => {
       const currentStoppedListeners = agent.listenerCount('stopped')
+      const currentErroredListeners = agent.listenerCount('errored')
+      const currentDisconnectedListeners = agent.listenerCount('disconnected')
       t.equal(
         currentStoppedListeners, 
         initialStoppedListeners, 
-        'should not have extra listeners'
+        'should not have extra stopped listeners'
+      )
+      t.equal(
+        currentErroredListeners, 
+        initialErroredListeners, 
+        'should not have extra errored listeners'
+      )
+      t.equal(
+        currentDisconnectedListeners, 
+        initialDisconnectedListeners, 
+        'should not have extra disconnected listeners'
       )
 
       agent.stop(() => {
