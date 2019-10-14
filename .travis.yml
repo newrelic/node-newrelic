@@ -34,6 +34,7 @@ addons:
     packages:
       - rabbitmq-server
 before_install:
+  - source ./bin/travis-node6.sh
   - ./bin/travis-setup.sh
 install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
 cache:
