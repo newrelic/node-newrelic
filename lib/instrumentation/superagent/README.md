@@ -10,9 +10,11 @@ npm install newrelic
 
 Alternatively, it can be installed and loaded independently based on specific
 versioning needs:
+
 ```
 npm install @newrelic/superagent
 ```
+
 ```js
 // index.js
 require('newrelic')
