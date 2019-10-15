@@ -4,7 +4,7 @@ sudo apt-get update
 
 # so dumb that we need python-software-properties
 # to get add-apt-repository
-sudo apt-get -y install build-essential libssl-dev curl python-software-properties
+sudo apt-get -y install build-essential libssl-dev curl python-software-properties time sudo
 
 # Where is ppa:ubuntu-toolchain-r/test?
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test

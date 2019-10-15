@@ -48,7 +48,3 @@ if [ "$SUITE" = "versioned" ]; then
 else
   echo " --- no $SUITE installation requirements --- "
 fi
-
-
-# Always install time.
-sudo apt-get install -qq time
