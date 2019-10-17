@@ -7,8 +7,8 @@ sudo apt-get update
 sudo apt-get -y install build-essential libssl-dev curl python-software-properties time sudo
 
 # update gcc to something that will install pg-native module
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt-get update
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo apt-get -y update
 sudo apt-get -y install gcc-4.9 g++-4.9
 ln -s /usr/bin/g++-4.9 /usr/bin/g++
 ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
