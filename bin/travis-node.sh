@@ -19,7 +19,7 @@ ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
 # sudo apt-get -y install libstdc++6-4.7-dev
 
 # only do for NODE 12
-if [ $NR_NODE_VERSION > 11 ]
+if [ $NR_NODE_VERSION -gt 11 ]
 then
   echo "Insatlling updated glibc\n"
   # can we get this from an actual repository?
