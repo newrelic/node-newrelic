@@ -141,7 +141,7 @@
     "semver": "^5.3.0"
   },
   "optionalDependencies": {
-    "@newrelic/native-metrics": "^4.0.0"
+    "@newrelic/native-metrics": "^5.0.0"
   },
   "devDependencies": {
     "@newrelic/proxy": "^1.0.0",
