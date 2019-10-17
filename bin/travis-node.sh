@@ -18,9 +18,13 @@ ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
 # sudo apt-get -y update
 # sudo apt-get -y install libstdc++6-4.7-dev
 
-# can we get this from an actual repository?
-curl -LO 'http://launchpadlibrarian.net/130794928/libc6_2.17-0ubuntu4_amd64.deb'
-sudo dpkg -i libc6_2.17-0ubuntu4_amd64.deb
+# only do for NODE 12
+if [ $NR_NODE_VERSION > 11 ]
+then
+  # can we get this from an actual repository?
+  curl -LO 'http://launchpadlibrarian.net/130794928/libc6_2.17-0ubuntu4_amd64.deb'
+  sudo dpkg -i libc6_2.17-0ubuntu4_amd64.deb
+fi
 
 # install nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh | bash
