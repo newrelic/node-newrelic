@@ -21,9 +21,12 @@ ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
 # only do for NODE 12
 if [ $NR_NODE_VERSION > 11 ]
 then
+  echo "Insatlling updated glibc\n"
   # can we get this from an actual repository?
   curl -LO 'http://launchpadlibrarian.net/130794928/libc6_2.17-0ubuntu4_amd64.deb'
   sudo dpkg -i libc6_2.17-0ubuntu4_amd64.deb
+else
+  echo "Skipping glibc update\n"
 fi
 
 # install nvm
