@@ -20,4 +20,4 @@ fi
 export AGENT_PATH=`pwd`
 
 # This is meant to be temporary. Remove once new major version with fixes rolled into agent.
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --skip koa ${directories[@]}
+time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
