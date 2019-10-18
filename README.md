@@ -3,7 +3,7 @@
 # New Relic for Node.js
 
 This package instruments your application for performance monitoring
-with [New Relic][4].
+with [New Relic][4] .
 
 Make sure you have a [New Relic account][4] before starting. To see all the
 features, such as slow transaction traces, you will need a [New Relic Pro][5]
