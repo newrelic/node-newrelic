@@ -128,7 +128,7 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@newrelic/koa": "^1.0.8",
+    "@newrelic/koa": "^3.0.0",
     "@newrelic/superagent": "^1.0.2",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^2.1.4",
