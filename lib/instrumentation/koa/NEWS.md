@@ -1,3 +1,16 @@
+### 3.0.0 (2019-10-18):
+* add @koa/router instrumentation
+
+  Thanks to @zacanger for this contribution.
+
+* **BREAKING** Removed support for Node 6, 7, and 9.
+
+  The minimum supported version is now Node v8. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+
+* Added support for Node v12.
+
+* Bumps `tap` to latest major version.
+
 ### 2.0.0 (2019-05-21):
 
 * `koa-router` instrumentation now names transactions after the internal `koa-router` matched route. In the case of multiple matches, the last matched route that can serve requests is used.
