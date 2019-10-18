@@ -12,8 +12,8 @@ sudo apt-get -y update
 sudo apt-get -y install gcc-4.9 g++-4.9
 sudo rm /usr/bin/g++
 sudo rm /usr/bin/gcc
-ln -s /usr/bin/g++-4.9 /usr/bin/g++
-ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
+sudo ln -s /usr/bin/g++-4.9 /usr/bin/g++
+sudo ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
 
 # Where is ppa:ubuntu-toolchain-r/test?
 # sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
