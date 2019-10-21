@@ -119,7 +119,7 @@
     "ssl": "./bin/ssl.sh",
     "sub-install": "node test/bin/install_sub_deps",
     "test": "npm run integration && npm run unit",
-    "unit": "rm -f newrelic_agent.log && mocha -r nock -c test/unit --recursive --exit",
+    "unit": "rm -f newrelic_agent.log && mocha -r nock -c --ignore='test/unit/instrumentation/core/globals.test.js' test/unit --recursive --exit",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
     "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
