@@ -1,9 +1,10 @@
 'use strict'
 
-var chai    = require('chai')
-var helper  = require('../../../lib/agent_helper')
+const chai = require('chai')
+const helper = require('../../../lib/agent_helper')
+const semver = require('semver')
 
-var expect = chai.expect
+const expect = chai.expect
 
 if (global.Promise) {
   describe('Unhandled rejection', function() {
@@ -30,6 +31,11 @@ if (global.Promise) {
     })
 
     it('should be associated with the transction if there is one', function(done) {
+      // As of node 12, the promise which triggered the init async hook will no longer
+      // be propagated to the hook, so this linkage is no longer possible.
+      if (semver.satisfies(process.version, '>=12')) {
+        this.skip()
+      }
       helper.runInTransaction(agent, function(transaction) {
         Promise.reject('test rejection')
 
