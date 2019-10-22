@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=8"
       },
       "dependencies": {
         "amqplib": ">=0.5.0"

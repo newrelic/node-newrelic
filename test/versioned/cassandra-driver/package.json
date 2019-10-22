@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=8"
       },
       "dependencies": {
         "cassandra-driver": ">=3.4.0 <4"
