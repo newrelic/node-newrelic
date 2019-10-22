@@ -109,7 +109,7 @@ enable browser timings.
 
 - Insert the result of `newrelic.getBrowserTimingHeader()` into your html page.
 - The browser timing headers should be placed in the beginning of your `<head>` tag.
-  - As an exception to the above, for maximum IE compatability, the results of
+  - As an exception to the above, for maximum IE compatibility, the results of
     `getBrowserTimingHeader()` should be placed *after* any
     `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
 - Do *not* cache the header, call it once for every request.
