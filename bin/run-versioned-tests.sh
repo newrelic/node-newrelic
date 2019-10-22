@@ -38,7 +38,6 @@ do
        [ "$d" != "test/versioned/amqplib" ] &&     #temp until we get tests passing on node 12
        [ "$d" != "test/versioned/mysql" ]   &&      #temp until we get tests passing on node 12
        [ "$d" != "test/versioned/mysql2" ]  &&      #temp until we get tests passing on node 12
-       [ "$d" != "test/versioned/restify" ] &&     #temp until we get tests passing on node 12
        [ "$d" != "test/versioned/mongodb" ]           #temp until we get tests passing on node 12
     then
         directories[$count]=$d
