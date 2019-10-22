@@ -5,30 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": "6"
-      },
-      "dependencies": {
-        "mongodb": "^1"
-      },
-      "files": [
-        "gridfs.tap.js",
-        "lifecycle.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": "6"
-      },
-      "dependencies": {
-        "mongodb": "1.0 || >=1.2 <2"
-      },
-      "files": [
-        "mongodb.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=6"
+        "node": ">=8"
       },
       "dependencies": {
         "mongodb": ">=2.1 <3"
@@ -44,7 +21,7 @@
     },
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=8"
       },
       "dependencies": {
         "mongodb": ">=3.0.0 < 3.3.0"
