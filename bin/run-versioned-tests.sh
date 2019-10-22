@@ -35,8 +35,6 @@ do
        [ "$d" != "node_modules/@newrelic/superagent/tests/versioned/node_modules" ] && # cruft from find
 
        # the modules we're excluding
-       [ "$d" != "test/versioned/mysql" ]   &&      #temp until we get tests passing on node 12
-       [ "$d" != "test/versioned/mysql2" ]  &&      #temp until we get tests passing on node 12
        [ "$d" != "test/versioned/mongodb" ]           #temp until we get tests passing on node 12
     then
         directories[$count]=$d
