@@ -30,6 +30,14 @@ tap.test('Restify', (t) => {
     var server  = restify.createServer()
     t.tearDown(() => server.close())
 
+    agent.on('transactionFinished', () => {
+      var metric = agent.metrics.getMetric(METRIC)
+      t.ok(metric, 'request metrics should have been gathered')
+      t.equals(metric.callCount, 1, 'handler should have been called')
+      var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+      t.ok(isFramework, 'should indicate that restify is a framework')
+    })
+
     server.get('/hello/:name', function sayHello(req, res) {
       t.ok(agent.getTransaction(), 'transaction should be available in handler')
       res.send('hello ' + req.params.name)
@@ -46,20 +54,23 @@ tap.test('Restify', (t) => {
           agent.getTransaction(),
           'transaction should not leak into external request'
         )
-
-        var metric = agent.metrics.getMetric(METRIC)
-        t.ok(metric, 'request metrics should have been gathered')
-        t.equals(metric.callCount, 1, 'handler should have been called')
         t.equals(body, '"hello friend"', 'should return expected data')
-
-        var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
-        t.ok(isFramework, 'should indicate that restify is a framework')
       })
     })
   })
 
   t.test('should still be instrumented when run with SSL', function(t) {
     t.plan(7)
+
+    agent.on('transactionFinished', () => {
+      var metric = agent.metrics.getMetric(METRIC)
+
+      t.ok(metric, 'request metrics should have been gathered')
+      t.equals(metric.callCount, 1, 'handler should have been called')
+
+      var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+      t.ok(isFramework, 'should indicate that restify is a framework')
+    })
 
     helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
       if (error) {
@@ -90,14 +101,7 @@ tap.test('Restify', (t) => {
             agent.getTransaction(),
             'transaction should not leak into external request'
           )
-
-          var metric = agent.metrics.getMetric(METRIC)
-          t.ok(metric, 'request metrics should have been gathered')
-          t.equals(metric.callCount, 1, 'handler should have been called')
           t.equals(body, '"hello friend"', 'should return expected data')
-
-          var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
-          t.ok(isFramework, 'should indicate that restify is a framework')
         })
       })
     })

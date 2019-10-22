@@ -7,15 +7,11 @@ env:
     - NR_NODE_VERSION=8 SUITE=smoke
     - NR_NODE_VERSION=8 SUITE=unit
     - NR_NODE_VERSION=8 SUITE=integration
-    # - NR_NODE=8 SUITE=lint
-    # - NR_NODE=8 SUITE=security
     - NR_NODE_VERSION=8 SUITE=versioned
     # NODE 10
     - NR_NODE_VERSION=10 SUITE=smoke
     - NR_NODE_VERSION=10 SUITE=unit
     - NR_NODE_VERSION=10 SUITE=integration
-    - NR_NODE_VERSION=10 SUITE=lint
-    - NR_NODE_VERSION=10 SUITE=security
     - NR_NODE_VERSION=10 SUITE=versioned
     # NODE 12 --
     - NR_NODE_VERSION=12 SUITE=smoke
