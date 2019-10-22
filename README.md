@@ -116,8 +116,8 @@ enable browser timings.
 
 ### Example
 
-Below is an example using `express` and `jade`; Express is a popular web
-application framework, and `jade` is a popular template module. Although the
+Below is an example using `express` and `pug`; Express is a popular web
+application framework, and `pug` is a popular template module. Although the
 specifics are different for other frameworks, the general approach described
 below should work in most cases.
 
@@ -140,9 +140,9 @@ app.get('/user/:id', function (req, res) {
 app.listen(process.env.PORT);
 ```
 
-*layout.jade:*
+*layout.pug:*
 
-```jade
+```pug
 doctype html
 html
   head
