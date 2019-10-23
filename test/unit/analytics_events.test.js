@@ -16,7 +16,6 @@ describe('Analytics events', function() {
   beforeEach(function() {
     agent = helper.loadMockedAgent({
       transaction_events: {
-        max_samples_per_minute: LIMIT,
         max_samples_stored: LIMIT
       }
     })
