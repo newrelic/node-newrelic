@@ -236,54 +236,6 @@ const helper = module.exports = {
   },
 
   /**
-   * Bootstrap a running MongoDB instance by dropping all the collections used
-   * by tests
-   *
-   * @param {Function} callback The operations to be performed while the server
-   *                            is running.
-   */
-  bootstrapMongoDB: (mongodb, collections, callback) => {
-    if (!callback) {
-      // bootstrapMongoDB(collections, callback)
-      callback = collections
-      collections = mongodb
-      mongodb = require('mongodb')
-    }
-
-    const server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-      auto_reconnect: true
-    })
-    const db = new mongodb.Db('integration', server, {
-      w: 1,
-      safe: true,
-      numberOfRetries: 10,
-      wtimeout: 100,
-      retryMiliSeconds: 300
-    })
-
-    db.open((err) => {
-      if (err) {
-        return callback(err)
-      }
-
-      async.eachSeries(collections, (collection, cb) => {
-        db.dropCollection(collection, (err) => {
-          // It's ok if the collection didn't exist before
-          if (err && err.errmsg === 'ns not found') {
-            err = null
-          }
-
-          cb(err)
-        })
-      }, (err) => {
-        db.close((err2) => {
-          callback(err || err2)
-        })
-      })
-    })
-  },
-
-  /**
    * Use c9/architect to bootstrap a MySQL server for running integration
    * tests.
    *

@@ -1,6 +1,7 @@
 'use strict'
 
 var common = require('./common')
+const collectionCommon = require('./collection-common')
 var helper = require('../../lib/agent_helper')
 var mongoPackage = require('mongodb/package.json')
 var params = require('../../lib/params')
@@ -358,7 +359,8 @@ function dbTest(name, collections, run) {
 
 function mongoTest(name, collections, run) {
   tap.test(name, function testWrap(t) {
-    helper.bootstrapMongoDB(collections, function bootstrapped(err) {
+    const mongodb = require('mongodb')
+    collectionCommon.dropTestCollections(mongodb, collections, function bootstrapped(err) {
       if (!t.error(err)) {
         return t.end()
       }

@@ -161,7 +161,7 @@
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mocha": "^6.2.1",
-    "mongodb": "^2",
+    "mongodb": "^3.3.3",
     "mysql": "*",
     "nock": "9.1.9",
     "proxyquire": "^1.8.0",

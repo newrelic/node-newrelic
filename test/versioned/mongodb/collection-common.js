@@ -3,6 +3,7 @@
 var common = require('./common')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
+const async = require('async')
 
 var METRIC_HOST_NAME = null
 var METRIC_HOST_PORT = null
@@ -16,6 +17,8 @@ exports.connect = common.connect
 exports.close = common.close
 exports.populate = populate
 exports.test = collectionTest
+
+exports.dropTestCollections = dropTestCollections
 
 function collectionTest(name, run) {
   var collections = ['testCollection', 'testCollection2']
@@ -31,12 +34,13 @@ function collectionTest(name, run) {
       t.autoend()
       t.beforeEach(function(done) {
         agent = helper.instrumentMockedAgent()
-        helper.bootstrapMongoDB(collections, function(err) {
+
+        var mongodb = require('mongodb')
+
+        dropTestCollections(mongodb, collections, function(err) {
           if (err) {
             return done(err)
           }
-
-          var mongodb = require('mongodb')
 
           METRIC_HOST_NAME = common.getHostName(agent)
           METRIC_HOST_PORT = common.getPort()
@@ -199,12 +203,15 @@ function collectionTest(name, run) {
         agent = helper.instrumentMockedAgent()
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
-        helper.bootstrapMongoDB(collections, function(err) {
+
+        var mongodb = require('mongodb')
+
+        dropTestCollections(mongodb, collections, function(err) {
           if (err) {
             return done(err)
           }
 
-          var mongodb = require('mongodb')
+
 
           common.connect(mongodb, domainPath, function(err, res) {
             if (err) {
@@ -256,7 +263,6 @@ function collectionTest(name, run) {
   })
 }
 
-
 function checkSegmentParams(t, segment) {
   var dbName = common.DB_NAME
   if (/\/rename$/.test(segment.name)) {
@@ -289,6 +295,40 @@ function populate(db, collection, done) {
     collection.deleteMany({}, function(err) {
       if (err) return done(err)
       collection.insert(items, done)
+    })
+  })
+}
+
+/**
+ * Bootstrap a running MongoDB instance by dropping all the collections used
+ * by tests.
+ * @param {*} mongodb MongoDB module to execute commands on.
+ * @param {*} collections Collections to drop for test.
+ * @param {Function} callback The operations to be performed while the server
+ *                     is running.
+ */
+function dropTestCollections(mongodb, collections, callback) {
+  common.connect(mongodb, null, function(err, res) {
+    if (err) {
+      return callback(err)
+    }
+
+    const client = res.client
+    const db = res.db
+
+    async.eachSeries(collections, (collection, cb) => {
+      db.dropCollection(collection, (err) => {
+        // It's ok if the collection didn't exist before
+        if (err && err.errmsg === 'ns not found') {
+          err = null
+        }
+
+        cb(err)
+      })
+    }, (err) => {
+      common.close(client, db, (err2) => {
+        callback(err || err2)
+      })
     })
   })
 }
