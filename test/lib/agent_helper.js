@@ -3,7 +3,6 @@
 const path = require('path')
 const fs = require('fs')
 const architect = require('architect')
-const async = require('async')
 const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
 const params = require('../lib/params')

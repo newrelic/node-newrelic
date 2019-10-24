@@ -360,7 +360,7 @@ function dbTest(name, collections, run) {
 function mongoTest(name, collections, run) {
   tap.test(name, function testWrap(t) {
     const mongodb = require('mongodb')
-    collectionCommon.dropTestCollections(mongodb, collections, function bootstrapped(err) {
+    collectionCommon.dropTestCollections(mongodb, collections, (err) => {
       if (!t.error(err)) {
         return t.end()
       }

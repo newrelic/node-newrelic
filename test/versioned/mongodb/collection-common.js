@@ -211,8 +211,6 @@ function collectionTest(name, run) {
             return done(err)
           }
 
-
-
           common.connect(mongodb, domainPath, function(err, res) {
             if (err) {
               return done(err)
