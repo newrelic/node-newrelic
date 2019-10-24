@@ -41,7 +41,7 @@ tap.test('MySQL transactions', {timeout : 30000}, function(t) {
         }
 
         // trying the object mode of client.query
-        client.query({sql: 'SELECT 1', timeout: 10}, function(err) {
+        client.query({sql: 'SELECT 1', timeout: 2000}, function(err) {
           if (!t.error(err, 'should not error')) {
             return t.end()
           }
