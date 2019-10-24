@@ -186,7 +186,7 @@ tap.test('Serverless mode harvest', (t) => {
   t.test('serverless_mode harvest should disregard sampling limits', (t) => {
     t.plan(4)
 
-    agent.config.transaction_events.max_samples_per_minute = 0
+    agent.config.transaction_events.max_samples_stored = 0
 
     var transaction
     var proxy = agent.tracer.transactionProxy(() => {

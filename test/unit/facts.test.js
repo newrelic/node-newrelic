@@ -190,7 +190,7 @@ describe('fun facts about apps that New Relic is interested in include', () => {
 
   it('should add harvest_limits from local or default config', (done) => {
     const expectedValue = 10
-    agent.config.transaction_events.max_samples_per_minute = expectedValue
+    agent.config.transaction_events.max_samples_stored = expectedValue
     agent.config.custom_insights_events.max_samples_stored = expectedValue
     agent.config.error_collector.max_event_samples_stored = expectedValue
 
