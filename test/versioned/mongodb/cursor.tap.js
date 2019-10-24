@@ -93,7 +93,7 @@ tap.test('piping cursor stream hides internal calls', function(t) {
   })
 
   var mongodb = require('mongodb')
-  helper.bootstrapMongoDB(['testCollection'], function(err) {
+  common.dropTestCollections(mongodb, ['testCollection'], function(err) {
     if (!t.error(err)) {
       return t.end()
     }

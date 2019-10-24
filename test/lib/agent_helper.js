@@ -3,7 +3,6 @@
 const path = require('path')
 const fs = require('fs')
 const architect = require('architect')
-const async = require('async')
 const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
 const params = require('../lib/params')
@@ -232,54 +231,6 @@ const helper = module.exports = {
     memcached.flush((err) => {
       memcached.end()
       callback(err)
-    })
-  },
-
-  /**
-   * Bootstrap a running MongoDB instance by dropping all the collections used
-   * by tests
-   *
-   * @param {Function} callback The operations to be performed while the server
-   *                            is running.
-   */
-  bootstrapMongoDB: (mongodb, collections, callback) => {
-    if (!callback) {
-      // bootstrapMongoDB(collections, callback)
-      callback = collections
-      collections = mongodb
-      mongodb = require('mongodb')
-    }
-
-    const server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-      auto_reconnect: true
-    })
-    const db = new mongodb.Db('integration', server, {
-      w: 1,
-      safe: true,
-      numberOfRetries: 10,
-      wtimeout: 100,
-      retryMiliSeconds: 300
-    })
-
-    db.open((err) => {
-      if (err) {
-        return callback(err)
-      }
-
-      async.eachSeries(collections, (collection, cb) => {
-        db.dropCollection(collection, (err) => {
-          // It's ok if the collection didn't exist before
-          if (err && err.errmsg === 'ns not found') {
-            err = null
-          }
-
-          cb(err)
-        })
-      }, (err) => {
-        db.close((err2) => {
-          callback(err || err2)
-        })
-      })
     })
   },
 
