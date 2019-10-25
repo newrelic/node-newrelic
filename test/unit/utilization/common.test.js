@@ -81,11 +81,8 @@ describe('Utilization Common Components', function() {
       let invocationCount = 0
       common.request(
         {
-          host: 'metadata.google.internal',
-          path: '/computeMetadata/v1/instance/?recursive=true',
-          headers: {
-            'Metadata-Flavor': 'Google'
-          }
+          host: 'fakedomain.provider.something',
+          path: '/metadata'
         },
         agent,
         (err) => {
