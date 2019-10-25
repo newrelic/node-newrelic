@@ -30,7 +30,7 @@ GLIBC_VERSION_CHECK=`ldd --version | head -n 1 | awk '{print $NF}'`
 
 if [ -z $NR_NODE_VERSION ]; then
     echo "please define NR_NODE_VERSION in local env"
-    exit(1)
+    exit 1
 fi
 
 if [ $NR_NODE_VERSION -gt 11 ] && version_gt 2.17 $GLIBC_VERSION_CHECK;then
