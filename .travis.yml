@@ -4,15 +4,15 @@ env:
     - MONGODB=2.6.11
   matrix:
     # NODE 8
-#    - NR_NODE_VERSION=8 SUITE=smoke
-#    - NR_NODE_VERSION=8 SUITE=unit
-#    - NR_NODE_VERSION=8 SUITE=integration
-#    - NR_NODE_VERSION=8 SUITE=versioned
-#    # NODE 10
-#    - NR_NODE_VERSION=10 SUITE=smoke
-#    - NR_NODE_VERSION=10 SUITE=unit
-#    - NR_NODE_VERSION=10 SUITE=integration
-#    - NR_NODE_VERSION=10 SUITE=versioned
+   - NR_NODE_VERSION=8 SUITE=smoke
+   - NR_NODE_VERSION=8 SUITE=unit
+   - NR_NODE_VERSION=8 SUITE=integration
+   - NR_NODE_VERSION=8 SUITE=versioned
+   # NODE 10
+   - NR_NODE_VERSION=10 SUITE=smoke
+   - NR_NODE_VERSION=10 SUITE=unit
+   - NR_NODE_VERSION=10 SUITE=integration
+   - NR_NODE_VERSION=10 SUITE=versioned
     # NODE 12 --
     - NR_NODE_VERSION=12 SUITE=smoke
     - NR_NODE_VERSION=12 SUITE=unit
