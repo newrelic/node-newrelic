@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# https://stackoverflow.com/questions/16989598/bash-comparing-version-numbers/24067243
+# tests version strings using `sort`'s -V option
+function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
+
 sudo apt-get update
 
 # so dumb that we need python-software-properties
@@ -20,8 +24,11 @@ sudo ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
 # sudo apt-get -y update
 # sudo apt-get -y install libstdc++6-4.7-dev
 
-# only do for NODE 12
-if [ $NR_NODE_VERSION -gt 11 ]
+# only do for NODE 12 AND for old glibc
+
+GLIBC_VERSION_CHECK=`ldd --version | head -n 1 | awk '{print $NF}'`
+
+if [ $NR_NODE_VERSION -gt 11 ] && [ version_gt 2.17 $GLIBC_VERSION_CHECK ]
 then
   echo "Insatlling updated glibc\n"
   # can we get this from an actual repository?
