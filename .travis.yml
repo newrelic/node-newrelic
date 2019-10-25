@@ -38,5 +38,4 @@ cache:
   directories:
     - "$HOME/.npm"
 script: npm run $SUITE
-after_failure:
-  - find /root/.npm/_logs/ -exec cat '{}' +
+after_script: find /root/.npm/_logs/ -exec cat '{}' +
