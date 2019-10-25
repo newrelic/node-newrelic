@@ -20,8 +20,11 @@
     "superagent": "^3.8.3",
     "tap": "^11.0.0"
   },
+  "engines": {
+    "node": ">=8.0"
+  },
   "peerDependencies": {
-    "newrelic": ">=4.3.0"
+    "newrelic": ">=6"
   },
   "dependencies": {
     "methods": "^1.1.2"
