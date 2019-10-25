@@ -5,16 +5,11 @@ node_js:
   - "12"
 env:
   - SUITE=lint
-  - SUITE=unit
   - SUITE=versioned
 matrix:
   exclude:
-    - node_js: "6"
-      env: SUITE=lint
-    - node_js: "7"
-      env: SUITE=lint
     - node_js: "8"
       env: SUITE=lint
-    - node_js: "9"
+    - node_js: "10"
       env: SUITE=lint
 script: npm run $SUITE
