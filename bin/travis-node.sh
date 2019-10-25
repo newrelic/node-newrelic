@@ -28,8 +28,12 @@ sudo ln -s /usr/bin/gcc-4.9 /usr/bin/gcc
 
 GLIBC_VERSION_CHECK=`ldd --version | head -n 1 | awk '{print $NF}'`
 
+if [ -z $NR_NODE_VERSION ]; then
+    echo "please define NR_NODE_VERSION in local env"
+    exit(1)
+fi
+
 if [ $NR_NODE_VERSION -gt 11 ] && version_gt 2.17 $GLIBC_VERSION_CHECK;then
-then
   echo "Installing updated glibc\n"
   # can we get this from an actual repository?
   curl -LO 'http://launchpadlibrarian.net/130794928/libc6_2.17-0ubuntu4_amd64.deb'
