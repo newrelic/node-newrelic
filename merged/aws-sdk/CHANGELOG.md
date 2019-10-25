@@ -1,6 +1,12 @@
+### 1.0.0 (2019-10-25):
+
+* **BREAKING** Removed support for Node 6, 7, and 9.
+
+  The minimum supported version is now Node v8. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+
 ### 0.3.0 (2019-07-18):
 
-* Adds support for DocumentClient API calls to be captured as Datastore segments/metrics. 
+* Adds support for DocumentClient API calls to be captured as Datastore segments/metrics.
 
   Supported calls are: `get`, `put`, `update`, `delete`, `query` and `scan`. These will be named according to the underlying DynamoDB operation that is executed. For example: `get` will be named `getItem`. DocumentClient calls not listed above will still be captured as Externals.
 
@@ -34,5 +40,5 @@
   * Rekognition
   * S3
   * SES
-  
+
 * Added instrumentation for DynamoDB.
