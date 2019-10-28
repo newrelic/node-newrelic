@@ -1,3 +1,11 @@
+### 2.0.0 (2019-10-28):
+
+* **BREAKING** Removed support for Node 6, 7, and 9.
+
+  The minimum supported version is now Node v8. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+
+* Added support for Node v12.
+
 ### 1.0.3 (2019-03-04):
 
 * Added missing `LICENSE` file.
