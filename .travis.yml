@@ -38,4 +38,4 @@ cache:
   directories:
     - "$HOME/.npm"
 script: npm run $SUITE
-after_script: find /home/travis/.npm/_logs -exec cat '{}' +
+after_script: find /home/travis/.npm/_logs -type f -exec cat '{}' +
