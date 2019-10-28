@@ -4,17 +4,7 @@
   "private": true,
   "tests": [{
     "engines": {
-      "node": "<6"
-    },
-    "dependencies": {
-      "superagent": ">=2 <4"
-    },
-    "files": [
-      "superagent.tap.js"
-    ]
-  }, {
-    "engines": {
-      "node": ">=6 <8.1"
+      "node": "<8.1"
     },
     "dependencies": {
       "superagent": ">=2"
