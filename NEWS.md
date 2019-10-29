@@ -4,7 +4,7 @@
   * Exception: Errors resulting in unhandled rejections will no longer be scoped to the
   transaction that was active when the rejected promise was created.
 
-  As of node 12, the promise responsible for triggering the init async hook will
+    As of node 12, the promise responsible for triggering the init async hook will
   no longer be passed through on the promise wrap instance. This breaks the linkage
   used to relate a given promise rejection to the transaction it was scheduled in.
 
