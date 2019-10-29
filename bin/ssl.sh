@@ -80,5 +80,5 @@ openssl ca \
   -in server.csr \
   -out $CERTIFICATE
 
-# remove the signing request now that it's gone
+# remove the signing request now that we're done with it
 rm -f server.csr
