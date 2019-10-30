@@ -1,6 +1,7 @@
 'use strict'
 
 var http = require('http')
+var url = require('url')
 var events = require('events')
 var expect = require('chai').expect
 var helper = require('../../../lib/agent_helper')
@@ -93,6 +94,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
+        'procedure': 'GET',
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
       })
 
@@ -128,6 +130,7 @@ describe('instrumentOutbound', function() {
       instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
+        'procedure': 'GET',
         'request.parameters.a': 'b',
         'request.parameters.another': 'yourself',
         'request.parameters.thing': true,
@@ -407,6 +410,27 @@ describe('when working with http.request', function() {
         transaction.end()
         done()
       })
+    })
+  })
+
+  it('should conform to external segment spec', function(done) {
+    var host = 'http://www.google.com'
+    var path = '/index.html'
+    nock(host).post(path).reply(200)
+
+    helper.runInTransaction(agent, function(transaction) {
+      var opts = url.parse(`${host}${path}`)
+      opts.method = 'POST'
+
+      var req = http.request(opts, function(res) {
+        var attributes = transaction.trace.root.children[0].getAttributes()
+        expect(attributes.url).equal('http://www.google.com/index.html')
+        expect(attributes.procedure).equal('POST')
+        res.resume()
+        transaction.end()
+        done()
+      })
+      req.end()
     })
   })
 
