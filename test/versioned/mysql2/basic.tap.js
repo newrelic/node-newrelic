@@ -196,6 +196,32 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
     })
   })
 
+  t.test('query via execute() should be instrumented', function testTransaction(t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
+    helper.runInTransaction(agent, function transactionInScope() {
+      t.ok(agent.getTransaction(), 'we should be in a transaction')
+
+      withRetry.getClient(function(err, client) {
+        if (err) return t.fail(err)
+
+        t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
+        client.execute('SELECT 1', function(err) {
+          if (err) return t.fail(err)
+
+          t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
+          withRetry.release(client)
+
+          agent.getTransaction().end()
+          console.log('queries', agent.queries)
+          t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+          for (let sample of agent.queries.samples.values()) {
+            t.ok(sample.total > 0, 'the samples should have positive duration')
+          }
+          t.end()
+        })
+      })
+    })
+  })
 
   t.test('streaming query should be timed correctly', function testCB(t) {
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
