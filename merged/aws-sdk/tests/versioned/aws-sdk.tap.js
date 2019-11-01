@@ -3,6 +3,7 @@
 const sinon = require('sinon')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
+utils.assert.extendTap(tap)
 
 tap.test('aws-sdk', (t) => {
   t.autoend()
@@ -60,5 +61,38 @@ tap.test('aws-sdk', (t) => {
       t.equal(symbols.length, 1, 'should have disabled dt')
     }
     t.end()
+  })
+
+  t.test('should maintain transaction state in promises', (t) => {
+    const service = new AWS.SES()
+    helper.runInTransaction((tx) => {
+      service.cloneReceiptRuleSet({
+        OriginalRuleSetName: 'RuleSetToClone',
+        RuleSetName: 'RuleSetToCreate'
+      }).promise().catch(() => {
+        t.transaction(tx)
+        tx.end()
+        ender()
+      })
+    })
+
+    // Run two concurrent promises to check for conflation
+    helper.runInTransaction((tx) => {
+      service.cloneReceiptRuleSet({
+        OriginalRuleSetName: 'RuleSetToClone',
+        RuleSetName: 'RuleSetToCreate'
+      }).promise().catch(() => {
+        t.transaction(tx)
+        tx.end()
+        ender()
+      })
+    })
+
+    let count = 0
+    function ender() {
+      if (++count === 2) {
+        t.end()
+      }
+    }
   })
 })
