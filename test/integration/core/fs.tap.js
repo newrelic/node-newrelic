@@ -909,6 +909,8 @@ test('watch emitter', function(t) {
 })
 
 test('watchFile', function(t) {
+  t.plan(5)
+
   var name = path.join(tempDir, 'watchFile')
   var content = 'some-content'
   var agent = setupAgent(t)
@@ -919,11 +921,8 @@ test('watchFile', function(t) {
       fs.watchFile(name, onChange)
 
       function onChange(cur, prev) {
-        t.notEqual(prev.atime.toISOString(), cur.atime.toISOString())
-        t.notEqual(prev.mtime.toISOString(), cur.mtime.toISOString())
-        t.ok(prev.ctime.toISOString() <= cur.ctime.toISOString(),
-          'ctime modified as expected'
-        )
+        t.ok(cur.mtime > prev.mtime, 'modified date incremented')
+        t.ok(cur.size > prev.size, 'content modified')
 
         t.equal(
           agent.getTransaction(),
@@ -935,10 +934,12 @@ test('watchFile', function(t) {
           'should not create any segments'
         )
         fs.unwatchFile(name, onChange)
-        t.end()
       }
     })
-    fs.utimesSync(name, 5, 15)
+
+    fs.writeFile(name, content + 'more', function(err) {
+      t.error(err, 'should not fail to write to file')
+    })
   }, 10)
 })
 
