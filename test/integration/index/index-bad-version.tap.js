@@ -3,7 +3,7 @@
 var tap = require('tap')
 
 
-tap.test('loading the agent with a bad version', {timeout: 5000}, function(t) {
+tap.test('loading the agent with a bad version', {timeout: 20000}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'

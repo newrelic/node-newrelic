@@ -2,7 +2,6 @@
 
 const path = require('path')
 const fs = require('fs')
-const architect = require('architect')
 const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
 const params = require('../lib/params')
@@ -231,25 +230,6 @@ const helper = module.exports = {
     memcached.flush((err) => {
       memcached.end()
       callback(err)
-    })
-  },
-
-  /**
-   * Use c9/architect to bootstrap a MySQL server for running integration
-   * tests.
-   *
-   * @param {Function} callback The operations to be performed while the server
-   *                            is running.
-   */
-  bootstrapMySQL: (callback) => {
-    const bootstrapped = path.join(__dirname, 'architecture/mysql-bootstrapped.js')
-    const config = architect.loadConfig(bootstrapped)
-    architect.createApp(config, (error, app) => {
-      if (error) {
-        return callback(error)
-      }
-
-      return callback(null, app)
     })
   },
 

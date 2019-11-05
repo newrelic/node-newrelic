@@ -781,6 +781,64 @@ tap.test('poolCluster', {timeout : 30 * 1000}, function(t) {
       })
     })
   })
+
+  t.test('poolCluster query', function(t) {
+    let poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    let masterPool = poolCluster.of('MASTER', 'RANDOM')
+    let replicaPool = poolCluster.of('REPLICA', 'RANDOM')
+    helper.runInTransaction(agent, function(txn) {
+      replicaPool.query('SELECT ? + ? AS solution', [1,1], function(err) {
+        let transxn = agent.getTransaction()
+        t.ok(transxn, 'transaction should exist')
+        t.strictEqual(transxn, txn, 'transaction must be same')
+
+        let segment = agent.tracer.getSegment().children[1]
+        t.ok(segment, 'segment should exist')
+        t.ok(segment.timer.start > 0, 'starts at a postitive time')
+        t.ok(segment.timer.start <= Date.now(), 'starts in past')
+
+        t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+        t.ifError(err, 'no error ocurred')
+        t.ok(transxn, 'transaction should exit')
+        t.strictEqual(transxn, txn, 'transaction must be same')
+        t.ok(segment, 'segment should exit')
+        t.ok(segment.timer.start > 0, 'starts at a postitive time')
+        t.ok(segment.timer.start <= Date.now(), 'starts in past')
+        t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+        masterPool.query('SELECT ? + ? AS solution', [1,1], function(err) {
+          transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+
+          segment = agent.tracer.getSegment().children[1]
+          t.ok(segment, 'segment should exist')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+          txn.end()
+          poolCluster.end()
+          t.end()
+        })
+      })
+    })
+  })
 })
 
 function getDomainSocketPath(callback) {

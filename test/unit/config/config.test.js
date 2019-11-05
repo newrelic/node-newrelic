@@ -51,14 +51,16 @@ describe('the agent configuration', function() {
 
   describe('when overriding configuration values via environment variables', function() {
     it('should pick up the application name', function() {
-      idempotentEnv({'NEW_RELIC_APP_NAME': 'feeling testy,and schizophrenic'}, (tc) => {
-        should.exist(tc.app_name)
-        expect(tc.app_name).eql(['feeling testy', 'and schizophrenic'])
-      })
+      idempotentEnv({'NEW_RELIC_APP_NAME': 'app one,app two;and app three'},
+        (tc) => {
+          should.exist(tc.app_name)
+          expect(tc.app_name).eql(['app one', 'app two', 'and app three'])
+        }
+      )
     })
 
     it('should trim spaces from multiple application names ', function() {
-      idempotentEnv({'NEW_RELIC_APP_NAME': 'zero,one, two,  three,   four'}, (tc) => {
+      idempotentEnv({'NEW_RELIC_APP_NAME': 'zero,one, two,  three;   four'}, (tc) => {
         should.exist(tc.app_name)
         expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
       })
