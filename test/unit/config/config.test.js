@@ -800,13 +800,27 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should explicitly disable native_metrics', () => {
+    it('should explicitly disable native_metrics when ' +
+      'serverless mode disabled explicitly', () => {
       const config = Config.initialize({
         serverless_mode: {
-          enabled: true
+          enabled: false
+        },
+        plugins: {
+          native_metrics: {enabled: false}
         }
       })
       expect(config.plugins.native_metrics.enabled).to.be.false
+    })
+
+    it('should enable native_metrics when ' +
+      'serverless mode disabled explicitly', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: false
+        }
+      })
+      expect(config.plugins.native_metrics.enabled).to.be.true
     })
 
     describe('via configuration input', () => {
