@@ -103,13 +103,14 @@ describe('the New Relic agent API', function() {
 
   describe("when getting a transaction handle", function() {
     it("shoud return a stub when running outside of a transaction", function() {
-      var handle = api.getTransaction()
+      let handle = api.getTransaction()
       expect(handle.end).to.be.a('function')
       expect(handle.ignore).to.be.a('function')
       expect(handle.createDistributedTracePayload).to.be.a('function')
       expect(handle.acceptDistributedTracePayload).to.be.a('function')
+      expect(handle.isSampled).to.be.a('function')
 
-      var payload = handle.createDistributedTracePayload()
+      let payload = handle.createDistributedTracePayload()
       expect(payload.httpSafe).to.be.a('function')
       expect(payload.text).to.be.a('function')
     })
@@ -185,6 +186,16 @@ describe('the New Relic agent API', function() {
         handle.end()
       })
     })
+
+    it("should have a method for reporting whether the transaction is sampled",
+      function() {
+        helper.runInTransaction(agent, function() {
+          let handle = api.getTransaction()
+          expect(handle.isSampled).to.be.a('function')
+          expect(handle.isSampled()).to.be.true
+        })
+      }
+    )
   })
 
 
