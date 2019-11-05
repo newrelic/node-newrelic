@@ -823,6 +823,16 @@ describe('the agent configuration', function() {
       expect(config.plugins.native_metrics.enabled).to.be.true
     })
 
+    it('should disable native_metrics when ' +
+    'serverless mode enabled explicitly', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: true
+        }
+      })
+      expect(config.plugins.native_metrics.enabled).to.be.false
+    })
+
     describe('via configuration input', () => {
       it('should set DT config settings while in serverless_mode', () => {
         const config = Config.initialize({
