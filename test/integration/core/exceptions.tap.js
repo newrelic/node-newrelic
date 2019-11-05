@@ -6,7 +6,6 @@ const path = require('path')
 const helper = require('../../lib/agent_helper')
 const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
 
-
 tap.test('Uncaught exceptions', (t) => {
   var proc = startProc()
 
@@ -68,7 +67,7 @@ tap.test('Report uncaught exceptions', (t) => {
 })
 
 tap.test('Triggers harvest while in serverless mode', (t) => {
-  t.plan(8)
+  t.plan(9)
 
   var proc = startProc({
     'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
@@ -86,7 +85,12 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
   proc.on('message', function(errors) {
     messageReceived = true
     t.equal(errors.count, 0, 'should have harvested the error')
-    const parsed = JSON.parse(payload)
+
+    const lambdaPayload = findLambdaPayload(payload)
+    t.ok(lambdaPayload, 'should find lambda payload log line')
+
+    const parsed = JSON.parse(lambdaPayload)
+
     helper.decodeServerlessPayload(t, parsed[2], function testDecoded(err, decoded) {
       t.error(err, 'should not run into errors decoding serverless payload')
       t.ok(decoded.metadata, 'metadata should be present')
@@ -178,4 +182,14 @@ function startProc(env) {
     stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
     env: env
   })
+}
+
+function findLambdaPayload(rawLogData) {
+  const logLines = rawLogData.split('\n')
+  for (let i = 0; i < logLines.length; i++) {
+    const logLine = logLines[i]
+    if (logLine.includes("NR_LAMBDA_MONITORING")) {
+      return logLine
+    }
+  }
 }

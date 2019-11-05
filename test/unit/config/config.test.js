@@ -798,6 +798,15 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should explicitly disable native_metrics', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: true
+        }
+      })
+      expect(config.plugins.native_metrics.enabled).to.be.false
+    })
+
     describe('via configuration input', () => {
       it('should set DT config settings while in serverless_mode', () => {
         const config = Config.initialize({
@@ -820,6 +829,17 @@ describe('the agent configuration', function() {
         expect(config.account_id).to.be.null
         expect(config.primary_application_id).to.be.null
         expect(config.trusted_account_key).to.be.null
+      })
+
+      it('should enable native_metrics via config', () => {
+        const config = Config.initialize({
+          serverless_mode: {enabled: true},
+          plugins: {
+            native_metrics: {enabled: true}
+          }
+        })
+
+        expect(config.plugins.native_metrics.enabled).to.be.true
       })
 
       it('should default logging to disabled', () => {
@@ -883,6 +903,26 @@ describe('the agent configuration', function() {
         idempotentEnv(envVariables, inputConfig, (config) => {
           expect(config.logging.enabled).to.be.true
         })
+      })
+
+      it('should enable native_metrics via env variable', () => {
+        const envVariables = {
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_NATIVE_METRICS_ENABLED: true
+        }
+
+        const inputConfig = {
+          plugins: {
+            native_metrics: {
+              enabled: false
+            }
+          }
+        }
+
+        idempotentEnv(envVariables, inputConfig,
+          (config) => {
+            expect(config.plugins.native_metrics.enabled).to.be.true
+          })
       })
 
       it('should default distributed to enabled when provided with account_id', () => {
