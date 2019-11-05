@@ -149,6 +149,35 @@ describe('the New Relic agent API', function() {
       })
     })
 
+    it("should have methods for getting trace and span IDs", function(done) {
+      helper.runInTransaction(agent, function(txn) {
+        agent.config.distributed_tracing.enabled = true
+        var handle = api.getTransaction()
+        expect(handle.getTraceId).to.be.a('function')
+        expect(handle.getSpanId).to.be.a('function')
+        expect(handle.getTraceId()).to.be.a('string')
+        expect(handle.getSpanId()).to.be.a('string')
+        expect(handle.getTraceId()).to.equal(txn.id)
+        expect(handle.getSpanId()).to.equal(txn.agent.tracer.getSegment().id)
+        done()
+      })
+    })
+
+    it("should return empty strings for trace and span IDs with DT disabled",
+      function(done) {
+        helper.runInTransaction(agent, function() {
+          var handle = api.getTransaction()
+          expect(handle.getTraceId).to.be.a('function')
+          expect(handle.getSpanId).to.be.a('function')
+          expect(handle.getTraceId()).to.be.a('string')
+          expect(handle.getSpanId()).to.be.a('string')
+          expect(handle.getTraceId()).to.equal('')
+          expect(handle.getSpanId()).to.equal('')
+          done()
+        })
+      }
+    )
+
     it("should have a method for accepting a distributed trace payload", function(done) {
       helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
