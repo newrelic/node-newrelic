@@ -658,6 +658,25 @@ describe('Transaction', function() {
     })
   })
 
+  describe('isSampled', function() {
+    let transaction
+
+    beforeEach(function() {
+      transaction = new Transaction(agent)
+    })
+
+    it('should be true when the transaction is sampled', function() {
+      // the first 10 transactions are sampled so this should be true
+      expect(transaction.isSampled()).to.be.true
+    })
+
+    it('should be false when the transaction is not sampled', function() {
+      transaction.priority = Infinity
+      transaction.sampled = false
+      expect(transaction.isSampled()).to.be.false
+    })
+  })
+
   describe('getIntrinsicAttributes', function() {
     var transaction
 
