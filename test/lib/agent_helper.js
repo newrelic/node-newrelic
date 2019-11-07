@@ -30,10 +30,10 @@ const helper = module.exports = {
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
    *
-   * @param {object} options Any configuration to override in the agent.
-   *                         See agent.js for details, but so far this includes
-   *                         passing in a config object and the connection stub
-   *                         created in this function.
+   * @param {object} conf Any configuration to override in the agent.
+   *                      See agent.js for details, but so far this includes
+   *                      passing in a config object and the connection stub
+   *                      created in this function.
    * @returns {Agent} Agent with a stubbed configuration.
    */
   loadMockedAgent: (conf, setState = true) => {
@@ -111,7 +111,7 @@ const helper = module.exports = {
    * Builds on loadMockedAgent by patching the module loader and setting up
    * the instrumentation framework.
    *
-   * @param {object} options
+   * @param {object} conf
    *  Any configuration to override in the agent. See agent.js for details,
    *  but so far this includes passing in a config object and the connection
    *  stub created in this function.
