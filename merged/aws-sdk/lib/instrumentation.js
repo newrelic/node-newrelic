@@ -25,7 +25,7 @@ const instrumentationSupported = function instrumentationSupported(AWS) {
 }
 
 module.exports = function initialize(shim, AWS) {
-  if(!instrumentationSupported(AWS)) {
+  if (!instrumentationSupported(AWS)) {
     return false
   }
   // Validate every instrumentation before attempting to run any of them.
