@@ -129,7 +129,7 @@ API.prototype.getTransaction = function getTransaction() {
 }
 
 API.prototype.getLinkingMetadata = function getLinkingMetadata() {
-  const metric = this.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
   )
   metric.incrementCallCount()
