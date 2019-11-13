@@ -1328,6 +1328,34 @@ function instrumentMessages(moduleName, onRequire, onError) {
 }
 
 /**
+ * Returns the current trace and span id.
+ *
+ * @returns {*} The object containing the current trace and span ids
+ */
+API.prototype.getTraceMetadata = function getTraceMetadata() {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getTraceMetadata'
+  )
+  metric.incrementCallCount()
+
+  const metadata = {
+    traceId: '',
+    spanId: ''
+  }
+  const segment = this.agent.tracer.getSegment()
+  if (!segment) {
+    logger.debug("No transaction found when calling API#getTraceMetadata")
+  } else if (!this.agent.config.distributed_tracing.enabled) {
+    logger.debug("Distributed tracing disabled when calling API#getTraceMetadata")
+  } else {
+    metadata.traceId = segment.transaction.getTraceId()
+    metadata.spanId = segment.getSpanId() || ''
+  }
+
+  return metadata
+}
+
+/**
  * Shuts down the agent.
  *
  * @param {object} [options]

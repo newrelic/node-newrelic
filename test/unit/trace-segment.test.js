@@ -109,6 +109,32 @@ describe('TraceSegment', function() {
     trans.end()
   })
 
+  describe('#getSpanId', function() {
+    it('should return the segment id when dt and spans are enabled', function() {
+      const trans = new Transaction(agent)
+      const segment = new TraceSegment(trans, 'Test')
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      expect(segment.getSpanId()).to.equal(segment.id)
+    })
+
+    it('should return null when dt is disabled', function() {
+      const trans = new Transaction(agent)
+      const segment = new TraceSegment(trans, 'Test')
+      agent.config.distributed_tracing.enabled = false
+      agent.config.span_events.enabled = true
+      expect(segment.getSpanId()).to.be.null
+    })
+
+    it('should return null when spans are disabled', function() {
+      const trans = new Transaction(agent)
+      const segment = new TraceSegment(trans, 'Test')
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = false
+      expect(segment.getSpanId()).to.be.null
+    })
+  })
+
   it('updates root segment timer when end() is called', function(done) {
     var trans = new Transaction(agent)
     var trace = trans.trace

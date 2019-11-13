@@ -226,11 +226,11 @@ describe('SpanEvent', () => {
         helper.runInTransaction(agent, (tx) => {
           tx.priority = 42
           tx.sample = true
-    
+
           setTimeout(() => {
             const seg = agent.tracer.getSegment()
             const span = SpanEvent.fromSegment(seg, 'parent')
-            
+
             const payload = span.toJSON()
 
             expect(payload[0]).to.have.property('type', 'Span')

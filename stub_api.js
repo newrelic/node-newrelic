@@ -36,6 +36,7 @@ Stub.prototype.getTransaction = getTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
 Stub.prototype.shutdown = shutdown
 Stub.prototype.setLambdaHandler = setLambdaHandler
+Stub.prototype.getTraceMetadata = getTraceMetadata
 
 // This code gets injected into HTML templates
 // and we don't want it to return undefined/null.
@@ -59,6 +60,13 @@ function startSegment(name, record, handler, callback) {
     return handler(callback)
   }
   return null
+}
+
+function getTraceMetadata() {
+  return {
+    traceId: '',
+    spanId: ''
+  }
 }
 
 function startWebTransaction(url, callback) {

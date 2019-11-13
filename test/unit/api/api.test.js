@@ -101,6 +101,52 @@ describe('the New Relic agent API', function() {
     expect(api.getTransaction).to.be.a('function')
   })
 
+  it("exports a trace metadata function", function(done) {
+    helper.runInTransaction(agent, function(txn) {
+      agent.config.distributed_tracing.enabled = true
+      expect(api.getTraceMetadata).to.be.a('function')
+      const metadata = api.getTraceMetadata()
+      expect(metadata).to.be.an('object')
+      expect(metadata.traceId).to.be.a('string')
+      expect(metadata.traceId).to.equal(txn.id)
+      expect(metadata.spanId).to.be.a('string')
+      expect(metadata.spanId).to.equal(txn.agent.tracer.getSegment().id)
+      done()
+    })
+  })
+
+  it("should return empty strings for trace and span IDs with DT disabled",
+    function(done) {
+      helper.runInTransaction(agent, function() {
+        expect(api.getTraceMetadata).to.be.a('function')
+        const metadata = api.getTraceMetadata()
+        expect(metadata).to.be.an('object')
+        expect(metadata.traceId).to.be.a('string')
+        expect(metadata.traceId).to.equal('')
+        expect(metadata.spanId).to.be.a('string')
+        expect(metadata.spanId).to.equal('')
+        done()
+      })
+    }
+  )
+  it("should return empty strings for span IDs with span events disabled",
+    function(done) {
+      helper.runInTransaction(agent, function(txn) {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = false
+        expect(api.getTraceMetadata).to.be.a('function')
+        const metadata = api.getTraceMetadata()
+        expect(metadata).to.be.an('object')
+        expect(metadata.traceId).to.be.a('string')
+        expect(metadata.traceId).to.equal(txn.id)
+        expect(metadata.spanId).to.be.a('string')
+        expect(metadata.spanId).to.equal('')
+        done()
+      })
+    }
+  )
+
+
   describe("when getting a transaction handle", function() {
     it("shoud return a stub when running outside of a transaction", function() {
       let handle = api.getTransaction()

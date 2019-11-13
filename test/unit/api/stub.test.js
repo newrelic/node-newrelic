@@ -13,8 +13,8 @@ describe("the stubbed New Relic agent API", function() {
     api = new API()
   })
 
-  it('should export 26 API calls', () => {
-    expect(Object.keys(api.constructor.prototype).length).to.equal(26)
+  it('should export 27 API calls', () => {
+    expect(Object.keys(api.constructor.prototype).length).to.equal(27)
   })
 
   it("exports a transaction naming function", function() {
@@ -70,6 +70,17 @@ describe("the stubbed New Relic agent API", function() {
 
   it("shouldn't throw when an ignoring rule is added", function() {
     expect(function() { api.addIgnoringRule(/^foo/, "/foo/*") }).not.throws()
+  })
+
+  it("exports a function for getting trace metadata", function() {
+    should.exist(api.getTraceMetadata)
+    expect(api.getTraceMetadata).a('function')
+    const metadata = api.getTraceMetadata()
+    expect(metadata).to.be.an('object')
+    expect(metadata.traceId).to.be.a('string')
+    expect(metadata.traceId).to.equal('')
+    expect(metadata.spanId).to.be.a('string')
+    expect(metadata.spanId).to.equal('')
   })
 
   it("exports a function for capturing errors", function() {
