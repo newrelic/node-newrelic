@@ -1349,7 +1349,7 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
     logger.debug("Distributed tracing disabled when calling API#getTraceMetadata")
   } else {
     metadata.traceId = segment.transaction.getTraceId()
-    metadata.spanId = segment.id
+    metadata.spanId = segment.getSpanId()
   }
 
   return metadata
