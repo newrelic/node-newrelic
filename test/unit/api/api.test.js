@@ -1781,7 +1781,7 @@ describe('the New Relic agent API', function() {
   })
 
   describe('getLinkingMetadata', () => {
-    it.only('should return metadata necessary for linking data to a trace', () => {
+    it('should return metadata necessary for linking data to a trace', () => {
       let metadata = api.getLinkingMetadata()
 
       expect(metadata['trace.id']).to.be.undefined
