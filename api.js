@@ -1347,10 +1347,8 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
   )
   metric.incrementCallCount()
 
-  const metadata = {
-    traceId: '',
-    spanId: ''
-  }
+  const metadata = {}
+
   const segment = this.agent.tracer.getSegment()
   if (!segment) {
     logger.debug("No transaction found when calling API#getTraceMetadata")
@@ -1358,7 +1356,11 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
     logger.debug("Distributed tracing disabled when calling API#getTraceMetadata")
   } else {
     metadata.traceId = segment.transaction.getTraceId()
-    metadata.spanId = segment.getSpanId() || ''
+
+    const spanId = segment.getSpanId()
+    if (spanId) {
+      metadata.spanId = spanId
+    }
   }
 
   return metadata
