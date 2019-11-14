@@ -128,6 +128,15 @@ API.prototype.getTransaction = function getTransaction() {
   return new TransactionHandle(transaction)
 }
 
+API.prototype.getLinkingMetadata = function getLinkingMetadata() {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
+  )
+  metric.incrementCallCount()
+
+  return this.agent.getLinkingMetadata()
+}
+
 /**
  * Specify the `Dispatcher` and `Dispatcher Version` environment values.
  * A dispatcher is typically the service responsible for brokering
