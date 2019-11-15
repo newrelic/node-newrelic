@@ -115,32 +115,31 @@ describe('the New Relic agent API', function() {
     })
   })
 
-  it("should return empty strings for trace and span IDs with DT disabled",
+  it("should return empty object with DT disabled",
     function(done) {
       helper.runInTransaction(agent, function() {
         expect(api.getTraceMetadata).to.be.a('function')
         const metadata = api.getTraceMetadata()
         expect(metadata).to.be.an('object')
-        expect(metadata.traceId).to.be.a('string')
-        expect(metadata.traceId).to.equal('')
-        expect(metadata.spanId).to.be.a('string')
-        expect(metadata.spanId).to.equal('')
+
+        expect(metadata).to.deep.equal({})
         done()
       })
     }
   )
-  it("should return empty strings for span IDs with span events disabled",
+  it("should not include spanId property with span events disabled",
     function(done) {
       helper.runInTransaction(agent, function(txn) {
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
         expect(api.getTraceMetadata).to.be.a('function')
+
         const metadata = api.getTraceMetadata()
         expect(metadata).to.be.an('object')
         expect(metadata.traceId).to.be.a('string')
         expect(metadata.traceId).to.equal(txn.id)
-        expect(metadata.spanId).to.be.a('string')
-        expect(metadata.spanId).to.equal('')
+
+        expect(metadata).to.not.have.property('spanId')
         done()
       })
     }
