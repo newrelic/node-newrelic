@@ -29,7 +29,7 @@ tap.test('instrumentation is supported', (t) => {
   })
 
   t.test('AWS should not have newrelic attributes', (t) => {
-    t.assert(!AWS.__NR_instrumented, 'Found __NR_instrumented')
+    t.assert(!AWS.__NR_instrumented, '__NR_instrumented not present')
     t.end()
   })
 
