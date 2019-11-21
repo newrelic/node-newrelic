@@ -128,13 +128,55 @@ API.prototype.getTransaction = function getTransaction() {
   return new TransactionHandle(transaction)
 }
 
-API.prototype.getLinkingMetadata = function getLinkingMetadata() {
-  const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
-  )
-  metric.incrementCallCount()
+/**
+ * This method returns an object with the following keys/data:
+ * - `trace.id`: The current trace ID
+ * - `span.id`: The current span ID
+ * - `entity.name`: The application name specified in the connect request as
+ *   app_name. If multiple application names are specified this will only be
+ *   the first name
+ * - `entity.type`: The string "SERVICE"
+ * - `entity.guid`: The entity ID returned in the connect reply as entity_guid
+ * - `hostname`: The hostname as specified in the connect request as
+ *   utilization.full_hostname. If utilization.full_hostname is null or empty,
+ *   this will be the hostname specified in the connect request as host.
+ *
+ * @returns {LinkingMetadata} The linking object with the data above
+ */
+API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportability) {
+  if (omitSupportability !== true) {
+    const metric = this.agent.metrics.getOrCreateMetric(
+      NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
+    )
+    metric.incrementCallCount()
+  }
 
-  return this.agent.getLinkingMetadata()
+  const agent = this.agent
+
+  const segment = agent.tracer.getSegment()
+  const config = agent.config
+
+  const linkingMetadata = {
+    'entity.name': config.applications()[0],
+    'entity.type': 'SERVICE',
+    'hostname': config.getHostnameSafe()
+  }
+
+  if (config.distributed_tracing.enabled && segment) {
+    linkingMetadata['trace.id'] = segment.transaction.getTraceId()
+    const spanId = segment.getSpanId()
+    if (spanId) {
+      linkingMetadata['span.id'] = spanId
+    }
+  } else {
+    logger.debug('getLinkingMetadata with no active transaction')
+  }
+
+  if (config.entity_guid) {
+    linkingMetadata['entity.guid'] = config.entity_guid
+  }
+
+  return linkingMetadata
 }
 
 /**
