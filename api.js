@@ -144,7 +144,7 @@ API.prototype.getTransaction = function getTransaction() {
  * @returns {LinkingMetadata} The linking object with the data above
  */
 API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportability) {
-  if (!omitSupportability) {
+  if (omitSupportability !== true) {
     const metric = this.agent.metrics.getOrCreateMetric(
       NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
     )
