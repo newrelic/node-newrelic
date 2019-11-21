@@ -143,11 +143,13 @@ API.prototype.getTransaction = function getTransaction() {
  *
  * @returns {LinkingMetadata} The linking object with the data above
  */
-API.prototype.getLinkingMetadata = function getLinkingMetadata() {
-  const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
-  )
-  metric.incrementCallCount()
+API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportability) {
+  if (!omitSupportability) {
+    const metric = this.agent.metrics.getOrCreateMetric(
+      NAMES.SUPPORTABILITY.API + '/getLinkingMetadata'
+    )
+    metric.incrementCallCount()
+  }
 
   const agent = this.agent
 
