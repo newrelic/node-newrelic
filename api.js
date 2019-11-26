@@ -39,7 +39,7 @@ const RUM_ISSUES = [
 ]
 
 // Can't overwrite internal parameters or all heck will break loose.
-const CUSTOM_BLACKLIST = new Set([
+const CUSTOM_DENYLIST = new Set([
   'nr_flatten_leading'
 ])
 
@@ -264,7 +264,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 
 /**
  * Add a custom attribute to the current transaction. Some attributes are
- * reserved (see CUSTOM_BLACKLIST for the current, very short list), and
+ * reserved (see CUSTOM_DENYLIST for the current, very short list), and
  * as with most API methods, this must be called in the context of an
  * active transaction. Most recently set value wins.
  *
@@ -304,7 +304,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     )
   }
 
-  if (CUSTOM_BLACKLIST.has(key)) {
+  if (CUSTOM_DENYLIST.has(key)) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
@@ -434,7 +434,7 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
  * etc.) are replaced in the name string. BE CAREFUL WHEN USING SUBSTITUTION.
  * If the replacement substrings are highly variable (i.e. are identifiers,
  * GUIDs, or timestamps), the rule will generate too many metrics and
- * potentially get your application blacklisted by New Relic.
+ * potentially get your application blocked by New Relic.
  *
  * An example of a good rule with replacements:
  *

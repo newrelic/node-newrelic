@@ -676,7 +676,7 @@ Support, you see discussion of "metric explosion", this is what they're talking
 about.
 
 While we have a variety of strategies for dealing with these issues, the most
-severe is simply to blacklist offending applications. The main reason for you
+severe is simply to block offending applications. The main reason for you
 to be careful in using our request-naming tools is to prevent that from
 happening to your applications. We will do everything in our power to ensure
 that you have a good experience with New Relic even if your application is
