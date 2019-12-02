@@ -7,7 +7,12 @@ const INSTRUMENTATIONS = [
   require('./sns')
 ]
 
+const helper = require('./instrumentation-helper')
+
 module.exports = function initialize(shim, AWS) {
+  if (!helper.instrumentationSupported(AWS)) {
+    return false
+  }
   // Validate every instrumentation before attempting to run any of them.
   for (let instrumentation of INSTRUMENTATIONS) {
     if (!instrumentation.validate(shim, AWS)) {
