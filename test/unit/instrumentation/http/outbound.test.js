@@ -73,7 +73,7 @@ describe('instrumentOutbound', function() {
     })
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({})
 
       function makeFakeRequest() {
@@ -92,7 +92,7 @@ describe('instrumentOutbound', function() {
     })
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'procedure': 'GET',
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
@@ -113,7 +113,7 @@ describe('instrumentOutbound', function() {
       var path = '/asdf'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
 
       function makeFakeRequest() {
@@ -127,7 +127,7 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
         'procedure': 'GET',
@@ -148,7 +148,12 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function() {
       expect(function() {
-        instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+        instrumentOutbound(
+          agent,
+          undefined,
+          {host: HOSTNAME, port: PORT},
+          makeFakeRequest
+        )
       }).to.throw(Error)
     })
 
@@ -163,7 +168,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -179,7 +184,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -195,7 +200,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, undefined, {port: PORT}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -213,7 +218,12 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {host: null, port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(
+          agent,
+          undefined,
+          {host: null, port: PORT},
+          makeFakeRequest
+        )
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -230,7 +240,12 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {host: '', port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(
+          agent,
+          undefined,
+          {host: '', port: PORT},
+          makeFakeRequest
+        )
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -248,7 +263,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {host: 'hostname'}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, undefined, {host: 'hostname'}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
