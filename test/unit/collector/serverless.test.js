@@ -153,11 +153,12 @@ describe('ServerlessCollector API', () => {
   describe('#flushPayload', () => {
     let logStub = null
 
-    before(() => {
-      logStub = sinon.stub(process.stdout, 'write').callsFake(() => {})
+    beforeEach(() => {
+      logStub = sinon.stub(process.stdout, 'write').callsFake(() => {
+      })
     })
 
-    after(() => {
+    afterEach(() => {
       logStub.restore()
     })
 
@@ -170,6 +171,24 @@ describe('ServerlessCollector API', () => {
         expect(logPayload[1]).to.equal('NR_LAMBDA_MONITORING')
         expect(logPayload[2]).to.be.a('string')
         done()
+      })
+    })
+    it('handles very large payload and writes formatted to stdout', done => {
+      api.payload = {type: 'test payload'}
+      for (let i = 0; i < 4096; i++) {
+        api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
+      }
+
+      api.flushPayload(() => {
+        const logPayload = JSON.parse(logStub.getCall(0).args[0])
+        const buf = Buffer.from(logPayload[2], 'base64')
+        zlib.gunzip(buf, (err, unpack) => {
+          expect(err).to.be.null
+          const payload = JSON.parse(unpack)
+          expect(payload.data).to.be.ok
+          expect(Object.keys(payload.data)).to.have.lengthOf.above(4000)
+          done()
+        })
       })
     })
   })
