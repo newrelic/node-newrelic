@@ -320,7 +320,7 @@ describe('should add data from cat header to segment', function() {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[0]
+        var segment = agent.tracer.getTransaction().trace.root.children[0].children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
@@ -337,7 +337,7 @@ describe('should add data from cat header to segment', function() {
     helper.runInTransaction(agent, function() {
       addSegment()
       http.get({host : 'localhost', port : 4123}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[0]
+        var segment = agent.tracer.getTransaction().trace.root.children[0].children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
