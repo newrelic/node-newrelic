@@ -1,6 +1,7 @@
 'use strict'
 
 var http = require('http')
+var https = require('https')
 var url = require('url')
 var events = require('events')
 var expect = require('chai').expect
@@ -73,7 +74,7 @@ describe('instrumentOutbound', function() {
     })
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({})
 
       function makeFakeRequest() {
@@ -92,7 +93,7 @@ describe('instrumentOutbound', function() {
     })
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'procedure': 'GET',
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
@@ -113,7 +114,7 @@ describe('instrumentOutbound', function() {
       var path = '/asdf'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
 
       function makeFakeRequest() {
@@ -127,7 +128,7 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
         'procedure': 'GET',
@@ -148,7 +149,12 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function() {
       expect(function() {
-        instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+        instrumentOutbound(
+          agent,
+          undefined,
+          {host: HOSTNAME, port: PORT},
+          makeFakeRequest
+        )
       }).to.throw(Error)
     })
 
@@ -163,7 +169,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -179,7 +185,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -195,7 +201,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, undefined, {port: PORT}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -213,7 +219,12 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {host: null, port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(
+          agent,
+          undefined,
+          {host: null, port: PORT},
+          makeFakeRequest
+        )
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -230,7 +241,12 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {host: '', port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(
+          agent,
+          undefined,
+          {host: '', port: PORT},
+          makeFakeRequest
+        )
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -248,7 +264,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, {host: 'hostname'}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, undefined, {host: 'hostname'}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -570,5 +586,83 @@ describe('when working with http.request', function() {
         })
       })
     })
+  })
+})
+
+describe("node >= v10 api", () => {
+  it('http.get', function(done) {
+    const host = 'http://www.google.com'
+    const path = `/index.html`
+    const _url = `${host}${path}`
+
+    nock(host).get(path).reply(200, 'Hello from Google')
+
+    http.get(
+      global.URL ? new global.URL(_url) : _url,
+      {
+        headers: { test: 'test' }
+      },
+      (res) => {
+        expect(res.statusCode).to.equal(200)
+        expect(res.req.headers.test).to.equal('test')
+        done()
+      })
+  })
+
+  it('http.request', function(done) {
+    const host = 'http://www.google.com'
+    const path = `/index.html`
+    const _url = `${host}${path}`
+
+    nock(host).get(path).reply(200, 'Hello from Google')
+
+    http.request(
+      global.URL ? new global.URL(_url) : _url,
+      {
+        headers: { test: 'test' }
+      },
+      (res) => {
+        expect(res.statusCode).to.equal(200)
+        expect(res.req.headers.test).to.equal('test')
+        done()
+      }).end()
+  })
+
+  it('https.get', function(done) {
+    const host = 'https://www.google.com'
+    const path = `/index.html`
+    const _url = `${host}${path}`
+
+    nock(host).get(path).reply(200, 'Hello from Google')
+
+    https.get(
+      global.URL ? new global.URL(_url) : _url,
+      {
+        headers: { test: 'test' }
+      },
+      (res) => {
+        expect(res.statusCode).to.equal(200)
+        expect(res.req.headers.test).to.equal('test')
+        done()
+      })
+  })
+
+  it('https.request', function(done) {
+    const host = 'https://www.google.com'
+    const path = `/index.html`
+    const _url = `${host}${path}`
+
+    nock(host).get(path).reply(200, 'Hello from Google')
+
+    https.request(
+      global.URL ? new global.URL(_url) : _url,
+      {
+        headers: { test: 'test' }
+      },
+      (res) => {
+        expect(res.statusCode).to.equal(200)
+        expect(res.req.headers.test).to.equal('test')
+        done()
+      }).end()
   })
 })
