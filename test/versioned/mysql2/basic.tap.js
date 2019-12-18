@@ -212,7 +212,6 @@ tap.test('Basic run through mysql functionality', {timeout: 30 * 1000}, function
           withRetry.release(client)
 
           agent.getTransaction().end()
-          console.log('queries', agent.queries)
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
           for (let sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
