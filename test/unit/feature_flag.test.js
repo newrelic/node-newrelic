@@ -23,6 +23,7 @@ var used = [
   'reverse_naming_rules',
   'send_request_uri_attribute',
   'synthetics',
+  'dt_format_w3c',
   'unreleased'
 ]
 
