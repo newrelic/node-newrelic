@@ -10,7 +10,6 @@ var hashes = require('../../../../lib/util/hashes')
 var Segment = require('../../../../lib/transaction/trace/segment')
 var Shim = require('../../../../lib/shim').Shim
 
-
 var NEWRELIC_ID_HEADER = 'x-newrelic-id'
 var NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
 var NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
@@ -662,6 +661,42 @@ describe('built-in http module instrumentation', function() {
       })
     })
   })
+
+  describe('Should accept w3c traceparent header when present on request',
+    function() {
+      beforeEach(function() {
+        agent = helper.instrumentMockedAgent({
+          distributed_tracing: {
+            enabled: true
+          },
+          feature_flag: {
+            dt_format_w3c: true
+          },
+        })
+      })
+
+      it('should set header correctly when all data is present', function(done) {
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        http = require('http')
+
+        var server = http.createServer(function(req, res) {
+          expect(agent.getTransaction().traceContext.parent).to.equal(traceparent)
+          res.writeHead(200, {'Content-Length': 3})
+          res.end('hi!')
+        })
+
+        var headers = {
+          traceparent: traceparent
+        }
+
+        server.listen(4123, function() {
+          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+            res.resume()
+            server.close(done)
+          })
+        })
+      })
+    })
 
   describe('response headers for outbound requests when cat is enabled', function() {
     var encKey = 'gringletoes'

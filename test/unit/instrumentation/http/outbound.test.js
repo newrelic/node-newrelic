@@ -491,8 +491,8 @@ describe('when working with http.request', function() {
     })
   })
 
-  describe('generates w3c headers', () => {
-    it('should generate w3c headers', (done) => {
+  describe('generates w3c trace context headers', () => {
+    it('should add header to outbound request', (done) => {
       helper.unloadAgent(agent)
       agent = helper.instrumentMockedAgent({
         distributed_tracing: {

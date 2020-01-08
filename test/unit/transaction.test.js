@@ -1251,9 +1251,9 @@ describe('Transaction', function() {
 
   describe('_validateTraceParentHeader', () => {
     it('should pass valid traceparent header', () => {
-      const goodHeader = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
-      expect(Transaction.prototype._validateTraceParentHeader(goodHeader)).to.equal(true)
+      expect(Transaction.prototype._validateTraceParentHeader(traceparent)).to.equal(true)
     })
 
     it('should not pass 32 char string of all zeroes in traceid part of header', () => {

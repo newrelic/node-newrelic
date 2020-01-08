@@ -446,6 +446,31 @@ describe('TransactionShim', function() {
           expect(tx.referringPathHash).to.equal('path hash')
         })
       })
+
+      it('Should propagate w3c tracecontext header when present', function() {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+        helper.runInTransaction(agent, function(tx) {
+          let headers = { traceparent: traceparent }
+          var segment = shim.getSegment()
+          shim.handleCATHeaders(headers, segment)
+          expect(tx.traceContext.parent).to.equal(traceparent)
+        })
+      })
+
+      it('Should create w3c tracecontext headers if not present', function() {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        helper.runInTransaction(agent, function(tx) {
+          let headers = {}
+          var segment = shim.getSegment()
+          shim.handleCATHeaders(headers, segment)
+          expect(tx.traceContext.parent).to.exist
+        })
+      })
     })
 
     describe('when app data is provided', function() {
