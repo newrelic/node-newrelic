@@ -490,4 +490,34 @@ describe('when working with http.request', function() {
       })
     })
   })
+
+  describe('generates w3c headers', () => {
+    it('should generate w3c headers', (done) => {
+      helper.unloadAgent(agent)
+      agent = helper.instrumentMockedAgent({
+        distributed_tracing: {
+          enabled: true
+        },
+        feature_flag: {
+          dt_format_w3c: true
+        }
+      })
+      const host = 'http://www.google.com'
+      const path = '/index.html'
+      let headers
+
+      nock(host).get(path).reply(200, function() {
+        headers = this.req.headers
+        expect(headers.traceparent.split('-').length).to.equal(4)
+      })
+
+      helper.runInTransaction(agent, (transaction) => {
+        http.get(`${host}${path}`, (res) => {
+          res.resume()
+          transaction.end()
+          done()
+        })
+      })
+    })
+  })
 })
