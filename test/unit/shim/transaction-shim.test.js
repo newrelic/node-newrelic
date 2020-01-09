@@ -459,18 +459,6 @@ describe('TransactionShim', function() {
           expect(tx.traceContext.parent).to.equal(traceparent)
         })
       })
-
-      it('Should create w3c tracecontext headers if not present', function() {
-        agent.config.distributed_tracing.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
-
-        helper.runInTransaction(agent, function(tx) {
-          let headers = {}
-          var segment = shim.getSegment()
-          shim.handleCATHeaders(headers, segment)
-          expect(tx.traceContext.parent).to.exist
-        })
-      })
     })
 
     describe('when app data is provided', function() {
