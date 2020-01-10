@@ -248,6 +248,48 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should set w3c tracecontext on transaction if present on request header',
+      (done) => {
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+        agent.on('transactionFinished', done())
+        agent.config.feature_flag.dt_format_w3c = true
+        agent.config.distributed_tracing.enabled = true
+
+        const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+        apiGatewayProxyEvent.headers.traceparent = traceparent
+          
+        const wrappedHandler = 
+        awsLambda.patchLambdaHandler((event, context, callback) => {
+          const transaction = agent.tracer.getTransaction()
+          expect(transaction.traceContext.parent).to.equal(traceparent)
+
+          callback(null, validResponse)
+        })
+
+        wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+      })
+
+    it('should add w3c tracecontext to transaction if not present on request header',
+      (done) => {
+        agent.on('transactionFinished', done())
+        agent.config.feature_flag.dt_format_w3c = true
+        agent.config.distributed_tracing.enabled = true
+
+        const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+          
+        const wrappedHandler = 
+        awsLambda.patchLambdaHandler((event, context, callback) => {
+          const transaction = agent.tracer.getTransaction()
+
+          expect(transaction.traceContext.parent).to.exist
+
+          callback(null, validResponse)
+        })
+
+        wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+      })
+
     it('should capture request parameters', (done) => {
       agent.on('transactionFinished', confirmAgentAttribute)
 
