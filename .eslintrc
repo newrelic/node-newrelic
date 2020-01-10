@@ -5,7 +5,7 @@
     "browser": false
   },
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 2018
   },
   "rules": {
     "indent": ["warn", 2, {"SwitchCase": 1}],
