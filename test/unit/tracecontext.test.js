@@ -12,6 +12,10 @@ describe.only('TraceContext', function() {
     tc = new TraceContext()
   })
 
+  it('getting traceparent twice should give the same value', function() {
+    raise Error('Not implemented')
+  })
+
   describe('flags hex', function() {
     it('should parse trace flags in the traceparent header', function() {
       let flags = tc.parseFlagsHex('01')
