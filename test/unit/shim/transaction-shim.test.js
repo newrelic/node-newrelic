@@ -456,7 +456,7 @@ describe('TransactionShim', function() {
           let headers = { traceparent: traceparent }
           var segment = shim.getSegment()
           shim.handleCATHeaders(headers, segment)
-          expect(tx.traceContext.parent).to.equal(traceparent)
+          expect(tx.traceContext.traceparent).to.equal(traceparent)
         })
       })
     })

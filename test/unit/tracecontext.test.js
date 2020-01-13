@@ -1,19 +1,39 @@
 'use strict'
 
 const chai = require('chai')
-const should = chai.should()
 const expect = chai.expect
+const helper = require('../lib/agent_helper')
+var Transaction = require('../../lib/transaction')
 const TraceContext = require('../../lib/transaction/tracecontext')
 
-describe.only('TraceContext', function() {
+describe('TraceContext', function() {
   let tc = null
+  let agent = null
+  let trans = null
 
   beforeEach(function() {
-    tc = new TraceContext()
+    agent = helper.loadMockedAgent({
+      attributes: {enabled: true}
+    })
+    trans = new Transaction(agent)
+    tc = new TraceContext(trans)
+  })
+
+  afterEach(function() {
+    helper.unloadAgent(agent)
   })
 
   it('getting traceparent twice should give the same value', function() {
-    raise Error('Not implemented')
+    helper.runInTransaction(agent, function(txn) {
+      var childSegment = txn.trace.add('child')
+      childSegment.start()
+
+      const tp1 = txn.traceContext.traceparent
+      const tp2 = txn.traceContext.traceparent
+
+      expect(tp1).to.equal(tp2)
+      txn.end()
+    })
   })
 
   describe('flags hex', function() {
@@ -26,11 +46,11 @@ describe.only('TraceContext', function() {
     })
 
     it('should return proper trace flags hex', function() {
-      tc.flags.sampled = false
+      trans.sampled = false
       let flagsHex = tc.createFlagsHex()
       expect(flagsHex).to.equal('00')
 
-      tc.flags.sampled = true
+      trans.sampled = true
       flagsHex = tc.createFlagsHex()
       expect(flagsHex).to.equal('01')
     })
@@ -107,7 +127,5 @@ describe.only('TraceContext', function() {
       expect(tc._validateTraceParentHeader(shorterStr))
         .to.equal(false)
     })
-
-    // TODO: add more tests around the version and flags parts of header
   })
 })

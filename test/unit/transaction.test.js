@@ -1150,7 +1150,7 @@ describe('Transaction', function() {
 
       tx.acceptTraceContextPayload(goodParent)
 
-      expect(tx.traceContext.parent).to.equal(goodParent)
+      expect(tx.traceContext.traceparent).to.equal(goodParent)
     })
 
     it('should not accept invalid trace context traceparent header', () => {
@@ -1158,12 +1158,18 @@ describe('Transaction', function() {
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
 
-      const tx = new Transaction(agent)
-      const badParent = 'asdlkfjasdl;fkja'
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+        
+        const badParent = 'asdlkfjasdl;fkja'
+        const traceparent = txn.traceContext.traceparent
+        txn.acceptTraceContextPayload(badParent)
 
-      tx.acceptTraceContextPayload(badParent)
+        expect(txn.traceContext.traceparent).to.equal(traceparent)
+        txn.end()
+      })
 
-      expect(tx.traceContext.parent).to.be.undefined
     })
   })
 
@@ -1177,7 +1183,7 @@ describe('Transaction', function() {
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       const lowercaseHexRegex = /^[a-f0-9]+/
@@ -1204,7 +1210,7 @@ describe('Transaction', function() {
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[2].length, 'parentId').to.equal(16)
@@ -1222,7 +1228,7 @@ describe('Transaction', function() {
       agent.tracer.segment = tx.trace.root
       tx.sampled = true
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[3], 'flags').to.equal('01')
@@ -1236,11 +1242,13 @@ describe('Transaction', function() {
       agent.config.span_events.enabled = true
 
       const tx = new Transaction(agent)
-      tx.traceContext.parent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      tx.traceContext.acceptTraceContextHeader(
+        '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      )
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
