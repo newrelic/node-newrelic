@@ -160,7 +160,7 @@ tap.test('DynamoDB', (t) => {
 })
 
 function finish(t, tx) {
-  const segments = common.checkAWSAttributes(t, tx.trace.root, /^Datastore/)
+  const segments = common.checkAWSAttributes(t, tx.trace.root, common.DATASTORE_PATTERN)
 
   t.equal(
     segments.length,
