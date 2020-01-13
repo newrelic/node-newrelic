@@ -680,7 +680,7 @@ describe('built-in http module instrumentation', function() {
         http = require('http')
 
         var server = http.createServer(function(req, res) {
-          expect(agent.getTransaction().traceContext.parent).to.equal(traceparent)
+          expect(agent.getTransaction().traceContext.traceparent).to.equal(traceparent)
           res.writeHead(200, {'Content-Length': 3})
           res.end('hi!')
         })
