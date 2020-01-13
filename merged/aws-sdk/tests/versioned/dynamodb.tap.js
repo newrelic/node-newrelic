@@ -160,13 +160,17 @@ tap.test('DynamoDB', (t) => {
 })
 
 function finish(t, tx) {
-  const segments = common.checkAWSAttributes(t, tx.trace.root, common.DATASTORE_PATTERN)
+  const root = tx.trace.root
+  const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN)
 
   t.equal(
     segments.length,
     tests.length,
     `should have ${tests.length} aws datastore segments`
   )
+
+  const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
+  t.equal(externalSegments.length, 0, 'should not have any External segments')
 
   segments.forEach((segment, i) => {
     const operation = tests[i].operation
