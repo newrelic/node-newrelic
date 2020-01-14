@@ -5,6 +5,7 @@ const expect = chai.expect
 const helper = require('../lib/agent_helper')
 var Transaction = require('../../lib/transaction')
 const TraceContext = require('../../lib/transaction/tracecontext')
+const hashes = require('../../lib/util/hashes')
 
 describe('TraceContext', function() {
   let tc = null
@@ -15,6 +16,9 @@ describe('TraceContext', function() {
     agent = helper.loadMockedAgent({
       attributes: {enabled: true}
     })
+    agent.config.feature_flag.dt_format_w3c = true
+    agent.config.distributed_tracing.enabled = true
+    
     trans = new Transaction(agent)
     tc = new TraceContext(trans)
   })
@@ -33,6 +37,38 @@ describe('TraceContext', function() {
 
       expect(tp1).to.equal(tp2)
       txn.end()
+    })
+  })
+
+  describe.only('acceptTraceContextFromHeaders', () => {
+    it('should accept a valid trace parent header', () => {
+      const traceid = (hashes.makeId() + hashes.makeId()).padStart(32, '0')
+      const traceparent = `00-${traceid}-00f067aa0ba902b7-00`
+
+      const headers = {
+        traceparent: traceparent
+      }
+
+      tc.acceptTraceContextFromHeaders(headers)
+      expect(tc.traceId).to.equal(traceid)
+    })
+
+    it('should not accept an empty trace parent header', () => {
+      const headers = {
+        traceparent: null
+      }
+
+      tc.acceptTraceContextFromHeaders(headers)
+      expect(tc._traceid).to.be.undefined
+    })
+
+    it('should not accept an invalid trace parent header', () => {
+      const headers = {
+        traceparent: 'invalid'
+      }
+
+      tc.acceptTraceContextFromHeaders(headers)
+      expect(tc._traceid).to.be.undefined
     })
   })
 
@@ -126,6 +162,17 @@ describe('TraceContext', function() {
 
       expect(tc._validateTraceParentHeader(shorterStr))
         .to.equal(false)
+    })
+  })
+
+  describe.only('_validateTraceStateHeader', () => {
+    it('should pass a valid tracestate header', () => {
+      agent.config.trusted_account_key = '190'
+      /* eslint-disable max-len */
+      const goodTraceStateHeader  = 
+      '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
+
+      expect(tc._validateTraceStateHeader(goodTraceStateHeader)).to.be.true
     })
   })
 })
