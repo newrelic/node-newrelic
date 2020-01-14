@@ -5,6 +5,9 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
+const RETRY_MS = 1500
+const RETRY_MAX_MS = 15500
+
 const TABLE_NAME = `DELETE_aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
 const UNIQUE_ARTIST = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
 
@@ -210,19 +213,13 @@ function finish(t, tx) {
 
 function onTableCreated(t, ddb, segment, cb, started) {
   // A hack to avoid this showing via outbound http instrumentation.
-  if (segment.__origOpaque == null) {
-    segment.__origOpaque = segment.opaque
-    segment.opaque = true
-  }
+  forceOpaqueSegment(segment)
 
   return ddb.describeTable({ TableName: TABLE_NAME }, (err, data) => {
     t.error(err)
 
     if (data.Table.TableStatus === 'ACTIVE') {
-      // Restore segment opaque state for
-      // rest of instrumentation.
-      segment.opaque = segment.__origOpaque
-      delete segment.__origOpaque
+      segment.__NR_test_restoreOpaque()
 
       t.comment('Table is active.')
       return setImmediate(cb)
@@ -232,11 +229,8 @@ function onTableCreated(t, ddb, segment, cb, started) {
     const startTime = started || currentTime
     const elapsed = startTime - currentTime
 
-    if (elapsed > 15500) {
-      // Restore segment opaque state for
-      // rest of instrumentation.
-      segment.opaque = segment.__origOpaque
-      delete segment.__origOpaque
+    if (elapsed > RETRY_MAX_MS) {
+      segment.__NR_test_restoreOpaque()
 
       t.ok(false, 'Should not take longer than 10s for table create.')
       return setImmediate(cb)
@@ -248,10 +242,29 @@ function onTableCreated(t, ddb, segment, cb, started) {
 
     return setTimeout(
       onTableCreated,
-      1500,
+      RETRY_MS,
       ...args
     )
   })
+}
+
+/**
+ * Manually sets segment.opaque to false.
+ * Adds __NR_test_restoreOpaque to restore state.
+ * @param {*} segment
+ */
+function forceOpaqueSegment(segment) {
+  if (segment.__NR_test_restoreOpaque != null) {
+    return
+  }
+
+  const originalOpaque = segment.opaque
+  segment.opaque = true
+
+  segment.__NR_test_restoreOpaque = function restoreOpaque() {
+    segment.opaque = originalOpaque
+    delete segment.__NR_test_restoreOpaque
+  }
 }
 
 function deleteTableIfNeeded(t, api, cb) {
@@ -259,7 +272,7 @@ function deleteTableIfNeeded(t, api, cb) {
     const tableExists = !(err && err.code === 'ResourceNotFoundException')
 
     if (!tableExists || (data && data.Table.TableStatus === 'DELETING')) {
-      // table deleted or in process, all is good.
+      // table deleted or in process of deleting, all is good.
       return setImmediate(cb)
     }
 
