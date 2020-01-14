@@ -470,6 +470,29 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should detect event type', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'aws.lambda.eventSource.eventType',
+          'apiGateway'
+        )
+
+        done()
+      }
+    })
+
     it('should record standard web metrics', (done) => {
       agent.on('harvestStarted', confirmMetrics)
 
