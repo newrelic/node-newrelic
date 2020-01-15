@@ -34,7 +34,7 @@ tap.test('SNS', (t) => {
     sns.deleteTopic({TopicArn}, () => done())
   })
 
-  t.test('publish', (t) => {
+  t.test('publish with callback', (t) => {
     helper.runInTransaction((tx) => {
       const params = {TopicArn, Message: 'Hello!'}
 
@@ -43,28 +43,48 @@ tap.test('SNS', (t) => {
           t.error(err)
         }
         tx.end()
-        setImmediate(finish, tx)
+
+        const args = [t, tx]
+        setImmediate(finish, ...args)
       })
     })
+  })
 
-    function finish(tx) {
-      const root = tx.trace.root
+  t.test('publish with promise', (t) => {
+    helper.runInTransaction(async tx => {
+      const params = {TopicArn, Message: 'Hello!'}
 
-      const messages = common.checkAWSAttributes(t, root, common.SNS_PATTERN)
-      t.equal(messages.length, 1, 'should have 1 message broker segment')
+      try {
+        await sns.publish(params).promise()
+      } catch (error) {
+        t.error()
+      }
 
-      const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
-      t.equal(externalSegments.length, 0, 'should not have any External segments')
+      tx.end()
 
-      const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
-      t.matches(attrs, {
-        'aws.operation': 'publish',
-        'aws.requestId': String,
-        'aws.service': 'Amazon SNS',
-        'aws.region': 'us-east-1'
-      }, 'should have expected attributes for publish')
-
-      t.end()
-    }
+      const args = [t, tx]
+      setImmediate(finish, ...args)
+    })
   })
 })
+
+function finish(t, tx) {
+  const root = tx.trace.root
+
+  const messages = common.checkAWSAttributes(t, root, common.SNS_PATTERN)
+  t.equal(messages.length, 1, 'should have 1 message broker segment')
+
+  const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
+  t.equal(externalSegments.length, 0, 'should not have any External segments')
+
+  const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
+  t.matches(attrs, {
+    'aws.operation': 'publish',
+    'aws.requestId': String,
+    'aws.service': 'Amazon SNS',
+    'aws.region': 'us-east-1'
+  }, 'should have expected attributes for publish')
+
+  t.end()
+}
+
