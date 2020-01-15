@@ -48,8 +48,13 @@ tap.test('SNS', (t) => {
     })
 
     function finish(tx) {
-      const messages = common.checkAWSAttributes(t, tx.trace.root, /^MessageBroker/)
+      const root = tx.trace.root
+
+      const messages = common.checkAWSAttributes(t, root, common.SNS_PATTERN)
       t.equal(messages.length, 1, 'should have 1 message broker segment')
+
+      const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
+      t.equal(externalSegments.length, 0, 'should not have any External segments')
 
       const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
       t.matches(attrs, {
