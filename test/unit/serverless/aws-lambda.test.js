@@ -12,6 +12,7 @@ const REQ_ID = 'aws.requestId'
 const LAMBDA_ARN = 'aws.lambda.arn'
 const COLDSTART = 'aws.lambda.coldStart'
 const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
+const EVENTSOURCE_TYPE = 'aws.lambda.eventSource.eventType'
 
 describe('AwsLambda.patchLambdaHandler', () => {
   const groupName = 'Function'
@@ -485,7 +486,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
         expect(agentAttributes).to.have.property(
-          'aws.lambda.eventSource.eventType',
+          EVENTSOURCE_TYPE,
           'apiGateway'
         )
 
@@ -667,6 +668,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('kinesis:eventsourcearn')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'kinesis'
+      )
       done()
     }
   })
@@ -686,6 +691,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('bucketarn')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        's3'
+      )
       done()
     }
   })
@@ -706,6 +715,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('eventsubscriptionarn')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'sns'
+      )
       done()
     }
   })
@@ -765,6 +778,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'cloudFront'
+      )
       done()
     }
   })
@@ -784,6 +801,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('aws:lambda:events')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'firehose'
+      )
       done()
     }
   })
