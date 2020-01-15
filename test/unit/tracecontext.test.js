@@ -206,4 +206,49 @@ describe('TraceContext', function() {
       expect(valid.entryValid).to.be.false
     })
   })
+
+  describe('header creation', () => {
+    it('should create valid headers', () => {
+      const accountId = '190'
+      const appId = '109354'
+      agent.config.account_id = accountId
+      agent.config.primary_application_id = appId
+
+      helper.runInTransaction(agent, function(txn) {
+        const childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const headers = txn.traceContext.createTraceContextPayload()
+
+        expect(txn.traceContext._validateTraceParentHeader(headers.traceparent)).to.be.ok
+        expect(txn.traceContext._validateTraceStateHeader(headers.tracestate)).to.be.ok
+        expect(headers.tracestate.split('=')[0]).to.equal('190@nr')
+        expect(headers.tracestate.split('-')[6]).to.equal('0')
+        expect(headers.tracestate.split('-')[3]).to.equal(appId)
+        expect(headers.tracestate.split('-')[2]).to.equal(accountId)
+
+        txn.end()
+      })
+    })
+
+    it('should propogate headers', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const tracestate = 'test=test'
+
+      helper.runInTransaction(agent, function(txn) {
+        const childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const headers = { traceparent, tracestate }
+        txn.traceContext.acceptTraceContextFromHeaders(headers)
+
+        expect(txn.traceContext.traceparent).to.equal(traceparent)
+        expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
+
+        txn.end()
+      })
+    })
+  })
 })
