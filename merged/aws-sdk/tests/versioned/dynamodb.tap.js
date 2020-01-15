@@ -40,7 +40,7 @@ tap.test('DynamoDB', (t) => {
     const ddb = new AWS.DynamoDB({region: 'us-east-1'})
     const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'})
 
-    tableName = `DELETE_aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
+    tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
     tests = createTests(ddb, docClient, tableName)
 
     done()

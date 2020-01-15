@@ -29,7 +29,7 @@ tap.test('SQS API', (t) => {
     AWS = require('aws-sdk')
     sqs = new AWS.SQS({apiVersion: '2012-11-05', region: AWS_REGION})
 
-    queueName = 'aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
+    queueName = 'delete-aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
 
     done()
   })

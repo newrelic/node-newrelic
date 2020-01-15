@@ -4,7 +4,7 @@ const common = require('./common')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
-const TOPIC_NAME = `test-topic-${Math.floor(Math.random() * 100000)}`
+const TOPIC_NAME = `delete-aws-sdk-test-topic-${Math.floor(Math.random() * 100000)}`
 
 tap.test('SNS', (t) => {
   t.autoend()
