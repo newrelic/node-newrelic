@@ -162,6 +162,7 @@ async function waitTableCreated(t, ddb, tableName, segment, started) {
     data = await ddb.describeTable({ TableName: tableName }).promise()
   } catch (err) {
     t.error(err)
+    return
   }
 
   if (data.Table.TableStatus === 'ACTIVE') {
