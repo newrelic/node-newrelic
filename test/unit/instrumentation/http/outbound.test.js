@@ -502,19 +502,28 @@ describe('when working with http.request', function() {
           dt_format_w3c: true
         }
       })
+      agent.config.account_id = 190
+      agent.config.primary_application_id = '389103'
       const host = 'http://www.google.com'
       const path = '/index.html'
       let headers
 
       nock(host).get(path).reply(200, function() {
         headers = this.req.headers
+        expect(headers.traceparent).to.exist
         expect(headers.traceparent.split('-').length).to.equal(4)
+        expect(headers.tracestate).to.exist
+        expect(headers.tracestate.includes('null')).to.be.false
+        expect(headers.tracestate.includes('true')).to.be.false
       })
 
       helper.runInTransaction(agent, (transaction) => {
         http.get(`${host}${path}`, (res) => {
           res.resume()
           transaction.end()
+          const tc = transaction.traceContext
+          const valid = tc._validateTraceStateHeader(headers.tracestate)
+          expect(valid).to.be.ok
           done()
         })
       })
