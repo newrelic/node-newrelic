@@ -98,6 +98,9 @@ tap.test('SQS API', (t) => {
         `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
       )
 
+      const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
+      t.equal(externalSegments.length, 0, 'should not have any External segments')
+
       const [sendMessage, sendMessageBatch, receiveMessage] = segments
 
       checkName(t, sendMessage.name, 'Produce', queueName)
