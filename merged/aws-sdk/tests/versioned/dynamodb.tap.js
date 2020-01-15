@@ -208,17 +208,19 @@ function deleteTableIfNeeded(t, api, tableName, cb) {
 }
 
 /**
- * Manually sets segment.opaque to false.
+ * Manually sets segment.opaque to true.
  * Adds __NR_test_restoreOpaque to restore state.
  * @param {*} segment
  */
 function forceOpaqueSegment(segment) {
+  const originalOpaque = segment.opaque
+  // Our promise instrumentation will reset opaque status each call
+  // so we always need to set this.
+  segment.opaque = true
+
   if (segment.__NR_test_restoreOpaque != null) {
     return
   }
-
-  const originalOpaque = segment.opaque
-  segment.opaque = true
 
   segment.__NR_test_restoreOpaque = function restoreOpaque() {
     segment.opaque = originalOpaque

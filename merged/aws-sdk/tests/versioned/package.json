@@ -9,6 +9,19 @@
       },
       "dependencies": {
         "aws-sdk": {
+          "versions": "2.2.48"
+        }
+      },
+      "files": [
+        "instrumentation-unsupported.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=8.0"
+      },
+      "dependencies": {
+        "aws-sdk": {
           "versions": ">=2.380.0",
           "samples": 10
         }
@@ -19,19 +32,6 @@
         "http-services.tap.js",
         "instrumentation-supported.tap.js",
         "s3.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=8.0"
-      },
-      "dependencies": {
-        "aws-sdk": {
-          "versions": "2.2.48"
-        }
-      },
-      "files": [
-        "instrumentation-unsupported.tap.js"
       ]
     }
   ],
