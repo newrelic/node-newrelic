@@ -1151,7 +1151,7 @@ describe('Transaction', function() {
       helper.runInTransaction(agent, function(txn) {
         var childSegment = txn.trace.add('child')
         childSegment.start()
-        
+
         const headers = {
           traceparent: goodParent
         }
@@ -1171,7 +1171,7 @@ describe('Transaction', function() {
       helper.runInTransaction(agent, function(txn) {
         var childSegment = txn.trace.add('child')
         childSegment.start()
-        
+
         const headers = {
           traceparent: 'asdlkfjasdl;fkja'
         }
@@ -1208,7 +1208,7 @@ describe('Transaction', function() {
 
       expect(traceparentParts[1], 'traceId is lowercase hex').to.match(lowercaseHexRegex)
       expect(traceparentParts[2], 'parentId is lowercase hex').to.match(lowercaseHexRegex)
-      
+
       agent.tracer.segment = null
     })
 
@@ -1252,10 +1252,11 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
 
       const tx = new Transaction(agent)
-      tx.traceContext.acceptTraceContextParentHeader(
-        '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      tx.traceContext.acceptTraceContextFromHeaders(
+        {traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'}
       )
 
       agent.tracer.segment = tx.trace.root
