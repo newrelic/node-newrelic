@@ -18,7 +18,7 @@ describe('TraceContext', function() {
     })
     agent.config.feature_flag.dt_format_w3c = true
     agent.config.distributed_tracing.enabled = true
-    
+
     trans = new Transaction(agent)
     tc = new TraceContext(trans)
   })
@@ -40,7 +40,7 @@ describe('TraceContext', function() {
     })
   })
 
-  describe.only('acceptTraceContextFromHeaders', () => {
+  describe('acceptTraceContextFromHeaders', () => {
     it('should accept a valid trace parent header', () => {
       const traceid = (hashes.makeId() + hashes.makeId()).padStart(32, '0')
       const traceparent = `00-${traceid}-00f067aa0ba902b7-00`
@@ -91,7 +91,7 @@ describe('TraceContext', function() {
       expect(flagsHex).to.equal('01')
     })
   })
-  
+
   describe('_validateTraceParentHeader', () => {
     it('should pass valid traceparent header', () => {
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
@@ -165,14 +165,45 @@ describe('TraceContext', function() {
     })
   })
 
-  describe.only('_validateTraceStateHeader', () => {
+  describe('_validateTraceStateHeader', () => {
     it('should pass a valid tracestate header', () => {
       agent.config.trusted_account_key = '190'
-      /* eslint-disable max-len */
-      const goodTraceStateHeader  = 
+      const goodTraceStateHeader =
+      /* eslint-disable-next-line max-len */
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
+      const valid = tc._validateTraceStateHeader(goodTraceStateHeader)
+      expect(valid).to.be.ok
+      expect(valid.entryFound).to.be.true
+      expect(valid.entryValid).to.be.true
+      expect(valid.intrinsics.version).to.equal(0)
+      expect(valid.intrinsics.parentType).to.equal(0)
+      expect(valid.intrinsics.accountId).to.equal('709288')
+      expect(valid.intrinsics.appId).to.equal('8599547')
+      expect(valid.intrinsics.spanId).to.equal('f85f42fd82a4cf1d')
+      expect(valid.intrinsics.transactionId).to.equal('164d3b4b0d09cb05')
+      expect(valid.intrinsics.sampled).to.equal(1)
+      expect(valid.intrinsics.priority).to.equal(0.789)
+      expect(valid.intrinsics.timestamp).to.equal(1563574856827)
+    })
 
-      expect(tc._validateTraceStateHeader(goodTraceStateHeader)).to.be.true
+    it('should fail mismatched trusted account ID in tracestate header', () => {
+      agent.config.trusted_account_key = '666'
+      const badTraceStateHeader =
+        /* eslint-disable-next-line max-len */
+        '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
+      const valid = tc._validateTraceStateHeader(badTraceStateHeader)
+      expect(valid.entryFound).to.be.false
+      expect(valid.entryValid).to.be.false
+    })
+
+    it('should fail mismatched trusted account ID in tracestate header', () => {
+      agent.config.trusted_account_key = '190'
+      const badTimestamp =
+        /* eslint-disable-next-line max-len */
+        '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-,234234@foo=bar'
+      const valid = tc._validateTraceStateHeader(badTimestamp)
+      expect(valid.entryFound).to.be.true
+      expect(valid.entryValid).to.be.false
     })
   })
 })
