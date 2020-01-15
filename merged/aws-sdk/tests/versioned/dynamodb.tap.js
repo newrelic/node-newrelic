@@ -8,104 +8,8 @@ const async = require('async')
 const RETRY_MS = 1500
 const RETRY_MAX_MS = 15500
 
-const TABLE_NAME = `DELETE_aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
-const UNIQUE_ARTIST = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
-
-const TABLE_DEF = {
-  AttributeDefinitions: [
-    {AttributeName: 'Artist', AttributeType: 'S'},
-    {AttributeName: 'SongTitle', AttributeType: 'S'}
-  ],
-  KeySchema: [
-    {AttributeName: 'Artist', KeyType: 'HASH'},
-    {AttributeName: 'SongTitle', KeyType: 'RANGE'}
-  ],
-  ProvisionedThroughput: {
-    ReadCapacityUnits: 5,
-    WriteCapacityUnits: 5
-  },
-  TableName: TABLE_NAME
-}
-
-const ITEM_DEF = {
-  Item: {
-    AlbumTitle: {S: 'Somewhat Famous'},
-    Artist: {S: UNIQUE_ARTIST},
-    SongTitle: {S: 'Call Me Today'}
-  },
-  TableName: TABLE_NAME
-}
-
-const ITEM = {
-  Key: {
-    Artist: {S: UNIQUE_ARTIST},
-    SongTitle: {S: 'Call Me Today'}
-  },
-  TableName: TABLE_NAME
-}
-
-const DELETE_TABLE = {
-  TableName: TABLE_NAME
-}
-
-const QUERY = {
-  ExpressionAttributeValues: {
-    ':v1': {S: UNIQUE_ARTIST}
-  },
-  KeyConditionExpression: 'Artist = :v1',
-  TableName: TABLE_NAME
-}
-
-const DOC_PUT_ITEM = {
-  Item: {
-    AlbumTitle: 'Somewhat Famous',
-    Artist: UNIQUE_ARTIST,
-    SongTitle: 'Call Me Today'
-  },
-  TableName: TABLE_NAME
-}
-
-const DOC_ITEM = {
-  Key: {
-    Artist: UNIQUE_ARTIST,
-    SongTitle: 'Call Me Today'
-  },
-  TableName: TABLE_NAME
-}
-
-const DOC_QUERY = {
-  ExpressionAttributeValues: {
-    ':v1': UNIQUE_ARTIST
-  },
-  KeyConditionExpression: 'Artist = :v1',
-  TableName: TABLE_NAME
-}
-
-let tests = null
-
-function createTests(ddb, docClient) {
-  const composedTests = [
-    {api: ddb, method: 'createTable', params: TABLE_DEF, operation: 'createTable'},
-    {api: ddb, method: 'putItem', params: ITEM_DEF, operation: 'putItem'},
-    {api: ddb, method: 'getItem', params: ITEM, operation: 'getItem'},
-    {api: ddb, method: 'updateItem', params: ITEM, operation: 'updateItem'},
-    {api: ddb, method: 'scan', params: {TableName: TABLE_NAME}, operation: 'scan'},
-    {api: ddb, method: 'query', params: QUERY, operation: 'query'},
-    {api: ddb, method: 'deleteItem', params: ITEM, operation: 'deleteItem'},
-
-    {api: docClient, method: 'put', params: DOC_PUT_ITEM, operation: 'putItem'},
-    {api: docClient, method: 'get', params: DOC_ITEM, operation: 'getItem'},
-    {api: docClient, method: 'update', params: DOC_ITEM, operation: 'updateItem'},
-    {api: docClient, method: 'scan', params: {TableName: TABLE_NAME}, operation: 'scan'},
-    {api: docClient, method: 'query', params: DOC_QUERY, operation: 'query'},
-    {api: docClient, method: 'delete', params: DOC_ITEM, operation: 'deleteItem'},
-
-    {api: ddb, method: 'deleteTable', params: DELETE_TABLE, operation: 'deleteTable'}
-  ]
-
-  return composedTests
-}
-
+// NOTE: these take a while to run and can trigger tap CLI file timeout
+// This can be avoided via --no-timeout or --timeout=<value>
 tap.test('DynamoDB', (t) => {
   t.autoend()
 
@@ -113,6 +17,8 @@ tap.test('DynamoDB', (t) => {
   let AWS = null
   let notInstrumentedDdb = null
 
+  let tableName = null
+  let tests = null
 
   t.beforeEach((done) => {
     // For administrative tasks we don't want to impact metrics or risk breaking
@@ -134,13 +40,14 @@ tap.test('DynamoDB', (t) => {
     const ddb = new AWS.DynamoDB({region: 'us-east-1'})
     const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'})
 
-    tests = createTests(ddb, docClient)
+    tableName = `DELETE_aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
+    tests = createTests(ddb, docClient, tableName)
 
     done()
   })
 
   t.afterEach((done) => {
-    deleteTableIfNeeded(t, notInstrumentedDdb, () => {
+    deleteTableIfNeeded(t, notInstrumentedDdb, tableName, () => {
       helper && helper.unload()
 
       helper = null
@@ -148,12 +55,13 @@ tap.test('DynamoDB', (t) => {
       notInstrumentedDdb = null
       AWS = null
       tests = null
+      tableName = null
 
       done()
     })
   })
 
-  t.test('commands', (t) => {
+  t.test('commands with callback', (t) => {
     helper.runInTransaction((tx) => {
       async.eachSeries(tests, (cfg, cb) => {
         t.comment(`Testing ${cfg.method}`)
@@ -162,20 +70,54 @@ tap.test('DynamoDB', (t) => {
 
           if (cfg.method === 'createTable') {
             const segment = helper.agent.tracer.getSegment()
-            return onTableCreated(t, notInstrumentedDdb, segment, cb)
+
+            return waitTableCreated(t, notInstrumentedDdb, tableName, segment)
+              .then(() => {
+                setImmediate(cb)
+              })
           }
 
           return setImmediate(cb)
         })
       }, () => {
         tx.end()
-        setImmediate(finish, t, tx)
+
+        const args = [t, tests, tx]
+        setImmediate(finish, ...args)
       })
+    })
+  })
+
+  t.test('commands with promises', (t) => {
+    helper.runInTransaction(async function(tx) {
+      // Execute commands in order
+      // Await works because this is in a for-loop / no callback api
+      for (let i = 0; i < tests.length; i++) {
+        const cfg = tests[i]
+
+        t.comment(`Testing ${cfg.method}`)
+
+        try {
+          await cfg.api[cfg.method](cfg.params).promise()
+
+          if (cfg.method === 'createTable') {
+            const segment = helper.agent.tracer.getSegment()
+            await waitTableCreated(t, notInstrumentedDdb, tableName, segment)
+          }
+        } catch (err) {
+          t.error(err)
+        }
+      }
+
+      tx.end()
+
+      const args = [t, tests, tx]
+      setImmediate(finish, ...args)
     })
   })
 })
 
-function finish(t, tx) {
+function finish(t, tests, tx) {
   const root = tx.trace.root
   const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN)
 
@@ -211,40 +153,57 @@ function finish(t, tx) {
   t.end()
 }
 
-function onTableCreated(t, ddb, segment, cb, started) {
+async function waitTableCreated(t, ddb, tableName, segment, started) {
   // A hack to avoid this showing via outbound http instrumentation.
   forceOpaqueSegment(segment)
 
-  return ddb.describeTable({ TableName: TABLE_NAME }, (err, data) => {
+  let data = null
+  try {
+    data = await ddb.describeTable({ TableName: tableName }).promise()
+  } catch (err) {
+    t.error(err)
+  }
+
+  if (data.Table.TableStatus === 'ACTIVE') {
+    segment.__NR_test_restoreOpaque()
+
+    t.comment('Table is active.')
+    return
+  }
+
+  const currentTime = Date.now()
+  const startTime = started || currentTime
+  const elapsed = startTime - currentTime
+
+  if (elapsed > RETRY_MAX_MS) {
+    segment.__NR_test_restoreOpaque()
+
+    t.ok(false, `Should not take longer than ${RETRY_MAX_MS}ms for table create.`)
+    return
+  }
+
+  t.comment(`Table does not yet exist, scheduling ${RETRY_MS}ms out.`)
+  await delay(RETRY_MS)
+  await waitTableCreated(t, ddb, tableName, segment, startTime)
+}
+
+function deleteTableIfNeeded(t, api, tableName, cb) {
+  api.describeTable({ TableName: tableName }, (err, data) => {
+    const tableExists = !(err && err.code === 'ResourceNotFoundException')
+
+    if (!tableExists || (data && data.Table.TableStatus === 'DELETING')) {
+      // table deleted or in process of deleting, all is good.
+      return setImmediate(cb)
+    }
+
     t.error(err)
 
-    if (data.Table.TableStatus === 'ACTIVE') {
-      segment.__NR_test_restoreOpaque()
-
-      t.comment('Table is active.')
-      return setImmediate(cb)
-    }
-
-    const currentTime = Date.now()
-    const startTime = started || currentTime
-    const elapsed = startTime - currentTime
-
-    if (elapsed > RETRY_MAX_MS) {
-      segment.__NR_test_restoreOpaque()
-
-      t.ok(false, 'Should not take longer than 10s for table create.')
-      return setImmediate(cb)
-    }
-
-    t.comment('Table does not yet exist, scheduling 100ms out.')
-
-    const args = [t, ddb, segment, cb, startTime]
-
-    return setTimeout(
-      onTableCreated,
-      RETRY_MS,
-      ...args
-    )
+    t.comment('Attempting to manually delete table')
+    const deleteTableParams = getDeleteTableParams(tableName)
+    return api.deleteTable(deleteTableParams, (err) => {
+      t.error(err)
+      cb()
+    })
   })
 }
 
@@ -267,22 +226,145 @@ function forceOpaqueSegment(segment) {
   }
 }
 
-function deleteTableIfNeeded(t, api, cb) {
-  api.describeTable({ TableName: TABLE_NAME }, (err, data) => {
-    const tableExists = !(err && err.code === 'ResourceNotFoundException')
+function createTests(ddb, docClient, tableName) {
+  const ddbUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
+  const createTblParams = getCreateTableParams(tableName)
+  const putItemParams = getPutItemParams(tableName, ddbUniqueArtist)
+  const itemParams = getItemParams(tableName, ddbUniqueArtist)
+  const queryParams = getQueryParams(tableName, ddbUniqueArtist)
+  const deleteTableParams = getDeleteTableParams(tableName)
 
-    if (!tableExists || (data && data.Table.TableStatus === 'DELETING')) {
-      // table deleted or in process of deleting, all is good.
-      return setImmediate(cb)
-    }
+  const docUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
+  const docPutParams = getDocPutItemParams(tableName, docUniqueArtist)
+  const docItemParams = getDocItemParams(tableName, docUniqueArtist)
+  const docQueryParams = getDocQueryParams(tableName, docUniqueArtist)
 
-    t.error(err)
+  const composedTests = [
+    {api: ddb, method: 'createTable', params: createTblParams, operation: 'createTable'},
+    {api: ddb, method: 'putItem', params: putItemParams, operation: 'putItem'},
+    {api: ddb, method: 'getItem', params: itemParams, operation: 'getItem'},
+    {api: ddb, method: 'updateItem', params: itemParams, operation: 'updateItem'},
+    {api: ddb, method: 'scan', params: {TableName: tableName}, operation: 'scan'},
+    {api: ddb, method: 'query', params: queryParams, operation: 'query'},
+    {api: ddb, method: 'deleteItem', params: itemParams, operation: 'deleteItem'},
 
-    t.comment('Attempting to manually delete table')
-    return api.deleteTable(DELETE_TABLE, (err) => {
-      t.error(err)
-      cb()
-    })
-  })
+    {api: docClient, method: 'put', params: docPutParams, operation: 'putItem'},
+    {api: docClient, method: 'get', params: docItemParams, operation: 'getItem'},
+    {api: docClient, method: 'update', params: docItemParams, operation: 'updateItem'},
+    {api: docClient, method: 'scan', params: {TableName: tableName}, operation: 'scan'},
+    {api: docClient, method: 'query', params: docQueryParams, operation: 'query'},
+    {api: docClient, method: 'delete', params: docItemParams, operation: 'deleteItem'},
+
+    {api: ddb, method: 'deleteTable', params: deleteTableParams, operation: 'deleteTable'}
+  ]
+
+  return composedTests
 }
 
+function getCreateTableParams(tableName) {
+  const params = {
+    AttributeDefinitions: [
+      {AttributeName: 'Artist', AttributeType: 'S'},
+      {AttributeName: 'SongTitle', AttributeType: 'S'}
+    ],
+    KeySchema: [
+      {AttributeName: 'Artist', KeyType: 'HASH'},
+      {AttributeName: 'SongTitle', KeyType: 'RANGE'}
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 5,
+      WriteCapacityUnits: 5
+    },
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getPutItemParams(tableName, uniqueArtist) {
+  const params = {
+    Item: {
+      AlbumTitle: {S: 'Somewhat Famous'},
+      Artist: {S: uniqueArtist},
+      SongTitle: {S: 'Call Me Today'}
+    },
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getItemParams(tableName, uniqueArtist) {
+  const params = {
+    Key: {
+      Artist: {S: uniqueArtist},
+      SongTitle: {S: 'Call Me Today'}
+    },
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getQueryParams(tableName, uniqueArtist) {
+  const params = {
+    ExpressionAttributeValues: {
+      ':v1': {S: uniqueArtist}
+    },
+    KeyConditionExpression: 'Artist = :v1',
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getDeleteTableParams(tableName) {
+  const params = {
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getDocPutItemParams(tableName, uniqueArtist) {
+  const params = {
+    Item: {
+      AlbumTitle: 'Somewhat Famous',
+      Artist: uniqueArtist,
+      SongTitle: 'Call Me Today'
+    },
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getDocItemParams(tableName, uniqueArtist) {
+  const params = {
+    Key: {
+      Artist: uniqueArtist,
+      SongTitle: 'Call Me Today'
+    },
+    TableName: tableName
+  }
+
+  return params
+}
+
+function getDocQueryParams(tableName, uniqueArtist) {
+  const params = {
+    ExpressionAttributeValues: {
+      ':v1': uniqueArtist
+    },
+    KeyConditionExpression: 'Artist = :v1',
+    TableName: tableName
+  }
+
+  return params
+}
+
+function delay(delayms) {
+  return new Promise(function(resolve) {
+    setTimeout(resolve, delayms)
+  })
+}
