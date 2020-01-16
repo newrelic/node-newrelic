@@ -219,11 +219,11 @@ describe('TraceContext', function() {
         childSegment.start()
 
         const headers = txn.traceContext.createTraceContextPayload()
-
         expect(txn.traceContext._validateTraceParentHeader(headers.traceparent)).to.be.ok
         expect(txn.traceContext._validateTraceStateHeader(headers.tracestate)).to.be.ok
         expect(headers.tracestate.split('=')[0]).to.equal('190@nr')
-        expect(headers.tracestate.split('-')[6]).to.equal('0')
+        // Sampled is set to 1 since we this is the 1st transaction the agent is seeing
+        expect(headers.tracestate.split('-')[6]).to.equal('1')
         expect(headers.tracestate.split('-')[3]).to.equal(appId)
         expect(headers.tracestate.split('-')[2]).to.equal(accountId)
 
