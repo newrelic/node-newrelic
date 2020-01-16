@@ -213,7 +213,8 @@ describe('TraceContext', function() {
       const appId = '109354'
       agent.config.account_id = accountId
       agent.config.primary_application_id = appId
-
+      agent.transactionSampler.shouldSample = () => false
+      
       helper.runInTransaction(agent, function(txn) {
         const childSegment = txn.trace.add('child')
         childSegment.start()
@@ -222,8 +223,7 @@ describe('TraceContext', function() {
         expect(txn.traceContext._validateTraceParentHeader(headers.traceparent)).to.be.ok
         expect(txn.traceContext._validateTraceStateHeader(headers.tracestate)).to.be.ok
         expect(headers.tracestate.split('=')[0]).to.equal('190@nr')
-        // Sampled is set to 1 since we this is the 1st transaction the agent is seeing
-        expect(headers.tracestate.split('-')[6]).to.equal('1')
+        expect(headers.tracestate.split('-')[6]).to.equal('0')
         expect(headers.tracestate.split('-')[3]).to.equal(appId)
         expect(headers.tracestate.split('-')[2]).to.equal(accountId)
 
