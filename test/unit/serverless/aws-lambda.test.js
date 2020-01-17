@@ -809,6 +809,72 @@ describe('AwsLambda.patchLambdaHandler', () => {
     }
   })
 
+  it('should capture ALB event type', (done) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.albEvent
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'alb'
+      )
+      done()
+    }
+  })
+
+  it('should capture CloudWatch Scheduled event type', (done) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.cloudwatchScheduled
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'cloudWatch_scheduled'
+      )
+      done()
+    }
+  })
+
+  it('should capture SES event type', (done) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.sesEvent
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'ses'
+      )
+      done()
+    }
+  })
+
   describe('when callback used', () => {
     it('should end appropriately', () => {
       let transaction
