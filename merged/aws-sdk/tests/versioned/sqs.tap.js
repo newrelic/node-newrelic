@@ -13,6 +13,12 @@ tap.test('SQS API', (t) => {
   let AWS = null
   let sqs = null
 
+  let queueName = null
+  let queueUrl = null
+  let sendMessageRequestId = null
+  let sendMessageBatchRequestId = null
+  let receiveMessageRequestId = null
+
   t.beforeEach((done) => {
     helper = utils.TestAgent.makeInstrumented()
     helper.registerInstrumentation({
@@ -22,21 +28,32 @@ tap.test('SQS API', (t) => {
     })
     AWS = require('aws-sdk')
     sqs = new AWS.SQS({apiVersion: '2012-11-05', region: AWS_REGION})
+
+    queueName = 'delete-aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
+
     done()
   })
 
   t.afterEach((done) => {
-    helper && helper.unload()
-    done()
+    deleteQueue(sqs, queueUrl, (err) => {
+      t.error(err)
+
+      helper && helper.unload()
+      helper = null
+      sqs = null
+      AWS = null
+
+      queueName = null
+      queueUrl = null
+      sendMessageRequestId = null
+      sendMessageBatchRequestId = null
+      receiveMessageRequestId = null
+
+      done()
+    })
   })
 
-  t.test('commands', (t) => {
-    const queueName = 'aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
-    let queueUrl = null
-    let sendMessageRequestId = null
-    let sendMessageBatchRequestId = null
-    let receiveMessageRequestId = null
-
+  t.test('commands with callback', (t) => {
     const createParams = getCreateParams(queueName)
     sqs.createQueue(createParams, function(createErr, createData) {
       t.error(createErr)
@@ -66,53 +83,103 @@ tap.test('SQS API', (t) => {
               receiveMessageRequestId = getRequestId(t, receiveData)
 
               transaction.end()
-              setImmediate(finish, transaction)
+
+              const args = [t, transaction]
+              setImmediate(finish, ...args)
             })
           })
         })
       })
     })
+  })
 
-    t.tearDown(() => {
-      // Cleanup queue after test
-      const deleteParams = {
-        QueueUrl: queueUrl
-      }
+  t.test('commands with promises', (t) => {
+    const createParams = getCreateParams(queueName)
+    sqs.createQueue(createParams, function(createErr, createData) {
+      t.error(createErr)
 
-      sqs.deleteQueue(deleteParams, function(err) {
-          if (err) {
-            throw err
-          }
+      queueUrl = createData.QueueUrl
+
+      helper.runInTransaction(async transaction => {
+        try {
+          const sendMessageParams = getSendMessageParams(queueUrl)
+          const sendData = await sqs.sendMessage(sendMessageParams).promise()
+          t.ok(sendData.MessageId)
+
+          sendMessageRequestId = getRequestId(t, sendData)
+        } catch (error) {
+          t.error(error)
+        }
+
+        try {
+          const sendMessageBatchParams = getSendMessageBatchParams(queueUrl)
+          const sendBatchData =
+            await sqs.sendMessageBatch(sendMessageBatchParams).promise()
+          t.ok(sendBatchData.Successful)
+
+          sendMessageBatchRequestId = getRequestId(t, sendBatchData)
+        } catch (error) {
+          t.error(error)
+        }
+
+        try {
+          const receiveMessageParams = getReceiveMessageParams(queueUrl)
+          const receiveData = await sqs.receiveMessage(receiveMessageParams).promise()
+          t.ok(receiveData.Messages)
+
+          receiveMessageRequestId = getRequestId(t, receiveData)
+        } catch (error) {
+          t.error(error)
+        }
+
+        transaction.end()
+
+        const args = [t, transaction]
+        setImmediate(finish, ...args)
       })
     })
-
-    function finish(transaction) {
-      const expectedSegmentCount = 3
-
-      const root = transaction.trace.root
-      const segments = common.checkAWSAttributes(t, root, common.SQS_PATTERN)
-
-      t.equal(
-        segments.length,
-        expectedSegmentCount,
-        `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
-      )
-
-      const [sendMessage, sendMessageBatch, receiveMessage] = segments
-
-      checkName(t, sendMessage.name, 'Produce', queueName)
-      checkAttributes(t, sendMessage, 'sendMessage', sendMessageRequestId)
-
-      checkName(t, sendMessageBatch.name, 'Produce', queueName)
-      checkAttributes(t, sendMessageBatch, 'sendMessageBatch', sendMessageBatchRequestId)
-
-      checkName(t, receiveMessage.name, 'Consume', queueName)
-      checkAttributes(t, receiveMessage, 'receiveMessage', receiveMessageRequestId)
-
-      t.end()
-    }
   })
+
+  function finish(t, transaction) {
+    const expectedSegmentCount = 3
+
+    const root = transaction.trace.root
+    const segments = common.checkAWSAttributes(t, root, common.SQS_PATTERN)
+
+    t.equal(
+      segments.length,
+      expectedSegmentCount,
+      `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
+    )
+
+    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
+    t.equal(externalSegments.length, 0, 'should not have any External segments')
+
+    const [sendMessage, sendMessageBatch, receiveMessage] = segments
+
+    checkName(t, sendMessage.name, 'Produce', queueName)
+    checkAttributes(t, sendMessage, 'sendMessage', sendMessageRequestId)
+
+    checkName(t, sendMessageBatch.name, 'Produce', queueName)
+    checkAttributes(t, sendMessageBatch, 'sendMessageBatch', sendMessageBatchRequestId)
+
+    checkName(t, receiveMessage.name, 'Consume', queueName)
+    checkAttributes(t, receiveMessage, 'receiveMessage', receiveMessageRequestId)
+
+    t.end()
+  }
 })
+
+function deleteQueue(sqs, queueUrl, cb) {
+  // Cleanup queue after test
+  const deleteParams = {
+    QueueUrl: queueUrl
+  }
+
+  sqs.deleteQueue(deleteParams, function(err) {
+      cb(err)
+  })
+}
 
 function checkName(t, name, action, queueName) {
   const specificName = `/${action}/Named/${queueName}`

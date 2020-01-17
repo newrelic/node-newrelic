@@ -1,8 +1,10 @@
 'use strict'
 
-const EXTERN_PATTERN = /^External\/.*?amazonaws\.com/
-const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 const DATASTORE_PATTERN = /^Datastore/
+const EXTERN_PATTERN = /^External\/.*?amazonaws\.com/
+const SNS_PATTERN = /^MessageBroker\/SNS\/Topic/
+const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
+
 const SEGMENT_DESTINATION = 0x20
 
 function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
@@ -26,9 +28,11 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
 }
 
 module.exports = {
-  EXTERN_PATTERN,
-  SQS_PATTERN,
   DATASTORE_PATTERN,
+  EXTERN_PATTERN,
+  SNS_PATTERN,
+  SQS_PATTERN,
+
   SEGMENT_DESTINATION,
 
   checkAWSAttributes

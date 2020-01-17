@@ -61,6 +61,24 @@ function wrapMakeRequest(shim, fn, name, request) {
     segment.addAttribute('aws.service', service || UNKNOWN)
     segment.addAttribute('aws.region', requestRegion || region || UNKNOWN)
   })
+
+  shim.wrap(request, 'promise', function wrapPromiseFunc(shim, original) {
+    const activeSegment = shim.getActiveSegment()
+
+    return function wrappedPromiseFunc() {
+      if (!activeSegment) {
+        return original.apply(this, arguments)
+      }
+
+      const promise = shim.applySegment(original, activeSegment, false, this, arguments)
+
+      // TODO: convert to shim.bindPromise() once released.
+      return shim.interceptPromise(promise, function thenTouch() {
+        activeSegment.opaque = false
+        activeSegment.touch()
+      })
+    }
+  })
 }
 
 function getServiceName(service) {

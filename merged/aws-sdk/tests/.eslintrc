@@ -1,4 +1,7 @@
 {
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
   "rules": {
     "max-nested-callbacks": "off",
     "func-names": "off",
