@@ -209,8 +209,10 @@ describe('TraceContext', function() {
 
   describe('header creation', () => {
     it('should create valid headers', () => {
+      const trusted_key = '19000'
       const accountId = '190'
       const appId = '109354'
+      agent.config.trusted_account_key = trusted_key
       agent.config.account_id = accountId
       agent.config.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
@@ -222,7 +224,7 @@ describe('TraceContext', function() {
         const headers = txn.traceContext.createTraceContextPayload()
         expect(txn.traceContext._validateTraceParentHeader(headers.traceparent)).to.be.ok
         expect(txn.traceContext._validateTraceStateHeader(headers.tracestate)).to.be.ok
-        expect(headers.tracestate.split('=')[0]).to.equal('190@nr')
+        expect(headers.tracestate.split('=')[0]).to.equal(`${trusted_key}@nr`)
         expect(headers.tracestate.split('-')[6]).to.equal('0')
         expect(headers.tracestate.split('-')[3]).to.equal(appId)
         expect(headers.tracestate.split('-')[2]).to.equal(accountId)
