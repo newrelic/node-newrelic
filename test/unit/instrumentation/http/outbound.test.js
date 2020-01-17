@@ -502,6 +502,7 @@ describe('when working with http.request', function() {
           dt_format_w3c: true
         }
       })
+      agent.config.trusted_account_key = 190
       agent.config.account_id = 190
       agent.config.primary_application_id = '389103'
       const host = 'http://www.google.com'
