@@ -671,22 +671,29 @@ describe('built-in http module instrumentation', function() {
           },
           feature_flag: {
             dt_format_w3c: true
-          },
+          }
         })
       })
 
       it('should set header correctly when all data is present', function(done) {
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const priority = 0.789
+        // eslint-disable-next-line
+        const tracestate = `190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-${priority}-1563574856827`
         http = require('http')
+        agent.config.trusted_account_key = 190
 
         var server = http.createServer(function(req, res) {
-          expect(agent.getTransaction().traceContext.traceparent).to.equal(traceparent)
+          const txn = agent.getTransaction()
+          expect(txn.traceContext.traceparent).to.equal(traceparent)
+          expect(txn.traceContext._traceStateIntrinsics.priority).to.equal(priority)
           res.writeHead(200, {'Content-Length': 3})
           res.end('hi!')
         })
 
         var headers = {
-          traceparent: traceparent
+          traceparent: traceparent,
+          tracestate: tracestate
         }
 
         server.listen(4123, function() {

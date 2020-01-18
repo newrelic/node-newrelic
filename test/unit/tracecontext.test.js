@@ -4,7 +4,7 @@ const chai = require('chai')
 const expect = chai.expect
 const helper = require('../lib/agent_helper')
 var Transaction = require('../../lib/transaction')
-const TraceContext = require('../../lib/transaction/tracecontext')
+const TraceContext = require('../../lib/transaction/tracecontext').TraceContext
 const hashes = require('../../lib/util/hashes')
 
 describe('TraceContext', function() {
@@ -40,34 +40,22 @@ describe('TraceContext', function() {
     })
   })
 
-  describe('acceptTraceContextFromHeaders', () => {
+  describe('acceptTraceContextPayload', () => {
     it('should accept a valid trace parent header', () => {
       const traceid = (hashes.makeId() + hashes.makeId()).padStart(32, '0')
       const traceparent = `00-${traceid}-00f067aa0ba902b7-00`
 
-      const headers = {
-        traceparent: traceparent
-      }
-
-      tc.acceptTraceContextFromHeaders(headers)
+      tc.acceptTraceContextPayload(traceparent, '')
       expect(tc.traceId).to.equal(traceid)
     })
 
     it('should not accept an empty trace parent header', () => {
-      const headers = {
-        traceparent: null
-      }
-
-      tc.acceptTraceContextFromHeaders(headers)
+      tc.acceptTraceContextPayload(null, '')
       expect(tc._traceid).to.be.undefined
     })
 
     it('should not accept an invalid trace parent header', () => {
-      const headers = {
-        traceparent: 'invalid'
-      }
-
-      tc.acceptTraceContextFromHeaders(headers)
+      tc.acceptTraceContextPayload('invalid', '')
       expect(tc._traceid).to.be.undefined
     })
   })
@@ -243,8 +231,7 @@ describe('TraceContext', function() {
         const childSegment = txn.trace.add('child')
         childSegment.start()
 
-        const headers = { traceparent, tracestate }
-        txn.traceContext.acceptTraceContextFromHeaders(headers)
+        txn.traceContext.acceptTraceContextPayload(traceparent, tracestate)
 
         expect(txn.traceContext.traceparent).to.equal(traceparent)
         expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
