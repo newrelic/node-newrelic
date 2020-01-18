@@ -1139,7 +1139,7 @@ describe('Transaction', function() {
     })
   })
 
-  describe('acceptTraceContextFromHeaders', () => {
+  describe('acceptTraceContextPayload', () => {
     it('should accept a valid trace context traceparent header', () => {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
@@ -1152,10 +1152,7 @@ describe('Transaction', function() {
         var childSegment = txn.trace.add('child')
         childSegment.start()
 
-        const headers = {
-          traceparent: goodParent
-        }
-        txn.acceptTraceContextFromHeaders(headers)
+        txn.traceContext.acceptTraceContextPayload(goodParent, 'stuff')
 
         expect(txn.traceContext.traceparent).to.equal(goodParent)
         txn.end()
@@ -1172,13 +1169,13 @@ describe('Transaction', function() {
         var childSegment = txn.trace.add('child')
         childSegment.start()
 
-        const headers = {
-          traceparent: 'asdlkfjasdl;fkja'
-        }
-        const traceparent = txn.traceContext.traceparent
-        txn.acceptTraceContextFromHeaders(headers)
+        const orig_traceparent = txn.traceContext.traceparent
+        const traceparent = 'asdlkfjasdl;fkja'
+        const tracestate = 'stuff'
 
-        expect(txn.traceContext.traceparent).to.equal(traceparent)
+        txn.traceContext.acceptTraceContextPayload(traceparent, tracestate)
+
+        expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
         txn.end()
       })
     })
@@ -1255,13 +1252,13 @@ describe('Transaction', function() {
       agent.config.feature_flag.dt_format_w3c = true
 
       const tx = new Transaction(agent)
-      tx.traceContext.acceptTraceContextFromHeaders(
-        {traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'}
-      )
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const tracestate = '323322332234234234423'
+
+      tx.traceContext.acceptTraceContextPayload(traceparent, tracestate)
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
