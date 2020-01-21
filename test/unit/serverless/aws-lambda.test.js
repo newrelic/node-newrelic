@@ -258,11 +258,11 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
         apiGatewayProxyEvent.headers.traceparent = traceparent
-          
-        const wrappedHandler = 
+
+        const wrappedHandler =
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
-          expect(transaction.traceContext.parent).to.equal(traceparent)
+          expect(transaction.traceContext.traceparent).to.equal(traceparent)
 
           callback(null, validResponse)
         })
@@ -277,12 +277,13 @@ describe('AwsLambda.patchLambdaHandler', () => {
         agent.config.distributed_tracing.enabled = true
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
-          
-        const wrappedHandler = 
+
+        const wrappedHandler =
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
-          expect(transaction.traceContext.parent).to.exist
+          expect(transaction.traceContext.traceparent).to.exist
+          expect(transaction.traceContext.tracestate).to.exist
 
           callback(null, validResponse)
         })

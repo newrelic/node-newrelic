@@ -1144,26 +1144,40 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
 
-      const tx = new Transaction(agent)
       const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
-      tx.acceptTraceContextPayload(goodParent)
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
 
-      expect(tx.traceContext.parent).to.equal(goodParent)
+        txn.traceContext.acceptTraceContextPayload(goodParent, 'stuff')
+
+        expect(txn.traceContext.traceparent).to.equal(goodParent)
+        txn.end()
+      })
     })
 
     it('should not accept invalid trace context traceparent header', () => {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
 
-      const tx = new Transaction(agent)
-      const badParent = 'asdlkfjasdl;fkja'
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
 
-      tx.acceptTraceContextPayload(badParent)
+        const orig_traceparent = txn.traceContext.traceparent
+        const traceparent = 'asdlkfjasdl;fkja'
+        const tracestate = 'stuff'
 
-      expect(tx.traceContext.parent).to.be.undefined
+        txn.traceContext.acceptTraceContextPayload(traceparent, tracestate)
+
+        expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
+        txn.end()
+      })
     })
   })
 
@@ -1172,12 +1186,13 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c
 
       const tx = new Transaction(agent)
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       const lowercaseHexRegex = /^[a-f0-9]+/
@@ -1190,7 +1205,7 @@ describe('Transaction', function() {
 
       expect(traceparentParts[1], 'traceId is lowercase hex').to.match(lowercaseHexRegex)
       expect(traceparentParts[2], 'parentId is lowercase hex').to.match(lowercaseHexRegex)
-      
+
       agent.tracer.segment = null
     })
 
@@ -1204,7 +1219,7 @@ describe('Transaction', function() {
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[2].length, 'parentId').to.equal(16)
@@ -1222,7 +1237,7 @@ describe('Transaction', function() {
       agent.tracer.segment = tx.trace.root
       tx.sampled = true
 
-      const traceparent = tx.createTraceParentHeader()
+      const traceparent = tx.traceContext.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[3], 'flags').to.equal('01')
@@ -1234,95 +1249,22 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
 
       const tx = new Transaction(agent)
-      tx.traceContext.parent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const tracestate = '323322332234234234423'
+
+      tx.traceContext.acceptTraceContextPayload(traceparent, tracestate)
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.createTraceParentHeader()
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
 
       agent.tracer.segment = null
     })
-  })
-
-  describe('_validateTraceParentHeader', () => {
-    it('should pass valid traceparent header', () => {
-      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(traceparent)).to.equal(true)
-    })
-
-    it('should not pass 32 char string of all zeroes in traceid part of header', () => {
-      const allZeroes = '00-00000000000000000000000000000000-00f067aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(allZeroes)).to.equal(false)
-    })
-
-    it('should not pass 16 char string of all zeroes in parentid part of header', () => {
-      const allZeroes = '00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(allZeroes)).to.equal(false)
-    })
-
-    it('should not pass when traceid part contains uppercase letters', () => {
-      const someCaps = '00-4BF92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(someCaps)).to.equal(false)
-    })
-
-    it('should not pass when parentid part contains uppercase letters', () => {
-      const someCaps = '00-4bf92f3577b34da6a3ce929d0e0e4736-00FFFFaa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(someCaps)).to.equal(false)
-    })
-
-    it('should not pass when traceid part contains invalid chars', () => {
-      const invalidChar = '00-ZZf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(invalidChar))
-        .to.equal(false)
-    })
-
-    it('should not pass when parentid part contains invalid chars', () => {
-      const invalidChar = '00-aaf92f3577b34da6a3ce929d0e0e4736-00XX67aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(invalidChar))
-        .to.equal(false)
-    })
-
-    it('should not pass when tracid part is < 32 char long', () => {
-      const shorterStr = '00-4bf92f3-00f067aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(shorterStr))
-        .to.equal(false)
-    })
-
-    it('should not pass when tracid part is > 32 char long', () => {
-      const longerStr = '00-4bf92f3577b34da6a3ce929d0e0e47366666666-00f067aa0ba902b7-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(longerStr))
-        .to.equal(false)
-    })
-
-    it('should not pass when parentid part is < 16 char long', () => {
-      const shorterStr = '00-aaf92f3577b34da6a3ce929d0e0e4736-ff-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(shorterStr))
-        .to.equal(false)
-    })
-
-    it('should not pass when parentid part is > 16 char long', () => {
-      const shorterStr = '00-aaf92f3577b34da6a3ce929d0e0e4736-00XX67aa0ba902b72322332-00'
-
-      expect(Transaction.prototype._validateTraceParentHeader(shorterStr))
-        .to.equal(false)
-    })
-
-    // TODO: add more tests around the version and flags parts of header
   })
 
   describe('addDistributedTraceIntrinsics', function() {
