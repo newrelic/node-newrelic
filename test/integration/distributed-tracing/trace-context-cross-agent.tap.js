@@ -7,7 +7,7 @@ const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 /* lists of tests to skip so we can skip tests
    until progress is made/things are finalized */
 const skipTests = [
-  // "accept_payload",
+  "accept_payload",
   "background_transaction",
   "create_payload",
   "exception",
