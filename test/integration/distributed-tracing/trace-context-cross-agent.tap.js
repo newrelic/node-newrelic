@@ -413,7 +413,6 @@ const runTestCase = function(testCase, parentTest) {
         transaction.trace.root.touch()
         transaction.end()
 
-        // console.log(context)
         runTestCaseOutboundPayloads(t, testCase, context)
         runTestCaseTargetEvents(t, testCase, agent)
         runTestCaseMetrics(t, testCase, agent)
