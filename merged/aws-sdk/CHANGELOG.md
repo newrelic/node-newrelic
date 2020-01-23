@@ -1,3 +1,13 @@
+### 1.1.0 (2020-01-23):
+
+* Adds official support for API promise calls.
+  For example: `await ddb.createTable(params).promise()`.
+
+  * Fixed issue where external spans/segments would be incorrectly created in addition to more specific types such as datastore spans/segments. This also resulted in missing attributes from the more specific spans/segments.
+  * Fixed issue where spans/segments would not have timing update appropriately upon promise resolution. These would show sub-millisecond execution time as the time captured was the execution of the initial function not accounting for async execution.
+
+* Adds check before applying instrumentation to avoid breaking for very old versions of `aws-sdk`.
+
 ### 1.0.0 (2019-10-25):
 
 * **BREAKING** Removed support for Node 6, 7, and 9.
