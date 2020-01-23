@@ -182,6 +182,7 @@ const objectHasField = function(object, field) {
 const testSingleEvent = function(t, event, eventType, fixture) {
   const {exact, expected, unexpected} = fixture
   const attributes = event[0]
+
   for (const [k] of expected.entries()) {
     t.ok(
       objectHasField(attributes, k),
