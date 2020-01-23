@@ -34,6 +34,10 @@ const skipTests = [
   "tracestate_missing_transactionId",
   "tracestate_missing_type",
   "tracestate_missing_version",
+  "w3c_and_newrelc_headers_present",
+  "w3c_and_newrelc_headers_present_error_parsing_traceparent",
+  "w3c_and_newrelc_headers_present_error_parsing_tracestate",
+  "trace_id_is_left_padded_and_priority_rounded"
 ]
 
 const camelCaseToSnakeCase = function(object) {
@@ -263,6 +267,19 @@ const runTestCaseOutboundPayloads = function(t, testCase, context) {
 }
 
 const runTestCase = function(testCase, parentTest) {
+  // temp -- we can't run inbound header tests until we have
+  // something like go's `AcceptDistributedTraceHeaders` method,
+  // which accepts _all three_ headers.  Until then, we'll auto
+  // fail any test that has `newrelic` in its inbound headers
+  for (const [key] of testCase.inbound_headers.entries()) {
+    const header = testCase.inbound_headers[key]
+    if (header.newrelic) {
+      parentTest.fail(
+        `I don't know how to test a traditional DT/BetterCat newrelic header`
+      )
+    }
+  }
+
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming
   // familiar with what we need to do to implement a test runner
