@@ -34,6 +34,10 @@ const skipTests = [
   "tracestate_missing_transactionId",
   "tracestate_missing_type",
   "tracestate_missing_version",
+  "w3c_and_newrelc_headers_present",
+  "w3c_and_newrelc_headers_present_error_parsing_traceparent",
+  "w3c_and_newrelc_headers_present_error_parsing_tracestate",
+  "trace_id_is_left_padded_and_priority_rounded"
 ]
 
 const camelCaseToSnakeCase = function(object) {
@@ -169,41 +173,41 @@ const getExactExpectedUnexpectedFromIntrinsics = function(testCase, eventType) {
   }
 }
 
-// TODO: tap doesn't have this? really?
-const objectHasField = function(object, field) {
-  for (const [key] of Object.entries(object)) {
-    if (key === field) {
-      return true
-    }
-  }
-  return false
-}
-
 const testSingleEvent = function(t, event, eventType, fixture) {
   const {exact, expected, unexpected} = fixture
   const attributes = event[0]
 
-  for (const [k] of expected.entries()) {
-    t.ok(
-      objectHasField(attributes, k),
-      `does ${eventType} have ${expected[k]}`
-    )
-  }
+  t.ok(attributes, 'Should have attributes')
+  const attributesHasOwnProperty = Object.hasOwnProperty.bind(attributes)
 
-  for (const [k] of unexpected.entries()) {
+  expected.forEach((key) => {
+    const hasAttribute = attributesHasOwnProperty(key)
     t.ok(
-      !objectHasField(attributes, k),
-      `does ${eventType} not have ${unexpected[k]}`
+      hasAttribute,
+      `does ${eventType} have ${key}`
     )
-  }
+  })
 
-  for (const [k] of Object.entries(exact)) {
+  unexpected.forEach((key) => {
+    const hasAttribute = attributesHasOwnProperty(key)
+
+    t.notOk(
+      hasAttribute,
+      `${eventType} should not have ${key}`
+    )
+  })
+
+
+  Object.keys(exact).forEach((key) => {
+    const attributeValue = attributes[key]
+    const expectedValue = exact[key]
+
     t.equals(
-      attributes[k],
-      exact[k],
-      `${eventType} should have ${k}=${exact[k]}`
+      attributeValue,
+      expectedValue,
+      `${eventType} should have ${key}=${expectedValue}`
     )
-  }
+  })
 }
 
 const runTestCaseTargetEvents = function(t, testCase, agent) {
@@ -264,6 +268,19 @@ const runTestCaseOutboundPayloads = function(t, testCase, context) {
 }
 
 const runTestCase = function(testCase, parentTest) {
+  // temp -- we can't run inbound header tests until we have
+  // something like go's `AcceptDistributedTraceHeaders` method,
+  // which accepts _all three_ headers.  Until then, we'll auto
+  // fail any test that has `newrelic` in its inbound headers
+  for (const [key] of testCase.inbound_headers.entries()) {
+    const header = testCase.inbound_headers[key]
+    if (header.newrelic) {
+      parentTest.fail(
+        `I don't know how to test a traditional DT/BetterCat newrelic header`
+      )
+    }
+  }
+
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming
   // familiar with what we need to do to implement a test runner
