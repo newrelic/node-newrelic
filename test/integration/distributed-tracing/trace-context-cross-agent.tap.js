@@ -173,40 +173,41 @@ const getExactExpectedUnexpectedFromIntrinsics = function(testCase, eventType) {
   }
 }
 
-// TODO: tap doesn't have this? really?
-const objectHasField = function(object, field) {
-  for (const [key] of Object.entries(object)) {
-    if (key === field) {
-      return true
-    }
-  }
-  return false
-}
-
 const testSingleEvent = function(t, event, eventType, fixture) {
   const {exact, expected, unexpected} = fixture
   const attributes = event[0]
-  for (const [k] of expected.entries()) {
-    t.ok(
-      objectHasField(attributes, k),
-      `does ${eventType} have ${expected[k]}`
-    )
-  }
 
-  for (const [k] of unexpected.entries()) {
-    t.ok(
-      !objectHasField(attributes, k),
-      `does ${eventType} not have ${unexpected[k]}`
-    )
-  }
+  t.ok(attributes, 'Should have attributes')
+  const attributesHasOwnProperty = Object.hasOwnProperty.bind(attributes)
 
-  for (const [k] of Object.entries(exact)) {
+  expected.forEach((key) => {
+    const hasAttribute = attributesHasOwnProperty(key)
+    t.ok(
+      hasAttribute,
+      `does ${eventType} have ${key}`
+    )
+  })
+
+  unexpected.forEach((key) => {
+    const hasAttribute = attributesHasOwnProperty(key)
+
+    t.notOk(
+      hasAttribute,
+      `${eventType} should not have ${key}`
+    )
+  })
+
+
+  Object.keys(exact).forEach((key) => {
+    const attributeValue = attributes[key]
+    const expectedValue = exact[key]
+
     t.equals(
-      attributes[k],
-      exact[k],
-      `${eventType} should have ${k}=${exact[k]}`
+      attributeValue,
+      expectedValue,
+      `${eventType} should have ${key}=${expectedValue}`
     )
-  }
+  })
 }
 
 const runTestCaseTargetEvents = function(t, testCase, agent) {
