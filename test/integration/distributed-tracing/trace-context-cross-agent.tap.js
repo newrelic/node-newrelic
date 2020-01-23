@@ -34,6 +34,10 @@ const skipTests = [
   "tracestate_missing_transactionId",
   "tracestate_missing_type",
   "tracestate_missing_version",
+  "w3c_and_newrelc_headers_present",
+  "w3c_and_newrelc_headers_present_error_parsing_traceparent",
+  "w3c_and_newrelc_headers_present_error_parsing_tracestate",
+  "trace_id_is_left_padded_and_priority_rounded"
 ]
 
 const camelCaseToSnakeCase = function(object) {
