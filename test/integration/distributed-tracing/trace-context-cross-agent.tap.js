@@ -244,18 +244,18 @@ const runTestCaseOutboundPayloads = function(t, testCase, context) {
     for (const [assertType,fields] of Object.entries(testToRun)) {
       switch (assertType) {
         case 'exact':
-          testExact(t, context, fields)
+          testExact(t, context[key], fields)
           break
         case 'expected':
-          testExpected(t, context, fields)
+          testExpected(t, context[key], fields)
           break
         case 'unexpected':
-          testUnexpected(t, context, fields)
+          testUnexpected(t, context[key], fields)
         case 'notequal':
-          testNotEqual(t, context, fields)
+          testNotEqual(t, context[key], fields)
           break
         case 'vendors':
-          testVendor(t, context, fields)
+          testVendor(t, context[key], fields)
           break
         default:
           throw new Error("I don't know how to test a(n) " + assertType)
@@ -398,67 +398,74 @@ const runTestCase = function(testCase, parentTest) {
           testCase.transport_type
         )
 
-        // Generate outbound payload
-        const headers = transaction.traceContext.createTraceContextPayload()
+        // Generate outbound payloads
+        const outboundPayloads = testCase.outbound_payloads || []
+        const outboundHeaders = outboundPayloads.map(
+          () => transaction.traceContext.createTraceContextPayload())
 
-        // Find the first/leftmost list-member, parse out intrinsics and tenant id
-        const listMembers = headers.tracestate.split(',')
-        const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
-        const [tenantString, nrIntrinsics] = nrTraceState.split('=')
-        const tenantId = tenantString.split('@')[0]
-        const validatedStateHeader = transaction.traceContext._validateAndParseIntrinsics(
-          nrIntrinsics
-        )
+        const context = outboundHeaders.map((headers) => {
+          // Find the first/leftmost list-member, parse out intrinsics and tenant id
+          const listMembers = headers.tracestate.split(',')
+          const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
+          const [tenantString, nrIntrinsics] = nrTraceState.split('=')
+          const tenantId = tenantString.split('@')[0]
+          const validatedStateHeader = transaction.traceContext.
+            _validateAndParseIntrinsics(nrIntrinsics)
 
-        // Get a list of vendor strings from tracestate after removing the NR list-member
-        const vendors = listMembers.map(m => m.split('=')[0])
+          // Get a list of vendor strings from the tracestate after removing the
+          // NR list-member
+          const vendors = listMembers.map(m => m.split('=')[0])
 
-        // TODO: Could have a pure "parse"
-        // function for intrinsics separate from validate that could still be
-        // leveraged here.
-        let validateObject = {}
-        if (validatedStateHeader.entryValid) {
-          // Found entry for the correct trust key / tenantId
-          // So manually setting for now
-          validateObject = { tenantId }
-          Object.assign(validateObject, validatedStateHeader.intrinsics)
-        }
-        validateObject.vendors = vendors
+          // TODO: Could have a pure "parse"
+          // function for intrinsics separate from validate that could still be
+          // leveraged here.
+          let validateObject = {}
+          if (validatedStateHeader.entryValid) {
+            // Found entry for the correct trust key / tenantId
+            // So manually setting for now
+            validateObject = { tenantId }
+            Object.assign(validateObject, validatedStateHeader.intrinsics)
+          }
+          validateObject.vendors = vendors
 
-        // get payload for how we represent it internally to how tests want it
-        const context = {
-          'traceparent':
-            transaction.traceContext._validateTraceParentHeader(
-              headers.traceparent
-            ),
-          'tracestate': validateObject
-        }
-
-        const normalizeAgentDataToCrossAgentTestData = function(data) {
-          data = camelCaseToSnakeCase(data)
-          if (data.flags) {
-            data.trace_flags = data.flags
-            delete data.flags
+          // get payload for how we represent it internally to how tests want it
+          const outboundPayload = {
+            'traceparent':
+              transaction.traceContext._validateTraceParentHeader(
+                headers.traceparent
+              ),
+            'tracestate': validateObject
           }
 
-          data.parent_account_id = data.account_id
-          delete data.account_id
+          const normalizeAgentDataToCrossAgentTestData = function(data) {
+            data = camelCaseToSnakeCase(data)
+            if (data.flags) {
+              data.trace_flags = data.flags
+              delete data.flags
+            }
 
-          data.parent_application_id = data.app_id
-          delete data.app_id
+            data.parent_account_id = data.account_id
+            delete data.account_id
 
-          if (data.sampled) {
-            data.sampled = data.sampled ? true : false
+            data.parent_application_id = data.app_id
+            delete data.app_id
+
+            if (data.sampled) {
+              data.sampled = data.sampled ? true : false
+            }
+
+            return data
           }
 
-          return data
-        }
-        context.tracestate = normalizeAgentDataToCrossAgentTestData(
-          context.tracestate
-        )
-        context.traceparent = normalizeAgentDataToCrossAgentTestData(
-          context.traceparent
-        )
+          outboundPayload.tracestate = normalizeAgentDataToCrossAgentTestData(
+            outboundPayload.tracestate
+          )
+          outboundPayload.traceparent = normalizeAgentDataToCrossAgentTestData(
+            outboundPayload.traceparent
+          )
+
+          return outboundPayload
+        })
 
         // end transaction
         transaction.trace.root.touch()
