@@ -398,16 +398,20 @@ const runTestCase = function(testCase, parentTest) {
           testCase.transport_type
         )
 
-        // generate payload
+        // Generate outbound payload
         const headers = transaction.traceContext.createTraceContextPayload()
 
         // Find the first/leftmost list-member, parse out intrinsics and tenant id
-        const nrTraceState = headers.tracestate.split(',')[0]
+        const listMembers = headers.tracestate.split(',')
+        const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
         const [tenantString, nrIntrinsics] = nrTraceState.split('=')
         const tenantId = tenantString.split('@')[0]
         const validatedStateHeader = transaction.traceContext._validateAndParseIntrinsics(
           nrIntrinsics
         )
+
+        // Get a list of vendor strings from tracestate after removing the NR list-member
+        const vendors = listMembers.map(m => m.split('=')[0])
 
         // TODO: Could have a pure "parse"
         // function for intrinsics separate from validate that could still be
@@ -419,6 +423,7 @@ const runTestCase = function(testCase, parentTest) {
           validateObject = { tenantId }
           Object.assign(validateObject, validatedStateHeader.intrinsics)
         }
+        validateObject.vendors = vendors
 
         // get payload for how we represent it internally to how tests want it
         const context = {
