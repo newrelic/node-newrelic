@@ -3,11 +3,11 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const TYPES = require('../../../lib/transaction').TYPES
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
+const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
 /* lists of tests to skip so we can skip tests
    until progress is made/things are finalized */
 const skipTests = [
-  "accept_payload",
   "background_transaction",
   "create_payload",
   "exception",
@@ -349,6 +349,7 @@ const runTestCase = function(testCase, parentTest) {
 
   parentTest.test('trace context: ' + testCase.test_name, function(t) {
     const agent = helper.instrumentMockedAgent({})
+    agent.recordSupportability = recordSupportability
     agent.config.trusted_account_key = testCase.trusted_account_key
     agent.config.account_id = testCase.account_id
     agent.config.primary_application_id = 4657
