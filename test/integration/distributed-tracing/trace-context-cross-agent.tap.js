@@ -1,5 +1,6 @@
 'use strict'
 const tap = require('tap')
+const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const TYPES = require('../../../lib/transaction').TYPES
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
@@ -8,9 +9,6 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 /* lists of tests to skip so we can skip tests
    until progress is made/things are finalized */
 const skipTests = [
-  "background_transacation",
-  "create_payload",
-  "exception",
   "lowercase_known_transport_is_unknown",
   "missing_traceparent_and_tracestate",
   "missing_traceparent",
@@ -356,6 +354,9 @@ const runTestCase = function(testCase, parentTest) {
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.distributed_tracing.enabled = true
     agent.config.feature_flag.dt_format_w3c = true
+
+    const agentApi = new API(agent)
+
     const transactionType = testCase.web_transaction ?
       TYPES.WEB : TYPES.BG
 
@@ -368,6 +369,11 @@ const runTestCase = function(testCase, parentTest) {
           segment.getExclusiveDurationInMillis()
         )
       })
+
+      // Check to see if the test runner should throw an error
+      if (testCase.raises_exception) {
+        agentApi.noticeError(new Error('should error'))
+      }
 
       // monkey patch this transaction object
       // to force sampled to be true.
