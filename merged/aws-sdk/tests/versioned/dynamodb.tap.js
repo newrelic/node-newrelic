@@ -6,11 +6,11 @@ const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
 const RETRY_MS = 1500
-const RETRY_MAX_MS = 15500
+const RETRY_MAX_MS = 30000
 
 // NOTE: these take a while to run and can trigger tap CLI file timeout
 // This can be avoided via --no-timeout or --timeout=<value>
-tap.test('DynamoDB', {timeout: 60000}, (t) => {
+tap.test('DynamoDB', {timeout: 90000}, (t) => {
   t.autoend()
 
   let helper = null
@@ -173,7 +173,7 @@ async function waitTableCreated(t, ddb, tableName, segment, started) {
 
   const currentTime = Date.now()
   const startTime = started || currentTime
-  const elapsed = startTime - currentTime
+  const elapsed = currentTime - startTime
 
   if (elapsed > RETRY_MAX_MS) {
     segment.__NR_test_restoreOpaque()
