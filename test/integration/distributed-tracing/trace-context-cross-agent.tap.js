@@ -9,7 +9,6 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 /* lists of tests to skip so we can skip tests
    until progress is made/things are finalized */
 const skipTests = [
-  "lowercase_known_transport_is_unknown",
   "missing_traceparent_and_tracestate",
   "missing_traceparent",
   "missing_tracestate",
