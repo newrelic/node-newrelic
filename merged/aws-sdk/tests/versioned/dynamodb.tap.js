@@ -10,7 +10,7 @@ const RETRY_MAX_MS = 15500
 
 // NOTE: these take a while to run and can trigger tap CLI file timeout
 // This can be avoided via --no-timeout or --timeout=<value>
-tap.test('DynamoDB', (t) => {
+tap.test('DynamoDB', {timeout: 60000}, (t) => {
   t.autoend()
 
   let helper = null
