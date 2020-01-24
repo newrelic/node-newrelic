@@ -8,7 +8,7 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 /* lists of tests to skip so we can skip tests
    until progress is made/things are finalized */
 const skipTests = [
-  "background_transaction",
+  "background_transacation",
   "create_payload",
   "exception",
   "lowercase_known_transport_is_unknown",
@@ -70,7 +70,7 @@ const testExpectedFixtureKeys = function(t, thingWithKeys, expectedKeys) {
 const testExact = function(t, object, fixture) {
   for (const [descendants, fixtureValue] of Object.entries(fixture)) {
     const valueToTest = getDescendantValue(object, descendants)
-    t.ok(valueToTest === fixtureValue, 'is ' + descendants + ' an exact match?')
+    t.equal(valueToTest, fixtureValue, 'is ' + descendants + ' an exact match?')
   }
 }
 
@@ -396,16 +396,32 @@ const runTestCase = function(testCase, parentTest) {
         // generate payload
         const headers = transaction.traceContext.createTraceContextPayload()
 
+        // Find the first/leftmost list-member, parse out intrinsics and tenant id
+        const nrTraceState = headers.tracestate.split(',')[0]
+        const [tenantString, nrIntrinsics] = nrTraceState.split('=')
+        const tenantId = tenantString.split('@')[0]
+        const validatedStateHeader = transaction.traceContext._validateAndParseIntrinsics(
+          nrIntrinsics
+        )
+
+        // TODO: Could have a pure "parse"
+        // function for intrinsics separate from validate that could still be
+        // leveraged here.
+        let validateObject = {}
+        if (validatedStateHeader.entryValid) {
+          // Found entry for the correct trust key / tenantId
+          // So manually setting for now
+          validateObject = { tenantId }
+          Object.assign(validateObject, validatedStateHeader.intrinsics)
+        }
+
         // get payload for how we represent it internally to how tests want it
         const context = {
           'traceparent':
             transaction.traceContext._validateTraceParentHeader(
               headers.traceparent
             ),
-          'tracestate':
-            transaction.traceContext._validateTraceStateHeader(
-              headers.tracestate
-            ).intrinsics
+          'tracestate': validateObject
         }
 
         const normalizeAgentDataToCrossAgentTestData = function(data) {
@@ -414,6 +430,12 @@ const runTestCase = function(testCase, parentTest) {
             data.trace_flags = data.flags
             delete data.flags
           }
+
+          data.parent_account_id = data.account_id
+          delete data.account_id
+
+          data.parent_application_id = data.app_id
+          delete data.app_id
 
           if (data.sampled) {
             data.sampled = data.sampled ? true : false
