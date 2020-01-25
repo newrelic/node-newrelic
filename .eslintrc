@@ -52,6 +52,7 @@
     "strict": "error",
     "quote-props": [ "off", "consistent-as-needed" ],
     "quotes": ["off", "single"],
+    "use-isnan": "error",
     "wrap-iife": "error"
   },
   "overrides": [
