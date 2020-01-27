@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/aws-sdk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "New Relic instrumentation of the aws-sdk package.",
   "main": "index.js",
   "scripts": {
