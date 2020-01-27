@@ -3,8 +3,8 @@
 * Bumped `@newrelic/aws-sdk` to `v1.1.1` from `v1.0.0`.
  https://github.com/newrelic/node-newrelic-aws-sdk/blob/master/CHANGELOG.md
  Notable improvements include:
- * Added official support for API promise calls, fixing two critical bugs.
- * Added check before applying instrumentation to avoid breaking for very old
+   * Added official support for API promise calls, fixing two critical bugs.
+   * Added check before applying instrumentation to avoid breaking for very old
   versions.
 
 * Added `bindPromise()` to `Shim` prototype for direct usage by instrumentation.
