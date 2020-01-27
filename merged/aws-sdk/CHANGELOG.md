@@ -1,3 +1,7 @@
+### 1.1.1 (2020-01-27):
+
+* Bumps DynamoDB tap.test timeout to avoid versioned test terminations when table creates are slow.
+
 ### 1.1.0 (2020-01-23):
 
 * Adds official support for API promise calls.
