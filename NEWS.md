@@ -1,3 +1,22 @@
+### 6.3.0 (2020-01-27):
+
+* Bumped `@newrelic/aws-sdk` to `v1.1.1` from `v1.0.0`.
+ https://github.com/newrelic/node-newrelic-aws-sdk/blob/master/CHANGELOG.md
+ Notable improvements include:
+ * Added official support for API promise calls, fixing two critical bugs.
+ * Added check before applying instrumentation to avoid breaking for very old
+  versions.
+
+* Added `bindPromise()` to `Shim` prototype for direct usage by instrumentation.
+ Previously, `_bindPromise()` was a private function in the `Shim` module.
+
+* Fixed spelling in configuration error.
+  Thank you to David Ray (@daaray) for the contribution.
+
+* Fixed long-log truncation issue in Serverless mode.
+
+* Updated language in agent to be in line with New Relic Standards.
+
 ### 6.2.0 (2019-11-25):
 
 * Upgraded `tap` to resolve `handlebars` audit warnings.
