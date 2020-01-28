@@ -523,8 +523,8 @@ describe('when working with http.request', function() {
           res.resume()
           transaction.end()
           const tc = transaction.traceContext
-          const valid = tc._validateTraceStateHeader(headers.tracestate)
-          expect(valid).to.be.ok
+          const valid = tc._validateAndParseTraceStateHeader(headers.tracestate)
+          expect(valid.entryValid).to.equal(true)
           done()
         })
       })
