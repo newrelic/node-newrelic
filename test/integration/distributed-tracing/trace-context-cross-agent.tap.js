@@ -370,7 +370,7 @@ const runTestCase = function(testCase, parentTest) {
       }
       for (const [key] of testCase.inbound_headers.entries()) {
         const inbound_header = testCase.inbound_headers[key]
-        transaction.traceContext.acceptTraceContextPayload(
+        transaction.acceptTraceContextPayload(
           inbound_header.traceparent,
           inbound_header.tracestate,
           testCase.transport_type
@@ -385,34 +385,27 @@ const runTestCase = function(testCase, parentTest) {
           // Find the first/leftmost list-member, parse out intrinsics and tenant id
           const listMembers = headers.tracestate.split(',')
           const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
-          const [tenantString, nrIntrinsics] = nrTraceState.split('=')
+          const [tenantString, nrTracestateEntry] = nrTraceState.split('=')
           const tenantId = tenantString.split('@')[0]
-          const validatedStateHeader = transaction.traceContext.
-            _validateAndParseIntrinsics(nrIntrinsics)
+          const intrinsics = transaction.traceContext.
+            _parseIntrinsics(nrTracestateEntry)
 
           // Get a list of vendor strings from the tracestate after removing the
           // NR list-member
           const vendors = listMembers.map(m => m.split('=')[0])
 
-          // TODO: Could have a pure "parse"
-          // function for intrinsics separate from validate that could still be
-          // leveraged here.
-          let validateObject = {}
-          if (validatedStateHeader.entryValid) {
-            // Found entry for the correct trust key / tenantId
-            // So manually setting for now
-            validateObject = { tenantId }
-            Object.assign(validateObject, validatedStateHeader.intrinsics)
-          }
-          validateObject.vendors = vendors
+          // Found entry for the correct trust key / tenantId
+          // So manually setting for now
+          intrinsics.tenantId = tenantId
+          intrinsics.vendors = vendors
 
           // get payload for how we represent it internally to how tests want it
           const outboundPayload = {
             'traceparent':
-              transaction.traceContext._validateTraceParentHeader(
+              transaction.traceContext._validateAndParseTraceParentHeader(
                 headers.traceparent
               ),
-            'tracestate': validateObject
+            'tracestate': intrinsics
           }
 
           const normalizeAgentDataToCrossAgentTestData = function(data) {
@@ -470,8 +463,8 @@ const runTestCase = function(testCase, parentTest) {
         // it matches. A PR has been put up to modify the cross-agent tests,
         // but until then, just modify them manually
         if (testCase.test_name === 'spans_disabled_in_child') {
-          delete testCase.outbound_payloads.exact['tracestate.span_id']
-          testCase.outbound_payloads.expected.push('tracestate.span_id')
+          delete testCase.outbound_payloads[0].exact['tracestate.span_id']
+          testCase.outbound_payloads[0].expected.push('tracestate.span_id')
         }
 
         runTestCaseOutboundPayloads(t, testCase, context)
