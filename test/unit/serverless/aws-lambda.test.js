@@ -649,6 +649,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(agentAttributes[EVENTSOURCE_TYPE]).to.be.undefined
       done()
     }
   })
