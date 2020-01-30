@@ -825,7 +825,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
-        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a')
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012' +
+        ':targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a')
       expect(agentAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'alb'
