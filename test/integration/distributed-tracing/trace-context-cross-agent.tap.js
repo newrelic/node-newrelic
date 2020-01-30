@@ -390,6 +390,11 @@ const runTestCase = function(testCase, parentTest) {
           const intrinsics = transaction.traceContext.
             _parseIntrinsics(nrTracestateEntry)
 
+          // _parseIntrinsics returns null for absent items, remove them
+          Object.keys(intrinsics).forEach(k => {
+            if (intrinsics[k] === null) delete intrinsics[k]
+          })
+
           // Get a list of vendor strings from the tracestate after removing the
           // NR list-member
           const vendors = listMembers.map(m => m.split('=')[0])
