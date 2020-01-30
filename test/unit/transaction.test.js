@@ -1152,9 +1152,11 @@ describe('Transaction', function() {
         var childSegment = txn.trace.add('child')
         childSegment.start()
 
-        txn.traceContext.acceptTraceContextPayload(goodParent, 'stuff')
+        txn.acceptTraceContextPayload(goodParent, 'stuff')
 
-        expect(txn.traceContext.traceparent).to.equal(goodParent)
+        expect(txn.traceId).to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
+        expect(txn.parentSpanId).to.equal('00f067aa0ba902b7')
+
         txn.end()
       })
     })

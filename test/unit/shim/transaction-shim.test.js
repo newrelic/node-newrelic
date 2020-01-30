@@ -457,7 +457,7 @@ describe('TransactionShim', function() {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
           shim.handleCATHeaders(headers, segment)
-          expect(tx.traceContext.traceparent).to.equal(traceparent)
+          expect(tx.traceContext.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
           expect(tx.traceContext.tracestate.endsWith(tracestate)).to.be.true
         })
       })

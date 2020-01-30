@@ -1,39 +1,14 @@
 'use strict'
 const tap = require('tap')
+const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const TYPES = require('../../../lib/transaction').TYPES
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
+const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
 /* lists of tests to skip so we can skip tests
    until progress is made/things are finalized */
 const skipTests = [
-  "accept_payload",
-  "background_transaction",
-  "create_payload",
-  "exception",
-  "lowercase_known_transport_is_unknown",
-  "missing_traceparent_and_tracestate",
-  "missing_traceparent",
-  "missing_tracestate",
-  "multiple_create_calls",
-  "multiple_new_relic_trace_state_entries",
-  "multiple_vendors_in_tracestate",
-  "payload_from_mobile_caller",
-  "payload_from_trusted_partnership_account",
-  "payload_from_untrusted_account",
-  "payload_with_sampled_false",
-  "payload_with_untrusted_key",
-  "spans_disabled_in_child",
-  "spans_disabled_in_parent",
-  "spans_disabled_root",
-  "traceparent_missing_traceId",
-  "tracestate_has_larger_version",
-  "tracestate_missing_account",
-  "tracestate_missing_application",
-  "tracestate_missing_timestamp",
-  "tracestate_missing_transactionId",
-  "tracestate_missing_type",
-  "tracestate_missing_version",
   "w3c_and_newrelc_headers_present",
   "w3c_and_newrelc_headers_present_error_parsing_traceparent",
   "w3c_and_newrelc_headers_present_error_parsing_tracestate",
@@ -70,7 +45,7 @@ const testExpectedFixtureKeys = function(t, thingWithKeys, expectedKeys) {
 const testExact = function(t, object, fixture) {
   for (const [descendants, fixtureValue] of Object.entries(fixture)) {
     const valueToTest = getDescendantValue(object, descendants)
-    t.ok(valueToTest === fixtureValue, 'is ' + descendants + ' an exact match?')
+    t.equal(valueToTest, fixtureValue, 'is ' + descendants + ' an exact match?')
   }
 }
 
@@ -247,18 +222,18 @@ const runTestCaseOutboundPayloads = function(t, testCase, context) {
     for (const [assertType,fields] of Object.entries(testToRun)) {
       switch (assertType) {
         case 'exact':
-          testExact(t, context, fields)
+          testExact(t, context[key], fields)
           break
         case 'expected':
-          testExpected(t, context, fields)
+          testExpected(t, context[key], fields)
           break
         case 'unexpected':
-          testUnexpected(t, context, fields)
+          testUnexpected(t, context[key], fields)
         case 'notequal':
-          testNotEqual(t, context, fields)
+          testNotEqual(t, context[key], fields)
           break
         case 'vendors':
-          testVendor(t, context, fields)
+          testVendor(t, context[key], fields)
           break
         default:
           throw new Error("I don't know how to test a(n) " + assertType)
@@ -349,12 +324,16 @@ const runTestCase = function(testCase, parentTest) {
 
   parentTest.test('trace context: ' + testCase.test_name, function(t) {
     const agent = helper.instrumentMockedAgent({})
+    agent.recordSupportability = recordSupportability
     agent.config.trusted_account_key = testCase.trusted_account_key
     agent.config.account_id = testCase.account_id
     agent.config.primary_application_id = 4657
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.distributed_tracing.enabled = true
     agent.config.feature_flag.dt_format_w3c = true
+
+    const agentApi = new API(agent)
+
     const transactionType = testCase.web_transaction ?
       TYPES.WEB : TYPES.BG
 
@@ -367,6 +346,11 @@ const runTestCase = function(testCase, parentTest) {
           segment.getExclusiveDurationInMillis()
         )
       })
+
+      // Check to see if the test runner should throw an error
+      if (testCase.raises_exception) {
+        agentApi.noticeError(new Error('should error'))
+      }
 
       // monkey patch this transaction object
       // to force sampled to be true.
@@ -386,52 +370,112 @@ const runTestCase = function(testCase, parentTest) {
       }
       for (const [key] of testCase.inbound_headers.entries()) {
         const inbound_header = testCase.inbound_headers[key]
-        transaction.traceContext.acceptTraceContextPayload(
+        transaction.acceptTraceContextPayload(
           inbound_header.traceparent,
           inbound_header.tracestate,
           testCase.transport_type
         )
 
-        // generate payload
-        const headers = transaction.traceContext.createTraceContextPayload()
+        // Generate outbound payloads
+        const outboundPayloads = testCase.outbound_payloads || []
+        const outboundHeaders = outboundPayloads.map(
+          () => transaction.traceContext.createTraceContextPayload())
 
-        // get payload for how we represent it internally to how tests want it
-        const context = {
-          'traceparent':
-            transaction.traceContext._validateTraceParentHeader(
-              headers.traceparent
-            ),
-          'tracestate':
-            transaction.traceContext._validateTraceStateHeader(
-              headers.tracestate
-            ).intrinsics
-        }
+        const context = outboundHeaders.map((headers) => {
+          // Find the first/leftmost list-member, parse out intrinsics and tenant id
+          const listMembers = headers.tracestate.split(',')
+          const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
+          const [tenantString, nrTracestateEntry] = nrTraceState.split('=')
+          const tenantId = tenantString.split('@')[0]
+          const intrinsics = transaction.traceContext.
+            _parseIntrinsics(nrTracestateEntry)
 
-        const normalizeAgentDataToCrossAgentTestData = function(data) {
-          data = camelCaseToSnakeCase(data)
-          if (data.flags) {
-            data.trace_flags = data.flags
-            delete data.flags
+          // _parseIntrinsics returns null for absent items, remove them
+          Object.keys(intrinsics).forEach(k => {
+            if (intrinsics[k] === null) delete intrinsics[k]
+          })
+
+          // Get a list of vendor strings from the tracestate after removing the
+          // NR list-member
+          const vendors = listMembers.map(m => m.split('=')[0])
+
+          // Found entry for the correct trust key / tenantId
+          // So manually setting for now
+          intrinsics.tenantId = tenantId
+          intrinsics.vendors = vendors
+
+          // get payload for how we represent it internally to how tests want it
+          const outboundPayload = {
+            'traceparent':
+              transaction.traceContext._validateAndParseTraceParentHeader(
+                headers.traceparent
+              ),
+            'tracestate': intrinsics
           }
 
-          if (data.sampled) {
-            data.sampled = data.sampled ? true : false
+          const normalizeAgentDataToCrossAgentTestData = function(data) {
+            data = camelCaseToSnakeCase(data)
+            if (data.flags) {
+              data.trace_flags = data.flags
+              delete data.flags
+            }
+
+            data.parent_account_id = data.account_id
+            delete data.account_id
+
+            data.parent_application_id = data.app_id
+            delete data.app_id
+
+            if (data.sampled) {
+              data.sampled = data.sampled ? true : false
+            }
+
+            return data
           }
 
-          return data
-        }
-        context.tracestate = normalizeAgentDataToCrossAgentTestData(
-          context.tracestate
-        )
-        context.traceparent = normalizeAgentDataToCrossAgentTestData(
-          context.traceparent
-        )
+          outboundPayload.tracestate = normalizeAgentDataToCrossAgentTestData(
+            outboundPayload.tracestate
+          )
+          outboundPayload.traceparent = normalizeAgentDataToCrossAgentTestData(
+            outboundPayload.traceparent
+          )
+
+          return outboundPayload
+        })
 
         // end transaction
         transaction.trace.root.touch()
         transaction.end()
 
-        // console.log(context)
+        // These tests assume setting a transport type even when there are not valid
+        // trace headers. This is slightly inconsistent with the spec. Given DT
+        // (NR format) does not include transport when there is no trace AND the
+        // attribute parent.transportType is only populated when a valid payload recieved,
+        // we are keeping our implementation conistent for now.
+        const removeTransportTests = [
+          'missing_traceparent',
+          'missing_traceparent_and_tracestate'
+        ]
+        if (removeTransportTests.indexOf(testCase.test_name) >= 0) {
+          testCase.expected_metrics = [
+            ['DurationByCaller/Unknown/Unknown/Unknown/Unknown/all', 1],
+            ['DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb', 1]
+          ]
+        }
+
+        // According to the spec, if spans are disabled, they SHOULD be omitted in
+        // outbound tracestate headers. But tests currently check to see if it matches.
+        // Also, a new transaction ID should be generated instead of propagating the
+        // parent one. A PR has been put up to modify the cross-agent tests, but until
+        // then, just modify them manually
+        if (testCase.test_name === 'spans_disabled_in_child') {
+          delete testCase.outbound_payloads[0].exact['tracestate.span_id']
+          testCase.outbound_payloads[0].unexpected = ['tracestate.span_id']
+
+          delete testCase.outbound_payloads[0].exact['tracestate.transaction_id']
+          testCase.outbound_payloads[0].expected.push('tracestate.transaction_id')
+        }
+
         runTestCaseOutboundPayloads(t, testCase, context)
         runTestCaseTargetEvents(t, testCase, agent)
         runTestCaseMetrics(t, testCase, agent)
