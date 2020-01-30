@@ -465,6 +465,7 @@ const runTestCase = function(testCase, parentTest) {
         // then, just modify them manually
         if (testCase.test_name === 'spans_disabled_in_child') {
           delete testCase.outbound_payloads[0].exact['tracestate.span_id']
+          testCase.outbound_payloads[0].unexpected = ['tracestate.span_id']
 
           delete testCase.outbound_payloads[0].exact['tracestate.transaction_id']
           testCase.outbound_payloads[0].expected.push('tracestate.transaction_id')
