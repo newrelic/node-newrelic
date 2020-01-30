@@ -458,13 +458,16 @@ const runTestCase = function(testCase, parentTest) {
           ]
         }
 
-        // According to the spec, if spans are disabled, they should be omitted
-        // in outbound tracestate headers. But tests currently check to see if
-        // it matches. A PR has been put up to modify the cross-agent tests,
-        // but until then, just modify them manually
+        // According to the spec, if spans are disabled, they SHOULD be omitted in
+        // outbound tracestate headers. But tests currently check to see if it matches.
+        // Also, a new transaction ID should be generated instead of propagating the
+        // parent one. A PR has been put up to modify the cross-agent tests, but until
+        // then, just modify them manually
         if (testCase.test_name === 'spans_disabled_in_child') {
           delete testCase.outbound_payloads[0].exact['tracestate.span_id']
-          testCase.outbound_payloads[0].expected.push('tracestate.span_id')
+
+          delete testCase.outbound_payloads[0].exact['tracestate.transaction_id']
+          testCase.outbound_payloads[0].expected.push('tracestate.transaction_id')
         }
 
         runTestCaseOutboundPayloads(t, testCase, context)
