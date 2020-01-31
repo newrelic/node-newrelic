@@ -5,7 +5,7 @@ PACKAGE_VERSION=$(node -e 'console.log(require("./package").version)')
 git checkout gh-pages
 git pull origin gh-pages
 git merge -
-make public-docs
+npm run public-docs
 git rm -r docs
 mv out docs
 git add docs

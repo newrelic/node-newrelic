@@ -21,7 +21,7 @@
     "func-names": "error",
     "guard-for-in": "error",
     "key-spacing": ["off", { "beforeColon": false }],
-    "max-len": ["error", 90, { "ignoreUrls": true }],
+    "max-len": ["error", 100, { "ignoreUrls": true }],
     "max-nested-callbacks": ["error", 3],
     "max-params": ["error", 5],
     "new-cap": "error",
@@ -52,6 +52,7 @@
     "strict": "error",
     "quote-props": [ "off", "consistent-as-needed" ],
     "quotes": ["off", "single"],
+    "use-isnan": "error",
     "wrap-iife": "error"
   },
   "overrides": [

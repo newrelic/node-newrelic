@@ -259,11 +259,11 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
         apiGatewayProxyEvent.headers.traceparent = traceparent
-          
-        const wrappedHandler = 
+
+        const wrappedHandler =
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
-          expect(transaction.traceContext.parent).to.equal(traceparent)
+          expect(transaction.traceContext.traceparent).to.equal(traceparent)
 
           callback(null, validResponse)
         })
@@ -278,12 +278,13 @@ describe('AwsLambda.patchLambdaHandler', () => {
         agent.config.distributed_tracing.enabled = true
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
-          
-        const wrappedHandler = 
+
+        const wrappedHandler =
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
-          expect(transaction.traceContext.parent).to.exist
+          expect(transaction.traceContext.traceparent).to.exist
+          expect(transaction.traceContext.tracestate).to.exist
 
           callback(null, validResponse)
         })
@@ -693,6 +694,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(agentAttributes[EVENTSOURCE_TYPE]).to.be.undefined
       done()
     }
   })
@@ -870,10 +872,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
         'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a') // eslint-disable-line max-len
+
       expect(agentAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'alb'
       )
+
       done()
     }
   })
