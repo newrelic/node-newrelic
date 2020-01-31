@@ -2,9 +2,9 @@
 
 const chai = require('chai')
 const expect = chai.expect
-const helper = require('../lib/agent_helper')
-var Transaction = require('../../lib/transaction')
-const TraceContext = require('../../lib/transaction/tracecontext').TraceContext
+const helper = require('../../lib/agent_helper')
+var Transaction = require('../../../lib/transaction')
+const TraceContext = require('../../../lib/transaction/tracecontext').TraceContext
 
 describe('TraceContext', function() {
   let tc = null
