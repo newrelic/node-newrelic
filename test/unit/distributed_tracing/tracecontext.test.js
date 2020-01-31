@@ -264,5 +264,77 @@ describe('TraceContext', function() {
         txn.end()
       })
     })
+
+    it('should generate parentId if no span/segment in context', (done) => {
+      // This is a corner case and ideally never happens but is potentially possible
+      // due to state loss.
+
+      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const expectedVersion = '00'
+      const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
+      const traceparent = `${expectedVersion}-${expectedTraceId}-00f067aa0ba902b7-00`
+      const tracestate = 'test=test'
+
+      helper.runInTransaction(agent, function(txn) {
+        helper.runOutOfContext(() => {
+          txn.acceptTraceContextPayload(traceparent, tracestate)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [version, traceId, parentId] = splitData
+
+          expect(version).to.equal(expectedVersion)
+          expect(traceId).to.equal(expectedTraceId)
+
+          expect(parentId).to.exist // we should generate *something*
+          expect(parentId.length).to.equal(16) // and it should be 16 chars
+
+          txn.end()
+
+          done()
+        })
+      })
+    })
+
+    it('should not generate spanId if no span/segment in context', (done) => {
+      // This is a corner case and ideally never happens but is potentially possible
+      // due to state loss.
+
+      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const expectedVersion = '00'
+      const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
+      const traceparent = `${expectedVersion}-${expectedTraceId}-00f067aa0ba902b7-00`
+      const incomingTraceState = 'test=test'
+
+      helper.runInTransaction(agent, function(txn) {
+        helper.runOutOfContext(() => {
+          txn.acceptTraceContextPayload(traceparent, incomingTraceState)
+
+          const tracestate = txn.traceContext.tracestate
+
+          // The test key/value should propagate at the end of the string
+          expect(tracestate.endsWith(incomingTraceState)).to.be.true
+
+          const secondListMemberIndex = tracestate.indexOf(incomingTraceState)
+          const nrItem = tracestate.substring(0, secondListMemberIndex)
+
+          const splitData = nrItem.split('-')
+          const {4: spanId} = splitData
+
+          expect(spanId).to.equal('')
+
+          txn.end()
+
+          done()
+        })
+      })
+    })
   })
 })
