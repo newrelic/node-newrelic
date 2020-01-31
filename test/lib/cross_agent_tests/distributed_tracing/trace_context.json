@@ -7,6 +7,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -61,6 +62,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -111,6 +113,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -166,6 +169,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": false,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -183,15 +187,14 @@
           "tracestate.version": 0,
           "tracestate.parent_type": 0,
           "tracestate.parent_account_id": "33",
-          "tracestate.span_id": "7d3efb1b173fecfa",
-          "tracestate.transaction_id": "e8b91a159289ff74",
           "tracestate.sampled": true,
           "tracestate.priority": 1.23456
         },
         "expected": [
           "traceparent.parent_id",
           "tracestate.timestamp",
-          "tracestate.parent_application_id"
+          "tracestate.parent_application_id",
+          "tracestate.transaction_id"
         ],
         "notequal": {
           "traceparent.parent_id": "7d3efb1b173fecfa"
@@ -236,6 +239,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": false,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
     ],
@@ -293,6 +297,7 @@
     "raises_exception": true,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -350,6 +355,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -404,6 +410,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -458,6 +465,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "kafka",
     "inbound_headers": [
       {
@@ -511,6 +519,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -588,6 +597,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -684,6 +694,7 @@
     "web_transaction": true,
     "raises_exception": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "force_sampled_true": false,
     "transport_type": "HTTP",
     "inbound_headers": [
@@ -761,6 +772,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -800,6 +812,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -847,6 +860,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -923,6 +937,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -962,6 +977,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -991,6 +1007,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1020,6 +1037,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1049,6 +1067,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1103,6 +1122,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1129,6 +1149,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1158,6 +1179,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1241,6 +1263,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1321,6 +1344,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1364,6 +1388,7 @@
     "raises_exception": false,
     "force_sampled_true": true,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       { }
@@ -1403,6 +1428,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1481,6 +1507,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1536,6 +1563,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1568,6 +1596,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1614,6 +1643,7 @@
     "raises_exception": false,
     "force_sampled_true": false,
     "span_events_enabled": true,
+    "transaction_events_enabled": true,
     "transport_type": "HTTP",
     "inbound_headers": [
       {
@@ -1677,6 +1707,129 @@
       ["TransportDuration/App/33/51424/HTTP/all", 1],
       ["TransportDuration/App/33/51424/HTTP/allWeb", 1],
       ["Supportability/DistributedTrace/AcceptPayload/Success", 1]
+    ]
+  },
+  {
+    "test_name": "span_events_enabled_transaction_events_disabled",
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "force_sampled_true": true,
+    "span_events_enabled": true,
+    "transaction_events_enabled": false,
+    "transport_type": "HTTP",
+    "inbound_headers": [
+      {
+        "traceparent": "00-e22175eb1d68b6de32bf70e38458ccc3-7d3efb1b173fecfa-01",
+        "tracestate": "33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035"
+      }
+    ],
+    "outbound_payloads": [
+      {
+        "exact": {
+          "traceparent.version": "00",
+          "traceparent.trace_id": "e22175eb1d68b6de32bf70e38458ccc3",
+          "traceparent.trace_flags": "01",
+          "tracestate.tenant_id": "33",
+          "tracestate.version": 0,
+          "tracestate.parent_type": 0,
+          "tracestate.parent_account_id": "33",
+          "tracestate.sampled": true,
+          "tracestate.priority": 1.23456
+        },
+        "expected": [
+          "traceparent.parent_id",
+          "tracestate.span_id",
+          "tracestate.timestamp",
+          "tracestate.parent_application_id"
+        ],
+        "unexpected": [
+          "tracestate.transaction_id"
+        ]
+      }
+    ],
+    "intrinsics": {
+      "target_events": ["Span"],
+      "common":{
+        "exact": {
+          "traceId": "e22175eb1d68b6de32bf70e38458ccc3",
+          "priority": 1.23456,
+          "sampled": true
+        },
+        "expected": ["guid"],
+        "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.alternatePathHashes"]
+      },
+      "Span": {
+        "exact": {
+          "parentId": "7d3efb1b173fecfa",
+          "trustedParentId": "7d3efb1b173fecfa"
+        },
+        "expected": ["transactionId"],
+        "unexpected": ["parent.transportDuration", "parent.type", "parent.app", "parent.account", "parent.transportType", "tracingVendors"]
+      }
+    },
+    "expected_metrics": [
+      ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+      ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+      ["TransportDuration/App/33/2827902/HTTP/all", 1],
+      ["TransportDuration/App/33/2827902/HTTP/allWeb", 1],
+      ["Supportability/TraceContext/Accept/Success", 1],
+      ["Supportability/TraceContext/Create/Success", 1]
+    ]
+  },
+  {
+    "test_name": "span_events_disabled_transaction_events_disabled",
+    "comment": [
+      "With both spans and transaction events disabled, there will be no ",
+      "events to verify intrinsics against. tracestate.span_id and ",
+      "tracestate.transaction_id are not expected on outbound payloads."
+    ],
+    "trusted_account_key": "33",
+    "account_id": "33",
+    "web_transaction": true,
+    "raises_exception": false,
+    "force_sampled_true": true,
+    "span_events_enabled": false,
+    "transaction_events_enabled": false,
+    "transport_type": "HTTP",
+    "inbound_headers": [
+      {
+        "traceparent": "00-e22175eb1d68b6de32bf70e38458ccc3-7d3efb1b173fecfa-01",
+        "tracestate": "33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035"
+      }
+    ],
+    "outbound_payloads": [
+      {
+        "exact": {
+          "traceparent.version": "00",
+          "traceparent.trace_id": "e22175eb1d68b6de32bf70e38458ccc3",
+          "traceparent.trace_flags": "01",
+          "tracestate.tenant_id": "33",
+          "tracestate.version": 0,
+          "tracestate.parent_type": 0,
+          "tracestate.parent_account_id": "33",
+          "tracestate.sampled": true,
+          "tracestate.priority": 1.23456
+        },
+        "expected": [
+          "traceparent.parent_id",
+          "tracestate.timestamp",
+          "tracestate.parent_application_id"
+        ],
+        "unexpected": [
+          "tracestate.span_id",
+          "tracestate.transaction_id"
+        ]
+      }
+    ],
+    "expected_metrics": [
+      ["DurationByCaller/App/33/2827902/HTTP/all", 1],
+      ["DurationByCaller/App/33/2827902/HTTP/allWeb", 1],
+      ["TransportDuration/App/33/2827902/HTTP/all", 1],
+      ["TransportDuration/App/33/2827902/HTTP/allWeb", 1],
+      ["Supportability/TraceContext/Accept/Success", 1],
+      ["Supportability/TraceContext/Create/Success", 1]
     ]
   }
 ]

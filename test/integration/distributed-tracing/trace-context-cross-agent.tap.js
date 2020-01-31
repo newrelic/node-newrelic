@@ -31,6 +31,23 @@ const getDescendantValue = function(object, descendants) {
   return object
 }
 
+function hasNestedProperty(object, descendants) {
+  const arrayDescendants = descendants.split('.')
+
+  let currentItem = object
+  for (let i = 0; i < arrayDescendants.length; i++) {
+    const property = arrayDescendants[i]
+
+    if (!currentItem || !currentItem.hasOwnProperty(property)) {
+      return false
+    }
+
+    currentItem = currentItem[property]
+  }
+
+  return true
+}
+
 const testExpectedFixtureKeys = function(t, thingWithKeys, expectedKeys) {
   let actualKeys = thingWithKeys
   if (!Array.isArray(actualKeys)) {
@@ -59,20 +76,18 @@ const testNotEqual = function(t, object, fixture) {
 const testUnexpected = function(t, object, fixture) {
   for (const [key] of fixture.entries()) {
     const fixtureValue = fixture[key]
-    t.ok(
-      typeof (getDescendantValue(object, fixtureValue)) === 'undefined',
-      'is ' + fixtureValue + ' absent?'
-    )
+
+    const exists = hasNestedProperty(object, fixtureValue)
+    t.notOk(exists, 'is ' + fixtureValue + ' absent?')
   }
 }
 
 const testExpected = function(t, object, fixture) {
   for (const [key] of fixture.entries()) {
     const fixtureValue = fixture[key]
-    t.ok(
-      typeof (getDescendantValue(object, fixtureValue)) !== 'undefined',
-      'is ' + fixtureValue + ' set?'
-    )
+
+    const exists = hasNestedProperty(object, fixtureValue)
+    t.ok(exists, 'is ' + fixtureValue + ' set?')
   }
 }
 
@@ -266,7 +281,8 @@ const runTestCase = function(testCase, parentTest) {
       [ 'account_id', 'expected_metrics', 'force_sampled_true',
         'inbound_headers', 'intrinsics', 'outbound_payloads',
         'raises_exception', 'span_events_enabled', 'test_name',
-        'transport_type','trusted_account_key', 'web_transaction','comment'
+        'transport_type','trusted_account_key', 'web_transaction', 'comment',
+        'transaction_events_enabled'
       ]
     )
 
@@ -323,12 +339,21 @@ const runTestCase = function(testCase, parentTest) {
   })
 
   parentTest.test('trace context: ' + testCase.test_name, function(t) {
+    if (testCase.comment && testCase.comment.length > 0) {
+      const comment = Array.isArray(testCase.comment) ?
+        testCase.comment.join('\n') :
+        testCase.comment
+
+      t.comment(comment)
+    }
+
     const agent = helper.instrumentMockedAgent({})
     agent.recordSupportability = recordSupportability
     agent.config.trusted_account_key = testCase.trusted_account_key
     agent.config.account_id = testCase.account_id
     agent.config.primary_application_id = 4657
     agent.config.span_events.enabled = testCase.span_events_enabled
+    agent.config.transaction_events.enabled = testCase.transaction_events_enabled
     agent.config.distributed_tracing.enabled = true
     agent.config.feature_flag.dt_format_w3c = true
 
@@ -461,19 +486,6 @@ const runTestCase = function(testCase, parentTest) {
             ['DurationByCaller/Unknown/Unknown/Unknown/Unknown/all', 1],
             ['DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb', 1]
           ]
-        }
-
-        // According to the spec, if spans are disabled, they SHOULD be omitted in
-        // outbound tracestate headers. But tests currently check to see if it matches.
-        // Also, a new transaction ID should be generated instead of propagating the
-        // parent one. A PR has been put up to modify the cross-agent tests, but until
-        // then, just modify them manually
-        if (testCase.test_name === 'spans_disabled_in_child') {
-          delete testCase.outbound_payloads[0].exact['tracestate.span_id']
-          testCase.outbound_payloads[0].unexpected = ['tracestate.span_id']
-
-          delete testCase.outbound_payloads[0].exact['tracestate.transaction_id']
-          testCase.outbound_payloads[0].expected.push('tracestate.transaction_id')
         }
 
         runTestCaseOutboundPayloads(t, testCase, context)
