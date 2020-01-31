@@ -12,6 +12,7 @@ const REQ_ID = 'aws.requestId'
 const LAMBDA_ARN = 'aws.lambda.arn'
 const COLDSTART = 'aws.lambda.coldStart'
 const EVENTSOURCE_ARN = 'aws.lambda.eventSource.arn'
+const EVENTSOURCE_TYPE = 'aws.lambda.eventSource.eventType'
 
 describe('AwsLambda.patchLambdaHandler', () => {
   const groupName = 'Function'
@@ -471,6 +472,29 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should detect event type', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          EVENTSOURCE_TYPE,
+          'apiGateway'
+        )
+
+        done()
+      }
+    })
+
     it('should record standard web metrics', (done) => {
       agent.on('harvestStarted', confirmMetrics)
 
@@ -625,6 +649,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(agentAttributes[EVENTSOURCE_TYPE]).to.be.undefined
       done()
     }
   })
@@ -645,6 +670,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('kinesis:eventsourcearn')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'kinesis'
+      )
       done()
     }
   })
@@ -664,6 +693,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('bucketarn')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        's3'
+      )
       done()
     }
   })
@@ -684,6 +717,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('eventsubscriptionarn')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'sns'
+      )
       done()
     }
   })
@@ -743,6 +780,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'cloudFront'
+      )
       done()
     }
   })
@@ -762,6 +803,81 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('aws:lambda:events')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'firehose'
+      )
+      done()
+    }
+  })
+
+  it('should capture ALB event type', (done) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.albEvent
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+
+      expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012' +
+        ':targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'alb'
+      )
+      done()
+    }
+  })
+
+  it('should capture CloudWatch Scheduled event type', (done) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.cloudwatchScheduled
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+
+      expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
+        'arn:aws:events:us-west-2:123456789012:rule/ExampleRule')
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'cloudWatch_scheduled'
+      )
+      done()
+    }
+  })
+
+  it('should capture SES event type', (done) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.sesEvent
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+
+      expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'ses'
+      )
       done()
     }
   })

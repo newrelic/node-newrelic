@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 'use strict'
 
 const kinesisDataStreamEvent = {
@@ -345,6 +346,147 @@ const kinesisDataFirehoseEvent = {
   ]
 }
 
+const albEvent = {
+  "requestContext": {
+    "elb": {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a"
+    }
+  },
+  "httpMethod": "GET",
+  "path": "/lambda",
+  "queryStringParameters": {
+    "query": "1234ABCD"
+  },
+  "headers": {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+    "accept-encoding": "gzip",
+    "accept-language": "en-US,en;q=0.9",
+    "connection": "keep-alive",
+    "host": "lambda-alb-123578498.us-east-2.elb.amazonaws.com",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+    "x-amzn-trace-id": "Root=1-5c536348-3d683b8b04734faae651f476",
+    "x-forwarded-for": "72.12.164.125",
+    "x-forwarded-port": "80",
+    "x-forwarded-proto": "http",
+    "x-imforwards": "20"
+  },
+  "body": "",
+  "isBase64Encoded": false
+}
+
+const cloudwatchScheduled = {
+  "id": "cdc73f9d-aea9-11e3-9d5a-835b769c0d9c",
+  "detail-type": "Scheduled Event",
+  "source": "aws.events",
+  "account": "{{{account-id}}}",
+  "time": "1970-01-01T00:00:00Z",
+  "region": "us-west-2",
+  "resources": [
+    "arn:aws:events:us-west-2:123456789012:rule/ExampleRule"
+  ],
+  "detail": {}
+}
+
+const sesEvent = {
+  "Records": [
+    {
+      "eventSource": "aws:ses",
+      "eventVersion": "1.0",
+      "ses": {
+        "mail": {
+          "commonHeaders": {
+            "date": "Wed, 7 Oct 2015 12:34:56 -0700",
+            "from": [
+              "Jane Doe <janedoe@example.com>"
+            ],
+            "messageId": "<0123456789example.com>",
+            "returnPath": "janedoe@example.com",
+            "subject": "Test Subject",
+            "to": [
+              "johndoe@example.com"
+            ]
+          },
+          "destination": [
+            "johndoe@example.com"
+          ],
+          "headers": [
+            {
+              "name": "Return-Path",
+              "value": "<janedoe@example.com>"
+            },
+            {
+              "name": "Received",
+              "value": "from mailer.example.com (mailer.example.com [203.0.113.1]) by inbound-smtp.us-west-2.amazonaws.com with SMTP id o3vrnil0e2ic28trm7dfhrc2v0cnbeccl4nbp0g1 for johndoe@example.com; Wed, 07 Oct 2015 12:34:56 +0000 (UTC)"
+            },
+            {
+              "name": "DKIM-Signature",
+              "value": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=example.com; s=example; h=mime-version:from:date:message-id:subject:to:content-type; bh=jX3F0bCAI7sIbkHyy3mLYO28ieDQz2R0P8HwQkklFj4=; b=sQwJ+LMe9RjkesGu+vqU56asvMhrLRRYrWCbVt6WJulueecwfEwRf9JVWgkBTKiL6m2hr70xDbPWDhtLdLO+jB3hzjVnXwK3pYIOHw3vxG6NtJ6o61XSUwjEsp9tdyxQjZf2HNYee873832l3K1EeSXKzxYk9Pwqcpi3dMC74ct9GukjIevf1H46hm1L2d9VYTL0LGZGHOAyMnHmEGB8ZExWbI+k6khpurTQQ4sp4PZPRlgHtnj3Zzv7nmpTo7dtPG5z5S9J+L+Ba7dixT0jn3HuhaJ9b+VThboo4YfsX9PMNhWWxGjVksSFOcGluPO7QutCPyoY4gbxtwkN9W69HA=="
+            },
+            {
+              "name": "MIME-Version",
+              "value": "1.0"
+            },
+            {
+              "name": "From",
+              "value": "Jane Doe <janedoe@example.com>"
+            },
+            {
+              "name": "Date",
+              "value": "Wed, 7 Oct 2015 12:34:56 -0700"
+            },
+            {
+              "name": "Message-ID",
+              "value": "<0123456789example.com>"
+            },
+            {
+              "name": "Subject",
+              "value": "Test Subject"
+            },
+            {
+              "name": "To",
+              "value": "johndoe@example.com"
+            },
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=UTF-8"
+            }
+          ],
+          "headersTruncated": false,
+          "messageId": "o3vrnil0e2ic28trm7dfhrc2v0clambda4nbp0g1",
+          "source": "janedoe@example.com",
+          "timestamp": "1970-01-01T00:00:00.000Z"
+        },
+        "receipt": {
+          "action": {
+            "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:Example",
+            "invocationType": "Event",
+            "type": "Lambda"
+          },
+          "dkimVerdict": {
+            "status": "PASS"
+          },
+          "processingTimeMillis": 574,
+          "recipients": [
+            "johndoe@example.com"
+          ],
+          "spamVerdict": {
+            "status": "PASS"
+          },
+          "spfVerdict": {
+            "status": "PASS"
+          },
+          "timestamp": "1970-01-01T00:00:00.000Z",
+          "virusVerdict": {
+            "status": "PASS"
+          }
+        }
+      }
+    }
+  ]
+}
+
+
 module.exports = {
   kinesisDataStreamEvent: kinesisDataStreamEvent,
   s3PutEvent: s3PutEvent,
@@ -355,5 +497,8 @@ module.exports = {
   cloudFormationCreateRequestEvent: cloudFormationCreateRequestEvent,
   apiGatewayProxyEvent: apiGatewayProxyEvent,
   cloudWatchLogsEvent: cloudWatchLogsEvent,
-  kinesisDataFirehoseEvent: kinesisDataFirehoseEvent
+  kinesisDataFirehoseEvent: kinesisDataFirehoseEvent,
+  albEvent: albEvent,
+  cloudwatchScheduled: cloudwatchScheduled,
+  sesEvent: sesEvent
 }
