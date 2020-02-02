@@ -7,9 +7,9 @@ var Transaction = require('../../../lib/transaction')
 const TraceContext = require('../../../lib/transaction/tracecontext').TraceContext
 
 describe('TraceContext', function() {
-  let tc = null
+  let traceContext = null
   let agent = null
-  let trans = null
+  let transaction = null
 
   beforeEach(function() {
     agent = helper.loadMockedAgent({
@@ -19,8 +19,8 @@ describe('TraceContext', function() {
     agent.config.feature_flag.dt_format_w3c = true
     agent.config.distributed_tracing.enabled = true
 
-    trans = new Transaction(agent)
-    tc = new TraceContext(trans)
+    transaction = new Transaction(agent)
+    traceContext = new TraceContext(transaction)
   })
 
   afterEach(function() {
@@ -33,7 +33,7 @@ describe('TraceContext', function() {
       // eslint-disable-next-line max-len
       const tracestate = `33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-${Date.now()}`
 
-      const tcd = tc.acceptTraceContextPayload(traceparent, tracestate)
+      const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
       expect(tcd.acceptedTraceparent).to.equal(true)
       expect(tcd.acceptedTracestate).to.equal(true)
       expect(tcd.traceId).to.equal('00015f9f95352ad550284c27c5d3084c')
@@ -49,40 +49,79 @@ describe('TraceContext', function() {
     })
 
     it('should not accept an empty traceparent header', () => {
-      const tcd = tc.acceptTraceContextPayload(null, '')
+      const tcd = traceContext.acceptTraceContextPayload(null, '')
       expect(tcd.acceptedTraceparent).to.equal(false)
     })
 
     it('should not accept an invalid traceparent header', () => {
-      const tcd = tc.acceptTraceContextPayload('invalid', '')
+      const tcd = traceContext.acceptTraceContextPayload('invalid', '')
       expect(tcd.acceptedTraceparent).to.equal(false)
     })
 
     it('should not accept an invalid tracestate header', () => {
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const tracestate = 'asdf,===asdf,,'
-      const tcd = tc.acceptTraceContextPayload(traceparent, tracestate)
+      const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
       expect(tcd.acceptedTraceparent).to.equal(true)
       expect(tcd.acceptedTracestate).to.equal(false)
+    })
+
+    it('should accept traceparent when tracestate missing', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = false
+      agent.config.feature_flag.dt_format_w3c = true
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+      helper.runInTransaction(agent, function(txn) {
+        const childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.acceptTraceContextPayload(traceparent, undefined)
+
+        // The traceId should propagate
+        expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+
+        txn.end()
+      })
+    })
+
+    it('should accept traceparent when tracestate empty string', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = false
+      agent.config.feature_flag.dt_format_w3c = true
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const tracestate = ''
+
+      helper.runInTransaction(agent, function(txn) {
+        const childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.acceptTraceContextPayload(traceparent, tracestate)
+
+        // The traceId should propagate
+        expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+
+        txn.end()
+      })
     })
   })
 
   describe('flags hex', function() {
     it('should parse trace flags in the traceparent header', function() {
-      let flags = tc.parseFlagsHex('01')
+      let flags = traceContext.parseFlagsHex('01')
       expect(flags.sampled).to.be.true
 
-      flags = tc.parseFlagsHex('00')
+      flags = traceContext.parseFlagsHex('00')
       expect(flags.sampled).to.be.false
     })
 
     it('should return proper trace flags hex', function() {
-      trans.sampled = false
-      let flagsHex = tc.createFlagsHex()
+      transaction.sampled = false
+      let flagsHex = traceContext.createFlagsHex()
       expect(flagsHex).to.equal('00')
 
-      trans.sampled = true
-      flagsHex = tc.createFlagsHex()
+      transaction.sampled = true
+      flagsHex = traceContext.createFlagsHex()
       expect(flagsHex).to.equal('01')
     })
   })
@@ -90,72 +129,72 @@ describe('TraceContext', function() {
   describe('_validateAndParseTraceParentHeader', () => {
     it('should pass valid traceparent header', () => {
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-      expect(tc._validateAndParseTraceParentHeader(traceparent).entryValid).to.be.ok
+      expect(traceContext._validateAndParseTraceParentHeader(traceparent).entryValid).to.be.ok
     })
 
     it('should not pass 32 char string of all zeroes in traceid part of header', () => {
       const allZeroes = '00-00000000000000000000000000000000-00f067aa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(allZeroes).entryValid).to.equal(false)
+      expect(traceContext._validateAndParseTraceParentHeader(allZeroes).entryValid).to.equal(false)
     })
 
     it('should not pass 16 char string of all zeroes in parentid part of header', () => {
       const allZeroes = '00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-00'
 
-      expect(tc._validateAndParseTraceParentHeader(allZeroes).entryValid).to.equal(false)
+      expect(traceContext._validateAndParseTraceParentHeader(allZeroes).entryValid).to.equal(false)
     })
 
     it('should not pass when traceid part contains uppercase letters', () => {
       const someCaps = '00-4BF92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(someCaps).entryValid).to.equal(false)
+      expect(traceContext._validateAndParseTraceParentHeader(someCaps).entryValid).to.equal(false)
     })
 
     it('should not pass when parentid part contains uppercase letters', () => {
       const someCaps = '00-4bf92f3577b34da6a3ce929d0e0e4736-00FFFFaa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(someCaps).entryValid).to.equal(false)
+      expect(traceContext._validateAndParseTraceParentHeader(someCaps).entryValid).to.equal(false)
     })
 
     it('should not pass when traceid part contains invalid chars', () => {
       const invalidChar = '00-ZZf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(invalidChar).entryValid)
+      expect(traceContext._validateAndParseTraceParentHeader(invalidChar).entryValid)
         .to.equal(false)
     })
 
     it('should not pass when parentid part contains invalid chars', () => {
       const invalidChar = '00-aaf92f3577b34da6a3ce929d0e0e4736-00XX67aa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(invalidChar).entryValid)
+      expect(traceContext._validateAndParseTraceParentHeader(invalidChar).entryValid)
         .to.equal(false)
     })
 
     it('should not pass when tracid part is < 32 char long', () => {
       const shorterStr = '00-4bf92f3-00f067aa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(shorterStr).entryValid)
+      expect(traceContext._validateAndParseTraceParentHeader(shorterStr).entryValid)
         .to.equal(false)
     })
 
     it('should not pass when tracid part is > 32 char long', () => {
       const longerStr = '00-4bf92f3577b34da6a3ce929d0e0e47366666666-00f067aa0ba902b7-00'
 
-      expect(tc._validateAndParseTraceParentHeader(longerStr).entryValid)
+      expect(traceContext._validateAndParseTraceParentHeader(longerStr).entryValid)
         .to.equal(false)
     })
 
     it('should not pass when parentid part is < 16 char long', () => {
       const shorterStr = '00-aaf92f3577b34da6a3ce929d0e0e4736-ff-00'
 
-      expect(tc._validateAndParseTraceParentHeader(shorterStr).entryValid)
+      expect(traceContext._validateAndParseTraceParentHeader(shorterStr).entryValid)
         .to.equal(false)
     })
 
     it('should not pass when parentid part is > 16 char long', () => {
       const shorterStr = '00-aaf92f3577b34da6a3ce929d0e0e4736-00XX67aa0ba902b72322332-00'
 
-      expect(tc._validateAndParseTraceParentHeader(shorterStr).entryValid)
+      expect(traceContext._validateAndParseTraceParentHeader(shorterStr).entryValid)
         .to.equal(false)
     })
   })
@@ -166,7 +205,7 @@ describe('TraceContext', function() {
       const goodTraceStateHeader =
       /* eslint-disable-next-line max-len */
       '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
-      const valid = tc._validateAndParseTraceStateHeader(goodTraceStateHeader)
+      const valid = traceContext._validateAndParseTraceStateHeader(goodTraceStateHeader)
       expect(valid).to.be.ok
       expect(valid.entryFound).to.be.true
       expect(valid.entryValid).to.be.true
@@ -186,7 +225,7 @@ describe('TraceContext', function() {
       const badTraceStateHeader =
         /* eslint-disable-next-line max-len */
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
-      const valid = tc._validateAndParseTraceStateHeader(badTraceStateHeader)
+      const valid = traceContext._validateAndParseTraceStateHeader(badTraceStateHeader)
       expect(valid.entryFound).to.be.false
       expect(valid.entryValid).to.be.undefined
     })
@@ -196,7 +235,7 @@ describe('TraceContext', function() {
       const badTimestamp =
         /* eslint-disable-next-line max-len */
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-,234234@foo=bar'
-      const valid = tc._validateAndParseTraceStateHeader(badTimestamp)
+      const valid = traceContext._validateAndParseTraceStateHeader(badTimestamp)
       expect(valid.entryFound).to.be.true
       expect(valid.entryValid).to.be.false
     })

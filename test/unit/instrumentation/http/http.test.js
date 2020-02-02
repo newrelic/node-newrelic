@@ -703,6 +703,59 @@ describe('built-in http module instrumentation', function() {
           })
         })
       })
+
+      it('should set traceparent header correctly tracestate missing', function(done) {
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+        http = require('http')
+        agent.config.trusted_account_key = 190
+
+        var server = http.createServer(function(req, res) {
+          const txn = agent.getTransaction()
+          expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
+          res.writeHead(200, {'Content-Length': 3})
+          res.end('hi!')
+        })
+
+        var headers = {
+          traceparent: traceparent
+        }
+
+        server.listen(4123, function() {
+          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+            res.resume()
+            server.close(done)
+          })
+        })
+      })
+
+      it('should set traceparent header correctly tracestate empty string', function(done) {
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+        const tracestate = ''
+        http = require('http')
+        agent.config.trusted_account_key = 190
+
+        var server = http.createServer(function(req, res) {
+          const txn = agent.getTransaction()
+          expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
+
+          res.writeHead(200, {'Content-Length': 3})
+          res.end('hi!')
+        })
+
+        var headers = {
+          traceparent: traceparent,
+          tracestate: tracestate
+        }
+
+        server.listen(4123, function() {
+          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+            res.resume()
+            server.close(done)
+          })
+        })
+      })
     })
 
   describe('response headers for outbound requests when cat is enabled', function() {

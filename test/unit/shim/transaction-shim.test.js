@@ -461,6 +461,33 @@ describe('TransactionShim', function() {
           expect(tx.traceContext.tracestate.endsWith(tracestate)).to.be.true
         })
       })
+
+      it('Should propagate w3c tracecontext header when no tracestate', function() {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+        helper.runInTransaction(agent, function(tx) {
+          const headers = { traceparent }
+          const segment = shim.getSegment()
+          shim.handleCATHeaders(headers, segment)
+          expect(tx.traceContext.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
+        })
+      })
+
+      it('Should propagate w3c tracecontext header when tracestate empty string', function() {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const tracestate = ''
+
+        helper.runInTransaction(agent, function(tx) {
+          const headers = { traceparent, tracestate }
+          const segment = shim.getSegment()
+          shim.handleCATHeaders(headers, segment)
+          expect(tx.traceContext.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
+        })
+      })
     })
 
     describe('when app data is provided', function() {
