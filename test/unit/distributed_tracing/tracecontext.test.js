@@ -454,5 +454,127 @@ describe('TraceContext', function() {
         done()
       })
     })
+
+    describe('traceparent parsing should accept and remove optional white space (OWS)', () => {
+      it ('should handle leading white space', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = ` 00-${expectedTraceId}-1234567890123456-01`
+        const incomingTraceState = 'test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          txn.end()
+
+          done()
+        })
+      })
+
+      it ('should handle leading tab', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `\t00-${expectedTraceId}-1234567890123456-01`
+        const incomingTraceState = 'test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          txn.end()
+
+          done()
+        })
+      })
+
+      it ('should handle trailing white space', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01 `
+        const incomingTraceState = 'test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          txn.end()
+
+          done()
+        })
+      })
+
+      it ('should handle trailing tab', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01\t`
+        const incomingTraceState = 'test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          txn.end()
+
+          done()
+        })
+      })
+
+      it ('should handle leading and trailing white space and tabs', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `\t 00-${expectedTraceId}-1234567890123456-01 \t`
+        const incomingTraceState = 'test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          txn.end()
+
+          done()
+        })
+      })
+    })
   })
 })
