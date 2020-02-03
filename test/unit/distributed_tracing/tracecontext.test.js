@@ -375,5 +375,84 @@ describe('TraceContext', function() {
         })
       })
     })
+
+    it('should generate new trace when receiving invalid traceparent', (done) => {
+      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const unexpectedTraceId = '12345678901234567890123456789012'
+      // version 255 (ff) is forbidden...
+      const traceparent = `ff-${unexpectedTraceId}-1234567890123456-01`
+      const incomingTraceState = 'test=test'
+
+      helper.runInTransaction(agent, function(txn) {
+        txn.acceptTraceContextPayload(traceparent, incomingTraceState)
+
+        const splitData = txn.traceContext.traceparent.split('-')
+        const [version, traceId] = splitData
+
+        expect(version).to.equal('00')
+        expect(traceId).to.exist
+        expect(traceId).to.not.equal(unexpectedTraceId)
+
+        txn.end()
+
+        done()
+      })
+    })
+
+    it('should continue trace when receiving future traceparent version', (done) => {
+      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const expectedTraceId = '12345678901234567890123456789012'
+      const extra = 'what-the-future-will-be-like'
+      const futureTraceparent = `cc-${expectedTraceId}-1234567890123456-01-${extra}`
+      const incomingTraceState = 'test=test'
+
+      helper.runInTransaction(agent, function(txn) {
+        txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+        const splitData = txn.traceContext.traceparent.split('-')
+        const [version, traceId] = splitData
+
+        expect(version).to.equal('00')
+        expect(traceId).to.equal(expectedTraceId)
+
+        txn.end()
+
+        done()
+      })
+    })
+
+    it('should not allow extra fields for 00 traceparent version', (done) => {
+      agent.config.account_id = 'AccountId1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const unexpectedTraceId = '12345678901234567890123456789012'
+      const extra = 'what-the-future-will-be-like'
+      const futureTraceparent = `00-${unexpectedTraceId}-1234567890123456-01-${extra}`
+      const incomingTraceState = 'test=test'
+
+      helper.runInTransaction(agent, function(txn) {
+        txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+        const splitData = txn.traceContext.traceparent.split('-')
+        const [version, traceId] = splitData
+
+        expect(version).to.equal('00')
+        expect(traceId).to.not.equal(unexpectedTraceId)
+
+        txn.end()
+
+        done()
+      })
+    })
   })
 })
