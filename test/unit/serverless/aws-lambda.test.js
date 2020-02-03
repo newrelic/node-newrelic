@@ -146,6 +146,72 @@ describe('AwsLambda.patchLambdaHandler', () => {
       })
     })
 
+    it('should record error event when func is async and promise is rejected', (done) => {
+      agent.on('harvestStarted', confirmErrorCapture)
+
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        transaction = agent.tracer.getTransaction()
+        return new Promise((resolve, reject) => {
+          expect(transaction).to.exist
+          expect(transaction.type).to.equal('bg')
+          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+          expect(transaction.isActive()).to.be.true
+          reject(error)
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then(() => {
+        done(new Error('wrapped handler should fail and go to catch block'))
+      }).catch((err) => {
+        expect(err).to.equal(error)
+        expect(transaction.isActive()).to.be.false
+      })
+
+      function confirmErrorCapture() {
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
+        expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
+        expect(noticedError[2], 'message').to.equal(errorMessage)
+        expect(noticedError[3], 'type').to.equal('SyntaxError')
+
+        done()
+      }
+    })
+
+    it('should record error event when func is async and error is thrown', (done) => {
+      agent.on('harvestStarted', confirmErrorCapture)
+
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        transaction = agent.tracer.getTransaction()
+        return new Promise(() => {
+          expect(transaction).to.exist
+          expect(transaction.type).to.equal('bg')
+          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+          expect(transaction.isActive()).to.be.true
+          throw error
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then(() => {
+        done(new Error('wrapped handler should fail and go to catch block'))
+      }).catch((err) => {
+        expect(err).to.equal(error)
+        expect(transaction.isActive()).to.be.false
+      })
+
+      function confirmErrorCapture() {
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
+        expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
+        expect(noticedError[2], 'message').to.equal(errorMessage)
+        expect(noticedError[3], 'type').to.equal('SyntaxError')
+
+        done()
+      }
+    })
+
     it('should not end transactions twice', (done) => {
       let transaction
       const wrappedHandler = awsLambda.patchLambdaHandler((ev, ctx, cb) => {
