@@ -527,6 +527,70 @@ describe('TraceContext', function() {
           done()
         })
       })
+    })
+    describe('tracestate parsing should accept and remove optional white space (OWS)', () => {
+      it ('should handle white space and tabs for a single item', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01`
+        const incomingTraceState = '\t foo=1 \t'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          const tracestate = txn.traceContext.tracestate
+          const listMembers = tracestate.split(',')
+
+          const [,fooMember] = listMembers
+          expect(fooMember).to.equal('foo=1')
+
+          txn.end()
+
+          done()
+        })
+      })
+
+      it ('should handle white space and tabs between list members', (done) => {
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01`
+        const incomingTraceState = 'foo=1 \t , \t bar=2, \t baz=3'
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          const tracestate = txn.traceContext.tracestate
+          const listMembers = tracestate.split(',')
+
+          const [,fooMember, barMember, bazMember] = listMembers
+
+          expect(fooMember).to.equal('foo=1')
+          expect(barMember).to.equal('bar=2')
+          expect(bazMember).to.equal('baz=3')
+
+          txn.end()
+
+          done()
+        })
+      })
 
       it ('should handle trailing tab', (done) => {
         agent.config.account_id = 'AccountId1'
