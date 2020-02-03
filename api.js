@@ -163,7 +163,7 @@ API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportabilit
   }
 
   if (config.distributed_tracing.enabled && segment) {
-    linkingMetadata['trace.id'] = segment.transaction.getTraceId()
+    linkingMetadata['trace.id'] = segment.transaction.traceId
     const spanId = segment.getSpanId()
     if (spanId) {
       linkingMetadata['span.id'] = spanId
@@ -1397,7 +1397,7 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
   } else if (!this.agent.config.distributed_tracing.enabled) {
     logger.debug("Distributed tracing disabled when calling API#getTraceMetadata")
   } else {
-    metadata.traceId = segment.transaction.getTraceId()
+    metadata.traceId = segment.transaction.traceId
 
     const spanId = segment.getSpanId()
     if (spanId) {

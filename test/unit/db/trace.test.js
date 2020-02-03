@@ -43,7 +43,7 @@ describe('SQL trace', function() {
         agent.queries.prepareJSON((err, samples) => {
           const sample = samples[0]
           const attributes = sample[sample.length - 1]
-          expect(attributes.traceId).to.equal(tx.id)
+          expect(attributes.traceId).to.equal(tx.traceId)
           expect(attributes.guid).to.equal(tx.id)
           expect(attributes.priority).to.equal(tx.priority)
           expect(attributes.sampled).to.equal(tx.sampled)
@@ -95,7 +95,7 @@ describe('SQL trace', function() {
         agent.queries.prepareJSON((err, samples) => {
           const sample = samples[0]
           const attributes = sample[sample.length - 1]
-          expect(attributes.traceId).to.equal(tx.id)
+          expect(attributes.traceId).to.equal(tx.traceId)
           expect(attributes.guid).to.equal(tx.id)
           expect(attributes.priority).to.equal(tx.priority)
           expect(attributes.sampled).to.equal(tx.sampled)

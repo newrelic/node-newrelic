@@ -203,7 +203,7 @@ describe('Trace', function() {
     helper.runInTransaction(agent, function(tx) {
       tx.end()
       const attributes = tx.trace.intrinsics
-      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.traceId).to.equal(tx.traceId)
       expect(attributes.guid).to.equal(tx.id)
       expect(attributes.priority).to.equal(tx.priority)
       expect(attributes.sampled).to.equal(tx.sampled)
@@ -225,7 +225,7 @@ describe('Trace', function() {
       tx.acceptDistributedTracePayload(payload)
       tx.end()
       const attributes = tx.trace.intrinsics
-      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.traceId).to.equal(tx.traceId)
       expect(attributes.guid).to.equal(tx.id)
       expect(attributes.priority).to.equal(tx.priority)
       expect(attributes.sampled).to.equal(tx.sampled)
@@ -268,7 +268,7 @@ describe('Trace', function() {
     expect(nested.intrinsics).to.have.property('transactionId', transaction.id)
     expect(nested.intrinsics).to.have.property('sampled', transaction.sampled)
     expect(nested.intrinsics).to.have.property('name', 'nested')
-    expect(nested.intrinsics).to.have.property('traceId', transaction.id)
+    expect(nested.intrinsics).to.have.property('traceId', transaction.traceId)
     expect(nested.intrinsics).to.have.property('timestamp')
 
     expect(testSpan.intrinsics).to.have.property('parentId', null)
@@ -278,7 +278,7 @@ describe('Trace', function() {
     expect(testSpan.intrinsics).to.have.property('transactionId', transaction.id)
     expect(testSpan.intrinsics).to.have.property('sampled', transaction.sampled)
     expect(testSpan.intrinsics).to.have.property('name', 'test')
-    expect(testSpan.intrinsics).to.have.property('traceId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('traceId', transaction.traceId)
     expect(testSpan.intrinsics).to.have.property('timestamp')
   })
 

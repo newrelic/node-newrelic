@@ -724,7 +724,7 @@ describe('Transaction', function() {
       expect(transaction.priority.toString().length).to.be.at.most(8)
 
       expect(attributes).to.have.property('guid', transaction.id)
-      expect(attributes).to.have.property('traceId', transaction.id)
+      expect(attributes).to.have.property('traceId', transaction.traceId)
       expect(attributes).to.have.property('priority', transaction.priority)
       expect(attributes).to.have.property('sampled', true)
     })
@@ -1304,7 +1304,7 @@ describe('Transaction', function() {
       tx.addDistributedTraceIntrinsics(attributes)
 
       expect(attributes).to.have.property('guid', tx.id)
-      expect(attributes).to.have.property('traceId', tx.id)
+      expect(attributes).to.have.property('traceId', tx.traceId)
       expect(attributes).to.have.property('priority', tx.priority)
       expect(attributes).to.have.property('sampled', true)
     })

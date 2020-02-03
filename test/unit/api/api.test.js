@@ -108,7 +108,7 @@ describe('the New Relic agent API', function() {
       const metadata = api.getTraceMetadata()
       expect(metadata).to.be.an('object')
       expect(metadata.traceId).to.be.a('string')
-      expect(metadata.traceId).to.equal(txn.id)
+      expect(metadata.traceId).to.equal(txn.traceId)
       expect(metadata.spanId).to.be.a('string')
       expect(metadata.spanId).to.equal(txn.agent.tracer.getSegment().id)
       done()
@@ -137,7 +137,7 @@ describe('the New Relic agent API', function() {
         const metadata = api.getTraceMetadata()
         expect(metadata).to.be.an('object')
         expect(metadata.traceId).to.be.a('string')
-        expect(metadata.traceId).to.equal(txn.id)
+        expect(metadata.traceId).to.equal(txn.traceId)
 
         expect(metadata).to.not.have.property('spanId')
         done()

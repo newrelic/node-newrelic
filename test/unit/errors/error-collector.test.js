@@ -1376,7 +1376,7 @@ describe('Errors', function() {
         var attributes = getFirstErrorIntrinsicAttributes(aggregator)
 
         expect(attributes).to.be.a('Object')
-        expect(attributes.traceId).to.equal(transaction.id)
+        expect(attributes.traceId).to.equal(transaction.traceId)
         expect(attributes.guid).to.equal(transaction.id)
         expect(attributes.priority).to.equal(transaction.priority)
         expect(attributes.sampled).to.equal(transaction.sampled)
@@ -1402,7 +1402,7 @@ describe('Errors', function() {
         var attributes = getFirstErrorIntrinsicAttributes(aggregator)
 
         expect(attributes).to.be.a('Object')
-        expect(attributes.traceId).to.equal(transaction.id)
+        expect(attributes.traceId).to.equal(transaction.traceId)
         expect(attributes.guid).to.equal(transaction.id)
         expect(attributes.priority).to.equal(transaction.priority)
         expect(attributes.sampled).to.equal(transaction.sampled)
