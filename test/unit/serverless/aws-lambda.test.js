@@ -577,6 +577,51 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should collect event source meta data', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'aws.lambda.eventSource.accountId',
+          '123456789012'
+        )
+
+        expect(agentAttributes).to.have.property(
+          'aws.lambda.eventSource.apiId',
+          'wt6mne2s9k'
+        )
+
+        expect(agentAttributes).to.have.property(
+          'aws.lambda.eventSource.resourceId',
+          'us4z18'
+        )
+
+        expect(agentAttributes).to.have.property(
+          'aws.lambda.eventSource.resourcePath',
+          '/{proxy+}'
+        )
+
+        expect(agentAttributes).to.have.property(
+          'aws.lambda.eventSource.stage',
+          'test'
+        )
+
+
+        done()
+      }
+    })
+
+
     it('should record standard web metrics', (done) => {
       agent.on('harvestStarted', confirmMetrics)
 
@@ -908,12 +953,13 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
-        'arn:aws:elasticloadbalancing:us-east-2:123456789012' +
-        ':targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a')
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a') // eslint-disable-line max-len
+
       expect(agentAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'alb'
       )
+
       done()
     }
   })
