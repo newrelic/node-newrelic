@@ -1613,7 +1613,7 @@
           "sampled": true
         },
         "expected": ["guid", "priority"],
-        "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.alternatePathHashes", "parent.type", "parent.app", "parent.account", "parent.transportDuration", "parentId", "trustedParentId"]
+        "unexpected": ["grandparentId", "cross_process_id", "nr.tripId", "nr.pathHash", "nr.referringPathHash", "nr.guid", "nr.referringTransactionGuid", "nr.alternatePathHashes", "parent.type", "parent.app", "parent.account", "parent.transportDuration", "trustedParentId"]
       },
       "Transaction": {
         "exact": {

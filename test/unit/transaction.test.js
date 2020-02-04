@@ -1139,6 +1139,106 @@ describe('Transaction', function() {
     })
   })
 
+  describe('acceptDistributedTraceHeaders', () => {
+    it('should accept a valid trace context traceparent header', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+      const headers = {
+        traceparent: goodParent
+      }
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.acceptDistributedTraceHeaders('HTTP', headers)
+
+        expect(txn.traceId).to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
+        expect(txn.parentSpanId).to.equal('00f067aa0ba902b7')
+
+        txn.end()
+      })
+    })
+
+    it('should not accept invalid trace context traceparent header', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const orig_traceparent = txn.traceContext.traceparent
+        const traceparent = 'asdlkfjasdl;fkja'
+        const tracestate = 'stuff'
+
+        const headers = {
+          traceparent,
+          tracestate
+        }
+
+        txn.acceptDistributedTraceHeaders('HTTP', headers)
+
+        expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
+        txn.end()
+      })
+    })
+
+    it('should use newrelic format when no traceparent', () => {
+      const trustedAccountKey = '123'
+
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = trustedAccountKey
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const incomingTraceId = '6e2fea0b173fdad0'
+      const expectedTraceId = '0000000000000000' + incomingTraceId
+
+      const newrelicDtData = {
+        v:[0,1],
+        d:{
+          ty: 'Mobile',
+          ac: trustedAccountKey,
+          ap: '51424',
+          id: '5f474d64b9cc9b2a',
+          tr: incomingTraceId,
+          pr: 0.1234,
+          sa: true,
+          ti: '1482959525577',
+          tx: '27856f70d3d314b7'
+        }
+      }
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const headers = {
+          newrelic: JSON.stringify(newrelicDtData)
+        }
+
+        txn.acceptDistributedTraceHeaders('HTTP', headers)
+
+        expect(txn.isDistributedTrace).to.be.true
+        expect(txn.acceptedDistributedTrace).to.be.true
+
+        const splitData = txn.traceContext.traceparent.split('-')
+        const [, traceId] = splitData
+
+        expect(traceId).to.equal(expectedTraceId)
+        txn.end()
+      })
+    })
+  })
+
   describe('acceptTraceContextPayload', () => {
     it('should accept a valid trace context traceparent header', () => {
       agent.config.distributed_tracing.enabled = true
@@ -1175,7 +1275,7 @@ describe('Transaction', function() {
         const traceparent = 'asdlkfjasdl;fkja'
         const tracestate = 'stuff'
 
-        txn.traceContext.acceptTraceContextPayload(traceparent, tracestate)
+        txn.acceptTraceContextPayload(traceparent, tracestate)
 
         expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
         txn.end()
@@ -1257,7 +1357,7 @@ describe('Transaction', function() {
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
       const tracestate = '323322332234234234423'
 
-      tx.traceContext.acceptTraceContextPayload(traceparent, tracestate)
+      tx.acceptTraceContextPayload(traceparent, tracestate)
 
       agent.tracer.segment = tx.trace.root
 

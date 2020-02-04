@@ -6,13 +6,8 @@ const TYPES = require('../../../lib/transaction').TYPES
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
-/* lists of tests to skip so we can skip tests
-   until progress is made/things are finalized */
+/* lists of tests to skip to aid isolating cases*/
 const skipTests = [
-  "w3c_and_newrelc_headers_present",
-  "w3c_and_newrelc_headers_present_error_parsing_traceparent",
-  "w3c_and_newrelc_headers_present_error_parsing_tracestate",
-  "trace_id_is_left_padded_and_priority_rounded"
 ]
 
 const camelCaseToSnakeCase = function(object) {
@@ -258,19 +253,6 @@ const runTestCaseOutboundPayloads = function(t, testCase, context) {
 }
 
 const runTestCase = function(testCase, parentTest) {
-  // temp -- we can't run inbound header tests until we have
-  // something like go's `AcceptDistributedTraceHeaders` method,
-  // which accepts _all three_ headers.  Until then, we'll auto
-  // fail any test that has `newrelic` in its inbound headers
-  for (const [key] of testCase.inbound_headers.entries()) {
-    const header = testCase.inbound_headers[key]
-    if (header.newrelic) {
-      parentTest.fail(
-        `I don't know how to test a traditional DT/BetterCat newrelic header`
-      )
-    }
-  }
-
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming
   // familiar with what we need to do to implement a test runner
@@ -395,16 +377,16 @@ const runTestCase = function(testCase, parentTest) {
       }
       for (const [key] of testCase.inbound_headers.entries()) {
         const inbound_header = testCase.inbound_headers[key]
-        transaction.acceptTraceContextPayload(
-          inbound_header.traceparent,
-          inbound_header.tracestate,
-          testCase.transport_type
-        )
+
+        transaction.acceptDistributedTraceHeaders(testCase.transport_type, inbound_header)
 
         // Generate outbound payloads
         const outboundPayloads = testCase.outbound_payloads || []
-        const outboundHeaders = outboundPayloads.map(
-          () => transaction.traceContext.createTraceContextPayload())
+        const outboundHeaders = outboundPayloads.map(() => {
+          const headers = {}
+          transaction.insertDistributedTraceHeaders(headers)
+          return headers
+        })
 
         const context = outboundHeaders.map((headers) => {
           // Find the first/leftmost list-member, parse out intrinsics and tenant id
@@ -479,13 +461,19 @@ const runTestCase = function(testCase, parentTest) {
         // we are keeping our implementation conistent for now.
         const removeTransportTests = [
           'missing_traceparent',
-          'missing_traceparent_and_tracestate'
+          'missing_traceparent_and_tracestate',
+          'w3c_and_newrelc_headers_present_error_parsing_traceparent'
         ]
         if (removeTransportTests.indexOf(testCase.test_name) >= 0) {
-          testCase.expected_metrics = [
-            ['DurationByCaller/Unknown/Unknown/Unknown/Unknown/all', 1],
-            ['DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb', 1]
-          ]
+          testCase.expected_metrics = testCase.expected_metrics.map((value) => {
+            if (value[0].indexOf('HTTP/all') >= 0) {
+              value[0] = 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'
+            } else if (value.indexOf('HTTP/allWeb') >= 0) {
+              value[0] = 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb'
+            }
+
+            return value
+          })
         }
 
         runTestCaseOutboundPayloads(t, testCase, context)
