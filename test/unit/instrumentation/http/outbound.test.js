@@ -491,8 +491,8 @@ describe('when working with http.request', function() {
     })
   })
 
-  describe('generates w3c trace context headers', () => {
-    it('should add header to outbound request', (done) => {
+  describe('generates distributed tracing headers', () => {
+    it('should add both headers to outbound request', (done) => {
       helper.unloadAgent(agent)
       agent = helper.instrumentMockedAgent({
         distributed_tracing: {
@@ -516,6 +516,49 @@ describe('when working with http.request', function() {
         expect(headers.tracestate).to.exist
         expect(headers.tracestate.includes('null')).to.be.false
         expect(headers.tracestate.includes('true')).to.be.false
+
+        expect(headers.newrelic).to.exist
+      })
+
+      helper.runInTransaction(agent, (transaction) => {
+        http.get(`${host}${path}`, (res) => {
+          res.resume()
+          transaction.end()
+          const tc = transaction.traceContext
+          const valid = tc._validateAndParseTraceStateHeader(headers.tracestate)
+          expect(valid.entryValid).to.equal(true)
+          done()
+        })
+      })
+    })
+
+    it('should only add w3c header when exclude_newrelic_header: true', (done) => {
+      helper.unloadAgent(agent)
+      agent = helper.instrumentMockedAgent({
+        distributed_tracing: {
+          enabled: true,
+          exclude_newrelic_header: true
+        },
+        feature_flag: {
+          dt_format_w3c: true
+        }
+      })
+      agent.config.trusted_account_key = 190
+      agent.config.account_id = 190
+      agent.config.primary_application_id = '389103'
+      const host = 'http://www.google.com'
+      const path = '/index.html'
+      let headers
+
+      nock(host).get(path).reply(200, function() {
+        headers = this.req.headers
+        expect(headers.traceparent).to.exist
+        expect(headers.traceparent.split('-').length).to.equal(4)
+        expect(headers.tracestate).to.exist
+        expect(headers.tracestate.includes('null')).to.be.false
+        expect(headers.tracestate.includes('true')).to.be.false
+
+        expect(headers.newrelic).to.not.exist
       })
 
       helper.runInTransaction(agent, (transaction) => {

@@ -141,9 +141,15 @@ describe('the agent configuration', function() {
       })
     })
 
-    it('should pick up on the DT env var', function() {
-      idempotentEnv({'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'true'}, function(tc) {
+    it('should pick up on Distributed Tracing env vars', function() {
+      const env = {
+        'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'true',
+        'NEW_RELIC_DISTRIBUTED_TRACING_EXCLUDE_NEWRELIC_HEADER': 'true'
+      }
+
+      idempotentEnv(env, function(tc) {
         expect(tc.distributed_tracing.enabled).equal(true)
+        expect(tc.distributed_tracing.exclude_newrelic_header).equal(true)
       })
     })
 
