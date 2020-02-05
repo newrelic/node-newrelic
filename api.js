@@ -125,7 +125,7 @@ API.prototype.getTransaction = function getTransaction() {
 
   transaction.handledExternally = true
 
-  return new TransactionHandle(transaction)
+  return new TransactionHandle(transaction, this.agent.metrics)
 }
 
 /**
