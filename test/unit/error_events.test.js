@@ -50,7 +50,7 @@ describe('Error events', function() {
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]
         expect(attributes.type).to.equal('TransactionError')
-        expect(attributes.traceId).to.equal(tx.id)
+        expect(attributes.traceId).to.equal(tx.traceId)
         expect(attributes.guid).to.equal(tx.id)
         expect(attributes.priority).to.equal(tx.priority)
         expect(attributes.sampled).to.equal(tx.sampled)
@@ -74,7 +74,7 @@ describe('Error events', function() {
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]
         expect(attributes.type).to.equal('TransactionError')
-        expect(attributes.traceId).to.equal(tx.id)
+        expect(attributes.traceId).to.equal(tx.traceId)
         expect(attributes.guid).to.equal(tx.id)
         expect(attributes.priority).to.equal(tx.priority)
         expect(attributes.sampled).to.equal(tx.sampled)

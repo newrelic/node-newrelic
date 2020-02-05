@@ -154,8 +154,8 @@ describe('Analytics events', function() {
 
       expect(events.length).to.equal(1)
 
-      var attributes = events[0][0]
-      expect(attributes.traceId).to.equal(trans.id)
+      const attributes = events[0][0]
+      expect(attributes.traceId).to.equal(trans.traceId)
       expect(attributes.guid).to.equal(trans.id)
       expect(attributes.priority).to.equal(trans.priority)
       expect(attributes.sampled).to.equal(trans.sampled)
@@ -178,7 +178,7 @@ describe('Analytics events', function() {
       expect(events.length).to.equal(1)
 
       var attributes = events[0][0]
-      expect(attributes.traceId).to.equal(trans.id)
+      expect(attributes.traceId).to.equal(trans.traceId)
       expect(attributes.guid).to.equal(trans.id)
       expect(attributes.priority).to.equal(trans.priority)
       expect(attributes.sampled).to.equal(trans.sampled)
