@@ -151,8 +151,13 @@ describe('the New Relic agent API', function() {
       let handle = api.getTransaction()
       expect(handle.end).to.be.a('function')
       expect(handle.ignore).to.be.a('function')
+
+      // Deprecated.
       expect(handle.createDistributedTracePayload).to.be.a('function')
       expect(handle.acceptDistributedTracePayload).to.be.a('function')
+
+      expect(handle.acceptDistributedTraceHeaders).to.be.a('function')
+      expect(handle.insertDistributedTraceHeaders).to.be.a('function')
       expect(handle.isSampled).to.be.a('function')
 
       let payload = handle.createDistributedTracePayload()
