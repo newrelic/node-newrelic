@@ -501,23 +501,22 @@ describe('TraceContext', function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
         agent.config.feature_flag.dt_format_w3c = true
-        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-        // null@nr is technically invalid.
-        const tracestate =
+        const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const incomingTracestate =
           '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035,test=test'
 
         helper.runInTransaction(agent, function(txn) {
           const childSegment = txn.trace.add('child')
           childSegment.start()
 
-          txn.acceptTraceContextPayload(traceparent, tracestate)
+          txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
 
           // The parentId (current span id) of traceparent will change, but the traceId
           // should propagate
           expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
-          // The test key/value should propagate at the end of the string
-          expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
+          // The original tracestate should be propogated
+          expect(txn.traceContext.tracestate).to.equal(incomingTracestate)
 
           txn.end()
 
@@ -534,22 +533,22 @@ describe('TraceContext', function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
         agent.config.feature_flag.dt_format_w3c = true
-        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-        const tracestate =
+        const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const incomingTracestate =
           '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035,test=test'
 
         helper.runInTransaction(agent, function(txn) {
           const childSegment = txn.trace.add('child')
           childSegment.start()
 
-          txn.acceptTraceContextPayload(traceparent, tracestate)
+          txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
 
           // The parentId (current span id) of traceparent will change, but the traceId
           // should propagate
           expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
-          // The test key/value should propagate at the end of the string
-          expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
+          // The original tracestate should be propogated
+          expect(txn.traceContext.tracestate).to.equal(incomingTracestate)
 
           txn.end()
 
@@ -772,6 +771,27 @@ describe('TraceContext', function() {
       it ('should not create tracestate when primary_application_id missing', (done) => {
         agent.config.account_id = '12345'
         agent.config.primary_application_id = null
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        helper.runInTransaction(agent, function(txn) {
+          const headers = {}
+          txn.traceContext.addTraceContextHeaders(headers)
+
+          expect(headers).to.have.property('traceparent')
+          expect(headers).to.not.have.property('tracestate')
+
+          txn.end()
+
+          done()
+        })
+      })
+
+      it ('should not create tracestate when trusted_account_key missing', (done) => {
+        agent.config.account_id = '12345'
+        agent.config.primary_application_id = 'appId'
+        agent.config.trusted_account_key = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
         agent.config.feature_flag.dt_format_w3c = true
