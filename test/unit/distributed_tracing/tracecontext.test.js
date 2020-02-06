@@ -494,14 +494,49 @@ describe('TraceContext', function() {
     })
 
     it (
-      'should propogate existing list members when cannot generate valid newrelic list member',
+      'should propogate existing list members when cannot accept newrelic list members',
       (done) => {
+        // missing trust key means can't accept/match newrelic header
         agent.config.trusted_account_key = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
         agent.config.feature_flag.dt_format_w3c = true
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
-        const tracestate = 'test=test'
+        // null@nr is technically invalid.
+        const tracestate =
+          '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035,test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          const childSegment = txn.trace.add('child')
+          childSegment.start()
+
+          txn.acceptTraceContextPayload(traceparent, tracestate)
+
+          // The parentId (current span id) of traceparent will change, but the traceId
+          // should propagate
+          expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+
+          // The test key/value should propagate at the end of the string
+          expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
+
+          txn.end()
+
+          done()
+        })
+      }
+    )
+
+    it (
+      'should propogate existing when cannot accept or generate newrelic list member',
+      (done) => {
+        agent.config.trusted_account_key = null
+        agent.config.account_id = null
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = false
+        agent.config.feature_flag.dt_format_w3c = true
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const tracestate =
+          '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035,test=test'
 
         helper.runInTransaction(agent, function(txn) {
           const childSegment = txn.trace.add('child')
