@@ -493,6 +493,36 @@ describe('TraceContext', function() {
       })
     })
 
+    it (
+      'should propogate existing list members when cannot generate valid newrelic list member',
+      (done) => {
+        agent.config.trusted_account_key = null
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = false
+        agent.config.feature_flag.dt_format_w3c = true
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const tracestate = 'test=test'
+
+        helper.runInTransaction(agent, function(txn) {
+          const childSegment = txn.trace.add('child')
+          childSegment.start()
+
+          txn.acceptTraceContextPayload(traceparent, tracestate)
+
+          // The parentId (current span id) of traceparent will change, but the traceId
+          // should propagate
+          expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+
+          // The test key/value should propagate at the end of the string
+          expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
+
+          txn.end()
+
+          done()
+        })
+      }
+    )
+
     describe('traceparent parsing should accept and remove optional white space (OWS)', () => {
       it ('should handle leading white space', (done) => {
         agent.config.account_id = 'AccountId1'
