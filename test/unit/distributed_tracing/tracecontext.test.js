@@ -639,6 +639,40 @@ describe('TraceContext', function() {
           done()
         })
       })
+
+      it ('should handle combined headers with empty values', (done) => {
+        // The http module will automatically combine headers
+        // In the case of combining ['tracestate', ''] and ['tracestate', 'foo=1']
+        // An incoming header may look like tracestate: 'foo=1, '.
+        agent.config.account_id = 'AccountId1'
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+
+        const expectedTraceId = '12345678901234567890123456789012'
+        const futureTraceparent = `\t 00-${expectedTraceId}-1234567890123456-01 \t`
+        const incomingTraceState = 'foo=1, '
+
+        helper.runInTransaction(agent, function(txn) {
+          txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
+
+          const splitData = txn.traceContext.traceparent.split('-')
+          const [, traceId] = splitData
+
+          expect(traceId).to.equal(expectedTraceId)
+
+          const tracestate = txn.traceContext.tracestate
+          const listMembers = tracestate.split(',')
+
+          const [,fooMember] = listMembers
+
+          expect(fooMember).to.equal('foo=1')
+
+          txn.end()
+
+          done()
+        })
+      })
     })
   })
 })
