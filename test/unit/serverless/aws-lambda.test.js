@@ -212,6 +212,29 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should record error event when error is thrown', (done) => {
+      agent.on('harvestStarted', confirmErrorCapture)
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        const transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
+        expect(transaction.type).to.equal('bg')
+        expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
+        expect(transaction.isActive()).to.be.true
+        throw error
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+
+      function confirmErrorCapture() {
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        const noticedError = agent.errors.traceAggregator.errors[0]
+        expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
+        expect(noticedError[2], 'message').to.equal(errorMessage)
+        expect(noticedError[3], 'type').to.equal('SyntaxError')
+        done()
+      }
+    })
+
     it('should not end transactions twice', (done) => {
       let transaction
       const wrappedHandler = awsLambda.patchLambdaHandler((ev, ctx, cb) => {
