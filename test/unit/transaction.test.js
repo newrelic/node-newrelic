@@ -1281,6 +1281,68 @@ describe('Transaction', function() {
         txn.end()
       })
     })
+
+    it('should not accept tracestate when trusted_account_key missing', () => {
+      agent.config.trusted_account_key = null
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      // When two bugs combine, we might accept a tracestate we shouldn't
+      const incomingNullKeyedTracestate =
+        'null@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035'
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.acceptTraceContextPayload(incomingTraceparent, incomingNullKeyedTracestate)
+
+        // traceparent
+        expect(txn.traceId).to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
+        expect(txn.parentSpanId).to.equal('00f067aa0ba902b7')
+
+        // tracestate
+        expect(txn.parentType).to.not.exist
+        expect(txn.accountId).to.not.exist
+        expect(txn.parentApp).to.not.exist
+        expect(txn.parentId).to.not.exist
+
+        txn.end()
+      })
+    })
+
+    it('should accept tracestate when trusted_account_key matches', () => {
+      agent.config.trusted_account_key = '33'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      // When two bugs combine, we might accept a tracestate we shouldn't
+      const incomingNullKeyedTracestate =
+        '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035'
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.acceptTraceContextPayload(incomingTraceparent, incomingNullKeyedTracestate)
+
+        // traceparent
+        expect(txn.traceId).to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
+        expect(txn.parentSpanId).to.equal('00f067aa0ba902b7')
+
+        // tracestate
+        expect(txn.parentType).to.equal('App')
+        expect(txn.parentAcct).to.equal('33')
+        expect(txn.parentApp).to.equal('2827902')
+        expect(txn.parentId).to.equal('e8b91a159289ff74')
+
+        txn.end()
+      })
+    })
   })
 
   describe('createTraceParentHeader', () => {

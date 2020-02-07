@@ -29,6 +29,9 @@ describe('TransactionShim', function() {
       encoding_key: 'this is an encoding key',
       cross_process_id: '1234#4321'
     }
+
+    agent.config.account_id = 'AccountId1'
+    agent.config.primary_application_id = 'AppId1'
     agent.config.trusted_account_ids = [9876, 6789]
     agent.config._fromServer(params, 'encoding_key')
     agent.config._fromServer(params, 'cross_process_id')
