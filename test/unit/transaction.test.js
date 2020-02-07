@@ -1239,6 +1239,70 @@ describe('Transaction', function() {
     })
   })
 
+  describe('insertDistributedTraceHeaders', () => {
+    it('should lowercase traceId for tracecontext when recieved upper from newrelic format', () => {
+      const trustedAccountKey = '123'
+
+      agent.config.account_id = 'AccountId1'
+      agent.config.primary_application_id = 'Application1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = trustedAccountKey
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const incomingTraceId = '6E2fEA0B173FDAD0'
+      const expectedTraceContextTraceId = '0000000000000000' + incomingTraceId.toLowerCase()
+
+      const newrelicDtData = {
+        v:[0,1],
+        d:{
+          ty: 'Mobile',
+          ac: trustedAccountKey,
+          ap: '51424',
+          id: '5f474d64b9cc9b2a',
+          tr: incomingTraceId,
+          pr: 0.1234,
+          sa: true,
+          ti: '1482959525577',
+          tx: '27856f70d3d314b7'
+        }
+      }
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const headers = {
+          newrelic: JSON.stringify(newrelicDtData)
+        }
+
+        txn.acceptDistributedTraceHeaders('HTTP', headers)
+
+        expect(txn.isDistributedTrace).to.be.true
+        expect(txn.acceptedDistributedTrace).to.be.true
+
+        const insertedHeaders = {}
+        txn.insertDistributedTraceHeaders(insertedHeaders)
+
+        const splitData = insertedHeaders.traceparent.split('-')
+        const [, traceId] = splitData
+
+        expect(traceId).to.equal(expectedTraceContextTraceId)
+
+        const rawPayload = Buffer.from(insertedHeaders.newrelic, 'base64').toString('utf-8')
+        const payload = JSON.parse(rawPayload)
+
+        // newrelic header should have traceId untouched
+        expect(payload.d.tr).to.equal(incomingTraceId)
+
+        // traceId used for metrics shoudl go untouched
+        expect(txn.traceId).to.equal(incomingTraceId)
+
+        txn.end()
+      })
+    })
+  })
+
   describe('acceptTraceContextPayload', () => {
     it('should accept a valid trace context traceparent header', () => {
       agent.config.distributed_tracing.enabled = true

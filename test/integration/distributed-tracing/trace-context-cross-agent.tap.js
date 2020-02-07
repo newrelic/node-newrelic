@@ -57,7 +57,11 @@ const testExpectedFixtureKeys = function(t, thingWithKeys, expectedKeys) {
 const testExact = function(t, object, fixture) {
   for (const [descendants, fixtureValue] of Object.entries(fixture)) {
     const valueToTest = getDescendantValue(object, descendants)
-    t.equal(valueToTest, fixtureValue, 'is ' + descendants + ' an exact match?')
+    t.deepEquals(
+      valueToTest,
+      fixtureValue,
+      `Expected ${descendants} to be ${fixtureValue} but got ${valueToTest}`
+    )
   }
 }
 
@@ -252,6 +256,35 @@ const runTestCaseOutboundPayloads = function(t, testCase, context) {
   }
 }
 
+function runTestCaseOutboundNewrelicPayloads(t, testCase, newrelicPayloads) {
+  if (!testCase.outbound_newrelic_payloads) {
+    return
+  }
+
+  for (const [index, testToRun] of testCase.outbound_newrelic_payloads.entries()) {
+    for (const [assertType, fields] of Object.entries(testToRun)) {
+      const newrelicPayload = newrelicPayloads[index]
+
+      switch (assertType) {
+        case 'exact':
+          testExact(t, newrelicPayload, fields)
+          break
+        case 'expected':
+          testExpected(t, newrelicPayload, fields)
+          break
+        case 'unexpected':
+          testUnexpected(t, newrelicPayload, fields)
+          break
+        case 'notequal':
+          testNotEqual(t, newrelicPayload, fields)
+          break
+        default:
+          throw new Error('Unexpected assert type for newrelic payloads: ' + assertType)
+      }
+    }
+  }
+}
+
 const runTestCase = function(testCase, parentTest) {
   // validates the test case data has what we're looking for.  Good for
   // catching any changes to the test format over time, as well as becoming
@@ -264,7 +297,7 @@ const runTestCase = function(testCase, parentTest) {
         'inbound_headers', 'intrinsics', 'outbound_payloads',
         'raises_exception', 'span_events_enabled', 'test_name',
         'transport_type','trusted_account_key', 'web_transaction', 'comment',
-        'transaction_events_enabled'
+        'transaction_events_enabled', 'outbound_newrelic_payloads'
       ]
     )
 
@@ -381,14 +414,20 @@ const runTestCase = function(testCase, parentTest) {
         transaction.acceptDistributedTraceHeaders(testCase.transport_type, inbound_header)
 
         // Generate outbound payloads
-        const outboundPayloads = testCase.outbound_payloads || []
-        const outboundHeaders = outboundPayloads.map(() => {
+        const outboundTraceContextPayloads = testCase.outbound_payloads || []
+        const outboundNewrelicPayloads = testCase.outbound_newrelic_payloads || []
+
+        const insertCount =
+          Math.max(outboundTraceContextPayloads.length, outboundNewrelicPayloads.length)
+
+        const outboundHeaders = []
+        for (let i = 0; i < insertCount; i++) {
           const headers = {}
           transaction.insertDistributedTraceHeaders(headers)
-          return headers
-        })
+          outboundHeaders.push(headers)
+        }
 
-        const context = outboundHeaders.map((headers) => {
+        const insertedTraceContextTraces = outboundHeaders.map((headers) => {
           // Find the first/leftmost list-member, parse out intrinsics and tenant id
           const listMembers = headers.tracestate.split(',')
           const nrTraceState = listMembers.splice(0, 1)[0] // removes the NR tracestate
@@ -450,6 +489,14 @@ const runTestCase = function(testCase, parentTest) {
           return outboundPayload
         })
 
+        const insertedNewrelicTraces = outboundHeaders.map((headers) => {
+          if (headers.newrelic) {
+            const rawPayload = Buffer.from(headers.newrelic, 'base64').toString('utf-8')
+            const payload = JSON.parse(rawPayload)
+            return payload
+          }
+        })
+
         // end transaction
         transaction.trace.root.touch()
         transaction.end()
@@ -462,7 +509,7 @@ const runTestCase = function(testCase, parentTest) {
         const removeTransportTests = [
           'missing_traceparent',
           'missing_traceparent_and_tracestate',
-          'w3c_and_newrelc_headers_present_error_parsing_traceparent'
+          'w3c_and_newrelic_headers_present_error_parsing_traceparent'
         ]
         if (removeTransportTests.indexOf(testCase.test_name) >= 0) {
           testCase.expected_metrics = testCase.expected_metrics.map((value) => {
@@ -476,7 +523,16 @@ const runTestCase = function(testCase, parentTest) {
           })
         }
 
-        runTestCaseOutboundPayloads(t, testCase, context)
+        // As of the in-progress PR https://source.datanerd.us/agents/cross_agent_tests/pull/136
+        // Priority is asserted to have 1-less precision than the incoming, which is not an agent
+        // requirement and not something we do. Adjusting so we can have the test in the repository.
+        if (testCase.test_name === 'newrelic_origin_trace_id_correctly_transformed_for_w3c') {
+          const payloadTest = testCase.outbound_newrelic_payloads[0]
+          payloadTest.exact["d.pr"] = 1.1234321
+        }
+
+        runTestCaseOutboundPayloads(t, testCase, insertedTraceContextTraces)
+        runTestCaseOutboundNewrelicPayloads(t, testCase, insertedNewrelicTraces)
         runTestCaseTargetEvents(t, testCase, agent)
         runTestCaseMetrics(t, testCase, agent)
       }
