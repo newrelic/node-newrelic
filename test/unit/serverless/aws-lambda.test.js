@@ -214,13 +214,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     it('should record error event when error is thrown', (done) => {
       agent.on('harvestStarted', confirmErrorCapture)
-      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
         const transaction = agent.tracer.getTransaction()
         expect(transaction).to.exist
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
         expect(transaction.isActive()).to.be.true
-        context.done(error, 'failed')
         throw error
       })
 
