@@ -288,11 +288,24 @@ describe('TraceContext', function() {
       agent.config.trusted_account_key = acct_key
       const duplicateAcctTraceState =
         /* eslint-disable-next-line max-len */
-        '190@nr=bar,42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827'
+        '42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,190@nr=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(duplicateAcctTraceState)
 
       expect(valid.entryFound).to.be.true
       expect(valid.entryValid).to.be.true
+      expect(valid.vendors.filter(v => v === `${acct_key}@nr`).length).to.equal(0)
+    })
+
+    it('should not accept first nr entry when duplicate entries exist and its invalid', () => {
+      const acct_key = '190'
+      agent.config.trusted_account_key = acct_key
+      const duplicateAcctTraceState =
+        /* eslint-disable-next-line max-len */
+        '190@nr=bar,42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827'
+      const valid = traceContext._validateAndParseTraceStateHeader(duplicateAcctTraceState)
+
+      expect(valid.entryFound).to.be.true
+      expect(valid.entryValid).to.be.false
       expect(valid.vendors.filter(v => v === `${acct_key}@nr`).length).to.equal(0)
     })
 
