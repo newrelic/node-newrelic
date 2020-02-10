@@ -395,19 +395,11 @@ const runTestCase = function(testCase, parentTest) {
       // monkey patch this transaction object
       // to force sampled to be true.
       if (testCase.force_sampled_true) {
-        // grab original function
-        const originalIsSampled = transaction.isSampled.bind(transaction)
-
-        // monkey batch, binding transaction to `this` works
-        // the way we'd expect here
-        transaction.isSampled = (function() {
-          // call original function to preserve unintentional side effects
-          originalIsSampled()
-
-          // forced sampled to be true
+        transaction.agent.transactionSampler.shouldSample = function stubShouldSample() {
           return true
-        }).bind(transaction)
+        }
       }
+
       for (const [key] of testCase.inbound_headers.entries()) {
         const inbound_header = testCase.inbound_headers[key]
 
