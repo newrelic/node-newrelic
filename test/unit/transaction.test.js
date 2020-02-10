@@ -1237,6 +1237,144 @@ describe('Transaction', function() {
         txn.end()
       })
     })
+
+    it('should only accept the first tracecontext', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const expectedTraceId = 'da8bc8cc6d062849b0efcf3c169afb5a'
+      const expectedParentSpanId = '7d3efb1b173fecfa'
+      const expectedAppId = '2827902'
+
+      const firstTraceContext = {
+        traceparent: `00-${expectedTraceId}-${expectedParentSpanId}-01`,
+        tracestate:
+          `1@nr=0-0-1-${expectedAppId}-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035`
+      }
+
+      const secondTraceContext = {
+        traceparent: '00-37375fc353f345b5801b166e31b76136-b4a07f08064ee8f9-00',
+        tracestate: '1@nr=0-0-1-3837903-b4a07f08064ee8f9-e8b91a159289ff74-0-0.123456-1518469636035'
+      }
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.acceptDistributedTraceHeaders('HTTP', firstTraceContext)
+        txn.acceptDistributedTraceHeaders('HTTP', secondTraceContext)
+
+        expect(txn.traceId).to.equal(expectedTraceId)
+        expect(txn.parentSpanId).to.equal(expectedParentSpanId)
+        expect(txn.parentApp).to.equal('2827902')
+
+        txn.end()
+      })
+    })
+
+    it('should not accept tracecontext after sending a trace', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const unexpectedTraceId = 'da8bc8cc6d062849b0efcf3c169afb5a'
+      const unexpectedParentSpanId = '7d3efb1b173fecfa'
+      const unexpectedAppId = '2827902'
+
+      const firstTraceContext = {
+        traceparent: `00-${unexpectedTraceId}-${unexpectedParentSpanId}-01`,
+        tracestate:
+          `1@nr=0-0-1-${unexpectedAppId}-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035`
+      }
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const outboundHeaders = {}
+        txn.insertDistributedTraceHeaders(outboundHeaders)
+
+        txn.acceptDistributedTraceHeaders('HTTP', firstTraceContext)
+
+        expect(txn.traceId).to.not.equal(unexpectedTraceId)
+        expect(txn.parentSpanId).to.not.equal(unexpectedParentSpanId)
+        expect(txn.parentApp).to.not.equal('2827902')
+
+        const traceparentParts = outboundHeaders.traceparent.split('-')
+        const [, expectedTraceId] = traceparentParts
+
+        expect(txn.traceId).to.equal(expectedTraceId)
+
+        txn.end()
+      })
+    })
+  })
+
+  describe('insertDistributedTraceHeaders', () => {
+    it('should lowercase traceId for tracecontext when recieved upper from newrelic format', () => {
+      const trustedAccountKey = '123'
+
+      agent.config.account_id = 'AccountId1'
+      agent.config.primary_application_id = 'Application1'
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = trustedAccountKey
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const incomingTraceId = '6E2fEA0B173FDAD0'
+      const expectedTraceContextTraceId = '0000000000000000' + incomingTraceId.toLowerCase()
+
+      const newrelicDtData = {
+        v:[0,1],
+        d:{
+          ty: 'Mobile',
+          ac: trustedAccountKey,
+          ap: '51424',
+          id: '5f474d64b9cc9b2a',
+          tr: incomingTraceId,
+          pr: 0.1234,
+          sa: true,
+          ti: '1482959525577',
+          tx: '27856f70d3d314b7'
+        }
+      }
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const headers = {
+          newrelic: JSON.stringify(newrelicDtData)
+        }
+
+        txn.acceptDistributedTraceHeaders('HTTP', headers)
+
+        expect(txn.isDistributedTrace).to.be.true
+        expect(txn.acceptedDistributedTrace).to.be.true
+
+        const insertedHeaders = {}
+        txn.insertDistributedTraceHeaders(insertedHeaders)
+
+        const splitData = insertedHeaders.traceparent.split('-')
+        const [, traceId] = splitData
+
+        expect(traceId).to.equal(expectedTraceContextTraceId)
+
+        const rawPayload = Buffer.from(insertedHeaders.newrelic, 'base64').toString('utf-8')
+        const payload = JSON.parse(rawPayload)
+
+        // newrelic header should have traceId untouched
+        expect(payload.d.tr).to.equal(incomingTraceId)
+
+        // traceId used for metrics shoudl go untouched
+        expect(txn.traceId).to.equal(incomingTraceId)
+
+        txn.end()
+      })
+    })
   })
 
   describe('acceptTraceContextPayload', () => {
