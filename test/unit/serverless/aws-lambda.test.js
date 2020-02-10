@@ -359,7 +359,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
-          const traceParentFields = transaction.traceContext.traceparent.split('-')
+          const headers = transaction.traceContext.createTraceContextPayload()
+          const traceParentFields = headers.traceparent.split('-')
           const [version, traceId] = traceParentFields
 
           expect(version).to.equal('00')
@@ -388,8 +389,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
-          expect(transaction.traceContext.traceparent).to.exist
-          expect(transaction.traceContext.tracestate).to.exist
+          const headers = transaction.traceContext.createTraceContextPayload()
+          expect(headers.traceparent).to.exist
+          expect(headers.tracestate).to.exist
 
           callback(null, validResponse)
         })

@@ -1175,7 +1175,9 @@ describe('Transaction', function() {
         var childSegment = txn.trace.add('child')
         childSegment.start()
 
-        const orig_traceparent = txn.traceContext.traceparent
+        const originalHeaders = txn.traceContext.createTraceContextPayload()
+
+        const orig_traceparent = originalHeaders.traceparent
         const traceparent = 'asdlkfjasdl;fkja'
         const tracestate = 'stuff'
 
@@ -1186,7 +1188,9 @@ describe('Transaction', function() {
 
         txn.acceptDistributedTraceHeaders('HTTP', headers)
 
-        expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
+        const secondHeaders = txn.traceContext.createTraceContextPayload()
+
+        expect(secondHeaders.traceparent).to.equal(orig_traceparent)
         txn.end()
       })
     })
@@ -1230,7 +1234,8 @@ describe('Transaction', function() {
         expect(txn.isDistributedTrace).to.be.true
         expect(txn.acceptedDistributedTrace).to.be.true
 
-        const splitData = txn.traceContext.traceparent.split('-')
+        const outboundHeaders = txn.traceContext.createTraceContextPayload()
+        const splitData = outboundHeaders.traceparent.split('-')
         const [, traceId] = splitData
 
         expect(traceId).to.equal(expectedTraceId)
@@ -1409,13 +1414,16 @@ describe('Transaction', function() {
         var childSegment = txn.trace.add('child')
         childSegment.start()
 
-        const orig_traceparent = txn.traceContext.traceparent
+        const originalHeaders = txn.traceContext.createTraceContextPayload()
+        const orig_traceparent = originalHeaders.traceparent
         const traceparent = 'asdlkfjasdl;fkja'
         const tracestate = 'stuff'
 
         txn.acceptTraceContextPayload(traceparent, tracestate)
 
-        expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
+        const secondHeaders = txn.traceContext.createTraceContextPayload()
+
+        expect(secondHeaders.traceparent).to.equal(orig_traceparent)
         txn.end()
       })
     })
@@ -1494,7 +1502,8 @@ describe('Transaction', function() {
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.traceContext.traceparent
+      const outboundHeaders = tx.traceContext.createTraceContextPayload()
+      const traceparent = outboundHeaders.traceparent
       const traceparentParts = traceparent.split('-')
 
       const lowercaseHexRegex = /^[a-f0-9]+/
@@ -1521,7 +1530,8 @@ describe('Transaction', function() {
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparent = tx.traceContext.traceparent
+      const outboundHeaders = tx.traceContext.createTraceContextPayload()
+      const traceparent = outboundHeaders.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[2].length, 'parentId').to.equal(16)
@@ -1539,7 +1549,8 @@ describe('Transaction', function() {
       agent.tracer.segment = tx.trace.root
       tx.sampled = true
 
-      const traceparent = tx.traceContext.traceparent
+      const outboundHeaders = tx.traceContext.createTraceContextPayload()
+      const traceparent = outboundHeaders.traceparent
       const traceparentParts = traceparent.split('-')
 
       expect(traceparentParts[3], 'flags').to.equal('01')
@@ -1561,7 +1572,8 @@ describe('Transaction', function() {
 
       agent.tracer.segment = tx.trace.root
 
-      const traceparentParts = traceparent.split('-')
+      const outboundHeaders = tx.traceContext.createTraceContextPayload()
+      const traceparentParts = outboundHeaders.traceparent.split('-')
 
       expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
 

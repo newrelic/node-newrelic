@@ -82,7 +82,8 @@ describe('TraceContext', function() {
         txn.acceptTraceContextPayload(traceparent, undefined)
 
         // The traceId should propagate
-        expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+        const newTraceparent = txn.traceContext.createTraceparent()
+        expect(newTraceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
         txn.end()
       })
@@ -102,7 +103,8 @@ describe('TraceContext', function() {
         txn.acceptTraceContextPayload(traceparent, tracestate)
 
         // The traceId should propagate
-        expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+        const newTraceparent = txn.traceContext.createTraceparent()
+        expect(newTraceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
         txn.end()
       })
@@ -245,13 +247,13 @@ describe('TraceContext', function() {
   })
 
   describe('header creation', () => {
-    it('getting traceparent twice should give the same value', function() {
+    it('creating traceparent twice should give the same value', function() {
       helper.runInTransaction(agent, function(txn) {
         var childSegment = txn.trace.add('child')
         childSegment.start()
 
-        const tp1 = txn.traceContext.traceparent
-        const tp2 = txn.traceContext.traceparent
+        const tp1 = txn.traceContext.createTraceparent()
+        const tp2 = txn.traceContext.createTraceparent()
 
         expect(tp1).to.equal(tp2)
         txn.end()
@@ -345,12 +347,14 @@ describe('TraceContext', function() {
 
         txn.acceptTraceContextPayload(traceparent, tracestate)
 
+        const headers = txn.traceContext.createTraceContextPayload()
+
         // The parentId (current span id) of traceparent will change, but the traceId
         // should propagate
-        expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+        expect(headers.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
         // The test key/value should propagate at the end of the string
-        expect(txn.traceContext.tracestate.endsWith(tracestate)).to.be.true
+        expect(headers.tracestate.endsWith(tracestate)).to.be.true
 
         txn.end()
       })
@@ -374,7 +378,9 @@ describe('TraceContext', function() {
         helper.runOutOfContext(() => {
           txn.acceptTraceContextPayload(traceparent, tracestate)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+
+          const splitData = headers.traceparent.split('-')
           const [version, traceId, parentId] = splitData
 
           expect(version).to.equal(expectedVersion)
@@ -408,7 +414,8 @@ describe('TraceContext', function() {
         helper.runOutOfContext(() => {
           txn.acceptTraceContextPayload(traceparent, incomingTraceState)
 
-          const tracestate = txn.traceContext.tracestate
+          const outboundHeaders = txn.traceContext.createTraceContextPayload()
+          const tracestate = outboundHeaders.tracestate
 
           // The test key/value should propagate at the end of the string
           expect(tracestate.endsWith(incomingTraceState)).to.be.true
@@ -442,7 +449,8 @@ describe('TraceContext', function() {
       helper.runInTransaction(agent, function(txn) {
         txn.acceptTraceContextPayload(traceparent, incomingTraceState)
 
-        const splitData = txn.traceContext.traceparent.split('-')
+        const headers = txn.traceContext.createTraceContextPayload()
+        const splitData = headers.traceparent.split('-')
         const [version, traceId] = splitData
 
         expect(version).to.equal('00')
@@ -469,7 +477,8 @@ describe('TraceContext', function() {
       helper.runInTransaction(agent, function(txn) {
         txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-        const splitData = txn.traceContext.traceparent.split('-')
+        const headers = txn.traceContext.createTraceContextPayload()
+        const splitData = headers.traceparent.split('-')
         const [version, traceId] = splitData
 
         expect(version).to.equal('00')
@@ -495,7 +504,8 @@ describe('TraceContext', function() {
       helper.runInTransaction(agent, function(txn) {
         txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-        const splitData = txn.traceContext.traceparent.split('-')
+        const headers = txn.traceContext.createTraceContextPayload()
+        const splitData = headers.traceparent.split('-')
         const [version, traceId] = splitData
 
         expect(version).to.equal('00')
@@ -524,12 +534,13 @@ describe('TraceContext', function() {
       helper.runInTransaction(agent, function(txn) {
         txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-        const splitData = txn.traceContext.traceparent.split('-')
+        const headers = txn.traceContext.createTraceContextPayload()
+        const splitData = headers.traceparent.split('-')
         const [, traceId] = splitData
 
         expect(traceId).to.equal(expectedTraceId)
 
-        const tracestate = txn.traceContext.tracestate
+        const tracestate = headers.tracestate
         const listMembers = tracestate.split(',')
 
         const [,fooMember] = listMembers
@@ -560,12 +571,13 @@ describe('TraceContext', function() {
 
           txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
 
+          const headers = txn.traceContext.createTraceContextPayload()
           // The parentId (current span id) of traceparent will change, but the traceId
           // should propagate
-          expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+          expect(headers.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
           // The original tracestate should be propogated
-          expect(txn.traceContext.tracestate).to.equal(incomingTracestate)
+          expect(headers.tracestate).to.equal(incomingTracestate)
 
           txn.end()
 
@@ -592,12 +604,13 @@ describe('TraceContext', function() {
 
           txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
 
+          const headers = txn.traceContext.createTraceContextPayload()
           // The parentId (current span id) of traceparent will change, but the traceId
           // should propagate
-          expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+          expect(headers.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
           // The original tracestate should be propogated
-          expect(txn.traceContext.tracestate).to.equal(incomingTracestate)
+          expect(headers.tracestate).to.equal(incomingTracestate)
 
           txn.end()
 
@@ -620,7 +633,8 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)
@@ -644,7 +658,8 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)
@@ -668,7 +683,8 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)
@@ -694,12 +710,13 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)
 
-          const tracestate = txn.traceContext.tracestate
+          const tracestate = headers.tracestate
           const listMembers = tracestate.split(',')
 
           const [,fooMember] = listMembers
@@ -724,12 +741,13 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)
 
-          const tracestate = txn.traceContext.tracestate
+          const tracestate = headers.tracestate
           const listMembers = tracestate.split(',')
 
           const [,fooMember, barMember, bazMember] = listMembers
@@ -757,7 +775,8 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)
@@ -781,7 +800,8 @@ describe('TraceContext', function() {
         helper.runInTransaction(agent, function(txn) {
           txn.acceptTraceContextPayload(futureTraceparent, incomingTraceState)
 
-          const splitData = txn.traceContext.traceparent.split('-')
+          const headers = txn.traceContext.createTraceContextPayload()
+          const splitData = headers.traceparent.split('-')
           const [, traceId] = splitData
 
           expect(traceId).to.equal(expectedTraceId)

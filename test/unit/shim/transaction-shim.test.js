@@ -460,8 +460,10 @@ describe('TransactionShim', function() {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
           shim.handleCATHeaders(headers, segment)
-          expect(tx.traceContext.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
-          expect(tx.traceContext.tracestate.endsWith(tracestate)).to.be.true
+
+          const outboundHeaders = tx.traceContext.createTraceContextPayload()
+          expect(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
+          expect(outboundHeaders.tracestate.endsWith(tracestate)).to.be.true
         })
       })
 
@@ -474,7 +476,9 @@ describe('TransactionShim', function() {
           const headers = { traceparent }
           const segment = shim.getSegment()
           shim.handleCATHeaders(headers, segment)
-          expect(tx.traceContext.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
+
+          const outboundHeaders = tx.traceContext.createTraceContextPayload()
+          expect(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
         })
       })
 
@@ -488,7 +492,9 @@ describe('TransactionShim', function() {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
           shim.handleCATHeaders(headers, segment)
-          expect(tx.traceContext.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
+
+          const outboundHeaders = tx.traceContext.createTraceContextPayload()
+          expect(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3')).to.equal(true)
         })
       })
     })
