@@ -242,6 +242,26 @@ describe('TraceContext', function() {
       expect(valid.entryFound).to.be.true
       expect(valid.entryValid).to.be.false
     })
+
+    it('should handle empty priority and sampled fields (mobile payload)', () => {
+      agent.config.trusted_account_key = '190'
+      const goodTraceStateHeader =
+      /* eslint-disable-next-line max-len */
+      '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05---1563574856827,234234@foo=bar'
+      const valid = traceContext._validateAndParseTraceStateHeader(goodTraceStateHeader)
+      expect(valid).to.be.ok
+      expect(valid.entryFound).to.be.true
+      expect(valid.entryValid).to.be.true
+      expect(valid.intrinsics.version).to.equal(0)
+      expect(valid.intrinsics.parentType).to.equal('App')
+      expect(valid.intrinsics.accountId).to.equal('709288')
+      expect(valid.intrinsics.appId).to.equal('8599547')
+      expect(valid.intrinsics.spanId).to.equal('f85f42fd82a4cf1d')
+      expect(valid.intrinsics.transactionId).to.equal('164d3b4b0d09cb05')
+      expect(valid.intrinsics.sampled).to.not.exist
+      expect(valid.intrinsics.priority).to.not.exist
+      expect(valid.intrinsics.timestamp).to.equal(1563574856827)
+    })
   })
 
   describe('header creation', () => {
