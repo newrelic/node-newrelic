@@ -289,11 +289,34 @@ describe('TraceContext', function() {
       const duplicateAcctTraceState =
         /* eslint-disable-next-line max-len */
         '42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,190@nr=bar'
-      const valid = traceContext._validateAndParseTraceStateHeader(duplicateAcctTraceState)
+      const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
+      const appId = '109354'
 
-      expect(valid.entryFound).to.be.true
-      expect(valid.entryValid).to.be.true
-      expect(valid.vendors.filter(v => v === `${acct_key}@nr`).length).to.equal(0)
+      agent.config.trusted_account_key = acct_key
+      agent.config.account_id = acct_key
+      agent.config.primary_application_id = appId
+      agent.transactionSampler.shouldSample = () => false
+
+      helper.runInTransaction(agent, function(txn) {
+        const childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.traceContext.acceptTraceContextPayload(traceparent, duplicateAcctTraceState)
+        const valid = txn.traceContext._validateAndParseTraceStateHeader(duplicateAcctTraceState)
+        const traceContextPayload = txn.traceContext.createTraceContextPayload()
+
+        expect(valid.entryFound).to.be.true
+        expect(valid.entryValid).to.be.true
+        expect(valid.vendors.filter(v => v === `${acct_key}@nr`).length).to.equal(0)
+
+        const nrMatch = (traceContextPayload.tracestate.match(/190@nr/g) || [])
+        expect(nrMatch.length, 'has only one nr entry').to.equal(1)
+
+        const nonNrMatch = (traceContextPayload.tracestate.match(/42@bar/g) || [])
+        expect(nonNrMatch.length, 'contains non-nr entry').to.equal(1)
+
+        txn.end()
+      })
     })
 
     it('should not accept first nr entry when duplicate entries exist and its invalid', () => {
