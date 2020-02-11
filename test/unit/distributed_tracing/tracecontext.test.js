@@ -90,10 +90,6 @@ describe('TraceContext', function() {
 
         txn.acceptTraceContextPayload(traceparent, undefined)
 
-        expect(supportabilitySpy.callCount).to.equal(1)
-        /* eslint-disable-next-line max-len */
-        expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
-
         // The traceId should propagate
         expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
 
@@ -113,10 +109,6 @@ describe('TraceContext', function() {
         childSegment.start()
 
         txn.acceptTraceContextPayload(traceparent, tracestate)
-        
-        expect(supportabilitySpy.callCount).to.equal(1)
-        /* eslint-disable-next-line max-len */
-        expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
 
         // The traceId should propagate
         expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
@@ -298,9 +290,6 @@ describe('TraceContext', function() {
         expect(headers.tracestate.split('-')[6]).to.equal('0')
         expect(headers.tracestate.split('-')[3]).to.equal(appId)
         expect(headers.tracestate.split('-')[2]).to.equal(accountId)
-
-        expect(supportabilitySpy.callCount).to.equal(1)
-        expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Success')
 
         txn.end()
       })
