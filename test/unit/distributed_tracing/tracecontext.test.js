@@ -299,6 +299,9 @@ describe('TraceContext', function() {
         expect(headers.tracestate.split('-')[3]).to.equal(appId)
         expect(headers.tracestate.split('-')[2]).to.equal(accountId)
 
+        expect(supportabilitySpy.callCount).to.equal(1)
+        expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Success')
+
         txn.end()
       })
     })
@@ -562,7 +565,7 @@ describe('TraceContext', function() {
       })
     })
 
-    it (
+    it(
       'should propogate existing list members when cannot accept newrelic list members',
       (done) => {
         // missing trust key means can't accept/match newrelic header
@@ -583,6 +586,9 @@ describe('TraceContext', function() {
           // The parentId (current span id) of traceparent will change, but the traceId
           // should propagate
           expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
+
+          expect(supportabilitySpy.callCount).to.equal(1)
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Accept/Exception')
 
           // The original tracestate should be propogated
           expect(txn.traceContext.tracestate).to.equal(incomingTracestate)
@@ -818,7 +824,7 @@ describe('TraceContext', function() {
       // requests (or via API call) and attempt to create traces before receiving
       // required fields from server.
 
-      it ('should not create tracestate when accountId missing', (done) => {
+      it('should not create tracestate when accountId missing', (done) => {
         agent.config.account_id = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -830,6 +836,9 @@ describe('TraceContext', function() {
 
           expect(headers).to.have.property('traceparent')
           expect(headers).to.not.have.property('tracestate')
+
+          expect(supportabilitySpy.callCount).to.equal(1)
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
 
           txn.end()
 
@@ -851,6 +860,9 @@ describe('TraceContext', function() {
           expect(headers).to.have.property('traceparent')
           expect(headers).to.not.have.property('tracestate')
 
+          expect(supportabilitySpy.callCount).to.equal(1)
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+
           txn.end()
 
           done()
@@ -871,6 +883,9 @@ describe('TraceContext', function() {
 
           expect(headers).to.have.property('traceparent')
           expect(headers).to.not.have.property('tracestate')
+
+          expect(supportabilitySpy.callCount).to.equal(1)
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
 
           txn.end()
 
