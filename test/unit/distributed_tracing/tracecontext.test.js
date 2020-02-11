@@ -5,11 +5,13 @@ const expect = chai.expect
 const helper = require('../../lib/agent_helper')
 var Transaction = require('../../../lib/transaction')
 const TraceContext = require('../../../lib/transaction/tracecontext').TraceContext
+const sinon = require('sinon')
 
 describe('TraceContext', function() {
   let traceContext = null
   let agent = null
   let transaction = null
+  let supportabilitySpy = sinon.spy()
 
   beforeEach(function() {
     agent = helper.loadMockedAgent({
@@ -21,12 +23,14 @@ describe('TraceContext', function() {
     agent.config.trusted_account_key = 33
     agent.config.feature_flag.dt_format_w3c = true
     agent.config.distributed_tracing.enabled = true
+    agent.recordSupportability = supportabilitySpy
 
     transaction = new Transaction(agent)
     traceContext = new TraceContext(transaction)
   })
 
   afterEach(function() {
+    supportabilitySpy.resetHistory()
     helper.unloadAgent(agent)
   })
 
@@ -65,6 +69,11 @@ describe('TraceContext', function() {
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const tracestate = 'asdf,===asdf,,'
       const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
+
+      expect(supportabilitySpy.callCount).to.equal(1)
+      /* eslint-disable-next-line max-len */
+      expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
+
       expect(tcd.acceptedTraceparent).to.equal(true)
       expect(tcd.acceptedTracestate).to.equal(false)
     })
@@ -80,6 +89,10 @@ describe('TraceContext', function() {
         childSegment.start()
 
         txn.acceptTraceContextPayload(traceparent, undefined)
+
+        expect(supportabilitySpy.callCount).to.equal(1)
+        /* eslint-disable-next-line max-len */
+        expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
 
         // The traceId should propagate
         expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
@@ -100,6 +113,10 @@ describe('TraceContext', function() {
         childSegment.start()
 
         txn.acceptTraceContextPayload(traceparent, tracestate)
+        
+        expect(supportabilitySpy.callCount).to.equal(1)
+        /* eslint-disable-next-line max-len */
+        expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
 
         // The traceId should propagate
         expect(txn.traceContext.traceparent.startsWith('00-4bf92f3577b34da6a')).to.be.true
@@ -229,6 +246,9 @@ describe('TraceContext', function() {
         /* eslint-disable-next-line max-len */
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(badTraceStateHeader)
+
+      expect(supportabilitySpy.callCount).to.equal(1)
+      expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/NoNrEntry')
       expect(valid.entryFound).to.be.false
       expect(valid.entryValid).to.be.undefined
     })
