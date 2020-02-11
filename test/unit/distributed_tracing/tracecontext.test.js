@@ -309,7 +309,7 @@ describe('TraceContext', function() {
 
         expect(valid.entryFound).to.be.true
         expect(valid.entryValid).to.be.true
-        expect(valid.vendors.filter(v => v === `${acct_key}@nr`).length).to.equal(0)
+        expect(valid.vendors.match(`${acct_key}@nr`)).to.not.exist
 
         const nrMatch = (traceContextPayload.tracestate.match(/190@nr/g) || [])
         expect(nrMatch.length, 'has only one nr entry').to.equal(1)
@@ -331,7 +331,7 @@ describe('TraceContext', function() {
 
       expect(valid.entryFound).to.be.true
       expect(valid.entryValid).to.be.false
-      expect(valid.vendors.filter(v => v === `${acct_key}@nr`).length).to.equal(0)
+      expect(valid.vendors.match(`${acct_key}@nr`)).to.not.exist
     })
 
     it('should propogate headers', () => {
