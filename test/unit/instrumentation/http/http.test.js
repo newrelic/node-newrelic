@@ -686,8 +686,9 @@ describe('built-in http module instrumentation', function() {
         var server = http.createServer(function(req, res) {
           const txn = agent.getTransaction()
 
-          const headers = txn.traceContext.createTraceContextPayload()
-          expect(headers.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
+          const outboundHeaders = createHeadersAndInsertTrace(txn)
+
+          expect(outboundHeaders.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
           expect(txn.priority).to.equal(priority)
           res.writeHead(200, {'Content-Length': 3})
           res.end('hi!')
@@ -714,8 +715,10 @@ describe('built-in http module instrumentation', function() {
 
         var server = http.createServer(function(req, res) {
           const txn = agent.getTransaction()
-          const headers = txn.traceContext.createTraceContextPayload()
-          expect(headers.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
+
+          const outboundHeaders = createHeadersAndInsertTrace(txn)
+
+          expect(outboundHeaders.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
           res.writeHead(200, {'Content-Length': 3})
           res.end('hi!')
         })
@@ -741,8 +744,8 @@ describe('built-in http module instrumentation', function() {
 
         var server = http.createServer(function(req, res) {
           const txn = agent.getTransaction()
-          const headers = txn.traceContext.createTraceContextPayload()
-          expect(headers.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
+          const outboundHeaders = createHeadersAndInsertTrace(txn)
+          expect(outboundHeaders.traceparent.startsWith('00-4bf92f3577b')).to.equal(true)
 
           res.writeHead(200, {'Content-Length': 3})
           res.end('hi!')
@@ -985,3 +988,10 @@ describe('built-in http module instrumentation', function() {
     }
   })
 })
+
+function createHeadersAndInsertTrace(transaction) {
+  const headers = {}
+  transaction.insertDistributedTraceHeaders(headers)
+
+  return headers
+}

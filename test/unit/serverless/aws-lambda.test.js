@@ -359,7 +359,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
-          const headers = transaction.traceContext.createTraceContextPayload()
+          const headers = {}
+          transaction.insertDistributedTraceHeaders(headers)
+
           const traceParentFields = headers.traceparent.split('-')
           const [version, traceId] = traceParentFields
 
@@ -389,7 +391,9 @@ describe('AwsLambda.patchLambdaHandler', () => {
         awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
-          const headers = transaction.traceContext.createTraceContextPayload()
+          const headers = {}
+          transaction.insertDistributedTraceHeaders(headers)
+
           expect(headers.traceparent).to.exist
           expect(headers.tracestate).to.exist
 
@@ -1252,4 +1256,3 @@ describe('AwsLambda.patchLambdaHandler', () => {
 function getMetrics(agent) {
   return agent.metrics._metrics
 }
-
