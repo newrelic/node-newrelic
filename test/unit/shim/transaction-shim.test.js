@@ -452,7 +452,7 @@ describe('TransactionShim', function() {
 
       it('Should propagate w3c tracecontext header when present', function() {
         agent.config.distributed_tracing.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
+
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
         const tracestate = 'test=test'
 
@@ -471,7 +471,7 @@ describe('TransactionShim', function() {
 
       it('Should propagate w3c tracecontext header when no tracestate', function() {
         agent.config.distributed_tracing.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
+
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
         helper.runInTransaction(agent, function(tx) {
@@ -488,7 +488,7 @@ describe('TransactionShim', function() {
 
       it('Should propagate w3c tracecontext header when tracestate empty string', function() {
         agent.config.distributed_tracing.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
+
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
         const tracestate = ''
 

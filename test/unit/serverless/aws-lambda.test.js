@@ -349,7 +349,6 @@ describe('AwsLambda.patchLambdaHandler', () => {
           done()
         })
 
-        agent.config.feature_flag.dt_format_w3c = true
         agent.config.distributed_tracing.enabled = true
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
@@ -382,7 +381,6 @@ describe('AwsLambda.patchLambdaHandler', () => {
           done()
         })
 
-        agent.config.feature_flag.dt_format_w3c = true
         agent.config.distributed_tracing.enabled = true
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent

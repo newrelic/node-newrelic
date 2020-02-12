@@ -670,7 +670,6 @@ describe('built-in http module instrumentation', function() {
             enabled: true
           },
           feature_flag: {
-            dt_format_w3c: true
           }
         })
       })

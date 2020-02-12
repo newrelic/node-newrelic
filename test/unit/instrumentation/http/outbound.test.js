@@ -499,7 +499,6 @@ describe('when working with http.request', function() {
           enabled: true
         },
         feature_flag: {
-          dt_format_w3c: true
         }
       })
       agent.config.trusted_account_key = 190
@@ -540,7 +539,6 @@ describe('when working with http.request', function() {
           exclude_newrelic_header: true
         },
         feature_flag: {
-          dt_format_w3c: true
         }
       })
       agent.config.trusted_account_key = 190
