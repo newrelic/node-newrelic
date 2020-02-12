@@ -33,7 +33,10 @@ if [ -z $NR_NODE_VERSION ]; then
     exit 1
 fi
 
-if [ $NR_NODE_VERSION -gt 11 ] && version_gt 2.17 $GLIBC_VERSION_CHECK;then
+version=$NR_NODE_VERSION
+major=${version/.*}
+echo $major
+if [ $major -gt 11 ] && version_gt 2.17 $GLIBC_VERSION_CHECK;then
   echo "Installing updated glibc\n"
   # can we get this from an actual repository?
   curl -LO 'http://launchpadlibrarian.net/130794928/libc6_2.17-0ubuntu4_amd64.deb'
