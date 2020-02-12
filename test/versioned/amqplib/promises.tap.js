@@ -282,6 +282,7 @@ tap.test('amqplib promise instrumentation', function(t) {
     agent.config.distributed_tracing.enabled = true
     agent.config.account_id = 1234
     agent.config.primary_application_id = 4321
+    agent.config.trusted_account_key = 1234
 
     var queue = null
     var consumeTxn = null
@@ -294,8 +295,6 @@ tap.test('amqplib promise instrumentation', function(t) {
       return channel.bindQueue(queue, exchange, 'consume-tx-key')
     }).then(function() {
       return helper.runInTransaction(agent, function(tx) {
-        tx.traceId = 'this-is-a-trace-id' // Checked in verifyDistributedTrace
-
         return channel.consume(queue, function(msg) {
           var consumeTxnHandle = api.getTransaction()
           consumeTxn = consumeTxnHandle._transaction
