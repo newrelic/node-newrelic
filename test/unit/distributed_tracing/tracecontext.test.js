@@ -833,7 +833,7 @@ describe('TraceContext', function() {
       // requests (or via API call) and attempt to create traces before receiving
       // required fields from server.
 
-      it('should not create tracestate when accountId missing', (done) => {
+      it('should not create tracestate when accountId is missing', (done) => {
         agent.config.account_id = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -846,8 +846,8 @@ describe('TraceContext', function() {
           expect(headers).to.have.property('traceparent')
           expect(headers).to.not.have.property('tracestate')
 
-          expect(supportabilitySpy.callCount).to.equal(1)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+          expect(supportabilitySpy.callCount).to.equal(2)
+          expect(supportabilitySpy.secondCall.args[0]).to.equal('TraceContext/Create/Exception')
 
           txn.end()
 
@@ -855,7 +855,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should not create tracestate when primary_application_id missing', (done) => {
+      it('should not create tracestate when primary_application_id missing', (done) => {
         agent.config.account_id = '12345'
         agent.config.primary_application_id = null
         agent.config.distributed_tracing.enabled = true
@@ -869,8 +869,8 @@ describe('TraceContext', function() {
           expect(headers).to.have.property('traceparent')
           expect(headers).to.not.have.property('tracestate')
 
-          expect(supportabilitySpy.callCount).to.equal(1)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+          expect(supportabilitySpy.callCount).to.equal(2)
+          expect(supportabilitySpy.secondCall.args[0]).to.equal('TraceContext/Create/Exception')
 
           txn.end()
 
@@ -893,8 +893,8 @@ describe('TraceContext', function() {
           expect(headers).to.have.property('traceparent')
           expect(headers).to.not.have.property('tracestate')
 
-          expect(supportabilitySpy.callCount).to.equal(1)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+          expect(supportabilitySpy.callCount).to.equal(2)
+          expect(supportabilitySpy.secondCall.args[0]).to.equal('TraceContext/Create/Exception')
 
           txn.end()
 
