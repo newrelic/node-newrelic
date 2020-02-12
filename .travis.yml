@@ -14,12 +14,12 @@ env:
     - NR_NODE_VERSION=10 SUITE=integration
     - NR_NODE_VERSION=10 SUITE=versioned
     # NODE 12 --
-    - NR_NODE_VERSION=12 SUITE=smoke
-    - NR_NODE_VERSION=12 SUITE=unit
-    - NR_NODE_VERSION=12 SUITE=integration
-    - NR_NODE_VERSION=12 SUITE=lint
-    - NR_NODE_VERSION=12 SUITE=security
-    - NR_NODE_VERSION=12 SUITE=versioned
+    - NR_NODE_VERSION=12.15 SUITE=smoke
+    - NR_NODE_VERSION=12.15 SUITE=unit
+    - NR_NODE_VERSION=12.15 SUITE=integration
+    - NR_NODE_VERSION=12.15 SUITE=lint
+    - NR_NODE_VERSION=12.15 SUITE=security
+    - NR_NODE_VERSION=12.15 SUITE=versioned
 services:
   - memcached
   - mysql
