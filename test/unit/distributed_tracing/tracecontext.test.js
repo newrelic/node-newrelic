@@ -604,7 +604,9 @@ describe('TraceContext', function() {
           txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
 
           expect(supportabilitySpy.callCount).to.equal(1)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Accept/Exception')
+
+          // eslint-disable-next-line max-len
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Accept/Exception')
 
           const headers = getTraceContextHeaders(txn)
           // The parentId (current span id) of traceparent will change, but the traceId
@@ -867,6 +869,7 @@ describe('TraceContext', function() {
           expect(headers).to.not.have.property('tracestate')
 
           expect(supportabilitySpy.callCount).to.equal(2)
+          // eslint-disable-next-line max-len
           expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Create/Exception')
 
           txn.end()
@@ -890,6 +893,7 @@ describe('TraceContext', function() {
           expect(headers).to.not.have.property('tracestate')
 
           expect(supportabilitySpy.callCount).to.equal(2)
+          // eslint-disable-next-line max-len
           expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Create/Exception')
 
           txn.end()
@@ -914,6 +918,7 @@ describe('TraceContext', function() {
           expect(headers).to.not.have.property('tracestate')
 
           expect(supportabilitySpy.callCount).to.equal(2)
+          // eslint-disable-next-line max-len
           expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Create/Exception')
 
           txn.end()
