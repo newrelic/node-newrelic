@@ -549,7 +549,7 @@ describe('TraceContext', function() {
       })
     })
 
-    it ('should handle combined headers with empty values', (done) => {
+    it('should handle combined headers with empty values', (done) => {
       // The http module will automatically combine headers
       // In the case of combining ['tracestate', ''] and ['tracestate', 'foo=1']
       // An incoming header may look like tracestate: 'foo=1, '.
@@ -604,7 +604,9 @@ describe('TraceContext', function() {
           txn.acceptTraceContextPayload(incomingTraceparent, incomingTracestate)
 
           expect(supportabilitySpy.callCount).to.equal(1)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Accept/Exception')
+
+          // eslint-disable-next-line max-len
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Accept/Exception')
 
           const headers = getTraceContextHeaders(txn)
           // The parentId (current span id) of traceparent will change, but the traceId
@@ -621,7 +623,7 @@ describe('TraceContext', function() {
       }
     )
 
-    it (
+    it(
       'should propogate existing when cannot accept or generate newrelic list member',
       (done) => {
         agent.config.trusted_account_key = null
@@ -655,7 +657,7 @@ describe('TraceContext', function() {
     )
 
     describe('traceparent parsing should accept and remove optional white space (OWS)', () => {
-      it ('should handle leading white space', (done) => {
+      it('should handle leading white space', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -680,7 +682,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should handle leading tab', (done) => {
+      it('should handle leading tab', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -705,7 +707,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should handle trailing white space', (done) => {
+      it('should handle trailing white space', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -732,7 +734,7 @@ describe('TraceContext', function() {
     })
 
     describe('tracestate parsing should accept and remove optional white space (OWS)', () => {
-      it ('should handle white space and tabs for a single item', (done) => {
+      it('should handle white space and tabs for a single item', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -763,7 +765,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should handle white space and tabs between list members', (done) => {
+      it('should handle white space and tabs between list members', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -797,7 +799,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should handle trailing tab', (done) => {
+      it('should handle trailing tab', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -822,7 +824,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should handle leading and trailing white space and tabs', (done) => {
+      it('should handle leading and trailing white space and tabs', (done) => {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
@@ -867,7 +869,8 @@ describe('TraceContext', function() {
           expect(headers).to.not.have.property('tracestate')
 
           expect(supportabilitySpy.callCount).to.equal(2)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+          // eslint-disable-next-line max-len
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Create/Exception')
 
           txn.end()
 
@@ -890,7 +893,8 @@ describe('TraceContext', function() {
           expect(headers).to.not.have.property('tracestate')
 
           expect(supportabilitySpy.callCount).to.equal(2)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+          // eslint-disable-next-line max-len
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Create/Exception')
 
           txn.end()
 
@@ -898,7 +902,7 @@ describe('TraceContext', function() {
         })
       })
 
-      it ('should not create tracestate when trusted_account_key missing', (done) => {
+      it('should not create tracestate when trusted_account_key missing', (done) => {
         agent.config.account_id = '12345'
         agent.config.primary_application_id = 'appId'
         agent.config.trusted_account_key = null
@@ -914,7 +918,8 @@ describe('TraceContext', function() {
           expect(headers).to.not.have.property('tracestate')
 
           expect(supportabilitySpy.callCount).to.equal(2)
-          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/Create/Exception')
+          // eslint-disable-next-line max-len
+          expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Create/Exception')
 
           txn.end()
 
