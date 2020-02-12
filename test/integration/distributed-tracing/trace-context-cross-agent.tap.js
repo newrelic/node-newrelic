@@ -370,7 +370,6 @@ const runTestCase = function(testCase, parentTest) {
     agent.config.span_events.enabled = testCase.span_events_enabled
     agent.config.transaction_events.enabled = testCase.transaction_events_enabled
     agent.config.distributed_tracing.enabled = true
-    agent.config.feature_flag.dt_format_w3c = true
 
     const agentApi = new API(agent)
 

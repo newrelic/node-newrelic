@@ -1144,7 +1144,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
@@ -1169,7 +1168,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       helper.runInTransaction(agent, function(txn) {
         var childSegment = txn.trace.add('child')
@@ -1201,7 +1199,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = trustedAccountKey
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const incomingTraceId = '6e2fea0b173fdad0'
       const expectedTraceId = '0000000000000000' + incomingTraceId
@@ -1247,7 +1244,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const expectedTraceId = 'da8bc8cc6d062849b0efcf3c169afb5a'
       const expectedParentSpanId = '7d3efb1b173fecfa'
@@ -1283,7 +1279,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const unexpectedTraceId = 'da8bc8cc6d062849b0efcf3c169afb5a'
       const unexpectedParentSpanId = '7d3efb1b173fecfa'
@@ -1327,7 +1322,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = trustedAccountKey
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const incomingTraceId = '6E2fEA0B173FDAD0'
       const expectedTraceContextTraceId = '0000000000000000' + incomingTraceId.toLowerCase()
@@ -1385,7 +1379,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const tx = new Transaction(agent)
 
@@ -1413,7 +1406,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = false
-      agent.config.feature_flag.dt_format_w3c = true
 
       const tx = new Transaction(agent)
       const lowercaseHexRegex = /^[a-f0-9]+/
@@ -1433,7 +1425,7 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
+
 
       const tx = new Transaction(agent)
 
@@ -1453,7 +1445,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const tx = new Transaction(agent)
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
@@ -1477,7 +1468,6 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
@@ -1498,7 +1488,7 @@ describe('Transaction', function() {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
+
 
       helper.runInTransaction(agent, function(txn) {
         var childSegment = txn.trace.add('child')
@@ -1522,7 +1512,6 @@ describe('Transaction', function() {
       agent.config.trusted_account_key = null
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
       // When two bugs combine, we might accept a tracestate we shouldn't
@@ -1553,7 +1542,6 @@ describe('Transaction', function() {
       agent.config.trusted_account_key = '33'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
       // When two bugs combine, we might accept a tracestate we shouldn't

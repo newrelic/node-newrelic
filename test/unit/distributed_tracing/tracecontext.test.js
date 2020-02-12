@@ -21,8 +21,8 @@ describe('TraceContext', function() {
     agent.config.account_id = 'AccountId1'
     agent.config.primary_application_id = 'AppId1'
     agent.config.trusted_account_key = 33
-    agent.config.feature_flag.dt_format_w3c = true
     agent.config.distributed_tracing.enabled = true
+
     agent.recordSupportability = supportabilitySpy
 
     transaction = new Transaction(agent)
@@ -81,7 +81,7 @@ describe('TraceContext', function() {
     it('should accept traceparent when tracestate missing', () => {
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = false
-      agent.config.feature_flag.dt_format_w3c = true
+
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
       helper.runInTransaction(agent, function(txn) {
@@ -101,7 +101,7 @@ describe('TraceContext', function() {
     it('should accept traceparent when tracestate empty string', () => {
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = false
-      agent.config.feature_flag.dt_format_w3c = true
+
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
       const tracestate = ''
 
@@ -369,7 +369,7 @@ describe('TraceContext', function() {
     it('should propogate headers', () => {
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = false
-      agent.config.feature_flag.dt_format_w3c = true
+
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
       const tracestate = 'test=test'
 
@@ -399,7 +399,6 @@ describe('TraceContext', function() {
       agent.config.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const expectedVersion = '00'
       const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
@@ -435,7 +434,6 @@ describe('TraceContext', function() {
       agent.config.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const expectedVersion = '00'
       const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
@@ -471,7 +469,6 @@ describe('TraceContext', function() {
       agent.config.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const unexpectedTraceId = '12345678901234567890123456789012'
       // version 255 (ff) is forbidden...
@@ -499,7 +496,6 @@ describe('TraceContext', function() {
       agent.config.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const expectedTraceId = '12345678901234567890123456789012'
       const extra = 'what-the-future-will-be-like'
@@ -526,7 +522,6 @@ describe('TraceContext', function() {
       agent.config.account_id = 'AccountId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const unexpectedTraceId = '12345678901234567890123456789012'
       const extra = 'what-the-future-will-be-like'
@@ -557,7 +552,6 @@ describe('TraceContext', function() {
       agent.config.primary_application_id = 'AppId1'
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      agent.config.feature_flag.dt_format_w3c = true
 
       const expectedTraceId = '12345678901234567890123456789012'
       const futureTraceparent = `\t 00-${expectedTraceId}-1234567890123456-01 \t`
@@ -592,7 +586,7 @@ describe('TraceContext', function() {
         agent.config.trusted_account_key = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
-        agent.config.feature_flag.dt_format_w3c = true
+
         const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
         const incomingTracestate =
           '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035,test=test'
@@ -628,7 +622,7 @@ describe('TraceContext', function() {
         agent.config.account_id = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = false
-        agent.config.feature_flag.dt_format_w3c = true
+
         const incomingTraceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
         const incomingTracestate =
           '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035,test=test'
@@ -659,7 +653,6 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = ` 00-${expectedTraceId}-1234567890123456-01`
@@ -684,7 +677,6 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = `\t00-${expectedTraceId}-1234567890123456-01`
@@ -709,7 +701,7 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
+
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01 `
@@ -736,7 +728,6 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01`
@@ -767,7 +758,6 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01`
@@ -801,7 +791,6 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = `00-${expectedTraceId}-1234567890123456-01\t`
@@ -826,7 +815,6 @@ describe('TraceContext', function() {
         agent.config.account_id = 'AccountId1'
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         const expectedTraceId = '12345678901234567890123456789012'
         const futureTraceparent = `\t 00-${expectedTraceId}-1234567890123456-01 \t`
@@ -857,7 +845,6 @@ describe('TraceContext', function() {
         agent.config.account_id = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         helper.runInTransaction(agent, function(txn) {
           const headers = {}
@@ -880,7 +867,6 @@ describe('TraceContext', function() {
         agent.config.primary_application_id = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         helper.runInTransaction(agent, function(txn) {
           const headers = {}
@@ -904,7 +890,6 @@ describe('TraceContext', function() {
         agent.config.trusted_account_key = null
         agent.config.distributed_tracing.enabled = true
         agent.config.span_events.enabled = true
-        agent.config.feature_flag.dt_format_w3c = true
 
         helper.runInTransaction(agent, function(txn) {
           const headers = {}
