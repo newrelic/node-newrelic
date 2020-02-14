@@ -74,7 +74,7 @@ describe('instrumentOutbound', function() {
     })
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({})
 
       function makeFakeRequest() {
@@ -93,7 +93,7 @@ describe('instrumentOutbound', function() {
     })
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'procedure': 'GET',
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
@@ -114,7 +114,7 @@ describe('instrumentOutbound', function() {
       var path = '/asdf'
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
 
       function makeFakeRequest() {
@@ -128,7 +128,7 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
         'procedure': 'GET',
@@ -149,12 +149,7 @@ describe('instrumentOutbound', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function() {
       expect(function() {
-        instrumentOutbound(
-          agent,
-          undefined,
-          {host: HOSTNAME, port: PORT},
-          makeFakeRequest
-        )
+        instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       }).to.throw(Error)
     })
 
@@ -169,7 +164,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -185,7 +180,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, undefined, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
       expect(transaction.trace.root.children[0].name).equal(name)
     })
 
@@ -201,7 +196,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, undefined, {port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, {port: PORT}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -219,12 +214,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(
-          agent,
-          undefined,
-          {host: null, port: PORT},
-          makeFakeRequest
-        )
+        req2 = instrumentOutbound(agent, {host: null, port: PORT}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -241,12 +231,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(
-          agent,
-          undefined,
-          {host: '', port: PORT},
-          makeFakeRequest
-        )
+        req2 = instrumentOutbound(agent, {host: '', port: PORT}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -264,7 +249,7 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function() {
       let req2 = null
       expect(() => {
-        req2 = instrumentOutbound(agent, undefined, {host: 'hostname'}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, {host: 'hostname'}, makeFakeRequest)
       }).to.not.throw()
 
       expect(req2).to.equal(req).and.not.have.property('__NR_transactionInfo')
@@ -590,79 +575,190 @@ describe('when working with http.request', function() {
 })
 
 describe("node >= v10 api", () => {
-  it('http.get', function(done) {
-    const host = 'http://www.google.com'
-    const path = `/index.html`
-    const _url = `${host}${path}`
+  let agent
 
-    nock(host).get(path).reply(200, 'Hello from Google')
+  before(function() {
+    if (!global.URL) { this.skip("Don't test Node v10+ API on this version of Node") }
+  })
 
-    http.get(
-      global.URL ? new global.URL(_url) : _url,
-      {
-        headers: { test: 'test' }
-      },
-      (res) => {
-        expect(res.statusCode).to.equal(200)
-        expect(res.req.headers.test).to.equal('test')
+  beforeEach(function() {
+    agent = helper.instrumentMockedAgent()
+    nock.disableNetConnect()
+  })
+
+  afterEach(function() {
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+  })
+
+  function getMethodFromName(nodule, method) {
+    let _nodule
+
+    if (nodule === 'http') { _nodule = http }
+    if (nodule === 'https') { _nodule = https }
+
+    return _nodule[method]
+  }
+
+  // Iterates through the given module and method, testing each signature combination. For
+  // testing the http/https modules and get/request methods.
+  function testSignatures(nodule, method) {
+    const host = 'www.newrelic.com'
+    const port = nodule === 'https' ? ':443' : ''
+    const path = '/index.html'
+    const leftPart = `${nodule}://${host}`
+    const _url = `${leftPart}${path}`
+
+    function testSignature(testOpts) {
+      const {urlType, headers, callback, swapHost} = testOpts
+
+      // Setup the arguments and the test name
+      let args = []   // Setup arguments to the get/request function
+      let names = []  // Capture parameters for the name of the test
+
+      // See if a URL argument is being used
+      if (urlType === 'string') {
+        args.push(_url)
+        names.push('URL string')
+      } else if (urlType === 'object') {
+        args.push(global.URL ? new global.URL(_url) : _url)
+        names.push('URL object')
+      }
+
+      // See if an options argument should be used
+      let opts = {}
+      if (headers) {
+        opts.headers = {test: 'test'}
+        names.push('options')
+      }
+      // If options specifies a hostname, it will override the url parameter
+      if (swapHost) {
+        opts.hostname = 'www.google.com'
+        names.push('options with different hostname')
+      }
+      if (Object.keys(opts).length > 0) {
+        args.push(opts)
+      }
+
+      // If the callback argument should be setup, just add it to the name for now, and
+      // setup within the it() call since the callback needs to access the done() function
+      if (callback) {
+        names.push('callback')
+      }
+
+      // Name the test and start it
+      const testName = names.join(', ')
+      it(testName, function(done) {
+        // If testing the options overriding the URL argument, set up nock differently
+        if (swapHost) {
+          nock(`${nodule}://www.google.com`).get(path).reply(200, 'Hello from Google')
+        } else {
+          nock(leftPart).get(path).reply(200, 'Hello from New Relic')
+        }
+
+        // Setup a function to test the response. Here to get access to done()
+        let callbackTester = (res) => {
+          testResult(res, testOpts, done)
+        }
+
+        // Add callback to the arguments, if used
+        if (callback) {
+          args.push(callbackTester)
+        }
+
+        helper.runInTransaction(agent, function() {
+          // Methods have to be retrieved within the transaction scope for instrumentation
+          const request = getMethodFromName(nodule, method)
+          const clientRequest = request(...args)
+          clientRequest.end()
+
+          // If not using a callback argument, setup the callback on the 'response' event
+          if (!callback) {
+            clientRequest.on('response', callbackTester)
+          }
+        })
+      })
+    }
+
+    function testResult(res, {headers, swapHost}, done) {
+      let external = `External/${host}${port}${path}`
+      let str = 'Hello from New Relic'
+      if (swapHost) {
+        external = `External/www.google.com${port}/index.html`
+        str = 'Hello from Google'
+      }
+
+      const segment = agent.tracer.getSegment()
+
+      expect(segment.name).equal(external)
+      expect(res.statusCode).to.equal(200)
+
+      res.on('data', (data) => {
+        if (headers) {
+          expect(res.req.headers.test).to.equal('test')
+        }
+        expect(data.toString()).to.equal(str)
         done()
       })
-  })
+    }
 
-  it('http.request', function(done) {
-    const host = 'http://www.google.com'
-    const path = `/index.html`
-    const _url = `${host}${path}`
+    testSignature({
+      urlType: 'object',
+    })
 
-    nock(host).get(path).reply(200, 'Hello from Google')
+    testSignature({
+      urlType: 'string',
+    })
 
-    http.request(
-      global.URL ? new global.URL(_url) : _url,
-      {
-        headers: { test: 'test' }
-      },
-      (res) => {
-        expect(res.statusCode).to.equal(200)
-        expect(res.req.headers.test).to.equal('test')
-        done()
-      }).end()
-  })
+    testSignature({
+      urlType: 'string',
+      headers: true,
+    })
 
-  it('https.get', function(done) {
-    const host = 'https://www.google.com'
-    const path = `/index.html`
-    const _url = `${host}${path}`
+    testSignature({
+      urlType: 'object',
+      headers: true,
+    })
 
-    nock(host).get(path).reply(200, 'Hello from Google')
+    testSignature({
+      urlType: 'string',
+      callback: true
+    })
 
-    https.get(
-      global.URL ? new global.URL(_url) : _url,
-      {
-        headers: { test: 'test' }
-      },
-      (res) => {
-        expect(res.statusCode).to.equal(200)
-        expect(res.req.headers.test).to.equal('test')
-        done()
-      })
-  })
+    testSignature({
+      urlType: 'object',
+      callback: true
+    })
 
-  it('https.request', function(done) {
-    const host = 'https://www.google.com'
-    const path = `/index.html`
-    const _url = `${host}${path}`
+    testSignature({
+      urlType: 'string',
+      headers: true,
+      callback: true
+    })
 
-    nock(host).get(path).reply(200, 'Hello from Google')
+    testSignature({
+      urlType: 'object',
+      headers: true,
+      callback: true
+    })
 
-    https.request(
-      global.URL ? new global.URL(_url) : _url,
-      {
-        headers: { test: 'test' }
-      },
-      (res) => {
-        expect(res.statusCode).to.equal(200)
-        expect(res.req.headers.test).to.equal('test')
-        done()
-      }).end()
-  })
+    testSignature({
+      urlType: 'string',
+      headers: true,
+      callback: true,
+      swapHost: true
+    })
+
+    testSignature({
+      urlType: 'object',
+      headers: true,
+      callback: true,
+      swapHost: true
+    })
+  }
+
+  describe("http.get",      () => { testSignatures('http',  'get') })
+  describe("http.request",  () => { testSignatures('http',  'request') })
+  describe("https.get",     () => { testSignatures('https', 'get') })
+  describe("https.request", () => { testSignatures('https', 'request') })
 })
