@@ -27,13 +27,13 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
   return markedSegments
 }
 
-function getSegments(t, segment, pattern, markedSegments = []) {
+function getMatchingSegments(t, segment, pattern, markedSegments = []) {
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
   }
 
   segment.children.forEach((child) => {
-    getSegments(t, child, pattern, markedSegments)
+    getMatchingSegments(t, child, pattern, markedSegments)
   })
 
   return markedSegments
@@ -48,5 +48,5 @@ module.exports = {
   SEGMENT_DESTINATION,
 
   checkAWSAttributes,
-  getSegments
+  getMatchingSegments
 }

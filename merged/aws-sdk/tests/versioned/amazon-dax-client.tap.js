@@ -46,6 +46,8 @@ tap.test('amazon-dax-client', (t) => {
 
     helper = null
     AWS = null
+    daxClient = null
+    docClient = null
 
     done()
   })
@@ -71,7 +73,7 @@ tap.test('amazon-dax-client', (t) => {
         const root = transaction.trace.root
 
         // Won't have the attributes cause not making web request...
-        const segments = common.getSegments(t, root, common.DATASTORE_PATTERN)
+        const segments = common.getMatchingSegments(t, root, common.DATASTORE_PATTERN)
 
         t.equal(segments.length, 1)
 
