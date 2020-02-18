@@ -72,7 +72,7 @@ describe("the stubbed New Relic agent API", function() {
     expect(function() { api.addIgnoringRule(/^foo/, "/foo/*") }).not.throws()
   })
 
-  it.only("exports a function for getting linking metadata", function() {
+  it("exports a function for getting linking metadata", function() {
     should.exist(api.getLinkingMetadata)
     expect(api.getTraceMetadata).a('function')
     const metadata = api.getLinkingMetadata()
