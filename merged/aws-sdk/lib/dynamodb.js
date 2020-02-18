@@ -35,8 +35,8 @@ function instrument(shim, AWS) {
         return {
           name: operationName,
           parameters: {
-            host: this.endpoint.host,
-            port_path_or_id: this.endpoint.port,
+            host: this.endpoint && this.endpoint.host,
+            port_path_or_id: this.endpoint && this.endpoint.port,
             collection: params && params.TableName || 'Unknown'
           },
           callback: shim.LAST,
@@ -58,11 +58,16 @@ function instrument(shim, AWS) {
       const params = args[0]
       const dynamoOperation = this.serviceClientOperationsMap[operationName]
 
+      // DocumentClient can be defined with a different service such as AmazonDaxClient.
+      // In these cases, an endpoint property may not exist. In the DAX case,
+      // the eventual cached endpoint to be hit is not known at this point.
+      const endpoint = this.service && this.service.endpoint
+
       return {
         name: dynamoOperation,
         parameters: {
-          host: this.service.endpoint.host,
-          port_path_or_id: this.service.endpoint.port,
+          host: endpoint && endpoint.host,
+          port_path_or_id: endpoint && endpoint.port,
           collection: params && params.TableName || 'Unknown'
         },
         callback: shim.LAST,
