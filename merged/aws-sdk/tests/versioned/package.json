@@ -33,6 +33,21 @@
         "instrumentation-supported.tap.js",
         "s3.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=8.0"
+      },
+      "dependencies": {
+        "aws-sdk": {
+          "versions": ">=2.380.0",
+          "samples": 10
+        },
+        "amazon-dax-client": ">=1.0.2"
+      },
+      "files": [
+        "amazon-dax-client.tap.js"
+      ]
     }
   ],
   "dependencies": {}

@@ -27,6 +27,18 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
   return markedSegments
 }
 
+function getSegments(t, segment, pattern, markedSegments = []) {
+  if (pattern.test(segment.name)) {
+    markedSegments.push(segment)
+  }
+
+  segment.children.forEach((child) => {
+    getSegments(t, child, pattern, markedSegments)
+  })
+
+  return markedSegments
+}
+
 module.exports = {
   DATASTORE_PATTERN,
   EXTERN_PATTERN,
@@ -35,5 +47,6 @@ module.exports = {
 
   SEGMENT_DESTINATION,
 
-  checkAWSAttributes
+  checkAWSAttributes,
+  getSegments
 }
