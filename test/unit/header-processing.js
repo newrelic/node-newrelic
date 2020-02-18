@@ -41,7 +41,6 @@ describe('header-processing', () => {
           {'zip':'zap', 'content-length': 50, 'Content-Length': 100, foo:'bar'}
         )
       ).to.equal(50)
-
     })
 
     it('should return -1 if there is no header', () => {
