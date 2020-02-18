@@ -5,6 +5,64 @@ const expect = require('chai').expect
 const headerProcessing = require('../../lib/header-processing')
 
 describe('header-processing', () => {
+  describe('#getContentLengthFromHeaders', () => {
+    it('should return content-length headers, case insensitive', () => {
+      // does it work?
+      expect(
+        headerProcessing.getContentLengthFromHeaders({'Content-Length': 100})
+      ).to.equal(100)
+
+      // does it work with weird casing?
+      expect(
+        headerProcessing.getContentLengthFromHeaders({'ConTent-LenGth': 100})
+      ).to.equal(100)
+
+      // does it ignore other headers?
+      expect(
+        headerProcessing.getContentLengthFromHeaders(
+          {'zip':'zap', 'Content-Length': 100, foo:'bar'}
+        )
+      ).to.equal(100)
+
+      // does it return _exactly_, type including, what's in the header
+      // this captures the exact behavior of the legacy code
+      expect(
+        headerProcessing.getContentLengthFromHeaders(
+          {'zip':'zap', 'Content-Length': '100', foo:'bar'}
+        )
+      ).to.equal('100')
+
+      // when presented with two headers that are the same name
+      // but different case, does it prefer the first one found.
+      // This captures the exact behavior of the legacy code we're
+      // replacing
+      expect(
+        headerProcessing.getContentLengthFromHeaders(
+          {'zip':'zap', 'content-length': 50, 'Content-Length': 100, foo:'bar'}
+        )
+      ).to.equal(50)
+
+    })
+
+    it('should return -1 if there is no header', () => {
+      expect(
+        headerProcessing.getContentLengthFromHeaders({})
+      ).to.equal(-1)
+
+      expect(
+        headerProcessing.getContentLengthFromHeaders('foo')
+      ).to.equal(-1)
+
+      expect(
+        headerProcessing.getContentLengthFromHeaders([])
+      ).to.equal(-1)
+
+      expect(
+        headerProcessing.getContentLengthFromHeaders({foo:'bar','zip':'zap'})
+      ).to.equal(-1)
+    })
+  })
+
   describe('#getQueueTime', () => {
     // This header can hold up to 4096 bytes which could quickly fill up logs.
     // Do not log a level higher than debug.
