@@ -53,7 +53,6 @@ describe('header-processing', () => {
       expect(
         headerProcessing.getContentLengthFromHeaders(fixture)
       ).to.equal(49)
-
     })
 
     it('should return -1 if there is no header', () => {
