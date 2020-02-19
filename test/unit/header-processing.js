@@ -41,6 +41,19 @@ describe('header-processing', () => {
           {'zip':'zap', 'content-length': 50, 'Content-Length': 100, foo:'bar'}
         )
       ).to.equal(50)
+
+      // doesn't fail when working with null prototype objects
+      // (returned by res.getHeaders() is -- some? all? versions
+      // of NodeJS
+      const fixture = Object.create(null)
+      fixture.zip = 'zap'
+      fixture['content-length'] = 49
+      fixture['Content-Length'] = 100
+      fixture.foo = 'bar'
+      expect(
+        headerProcessing.getContentLengthFromHeaders(fixture)
+      ).to.equal(49)
+
     })
 
     it('should return -1 if there is no header', () => {
