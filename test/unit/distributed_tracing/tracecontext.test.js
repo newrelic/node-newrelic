@@ -65,14 +65,14 @@ describe('TraceContext', function() {
       expect(tcd.acceptedTraceparent).to.equal(false)
     })
 
-    it('should not accept an invalid tracestate header', () => {
+    it.only('should not accept an invalid tracestate header', () => {
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const tracestate = 'asdf,===asdf,,'
       const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
 
-      expect(supportabilitySpy.callCount).to.equal(1)
+      expect(supportabilitySpy.callCount).to.equal(2)
       /* eslint-disable-next-line max-len */
-      expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
+      expect(supportabilitySpy.secondCall.args[0]).to.equal('TraceContext/TraceState/Parse/Exception')
 
       expect(tcd.acceptedTraceparent).to.equal(true)
       expect(tcd.acceptedTracestate).to.equal(false)
@@ -245,6 +245,19 @@ describe('TraceContext', function() {
       expect(supportabilitySpy.firstCall.args[0]).to.equal('TraceContext/TraceState/NoNrEntry')
       expect(valid.entryFound).to.be.false
       expect(valid.entryValid).to.be.undefined
+    })
+
+    it('should generate supportability metric when vendor list parsing fails', () => {
+      agent.config.trusted_account_key = '190'
+      const badTraceStateHeader =
+      /* eslint-disable-next-line max-len */
+      '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foobar'
+      const valid = traceContext._validateAndParseTraceStateHeader(badTraceStateHeader)
+
+      expect(supportabilitySpy.callCount).to.equal(1)
+      expect(supportabilitySpy.firstCall.args[0]).to
+        .equal('TraceContext/TraceState/Parse/ListMember/Exception')
+      expect(valid.traceStateValid).to.be.false
     })
 
     it('should fail mismatched trusted account ID in tracestate header', () => {
