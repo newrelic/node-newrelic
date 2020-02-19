@@ -1897,6 +1897,15 @@ describe('the agent configuration', function() {
       }
     })
 
+    it('should not return serialized attributeFilter object from publicSettings', () => {
+      var pub = configuration.publicSettings()
+
+      var result = Object.keys(pub).some((key) => {
+        return key.includes('attributeFilter')
+      })
+      expect (result).to.be.false
+    })
+
     it('should not return serialized mergeServerConfig props from publicSettings', () => {
       const pub = configuration.publicSettings()
       const result = Object.keys(pub).some((key) => {
