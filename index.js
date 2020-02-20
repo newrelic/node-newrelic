@@ -44,9 +44,9 @@ function initialize() {
     )
 
     // TODO: Update this check when Node v6 is deprecated.
-    if (psemver.satisfies('<6.0.0')) {
+    if (psemver.satisfies('<8.0.0')) {
       message = 'New Relic for Node.js requires a version of Node equal to or\n' +
-                'greater than 6.0.0. Not starting!'
+                'greater than 8.0.0. Not starting!'
 
       logger.error(message)
       throw new Error(message)
