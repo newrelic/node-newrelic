@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const common = require('../../../lib/utilization/common')
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper.js')
