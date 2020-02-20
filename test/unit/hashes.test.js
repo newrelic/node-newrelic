@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var test_data = require('../lib/obfuscation-data')
 var hashes = require('../../lib/util/hashes')
 var expect = require('chai').expect
