@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var API = require('../../../api')
 var chai = require('chai')
 var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
