@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const AttributeFilter = require('../../../lib/config/attribute-filter')
 const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
 const {expect} = require('chai')
