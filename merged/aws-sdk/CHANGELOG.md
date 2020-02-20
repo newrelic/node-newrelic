@@ -1,3 +1,9 @@
+### 1.1.2 (2020-02-20):
+
+* Fixed issue where instrumentation would crash pulling `host` and `port` values when `AmazonDaxClient` was used as the service for `DocumentClient.`
+
+  `AmazonDaxClient` requests will report 'unknown' for `host` and `port` attributes. Other oddities may still exist until DAX officially supported.
+
 ### 1.1.1 (2020-01-27):
 
 * Bumps DynamoDB tap.test timeout to avoid versioned test terminations when table creates are slow.
