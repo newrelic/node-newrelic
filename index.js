@@ -43,7 +43,7 @@ function initialize() {
       preAgentTime
     )
 
-    // TODO: Update this check when Node v6 is deprecated.
+    // TODO: Update this check when Node v8 is deprecated.
     if (psemver.satisfies('<8.0.0')) {
       message = 'New Relic for Node.js requires a version of Node equal to or\n' +
                 'greater than 8.0.0. Not starting!'
