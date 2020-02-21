@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "6.4.0",
+  "version": "6.4.1",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "SEE LICENSE IN LICENSE",
   "contributors": [
@@ -128,7 +128,7 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@newrelic/aws-sdk": "^1.1.1",
+    "@newrelic/aws-sdk": "^1.1.2",
     "@newrelic/koa": "^3.0.0",
     "@newrelic/superagent": "^2.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
@@ -153,6 +153,7 @@
     "bluebird": "^3.4.7",
     "chai": "^4.1.2",
     "eslint": "^5.13.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
     "express": "*",
     "generic-pool": "^3.6.1",
     "glob": "^7.1.2",
