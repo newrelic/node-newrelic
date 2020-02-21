@@ -1,5 +1,12 @@
 'use strict'
 
+const tap = require('tap')
+const test = tap.test
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 const os = require('os')
 const hostname = os.hostname
 const networkInterfaces = os.networkInterfaces
@@ -555,34 +562,41 @@ describe('boot_id', () => {
   }
 })
 
-describe('display_host', function() {
-  let agent = null
+test('display_host', {timeout: 10000}, (t) => {
+  t.autoend()
+
   const original_hostname = os.hostname
 
-  this.timeout(10000) // Environment scans can take a long time.
+  let agent = null
 
-  beforeEach(() => {
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
     agent.config.utilization = null
     os.hostname = () => {
       throw ('BROKEN')
     }
+
+    done()
   })
 
-  afterEach(() => {
+  t.afterEach((done) => {
     os.hostname = original_hostname
     helper.unloadAgent(agent)
+
+    agent = null
+
+    done()
   })
 
-  it('should be set to what the user specifies (happy path)', (done) => {
+  t.test('should be set to what the user specifies (happy path)', (t) => {
     agent.config.process_host.display_name = 'test-value'
     facts(agent, function getFacts(factsed) {
-      expect(factsed.display_host).equal('test-value')
-      done()
+      t.equal(factsed.display_host, 'test-value')
+      t.end()
     })
   })
 
-  it('should be cached along with hostname in config', (done) => {
+  t.test('should be cached along with hostname in config', (t) => {
     agent.config.process_host.display_name = 'test-value'
     facts(agent, function getFacts(factsed) {
       const displayHost1 = factsed.display_host
@@ -592,104 +606,104 @@ describe('display_host', function() {
       agent.config.process_host.display_name = 'test-value2'
 
       facts(agent, function getFacts2(factsed2) {
-        expect(factsed2.display_host).deep.equal(displayHost1)
-        expect(factsed2.host).deep.equal(host1)
+        t.deepEqual(factsed2.display_host, displayHost1)
+        t.deepEqual(factsed2.host, host1)
 
         agent.config.clearHostnameCache()
         agent.config.clearDisplayHostCache()
 
         facts(agent, function getFacts3(factsed3) {
-          expect(factsed3.display_host).deep.equal('test-value2')
-          expect(factsed3.host).deep.equal(os.hostname())
-          done()
+          t.deepEqual(factsed3.display_host, 'test-value2')
+          t.deepEqual(factsed3.host, os.hostname())
+
+          t.end()
         })
       })
     })
   })
 
-  it('should be set as os.hostname() (if available) when not specified', (done) => {
+  t.test('should be set as os.hostname() (if available) when not specified', (t) => {
     os.hostname = original_hostname
     facts(agent, function getFacts(factsed) {
-      expect(factsed.display_host).equal(os.hostname())
-      done()
+      t.equal(factsed.display_host, os.hostname())
+      t.end()
     })
   })
 
-  describe('when os.hostname() not available', () => {
-    it('should be ipv4 when ipv_preference === 4', (done) => {
-      agent.config.process_host.ipv_preference = '4'
+  t.test('should be ipv4 when ipv_preference === 4', (t) => {
+    agent.config.process_host.ipv_preference = '4'
 
-      facts(agent, function getFacts(factsed) {
-        expect(factsed.display_host).match(IP_V4_PATTERN)
-        done()
-      })
-    })
-
-    it('should be ipv6 when ipv_preference === 6', (done) => {
-      if (!agent.config.getIPAddresses().ipv6) {
-        /* eslint-disable no-console */
-        console.log('this machine does not have an ipv6 address, skipping')
-        /* eslint-enable no-console */
-        return done()
-      }
-      agent.config.process_host.ipv_preference = '6'
-
-      facts(agent, function getFacts(factsed) {
-        expect(factsed.display_host).match(IP_V6_PATTERN)
-        done()
-      })
-    })
-
-    it('should be ipv4 when invalid ipv_preference', function badIpPref(done) {
-      agent.config.process_host.ipv_preference = '9'
-
-      facts(agent, function getFacts(factsed) {
-        expect(factsed.display_host).match(IP_V4_PATTERN)
-        done()
-      })
+    facts(agent, function getFacts(factsed) {
+      t.match(factsed.display_host, IP_V4_PATTERN)
+      t.end()
     })
   })
 
-  describe('When os.networkInterfaces()', function netInterface() {
-    it('returns no ipv4, hostname should be ipv6 if possible',
-      function noip4(done) {
-        if (!agent.config.getIPAddresses().ipv6) {
-          /* eslint-disable no-console */
-          console.log('this machine does not have an ipv6 address, skipping')
-          /* eslint-enable no-console */
-          return done()
-        }
-        const mockedNI = {
-          lo: [],
-          en0: [{
-            address: 'fe80::a00:27ff:fe4e:66a1',
-            netmask: 'ffff:ffff:ffff:ffff::',
-            family: 'IPv6',
-            mac: '01:02:03:0a:0b:0c',
-            internal: false
-          }]
-        }
-        const original_NI = os.networkInterfaces
-        os.networkInterfaces = createMock(mockedNI)
 
-        facts(agent, function getFacts(factsed) {
-          expect(factsed.display_host).match(IP_V6_PATTERN)
-          os.networkInterfaces = original_NI
-          done()
-        })
-      })
-    it("returns no ip addresses, hostname should be 'UNKNOWN_BOX' (everything broke)",
-      function broken(done) {
-        const mockedNI = {lo: [], en0: []}
-        const original_NI = os.networkInterfaces
-        os.networkInterfaces = createMock(mockedNI)
+  t.test('should be ipv6 when ipv_preference === 6', (t) => {
+    if (!agent.config.getIPAddresses().ipv6) {
+      /* eslint-disable no-console */
+      console.log('this machine does not have an ipv6 address, skipping')
+      /* eslint-enable no-console */
+      return t.end()
+    }
+    agent.config.process_host.ipv_preference = '6'
 
-        facts(agent, function getFacts(factsed) {
-          os.networkInterfaces = original_NI
-          expect(factsed.display_host).equal('UNKNOWN_BOX')
-          done()
-        })
-      })
+    facts(agent, function getFacts(factsed) {
+      t.match(factsed.display_host, IP_V6_PATTERN)
+      t.end()
+    })
+  })
+
+  t.test('should be ipv4 when invalid ipv_preference', (t) => {
+    agent.config.process_host.ipv_preference = '9'
+
+    facts(agent, function getFacts(factsed) {
+      t.match(factsed.display_host, IP_V4_PATTERN)
+
+      t.end()
+    })
+  })
+
+  t.test('returns no ipv4, hostname should be ipv6 if possible', (t) => {
+    if (!agent.config.getIPAddresses().ipv6) {
+      /* eslint-disable no-console */
+      console.log('this machine does not have an ipv6 address, skipping')
+      /* eslint-enable no-console */
+      return t.end()
+    }
+    const mockedNI = {
+      lo: [],
+      en0: [{
+        address: 'fe80::a00:27ff:fe4e:66a1',
+        netmask: 'ffff:ffff:ffff:ffff::',
+        family: 'IPv6',
+        mac: '01:02:03:0a:0b:0c',
+        internal: false
+      }]
+    }
+    const original_NI = os.networkInterfaces
+    os.networkInterfaces = createMock(mockedNI)
+
+    facts(agent, function getFacts(factsed) {
+      t.match(factsed.display_host, IP_V6_PATTERN)
+      os.networkInterfaces = original_NI
+
+      t.end()
+    })
+  })
+
+  t.test('returns no ip addresses, hostname should be UNKNOWN_BOX (everything broke)', (t) => {
+    const mockedNI = {lo: [], en0: []}
+    const original_NI = os.networkInterfaces
+    os.networkInterfaces = createMock(mockedNI)
+
+    facts(agent, function getFacts(factsed) {
+      os.networkInterfaces = original_NI
+      t.equal(factsed.display_host, 'UNKNOWN_BOX')
+
+      t.end()
+    })
   })
 })
 
