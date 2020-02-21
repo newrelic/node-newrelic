@@ -3,10 +3,6 @@
 const tap = require('tap')
 const test = tap.test
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-tap.mochaGlobals()
-
 const helper  = require('../../../lib/agent_helper')
 
 test('Domains', (t) => {
