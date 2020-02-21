@@ -261,6 +261,7 @@ describe('built-in http module instrumentation', function() {
       var fetchedStatusCode = null
       var fetchedBody = null
       var refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
+      const userAgent = 'Palm680/RC1'
 
       beforeEach(function(done) {
         transaction = null
@@ -270,7 +271,8 @@ describe('built-in http module instrumentation', function() {
           path: '/path',
           method: 'GET',
           headers: {
-            referer: refererUrl
+            referer: refererUrl,
+            'User-Agent': userAgent
           }
         }, function(err, statusCode, body) {
           fetchedStatusCode = statusCode
@@ -297,6 +299,21 @@ describe('built-in http module instrumentation', function() {
       it('should include a stringified response status code', function() {
         var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes['response.status']).to.equal('200')
+      })
+
+      it('should include http.statusCode attribute', () => {
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes['http.statusCode']).to.equal('200')
+      })
+
+      it('should include http.statusText attribute', () => {
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes['http.statusText']).to.equal('OK')
+      })
+
+      it('should include request.headers.userAgent attribute', () => {
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        expect(attributes['request.headers.userAgent']).to.equal(userAgent)
       })
 
       it('should record unscoped path stats after a normal request', function() {
