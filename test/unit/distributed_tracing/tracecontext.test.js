@@ -65,7 +65,7 @@ describe('TraceContext', function() {
       expect(tcd.acceptedTraceparent).to.equal(false)
     })
 
-    it.only('should not accept an invalid tracestate header', () => {
+    it('should not accept an invalid tracestate header', () => {
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const tracestate = 'asdf,===asdf,,'
       const tcd = traceContext.acceptTraceContextPayload(traceparent, tracestate)
@@ -256,7 +256,7 @@ describe('TraceContext', function() {
 
       expect(supportabilitySpy.callCount).to.equal(1)
       expect(supportabilitySpy.firstCall.args[0]).to
-        .equal('TraceContext/TraceState/Parse/ListMember/Exception')
+        .equal('TraceContext/TraceState/Parse/Exception/ListMember')
       expect(valid.traceStateValid).to.be.false
     })
 
