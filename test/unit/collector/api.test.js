@@ -1,5 +1,12 @@
 'use strict'
 
+const tap = require('tap')
+const test = tap.test
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 const nock = require('nock')
 const chai = require('chai')
 const expect = chai.expect
@@ -7,6 +14,7 @@ const helper = require('../../lib/agent_helper')
 const should = chai.should()
 const API = require('../../../lib/collector/api')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
+const CollectorResponse = require('../../../lib/collector/response')
 
 const HOST = 'collector.newrelic.com'
 const PORT = 443
@@ -14,7 +22,11 @@ const URL = 'https://' + HOST
 const RUN_ID = 1337
 
 const timeout = global.setTimeout
-function fast() { global.setTimeout = function(cb) {return timeout(cb, 0)} }
+function fast() {
+  global.setTimeout = function(cb) {
+    return timeout(cb, 0)
+  }
+}
 function slow() { global.setTimeout = timeout }
 
 describe('CollectorAPI', function() {
@@ -681,114 +693,6 @@ describe('CollectorAPI', function() {
           expect(ssc).eql(valid)
         })
       })
-
-      describe('succeeds after one 503 on preconnect', function() {
-        var bad
-        var ssc
-
-
-        var valid = {
-          agent_run_id: RUN_ID
-        }
-
-        var response = {return_value: valid}
-
-        beforeEach(function(done) {
-          fast()
-
-          var redirectURL = helper.generateCollectorPath('preconnect')
-          var failure = nock(URL).post(redirectURL).reply(503)
-          var success = nock(URL)
-            .post(redirectURL)
-            .reply(200, {
-              return_value: {redirect_host: HOST, security_policies: {}}
-            })
-          var connection = nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, response)
-
-
-          api.connect(function test(error, res) {
-            bad = error
-            ssc = res.payload
-
-            failure.done()
-            success.done()
-            connection.done()
-            done()
-          })
-        })
-
-        afterEach(function() {
-          slow()
-        })
-
-        it('should not error out', function() {
-          should.not.exist(bad)
-        })
-
-        it('should have a run ID', function() {
-          expect(ssc.agent_run_id).equal(RUN_ID)
-        })
-
-        it('should pass through server-side configuration untouched', function() {
-          expect(ssc).eql(valid)
-        })
-      })
-
-      describe('succeeds after five 503s on preconnect', function() {
-        var bad
-        var ssc
-
-
-        var valid = {
-          agent_run_id: RUN_ID
-        }
-
-        var response = {return_value: valid}
-
-        before(function(done) {
-          fast()
-
-          var redirectURL = helper.generateCollectorPath('preconnect')
-          var failure = nock(URL).post(redirectURL).times(5).reply(503)
-          var success = nock(URL)
-            .post(redirectURL)
-            .reply(200, {
-              return_value: {redirect_host: HOST, security_policies: {}}
-            })
-          var connection = nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, response)
-
-
-          api.connect(function test(error, res) {
-            bad = error
-            ssc = res.payload
-
-            failure.done()
-            success.done()
-            connection.done()
-            done()
-          })
-        })
-
-        after(function() {
-          slow()
-        })
-
-        it('should not error out', function() {
-          should.not.exist(bad)
-        })
-
-        it('should have a run ID', function() {
-          expect(ssc.agent_run_id).equal(RUN_ID)
-        })
-
-        it('should pass through server-side configuration untouched', function() {
-          expect(ssc).eql(valid)
-        })
-      })
     })
 
     describe('off the happy path', function() {
@@ -830,59 +734,6 @@ describe('CollectorAPI', function() {
 
         it('should not have a response body', function() {
           expect(res.payload).to.not.exist
-        })
-      })
-
-      describe('retries preconnect until forced to disconnect (410)', function() {
-        var captured = null
-
-        before(function(done) {
-          var redirectURL = helper.generateCollectorPath('preconnect')
-          var failure = nock(URL).post(redirectURL).times(500).reply(503)
-          var disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
-          api.connect(function test(error) {
-            captured = error
-
-            failure.done()
-            disconnect.done()
-            done()
-          })
-        })
-
-        it('should have gotten an error', function() {
-          expect(captured).to.be.null
-        })
-      })
-
-      describe('retries on receiving invalid license key (401)', function() {
-        var failure = null
-        let success = null
-        let connect = null
-        var error = {
-          exception: {
-            message: 'Invalid license key. Please contact support@newrelic.com.',
-            error_type: 'NewRelic::Agent::LicenseException'
-          }
-        }
-
-        beforeEach(function(done) {
-          var preconnectURL = helper.generateCollectorPath('preconnect')
-          failure = nock(URL).post(preconnectURL).times(5).reply(401, error)
-          success = nock(URL).post(preconnectURL).reply(200, {return_value: {}})
-          connect = nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, {return_value: {agent_run_id: 31338}})
-
-          api.connect(function test() {
-            failure.done()
-            success.done()
-            connect.done()
-            done()
-          })
-        })
-
-        it('should call the expected number of times', function() {
-          failure.done()
         })
       })
     })
@@ -1509,3 +1360,370 @@ describe('CollectorAPI', function() {
     })
   })
 })
+
+test('succeeds after one 503 on preconnect', (t) => {
+  t.autoend()
+
+  let api = null
+  let agent = null
+
+  const valid = {
+    agent_run_id: RUN_ID
+  }
+
+  const response = {return_value: valid}
+
+  let failure = null
+  let success = null
+  let connection = null
+
+  let bad = null
+  let ssc = null
+
+  t.beforeEach((done) => {
+    fastSetTimeoutIncrementRef()
+
+    nock.disableNetConnect()
+
+    agent = setupMockedAgent()
+    api = new API(agent)
+
+    const redirectURL = helper.generateCollectorPath('preconnect')
+    failure = nock(URL).post(redirectURL).reply(503)
+    success = nock(URL)
+      .post(redirectURL)
+      .reply(200, {
+        return_value: {redirect_host: HOST, security_policies: {}}
+      })
+    connection = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, response)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    restoreSetTimeout()
+
+    if (!nock.isDone()) {
+      /* eslint-disable no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+
+    done()
+  })
+
+  t.test('should not error out', (t) => {
+    testConnect(t, () => {
+      t.notOk(bad)
+      t.end()
+    })
+  })
+
+  t.test('should have a run ID', (t) => {
+    testConnect(t, () => {
+      t.equal(ssc.agent_run_id, RUN_ID)
+      t.end()
+    })
+  })
+
+  t.test('should pass through server-side configuration untouched', (t) => {
+    testConnect(t, () => {
+      t.deepEqual(ssc, valid)
+      t.end()
+    })
+  })
+
+  function testConnect(t, cb) {
+    api.connect((error, res) => {
+      bad = error
+      ssc = res.payload
+
+      t.ok(failure.isDone())
+      t.ok(success.isDone())
+      t.ok(connection.isDone())
+      cb()
+    })
+  }
+})
+
+// TODO: 503 tests can likely be consolidated into single test func
+// passed to t.test() while specifying different # of 503s.
+test('succeeds after five 503s on preconnect', (t) => {
+  t.autoend()
+
+  let api = null
+  let agent = null
+
+  const valid = {
+    agent_run_id: RUN_ID
+  }
+
+  const response = {return_value: valid}
+
+  let failure = null
+  let success = null
+  let connection = null
+
+  let bad = null
+  let ssc = null
+
+  t.beforeEach((done) => {
+    fastSetTimeoutIncrementRef()
+
+    nock.disableNetConnect()
+
+    agent = setupMockedAgent()
+    api = new API(agent)
+
+    const redirectURL = helper.generateCollectorPath('preconnect')
+    failure = nock(URL).post(redirectURL).times(5).reply(503)
+    success = nock(URL)
+      .post(redirectURL)
+      .reply(200, {
+        return_value: {redirect_host: HOST, security_policies: {}}
+      })
+    connection = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, response)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    restoreSetTimeout()
+
+    if (!nock.isDone()) {
+      /* eslint-disable no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+
+    done()
+  })
+
+
+  t.test('should not error out', (t) => {
+    testConnect(t, () => {
+      t.notOk(bad)
+      t.end()
+    })
+  })
+
+  t.test('should have a run ID', (t) => {
+    testConnect(t, () => {
+      t.equal(ssc.agent_run_id, RUN_ID)
+      t.end()
+    })
+  })
+
+  t.test('should pass through server-side configuration untouched', (t) => {
+    testConnect(t, () => {
+      t.deepEqual(ssc, valid)
+      t.end()
+    })
+  })
+
+
+  function testConnect(t, cb) {
+    api.connect((error, res) => {
+      bad = error
+      ssc = res.payload
+
+      t.ok(failure.isDone())
+      t.ok(success.isDone())
+      t.ok(connection.isDone())
+      cb()
+    })
+  }
+})
+
+test('retries preconnect until forced to disconnect (410)', (t) => {
+  t.autoend()
+
+  let api = null
+  let agent = null
+
+  const exception = {
+    exception: {
+      message: 'fake force disconnect',
+      error_type: 'NewRelic::Agent::ForceDisconnectException'
+    }
+  }
+
+  let failure = null
+  let disconnect = null
+
+  let capturedResponse = null
+
+  t.beforeEach((done) => {
+    fastSetTimeoutIncrementRef()
+
+    nock.disableNetConnect()
+
+    agent = setupMockedAgent()
+    api = new API(agent)
+
+    const redirectURL = helper.generateCollectorPath('preconnect')
+    failure = nock(URL).post(redirectURL).times(500).reply(503)
+    disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    restoreSetTimeout()
+
+    if (!nock.isDone()) {
+      /* eslint-disable no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+
+    done()
+  })
+
+  t.test('should have received shutdown response', (t) => {
+    testConnect(t, () => {
+      const shutdownCommand = CollectorResponse.AGENT_RUN_BEHAVIOR.SHUTDOWN
+
+      t.ok(capturedResponse)
+      t.equal(capturedResponse.agentRun, shutdownCommand)
+
+      t.end()
+    })
+  })
+
+  function testConnect(t, cb) {
+    api.connect((error, response) => {
+      capturedResponse = response
+
+      t.ok(failure.isDone())
+      t.ok(disconnect.isDone())
+      cb()
+    })
+  }
+})
+
+
+test('retries on receiving invalid license key (401)', (t) => {
+  t.autoend()
+
+  let api = null
+  let agent = null
+
+  const error = {
+    exception: {
+      message: 'Invalid license key. Please contact support@newrelic.com.',
+      error_type: 'NewRelic::Agent::LicenseException'
+    }
+  }
+
+  let failure = null
+  let success = null
+  let connect = null
+
+  t.beforeEach((done) => {
+    fastSetTimeoutIncrementRef()
+
+    nock.disableNetConnect()
+
+    agent = setupMockedAgent()
+    api = new API(agent)
+
+    const preconnectURL = helper.generateCollectorPath('preconnect')
+    failure = nock(URL).post(preconnectURL).times(5).reply(401, error)
+    success = nock(URL).post(preconnectURL).reply(200, {return_value: {}})
+    connect = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, {return_value: {agent_run_id: 31338}})
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    restoreSetTimeout()
+
+    if (!nock.isDone()) {
+      /* eslint-disable no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+
+    done()
+  })
+
+  t.test('should call the expected number of times', (t) => {
+    testConnect(t, () => {
+      t.end()
+    })
+  })
+
+  function testConnect(t, cb) {
+    api.connect(() => {
+      t.ok(failure.isDone())
+      t.ok(success.isDone())
+      t.ok(connect.isDone())
+
+      cb()
+    })
+  }
+})
+
+function fastSetTimeoutIncrementRef() {
+  global.setTimeout = function(cb) {
+    const nodeTimeout = timeout(cb, 0)
+
+    // This is a hack to keep tap from shutting down test early.
+    // Is there a better way to do this?
+    setImmediate(() => {
+      nodeTimeout.ref()
+    })
+
+    return nodeTimeout
+  }
+}
+
+function restoreSetTimeout() {
+  global.setTimeout = timeout
+}
+
+function setupMockedAgent() {
+  const agent = helper.loadMockedAgent({
+    host: HOST,
+    port: PORT,
+    app_name: ['TEST'],
+    ssl: true,
+    license_key: 'license key here',
+    utilization: {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: false
+    },
+    browser_monitoring: {},
+    transaction_tracer: {}
+  })
+  agent.reconfigure = function() {}
+  agent.setState = function() {}
+
+  return agent
+}
