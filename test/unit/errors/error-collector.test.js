@@ -1,5 +1,12 @@
 'use strict'
 
+const tap = require('tap')
+const test = tap.test
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const ErrorCollector = require('../../../lib/errors/error-collector')
@@ -993,90 +1000,6 @@ describe('Errors', function() {
       })
     })
 
-    describe('when using the async listener', function() {
-      var mochaHandlers
-      var transaction
-      var active
-      var json
-
-      beforeEach(function(done) {
-        helper.unloadAgent(agent)
-        agent = helper.instrumentMockedAgent()
-
-        /**
-         * Mocha is extremely zealous about trapping errors, and runs each test
-         * in a try / catch block. To get the exception to propagate out to the
-         * domain's uncaughtException handler, we need to put the test in an
-         * asynchronous context and break out of the mocha jail.
-         */
-        process.nextTick(function cb_nextTick() {
-          // disable mocha's error handler
-          mochaHandlers = helper.onlyDomains()
-
-          process.once('uncaughtException', function() {
-            const errorTraces = getErrorTraces(agent.errors)
-            json = errorTraces[0]
-
-            return done()
-          })
-
-          var disruptor = agent.tracer.transactionProxy(function cb_transactionProxy() {
-            transaction = agent.getTransaction()
-            active = process.domain
-
-            // trigger the error handler
-            throw new Error('sample error')
-          })
-
-          disruptor()
-        })
-      })
-
-      afterEach(function() {
-        // ...but be sure to re-enable mocha's error handler
-        transaction.end()
-        process._events.uncaughtException = mochaHandlers
-      })
-
-      it('should not have a domain active', function() {
-        expect(active).to.not.exist
-      })
-
-      it('should find a single error', function() {
-        const errorTraces = getErrorTraces(agent.errors)
-        expect(errorTraces.length).equal(1)
-      })
-
-      describe('and an error is traced', function() {
-        it('should find the error', function() {
-          expect(json).to.exist
-        })
-
-        it('should have 5 elements in the trace', function() {
-          expect(json.length).equal(5)
-        })
-
-        it('should have the default name', function() {
-          expect(json[1]).equal('Unknown')
-        })
-
-        it('should have the error\'s message', function() {
-          expect(json[2]).equal('sample error')
-        })
-
-        it('should have the error\'s constructor name (type)', function() {
-          expect(json[3]).equal('Error')
-        })
-
-        it('should default to passing the stack trace as a parameter', function() {
-          var params = json[4]
-
-          expect(params).to.exist.and.have.property('stack_trace')
-          expect(params.stack_trace[0]).equal('Error: sample error')
-        })
-      })
-    })
-
     it('should allow throwing null', function() {
       var api = new API(agent)
 
@@ -1824,3 +1747,120 @@ function getFirstEvent(aggregator) {
   expect(events.length).equal(1)
   return events[0]
 }
+
+test('When using the async listener', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+  let active = null
+  let json = null
+
+  t.beforeEach((done, t) => {
+    agent = helper.instrumentMockedAgent()
+
+    // Once on node 10+ only, may be able to replace with below.
+    // t.expectUncaughtException(fn, [expectedError], message, extra)
+    // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
+    done()
+  })
+
+  t.afterEach(function(done) {
+    transaction.end()
+
+    helper.unloadAgent(agent)
+    agent = null
+    transaction = null
+    active = null
+    json = null
+
+    done()
+  })
+
+  t.test('should not have a domain active', (t) => {
+    executeThrowingTransaction(() => {
+      t.notOk(active)
+      t.end()
+    })
+  })
+
+  t.test('should find a single error', (t) => {
+    executeThrowingTransaction(() => {
+      const errorTraces = getErrorTraces(agent.errors)
+      t.equal(errorTraces.length, 1)
+      t.end()
+    })
+  })
+
+  t.test('should find traced error', (t) => {
+    executeThrowingTransaction(() => {
+      t.ok(json)
+      t.end()
+    })
+  })
+
+  t.test('should have 5 elements in the trace', (t) => {
+    executeThrowingTransaction(() => {
+      t.equal(json.length, 5)
+      t.end()
+    })
+  })
+
+  t.test('should have the default name', (t) => {
+    executeThrowingTransaction(() => {
+      const {1: name} = json
+      t.equal(name, 'Unknown')
+      t.end()
+    })
+  })
+
+  t.test('should have the error\'s message', (t) => {
+    executeThrowingTransaction(() => {
+      const {2: message} = json
+      t.equal(message, 'sample error')
+      t.end()
+    })
+  })
+
+  t.test('should have the error\'s constructor name (type)', (t) => {
+    executeThrowingTransaction(() => {
+      const {3: name} = json
+      t.equal(name, 'Error')
+      t.end()
+    })
+  })
+
+  t.test('should default to passing the stack trace as a parameter', (t) => {
+    executeThrowingTransaction(() => {
+      const {4: params} = json
+      t.ok(params)
+      t.ok(params.stack_trace)
+      t.equal(params.stack_trace[0], 'Error: sample error')
+
+      t.end()
+    })
+  })
+
+  function executeThrowingTransaction(handledErrorCallback) {
+    process.nextTick(() => {
+      process.once('uncaughtException', function() {
+        const errorTraces = getErrorTraces(agent.errors)
+        json = errorTraces[0]
+
+        return handledErrorCallback()
+      })
+
+      const disruptor = agent.tracer.transactionProxy(function cb_transactionProxy() {
+        transaction = agent.getTransaction()
+        active = process.domain
+
+        // trigger the error handler
+        throw new Error('sample error')
+      })
+
+      disruptor()
+    })
+  }
+})
