@@ -1003,37 +1003,6 @@ describe('the agent configuration', function() {
       delete configuration.newrelic_home
     })
 
-    it('should be able to create a flat JSONifiable version', function() {
-      var pub = configuration.publicSettings()
-
-      // The object returned from Config.publicSettings
-      // should not have any values of type object
-      for (var key in pub) {
-        if (pub[key] !== null) {
-          expect(typeof pub[key]).not.equal('object')
-        }
-      }
-    })
-
-    it('should not return serialized attributeFilter object from publicSettings', () => {
-      var pub = configuration.publicSettings()
-
-      var result = Object.keys(pub).some((key) => {
-        return key.includes('attributeFilter')
-      })
-      expect (result).to.be.false
-    })
-
-    it('should not return serialized mergeServerConfig props from publicSettings',
-      function() {
-        var pub = configuration.publicSettings()
-        var result = Object.keys(pub).some((key) => {
-          return key.includes('mergeServerConfig')
-        })
-        expect(result).to.be.false
-      }
-    )
-
     it('should have no application name', function() {
       expect(configuration.app_name).eql([])
     })
@@ -1899,6 +1868,61 @@ describe('the agent configuration', function() {
         custom_events: { enabled: false, required: false },
         custom_parameters: { enabled: false, required: false }
       })
+    })
+  })
+
+  describe('#publicSettings', function() {
+    let configuration
+
+    beforeEach(function() {
+      configuration = Config.initialize({})
+
+      // ensure environment is clean
+      delete configuration.newrelic_home
+    })
+
+    afterEach(() => {
+      configuration = null
+    })
+
+    it('should be able to create a flat JSONifiable version', function() {
+      const pub = configuration.publicSettings()
+
+      // The object returned from Config.publicSettings
+      // should not have any values of type object
+      for (let key in pub) {
+        if (pub[key] !== null) {
+          expect(typeof pub[key]).not.equal('object')
+        }
+      }
+    })
+
+    it('should not return serialized attributeFilter object from publicSettings', () => {
+      var pub = configuration.publicSettings()
+
+      var result = Object.keys(pub).some((key) => {
+        return key.includes('attributeFilter')
+      })
+      expect (result).to.be.false
+    })
+
+    it('should not return serialized mergeServerConfig props from publicSettings', () => {
+      const pub = configuration.publicSettings()
+      const result = Object.keys(pub).some((key) => {
+        return key.includes('mergeServerConfig')
+      })
+      expect(result).to.be.false
+    })
+
+    it('should obfuscate certificates in publicSettings', () => {
+      configuration = Config.initialize({
+        certificates: ['some-pub-cert-1', 'some-pub-cert-2']
+      })
+
+      const publicSettings = configuration.publicSettings()
+
+      expect(publicSettings['certificates.0']).to.equal('****')
+      expect(publicSettings['certificates.1']).to.equal('****')
     })
   })
 })
