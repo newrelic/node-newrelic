@@ -186,6 +186,7 @@
   "files": [
     "lib/",
     "api.js",
+    "LICENSE",
     "index.js",
     "stub_api.js",
     "newrelic.js",
