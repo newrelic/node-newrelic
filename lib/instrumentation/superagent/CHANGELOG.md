@@ -1,3 +1,7 @@
+### 2.0.1 (2020-02-26):
+
+* Support the fixed segment naming in Node 8
+
 ### 2.0.0 (2019-10-28):
 
 * **BREAKING** Removed support for Node 6, 7, and 9.
