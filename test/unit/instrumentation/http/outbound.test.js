@@ -1,6 +1,7 @@
 'use strict'
 
 var http = require('http')
+var https = require('https')
 var url = require('url')
 var events = require('events')
 var expect = require('chai').expect
@@ -571,4 +572,193 @@ describe('when working with http.request', function() {
       })
     })
   })
+})
+
+describe("node >= v10 api", () => {
+  let agent
+
+  before(function() {
+    if (!global.URL) { this.skip("Don't test Node v10+ API on this version of Node") }
+  })
+
+  beforeEach(function() {
+    agent = helper.instrumentMockedAgent()
+    nock.disableNetConnect()
+  })
+
+  afterEach(function() {
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+  })
+
+  function getMethodFromName(nodule, method) {
+    let _nodule
+
+    if (nodule === 'http') { _nodule = http }
+    if (nodule === 'https') { _nodule = https }
+
+    return _nodule[method]
+  }
+
+  // Iterates through the given module and method, testing each signature combination. For
+  // testing the http/https modules and get/request methods.
+  function testSignatures(nodule, method) {
+    const host = 'www.newrelic.com'
+    const port = nodule === 'https' ? ':443' : ''
+    const path = '/index.html'
+    const leftPart = `${nodule}://${host}`
+    const _url = `${leftPart}${path}`
+
+    function testSignature(testOpts) {
+      const {urlType, headers, callback, swapHost} = testOpts
+
+      // Setup the arguments and the test name
+      let args = []   // Setup arguments to the get/request function
+      let names = []  // Capture parameters for the name of the test
+
+      // See if a URL argument is being used
+      if (urlType === 'string') {
+        args.push(_url)
+        names.push('URL string')
+      } else if (urlType === 'object') {
+        args.push(global.URL ? new global.URL(_url) : _url)
+        names.push('URL object')
+      }
+
+      // See if an options argument should be used
+      let opts = {}
+      if (headers) {
+        opts.headers = {test: 'test'}
+        names.push('options')
+      }
+      // If options specifies a hostname, it will override the url parameter
+      if (swapHost) {
+        opts.hostname = 'www.google.com'
+        names.push('options with different hostname')
+      }
+      if (Object.keys(opts).length > 0) {
+        args.push(opts)
+      }
+
+      // If the callback argument should be setup, just add it to the name for now, and
+      // setup within the it() call since the callback needs to access the done() function
+      if (callback) {
+        names.push('callback')
+      }
+
+      // Name the test and start it
+      const testName = names.join(', ')
+      it(testName, function(done) {
+        // If testing the options overriding the URL argument, set up nock differently
+        if (swapHost) {
+          nock(`${nodule}://www.google.com`).get(path).reply(200, 'Hello from Google')
+        } else {
+          nock(leftPart).get(path).reply(200, 'Hello from New Relic')
+        }
+
+        // Setup a function to test the response. Here to get access to done()
+        let callbackTester = (res) => {
+          testResult(res, testOpts, done)
+        }
+
+        // Add callback to the arguments, if used
+        if (callback) {
+          args.push(callbackTester)
+        }
+
+        helper.runInTransaction(agent, function() {
+          // Methods have to be retrieved within the transaction scope for instrumentation
+          const request = getMethodFromName(nodule, method)
+          const clientRequest = request(...args)
+          clientRequest.end()
+
+          // If not using a callback argument, setup the callback on the 'response' event
+          if (!callback) {
+            clientRequest.on('response', callbackTester)
+          }
+        })
+      })
+    }
+
+    function testResult(res, {headers, swapHost}, done) {
+      let external = `External/${host}${port}${path}`
+      let str = 'Hello from New Relic'
+      if (swapHost) {
+        external = `External/www.google.com${port}/index.html`
+        str = 'Hello from Google'
+      }
+
+      const segment = agent.tracer.getSegment()
+
+      expect(segment.name).equal(external)
+      expect(res.statusCode).to.equal(200)
+
+      res.on('data', (data) => {
+        if (headers) {
+          expect(res.req.headers.test).to.equal('test')
+        }
+        expect(data.toString()).to.equal(str)
+        done()
+      })
+    }
+
+    testSignature({
+      urlType: 'object',
+    })
+
+    testSignature({
+      urlType: 'string',
+    })
+
+    testSignature({
+      urlType: 'string',
+      headers: true,
+    })
+
+    testSignature({
+      urlType: 'object',
+      headers: true,
+    })
+
+    testSignature({
+      urlType: 'string',
+      callback: true
+    })
+
+    testSignature({
+      urlType: 'object',
+      callback: true
+    })
+
+    testSignature({
+      urlType: 'string',
+      headers: true,
+      callback: true
+    })
+
+    testSignature({
+      urlType: 'object',
+      headers: true,
+      callback: true
+    })
+
+    testSignature({
+      urlType: 'string',
+      headers: true,
+      callback: true,
+      swapHost: true
+    })
+
+    testSignature({
+      urlType: 'object',
+      headers: true,
+      callback: true,
+      swapHost: true
+    })
+  }
+
+  describe("http.get",      () => { testSignatures('http',  'get') })
+  describe("http.request",  () => { testSignatures('http',  'request') })
+  describe("https.get",     () => { testSignatures('https', 'get') })
+  describe("https.request", () => { testSignatures('https', 'request') })
 })
