@@ -1,3 +1,25 @@
+### 6.4.2 (2020-02-27):
+
+* Support new http[s] get/request function signature in Node v10+
+
+* Added the following Span Event attributes:
+  - http.statusCode
+  - http.statusText
+
+  The above attributes will be replacing the following *deprecated* attributes:
+  - httpResponseCode
+  - response.status
+  - response.statusMessage
+
+  The deprecated attributes will be removed with the next major release of the Agent.
+
+* Updates version check to be in alignment with [our stated support
+  policy](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent)
+  and the version constraints in package.json
+
+* Redacts individual certificates configuration values before sending to server
+  settings. When configured, these values will now appear like: `{certificates.0: ****}`.
+
 ### 6.4.1 (2020-02-20):
 
 * Bumped `@newrelic/aws-sdk` version to `v1.1.2` from `v1.1.1`.
