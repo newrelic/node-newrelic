@@ -406,4 +406,3 @@ function verifier(t, verb) {
     )
   }
 }
-
