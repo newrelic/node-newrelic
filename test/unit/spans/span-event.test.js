@@ -127,6 +127,8 @@ describe('SpanEvent', () => {
             // Should have (most) http properties.
             expect(attributes).to.have.property('http.url', 'https://example.com:443/')
             expect(attributes).to.have.property('http.method')
+            expect(attributes).to.have.property('http.statusCode', 200)
+            expect(attributes).to.have.property('http.statusText', 'OK')
 
             // Should have no datastore properties.
             expect(attributes).to.not.have.property('db.statement')
