@@ -376,13 +376,12 @@ tap.test('Hapi router introspection', function(t) {
   })
 })
 
-function verifier(t, verb, path) {
-  path = path ? path : '/test/{id}'
+function verifier(t, verb) {
   verb = verb || 'GET'
   return function(transaction) {
     t.equal(
       transaction.name,
-      'WebTransaction/Hapi/' + verb + '/' + path,
+      'WebTransaction/Hapi/' + verb + '//test/{id}',
       'transaction has expected name'
     )
 
