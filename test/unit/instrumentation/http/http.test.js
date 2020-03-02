@@ -357,26 +357,6 @@ describe('built-in http module instrumentation', function() {
         expect(hookCalled).to.be.true
       })
     })
-
-    // describe('that aborts', function() {
-    //   before(function(done) {
-    //     transaction = null
-    //     makeRequest({
-    //       port: 8123,
-    //       host: 'localhost',
-    //       path: '/slow',
-    //       method: 'GET',
-    //       abort: 15
-    //     }, function(err) {
-    //       done(err)
-    //     })
-    //   })
-
-    //   it('should still finish the transaction', function() {
-    //     expect(transaction).to.exist
-    //     expect(transaction.isActive()).to.be.false
-    //   })
-    // })
   })
 
   describe('inbound http requests when cat is enabled', function() {
