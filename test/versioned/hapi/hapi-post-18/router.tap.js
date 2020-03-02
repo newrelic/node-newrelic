@@ -4,6 +4,7 @@ var tap = require('tap')
 var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-18-utils')
+const Boom = require('@hapi/boom')
 
 tap.test('Hapi router introspection', function(t) {
   t.autoend()
@@ -276,6 +277,99 @@ tap.test('Hapi router introspection', function(t) {
           {statusCode: 404, error: 'Not Found', message: 'Not Found'},
           'got expected response'
         )
+        t.end()
+      })
+    })
+  })
+
+  t.test('using shared `pre` config option', function(t) {
+    agent.on('transactionFinished', (transaction) => {
+      t.equal(
+        'WebTransaction/Hapi/GET//first/{firstId}/second/{secondId}/data',
+        transaction.name,
+        'transaction is named correctly'
+      )
+    })
+
+    // Middlewares if shared across routes causing
+    // issues with the new relic transactions
+    const assignStuff = {
+      method: async({ params: { firstId, secondId } }) => {
+        let stuff = null
+        if (firstId && secondId) {
+          stuff = await Promise.resolve({ id: 123 })
+        }
+        return stuff || Boom.notFound()
+      },
+      assign: 'stuff',
+    }
+
+    const assignMoreStuff = {
+      method: async() => {
+        return { test: 123 }
+      },
+      assign: 'stuff',
+    }
+
+    server.route([
+      {
+        method: 'GET',
+        path: '/first/{firstId}/second/{secondId}/data', // I'm calling this URL
+        config: {
+          auth: false,
+          pre: [assignStuff, assignMoreStuff],
+          handler: async() => {
+            return { success: 'TRUE' }
+          },
+        },
+      },
+      {
+        method: 'POST',
+        path: '/first/{firstId}/second/{secondId}/data', // This one should not be added as well
+        config: {
+          auth: false,
+          pre: [assignStuff],
+          handler: async() => ({ success: 'TRUE' }),
+        },
+      },
+      {
+        method: 'GET',
+        path: '/first/{firstId}/second/{secondId}/should-not-be-added',
+        config: {
+          auth: false,
+          pre: [assignStuff],
+          handler: async() => ({ success: 'TRUE' }),
+        },
+      },
+      {
+        method: 'GET',
+        path: '/first/{firstId}/second/{secondId}/should-not-be-added2',
+        config: {
+          auth: false,
+          pre: [assignStuff],
+          handler: async() => ({ success: 'TRUE' }),
+        },
+      },
+      {
+        method: 'GET',
+        path: '/first/{firstId}/second/{secondId}/should-not-be-added3',
+        config: {
+          auth: false,
+          pre: [assignStuff, assignMoreStuff],
+          handler: async() => ({ success: 'TRUE' }),
+        },
+      },
+    ])
+
+    server.start().then(function() {
+      port = server.info.port
+      var params = {
+        uri: 'http://localhost:' + port + '/first/123/second/456/data',
+        json: true
+      }
+      request.get(params, function(error, res, body) {
+        t.equal(res.statusCode, 200, 'nothing exploded')
+        t.deepEqual(body, {success: 'TRUE'}, 'got expected response')
         t.end()
       })
     })
