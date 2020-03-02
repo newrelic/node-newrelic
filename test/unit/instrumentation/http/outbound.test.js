@@ -27,44 +27,6 @@ describe('instrumentOutbound', function() {
     helper.unloadAgent(agent)
   })
 
-  describe('when working with http.createClient', function() {
-    before(function() {
-      // capture the deprecation warning here
-      if (!http.createClient) {
-        this.skip(
-          'http.createClient does not in exist in node version ' + process.version
-        )
-      }
-      http.createClient()
-    })
-
-    function test(expectedPort, expectedHost, port, host) {
-      var client = http.createClient(port, host)
-      expect(client.port).equal(expectedPort)
-      expect(client.host).equal(expectedHost)
-    }
-
-    it('should provide default port and hostname', function() {
-      test(80, 'localhost')
-    })
-
-    it('should accept port and provide default hostname', function() {
-      test(8089, 'localhost', 8089)
-    })
-
-    it('should accept port and hostname', function() {
-      test(8089, 'me', 8089, 'me')
-    })
-
-    it('should set default port on null port', function() {
-      test(80, 'me', null, 'me')
-    })
-
-    it('should provide default port and hostname on nulls', function() {
-      test(80, 'localhost', null, null)
-    })
-  })
-
   it('should omit query parameters from path if attributes.enabled is false', function() {
     helper.unloadAgent(agent)
     agent = helper.loadMockedAgent({
