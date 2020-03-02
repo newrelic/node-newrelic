@@ -1,5 +1,12 @@
 'use strict'
 
+const tap = require('tap')
+const test = tap.test
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 var chai = require('chai')
 var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
@@ -370,80 +377,6 @@ describe('built-in http module instrumentation', function() {
     //     expect(transaction.isActive()).to.be.false
     //   })
     // })
-  })
-
-  describe('with error monitor', function() {
-    var mochaHandlers
-
-    afterEach(function() {
-      process._events.uncaughtException = mochaHandlers
-    })
-
-    beforeEach(function() {
-      http = require('http')
-      agent = helper.instrumentMockedAgent()
-      // disable mocha's error handler
-      mochaHandlers = helper.onlyDomains()
-    })
-
-    it('should have stored mocha\'s exception handler', function() {
-      expect(mochaHandlers).to.have.property('length').above(0)
-    })
-
-    describe('for http.createServer', function() {
-      it('should trace errors in top-level handlers', function(done) {
-        let server
-        let request
-
-        process.once('uncaughtException', function() {
-          var errors = agent.errors.traceAggregator.errors
-          expect(errors).to.have.property('length', 1)
-
-          // abort request to close connection and
-          // allow server to close fast instead of after timeout
-          request.abort()
-          server.close(done)
-        })
-
-        server = http.createServer(function cb_createServer() {
-          throw new Error('whoops!')
-        })
-
-        server.listen(8182, function() {
-          request = http.get({host: 'localhost', port: 8182}, function() {
-            done('actually got response')
-          })
-
-          request.on('error', function swallowError(err) {
-            // eslint-disable-next-line no-console
-            console.log('swallowed error: ', err)
-          })
-        })
-      })
-    })
-
-    describe('for http.request', function() {
-      it('should trace errors in listeners', function(done) {
-        var server
-        process.once('uncaughtException', function() {
-          var errors = agent.errors.traceAggregator.errors
-          expect(errors.length).equal(1)
-
-          server.close(done)
-        })
-
-        server = http.createServer(function cb_createServer(request, response) {
-          response.writeHead(200, {'Content-Type': 'text/plain'})
-          response.end()
-        })
-
-        server.listen(8183, function() {
-          http.get({host: 'localhost', port: 8183}, function() {
-            throw new Error('whoah')
-          })
-        })
-      })
-    })
   })
 
   describe('inbound http requests when cat is enabled', function() {
@@ -1002,6 +935,86 @@ describe('built-in http module instrumentation', function() {
       transaction.type = 'web'
       transaction.baseSegment = new Segment(transaction, 'base-segment')
     }
+  })
+})
+
+test('http.createServer should trace errors in top-level handlers', (t) => {
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
+  const http = require('http')
+  const agent = helper.instrumentMockedAgent()
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  let server
+  let request
+
+  process.once('uncaughtException', function() {
+    const errors = agent.errors.traceAggregator.errors
+    t.equal(errors.length, 1)
+
+    // abort request to close connection and
+    // allow server to close fast instead of after timeout
+    request.abort()
+    server.close(() => {
+      t.end()
+    })
+  })
+
+  server = http.createServer(function cb_createServer() {
+    throw new Error('whoops!')
+  })
+
+  server.listen(8182, function() {
+    request = http.get({host: 'localhost', port: 8182}, function() {
+      t.end('actually got response')
+    })
+
+    request.on('error', function swallowError(err) {
+      // eslint-disable-next-line no-console
+      console.log('swallowed error: ', err)
+    })
+  })
+})
+
+test('http.request should trace errors in listeners', (t) => {
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
+  const http = require('http')
+  const agent = helper.instrumentMockedAgent()
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  let server
+
+  process.once('uncaughtException', function() {
+    const errors = agent.errors.traceAggregator.errors
+    t.equal(errors.length, 1)
+
+    server.close(() => {
+      t.end()
+    })
+  })
+
+  server = http.createServer(function cb_createServer(request, response) {
+    response.writeHead(200, {'Content-Type': 'text/plain'})
+    response.end()
+  })
+
+  server.listen(8183, function() {
+    http.get({host: 'localhost', port: 8183}, function() {
+      throw new Error('whoah')
+    })
   })
 })
 
