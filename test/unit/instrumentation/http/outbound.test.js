@@ -1,5 +1,11 @@
 'use strict'
 
+const tap = require('tap')
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 var http = require('http')
 var https = require('https')
 var url = require('url')
