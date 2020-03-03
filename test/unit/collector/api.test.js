@@ -1,7 +1,6 @@
 'use strict'
 
 const tap = require('tap')
-const test = tap.test
 
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
@@ -1361,7 +1360,7 @@ describe('CollectorAPI', function() {
   })
 })
 
-test('succeeds after one 503 on preconnect', (t) => {
+tap.test('succeeds after one 503 on preconnect', (t) => {
   t.autoend()
 
   let api = null
@@ -1454,7 +1453,7 @@ test('succeeds after one 503 on preconnect', (t) => {
 
 // TODO: 503 tests can likely be consolidated into single test func
 // passed to t.test() while specifying different # of 503s.
-test('succeeds after five 503s on preconnect', (t) => {
+tap.test('succeeds after five 503s on preconnect', (t) => {
   t.autoend()
 
   let api = null
@@ -1547,7 +1546,7 @@ test('succeeds after five 503s on preconnect', (t) => {
   }
 })
 
-test('retries preconnect until forced to disconnect (410)', (t) => {
+tap.test('retries preconnect until forced to disconnect (410)', (t) => {
   t.autoend()
 
   let api = null
@@ -1619,7 +1618,7 @@ test('retries preconnect until forced to disconnect (410)', (t) => {
 })
 
 
-test('retries on receiving invalid license key (401)', (t) => {
+tap.test('retries on receiving invalid license key (401)', (t) => {
   t.autoend()
 
   let api = null

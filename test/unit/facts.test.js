@@ -1,7 +1,6 @@
 'use strict'
 
 const tap = require('tap')
-const test = tap.test
 
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
@@ -562,7 +561,7 @@ describe('boot_id', () => {
   }
 })
 
-test('display_host', {timeout: 10000}, (t) => {
+tap.test('display_host', {timeout: 10000}, (t) => {
   t.autoend()
 
   const original_hostname = os.hostname
