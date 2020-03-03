@@ -1,5 +1,12 @@
 'use strict'
 
+const tap = require('tap')
+const test = tap.test
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 const chai = require('chai')
 const expect = chai.expect
 const helper = require('../../lib/agent_helper')
@@ -76,6 +83,11 @@ describe('AwsLambda.patchLambdaHandler', () => {
     delete process.env.AWS_EXECUTION_ENV
 
     helper.unloadAgent(agent)
+
+    if (process.emit && process.emit.__NR_unwrap) {
+      process.emit.__NR_unwrap()
+    }
+
     agent = null
     awsLambda = null
   })
@@ -91,216 +103,6 @@ describe('AwsLambda.patchLambdaHandler', () => {
     expect(agent.collector.metadata.arn).to.be.null
     awsLambda.patchLambdaHandler(() => {})(stubEvent, stubContext, stubCallback)
     expect(agent.collector.metadata.arn).to.equal(stubContext.invokedFunctionArn)
-  })
-
-  describe('when invoked with non web event', () => {
-    it('should create a transaction for handler', () => {
-      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
-        const transaction = agent.tracer.getTransaction()
-        expect(transaction).to.exist
-        expect(transaction.type).to.equal('bg')
-        expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-        expect(transaction.isActive()).to.be.true
-
-        callback(null, 'worked')
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-    })
-
-    it('should end transactions on a beforeExit event on process', () => {
-      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-        const transaction = agent.tracer.getTransaction()
-        expect(transaction).to.exist
-        expect(transaction.type).to.equal('bg')
-        expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-        expect(transaction.isActive()).to.be.true
-
-        process.emit('beforeExit')
-
-        expect(transaction.isActive()).to.be.false
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-    })
-
-    it('should end transactions after the returned promise resolves', (done) => {
-      let transaction
-      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-        transaction = agent.tracer.getTransaction()
-        return new Promise((resolve) => {
-          expect(transaction).to.exist
-          expect(transaction.type).to.equal('bg')
-          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-          expect(transaction.isActive()).to.be.true
-          return resolve('hello')
-        })
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback).then((value) => {
-        expect(value).to.equal('hello')
-        expect(transaction.isActive()).to.be.false
-        done()
-      }).catch((err) => {
-        done(err)
-      })
-    })
-
-    it('should record error event when func is async and promise is rejected', (done) => {
-      agent.on('harvestStarted', confirmErrorCapture)
-
-      let transaction
-      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-        transaction = agent.tracer.getTransaction()
-        return new Promise((resolve, reject) => {
-          expect(transaction).to.exist
-          expect(transaction.type).to.equal('bg')
-          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-          expect(transaction.isActive()).to.be.true
-          reject(error)
-        })
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback).then(() => {
-        done(new Error('wrapped handler should fail and go to catch block'))
-      }).catch((err) => {
-        expect(err).to.equal(error)
-        expect(transaction.isActive()).to.be.false
-      })
-
-      function confirmErrorCapture() {
-        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
-        const noticedError = agent.errors.traceAggregator.errors[0]
-        expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
-        expect(noticedError[2], 'message').to.equal(errorMessage)
-        expect(noticedError[3], 'type').to.equal('SyntaxError')
-
-        done()
-      }
-    })
-
-    it('should record error event when func is async and error is thrown', (done) => {
-      agent.on('harvestStarted', confirmErrorCapture)
-
-      let transaction
-      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-        transaction = agent.tracer.getTransaction()
-        return new Promise(() => {
-          expect(transaction).to.exist
-          expect(transaction.type).to.equal('bg')
-          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-          expect(transaction.isActive()).to.be.true
-          throw error
-        })
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback).then(() => {
-        done(new Error('wrapped handler should fail and go to catch block'))
-      }).catch((err) => {
-        expect(err).to.equal(error)
-        expect(transaction.isActive()).to.be.false
-      })
-
-      function confirmErrorCapture() {
-        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
-        const noticedError = agent.errors.traceAggregator.errors[0]
-        expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
-        expect(noticedError[2], 'message').to.equal(errorMessage)
-        expect(noticedError[3], 'type').to.equal('SyntaxError')
-
-        done()
-      }
-    })
-
-    it('should record error event when error is thrown', (done) => {
-      agent.on('harvestStarted', confirmErrorCapture)
-      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-        const transaction = agent.tracer.getTransaction()
-        expect(transaction).to.exist
-        expect(transaction.type).to.equal('bg')
-        expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-        expect(transaction.isActive()).to.be.true
-        throw error
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmErrorCapture() {
-        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
-        const noticedError = agent.errors.traceAggregator.errors[0]
-        expect(noticedError[1], 'transaction name').to.equal(expectedBgTransactionName)
-        expect(noticedError[2], 'message').to.equal(errorMessage)
-        expect(noticedError[3], 'type').to.equal('SyntaxError')
-        done()
-      }
-    })
-
-    it('should not end transactions twice', (done) => {
-      let transaction
-      const wrappedHandler = awsLambda.patchLambdaHandler((ev, ctx, cb) => {
-        transaction = agent.tracer.getTransaction()
-        let called = false
-        const oldEnd = transaction.end
-        transaction.end = function wrappedEnd() {
-          if (called) {
-            throw new Error('called end on the same transaction twice')
-          }
-          called = true
-          return oldEnd.apply(transaction, arguments)
-        }
-        return new Promise((resolve) => {
-          expect(transaction).to.exist
-          expect(transaction.type).to.equal('bg')
-          expect(transaction.getFullName()).to.equal(expectedBgTransactionName)
-          expect(transaction.isActive()).to.be.true
-          cb()
-          expect(transaction.isActive()).to.be.false
-          return resolve('hello')
-        })
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback).then((value) => {
-        expect(value).to.equal('hello')
-        expect(transaction.isActive()).to.be.false
-        done()
-      }).catch((err) => {
-        done(err)
-      })
-    })
-
-    it('should record standard background metrics', (done) => {
-      agent.on('harvestStarted', confirmMetrics)
-
-      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
-        callback(null, 'worked')
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmMetrics() {
-        const unscopedMetrics = getMetrics(agent).unscoped
-        expect(unscopedMetrics).exist
-
-        const otherTransactionAll = 'OtherTransaction/all'
-        expect(unscopedMetrics[otherTransactionAll], otherTransactionAll)
-          .to.exist.and.have.property('callCount', 1)
-
-        expect(
-          unscopedMetrics[expectedBgTransactionName],
-          expectedBgTransactionName
-        ).to.exist.and.have.property('callCount', 1)
-
-        expect(unscopedMetrics.OtherTransactionTotalTime, 'OtherTransactionTotalTime')
-          .to.exist.and.have.property('callCount', 1)
-
-        const transactionOtherTotalTime =
-          'OtherTransactionTotalTime/' + expectedTransactionName
-        expect(unscopedMetrics[transactionOtherTotalTime], transactionOtherTotalTime)
-          .to.exist.and.have.property('callCount', 1)
-
-        done()
-      }
-    })
   })
 
   describe('when invoked with API Gateway Lambda proxy event', () => {
@@ -381,12 +183,14 @@ describe('AwsLambda.patchLambdaHandler', () => {
           done()
         })
 
+        agent.config.account_id = 'AccountId1'
+        agent.config.primary_application_id = 'AppId1'
+        agent.config.trusted_account_key = 33
         agent.config.distributed_tracing.enabled = true
 
         const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
-        const wrappedHandler =
-        awsLambda.patchLambdaHandler((event, context, callback) => {
+        const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
           const transaction = agent.tracer.getTransaction()
 
           const headers = {}
@@ -1246,6 +1050,336 @@ describe('AwsLambda.patchLambdaHandler', () => {
         expect(data.stack_trace, 'stack_trace').to.exist
 
         done()
+      }
+    })
+  })
+})
+
+// TODO: A duplicate of above while in hybrid mocha DSL state. Cleanup when go full tap.
+test('AwsLambda.patchLambdaHandler', (t) => {
+  t.autoend()
+
+  const groupName = 'Function'
+  const functionName = 'testName'
+  const expectedTransactionName = groupName + '/' + functionName
+  const expectedBgTransactionName = 'OtherTransaction/' + expectedTransactionName
+  const errorMessage = 'sad day'
+
+  let agent
+  let awsLambda
+
+  let stubEvent
+  let stubContext
+  let stubCallback
+
+  let error
+
+  function beforeTest(cb) {
+    agent = helper.loadMockedAgent({
+      allow_all_headers: true,
+      attributes: {
+        exclude: [
+          'request.headers.x*',
+          'response.headers.x*'
+        ]
+      },
+      serverless_mode: {
+        enabled: true
+      }
+    })
+    awsLambda = new AwsLambda(agent)
+    awsLambda._resetModuleState()
+
+    stubEvent = {}
+    stubContext = {
+      done: () => {},
+      succeed: () => {},
+      fail: () => {},
+      functionName: functionName,
+      functionVersion: 'TestVersion',
+      invokedFunctionArn: 'arn:test:function',
+      memoryLimitInMB: '128',
+      awsRequestId: 'testid'
+    },
+    stubCallback = () => {}
+
+    process.env.AWS_EXECUTION_ENV = 'Test_nodejsNegative2.3'
+
+    error = new SyntaxError(errorMessage)
+
+    agent.setState('started')
+
+    cb()
+  }
+
+  function afterTest(cb) {
+    stubEvent = null
+    stubContext = null
+    stubCallback = null
+    error = null
+
+    delete process.env.AWS_EXECUTION_ENV
+
+    helper.unloadAgent(agent)
+
+    // TODO: would be nice if this auto-cleaned up easier
+    if (process.emit && process.emit.__NR_unwrap) {
+      process.emit.__NR_unwrap()
+    }
+
+    agent = null
+    awsLambda = null
+
+    cb()
+  }
+
+  t.test('when invoked with a non web event', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should create a transaction for handler', (t) => {
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        const transaction = agent.tracer.getTransaction()
+
+        t.ok(transaction)
+        t.equal(transaction.type, 'bg')
+        t.equal(transaction.getFullName(), expectedBgTransactionName)
+        t.ok(transaction.isActive())
+
+        callback(null, 'worked')
+        t.end()
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+    })
+
+    t.test('should end transactions on a beforeExit event on process', (t) => {
+      helper.temporarilyRemoveListeners(t, process, 'beforeExit')
+
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        const transaction = agent.tracer.getTransaction()
+
+        t.ok(transaction)
+        t.equal(transaction.type, 'bg')
+        t.equal(transaction.getFullName(), expectedBgTransactionName)
+        t.ok(transaction.isActive())
+
+        process.emit('beforeExit')
+
+        t.equal(transaction.isActive(), false)
+        t.end()
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+    })
+
+    t.test('should end transactions after the returned promise resolves', (t) => {
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        transaction = agent.tracer.getTransaction()
+        return new Promise((resolve) => {
+          t.ok(transaction)
+          t.equal(transaction.type, 'bg')
+          t.equal(transaction.getFullName(), expectedBgTransactionName)
+          t.ok(transaction.isActive())
+
+          return resolve('hello')
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then((value) => {
+        t.equal(value, 'hello')
+        t.equal(transaction.isActive(), false)
+
+        t.end()
+      }).catch((err) => {
+        t.error(err)
+        t.end()
+      })
+    })
+
+    t.test('should record error event when func is async and promise is rejected', (t) => {
+      agent.on('harvestStarted', confirmErrorCapture)
+
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        transaction = agent.tracer.getTransaction()
+        return new Promise((resolve, reject) => {
+          t.ok(transaction)
+          t.equal(transaction.type, 'bg')
+          t.equal(transaction.getFullName(), expectedBgTransactionName)
+          t.ok(transaction.isActive())
+
+          reject(error)
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then(() => {
+        t.error(new Error('wrapped handler should fail and go to catch block'))
+        t.end()
+      }).catch((err) => {
+        t.equal(err, error)
+        t.equal(transaction.isActive(), false)
+
+        t.end()
+      })
+
+      function confirmErrorCapture() {
+        const errors = agent.errors.traceAggregator.errors
+        t.equal(errors.length, 1)
+
+        const noticedError = errors[0]
+        const [,transactionName, message, type] = noticedError
+        t.equal(transactionName, expectedBgTransactionName)
+        t.equal(message, errorMessage)
+        t.equal(type, 'SyntaxError')
+      }
+    })
+
+    t.test('should record error event when func is async and error is thrown', (t) => {
+      agent.on('harvestStarted', confirmErrorCapture)
+
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        transaction = agent.tracer.getTransaction()
+        return new Promise(() => {
+          t.ok(transaction)
+          t.equal(transaction.type, 'bg')
+          t.equal(transaction.getFullName(), expectedBgTransactionName)
+          t.ok(transaction.isActive())
+
+          throw error
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then(() => {
+        t.error(new Error('wrapped handler should fail and go to catch block'))
+        t.end()
+      }).catch((err) => {
+        t.equal(err, error)
+        t.equal(transaction.isActive(), false)
+
+        t.end()
+      })
+
+      function confirmErrorCapture() {
+        const errors = agent.errors.traceAggregator.errors
+        t.equal(errors.length, 1)
+
+        const noticedError = errors[0]
+        const [,transactionName, message, type] = noticedError
+        t.equal(transactionName, expectedBgTransactionName)
+        t.equal(message, errorMessage)
+        t.equal(type, 'SyntaxError')
+      }
+    })
+
+    t.test('should record error event when error is thrown', (t) => {
+      // Once on node 10+ only, may be able to replace with below.
+      // t.expectUncaughtException(fn, [expectedError], message, extra)
+      // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+      helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
+      agent.on('harvestStarted', confirmErrorCapture)
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+        const transaction = agent.tracer.getTransaction()
+        t.ok(transaction)
+        t.equal(transaction.type, 'bg')
+        t.equal(transaction.getFullName(), expectedBgTransactionName)
+        t.ok(transaction.isActive())
+
+        throw error
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+
+      function confirmErrorCapture() {
+        const errors = agent.errors.traceAggregator.errors
+        t.equal(errors.length, 1)
+
+        const noticedError = errors[0]
+        const [,transactionName, message, type] = noticedError
+        t.equal(transactionName, expectedBgTransactionName)
+        t.equal(message, errorMessage)
+        t.equal(type, 'SyntaxError')
+
+        t.end()
+      }
+    })
+
+    t.test('should not end transactions twice', (t) => {
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler((ev, ctx, cb) => {
+        transaction = agent.tracer.getTransaction()
+        let called = false
+        const oldEnd = transaction.end
+        transaction.end = function wrappedEnd() {
+          if (called) {
+            throw new Error('called end on the same transaction twice')
+          }
+          called = true
+          return oldEnd.apply(transaction, arguments)
+        }
+        return new Promise((resolve) => {
+          t.ok(transaction)
+          t.equal(transaction.type, 'bg')
+          t.equal(transaction.getFullName(), expectedBgTransactionName)
+          t.ok(transaction.isActive())
+
+          cb()
+
+          t.equal(transaction.isActive(), false)
+          return resolve('hello')
+        })
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback).then((value) => {
+        t.equal(value, 'hello')
+        t.equal(transaction.isActive(), false)
+
+        t.end()
+      }).catch((err) => {
+        t.error(err)
+        t.end()
+      })
+    })
+
+    t.test('should record standard background metrics', (t) => {
+      agent.on('harvestStarted', confirmMetrics)
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, 'worked')
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+
+      function confirmMetrics() {
+        const unscopedMetrics = getMetrics(agent).unscoped
+        t.ok(unscopedMetrics)
+
+        const otherTransactionAllName = 'OtherTransaction/all'
+        const otherTransactionAllMetric = unscopedMetrics[otherTransactionAllName]
+        t.ok(otherTransactionAllMetric)
+        t.equal(otherTransactionAllMetric.callCount, 1)
+
+        const bgTransactionNameMetric = unscopedMetrics[expectedBgTransactionName]
+        t.ok(bgTransactionNameMetric)
+        t.equal(bgTransactionNameMetric.callCount, 1)
+
+        const otherTransactionTotalTimeMetric = unscopedMetrics.OtherTransactionTotalTime
+        t.ok(otherTransactionTotalTimeMetric)
+        t.equal(otherTransactionAllMetric.callCount, 1)
+
+        const otherTotalTimeBgTransactionName =
+          'OtherTransactionTotalTime/' + expectedTransactionName
+        const otherTotalTimeBgTransactionNameMetric =
+          unscopedMetrics[otherTotalTimeBgTransactionName]
+        t.ok(otherTotalTimeBgTransactionNameMetric)
+        t.equal(otherTotalTimeBgTransactionNameMetric.callCount, 1)
+
+        t.end()
       }
     })
   })
