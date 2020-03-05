@@ -1,107 +1,92 @@
 'use strict'
 
-const chai = require('chai')
+const tap = require('tap')
+const test = tap.test
 const helper = require('../../../lib/agent_helper')
 const semver = require('semver')
 
-const expect = chai.expect
+const isNode12Plus = semver.satisfies(process.version, '>=12')
 
-if (global.Promise) {
-  describe('Unhandled rejection', function() {
-    var agent = null
-    var hasEvent = false
+test('Unhandled rejection', (t) => {
+  t.autoend()
 
-    before(function(done) {
-      // The `unhandledRejection` event has not existed as long as unhandled
-      // rejections have. Thus we need to check if this even got triggered at
-      // all before looking for the error on the transaction in the tests.
-      Promise.reject('testing event')
-      process.once('unhandledRejection', function() {
-        hasEvent = true
-      })
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
+  let agent = null
+
+  t.beforeEach((done, t) => {
+    // Once on node 10+ only, may be able to replace with below.
+    // t.expectUncaughtException(fn, [expectedError], message, extra)
+    // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
+    agent = helper.instrumentMockedAgent()
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  // As of node 12, the promise which triggered the init async hook will no longer
+  // be propagated to the hook, so this linkage is no longer possible.
+  t.test('should be associated with the transction if there is one', {skip: isNode12Plus}, (t) => {
+    helper.runInTransaction(agent, function(transaction) {
+      Promise.reject('test rejection')
 
       setTimeout(function() {
-        agent = helper.instrumentMockedAgent()
-        done()
+        t.equal(transaction.exceptions.length, 1)
+        t.equal(transaction.exceptions[0][0], 'test rejection')
+
+        t.end()
       }, 15)
     })
+  })
 
-    after(function() {
-      helper.unloadAgent(agent)
-    })
+  t.test('should not report it if there is another handler', (t) => {
+    process.once('unhandledRejection', function() {})
 
-    it('should be associated with the transction if there is one', function(done) {
-      // As of node 12, the promise which triggered the init async hook will no longer
-      // be propagated to the hook, so this linkage is no longer possible.
-      if (semver.satisfies(process.version, '>=12')) {
-        this.skip()
-      }
-      helper.runInTransaction(agent, function(transaction) {
-        Promise.reject('test rejection')
+    helper.runInTransaction(agent, function(transaction) {
+      Promise.reject('test rejection')
 
-        setTimeout(function() {
-          if (hasEvent) {
-            expect(transaction.exceptions.length).to.equal(1)
-            expect(transaction.exceptions[0][0]).to.equal('test rejection')
-          }
-          done()
-        }, 15)
-      })
-    })
-
-    it('should not report it if there is another handler', function(done) {
-      process.once('unhandledRejection', function() {})
-
-      helper.runInTransaction(agent, function(transaction) {
-        Promise.reject('test rejection')
-
-        setTimeout(function() {
-          expect(transaction.exceptions.length).to.equal(0)
-          done()
-        }, 15)
-      })
+      setTimeout(function() {
+        t.equal(transaction.exceptions.length, 0)
+        t.end()
+      }, 15)
     })
   })
 
-  describe('agent instrumentation of Promise', function() {
-    var agent
+  t.test('should catch early throws with long chains', (t) => {
+    let segment
 
-    before(function() {
-      agent = helper.instrumentMockedAgent()
-    })
-
-    after(function() {
-      helper.unloadAgent(agent)
-    })
-
-    it('should catch early throws with long chains', function(done) {
-      var segment
-
-      helper.runInTransaction(agent, function(transaction) {
-        new Promise(function(resolve) {
-          segment = agent.tracer.getSegment()
-          setTimeout(resolve, 0)
+    helper.runInTransaction(agent, function(transaction) {
+      new Promise(function(resolve) {
+        segment = agent.tracer.getSegment()
+        setTimeout(resolve, 0)
+      })
+        .then(function() {
+          throw new Error('some error')
         })
-          .then(function() {
-            throw new Error('some error')
+        .then(function() {
+          throw new Error('We shouldn\'t be here!')
+        })
+        .catch(function(err) {
+          process.nextTick(function() {
+            const currentSegment = agent.tracer.getSegment()
+            const currentTransaction = agent.getTransaction()
+
+            t.equal(currentSegment, segment)
+            t.equal(err.message, 'some error')
+            t.equal(currentTransaction, transaction)
+
+            t.end()
           })
-          .then(function() {
-            throw new Error('We shouldn\'t be here!')
-          })
-          .catch(function(err) {
-            process.nextTick(function() {
-              expect(agent.tracer.getSegment())
-                .to.exist
-                .and.to.equal(segment)
-              expect(err)
-                .to.have.property('message', 'some error')
-              expect(agent.getTransaction())
-                .to.exist
-                .and.to.equal(transaction)
-              done()
-            })
-          })
-      })
+        })
     })
   })
-}
+})

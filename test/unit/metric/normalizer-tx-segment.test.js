@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var expect = require('chai').expect
 var TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment')
 var txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms')

@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var oldInstrumentations = require('../../lib/instrumentations')
 var insPath = require.resolve('../../lib/instrumentations')
 require.cache[insPath].exports = wrappedInst

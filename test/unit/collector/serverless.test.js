@@ -1,4 +1,9 @@
 'use strict'
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const zlib = require('zlib')
 const nock = require('nock')
 const chai = require('chai')

@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const expect = require('chai').expect
 const sinon = require('sinon')
 const QuerySample = require('../../../lib/db/query-sample')
@@ -88,11 +92,11 @@ describe('Query Sample', function testQuerySample() {
     }
     sinon.stub(codec, 'encode').callsFake(fakeCodec)
     sinon.stub(QuerySample.prototype, 'getParams').callsFake(() => {})
-    
+
     const querySample = new QuerySample(fakeTracer, fakeSample)
-    
+
     querySample.prepareJSON(() => {})
-    
+
     expect(codecCalled).to.be.true
 
     QuerySample.prototype.getParams.restore()
@@ -127,13 +131,13 @@ describe('Query Sample', function testQuerySample() {
     process.nextTick(() => {})
 
     sinon.stub(QuerySample.prototype, 'getParams').callsFake(() => {})
-    
+
     const querySample = new QuerySample(fakeTracer, fakeSample)
-    
+
     querySample.prepareJSON(() => {})
 
     clock.runAll()
-    
+
     expect(getFullNameCalled).to.be.true
 
     clock.restore()

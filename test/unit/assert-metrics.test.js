@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var assertMetrics = require('../lib/metrics_helper').assertMetrics
 var assert = require('chai').assert
 var Metrics = require('../../lib/metrics')

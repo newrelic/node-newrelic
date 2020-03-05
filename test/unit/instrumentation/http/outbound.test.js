@@ -1,5 +1,11 @@
 'use strict'
 
+const tap = require('tap')
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 var http = require('http')
 var https = require('https')
 var url = require('url')
@@ -25,44 +31,6 @@ describe('instrumentOutbound', function() {
 
   after(function() {
     helper.unloadAgent(agent)
-  })
-
-  describe('when working with http.createClient', function() {
-    before(function() {
-      // capture the deprecation warning here
-      if (!http.createClient) {
-        this.skip(
-          'http.createClient does not in exist in node version ' + process.version
-        )
-      }
-      http.createClient()
-    })
-
-    function test(expectedPort, expectedHost, port, host) {
-      var client = http.createClient(port, host)
-      expect(client.port).equal(expectedPort)
-      expect(client.host).equal(expectedHost)
-    }
-
-    it('should provide default port and hostname', function() {
-      test(80, 'localhost')
-    })
-
-    it('should accept port and provide default hostname', function() {
-      test(8089, 'localhost', 8089)
-    })
-
-    it('should accept port and hostname', function() {
-      test(8089, 'me', 8089, 'me')
-    })
-
-    it('should set default port on null port', function() {
-      test(80, 'me', null, 'me')
-    })
-
-    it('should provide default port and hostname on nulls', function() {
-      test(80, 'localhost', null, null)
-    })
   })
 
   it('should omit query parameters from path if attributes.enabled is false', function() {
@@ -574,21 +542,56 @@ describe('when working with http.request', function() {
   })
 })
 
-describe("node >= v10 api", () => {
-  let agent
+// TODO: seems like should probably be versioned test(s)?
+tap.test('node >= v10 api', {skip: !global.URL}, (t) => {
+  t.autoend()
 
-  before(function() {
-    if (!global.URL) { this.skip("Don't test Node v10+ API on this version of Node") }
-  })
+  let agent = null
 
-  beforeEach(function() {
+  function beforeTest(cb) {
     agent = helper.instrumentMockedAgent()
     nock.disableNetConnect()
-  })
 
-  afterEach(function() {
+    cb()
+  }
+
+  function afterTest(cb) {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
+
+    cb()
+  }
+
+  t.test('http.get', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    testSignatures('http', 'get', t)
+  })
+
+  t.test('http.request', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    testSignatures('http',  'request', t)
+  })
+
+  t.test('https.get', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    testSignatures('https', 'get', t)
+  })
+
+  t.test('https.request', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    testSignatures('https', 'request', t)
   })
 
   function getMethodFromName(nodule, method) {
@@ -602,7 +605,7 @@ describe("node >= v10 api", () => {
 
   // Iterates through the given module and method, testing each signature combination. For
   // testing the http/https modules and get/request methods.
-  function testSignatures(nodule, method) {
+  function testSignatures(nodule, method, t) {
     const host = 'www.newrelic.com'
     const port = nodule === 'https' ? ':443' : ''
     const path = '/index.html'
@@ -648,7 +651,8 @@ describe("node >= v10 api", () => {
 
       // Name the test and start it
       const testName = names.join(', ')
-      it(testName, function(done) {
+
+      t.test(testName, function(t) {
         // If testing the options overriding the URL argument, set up nock differently
         if (swapHost) {
           nock(`${nodule}://www.google.com`).get(path).reply(200, 'Hello from Google')
@@ -656,9 +660,9 @@ describe("node >= v10 api", () => {
           nock(leftPart).get(path).reply(200, 'Hello from New Relic')
         }
 
-        // Setup a function to test the response. Here to get access to done()
+        // Setup a function to test the response.
         let callbackTester = (res) => {
-          testResult(res, testOpts, done)
+          testResult(res, testOpts, t)
         }
 
         // Add callback to the arguments, if used
@@ -680,7 +684,7 @@ describe("node >= v10 api", () => {
       })
     }
 
-    function testResult(res, {headers, swapHost}, done) {
+    function testResult(res, {headers, swapHost}, t) {
       let external = `External/${host}${port}${path}`
       let str = 'Hello from New Relic'
       if (swapHost) {
@@ -690,15 +694,15 @@ describe("node >= v10 api", () => {
 
       const segment = agent.tracer.getSegment()
 
-      expect(segment.name).equal(external)
-      expect(res.statusCode).to.equal(200)
+      t.equal(segment.name, external)
+      t.equal(res.statusCode, 200)
 
       res.on('data', (data) => {
         if (headers) {
-          expect(res.req.headers.test).to.equal('test')
+          t.equal(res.req.headers.test, 'test')
         }
-        expect(data.toString()).to.equal(str)
-        done()
+        t.equal(data.toString(), str)
+        t.end()
       })
     }
 
@@ -756,9 +760,4 @@ describe("node >= v10 api", () => {
       swapHost: true
     })
   }
-
-  describe("http.get",      () => { testSignatures('http',  'get') })
-  describe("http.request",  () => { testSignatures('http',  'request') })
-  describe("https.get",     () => { testSignatures('https', 'get') })
-  describe("https.request", () => { testSignatures('https', 'request') })
 })

@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var flags = require('../../lib/feature_flags')
 var chai = require('chai')
 var assert = require('assert')

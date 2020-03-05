@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 // For consistent results, unset this in case the user had it set in their
 // environment when testing.
 delete process.env.NODE_ENV

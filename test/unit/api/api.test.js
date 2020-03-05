@@ -1,5 +1,10 @@
 'use strict'
 
+const tap = require('tap')
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 var API = require('../../../api')
 var chai = require('chai')
 var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
@@ -562,7 +567,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should be namable with setTransactionName", function() {
+    it("should be namable with setTransactionName", function(done) {
       var handle
       api.startBackgroundTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
@@ -572,10 +577,13 @@ describe('the New Relic agent API', function() {
         expect(transaction.getFullName()).to.equal('OtherTransaction/Custom/custom name')
         expect(transaction.isActive()).to.be.true
       })
+
       process.nextTick(function() {
         handle.end()
         expect(transaction.isActive()).to.be.false
         expect(transaction.getFullName()).to.equal('OtherTransaction/Custom/custom name')
+
+        done()
       })
     })
 

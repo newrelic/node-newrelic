@@ -345,7 +345,7 @@ const helper = module.exports = {
     t.tearDown(() => {
       t.comment('Re-adding listeners for %s', evnt)
       listeners.forEach((fn) => {
-        process.on('uncaughtException', fn)
+        emitter.on(evnt, fn)
       })
       listeners = []
     })
