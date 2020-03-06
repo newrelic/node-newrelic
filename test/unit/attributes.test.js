@@ -86,6 +86,23 @@ describe('Attributes', () => {
       expect(res.eighth).to.be.undefined
       expect(res.ninth).to.be.undefined
     })
+
+    it('disallows adding more than maximum allowed attributes', () => {
+      const inst = new Attributes(TRANSACTION_SCOPE, 3)
+      const attributes = {
+        first: 1,
+        second: 2,
+        portishead: 3,
+        so: 4
+      }
+
+      inst.addAttributes(
+        DESTINATIONS.TRANS_SCOPE,
+        attributes
+      )
+      const res = inst.get(DESTINATIONS.TRANS_SCOPE)
+      expect(Object.keys(res).length).to.equal(3)
+    })
   })
 
   describe('#get', () => {
