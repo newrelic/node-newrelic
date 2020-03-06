@@ -340,6 +340,57 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
   }
 }
 
+API.prototype.addCustomSpanAttributes = function addCustomSpanAttributes(atts) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomSpanAttributes'
+  )
+  metric.incrementCallCount()
+
+  for (var key in atts) {
+    if (!properties.hasOwn(atts, key)) {
+      continue
+    }
+
+    this.addCustomSpanAttribute(key, atts[key])
+  }
+}
+
+API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, value) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomSpanAttribute'
+  )
+  metric.incrementCallCount()
+
+  // If high security mode is on, custom attributes are disabled.
+  if (this.agent.config.high_security) {
+    logger.warnOnce(
+      'Custom span attributes',
+      'Custom span attributes are disabled by high security mode.'
+    )
+    return false
+  } else if (!this.agent.config.api.custom_attributes_enabled) {
+    logger.debug(
+      'Config.api.custom_attributes_enabled set to false, not collecting value'
+    )
+    return false
+  }
+
+  const segment = this.agent.tracer.getSegment()
+  
+  if (!segment) {
+    return logger.warn(
+      'Could not add attribute %s. No available segment.',
+      key
+    )
+  }
+
+  if (CUSTOM_DENYLIST.has(key)) {
+    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+  }
+
+  segment.addCustomSpanAttribute(key, value)
+}
+
 API.prototype.setIgnoreTransaction = util.deprecate(
   setIgnoreTransaction, [
     'API#setIgnoreTransaction is being deprecated!',
