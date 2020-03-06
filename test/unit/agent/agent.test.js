@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var sinon = require('sinon')
 var chai = require('chai')
 var should = chai.should()

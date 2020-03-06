@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const ConglomerateShim = require('../../../lib/shim/conglomerate-shim')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const {expect} = require('chai')

@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const assert = require('chai').assert
 const Config = require('../../../lib/config')
 const expect = require('chai').expect
@@ -527,7 +531,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
           }),
           method: 'sql_trace_data',
-        }        
+        }
         var queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')

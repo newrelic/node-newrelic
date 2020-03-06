@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 const expect = require('chai').expect
 const CustomEventAggregator =
   require('../../../lib/custom-events/custom-event-aggregator')
@@ -45,7 +49,7 @@ describe('Custom Event Aggregator', () => {
 
   it('toPayloadSync() should return nothing with no event data', () => {
     const payload = eventAggregator._toPayloadSync()
-    
+
     expect(payload).to.not.exist
   })
 })

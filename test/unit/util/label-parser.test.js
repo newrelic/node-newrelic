@@ -1,5 +1,9 @@
 'use strict'
 
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+require('tap').mochaGlobals()
+
 var test_data = require('../../lib/cross_agent_tests/labels.json')
 var parse = require('../../../lib/util/label-parser').fromString
 var chai = require('chai')

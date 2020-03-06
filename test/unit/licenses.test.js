@@ -1,50 +1,51 @@
 'use strict'
 
-var a = require('async')
-var expect = require('chai').expect
-var fs = require('fs')
-var licenses = require('./licenses')
-var path = require('path')
-var pkg = require('../../package.json')
+const tap = require('tap')
+const test = tap.test
+const a = require('async')
+const fs = require('fs')
+const licenses = require('./licenses')
+const path = require('path')
+const pkg = require('../../package.json')
 
-var MODULE_DIR = path.resolve(__dirname, '../../node_modules')
+const MODULE_DIR = path.resolve(__dirname, '../../node_modules')
 
 const LICENSE_MESSAGE =
   'If licenses are out of date: along with licenses.json, please ' +
   'update LICENSE file and license info on docs site: ' +
   'https://docs.newrelic.com/docs/licenses/license-information/agent-licenses/nodejs-agent-licenses'
 
-describe('Agent licenses', function() {
-  this.timeout(5000)
-  it('should all be accounted for in LICENSES object', function(done) {
-    var deps = Object.keys(pkg.dependencies || {})
-    deps.push.apply(deps, Object.keys(pkg.optionalDependencies || {}))
-    a.map(deps, function(dep, cb) {
-      a.waterfall([
-        function(cb) {
-          fs.readFile(path.join(MODULE_DIR, dep, 'package.json'), {encoding: 'utf8'}, cb)
-        },
-        function(depPackage, cb) {
-          try {
-            var parsedPackage = JSON.parse(depPackage)
-            var license = parsedPackage.license || parsedPackage.licenses
-            setImmediate(function() {
-              cb(null, [dep, license])
-            })
-          } catch (e) {
-            cb(e)
-          }
-        }
-      ], cb)
-    }, function(err, depLicensesArray) {
-      expect(err).to.not.exist
-      var depLicenses = depLicensesArray.reduce(function(obj, dep) {
-        obj[dep[0]] = dep[1]
-        return obj
-      }, {})
 
-      expect(depLicenses, LICENSE_MESSAGE).to.deep.equal(licenses)
-      done()
-    })
+test('should all be accounted for in LICENSES object', {timeout: 5000}, (t) => {
+  const deps = Object.keys(pkg.dependencies || {})
+  deps.push.apply(deps, Object.keys(pkg.optionalDependencies || {}))
+
+  a.map(deps, function(dep, cb) {
+    a.waterfall([
+      function(cb) {
+        fs.readFile(path.join(MODULE_DIR, dep, 'package.json'), {encoding: 'utf8'}, cb)
+      },
+      function(depPackage, cb) {
+        try {
+          const parsedPackage = JSON.parse(depPackage)
+          const license = parsedPackage.license || parsedPackage.licenses
+          setImmediate(function() {
+            cb(null, [dep, license])
+          })
+        } catch (e) {
+          cb(e)
+        }
+      }
+    ], cb)
+  }, function(err, depLicensesArray) {
+    t.error(err)
+
+    const depLicenses = depLicensesArray.reduce(function(obj, dep) {
+      obj[dep[0]] = dep[1]
+      return obj
+    }, {})
+
+    t.deepEqual(depLicenses, licenses, LICENSE_MESSAGE)
+    t.end()
   })
 })

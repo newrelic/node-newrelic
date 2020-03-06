@@ -1,5 +1,12 @@
 'use strict'
 
+const tap = require('tap')
+const test = tap.test
+
+// TODO: convert to normal tap style.
+// Below allows use of mocha DSL with tap runner.
+tap.mochaGlobals()
+
 const chai = require('chai')
 const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 const should = chai.should()
@@ -464,47 +471,6 @@ describe('TraceSegment', function() {
     })
   })
 
-  describe('when serialized', function() {
-    var trans = null
-    var segment = null
-
-    beforeEach(function() {
-      trans = new Transaction(agent)
-      segment = new TraceSegment(trans, 'UnitTest')
-    })
-
-    afterEach(function() {
-      trans = null
-      segment = null
-    })
-
-    it('should create a plain JS array', function() {
-      segment.end()
-      var js = segment.toJSON()
-
-      expect(js).to.be.an.instanceOf(Array)
-      expect(js[0]).to.be.a('number')
-      expect(js[1]).to.be.a('number')
-      expect(js[2]).to.be.a('string').and.equal('UnitTest')
-      expect(js[3]).to.be.an('object')
-      expect(js[4]).to.be.an.instanceOf(Array).and.have.lengthOf(0)
-    })
-
-    it('should not cause a stack overflow', function() {
-      this.timeout(30000)
-      var parent = segment
-      for (var i = 0; i < 9000; ++i) {
-        var child = new TraceSegment(trans, 'Child ' + i)
-        parent.children.push(child)
-        parent = child
-      }
-
-      expect(function() {
-        segment.toJSON()
-      }).to.not.throw()
-    })
-  })
-
   describe('#finalize', () => {
     it('should add nr_exclusive_duration_millis attribute', () => {
       const transaction = new Transaction(agent)
@@ -541,5 +507,64 @@ describe('TraceSegment', function() {
       expect(segment.name).to.equal(`Truncated/${segmentName}`)
       expect(root.getDurationInMillis()).to.equal(4)
     })
+  })
+})
+
+
+test('when serialized', (t) => {
+  t.autoend()
+
+  let agent = null
+  let trans = null
+  let segment = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent()
+    trans = new Transaction(agent)
+    segment = new TraceSegment(trans, 'UnitTest')
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+    trans = null
+    segment = null
+
+    done()
+  })
+
+  t.test('should create a plain JS array', (t) => {
+    segment.end()
+    const js = segment.toJSON()
+
+    t.ok(Array.isArray(js))
+    t.equal(typeof js[0], 'number')
+    t.equal(typeof js[1], 'number')
+
+    t.equal(js[2], 'UnitTest')
+
+    t.equal(typeof js[3], 'object')
+
+    t.ok(Array.isArray(js[4]))
+    t.equal(js[4].length, 0)
+
+    t.end()
+  })
+
+  t.test('should not cause a stack overflow', {timeout: 30000}, (t) => {
+    let parent = segment
+    for (var i = 0; i < 9000; ++i) {
+      const child = new TraceSegment(trans, 'Child ' + i)
+      parent.children.push(child)
+      parent = child
+    }
+
+    t.doesNotThrow(function() {
+      segment.toJSON()
+    })
+
+    t.end()
   })
 })
