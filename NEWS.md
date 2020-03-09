@@ -92,7 +92,9 @@
 
   Known Issues and Workarounds
 
-  * If a .NET agent is initiating traces as the root service, do not upgrade your downstream Node New Relic agents to this agent release.
+  * If a .NET agent is initiating distributed traces as the root service, you must update
+    that .NET agent to version `8.24` or later before upgrading your downstream Node
+    New Relic agents to this agent release.
 
 * Pins Node 12 version to `v12.15` to avoid breakages with `v12.16.0` until cause(s)
   resolved.
