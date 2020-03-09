@@ -340,23 +340,43 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
   }
 }
 
+/**
+ * Add custom span attributes in an object to the current segment/span.
+ * 
+ * See documentation for newrelic.addCustomSpanAttribute for more information.
+ * 
+ * An example of setting a custom span attribute:
+ * 
+ *    newrelic.addCustomSpanAttribute({test: 'value', test2: 'value2'})
+ * 
+ * @param {object} [atts]
+ * @param {string} [atts.KEY] The name you want displayed in the RPM UI.API.
+ * @param {string} [atts.KEY.VALUE] The value you want displayed.  Must be serializable.
+ */
 API.prototype.addCustomSpanAttributes = function addCustomSpanAttributes(atts) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomSpanAttributes'
   )
   metric.incrementCallCount()
 
-  for (var key in atts) {
-    if (!properties.hasOwn(atts, key)) {
-      continue
+  for (let key in atts) {
+    if (properties.hasOwn(atts, key)) {
+      this.addCustomSpanAttribute(key, atts[key])
     }
-
-    this.addCustomSpanAttribute(key, atts[key])
   }
 }
 
+/**
+ * Add a custom span attribute to the current transaction. Some attributes
+ * are reserved (see CUSTOM_DENYLIST for the current, very short list), and
+ * as with most API methods, this must be called in the context of an
+ * active segment/span. Most recently set value wins.
+ *
+ * @param {string} key  The key you want displayed in the RPM UI.
+ * @param {string} value The value you want displayed. Must be serializable.
+ */
 API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomSpanAttribute'
   )
   metric.incrementCallCount()
@@ -378,8 +398,8 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
   const segment = this.agent.tracer.getSegment()
   
   if (!segment) {
-    return logger.warn(
-      'Could not add attribute %s. No available segment.',
+    return logger.debug(
+      'Could not add attribute %s. No available span/segment.',
       key
     )
   }
