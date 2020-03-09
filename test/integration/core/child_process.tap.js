@@ -47,6 +47,65 @@ test('transaction context is preserved in subscribed events', function(t) {
   })
 })
 
+test('should not break removeListener', (t) => {
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function() {
+    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+
+    function onMessage() {}
+
+    child.on('message', onMessage)
+    t.ok(child._events.message)
+
+    child.removeListener('message', onMessage)
+    t.notOk(child._events.message)
+
+    child.on('exit', function() {
+      t.end()
+    })
+  })
+})
+
+test('should not break once() removal of listener', (t) => {
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function() {
+    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+
+    let invokedMessage = false
+    child.once('message', function onMessage() {
+      invokedMessage = true
+      t.notOk(child._events.message)
+    })
+
+    child.on('exit', function() {
+      t.ok(invokedMessage, 'Must have onMessage called for test to be valid.')
+      t.end()
+    })
+  })
+})
+
+test('should not break removeAllListeners', (t) => {
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function() {
+    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+
+    function onMessage() {}
+
+    child.on('message', onMessage)
+    t.ok(child._events.message)
+
+    child.removeAllListeners('message')
+    t.notOk(child._events.message)
+
+    child.on('exit', function() {
+      t.end()
+    })
+  })
+})
+
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
   t.tearDown(function() {
