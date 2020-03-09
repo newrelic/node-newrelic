@@ -113,7 +113,6 @@
     "lint": "eslint ./*.js lib test",
     "public-docs": "npm ci && jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
-    "security": "npm audit",
     "services": "./bin/docker-services.sh",
     "smoke": "npm run clean && ./bin/smoke.sh",
     "ssl": "./bin/ssl.sh",
