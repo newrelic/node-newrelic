@@ -5,6 +5,7 @@
 require('tap').mochaGlobals()
 
 const expect = require('chai').expect
+const Exception = require('../../../lib/errors').Exception
 const helper = require('../../lib/agent_helper')
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 // recordSupportability is stubbed out on the test agent. Since
@@ -50,7 +51,9 @@ describe('distributed tracing', function() {
         testCase.inbound_payloads.forEach((payload) => {
           tx.acceptDistributedTracePayload(payload, testCase.transport_type)
           if (testCase.intrinsics.target_events.indexOf('TransactionError') > -1) {
-            tx.addException(new Error('uh oh'))
+            const error = new Error('uh oh')
+            const exception = new Exception({error})
+            tx.addException(exception)
           }
         })
 

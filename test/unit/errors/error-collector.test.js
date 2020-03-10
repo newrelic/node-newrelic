@@ -9,6 +9,7 @@ tap.mochaGlobals()
 
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
+const Exception = require('../../../lib/errors').Exception
 const ErrorCollector = require('../../../lib/errors/error-collector')
 const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
 const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
@@ -431,7 +432,9 @@ describe('Errors', function() {
 
         // add errors by various means
         finalizeCollector.add(transaction, new Error("no"))
-        transaction.addException(new Error('ignored'))
+        const error = new Error('ignored')
+        const exception = new Exception({error})
+        transaction.addException(exception)
         finalizeCollector.onTransactionFinished(transaction)
 
         const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
@@ -455,7 +458,9 @@ describe('Errors', function() {
 
       it('should ignore 404 errors for transactions with exceptions attached', () => {
         var notIgnored = createTransaction(agent, 400)
-        notIgnored.addException(new Error('bad request'))
+        const error = new Error('bad request')
+        const exception = new Exception({error})
+        notIgnored.addException(exception)
         finalizeCollector.onTransactionFinished(notIgnored)
 
         // 404 errors are ignored by default, but making sure the config is set
@@ -926,15 +931,14 @@ describe('Errors', function() {
     })
 
     describe('with an internal server error (500) and an exception', function() {
-      var name = 'WebTransaction/Uri/test-request/zxrkbl'
-      var error
-
+      let name = 'WebTransaction/Uri/test-request/zxrkbl'
+      let error
 
       beforeEach(function() {
         errorCollector = agent.errors
 
-        var transaction = new Transaction(agent)
-        var exception = new Error('500 test error')
+        let transaction = new Transaction(agent)
+        const exception = new Exception({error: new Error('500 test error')})
 
         transaction.addException(exception)
         transaction.url = '/test-request/zxrkbl'
