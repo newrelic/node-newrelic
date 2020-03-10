@@ -6,8 +6,14 @@ require('tap').mochaGlobals()
 
 const assert = require('assert')
 const http = require('http')
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../../../lib/agent_helper')
 
+/**
+ * This test file has been setup to run serial / not in parallel with other files.
+ * These tests attempt to verify a reasonable threshold for queue time.
+ * That can be easily thrwarted during a parallel run which can double time
+ * for these to execute.
+ */
 describe('built-in http queueTime', () => {
   let agent = null
   let testDate = null
