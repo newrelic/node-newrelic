@@ -1,4 +1,4 @@
-{
+module.exports = {
   "env": {
     "es6": true,
     "node": true,
@@ -7,6 +7,7 @@
   "parserOptions": {
     "ecmaVersion": 6
   },
+  "ignorePatterns": ["invalid-json/"],
   "rules": {
     "indent": ["warn", 2, {"SwitchCase": 1}],
     "brace-style": "error",

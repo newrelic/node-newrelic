@@ -13,6 +13,7 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
+const SpanEvent = require('../../../lib/spans/span-event')
 
 
 describe('the New Relic agent API', function() {
@@ -269,6 +270,41 @@ describe('the New Relic agent API', function() {
         api.addCustomAttribute('test', 1)
         var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
         expect(attributes.test).to.equal(1)
+        transaction.end()
+      })
+    })
+
+    it('should properly add custom span attribute', function() {
+      helper.runInTransaction(agent, function(transaction) {
+        transaction.name = 'test'
+        api.startSegment('foobar', false, function() {
+          api.addCustomSpanAttribute('spannnnnny', 1)
+          const segment = api.shim.getSegment()
+          const span = SpanEvent.fromSegment(segment, 'parent')
+          const attributes = span.customAttributes
+          expect(attributes.spannnnnny).to.equal(1)
+        })
+        transaction.end()
+      })
+    })
+
+    it('should properly add multiple custom span attributes', () => {
+      helper.runInTransaction(agent, function(transaction) {
+        api.startSegment('foo', false, () => {
+          api.addCustomSpanAttributes({
+            one: 1,
+            two: 2
+          })
+          const segment = api.shim.getSegment()
+          const span = SpanEvent.fromSegment(segment, 'parent')
+          const attributes = span.customAttributes
+          expect(attributes.one).to.equal(1)
+          expect(attributes.two).to.equal(2)
+        })
+        api.addCustomAttributes({
+          one: 1,
+          two: 2
+        })
         transaction.end()
       })
     })

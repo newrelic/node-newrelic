@@ -54,6 +54,7 @@ describe('SpanEvent', () => {
 
         setTimeout(() => {
           const seg = agent.tracer.getTransaction().trace.root.children[0]
+          seg.addCustomSpanAttribute('Span Lee', 'no prize')
           const span = SpanEvent.fromSegment(seg, 'parent')
 
           // Should have all the normal properties.
@@ -77,6 +78,11 @@ describe('SpanEvent', () => {
 
           expect(span).to.have.property('attributes')
           const attributes = span.attributes
+
+          expect(span).to.have.property('customAttributes')
+          const customAttributes = span.customAttributes
+
+          expect(customAttributes).to.have.property('Span Lee')
 
           // Should have no http properties.
           expect(attributes).to.not.have.property('externalLibrary')

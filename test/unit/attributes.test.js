@@ -6,7 +6,7 @@ require('tap').mochaGlobals()
 
 const {expect} = require('chai')
 const helper = require('../lib/agent_helper')
-const Attributes = require('../../lib/attributes')
+const {Attributes} = require('../../lib/attributes')
 const AttributeFilter = require('../../lib/config/attribute-filter')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
@@ -86,6 +86,33 @@ describe('Attributes', () => {
       expect(res.eighth).to.be.undefined
       expect(res.ninth).to.be.undefined
     })
+
+    it('disallows adding more than maximum allowed attributes', () => {
+      const inst = new Attributes(TRANSACTION_SCOPE, 3)
+      const attributes = {
+        first: 1,
+        second: 2,
+        portishead: 3,
+        so: 4
+      }
+
+      inst.addAttributes(
+        DESTINATIONS.TRANS_SCOPE,
+        attributes
+      )
+      const res = inst.get(DESTINATIONS.TRANS_SCOPE)
+      expect(Object.keys(res).length).to.equal(3)
+    })
+
+    it('Overwrites value of added attribute with same key', () => {
+      const inst = new Attributes(TRANSACTION_SCOPE, 2)
+      inst.addAttribute(0x01, 'Roboto', 1)
+      inst.addAttribute(0x01, 'Roboto', 99)
+
+      const res = inst.get(0x01)
+      expect(Object.keys(res).length).to.equal(1)
+      expect(res.Roboto).to.equal(99)
+    })
   })
 
   describe('#get', () => {
@@ -99,20 +126,9 @@ describe('Attributes', () => {
       ].join(' ')
 
       const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.attributes = {
-        valid: {
-          destinations: 0x01,
-          value: 50
-        },
-        tooLong: {
-          destinations: 0x01,
-          value: longVal
-        },
-        wrongDest: {
-          destinations: 0x08,
-          value: 'hello'
-        }
-      }
+      inst.addAttribute(0x01, 'valid', 50)
+      inst.addAttribute(0x01, 'tooLong', longVal)
+      inst.addAttribute(0x08, 'wrongDest', 'hello')
 
       expect(Buffer.byteLength(longVal)).to.be.above(255)
       const res = inst.get(0x01)
@@ -122,66 +138,22 @@ describe('Attributes', () => {
 
     it('only returns attributes up to specified limit', () => {
       const inst = new Attributes(TRANSACTION_SCOPE, 2)
-      inst.attributes = {
-        first: {
-          destinations: 0x01,
-          value: 'first'
-        },
-        second: {
-          destinations: 0x01,
-          value: 'second'
-        },
-        third: {
-          destinations: 0x01,
-          value: 'third'
-        }
-      }
+      inst.addAttribute(0x01, 'first', 'first')
+      inst.addAttribute(0x01, 'second', 'second')
+      inst.addAttribute(0x01, 'third', 'third')
 
       const res = inst.get(0x01)
       expect(Object.keys(res).length).to.equal(2)
       expect(res.third).to.be.undefined
-    })
-
-    it('returns attributes up to specified limit, regardless of position', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE, 2)
-      inst.attributes = {
-        first: {
-          destinations: 0x08,
-          value: 'first'
-        },
-        second: {
-          destinations: 0x01,
-          value: 'second'
-        },
-        third: {
-          destinations: 0x01,
-          value: 'third'
-        }
-      }
-
-      const res = inst.get(0x01)
-      expect(Object.keys(res).length).to.equal(2)
-      expect(res.first).to.be.undefined
     })
   })
 
   describe('#reset', () => {
     it('resets instance attributes', () => {
       const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.attributes = {
-        first: {
-          destinations: 0x08,
-          value: 'first'
-        },
-        second: {
-          destinations: 0x01,
-          value: 'second'
-        },
-        third: {
-          destinations: 0x01,
-          value: 'third'
-        }
-      }
+      inst.addAttribute(0x01, 'first', 'first')
+      inst.addAttribute(0x01, 'second', 'second')
+      inst.addAttribute(0x01, 'third', 'third')
 
       inst.reset()
 
