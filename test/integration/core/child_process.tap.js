@@ -242,6 +242,44 @@ test('should not break when non-wrapped listener exists', (t) => {
   })
 })
 
+test('should not introduce a new error nor hide error for missing handler', (t) => {
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function() {
+    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+
+    try {
+      child.on('message', null)
+    } catch (error) {
+      t.ok(error)
+      t.ok(error.message.includes('"listener" argument must be'))
+    }
+
+    child.on('exit', function() {
+      t.end()
+    })
+  })
+})
+
+test('should not introduce a new error nor hide error for invalid handler', (t) => {
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function() {
+    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+
+    try {
+      child.on('message', 1)
+    } catch (error) {
+      t.ok(error)
+      t.ok(error.message.includes('"listener" argument must be'))
+    }
+
+    child.on('exit', function() {
+      t.end()
+    })
+  })
+})
+
 test('should not break removeAllListeners', (t) => {
   const agent = setupAgent(t)
 
