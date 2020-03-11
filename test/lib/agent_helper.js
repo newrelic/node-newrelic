@@ -320,6 +320,33 @@ const helper = module.exports = {
     server.listen(port)
   },
 
+  startServerWithRandomPortRetry: (server, maxAttempts = 5) => {
+    let attempts = 0
+    server.on('error', (e) => {
+      // server port not guranteed to be not in use
+      if (e.code === 'EADDRINUSE') {
+        if (attempts >= maxAttempts) {
+          // eslint-disable-next-line no-console
+          console.log('Exceeded max attempts (%s), bailing out.', maxAttempts)
+          throw new Error('Unable to get unused port')
+        }
+
+        attempts++
+
+        // eslint-disable-next-line no-console
+        console.log('Address in use, retrying...')
+        setTimeout(() => {
+          server.close()
+
+          // start the server using a random port
+          server.listen()
+        }, 1000)
+      }
+    })
+
+    server.listen()
+  },
+
   makeGetRequest: (url, options, callback) => {
     if (!options || typeof options === 'function') {
       callback = options

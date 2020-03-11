@@ -395,9 +395,12 @@ describe('built-in http module instrumentation', function() {
         encKey
       )
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers})
+      server.on('listening', function() {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers})
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
 
     it('should ignore invalid pathHash', function(done) {
@@ -420,9 +423,12 @@ describe('built-in http module instrumentation', function() {
         encKey
       )
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers})
+      server.on('listening', function() {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers})
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
 
     it('should not explode on invalid JSON', function(done) {
@@ -438,9 +444,12 @@ describe('built-in http module instrumentation', function() {
         encKey
       )
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers})
+      server.on('listening', function() {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers})
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
   })
 
@@ -486,9 +495,12 @@ describe('built-in http module instrumentation', function() {
         encKey
       )
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers})
+      server.on('listening', () => {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers})
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
   })
 
@@ -515,8 +527,10 @@ describe('built-in http module instrumentation', function() {
       var headers = {}
       headers[NEWRELIC_ID_HEADER] = hashes.obfuscateNameUsingKey('123', encKey)
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+      server.on('listening', () => {
+        const port = server.address().port
+
+        http.get({host: 'localhost', port: port, headers: headers}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
             res.headers['x-newrelic-app-data'],
             encKey
@@ -530,6 +544,8 @@ describe('built-in http module instrumentation', function() {
           server.close(done)
         })
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
 
     it('should default Content-Length to -1', function(done) {
@@ -540,8 +556,9 @@ describe('built-in http module instrumentation', function() {
       var headers = {}
       headers[NEWRELIC_ID_HEADER] = hashes.obfuscateNameUsingKey('123', encKey)
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+      server.on('listening', function() {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
             res.headers['x-newrelic-app-data'],
             encKey
@@ -551,7 +568,10 @@ describe('built-in http module instrumentation', function() {
           server.close(done)
         })
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
+
     it('should not set header if id not in trusted_account_ids', function(done) {
       var server = http.createServer(function(req, res) {
         res.end()
@@ -560,13 +580,16 @@ describe('built-in http module instrumentation', function() {
       var headers = {}
       headers[NEWRELIC_ID_HEADER] = hashes.obfuscateNameUsingKey('!123', encKey)
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+      server.on('listening', function() {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers}, function(res) {
           should.not.exist(res.headers['x-newrelic-app-data'])
           res.resume()
           server.close(done)
         })
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
 
     it('should fall back to partial name if transaction.name is not set', function(done) {
@@ -578,8 +601,9 @@ describe('built-in http module instrumentation', function() {
       var headers = {}
       headers[NEWRELIC_ID_HEADER] = hashes.obfuscateNameUsingKey('123', encKey)
 
-      server.listen(4123, function() {
-        http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+      server.on('listening', function() {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port, headers: headers}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
             res.headers['x-newrelic-app-data'],
             encKey
@@ -589,6 +613,8 @@ describe('built-in http module instrumentation', function() {
           server.close(done)
         })
       })
+
+      helper.startServerWithRandomPortRetry(server)
     })
   })
 
@@ -628,12 +654,15 @@ describe('built-in http module instrumentation', function() {
           tracestate: tracestate
         }
 
-        server.listen(4123, function() {
-          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+        server.on('listening', function() {
+          const port = server.address().port
+          http.get({host: 'localhost', port: port, headers: headers}, function(res) {
             res.resume()
             server.close(done)
           })
         })
+
+        helper.startServerWithRandomPortRetry(server)
       })
 
       it('should set traceparent header correctly tracestate missing', function(done) {
@@ -656,12 +685,15 @@ describe('built-in http module instrumentation', function() {
           traceparent: traceparent
         }
 
-        server.listen(4123, function() {
-          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+        server.on('listening', function() {
+          const port = server.address().port
+          http.get({host: 'localhost', port: port, headers: headers}, function(res) {
             res.resume()
             server.close(done)
           })
         })
+
+        helper.startServerWithRandomPortRetry(server)
       })
 
       it('should set traceparent header correctly tracestate empty string', function(done) {
@@ -685,12 +717,15 @@ describe('built-in http module instrumentation', function() {
           tracestate: tracestate
         }
 
-        server.listen(4123, function() {
-          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+        server.on('listening', function() {
+          const port = server.address().port
+          http.get({host: 'localhost', port: port, headers: headers}, function(res) {
             res.resume()
             server.close(done)
           })
         })
+
+        helper.startServerWithRandomPortRetry(server)
       })
     })
 
@@ -709,7 +744,10 @@ describe('built-in http module instrumentation', function() {
         res.end()
         req.resume()
       })
-      server.listen(4123, done)
+
+      helper.randomPort((port) => {
+        server.listen(port, done)
+      })
     })
 
     afterEach(function(done) {
@@ -725,7 +763,9 @@ describe('built-in http module instrumentation', function() {
     it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
       helper.runInTransaction(agent, function() {
         addSegment() // Add web segment so everything works properly
-        var req = http.request({host: 'localhost', port: 4123}, function(res) {
+
+        const port = server.address().port
+        var req = http.request({host: 'localhost', port: port}, function(res) {
           expect(req.getHeader(NEWRELIC_ID_HEADER)).equal('o123')
           res.resume()
           agent.getTransaction().end()
@@ -749,7 +789,8 @@ describe('built-in http module instrumentation', function() {
           transaction.referringPathHash
         )
 
-        var req = http.get({host: 'localhost', port: 4123}, function(res) {
+        const port = server.address().port
+        var req = http.get({host: 'localhost', port: port}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
             req.getHeader(NEWRELIC_TRANSACTION_HEADER),
             encKey
@@ -773,7 +814,8 @@ describe('built-in http module instrumentation', function() {
         transaction.id = '456'
         transaction.tripId = null
 
-        var req = http.get({host: 'localhost', port: 4123}, function(res) {
+        const port = server.address().port
+        var req = http.get({host: 'localhost', port: port}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
             req.getHeader(NEWRELIC_TRANSACTION_HEADER),
             encKey
@@ -801,7 +843,8 @@ describe('built-in http module instrumentation', function() {
           transaction.referringPathHash
         )
 
-        var req = http.get({host: 'localhost', port: 4123}, function(res) {
+        const port = server.address().port
+        var req = http.get({host: 'localhost', port: port}, function(res) {
           var data = JSON.parse(hashes.deobfuscateNameUsingKey(
             req.getHeader(NEWRELIC_TRANSACTION_HEADER),
             encKey
@@ -826,7 +869,8 @@ describe('built-in http module instrumentation', function() {
           transaction.referringPathHash
         )
 
-        http.get({host: 'localhost', port: 4123}, function(res) {
+        const port = server.address().port
+        http.get({host: 'localhost', port: port}, function(res) {
           expect(transaction.pathHashes).deep.equal([pathHash])
           res.resume()
           transaction.end ()
@@ -861,14 +905,18 @@ describe('built-in http module instrumentation', function() {
         req.resume()
       })
 
-      server.listen(4123, function() {
+      server.on('listening', function() {
         helper.runInTransaction(agent, obj_request)
       })
 
+      helper.startServerWithRandomPortRetry(server)
+
       function obj_request() {
         addSegment()
+
+        const port = server.address().port
         var req = http.request(
-          {host: 'localhost', port: 4123, headers: {a: 1, b: 2}},
+          {host: 'localhost', port: port, headers: {a: 1, b: 2}},
           function(res) {
             res.resume()
             array_request()
@@ -879,8 +927,10 @@ describe('built-in http module instrumentation', function() {
 
       function array_request() {
         addSegment()
+
+        const port = server.address().port
         var req = http.request(
-          {host: 'localhost', port: 4123, headers: [['a', 1], ['b', 2]]},
+          {host: 'localhost', port: port, headers: [['a', 1], ['b', 2]]},
           function(res) {
             res.resume()
             expect_request()
@@ -891,9 +941,11 @@ describe('built-in http module instrumentation', function() {
 
       function expect_request() {
         addSegment()
+
+        const port = server.address().port
         var req = http.request({
           host: 'localhost',
-          port: 4123,
+          port: port,
           headers: {a: 1, b: 2, expect: '100-continue'}
         }, function(res) {
           res.resume()
