@@ -561,7 +561,7 @@ describe('boot_id', () => {
   }
 })
 
-tap.test('display_host', {timeout: 10000}, (t) => {
+tap.test('display_host', {timeout: 20000}, (t) => {
   t.autoend()
 
   const original_hostname = os.hostname
