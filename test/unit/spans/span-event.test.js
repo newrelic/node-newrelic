@@ -71,7 +71,7 @@ describe('SpanEvent', () => {
           expect(span.intrinsics).to.have.property('priority', 42)
           expect(span.intrinsics).to.have.property('name', 'timers.setTimeout')
           expect(span.intrinsics).to.have.property('timestamp', seg.timer.start)
-          expect(span.intrinsics).to.have.property('duration').within(0.03, 0.07)
+          expect(span.intrinsics).to.have.property('duration').within(0.03, 0.3)
           // Generic should not have 'span.kind' or 'component'
           expect(span.intrinsics).to.have.property('span.kind', null)
           expect(span.intrinsics).to.have.property('component', null)
