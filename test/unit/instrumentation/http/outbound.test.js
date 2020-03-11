@@ -256,7 +256,10 @@ describe('should add data from cat header to segment', function() {
       res.end()
       req.resume()
     })
-    server.listen(4123, done)
+
+    helper.randomPort((port) => {
+      server.listen(port, done)
+    })
   })
 
   after(function(done) {
@@ -273,12 +276,14 @@ describe('should add data from cat header to segment', function() {
   it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
     helper.runInTransaction(agent, function() {
       addSegment()
-      http.get({host : 'localhost', port : 4123}, function(res) {
+
+      const port = server.address().port
+      http.get({host: 'localhost', port: port}, function(res) {
         var segment = agent.tracer.getTransaction().trace.root.children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
-        expect(segment.name).equal('ExternalTransaction/localhost:4123/123#456/abc')
+        expect(segment.name).equal(`ExternalTransaction/localhost:${port}/123#456/abc`)
         expect(segment.getAttributes().transaction_guid).equal('xyz')
         res.resume()
         agent.getTransaction().end()
@@ -290,14 +295,16 @@ describe('should add data from cat header to segment', function() {
   it('should not explode with invalid data', function(done) {
     helper.runInTransaction(agent, function() {
       addSegment()
-      http.get({host : 'localhost', port : 4123}, function(res) {
+
+      const port = server.address().port
+      http.get({host: 'localhost', port: port}, function(res) {
         var segment = agent.tracer.getTransaction().trace.root.children[0]
 
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
 
         // TODO: port in metric is a known bug. issue #142
-        expect(segment.name).equal('ExternalTransaction/localhost:4123/123#456/abc')
+        expect(segment.name).equal(`ExternalTransaction/localhost:${port}/123#456/abc`)
         expect(segment.getAttributes().transaction_guid).equal('xyz')
         res.resume()
         agent.getTransaction().end()
