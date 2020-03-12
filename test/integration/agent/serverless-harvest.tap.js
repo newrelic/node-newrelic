@@ -25,6 +25,9 @@ tap.test('Serverless mode harvest', (t) => {
       serverless_mode: {
         enabled: true
       },
+      feature_flag: {
+        span_error_attributes: true,
+      },
       app_name: 'serverless mode tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
     })

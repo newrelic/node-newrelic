@@ -9,6 +9,9 @@ tap.test('span error attributes', (t) => {
     distributed_tracing: {
       enabled: true
     },
+    feature_flag: {
+      span_error_attributes: true,
+    },
     cross_application_tracer: {enabled: false},
     account_id: '1337',
     primary_application_id: '7331',
