@@ -118,7 +118,7 @@
     "ssl": "./bin/ssl.sh",
     "sub-install": "node test/bin/install_sub_deps",
     "test": "npm run integration && npm run unit",
-    "unit": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --no-coverage --jobs=1",
+    "unit": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=120 --no-coverage",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
     "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
