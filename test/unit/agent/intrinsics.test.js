@@ -1,77 +1,37 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+const helper = require('../../lib/agent_helper.js')
+const chai = require('chai')
+const assert = chai.assert
+const sinon = require('sinon')
+const Transaction = require('../../../lib/transaction')
+const crossAgentTests = require('../../lib/cross_agent_tests/cat/cat_map.json')
+const cat = require('../../../lib/util/cat.js')
+const NAMES = require('../../../lib/metrics/names.js')
 
-var helper = require('../../lib/agent_helper.js')
-var chai = require('chai')
-var assert = chai.assert
-var sinon = require('sinon')
-var Transaction = require('../../../lib/transaction')
-var tests = require('../../lib/cross_agent_tests/cat/cat_map.json')
-var cat = require('../../../lib/util/cat.js')
-var NAMES = require('../../../lib/metrics/names.js')
+tap.test('when CAT is disabled', (t) => {
+  t.autoend()
 
+  let agent = null
 
-function getMockTransaction(agent, test, start, durationInSeconds, totalTimeInSeconds) {
-  const trans = new Transaction(agent)
-
-  // non-CAT data
-  trans.name = test.transactionName
-  trans.id = test.transactionGuid
-  trans.type = 'web'
-
-  const durationInMilliseconds = durationInSeconds * 1000
-  const totalTimeInMilliseconds = totalTimeInSeconds * 1000
-
-  trans.timer.start = start
-
-  trans.timer.getDurationInMillis = function stubDurationInMillis() {
-    return durationInMilliseconds
-  }
-
-  trans.trace.getTotalTimeDurationInMillis = function stubTotalTimeInMillis() {
-    return totalTimeInMilliseconds
-  }
-
-  // CAT data
-  if (test.inboundPayload) {
-    cat.parsedHeadersToTrans(test.inboundPayload[0], test.inboundPayload, trans)
-  } else {
-    // Simulate the headers being unparsable or not existing
-    cat.parsedHeadersToTrans(null, null, trans)
-  }
-
-  if (test.outboundRequests) {
-    test.outboundRequests.forEach(function(req) {
-      trans.pushPathHash(req.expectedOutboundPayload[3])
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      cross_application_tracer: {enabled: false}
     })
-  }
 
-  trans.baseSegment = {
-    // used by nr.apdexPerfZone
-    getDurationInMillis: function() {
-      return durationInMilliseconds
-    }
-  }
-
-  return trans
-}
-
-describe('when CAT is disabled', function() {
-  var agent
-
-  before(function() {
-    agent = helper.loadMockedAgent({cross_application_tracer: {enabled: false}})
+    done()
   })
 
-  after(function() {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    agent = null
+
+    done()
   })
 
-  tests.forEach(function(test) {
-    it(test.name + ' tx event should only contain non-CAT intrinsic attrs', () => {
+  crossAgentTests.forEach(function(test) {
+    t.test(test.name + ' tx event should only contain non-CAT intrinsic attrs', (t) => {
       const expectedDuration = 0.020
       const expectedTotalTime = 0.030
 
@@ -95,74 +55,93 @@ describe('when CAT is disabled', function() {
       chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
-      chai.expect(attrs.timestamp).to.equal(start)
-      chai.expect(attrs.name).to.equal(test.transactionName)
-      chai.expect(attrs.type).to.equal('Transaction')
-      chai.expect(attrs.error).to.be.false
+
+      t.equal(attrs.timestamp, start)
+      t.equal(attrs.name, test.transactionName)
+      t.equal(attrs.type, 'Transaction')
+      t.equal(attrs.error, false)
+
+      t.end()
     })
   })
 
-  it('includes queueDuration', function() {
-    var trans = new Transaction(agent)
-    trans.measure(NAMES.QUEUETIME, null, 100)
-    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
-    assert.equal(attrs.queueDuration, 0.1)
+  t.test('includes queueDuration', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.measure(NAMES.QUEUETIME, null, 100)
+    const attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
+    t.equal(attrs.queueDuration, 0.1)
+
+    t.end()
   })
 
-  it('includes externalDuration', function() {
-    var trans = new Transaction(agent)
-    trans.measure(NAMES.EXTERNAL.ALL, null, 100)
-    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
-    assert.equal(attrs.externalDuration, 0.1)
+  t.test('includes externalDuration', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.measure(NAMES.EXTERNAL.ALL, null, 100)
+    const attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
+    t.equal(attrs.externalDuration, 0.1)
+
+    t.end()
   })
 
-  it('includes databaseDuration', function() {
-    var trans = new Transaction(agent)
-    trans.measure(NAMES.DB.ALL, null, 100)
-    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+  t.test('includes databaseDuration', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.measure(NAMES.DB.ALL, null, 100)
+    const attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
     assert.equal(attrs.databaseDuration, 0.1)
+
+    t.end()
   })
 
-  it('includes externalCallCount', function() {
-    var trans = new Transaction(agent)
-    trans.measure(NAMES.EXTERNAL.ALL, null, 100)
-    trans.measure(NAMES.EXTERNAL.ALL, null, 100)
-    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
-    assert.equal(attrs.externalCallCount, 2)
+  t.test('includes externalCallCount', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.measure(NAMES.EXTERNAL.ALL, null, 100)
+    transaction.measure(NAMES.EXTERNAL.ALL, null, 100)
+    const attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
+    t.equal(attrs.externalCallCount, 2)
+
+    t.end()
   })
 
-  it('includes databaseDuration', function() {
-    var trans = new Transaction(agent)
-    trans.measure(NAMES.DB.ALL, null, 100)
-    trans.measure(NAMES.DB.ALL, null, 100)
-    var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
-    assert.equal(attrs.databaseCallCount, 2)
+
+  t.test('includes databaseDuration', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.measure(NAMES.DB.ALL, null, 100)
+    transaction.measure(NAMES.DB.ALL, null, 100)
+    const attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
+    t.equal(attrs.databaseCallCount, 2)
+
+    t.end()
   })
 
-  it("should call transaction.hasErrors() for error attribute", function() {
-    var trans = new Transaction(agent)
-    var mock, attrs
+  t.test("should call transaction.hasErrors() for error attribute", (t) => {
+    const transaction = new Transaction(agent)
+    let mock = null
+    let attrs = null
 
-    mock = sinon.mock(trans)
+    mock = sinon.mock(transaction)
     mock.expects('hasErrors').returns(true)
-    attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
     mock.verify()
     mock.restore()
-    assert.equal(true, attrs.error)
+    t.equal(true, attrs.error)
 
-    mock = sinon.mock(trans)
+    mock = sinon.mock(transaction)
     mock.expects('hasErrors').returns(false)
-    attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+    attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
     mock.verify()
     mock.restore()
-    assert.equal(false, attrs.error)
+    t.equal(false, attrs.error)
+
+    t.end()
   })
 })
 
-describe('when CAT is enabled', function() {
-  var agent
+tap.test('when CAT is enabled', (t) => {
+  t.autoend()
 
-  before(function() {
+  let agent = null
+
+  t.beforeEach((done) => {
     // App name from test data
     agent = helper.loadMockedAgent({
       apdex_t: 0.050,
@@ -171,28 +150,33 @@ describe('when CAT is enabled', function() {
     agent.config.applications = function newFake() {
       return ['testAppName']
     }
+
+    done()
   })
 
-  after(function() {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    agent = null
+
+    done()
   })
 
   const expectedDurationsInSeconds = [0.030, 0.150, 0.500]
 
-  tests.forEach(function(test, index) {
-    it(test.name + ' tx event should contain all intrinsic attrs', () => {
-      var idx = index % expectedDurationsInSeconds.length
-      var expectedDuration = expectedDurationsInSeconds[idx]
+  crossAgentTests.forEach(function(test, index) {
+    t.test(test.name + ' tx event should contain all intrinsic attrs', (t) => {
+      const idx = index % expectedDurationsInSeconds.length
+      const expectedDuration = expectedDurationsInSeconds[idx]
 
       const expectedTotalTime = 0.030
 
-      var start = Date.now()
+      const start = Date.now()
       const trans =
         getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
 
-      var attrs = agent._addIntrinsicAttrsFromTransaction(trans)
+      const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
-      var keys = [
+      const keys = [
         'duration',
         'name',
         'timestamp',
@@ -208,9 +192,11 @@ describe('when CAT is enabled', function() {
         'nr.alternatePathHashes',
         'nr.apdexPerfZone'
       ]
-      for (var i = 0; i < test.nonExpectedIntrinsicFields.length; ++i) {
+
+      for (let i = 0; i < test.nonExpectedIntrinsicFields.length; ++i) {
         keys.splice(keys.indexOf(test.nonExpectedIntrinsicFields[i]), 1)
       }
+
       if (!test.expectedIntrinsicFields['nr.pathHash']) {
         keys.splice(keys.indexOf('nr.apdexPerfZone'), 1)
       }
@@ -220,37 +206,87 @@ describe('when CAT is enabled', function() {
       chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
-      chai.expect(attrs.timestamp).to.equal(start)
-      chai.expect(attrs.name).to.equal(test.transactionName)
-      chai.expect(attrs.type).to.equal('Transaction')
-      chai.expect(attrs.error).to.be.false
-      chai.expect(attrs['nr.guid'])
-        .to.equal(test.expectedIntrinsicFields['nr.guid'])
-      chai.expect(attrs['nr.pathHash'])
-        .to.equal(test.expectedIntrinsicFields['nr.pathHash'])
-      chai.expect(attrs['nr.referringPathHash'])
-        .to.equal(test.expectedIntrinsicFields['nr.referringPathHash'])
-      chai.expect(attrs['nr.tripId'])
-        .to.equal(test.expectedIntrinsicFields['nr.tripId'])
-      chai.expect(attrs['nr.referringTransactionGuid'])
-        .to.equal(test.expectedIntrinsicFields['nr.referringTransactionGuid'])
-      chai.expect(attrs['nr.alternatePathHashes'])
-        .to.equal(test.expectedIntrinsicFields['nr.alternatePathHashes'])
+
+      t.equal(attrs.timestamp, start)
+      t.equal(attrs.name, test.transactionName)
+      t.equal(attrs.type, 'Transaction')
+      t.equal(attrs.error, false)
+      t.equal(attrs['nr.guid'], test.expectedIntrinsicFields['nr.guid'])
+      t.equal(attrs['nr.pathHash'], test.expectedIntrinsicFields['nr.pathHash'])
+      t.equal(attrs['nr.referringPathHash'], test.expectedIntrinsicFields['nr.referringPathHash'])
+      t.equal(attrs['nr.tripId'], test.expectedIntrinsicFields['nr.tripId'])
+
+      t.equal(
+        attrs['nr.referringTransactionGuid'],
+        test.expectedIntrinsicFields['nr.referringTransactionGuid']
+      )
+
+      t.equal(
+        attrs['nr.alternatePathHashes'],
+        test.expectedIntrinsicFields['nr.alternatePathHashes']
+      )
 
       if (test.expectedIntrinsicFields['nr.pathHash']) {
         // nr.apdexPerfZone not specified in the test, this is used to exercise it.
         switch (idx) {
           case 0:
-            chai.expect(attrs['nr.apdexPerfZone']).to.equal('S')
+            t.equal(attrs['nr.apdexPerfZone'], 'S')
             break
           case 1:
-            chai.expect(attrs['nr.apdexPerfZone']).to.equal('T')
+            t.equal(attrs['nr.apdexPerfZone'], 'T')
             break
           case 2:
-            chai.expect(attrs['nr.apdexPerfZone']).to.equal('F')
+            t.equal(attrs['nr.apdexPerfZone'], 'F')
             break
         }
       }
+
+      t.end()
     })
   })
 })
+
+function getMockTransaction(agent, test, start, durationInSeconds, totalTimeInSeconds) {
+  const transaction = new Transaction(agent)
+
+  // non-CAT data
+  transaction.name = test.transactionName
+  transaction.id = test.transactionGuid
+  transaction.type = 'web'
+
+  const durationInMilliseconds = durationInSeconds * 1000
+  const totalTimeInMilliseconds = totalTimeInSeconds * 1000
+
+  transaction.timer.start = start
+
+  transaction.timer.getDurationInMillis = function stubDurationInMillis() {
+    return durationInMilliseconds
+  }
+
+  transaction.trace.getTotalTimeDurationInMillis = function stubTotalTimeInMillis() {
+    return totalTimeInMilliseconds
+  }
+
+  // CAT data
+  if (test.inboundPayload) {
+    cat.parsedHeadersToTrans(test.inboundPayload[0], test.inboundPayload, transaction)
+  } else {
+    // Simulate the headers being unparsable or not existing
+    cat.parsedHeadersToTrans(null, null, transaction)
+  }
+
+  if (test.outboundRequests) {
+    test.outboundRequests.forEach(function(req) {
+      transaction.pushPathHash(req.expectedOutboundPayload[3])
+    })
+  }
+
+  transaction.baseSegment = {
+    // used by nr.apdexPerfZone
+    getDurationInMillis: function() {
+      return durationInMilliseconds
+    }
+  }
+
+  return transaction
+}
