@@ -1,10 +1,7 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
 
-const expect = require('chai').expect
+const tap = require('tap')
 const sinon = require('sinon')
 const Aggregator = require('../../../lib/aggregators/base-aggregator')
 
@@ -13,11 +10,15 @@ const LIMIT = 5
 const PERIOD_MS = 5
 const METHOD = 'some_method'
 
-describe('Base Aggregator', () => {
+tap.test('scheduling', (t) => {
+  t.autoend()
+
   let baseAggregator = null
   let fakeCollectorApi = null
+  let sendInvocation = 0
+  let clock = null
 
-  beforeEach(() => {
+  t.beforeEach((done) => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
@@ -27,300 +28,365 @@ describe('Base Aggregator', () => {
       limit: LIMIT,
       method: METHOD
     }, fakeCollectorApi)
+
+    // Keep track of send invocations, avoiding rest of functionality
+    sendInvocation = 0
+    baseAggregator.send = () => sendInvocation++
+
+    clock = sinon.useFakeTimers()
+
+    done()
   })
 
-  afterEach(() => {
+  t.afterEach((done) => {
     baseAggregator = null
     fakeCollectorApi = null
+
+    clock.restore()
+    clock = null
+
+    sendInvocation = 0
+
+    done()
   })
 
-  describe('scheduling', () => {
-    let sendInvocation = 0
-    let clock = null
+  t.test('should consistently invoke send on period', (t) => {
+    baseAggregator.start()
 
-    beforeEach(() => {
-      // Keep track of send invocations, avoiding rest of functionality
-      sendInvocation = 0
-      baseAggregator.send = () => sendInvocation++
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 1)
 
-      clock = sinon.useFakeTimers()
-    })
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 2)
 
-    afterEach(() => {
-      clock.restore()
-      clock = null
-
-      sendInvocation = 0
-    })
-
-    describe('start()', () => {
-      it('should consistently invoke send on period', () => {
-        baseAggregator.start()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(1)
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(2)
-      })
-
-      it('should not schedule multiple timers once started', () => {
-        baseAggregator.start()
-        baseAggregator.start()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(1)
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(2)
-      })
-    })
-
-    describe('stop()', () => {
-      it('should stop invoking send on period', () => {
-        baseAggregator.start()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(1)
-
-        baseAggregator.stop()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(1)
-      })
-
-      it('should stop gracefully handle stop when not started', () => {
-        baseAggregator.stop()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(0)
-      })
-
-      it('should stop gracefully handle stop when already stopped', () => {
-        baseAggregator.start()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(1)
-
-        baseAggregator.stop()
-        baseAggregator.stop()
-
-        clock.tick(PERIOD_MS)
-
-        expect(sendInvocation).to.equal(1)
-      })
-    })
+    t.end()
   })
 
-  describe('send()', () => {
-    it('should emit proper message with method for starting send', () => {
-      baseAggregator._getMergeData = () => null
-      baseAggregator._toPayloadSync = () => null
-      baseAggregator.clear = () => {}
+  t.test('should not schedule multiple timers once started', (t) => {
+    baseAggregator.start()
+    baseAggregator.start()
 
-      const expectedStartEmit = `starting ${METHOD} data send.`
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 1)
 
-      let emitFired = false
-      baseAggregator.once(expectedStartEmit, () => {
-        emitFired = true
-      })
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 2)
 
-      baseAggregator.send()
-
-      expect(emitFired).to.be.true
-    })
-
-    it('should clear existing data', () => {
-      // Keep track of clear invocations
-      let clearInvocations = 0
-      baseAggregator.clear = () => clearInvocations++
-
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => ['data']
-      baseAggregator._toPayloadSync = () => ['data']
-
-      baseAggregator.send()
-
-      expect(clearInvocations).to.equal(1)
-    })
-
-    it('should call transport w/ correct payload', () => {
-      // stub to allow invocation
-      baseAggregator.clear = () => {}
-
-      const expectedPayload = ['payloadData']
-
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => ['rawData']
-      baseAggregator._toPayloadSync = () => expectedPayload
-
-      let invokedPayload = null
-
-      fakeCollectorApi[METHOD] = (payload) => {
-        invokedPayload = payload
-      }
-
-
-      baseAggregator.send()
-
-      expect(invokedPayload).to.deep.equal(expectedPayload)
-    })
-
-    it('should not call transport for no data', () => {
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => null
-      baseAggregator._toPayloadSync = () => null
-      baseAggregator.clear = () => {}
-
-      let transportInvocations = 0
-      fakeCollectorApi[METHOD] = () => {
-        transportInvocations++
-      }
-
-      baseAggregator.send()
-
-      expect(transportInvocations).to.equal(0)
-    })
-
-    it('should call merge with original data when transport indicates retain', () => {
-      // stub to allow invocation
-      baseAggregator.clear = () => {}
-
-      const expectedData = ['payloadData']
-
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => expectedData
-      baseAggregator._toPayloadSync = () => ['payloadData']
-
-      let mergeData = null
-      baseAggregator._merge = (data) => {
-        mergeData = data
-      }
-
-      fakeCollectorApi[METHOD] = (payload, callback) => {
-        callback(null, { retainData: true})
-      }
-
-      baseAggregator.send()
-
-      expect(mergeData).to.deep.equal(expectedData)
-    })
-
-    it('should not merge when transport indicates not to retain', () => {
-      // stub to allow invocation
-      baseAggregator.clear = () => {}
-
-      const expectedData = ['payloadData']
-
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => expectedData
-      baseAggregator._toPayloadSync = () => ['payloadData']
-
-      let mergeInvocations = 0
-      baseAggregator._merge = () => {
-        mergeInvocations++
-      }
-
-      fakeCollectorApi[METHOD] = (payload, callback) => {
-        callback(null, { retainData: false})
-      }
-
-      baseAggregator.send()
-
-      expect(mergeInvocations).to.equal(0)
-    })
-
-    it('should default to the sync method in the async case with no override', () => {
-      // stub to allow invocation
-      baseAggregator.clear = () => {}
-
-      const expectedData = ['payloadData']
-
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => expectedData
-      baseAggregator._toPayloadSync = () => ['payloadData']
-
-      // Set the aggregator up as async
-      baseAggregator.isAsync = true
-
-      let mergeInvocations = 0
-      baseAggregator._merge = () => {
-        mergeInvocations++
-      }
-
-      fakeCollectorApi[METHOD] = (payload, callback) => {
-        callback(null, { retainData: false})
-      }
-
-      baseAggregator.send()
-
-      expect(mergeInvocations).to.equal(0)
-    })
-
-    it('should allow for async payload override', () => {
-      // stub to allow invocation
-      baseAggregator.clear = () => {}
-
-      const expectedData = ['payloadData']
-
-      // Pretend there's data to clear
-      baseAggregator._getMergeData = () => expectedData
-      baseAggregator.toPayload = (cb) => cb(null, ['payloadData'])
-
-      // Set the aggregator up as async
-      baseAggregator.isAsync = true
-
-      let mergeInvocations = 0
-      baseAggregator._merge = () => {
-        mergeInvocations++
-      }
-
-      fakeCollectorApi[METHOD] = (payload, callback) => {
-        callback(null, { retainData: false})
-      }
-
-      baseAggregator.send()
-
-      expect(mergeInvocations).to.equal(0)
-    })
-
-    it('should emit proper message with method for finishing send', () => {
-      // stub to allow invocation
-      baseAggregator.clear = () => {}
-      baseAggregator._getMergeData = () => ['data']
-      baseAggregator._toPayloadSync = () => ['data']
-
-      const expectedStartEmit = `finished ${METHOD} data send.`
-
-      let emitFired = false
-      baseAggregator.once(expectedStartEmit, () => {
-        emitFired = true
-      })
-
-      fakeCollectorApi[METHOD] = (payload, callback) => {
-        callback(null, { retainData: false})
-      }
-
-      baseAggregator.send()
-
-      expect(emitFired).to.be.true
-    })
+    t.end()
   })
 
-  it('reconfigure() should update runid', () => {
+  t.test('should stop invoking send on period', (t) => {
+    baseAggregator.start()
+
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 1)
+
+    baseAggregator.stop()
+
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 1)
+
+    t.end()
+  })
+
+  t.test('should stop gracefully handle stop when not started', (t) => {
+    baseAggregator.stop()
+
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 0)
+
+    t.end()
+  })
+
+  t.test('should stop gracefully handle stop when already stopped', (t) => {
+    baseAggregator.start()
+
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 1)
+
+    baseAggregator.stop()
+    baseAggregator.stop()
+
+    clock.tick(PERIOD_MS)
+    t.equal(sendInvocation, 1)
+
+    t.end()
+  })
+})
+
+tap.test('send', (t) => {
+  t.autoend()
+
+  let baseAggregator = null
+  let fakeCollectorApi = null
+
+  t.beforeEach((done) => {
+    fakeCollectorApi = {}
+    fakeCollectorApi[METHOD] = () => {}
+
+    baseAggregator = new Aggregator({
+      periodMs: PERIOD_MS,
+      runId: RUN_ID,
+      limit: LIMIT,
+      method: METHOD
+    }, fakeCollectorApi)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    baseAggregator = null
+    fakeCollectorApi = null
+
+    done()
+  })
+
+  t.test('should emit proper message with method for starting send', (t) => {
+    baseAggregator._getMergeData = () => null
+    baseAggregator._toPayloadSync = () => null
+    baseAggregator.clear = () => {}
+
+    const expectedStartEmit = `starting ${METHOD} data send.`
+
+    let emitFired = false
+    baseAggregator.once(expectedStartEmit, () => {
+      emitFired = true
+    })
+
+    baseAggregator.send()
+
+    t.ok(emitFired)
+
+    t.end()
+  })
+
+  t.test('should clear existing data', (t) => {
+    // Keep track of clear invocations
+    let clearInvocations = 0
+    baseAggregator.clear = () => clearInvocations++
+
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => ['data']
+    baseAggregator._toPayloadSync = () => ['data']
+
+    baseAggregator.send()
+
+    t.equal(clearInvocations, 1)
+
+    t.end()
+  })
+
+  t.test('should call transport w/ correct payload', (t) => {
+    // stub to allow invocation
+    baseAggregator.clear = () => {}
+
+    const expectedPayload = ['payloadData']
+
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => ['rawData']
+    baseAggregator._toPayloadSync = () => expectedPayload
+
+    let invokedPayload = null
+
+    fakeCollectorApi[METHOD] = (payload) => {
+      invokedPayload = payload
+    }
+
+    baseAggregator.send()
+
+    t.deepEqual(invokedPayload, expectedPayload)
+
+    t.end()
+  })
+
+  t.test('should not call transport for no data', (t) => {
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => null
+    baseAggregator._toPayloadSync = () => null
+    baseAggregator.clear = () => {}
+
+    let transportInvocations = 0
+    fakeCollectorApi[METHOD] = () => {
+      transportInvocations++
+    }
+
+    baseAggregator.send()
+
+    t.equal(transportInvocations, 0)
+
+    t.end()
+  })
+
+  t.test('should call merge with original data when transport indicates retain', (t) => {
+    // stub to allow invocation
+    baseAggregator.clear = () => {}
+
+    const expectedData = ['payloadData']
+
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => expectedData
+    baseAggregator._toPayloadSync = () => ['payloadData']
+
+    let mergeData = null
+    baseAggregator._merge = (data) => {
+      mergeData = data
+    }
+
+    fakeCollectorApi[METHOD] = (payload, callback) => {
+      callback(null, { retainData: true})
+    }
+
+    baseAggregator.send()
+
+    t.deepEqual(mergeData, expectedData)
+
+    t.end()
+  })
+
+  t.test('should not merge when transport indicates not to retain', (t) => {
+    // stub to allow invocation
+    baseAggregator.clear = () => {}
+
+    const expectedData = ['payloadData']
+
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => expectedData
+    baseAggregator._toPayloadSync = () => ['payloadData']
+
+    let mergeInvocations = 0
+    baseAggregator._merge = () => {
+      mergeInvocations++
+    }
+
+    fakeCollectorApi[METHOD] = (payload, callback) => {
+      callback(null, { retainData: false})
+    }
+
+    baseAggregator.send()
+
+    t.equal(mergeInvocations, 0)
+
+    t.end()
+  })
+
+  t.test('should default to the sync method in the async case with no override', (t) => {
+    // stub to allow invocation
+    baseAggregator.clear = () => {}
+
+    const expectedData = ['payloadData']
+
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => expectedData
+    baseAggregator._toPayloadSync = () => ['payloadData']
+
+    // Set the aggregator up as async
+    baseAggregator.isAsync = true
+
+    let mergeInvocations = 0
+    baseAggregator._merge = () => {
+      mergeInvocations++
+    }
+
+    fakeCollectorApi[METHOD] = (payload, callback) => {
+      callback(null, { retainData: false})
+    }
+
+    baseAggregator.send()
+
+    t.equal(mergeInvocations, 0)
+
+    t.end()
+  })
+
+  t.test('should allow for async payload override', (t) => {
+    // stub to allow invocation
+    baseAggregator.clear = () => {}
+
+    const expectedData = ['payloadData']
+
+    // Pretend there's data to clear
+    baseAggregator._getMergeData = () => expectedData
+    baseAggregator.toPayload = (cb) => cb(null, ['payloadData'])
+
+    // Set the aggregator up as async
+    baseAggregator.isAsync = true
+
+    let mergeInvocations = 0
+    baseAggregator._merge = () => {
+      mergeInvocations++
+    }
+
+    fakeCollectorApi[METHOD] = (payload, callback) => {
+      callback(null, { retainData: false})
+    }
+
+    baseAggregator.send()
+
+    t.equal(mergeInvocations, 0)
+
+    t.end()
+  })
+
+  t.test('should emit proper message with method for finishing send', (t) => {
+    // stub to allow invocation
+    baseAggregator.clear = () => {}
+    baseAggregator._getMergeData = () => ['data']
+    baseAggregator._toPayloadSync = () => ['data']
+
+    const expectedStartEmit = `finished ${METHOD} data send.`
+
+    let emitFired = false
+    baseAggregator.once(expectedStartEmit, () => {
+      emitFired = true
+    })
+
+    fakeCollectorApi[METHOD] = (payload, callback) => {
+      callback(null, { retainData: false})
+    }
+
+    baseAggregator.send()
+
+    t.ok(emitFired)
+
+    t.end()
+  })
+})
+
+tap.test('reconfigure() should update runid', (t) => {
+  t.autoend()
+
+  let baseAggregator = null
+  let fakeCollectorApi = null
+
+  t.beforeEach((done) => {
+    fakeCollectorApi = {}
+    fakeCollectorApi[METHOD] = () => {}
+
+    baseAggregator = new Aggregator({
+      periodMs: PERIOD_MS,
+      runId: RUN_ID,
+      limit: LIMIT,
+      method: METHOD
+    }, fakeCollectorApi)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    baseAggregator = null
+    fakeCollectorApi = null
+
+    done()
+  })
+
+  t.test('reconfigure() should update runid', (t) => {
     const expectedRunId = 'new run id'
     const fakeConfig = {run_id: expectedRunId}
 
     baseAggregator.reconfigure(fakeConfig)
 
-    expect(baseAggregator.runId).to.equal(expectedRunId)
+    t.equal(baseAggregator.runId, expectedRunId)
+
+    t.end()
   })
 })
