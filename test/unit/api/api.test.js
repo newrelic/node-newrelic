@@ -37,46 +37,6 @@ describe('the New Relic agent API', function() {
     expect(api.setTransactionName).to.be.a('function')
   })
 
-  it("exports a dispatcher setter", function() {
-    should.exist(api.setDispatcher)
-    expect(api.setDispatcher).to.be.a('function')
-  })
-
-  describe("dispatch setter", function() {
-    afterEach(function() {
-      agent.environment.clearDispatcher()
-    })
-    it("sets the dispatcher", function() {
-      api.setDispatcher('test')
-      expect(agent.environment.get('Dispatcher')).to.include('test')
-    })
-
-    it("sets the dispatcher and version", function() {
-      api.setDispatcher('test', 2)
-      expect(agent.environment.get('Dispatcher')).to.include('test')
-      expect(agent.environment.get('Dispatcher Version')).to.include('2')
-    })
-
-    it("does not allow internal calls to setDispatcher to override", function() {
-      agent.environment.setDispatcher('internal', '3')
-      expect(agent.environment.get('Dispatcher')).to.include('internal')
-      expect(agent.environment.get('Dispatcher Version')).to.include('3')
-
-      api.setDispatcher('test', 2)
-      expect(agent.environment.get('Dispatcher')).to.include('test')
-      expect(agent.environment.get('Dispatcher Version')).to.include('2')
-
-      agent.environment.setDispatcher('internal', '3')
-      expect(agent.environment.get('Dispatcher')).to.include('test')
-      expect(agent.environment.get('Dispatcher Version')).to.include('2')
-    })
-  })
-
-  it("exports a dispatcher setter", function() {
-    should.exist(api.setDispatcher)
-    expect(api.setDispatcher).to.be.a('function')
-  })
-
   it("exports a controller naming function", function() {
     should.exist(api.setControllerName)
     expect(api.setControllerName).to.be.a('function')
