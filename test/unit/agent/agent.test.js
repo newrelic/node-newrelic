@@ -1,777 +1,1014 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-var sinon = require('sinon')
-var chai = require('chai')
-var should = chai.should()
-var expect = chai.expect
-var nock = require('nock')
-var helper = require('../../lib/agent_helper')
-var sampler = require('../../../lib/sampler')
-var configurator = require('../../../lib/config')
-var Agent = require('../../../lib/agent')
-var Transaction = require('../../../lib/transaction')
-var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
+const tap = require('tap')
+const sinon = require('sinon')
+const nock = require('nock')
+const helper = require('../../lib/agent_helper')
+const sampler = require('../../../lib/sampler')
+const configurator = require('../../../lib/config')
+const Agent = require('../../../lib/agent')
+const Transaction = require('../../../lib/transaction')
 const CollectorResponse = require('../../../lib/collector/response')
 
+const RUN_ID = 1337
+const URL = 'https://collector.newrelic.com'
 
-/*
- *
- * CONSTANTS
- *
- */
-var RUN_ID = 1337
-var URL = 'https://collector.newrelic.com'
+tap.test('should require configuration passed to constructor', (t) => {
+  t.throws(() => new Agent())
+  t.end()
+})
 
-// TODO: do we need to mock AWS (and other vendors) in these tests?
-// Why not just disable?
-var awsHost = 'http://169.254.169.254'
+tap.test('should not throw with valid config', (t) => {
+  const config = configurator.initialize({agent_enabled: false})
+  const agent = new Agent(config)
 
-var awsResponses = {
-  'dynamic/instance-identity/document': {
-    'instanceType': 'test.type',
-    'instanceId': 'test.id',
-    'availabilityZone': 'us-west-2b'
+  t.notOk(agent.config.agent_enabled)
+  t.end()
+})
+
+tap.test('when loaded with defaults', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+
+    done()
+  })
+
+  t.test('bootstraps its configuration', (t) => {
+    t.ok(agent.config)
+    t.end()
+  })
+
+  t.test('has an error tracer', (t) => {
+    t.ok(agent.errors)
+    t.end()
+  })
+
+  t.test('has query tracer', (t) => {
+    t.ok(agent.queries)
+    t.end()
+  })
+
+  t.test('uses an aggregator to apply top N slow trace logic', (t) => {
+    t.ok(agent.traces)
+    t.end()
+  })
+
+  t.test('has a URL normalizer', (t) => {
+    t.ok(agent.urlNormalizer)
+    t.end()
+  })
+
+  t.test('has a metric name normalizer', (t) => {
+    t.ok(agent.metricNameNormalizer)
+    t.end()
+  })
+
+  t.test('has a transaction name normalizer', (t) => {
+    t.ok(agent.transactionNameNormalizer)
+    t.end()
+  })
+
+  t.test('has a consolidated metrics collection that transactions feed into', (t) => {
+    t.ok(agent.metrics)
+    t.end()
+  })
+
+  t.test('has a function to look up the active transaction', (t) => {
+    t.ok(agent.getTransaction)
+    // should not throw
+    agent.getTransaction()
+
+    t.end()
+  })
+
+  t.test('requires new configuration to reconfigure the agent', (t) => {
+    t.throws(() => agent.reconfigure())
+    t.end()
+  })
+
+  t.test('defaults to a state of `stopped`', (t) => {
+    t.equal(agent._state, 'stopped')
+    t.end()
+  })
+
+  t.test('requires a valid value when changing state', (t) => {
+    t.throws(() => agent.setState('bogus'), new Error('Invalid state bogus'))
+    t.end()
+  })
+
+  t.test('has some debugging configuration by default', (t) => {
+    t.ok(agent.config.debug)
+    t.end()
+  })
+})
+
+tap.test('should load naming rules when configured', (t) => {
+  const config = configurator.initialize({
+    rules: {name: [
+      {pattern: '^/t',  name: 'u'},
+      {pattern: /^\/u/, name: 't'}
+    ]}
+  })
+
+  const configured = new Agent(config)
+
+  const rules = configured.userNormalizer.rules
+  tap.equal(rules.length, 2 + 1) // +1 default ignore rule
+
+  // Rules are reversed by default
+  t.equal(rules[2].pattern.source, '^\\/u')
+
+  t.equal(rules[1].pattern.source, '^\\/t')
+
+  t.end()
+})
+
+tap.test('should load ignoring rules when configured', (t) => {
+  const config = configurator.initialize({
+    rules: {ignore: [
+      /^\/ham_snadwich\/ignore/
+    ]}
+  })
+
+  const configured = new Agent(config)
+
+  const rules = configured.userNormalizer.rules
+  t.equal(rules.length, 1)
+  t.equal(rules[0].pattern.source, '^\\/ham_snadwich\\/ignore')
+  t.equal(rules[0].ignore, true)
+
+  t.end()
+})
+
+tap.test('when forcing transaction ignore status', (t) => {
+  t.autoend()
+
+  let agentInstance = null
+
+  t.beforeEach((done) => {
+    const config = configurator.initialize({
+      rules: {ignore: [
+        /^\/ham_snadwich\/ignore/
+      ]}
+    })
+    agentInstance = new Agent(config)
+    done()
+  })
+
+  t.afterEach((done) => {
+    agentInstance = null
+    done()
+  })
+
+  t.test('should not error when forcing an ignore', (t) => {
+    const transaction = new Transaction(agentInstance)
+    transaction.forceIgnore = true
+    transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
+    t.equal(transaction.ignore, true)
+
+    // should not throw
+    transaction.end()
+
+    t.end()
+  })
+
+  t.test('should not error when forcing a non-ignore', (t) => {
+    const transaction = new Transaction(agentInstance)
+    transaction.forceIgnore = false
+    transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
+    t.equal(transaction.ignore, false)
+
+    // should not throw
+    transaction.end()
+
+    t.end()
+  })
+
+  t.test('should ignore when finalizeNameFromUri is not called', (t) => {
+    const transaction = new Transaction(agentInstance)
+    transaction.forceIgnore = true
+    agentInstance._transactionFinished(transaction)
+    t.equal(transaction.ignore, true)
+
+    t.end()
+  })
+})
+
+tap.test('#startAggregators should start all aggregators', (t) => {
+  // Load agent with default 'stopped' state
+  let agent = helper.loadMockedAgent(null, false)
+  agent.config.distributed_tracing.enabled = true // for span events
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  agent.startAggregators()
+
+  t.ok(agent.traces.sendTimer)
+  t.ok(agent.errors.traceAggregator.sendTimer)
+  t.ok(agent.errors.eventAggregator.sendTimer)
+  t.ok(agent.spanEventAggregator.sendTimer)
+  t.ok(agent.transactionEventAggregator.sendTimer)
+  t.ok(agent.customEventAggregator.sendTimer)
+
+  t.end()
+})
+
+tap.test('#startAggregators should start all aggregators', (t) => {
+  // Load agent with default 'stopped' state
+  let agent = helper.loadMockedAgent(null, false)
+  agent.config.distributed_tracing.enabled = true // for span events
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  agent.startAggregators()
+
+  t.ok(agent.traces.sendTimer)
+  t.ok(agent.errors.traceAggregator.sendTimer)
+  t.ok(agent.errors.eventAggregator.sendTimer)
+  t.ok(agent.spanEventAggregator.sendTimer)
+  t.ok(agent.transactionEventAggregator.sendTimer)
+  t.ok(agent.customEventAggregator.sendTimer)
+
+  t.end()
+})
+
+tap.test('#stopAggregators should stop all aggregators', (t) => {
+  // Load agent with default 'stopped' state
+  let agent = helper.loadMockedAgent(null, false)
+  agent.config.distributed_tracing.enabled = true // for span events
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  agent.startAggregators()
+  agent.stopAggregators()
+
+  t.notOk(agent.traces.sendTimer)
+  t.notOk(agent.errors.traceAggregator.sendTimer)
+  t.notOk(agent.errors.eventAggregator.sendTimer)
+  t.notOk(agent.spanEventAggregator.sendTimer)
+  t.notOk(agent.transactionEventAggregator.sendTimer)
+  t.notOk(agent.customEventAggregator.sendTimer)
+
+  t.end()
+})
+
+tap.test('#onConnect should reconfigure all the aggregators', (t) => {
+  const EXPECTED_AGG_COUNT = 8
+
+  // Load agent with default 'stopped' state
+  let agent = helper.loadMockedAgent(null, false)
+  agent.config.distributed_tracing.enabled = true // for span events
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  // mock out the base reconfigure method
+  const proto = agent.traces.__proto__.__proto__.__proto__
+  const mock = sinon.mock(proto)
+
+  agent.config.event_harvest_config = {
+    report_period_ms: 5000,
+    harvest_limits: {
+      span_event_data: 1
+    }
   }
-}
+  mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
+  agent.onConnect()
+  mock.verify()
 
-var awsRedirect
+  t.end()
+})
 
-function refreshAWSEndpoints() {
-  clearAWSCache()
-  awsRedirect = nock(awsHost)
-  for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
-    var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
-    redirect.reply(200, awsResponses[awsPath])
-  }
-}
+tap.test('when starting', (t) => {
+  t.autoend()
 
+  let agent = null
 
-describe('the New Relic agent', function() {
-  before(function() {
+  t.beforeEach((done) => {
     nock.disableNetConnect()
-    refreshAWSEndpoints()
+
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+    done()
   })
 
-  after(function() {
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+
+    if (!nock.isDone()) {
+      /* eslint-disable-next-line no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
+
     nock.enableNetConnect()
+
+    done()
   })
 
-  it('requires the configuration be passed to the constructor', function() {
-    expect(function() { new Agent() }).to.throw() // eslint-disable-line no-new
+  t.test('should require a callback', (t) => {
+    t.throws(() => agent.start(), new Error('callback required!'))
+
+    t.end()
   })
 
-  it('does not throw when passed a valid configuration', function() {
-    var config = configurator.initialize({agent_enabled: false})
-    var agent = new Agent(config)
+  t.test('should change state to `starting`', (t) => {
+    agent.collector.connect = function() {
+      t.equal(agent._state, 'starting')
+      t.end()
+    }
 
-    expect(agent.config.agent_enabled).equal(false)
+    agent.start(function cb_start() {})
   })
 
-  describe('when configured', function() {
-    var agent
-
-    beforeEach(function() {
-      // Load agent with default 'stopped' state
-      agent = helper.loadMockedAgent(null, false)
+  t.test('should not error when disabled via configuration', (t) => {
+    agent.config.agent_enabled = false
+    agent.collector.connect = function() {
+      t.error(new Error('should not be called'))
+      t.end()
+    }
+    agent.start(() => {
+      t.end()
     })
+  })
 
-    afterEach(function() {
-      helper.unloadAgent(agent)
+  t.test('should emit `stopped` when disabled via configuration', (t) => {
+    agent.config.agent_enabled = false
+    agent.collector.connect = function() {
+      t.error(new Error('should not be called'))
+      t.end()
+    }
+
+    agent.start(function cb_start() {
+      t.equal(agent._state, 'stopped')
+      t.end()
     })
+  })
 
-    it('bootstraps its configuration', function() {
-      should.exist(agent.config)
+  t.test('should error when no license key is included', (t) => {
+    agent.config.license_key = undefined
+    agent.collector.connect = function() {
+      t.error(new Error('should not be called'))
+      t.end()
+    }
+
+    agent.start(function cb_start(error) {
+      t.ok(error)
+
+      t.end()
     })
+  })
 
-    it('has an error tracer', function() {
-      should.exist(agent.errors)
+  t.test('should say why startup failed without license key', (t) => {
+    agent.config.license_key = undefined
+
+    agent.collector.connect = function() {
+      t.error(new Error('should not be called'))
+      t.end()
+    }
+
+    agent.start(function cb_start(error) {
+      t.equal(error.message, 'Not starting without license key!')
+
+      t.end()
     })
+  })
 
-    it('has query tracer', function() {
-      should.exist(agent.queries)
+  t.test('should call connect when using proxy', (t) => {
+    agent.config.proxy = 'fake://url'
+
+    agent.collector.connect = function(callback) {
+      t.ok(callback)
+
+      t.end()
+    }
+
+    agent.start(() => {})
+  })
+
+  t.test('should call connect when config is correct', (t) => {
+    agent.collector.connect = function(callback) {
+      t.ok(callback)
+      t.end()
+    }
+
+    agent.start(() => {})
+  })
+
+  t.test('should error when connection fails', (t) => {
+    const passed = new Error('passin on through')
+
+    agent.collector.connect = function(callback) {
+      callback(passed)
+    }
+
+    agent.start(function cb_start(error) {
+      t.equal(error, passed)
+
+      t.end()
     })
+  })
 
-    it('uses an aggregator to apply top N slow trace logic', function() {
-      should.exist(agent.traces)
+  t.test('should harvest at connect when metrics are already there', (t) => {
+    const metrics = nock(URL)
+      .post(helper.generateCollectorPath('metric_data', RUN_ID))
+      .reply(200, {return_value: []})
+
+    agent.collector.connect = function(callback) {
+      agent.collector.isConnected = () => true
+      callback(null, CollectorResponse.success(null, {agent_run_id: RUN_ID}))
+    }
+
+    agent.config.run_id = RUN_ID
+
+    agent.metrics.measureMilliseconds('Test/Bogus', null, 1)
+
+    agent.start(function cb_start(error) {
+      t.error(error)
+      t.ok(metrics.isDone())
+
+      t.end()
     })
+  })
+})
 
-    it('has a URL normalizer', function() {
-      should.exist(agent.urlNormalizer)
-    })
+tap.test('initial harvest', (t) => {
+  t.autoend()
 
-    it('has a metric name normalizer', function() {
-      should.exist(agent.metricNameNormalizer)
-    })
+  const origInterval = global.setInterval
 
-    it('has a transaction name normalizer', function() {
-      should.exist(agent.transactionNameNormalizer)
-    })
+  let agent = null
+  let redirect = null
+  let connect = null
+  let settings = null
 
-    it('has a consolidated metrics collection that transactions feed into', function() {
-      should.exist(agent.metrics)
-    })
+  t.beforeEach((done) => {
+    nock.disableNetConnect()
 
-    it('has a function to look up the active transaction', function() {
-      expect(function() { agent.getTransaction() }).not.throws()
-    })
+    global.setInterval = (callback) => {
+      return Object.assign({unref: () => {}}, setImmediate(callback))
+    }
 
-    it('requires new configuration to reconfigure the agent', function() {
-      expect(function() { agent.reconfigure() }).throws()
-    })
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
 
-    it('defaults to a state of `stopped`', function() {
-      expect(agent._state).equal('stopped')
-    })
+    // Avoid detection work / network call attempts
+    agent.config.utilization = {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: false
+    }
 
-    it('requires a valid value when changing state', function() {
-      expect(function() { agent.setState('bogus') }).throws('Invalid state bogus')
-    })
+    agent.config.no_immediate_harvest = true
 
-    it('has some debugging configuration by default', function() {
-      should.exist(agent.config.debug)
-    })
-
-    describe('with naming rules configured', function() {
-      var configured
-      beforeEach(function() {
-        var config = configurator.initialize({
-          rules: {name: [
-            {pattern: '^/t',  name: 'u'},
-            {pattern: /^\/u/, name: 't'}
-          ]}
-        })
-        configured = new Agent(config)
-      })
-
-      it('loads the rules', function() {
-        var rules = configured.userNormalizer.rules
-        expect(rules.length).equal(2 + 1) // +1 default ignore rule
-
-        // Rules are reversed by default
-        expect(rules[2].pattern.source).equal('^\\/u')
-
-        expect(rules[1].pattern.source).equal('^\\/t')
-      })
-    })
-
-    describe('with ignoring rules configured', function() {
-      var configured
-
-      beforeEach(function() {
-        var config = configurator.initialize({
-          rules: {ignore: [
-            /^\/ham_snadwich\/ignore/
-          ]}
-        })
-        configured = new Agent(config)
-      })
-
-      it('loads the rules', function() {
-        var rules = configured.userNormalizer.rules
-        expect(rules.length).equal(1)
-        expect(rules[0].pattern.source).equal('^\\/ham_snadwich\\/ignore')
-        expect(rules[0].ignore).equal(true)
-      })
-    })
-
-    describe('when forcing transaction ignore status', function() {
-      var agentInstance
-
-      beforeEach(function() {
-        var config = configurator.initialize({
-          rules: {ignore: [
-            /^\/ham_snadwich\/ignore/
-          ]}
-        })
-        agentInstance = new Agent(config)
-      })
-
-      it('should not error when forcing an ignore', function() {
-        var transaction = new Transaction(agentInstance)
-        transaction.forceIgnore = true
-        transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
-        expect(transaction.ignore).equal(true)
-
-        expect(function() { transaction.end() }).not.throws()
-      })
-
-      it('should not error when forcing a non-ignore', function() {
-        var transaction = new Transaction(agentInstance)
-        transaction.forceIgnore = false
-        transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
-        expect(transaction.ignore).equal(false)
-
-        expect(function() { transaction.end() }).not.throws()
-      })
-
-      it('should ignore when finalizeNameFromUri is not called', function() {
-        var transaction = new Transaction(agentInstance)
-        transaction.forceIgnore = true
-        agentInstance._transactionFinished(transaction)
-        expect(transaction.ignore).equal(true)
-      })
-    })
-
-    describe('aggregator methods', function() {
-      beforeEach(function() {
-        agent.config.distributed_tracing.enabled = true // for span events
-
-        agent.startAggregators()
-      })
-
-      describe('#stopAggregators', function() {
-        it('should stop all the aggregators', function() {
-          expect(agent.traces.sendTimer).to.not.be.null
-          expect(agent.errors.traceAggregator.sendTimer).to.not.be.null
-          expect(agent.errors.eventAggregator.sendTimer).to.not.be.null
-          expect(agent.spanEventAggregator.sendTimer).to.not.be.null
-          expect(agent.transactionEventAggregator.sendTimer).to.not.be.null
-          expect(agent.customEventAggregator.sendTimer).to.not.be.null
-        })
-      })
-
-      describe('#stopAggregators', function() {
-        it('should stop all the aggregators', function() {
-          agent.stopAggregators()
-          expect(agent.traces.sendTimer).to.be.null
-          expect(agent.errors.traceAggregator.sendTimer).to.be.null
-          expect(agent.errors.eventAggregator.sendTimer).to.be.null
-          expect(agent.spanEventAggregator.sendTimer).to.be.null
-          expect(agent.transactionEventAggregator.sendTimer).to.be.null
-          expect(agent.customEventAggregator.sendTimer).to.be.null
-        })
-      })
-      describe('#onConnect', function() {
-        const EXPECTED_AGG_COUNT = 8
-        it('should reconfigure all the aggregators', function() {
-          // mock out the base reconfigure method
-          const proto = agent.traces.__proto__.__proto__.__proto__
-          const mock = sinon.mock(proto)
-
-          agent.config.event_harvest_config = {
-            report_period_ms: 5000,
-            harvest_limits: {
-              span_event_data: 1
-            }
-          }
-          mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
-          agent.onConnect()
-          mock.verify()
-        })
-      })
-    })
-
-    describe('when starting', function() {
-      it('should require a callback', function() {
-        expect(function() { agent.start() }).throws('callback required!')
-      })
-
-      it('should change state to `starting`', function(done) {
-        agent.collector.connect = function() { done() }
-        agent.start(function cb_start() {})
-        expect(agent._state).equal('starting')
-      })
-
-      it('should not error when disabled via configuration', function(done) {
-        agent.config.agent_enabled = false
-        agent.collector.connect = function() {
-          done(new Error('should not be called'))
+    redirect = nock(URL)
+      .post(helper.generateCollectorPath('preconnect'))
+      .reply(200, {
+        return_value: {
+          redirect_host: 'collector.newrelic.com',
+          security_policies: {}
         }
-        agent.start(done)
       })
 
-      it('should emit `stopped` when disabled via configuration', function(done) {
-        agent.config.agent_enabled = false
-        agent.collector.connect = function() {
-          done(new Error('should not be called'))
-        }
-        agent.start(function cb_start() {
-          expect(agent._state).equal('stopped')
-          done()
-        })
-      })
+    connect = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, {return_value: {agent_run_id: RUN_ID}})
 
-      it('should error when no license key is included', function(done) {
-        agent.config.license_key = undefined
-        agent.collector.connect = function() {
-          done(new Error('should not be called'))
-        }
-        agent.start(function cb_start(error) {
-          should.exist(error)
+    settings = nock(URL)
+      .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+      .reply(200, {return_value: []})
 
-          done()
-        })
-      })
+    done()
+  })
 
-      it('should say why startup failed without license key', function(done) {
-        agent.config.license_key = undefined
-        agent.collector.connect = function() {
-          done(new Error('should not be called'))
-        }
-        agent.start(function cb_start(error) {
-          expect(error.message).equal('Not starting without license key!')
+  t.afterEach((done) => {
+    global.setInterval = origInterval
 
-          done()
-        })
-      })
+    helper.unloadAgent(agent)
+    agent = null
 
-      it('should call connect when using proxy', function(done) {
-        agent.config.proxy = 'fake://url'
+    if (!nock.isDone()) {
+      /* eslint-disable-next-line no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
 
-        agent.collector.connect = function(callback) {
-          should.exist(callback)
-          done()
-        }
+    nock.enableNetConnect()
 
-        agent.start(done)
-      })
+    done()
+  })
 
-      it('should call connect when config is correct', function(done) {
-        agent.collector.connect = function(callback) {
-          should.exist(callback)
-          done()
-        }
+  t.test('should not blow up when harvest cycle runs', (t) => {
+    agent.start(() => {
+      setTimeout(() => {
+        t.ok(redirect.isDone())
+        t.ok(connect.isDone())
+        t.ok(settings.isDone())
 
-        agent.start(done)
-      })
+        t.end()
+      }, 15)
+    })
+  })
 
-      it('should error when connection fails', function(done) {
-        var passed = new Error('passin on through')
+  t.test('should start aggregators after initial harvest', (t) => {
+    let aggregatorsStarted = false
 
-        agent.collector.connect = function(callback) {
-          callback(passed)
-        }
+    agent.startAggregators = () => {
+      aggregatorsStarted = true
+    }
 
-        agent.start(function cb_start(error) {
-          expect(error).equal(passed)
+    agent.start(() => {
+      setTimeout(() => {
+        t.ok(aggregatorsStarted)
 
-          done()
-        })
-      })
+        t.ok(redirect.isDone())
+        t.ok(connect.isDone())
+        t.ok(settings.isDone())
 
-      it('should harvest at connect when metrics are already there', function(done) {
-        var metrics = nock(URL)
-          .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(200, {return_value: []})
+        t.end()
+      }, 15)
+    })
+  })
 
-        agent.collector.connect = function(callback) {
-          agent.collector.isConnected = () => true
-          callback(null, CollectorResponse.success(null, {agent_run_id: RUN_ID}))
-        }
+  t.test('should not blow up when harvest cycle errors', (t) => {
+    const metrics = nock(URL)
+      .post(helper.generateCollectorPath('metric_data', RUN_ID))
+      .reply(503)
 
-        agent.config.run_id = RUN_ID
+    agent.start(function cb_start() {
+      setTimeout(function() {
+        global.setInterval = origInterval
 
-        agent.metrics.measureMilliseconds('Test/Bogus', null, 1)
+        redirect.done()
+        connect.done()
+        settings.done()
+        metrics.done()
 
-        agent.start(function cb_start(error) {
-          should.not.exist(error)
+        t.end()
+      }, 15)
+    })
+  })
+})
 
-          metrics.done()
-          done()
-        })
-      })
+tap.test('when stopping', (t) => {
+  t.autoend()
 
-      it('should not blow up when harvest cycle runs', (done) => {
-        var origInterval = global.setInterval
-        global.setInterval = (callback) => {
-          return Object.assign({unref: () => {}}, setImmediate(callback))
-        }
+  function nop() {}
 
-        // manually harvesting
-        agent.config.no_immediate_harvest = true
+  let agent = null
 
-        var redirect = nock(URL)
-          .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {
-            return_value: {
-              redirect_host: 'collector.newrelic.com',
-              security_policies: {}
-            }
-          })
-        var connect = nock(URL)
-          .post(helper.generateCollectorPath('connect'))
-          .reply(200, {return_value: {agent_run_id: RUN_ID}})
-        var settings = nock(URL)
-          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value: []})
+  t.beforeEach((done) => {
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+    done()
+  })
 
-        agent.start(() => {
-          setTimeout(() => {
-            global.setInterval = origInterval
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
 
-            redirect.done()
-            awsRedirect.done()
-            connect.done()
-            settings.done()
-            done()
-          }, 15)
-        })
-      })
+    done()
+  })
 
-      it('should start aggregators after initial harvest', (done) => {
-        var origInterval = global.setInterval
-        global.setInterval = (callback) => {
-          return Object.assign({unref: () => {}}, setImmediate(callback))
-        }
+  t.test('should require a callback', (t) => {
+    t.throws(() => agent.stop(), new Error('callback required!'))
+    t.end()
+  })
 
-        let aggregatorsStarted = false
+  t.test('should stop sampler', (t) => {
+    sampler.start(agent)
+    agent.collector.shutdown = nop
+    agent.stop(nop)
 
-        agent.config.no_immediate_harvest = false
+    t.equal(sampler.state, 'stopped')
+    t.end()
+  })
 
-        agent.startAggregators = () => {
-          aggregatorsStarted = true
-        }
+  t.test('should change state to `stopping`', (t) => {
+    sampler.start(agent)
+    agent.collector.shutdown = nop
+    agent.stop(nop)
 
-        var redirect = nock(URL)
-          .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {
-            return_value: {
-              redirect_host: 'collector.newrelic.com',
-              security_policies: {}
-            }
-          })
-        var connect = nock(URL)
-          .post(helper.generateCollectorPath('connect'))
-          .reply(200, {return_value: {agent_run_id: RUN_ID}})
-        var settings = nock(URL)
-          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value: []})
+    t.equal(agent._state, 'stopping')
+    t.end()
+  })
 
-        agent.start(() => {
-          setTimeout(() => {
-            global.setInterval = origInterval
+  t.test('should not shut down connection if not connected', (t) => {
+    agent.stop(function cb_stop(error) {
+      t.error(error)
+      t.end()
+    })
+  })
+})
 
-            expect(aggregatorsStarted).to.be.true
+tap.test('when stopping after connected', (t) => {
+  t.autoend()
 
-            redirect.done()
-            awsRedirect.done()
-            connect.done()
-            settings.done()
-            done()
-          }, 15)
-        })
-      })
+  let agent = null
 
-      it('should not blow up when harvest cycle errors', function(done) {
-        var origInterval = global.setInterval
-        global.setInterval = function(callback) {
-          return Object.assign({unref: function() {}}, setImmediate(callback))
-        }
+  t.beforeEach((done) => {
+    nock.disableNetConnect()
 
-        var redirect = nock(URL)
-          .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {
-            return_value: {
-              redirect_host: 'collector.newrelic.com',
-              security_policies: {}
-            }
-          })
-        var connect = nock(URL)
-          .post(helper.generateCollectorPath('connect'))
-          .reply(200, {return_value: {agent_run_id: RUN_ID}})
-        var settings = nock(URL)
-          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-          .reply(200, {return_value: []})
-        var metrics = nock(URL)
-          .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .reply(503)
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+    done()
+  })
 
-        agent.start(function cb_start() {
-          setTimeout(function() {
-            global.setInterval = origInterval
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
 
-            redirect.done()
-            connect.done()
-            awsRedirect.done()
-            settings.done()
-            metrics.done()
-            done()
-          }, 15)
-        })
-      })
+    if (!nock.isDone()) {
+      /* eslint-disable-next-line no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+
+    done()
+  })
+
+  t.test('should call shutdown', (t) => {
+    agent.config.run_id = RUN_ID
+    const shutdown = nock(URL)
+      .post(helper.generateCollectorPath('shutdown', RUN_ID))
+      .reply(200, {return_value: null})
+
+    agent.stop(function cb_stop(error) {
+      t.error(error)
+      t.notOk(agent.config.run_id)
+
+      t.ok(shutdown.isDone())
+      t.end()
+    })
+  })
+
+  t.test('should pass through error if shutdown fails', (t) => {
+    agent.config.run_id = RUN_ID
+    const shutdown = nock(URL)
+      .post(helper.generateCollectorPath('shutdown', RUN_ID))
+      .replyWithError('whoops!')
+
+    agent.stop((error) => {
+      t.ok(error)
+      t.equal(error.message, 'whoops!')
+
+      t.ok(shutdown.isDone())
+      t.end()
+    })
+  })
+})
+
+tap.test('when connected', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    nock.disableNetConnect()
+
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+
+    // Avoid detection work / network call attempts
+    agent.config.utilization = {
+      detect_aws: false,
+      detect_pcf: false,
+      detect_azure: false,
+      detect_gcp: false,
+      detect_docker: false
+    }
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+
+    if (!nock.isDone()) {
+      /* eslint-disable-next-line no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+
+    done()
+  })
+
+  t.test('should update the metric apdexT value after connect', (t) => {
+    t.equal(agent.metrics._apdexT, 0.1)
+
+    process.nextTick(function cb_nextTick() {
+      t.ok(agent.metrics._apdexT)
+
+      t.equal(agent.metrics._apdexT, 0.666)
+      t.equal(agent.metrics._metrics.apdexT, 0.666)
+
+      t.end()
     })
 
-    describe('when stopping', function() {
-      function nop() {}
+    agent.config.apdex_t = 0.666
+    agent.onConnect()
+  })
 
-      it('should require a callback', function() {
-        expect(function() { agent.stop() }).throws('callback required!')
-      })
+  t.test('should reset the config and metrics normalizer on connection', (t) => {
+    const config = {
+      agent_run_id: 404,
+      apdex_t: 0.742,
+      url_rules: []
+    }
 
-      it('should stop sampler', function() {
-        sampler.start(agent)
-        agent.collector.shutdown = nop
-        agent.stop(nop)
-
-        expect(sampler.state).equal('stopped')
-      })
-
-      it('should change state to `stopping`', function() {
-        sampler.start(agent)
-        agent.collector.shutdown = nop
-        agent.stop(nop)
-
-        expect(agent._state).equal('stopping')
-      })
-
-
-      it('should not shut down connection if not connected', function(done) {
-        agent.stop(function cb_stop(error) {
-          should.not.exist(error)
-          done()
-        })
-      })
-
-      describe('if connected', function() {
-        it('should call shutdown', function(done) {
-          agent.config.run_id = RUN_ID
-          var shutdown = nock(URL)
-            .post(helper.generateCollectorPath('shutdown', RUN_ID))
-            .reply(200, {return_value: null})
-
-          agent.stop(function cb_stop(error) {
-            should.not.exist(error)
-            expect(agent.config.run_id).to.be.undefined
-
-            shutdown.done()
-            done()
-          })
-        })
-
-        it('should pass through error if shutdown fails', (done) => {
-          agent.config.run_id = RUN_ID
-          var shutdown = nock(URL)
-            .post(helper.generateCollectorPath('shutdown', RUN_ID))
-            .replyWithError('whoops!')
-
-          agent.stop((error) => {
-            expect(error).to.exist.and.have.property('message', 'whoops!')
-
-            shutdown.done()
-            done()
-          })
-        })
-      })
-    })
-
-    describe('when calling out to the collector', function() {
-      it('should update the metric apdexT value after connect', (done) => {
-        expect(agent.metrics._apdexT).equal(0.1)
-        process.nextTick(function cb_nextTick() {
-          should.exist(agent.metrics._apdexT)
-          expect(agent.metrics._apdexT).equal(0.666)
-          expect(agent.metrics._metrics.apdexT).equal(0.666)
-
-          done()
-        })
-
-        agent.config.apdex_t = 0.666
-        agent.onConnect()
-      })
-
-      it('should reset the config and metrics normalizer on connection', (done) => {
-        var config = {
-          agent_run_id: 404,
-          apdex_t: 0.742,
-          url_rules: []
+    const redirect = nock(URL)
+      .post(helper.generateCollectorPath('preconnect'))
+      .reply(200, {
+        return_value: {
+          redirect_host: 'collector.newrelic.com',
+          security_policies: {}
         }
-
-        var redirect = nock(URL)
-          .post(helper.generateCollectorPath('preconnect'))
-          .reply(200, {
-            return_value: {
-              redirect_host: 'collector.newrelic.com',
-              security_policies: {}
-            }
-          })
-        var handshake = nock(URL)
-          .post(helper.generateCollectorPath('connect'))
-          .reply(200, {return_value: config})
-        var settings = nock(URL)
-          .post(helper.generateCollectorPath('agent_settings', 404))
-          .reply(200, {return_value: config})
-        var metrics = nock(URL)
-          .post(helper.generateCollectorPath('metric_data', 404))
-          .reply(200, {return_value: []})
-        var shutdown = nock(URL)
-          .post(helper.generateCollectorPath('shutdown', 404))
-          .reply(200, {return_value: null})
-
-        agent.start(function cb_start(error) {
-          should.not.exist(error)
-          redirect.done()
-          handshake.done()
-
-          expect(agent._state).equal('started')
-          expect(agent.config.run_id).equal(404)
-          expect(agent.metrics._apdexT).equal(0.742)
-          expect(agent.urlNormalizer.rules).deep.equal([])
-
-          agent.stop(function cb_stop() {
-            settings.done()
-            metrics.done()
-            awsRedirect.done()
-            shutdown.done()
-            done()
-          })
-        })
       })
 
-      it('should capture the trace off a finished transaction', function(done) {
-        var trans = new Transaction(agent)
-        // need to initialize the trace
-        trans.trace.setDurationInMillis(2100)
+    const handshake = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, {return_value: config})
 
-        agent.once('transactionFinished', function() {
-          var trace = agent.traces.trace
-          should.exist(trace)
-          expect(trace.getDurationInMillis(), 'same trace just passed in').equal(2100)
+    const settings = nock(URL)
+      .post(helper.generateCollectorPath('agent_settings', 404))
+      .reply(200, {return_value: config})
 
-          return done()
-        })
+    const metrics = nock(URL)
+      .post(helper.generateCollectorPath('metric_data', 404))
+      .reply(200, {return_value: []})
 
-        trans.end()
-      })
+    const shutdown = nock(URL)
+      .post(helper.generateCollectorPath('shutdown', 404))
+      .reply(200, {return_value: null})
 
-      it('should capture the synthetic trace off a finished transaction', function(done) {
-        var trans = new Transaction(agent)
-        // need to initialize the trace
-        trans.trace.setDurationInMillis(2100)
-        trans.syntheticsData = {
-          version: 1,
-          accountId: 357,
-          resourceId: 'resId',
-          jobId: 'jobId',
-          monitorId: 'monId'
-        }
+    agent.start(function cb_start(error) {
+      t.error(error)
+      t.ok(redirect.isDone())
+      t.ok(handshake.isDone())
 
-        agent.once('transactionFinished', function() {
-          expect(agent.traces.trace).not.exist
-          expect(agent.traces.syntheticsTraces).length(1)
-          var trace = agent.traces.syntheticsTraces[0]
-          expect(trace.getDurationInMillis(), 'same trace just passed in').equal(2100)
+      t.equal(agent._state, 'started')
+      t.equal(agent.config.run_id, 404)
+      t.equal(agent.metrics._apdexT, 0.742)
+      t.deepEqual(agent.urlNormalizer.rules, [])
 
-          return done()
-        })
+      agent.stop(function cb_stop() {
+        t.ok(settings.isDone())
+        t.ok(metrics.isDone())
+        t.ok(shutdown.isDone())
 
-        trans.end()
+        t.end()
       })
     })
+  })
+})
 
-    describe('when handling finished transactions', function() {
-      var transaction
+tap.test('when handling finished transactions', (t) => {
+  t.autoend()
 
-      beforeEach(function() {
-        transaction = new Transaction(agent)
-        transaction.ignore = true
-      })
+  let agent = null
 
-      it('should not merge metrics when transaction is ignored', function() {
-        /* Top-level method is bound into EE, so mock the metrics collection
-         * instead.
-         */
-        var mock = sinon.mock(agent.metrics)
-        mock.expects('merge').never()
+  t.beforeEach((done) => {
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
 
-        transaction.end()
-      })
+    done()
+  })
 
-      it('should not merge errors when transaction is ignored', function() {
-        /* Top-level method is bound into EE, so mock the error tracer instead.
-         */
-        var mock = sinon.mock(agent.errors)
-        mock.expects('onTransactionFinished').never()
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
 
-        transaction.end()
-      })
+    done()
+  })
 
-      it('should not aggregate trace when transaction is ignored', function() {
-        /* Top-level *and* second-level methods are bound into EEs, so mock the
-         * transaction trace record method instead.
-         */
-        var mock = sinon.mock(transaction)
-        mock.expects('record').never()
+  t.test('should capture the trace off a finished transaction', (t) => {
+    const transaction = new Transaction(agent)
+    // need to initialize the trace
+    transaction.trace.setDurationInMillis(2100)
 
-        transaction.end()
-      })
+    agent.once('transactionFinished', function() {
+      const trace = agent.traces.trace
+      t.ok(trace)
+      t.equal(trace.getDurationInMillis(), 2100)
+
+      t.end()
     })
 
-    describe('when sampling_target changes', function() {
-      it('should adjust the current sampling target', () => {
-        expect(agent.transactionSampler.samplingTarget).to.not.equal(5)
-        agent.config.onConnect({sampling_target: 5})
-        expect(agent.transactionSampler.samplingTarget).to.equal(5)
-      })
+    transaction.end()
+  })
 
-      it('should adjust the sampling period', () => {
-        expect(agent.transactionSampler.samplingPeriod).to.not.equal(100)
-        agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
-        expect(agent.transactionSampler.samplingPeriod).to.equal(100)
-      })
+
+  t.test('should capture the synthetic trace off a finished transaction', (t) => {
+    const transaction = new Transaction(agent)
+    // need to initialize the trace
+    transaction.trace.setDurationInMillis(2100)
+    transaction.syntheticsData = {
+      version: 1,
+      accountId: 357,
+      resourceId: 'resId',
+      jobId: 'jobId',
+      monitorId: 'monId'
+    }
+
+    agent.once('transactionFinished', function() {
+      t.notOk(agent.traces.trace)
+      t.equal(agent.traces.syntheticsTraces.length, 1)
+
+      const trace = agent.traces.syntheticsTraces[0]
+      t.equal(trace.getDurationInMillis(), 2100)
+
+      t.end()
     })
 
-    describe('when event_harvest_config updated on connect', () => {
-      describe('with a valid config', () => {
-        const validHarvestConfig = {
-          report_period_ms: 5000,
-          harvest_limits: {
-            analytic_event_data: 833,
-            custom_event_data: 833,
-            error_event_data: 8
-          }
-        }
+    transaction.end()
+  })
 
-        beforeEach(() => {
-          agent.config.onConnect({event_harvest_config: validHarvestConfig})
-          agent.onConnect()
-        })
+  t.test('should not merge metrics when transaction is ignored', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.ignore = true
 
-        it('should generate ReportPeriod supportability', () => {
-          const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
+    /* Top-level method is bound into EE, so mock the metrics collection
+     * instead.
+     */
+    const mock = sinon.mock(agent.metrics)
+    mock.expects('merge').never()
 
-          const metric = agent.metrics.getMetric(expectedMetricName)
+    transaction.end()
 
-          expect(metric).to.exist
-          expect(metric.total).to.equal(validHarvestConfig.report_period_ms)
-        })
+    t.end()
+  })
 
-        it('should generate AnalyticEventData/HarvestLimit supportability', () => {
-          const expectedMetricName =
-            'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
+  t.test('should not merge errors when transaction is ignored', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.ignore = true
 
-          const metric = agent.metrics.getMetric(expectedMetricName)
+    /* Top-level method is bound into EE, so mock the error tracer instead.
+     */
+    const mock = sinon.mock(agent.errors)
+    mock.expects('onTransactionFinished').never()
 
-          expect(metric).to.exist
-          expect(metric.total)
-            .to.equal(validHarvestConfig.harvest_limits.analytic_event_data)
-        })
+    transaction.end()
+    t.end()
+  })
 
-        it('should generate CustomEventData/HarvestLimit supportability', () => {
-          const expectedMetricName =
-            'Supportability/EventHarvest/CustomEventData/HarvestLimit'
+  t.test('should not aggregate trace when transaction is ignored', (t) => {
+    const transaction = new Transaction(agent)
+    transaction.ignore = true
 
-          const metric = agent.metrics.getMetric(expectedMetricName)
+    /* Top-level *and* second-level methods are bound into EEs, so mock the
+     * transaction trace record method instead.
+     */
+    const mock = sinon.mock(transaction)
+    mock.expects('record').never()
 
-          expect(metric).to.exist
-          expect(metric.total)
-            .to.equal(validHarvestConfig.harvest_limits.custom_event_data)
-        })
+    transaction.end()
+    t.end()
+  })
+})
 
-        it('should generate ErrorEventData/HarvestLimit supportability', () => {
-          const expectedMetricName =
-            'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
+tap.test('when sampling_target changes', (t) => {
+  t.autoend()
 
-          const metric = agent.metrics.getMetric(expectedMetricName)
+  let agent = null
 
-          expect(metric).to.exist
-          expect(metric.total)
-            .to.equal(validHarvestConfig.harvest_limits.error_event_data)
-        })
-      })
-    })
+  t.beforeEach((done) => {
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+
+    done()
+  })
+
+  t.test('should adjust the current sampling target', (t) => {
+    t.notEqual(agent.transactionSampler.samplingTarget, 5)
+    agent.config.onConnect({sampling_target: 5})
+    t.equal(agent.transactionSampler.samplingTarget, 5)
+
+    t.end()
+  })
+
+  t.test('should adjust the sampling period', (t) => {
+    t.notEqual(agent.transactionSampler.samplingPeriod, 100)
+    agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
+    t.equal(agent.transactionSampler.samplingPeriod, 100)
+
+    t.end()
+  })
+})
+
+tap.test('when event_harvest_config updated on connect with a valid config', (t) => {
+  t.autoend()
+
+  const validHarvestConfig = {
+    report_period_ms: 5000,
+    harvest_limits: {
+      analytic_event_data: 833,
+      custom_event_data: 833,
+      error_event_data: 8
+    }
+  }
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    // Load agent with default 'stopped' state
+    agent = helper.loadMockedAgent(null, false)
+
+    agent.config.onConnect({event_harvest_config: validHarvestConfig})
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+
+    done()
+  })
+
+  t.test('should generate ReportPeriod supportability', (t) => {
+    agent.onConnect()
+
+    const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
+
+    const metric = agent.metrics.getMetric(expectedMetricName)
+
+    t.ok(metric)
+    t.equal(metric.total, validHarvestConfig.report_period_ms)
+
+    t.end()
+  })
+
+  t.test('should generate AnalyticEventData/HarvestLimit supportability', (t) => {
+    agent.onConnect()
+
+    const expectedMetricName =
+      'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
+
+    const metric = agent.metrics.getMetric(expectedMetricName)
+
+    t.ok(metric)
+    t.equal(metric.total, validHarvestConfig.harvest_limits.analytic_event_data)
+
+    t.end()
+  })
+
+  t.test('should generate CustomEventData/HarvestLimit supportability', (t) => {
+    agent.onConnect()
+
+    const expectedMetricName =
+      'Supportability/EventHarvest/CustomEventData/HarvestLimit'
+
+    const metric = agent.metrics.getMetric(expectedMetricName)
+
+    t.ok(metric)
+    t.equal(metric.total, validHarvestConfig.harvest_limits.custom_event_data)
+
+    t.end()
+  })
+
+  t.test('should generate ErrorEventData/HarvestLimit supportability', (t) => {
+    agent.onConnect()
+
+    const expectedMetricName =
+      'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
+
+    const metric = agent.metrics.getMetric(expectedMetricName)
+
+    t.ok(metric)
+    t.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
+    t.end()
   })
 })
