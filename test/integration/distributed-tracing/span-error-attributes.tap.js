@@ -49,7 +49,11 @@ tap.test('span error attributes', (t) => {
         'Error attributes are on the spans'
       )
 
-      t.match(attrs['error.name'], 'Error',
+      t.match(attrs['error.name'], 'Unknown',
+        'Error attributes are on the spans'
+      )
+
+      t.match(attrs['error.type'], 'Error',
         'Error attributes are on the spans'
       )
     })
