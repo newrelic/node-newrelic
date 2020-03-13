@@ -6,6 +6,7 @@ require('tap').mochaGlobals()
 
 const helper = require('../../lib/agent_helper')
 const NAMES = require('../../../lib/metrics/names.js')
+const Exception = require('../../../lib/errors').Exception
 const chai = require('chai')
 const should = require('chai').should()
 const urltils = require('../../../lib/util/urltils')
@@ -44,11 +45,13 @@ describe('Expected Errors', function() {
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_messages = {"Error":["expected"]}
 
-        var error = new Error('expected')
-        tx.addException(error, {}, 0)
+        let error = new Error('expected')
+        let exception = new Exception({error})
+        tx.addException(exception)
 
         error = new Error('NOT expected')
-        tx.addException(error, {}, 0)
+        exception = new Exception({error})
+        tx.addException(exception)
 
         tx.end()
 
@@ -69,11 +72,13 @@ describe('Expected Errors', function() {
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_classes = ["ReferenceError"]
 
-        var error = new ReferenceError('expected')
-        tx.addException(error, {}, 0)
+        let error = new ReferenceError('expected')
+        let exception = new Exception({error})
+        tx.addException(exception)
 
         error = new Error('NOT expected')
-        tx.addException(error, {}, 0)
+        exception = new Exception({error})
+        tx.addException(exception)
 
         tx.end()
 
@@ -96,11 +101,13 @@ describe('Expected Errors', function() {
           "ReferenceError":["expected if a ReferenceError"]
         }
 
-        var error = new ReferenceError('expected if a ReferenceError')
-        tx.addException(error, {}, 0)
+        let error = new ReferenceError('expected if a ReferenceError')
+        let exception = new Exception({error})
+        tx.addException(exception)
 
         error = new Error('expected if a ReferenceError')
-        tx.addException(error, {}, 0)
+        exception = new Exception({error})
+        tx.addException(exception)
 
         tx.end()
 
@@ -123,9 +130,11 @@ describe('Expected Errors', function() {
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
+        const exception1 = new Exception({error: error1})
+        const exception2 = new Exception({error: error2})
 
-        tx.addException(error1, {}, 0)
-        tx.addException(error2, {}, 0)
+        tx.addException(exception1)
+        tx.addException(exception2)
         tx.end()
 
         const transactionErrorMetric
@@ -145,9 +154,11 @@ describe('Expected Errors', function() {
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
+        const exception1 = new Exception({error: error1})
+        const exception2 = new Exception({error: error2})
 
-        tx.addException(error1, {}, 0)
-        tx.addException(error2, {}, 0)
+        tx.addException(exception1)
+        tx.addException(exception2)
         tx.end()
 
         const transactionErrorMetric
@@ -169,11 +180,14 @@ describe('Expected Errors', function() {
       helper.runInTransaction(agent, function(tx) {
         agent.config.error_collector.expected_status_codes = [500]
         tx.statusCode = 500
+
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
+        const exception1 = new Exception({error: error1})
+        const exception2 = new Exception({error: error2})
 
-        tx.addException(error1, {}, 0)
-        tx.addException(error2, {}, 0)
+        tx.addException(exception1)
+        tx.addException(exception2)
         tx.end()
 
         const transactionErrorMetric
@@ -199,9 +213,11 @@ describe('Expected Errors', function() {
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
+        const exception1 = new Exception({error: error1})
+        const exception2 = new Exception({error: error2})
 
-        tx.addException(error1, {}, 0)
-        tx.addException(error2, {}, 0)
+        tx.addException(exception1)
+        tx.addException(exception2)
         tx.end()
 
 
@@ -250,8 +266,14 @@ describe('Expected Errors', function() {
           ReferenceError: ['apdex is frustrating']
         }
 
-        tx.addException(new Error('apdex is frustrating'))
-        tx.addException(new ReferenceError('apdex is frustrating'))
+        let error = new Error('apdex is frustrating')
+        let exception = new Exception({error})
+        tx.addException(exception)
+
+        error = new ReferenceError('apdex is frustrating')
+        exception = new Exception({error})
+        tx.addException(exception)
+
         expect(tx.hasOnlyExpectedErrors()).equals(true)
 
         tx._setApdex(NAMES.APDEX, 1, 1)
@@ -289,8 +311,13 @@ describe('Expected Errors', function() {
           "Error":["apdex is frustrating"]
         }
 
-        tx.addException(new Error('apdex is frustrating'))
-        tx.addException(new ReferenceError('apdex is frustrating'))
+        let error = new Error('apdex is frustrating')
+        let exception = new Exception({error})
+        tx.addException(exception)
+
+        error = new ReferenceError('apdex is frustrating')
+        exception = new Exception({error})
+        tx.addException(exception)
 
         tx._setApdex(NAMES.APDEX, 1, 1)
         const json = apdexStats.toJSON()

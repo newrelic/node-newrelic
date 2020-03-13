@@ -350,7 +350,7 @@ describe('should add data from cat header to segment', function() {
 
       req.on('close', function() {
         expect(transaction.exceptions).length(1)
-        expect(transaction.exceptions[0][0].message).match(errRegex)
+        expect(transaction.exceptions[0].error.message).match(errRegex)
         done()
       })
 

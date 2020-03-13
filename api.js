@@ -486,7 +486,6 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
   if (typeof error === 'string') {
     error = new Error(error)
   }
-  const transaction = this.agent.tracer.getTransaction()
 
   // Filter all object type valued attributes out
   let filteredAttributes = customAttributes
@@ -494,6 +493,7 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
     filteredAttributes = _filterAttributes(customAttributes, 'noticeError')
   }
 
+  const transaction = this.agent.tracer.getTransaction()
   this.agent.errors.addUserError(transaction, error, filteredAttributes)
 }
 

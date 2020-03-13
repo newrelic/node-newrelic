@@ -14,6 +14,7 @@ test('errors in web transactions should gather the query params', function(t) {
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
+  agent.config.feature_flag.span_error_attributes = true
   agent.config.emit('attributes.include')
 
   http.createServer(function(req, res) {
@@ -50,11 +51,11 @@ test('errors in web transactions should gather the query params', function(t) {
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 10
-    var keys = ['response.headers.contentLength', 'httpResponseMessage']
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i]
-      var value = attributes.agentAttributes[key]
+    let expectedValue = 11
+    let keys = ['response.headers.contentLength', 'httpResponseMessage']
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      let value = attributes.agentAttributes[key]
       if (value) {
         expectedValue++
       }
@@ -87,6 +88,7 @@ test('multiple errors in web transactions should gather the query params', funct
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
+  agent.config.feature_flag.span_error_attributes = true
   agent.config.emit('attributes.include')
 
   var names = [
@@ -134,11 +136,11 @@ test('multiple errors in web transactions should gather the query params', funct
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 10
-      var keys = ['response.headers.contentLength', 'httpResponseMessage']
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i]
-        var value = attributes.agentAttributes[key]
+      let expectedValue = 11
+      let keys = ['response.headers.contentLength', 'httpResponseMessage']
+      for (let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        let value = attributes.agentAttributes[key]
         if (value) {
           expectedValue++
         }
@@ -170,6 +172,7 @@ test('errors in web transactions should gather and merge custom params', functio
   const http = require('http')
 
   agent.config.attributes.enabled = true
+  agent.config.feature_flag.span_error_attributes = true
 
   http.createServer(function(req, res) {
     req.resume()
@@ -227,11 +230,11 @@ test('errors in web transactions should gather and merge custom params', functio
     // agent/query parameters
     // on older versions of node the content length and response message
     // will be omitted
-    var expectedValue = 8
-    var keys = ['response.headers.contentLength', 'httpResponseMessage']
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i]
-      var value = attributes.agentAttributes[key]
+    let expectedValue = 9
+    let keys = ['response.headers.contentLength', 'httpResponseMessage']
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      let value = attributes.agentAttributes[key]
       if (value) {
         expectedValue++
       }
@@ -252,6 +255,7 @@ test('multiple errors in web tx should gather and merge custom params', function
   const http = require('http')
 
   agent.config.attributes.enabled = true
+  agent.config.feature_flag.span_error_attributes = true
 
   var errorData = [{
     name: 'first error indexOf tx test',
@@ -333,11 +337,11 @@ test('multiple errors in web tx should gather and merge custom params', function
       // agent/query parameters
       // on older versions of node the content length and response message
       // will be omitted
-      var expectedValue = 8
-      var keys = ['response.headers.contentLength', 'httpResponseMessage']
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i]
-        var value = attributes.agentAttributes[key]
+      let expectedValue = 9
+      let keys = ['response.headers.contentLength', 'httpResponseMessage']
+      for (let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        let value = attributes.agentAttributes[key]
         if (value) {
           expectedValue++
         }
@@ -356,6 +360,7 @@ test('errors in background transactions are collected with correct data', functi
   const api = new API(agent)
 
   agent.config.attributes.enabled = true
+  agent.config.feature_flag.span_error_attributes = true
 
   agent.on('transactionFinished', function() {
     var error = agent.errors.traceAggregator.errors[0]
@@ -376,8 +381,13 @@ test('errors in background transactions are collected with correct data', functi
     // agent/query parameters
     t.equal(
       Object.keys(attributes.agentAttributes).length,
-      0,
-      'should have collected no agent attributes'
+      1,
+      'should only have collected the "spanId" agent attribute'
+    )
+    t.equal(
+      Object.keys(attributes.agentAttributes)[0],
+      'spanId',
+      'should only have collected the "spanId" agent attribute'
     )
     t.end()
   })

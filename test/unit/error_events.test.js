@@ -6,6 +6,7 @@ require('tap').mochaGlobals()
 
 const helper = require('../lib/agent_helper')
 const chai = require('chai')
+const Exception = require('../../lib/errors').Exception
 
 const expect  = chai.expect
 
@@ -41,6 +42,7 @@ describe('Error events', function() {
     afterEach(function() {
       helper.unloadAgent(agent)
     })
+
     it('should include DT intrinsics', function(done) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
@@ -49,8 +51,11 @@ describe('Error events', function() {
         const payload = tx.createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx.acceptDistributedTracePayload(payload)
-        var error = new Error('some error')
-        tx.addException(error, {}, 0)
+        const error = new Error('some error')
+        const customAttributes = {}
+        const timestamp = 0
+        const exception = new Exception({error, customAttributes, timestamp})
+        tx.addException(exception)
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]
         expect(attributes.type).to.equal('TransactionError')
@@ -73,8 +78,11 @@ describe('Error events', function() {
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       helper.runInTransaction(agent, function(tx) {
-        var error = new Error('some error')
-        tx.addException(error, {}, 0)
+        const error = new Error('some error')
+        const customAttributes = {}
+        const timestamp = 0
+        const exception = new Exception({error, customAttributes, timestamp})
+        tx.addException(exception)
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]
         expect(attributes.type).to.equal('TransactionError')

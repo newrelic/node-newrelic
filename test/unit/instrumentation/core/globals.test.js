@@ -41,7 +41,7 @@ test('Unhandled rejection', (t) => {
 
       setTimeout(function() {
         t.equal(transaction.exceptions.length, 1)
-        t.equal(transaction.exceptions[0][0], 'test rejection')
+        t.equal(transaction.exceptions[0].error, 'test rejection')
 
         t.end()
       }, 15)

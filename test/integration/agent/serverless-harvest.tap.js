@@ -25,6 +25,9 @@ tap.test('Serverless mode harvest', (t) => {
       serverless_mode: {
         enabled: true
       },
+      feature_flag: {
+        span_error_attributes: true,
+      },
       app_name: 'serverless mode tests',
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
     })
@@ -129,6 +132,7 @@ tap.test('Serverless mode harvest', (t) => {
         '/nonexistent'
       )
       agent.errors.add(tx, new Error('test error'))
+      const spanId = agent.tracer.getSegment().id
 
       tx.end()
       agent.once('harvestFinished', () => {
@@ -143,7 +147,7 @@ tap.test('Serverless mode harvest', (t) => {
             const attrs = errData.agentAttributes
             t.deepEqual(
               attrs,
-              {foo: 'bar', 'request.uri': '/nonexistent'},
+              {foo: 'bar', 'request.uri': '/nonexistent', spanId},
               'should have the correct attributes'
             )
             t.end()
@@ -259,6 +263,7 @@ tap.test('Serverless mode harvest', (t) => {
         '/nonexistent'
       )
       agent.errors.add(tx, new Error('test error'))
+      const spanId = agent.tracer.getSegment().id
 
       tx.end()
       agent.once('harvestFinished', () => {
@@ -289,7 +294,7 @@ tap.test('Serverless mode harvest', (t) => {
 
             t.deepEqual(
               agentAttr,
-              {foo: 'bar', 'request.uri': '/nonexistent'},
+              {foo: 'bar', 'request.uri': '/nonexistent', spanId},
               'should have the correct attributes'
             )
             t.end()
