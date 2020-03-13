@@ -1,29 +1,29 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
-var NAMES = require('../../../lib/metrics/names')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const API = require('../../../api')
+const NAMES = require('../../../lib/metrics/names')
 
+tap.test('The API supportability metrics', (t) => {
+  t.autoend()
 
-describe('The API supportability metrics', function() {
-  var agent
-  var api
+  let agent = null
+  let api = null
 
-  var apiCalls = Object.keys(API.prototype)
+  const apiCalls = Object.keys(API.prototype)
 
-  beforeEach(function() {
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
+
+    done()
   })
 
-  afterEach(function() {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    done()
   })
 
   for (var i = 0; i < apiCalls.length; i++) {
@@ -31,20 +31,22 @@ describe('The API supportability metrics', function() {
   }
 
   function testMetricCalls(name) {
-    var message = 'should create a metric for API#' + name
-    it(message, function() {
-      var beforeMetric = agent.metrics.getOrCreateMetric(
+    const testName = 'should create a metric for API#' + name
+    t.test(testName, (t) => {
+      const beforeMetric = agent.metrics.getOrCreateMetric(
         NAMES.SUPPORTABILITY.API + '/' + name
       )
-      expect(beforeMetric.callCount).equal(0)
+      t.equal(beforeMetric.callCount, 0)
 
       // Some api calls required a name to be given rather than just an empty string
       api[name]('test')
 
-      var afterMetric = agent.metrics.getOrCreateMetric(
+      const afterMetric = agent.metrics.getOrCreateMetric(
         NAMES.SUPPORTABILITY.API + '/' + name
       )
-      expect(afterMetric.callCount).equal(1)
+      t.equal(afterMetric.callCount, 1)
+
+      t.end()
     })
   }
 })
