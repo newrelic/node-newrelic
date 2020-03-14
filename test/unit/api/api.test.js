@@ -67,51 +67,6 @@ describe('the New Relic agent API', function() {
     expect(api.getTransaction).to.be.a('function')
   })
 
-  it("exports a trace metadata function", function(done) {
-    helper.runInTransaction(agent, function(txn) {
-      agent.config.distributed_tracing.enabled = true
-      expect(api.getTraceMetadata).to.be.a('function')
-      const metadata = api.getTraceMetadata()
-      expect(metadata).to.be.an('object')
-      expect(metadata.traceId).to.be.a('string')
-      expect(metadata.traceId).to.equal(txn.traceId)
-      expect(metadata.spanId).to.be.a('string')
-      expect(metadata.spanId).to.equal(txn.agent.tracer.getSegment().id)
-      done()
-    })
-  })
-
-  it("should return empty object with DT disabled",
-    function(done) {
-      helper.runInTransaction(agent, function() {
-        expect(api.getTraceMetadata).to.be.a('function')
-        const metadata = api.getTraceMetadata()
-        expect(metadata).to.be.an('object')
-
-        expect(metadata).to.deep.equal({})
-        done()
-      })
-    }
-  )
-  it("should not include spanId property with span events disabled",
-    function(done) {
-      helper.runInTransaction(agent, function(txn) {
-        agent.config.distributed_tracing.enabled = true
-        agent.config.span_events.enabled = false
-        expect(api.getTraceMetadata).to.be.a('function')
-
-        const metadata = api.getTraceMetadata()
-        expect(metadata).to.be.an('object')
-        expect(metadata.traceId).to.be.a('string')
-        expect(metadata.traceId).to.equal(txn.traceId)
-
-        expect(metadata).to.not.have.property('spanId')
-        done()
-      })
-    }
-  )
-
-
   describe("when getting a transaction handle", function() {
     it("shoud return a stub when running outside of a transaction", function() {
       let handle = api.getTransaction()
