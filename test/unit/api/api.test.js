@@ -7,14 +7,11 @@ tap.mochaGlobals()
 
 var API = require('../../../api')
 var chai = require('chai')
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
-const SpanEvent = require('../../../lib/spans/span-event')
-
 
 describe('the New Relic agent API', function() {
   var URL = '/test/path/31337'
@@ -60,141 +57,6 @@ describe('the New Relic agent API', function() {
   it("exports a function for adding custom instrumentation", function() {
     should.exist(api.instrument)
     expect(api.instrument).to.be.a('function')
-  })
-
-  it("exports a function for adding multiple custom attributes at once", function() {
-    should.exist(api.addCustomAttributes)
-    expect(api.addCustomAttributes).a('function')
-  })
-
-  describe("when adding custom attributes", function() {
-    beforeEach(function() {
-      agent.config.attributes.enabled = true
-    })
-
-    it('should properly add custom attributes', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes.test).to.equal(1)
-        transaction.end()
-      })
-    })
-
-    it('should properly add custom span attribute', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        transaction.name = 'test'
-        api.startSegment('foobar', false, function() {
-          api.addCustomSpanAttribute('spannnnnny', 1)
-          const segment = api.shim.getSegment()
-          const span = SpanEvent.fromSegment(segment, 'parent')
-          const attributes = span.customAttributes
-          expect(attributes.spannnnnny).to.equal(1)
-        })
-        transaction.end()
-      })
-    })
-
-    it('should properly add multiple custom span attributes', () => {
-      helper.runInTransaction(agent, function(transaction) {
-        api.startSegment('foo', false, () => {
-          api.addCustomSpanAttributes({
-            one: 1,
-            two: 2
-          })
-          const segment = api.shim.getSegment()
-          const span = SpanEvent.fromSegment(segment, 'parent')
-          const attributes = span.customAttributes
-          expect(attributes.one).to.equal(1)
-          expect(attributes.two).to.equal(2)
-        })
-        api.addCustomAttributes({
-          one: 1,
-          two: 2
-        })
-        transaction.end()
-      })
-    })
-
-    it('should skip if attribute key length limit is exceeded', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        var tooLong = [
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-          'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-          'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-          'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
-        ].join(' ')
-        api.addCustomAttribute(tooLong, 'will fail')
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes[tooLong]).to.be.undefined
-        transaction.end()
-      })
-    })
-
-    it('should properly add multiple custom attributes', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        api.addCustomAttributes({
-          one: 1,
-          two: 2
-        })
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes.one).to.equal(1)
-        expect(attributes.two).to.equal(2)
-        transaction.end()
-      })
-    })
-
-    it('should not add custom attributes when disabled', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        agent.config.api.custom_attributes_enabled = false
-        api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes.test).to.equal(undefined)
-        agent.config.api.custom_attributes_enabled = true
-        transaction.end()
-      })
-    })
-
-    it('should not add multiple custom attributes when disabled', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        agent.config.api.custom_attributes_enabled = false
-        api.addCustomAttributes({
-          one: 1,
-          two: 2
-        })
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes.one).to.equal(undefined)
-        expect(attributes.two).to.equal(undefined)
-        agent.config.api.custom_attributes_enabled = true
-        transaction.end()
-      })
-    })
-
-    it('should not add custom attributes in high security mode', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        agent.config.high_security = true
-        api.addCustomAttribute('test', 1)
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes.test).to.equal(undefined)
-        agent.config.high_security = false
-        transaction.end()
-      })
-    })
-
-    it('should not add multiple custom attributes in high security mode', function() {
-      helper.runInTransaction(agent, function(transaction) {
-        agent.config.high_security = true
-        api.addCustomAttributes({
-          one: 1,
-          two: 2
-        })
-        var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes.one).to.equal(undefined)
-        expect(attributes.two).to.equal(undefined)
-        agent.config.high_security = false
-        transaction.end()
-      })
-    })
   })
 
   describe('when creating a segment with `startSegment`', function() {
@@ -706,82 +568,6 @@ describe('the New Relic agent API', function() {
         api.setControllerName('Test', 'list')
 
         transaction.end()
-      })
-    })
-  })
-
-  describe('when adding a custom attribute', function() {
-    beforeEach(function() {
-      agent.config.attributes.enabled = true
-    })
-
-    describe('inside a transaction', function() {
-      it('should have set the value properly', function(done) {
-        agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes.TestName).equal('TestValue')
-
-          done()
-        })
-
-        helper.runInTransaction(agent, function(transaction) {
-          api.addCustomAttribute('TestName', 'TestValue')
-
-          transaction.end()
-        })
-      })
-
-      it("should keep the most-recently seen value", function(done) {
-        agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes.TestName).equal('Third')
-
-          done()
-        })
-
-        helper.runInTransaction(agent, function(transaction) {
-          api.addCustomAttribute('TestName', 'TestValue')
-          api.addCustomAttribute('TestName', 'Second')
-          api.addCustomAttribute('TestName', 'Third')
-
-          transaction.end()
-        })
-      })
-
-      it('should roll with it if custom attributes are gone', function() {
-        helper.runInTransaction(agent, function(transaction) {
-          var trace = transaction.trace
-          delete trace.custom
-          expect(function() {
-            api.addCustomAttribute('TestName', 'TestValue')
-          }).not.throws()
-        })
-      })
-
-      it('should not allow setting of excluded attributes', function(done) {
-        agent.config.attributes.exclude.push('ignore_me')
-        agent.config.emit('attributes.exclude')
-
-        agent.on('transactionFinished', function(transaction) {
-          var attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes).to.not.have.property('ignore_me')
-
-          done()
-        })
-
-        helper.runInTransaction(agent, function(transaction) {
-          api.addCustomAttribute('ignore_me', 'set')
-
-          transaction.end()
-        })
-      })
-    })
-
-    describe('outside a transaction', function() {
-      it("shouldn't blow up", function() {
-        expect(function() {
-          api.addCustomAttribute('TestName', 'TestValue')
-        }).not.throws()
       })
     })
   })

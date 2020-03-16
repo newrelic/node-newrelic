@@ -12,8 +12,6 @@ tap.test('Agent API - transaction handle', (t) => {
 
   t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
-    agent.config.distributed_tracing.enabled = true
-
     api = new API(agent)
 
     done()
