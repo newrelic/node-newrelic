@@ -1,10 +1,7 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
 
-const expect = require('chai').expect
+const tap = require('tap')
 const EventAggregator = require('../../../lib/aggregators/event-aggregator')
 const PriorityQueue = require('../../../lib/priority-queue')
 const Metrics = require('../../../lib/metrics')
@@ -18,11 +15,13 @@ const METRIC_NAMES = {
   DROPPED: '/DROPPED'
 }
 
-describe('Event Aggregator', () => {
+tap.test('Event Aggregator', (t) => {
+  t.autoend()
+
   let metrics = null
   let eventAggregator = null
 
-  beforeEach(() => {
+  function beforeTest(cb) {
     metrics = new Metrics(5, {}, {})
 
     eventAggregator = new EventAggregator({
@@ -30,48 +29,62 @@ describe('Event Aggregator', () => {
       limit: LIMIT,
       metricNames: METRIC_NAMES
     }, {}, metrics)
-  })
 
-  afterEach(() => {
+    cb()
+  }
+
+  function afterTest(cb) {
     eventAggregator = null
-  })
+    cb()
+  }
 
-  describe('add()', () => {
-    it('should add errors', () => {
+  t.test('add()', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should add errors', (t) => {
       const rawEvent = [{type: 'some-event'}, {}, {}]
       eventAggregator.add(rawEvent)
 
-      expect(eventAggregator.length).to.equal(1)
+      t.equal(eventAggregator.length, 1)
 
       const firstEvent = eventAggregator.events.toArray()[0]
-      expect(rawEvent).to.equal(firstEvent)
+      t.equal(rawEvent, firstEvent)
+
+      t.end()
     })
 
-    it('should not add over limit', () => {
+    t.test('should not add over limit', (t) => {
       eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name4`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name5`'}, {}])
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       eventAggregator.add([{type: 'some-event'}, {name: 'name6`'}, {}])
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
+
+      t.end()
     })
 
-    it('should increment seen metric for successful add', () => {
+    t.test('should increment seen metric for successful add', (t) => {
       const rawEvent = [{type: 'some-event'}, {}, {}]
       eventAggregator.add(rawEvent)
 
-      expect(eventAggregator.length).to.equal(1)
+      t.equal(eventAggregator.length, 1)
 
       const metric = metrics.getMetric(METRIC_NAMES.SEEN)
-      expect(metric.callCount).to.equal(1)
+      t.equal(metric.callCount, 1)
+
+      t.end()
     })
 
-    it('should increment seen metric for unsuccessful add', () => {
+    t.test('should increment seen metric for unsuccessful add', (t) => {
       eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
@@ -80,23 +93,27 @@ describe('Event Aggregator', () => {
 
       eventAggregator.add([{type: 'some-event'}, {name: 'not added`'}, {}])
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       const metric = metrics.getMetric(METRIC_NAMES.SEEN)
-      expect(metric.callCount).to.equal(LIMIT + 1)
+      t.equal(metric.callCount, LIMIT + 1)
+
+      t.end()
     })
 
-    it('should increment sent metric for successful add', () => {
+    t.test('should increment sent metric for successful add', (t) => {
       const rawEvent = [{type: 'some-event'}, {}, {}]
       eventAggregator.add(rawEvent)
 
-      expect(eventAggregator.length).to.equal(1)
+      t.equal(eventAggregator.length, 1)
 
       const metric = metrics.getMetric(METRIC_NAMES.SENT)
-      expect(metric.callCount).to.equal(1)
+      t.equal(metric.callCount, 1)
+
+      t.end()
     })
 
-    it('should not increment sent metric for unsuccessful add', () => {
+    t.test('should not increment sent metric for unsuccessful add', (t) => {
       eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
@@ -105,13 +122,15 @@ describe('Event Aggregator', () => {
 
       eventAggregator.add([{type: 'some-event'}, {name: 'not added`'}, {}])
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       const metric = metrics.getMetric(METRIC_NAMES.SENT)
-      expect(metric.callCount).to.equal(LIMIT)
+      t.equal(metric.callCount, LIMIT)
+
+      t.end()
     })
 
-    it('should increment dropped metric for unsucccesful add', () => {
+    t.test('should increment dropped metric for unsucccesful add', (t) => {
       eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
       eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
@@ -120,25 +139,34 @@ describe('Event Aggregator', () => {
 
       eventAggregator.add([{type: 'some-event'}, {name: 'not added`'}, {}])
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       const metric = metrics.getMetric(METRIC_NAMES.DROPPED)
-      expect(metric.callCount).to.equal(1)
+      t.equal(metric.callCount, 1)
+
+      t.end()
     })
 
-    it('should not increment dropped metric for successful add', () =>{
+    t.test('should not increment dropped metric for successful add', (t) =>{
       const rawEvent = [{type: 'some-event'}, {}, {}]
       eventAggregator.add(rawEvent)
 
-      expect(eventAggregator.length).to.equal(1)
+      t.equal(eventAggregator.length, 1)
 
       const metric = metrics.getMetric(METRIC_NAMES.DROPPED)
-      expect(metric).to.not.exist
+      t.notOk(metric)
+
+      t.end()
     })
   })
 
-  describe('_merge()', () => {
-    it('should merge passed-in data with priorities', () => {
+  t.test('_merge()', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should merge passed-in data with priorities', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -148,10 +176,12 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(3)
+      t.equal(eventAggregator.length, 3)
+
+      t.end()
     })
 
-    it('should not merge past limit', () => {
+    t.test('should not merge past limit', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -165,10 +195,12 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
+
+      t.end()
     })
 
-    it('should increment seen metric for successful merge', () => {
+    t.test('should increment seen metric for successful merge', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -178,13 +210,15 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(3)
+      t.equal(eventAggregator.length, 3)
 
       const metric = metrics.getMetric(METRIC_NAMES.SEEN)
-      expect(metric.callCount).to.equal(3)
+      t.equal(metric.callCount, 3)
+
+      t.end()
     })
 
-    it('should increment seen metric for unsuccessful merge', () => {
+    t.test('should increment seen metric for unsuccessful merge', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -198,13 +232,15 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       const metric = metrics.getMetric(METRIC_NAMES.SEEN)
-      expect(metric.callCount).to.equal(LIMIT + 1)
+      t.equal(metric.callCount, LIMIT + 1)
+
+      t.end()
     })
 
-    it('should increment sent metric for successful merge', () => {
+    t.test('should increment sent metric for successful merge', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -214,13 +250,15 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(3)
+      t.equal(eventAggregator.length, 3)
 
       const metric = metrics.getMetric(METRIC_NAMES.SENT)
-      expect(metric.callCount).to.equal(3)
+      t.equal(metric.callCount, 3)
+
+      t.end()
     })
 
-    it('should not increment sent metric for unsuccessful merge', () => {
+    t.test('should not increment sent metric for unsuccessful merge', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -234,13 +272,15 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       const metric = metrics.getMetric(METRIC_NAMES.SENT)
-      expect(metric.callCount).to.equal(LIMIT)
+      t.equal(metric.callCount, LIMIT)
+
+      t.end()
     })
 
-    it('should increment dropped metric for unsucccesful merge', () => {
+    t.test('should increment dropped metric for unsucccesful merge', (t) => {
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -254,13 +294,15 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(LIMIT)
+      t.equal(eventAggregator.length, LIMIT)
 
       const metric = metrics.getMetric(METRIC_NAMES.DROPPED)
-      expect(metric.callCount).to.equal(1)
+      t.equal(metric.callCount, 1)
+
+      t.end()
     })
 
-    it('should not increment dropped metric for successful merge', () =>{
+    t.test('should not increment dropped metric for successful merge', (t) =>{
       const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
       eventAggregator.add(rawEvent)
 
@@ -270,79 +312,112 @@ describe('Event Aggregator', () => {
 
       eventAggregator._merge(mergePriorityData)
 
-      expect(eventAggregator.length).to.equal(3)
+      t.equal(eventAggregator.length, 3)
 
       const metric = metrics.getMetric(METRIC_NAMES.DROPPED)
-      expect(metric).to.not.exist
+      t.notOk(metric)
+
+      t.end()
     })
   })
 
-  it('_getMergeData() should return events in priority collection', () => {
-    const rawEvent = [{type: 'some-event'}, {}, {}]
-    eventAggregator.add(rawEvent)
+  t.test('_getMergeData()', (t) => {
+    t.autoend()
 
-    const data = eventAggregator._getMergeData()
-    expect(data.length).to.equal(1)
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
 
-    expect(data.getMinimumPriority()).to.equal(0)
+    t.test('should return events in priority collection', (t) => {
+      const rawEvent = [{type: 'some-event'}, {}, {}]
+      eventAggregator.add(rawEvent)
+
+      const data = eventAggregator._getMergeData()
+      t.equal(data.length, 1)
+
+      t.equal(data.getMinimumPriority(), 0)
+
+      t.end()
+    })
   })
 
-  it('clear() should clear errors', () => {
-    const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
-    eventAggregator.add(rawEvent)
+  t.test('clear()', (t) => {
+    t.autoend()
 
-    expect(eventAggregator.length).to.equal(1)
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
 
-    eventAggregator.clear()
+    t.test('should clear errors', (t) => {
+      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      eventAggregator.add(rawEvent)
 
-    expect(eventAggregator.length).to.equal(0)
+      t.equal(eventAggregator.length, 1)
+
+      eventAggregator.clear()
+
+      t.equal(eventAggregator.length, 0)
+
+      t.end()
+    })
   })
 
-  it('reconfigure() should update underlying container limits on resize', () => {
-    const fakeConfig = {
-      getAggregatorConfig: function() {
-        return {
-          periodMs: 3000,
-          limit: LIMIT - 1
+  t.test('reconfigure()', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should update underlying container limits on resize', (t) => {
+      const fakeConfig = {
+        getAggregatorConfig: function() {
+          return {
+            periodMs: 3000,
+            limit: LIMIT - 1
+          }
         }
       }
-    }
-    expect(eventAggregator._items.limit).to.equal(LIMIT)
-    eventAggregator.reconfigure(fakeConfig)
-    expect(eventAggregator._items.limit).to.equal(LIMIT - 1)
-  })
+      t.equal(eventAggregator._items.limit, LIMIT)
+      eventAggregator.reconfigure(fakeConfig)
+      t.equal(eventAggregator._items.limit, LIMIT - 1)
 
-  it('reconfigure() should not update underlying container on no resize', () => {
-    const fakeConfig = {
-      getAggregatorConfig: function() {
-        return {
-          periodMs: 3000,
-          limit: LIMIT
+      t.end()
+    })
+
+    t.test('reconfigure() should not update underlying container on no resize', (t) => {
+      const fakeConfig = {
+        getAggregatorConfig: function() {
+          return {
+            periodMs: 3000,
+            limit: LIMIT
+          }
         }
       }
-    }
 
-    expect(eventAggregator._items.limit).to.equal(LIMIT)
-    eventAggregator.reconfigure(fakeConfig)
-    expect(eventAggregator._items.limit).to.equal(LIMIT)
-  })
+      t.equal(eventAggregator._items.limit, LIMIT)
+      eventAggregator.reconfigure(fakeConfig)
+      t.equal(eventAggregator._items.limit, LIMIT)
 
-  it('reconfigure() should update the period and limit when present', () => {
-    const fakeConfig = {
-      getAggregatorConfig: function() {
-        return {
-          periodMs: 3000,
-          limit: 2000
+      t.end()
+    })
+
+    t.test('reconfigure() should update the period and limit when present', (t) => {
+      const fakeConfig = {
+        getAggregatorConfig: function() {
+          return {
+            periodMs: 3000,
+            limit: 2000
+          }
         }
       }
-    }
 
-    expect(eventAggregator.periodMs).to.be.undefined
-    expect(eventAggregator.limit).to.equal(LIMIT)
+      t.equal(eventAggregator.periodMs, undefined)
+      t.equal(eventAggregator.limit, LIMIT)
 
-    eventAggregator.reconfigure(fakeConfig)
+      eventAggregator.reconfigure(fakeConfig)
 
-    expect(eventAggregator.periodMs).to.equal(3000)
-    expect(eventAggregator.limit).to.equal(2000)
+      t.equal(eventAggregator.periodMs, 3000)
+      t.equal(eventAggregator.limit, 2000)
+
+      t.end()
+    })
   })
 })
