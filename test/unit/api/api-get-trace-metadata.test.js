@@ -7,8 +7,8 @@ const helper = require('../../lib/agent_helper')
 tap.test('Agent API - trace metadata', (t) => {
   t.autoend()
 
-  let agent
-  let api
+  let agent = null
+  let api = null
 
   t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
@@ -20,9 +20,9 @@ tap.test('Agent API - trace metadata', (t) => {
   })
 
   t.afterEach((done) => {
-    agent.environment.clearDispatcher()
-
     helper.unloadAgent(agent)
+    agent = null
+
     done()
   })
 

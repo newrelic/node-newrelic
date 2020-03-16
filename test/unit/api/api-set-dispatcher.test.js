@@ -7,8 +7,8 @@ const helper = require('../../lib/agent_helper')
 tap.test('Agent API - dispatch setter', (t) => {
   t.autoend()
 
-  let agent
-  let api
+  let agent = null
+  let api = null
 
   t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
@@ -21,6 +21,8 @@ tap.test('Agent API - dispatch setter', (t) => {
     agent.environment.clearDispatcher()
 
     helper.unloadAgent(agent)
+    agent = null
+
     done()
   })
 
