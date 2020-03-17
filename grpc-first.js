@@ -1,8 +1,8 @@
 'use strict'
 
-// const grpc = require('grpc');
-const grpc = require('@grpc/grpc-js');
-const protoLoader = require('@grpc/proto-loader');
+// const grpc = require('grpc')
+const grpc = require('@grpc/grpc-js')
+const protoLoader = require('@grpc/proto-loader')
 const utilHash = require('./lib/util/hashes')
 
 const packageDefinition = protoLoader.loadSync(
@@ -14,9 +14,9 @@ const packageDefinition = protoLoader.loadSync(
     enums: String,
     defaults: true,
     oneofs: true
-  });
+  })
 
-const mtb = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1;
+const mtb = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 const client = new mtb.IngestService(
   'mtb.nr-data.net:443',
   grpc.credentials.createSsl()
@@ -29,7 +29,7 @@ metadata.add('api_key','NRII-P-ebIQ1gvBIarrCMiNgVuyfBXEiolV6K')
 // console.log(metadata)
 
 const traceId = utilHash.makeId()
-// const intrinsics = new Map();
+// const intrinsics = new Map()
 const intrinsics = {
   'appName':{string_value:'Node Jam App'},
   'type':{string_value:'Span'},
@@ -50,8 +50,6 @@ const intrinsics = {
   'tracingVendors':{string_value:null},
 }
 
-
-
 const fakeSpan = {
   trace_id:traceId,
   intrinsics: intrinsics,
@@ -60,20 +58,20 @@ const fakeSpan = {
 }
 
 const stream = client.recordSpan(metadata)
-stream.on('data', function handle(data) {
-  console.log("It's Data!")
-  console.log(data)
-})
+// stream.on('data', function handle(data) {
+//   console.log("It's Data!")
+//   console.log(data)
+// })
 
-stream.on('end', function handle(endData) {
-  console.log("It's Over!")
-  console.log(endData)
-})
+// stream.on('end', function handle(endData) {
+//   console.log("It's Over!")
+//   console.log(endData)
+// })
 
-console.log("About to Write This Object")
-console.log('--START-------------------------------------------')
-console.log(fakeSpan)
+// console.log("About to Write This Object")
+// console.log('--START-------------------------------------------')
+// console.log(fakeSpan)
 stream.write(fakeSpan)
-console.log('--END---------------------------------------------')
+// console.log('--END---------------------------------------------')
 stream.end()
-console.log("Wrote")
+// console.log("Wrote")
