@@ -14,7 +14,6 @@ test('errors in web transactions should gather the query params', function(t) {
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
-  agent.config.feature_flag.span_error_attributes = true
   agent.config.emit('attributes.include')
 
   http.createServer(function(req, res) {
@@ -88,7 +87,6 @@ test('multiple errors in web transactions should gather the query params', funct
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
-  agent.config.feature_flag.span_error_attributes = true
   agent.config.emit('attributes.include')
 
   var names = [
@@ -172,7 +170,6 @@ test('errors in web transactions should gather and merge custom params', functio
   const http = require('http')
 
   agent.config.attributes.enabled = true
-  agent.config.feature_flag.span_error_attributes = true
 
   http.createServer(function(req, res) {
     req.resume()
@@ -255,7 +252,6 @@ test('multiple errors in web tx should gather and merge custom params', function
   const http = require('http')
 
   agent.config.attributes.enabled = true
-  agent.config.feature_flag.span_error_attributes = true
 
   var errorData = [{
     name: 'first error indexOf tx test',
@@ -360,7 +356,6 @@ test('errors in background transactions are collected with correct data', functi
   const api = new API(agent)
 
   agent.config.attributes.enabled = true
-  agent.config.feature_flag.span_error_attributes = true
 
   agent.on('transactionFinished', function() {
     var error = agent.errors.traceAggregator.errors[0]

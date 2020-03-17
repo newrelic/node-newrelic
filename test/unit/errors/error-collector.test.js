@@ -466,8 +466,8 @@ describe('Errors', function() {
         // 404 errors are ignored by default, but making sure the config is set
         finalizeCollector.config.error_collector.ignore_status_codes = [404]
 
-        var ignored = createTransaction(agent, 404)
-        ignored.addException(new Error('ignored'))
+        let ignored = createTransaction(agent, 404)
+        agent.errors.add(ignored, new Error('ignored'))
         finalizeCollector.onTransactionFinished(ignored)
 
         const errorTraces = getErrorTraces(finalizeCollector)
@@ -490,7 +490,7 @@ describe('Errors', function() {
         finalizeCollector.config.error_collector.ignore_status_codes = [404]
 
         // this should be ignored
-        tx.addException(new Error('should be ignored'))
+        agent.errors.add(tx, new Error('should be ignored'))
         // this should go through
         api.noticeError(new Error('should go through'))
         finalizeCollector.onTransactionFinished(tx)

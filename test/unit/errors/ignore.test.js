@@ -6,7 +6,6 @@ require('tap').mochaGlobals()
 
 const helper = require('../../lib/agent_helper')
 const NAMES = require('../../../lib/metrics/names.js')
-const Exception = require('../../../lib/errors').Exception
 const chai = require('chai')
 
 const expect  = chai.expect
@@ -31,11 +30,9 @@ describe('Ignored Errors', function() {
 
         const error1 = new Error('ignored')
         const error2 = new ReferenceError('NOT ignored')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
 
-        tx.addException(exception1)
-        tx.addException(exception2)
+        errorAggr.add(tx, error1)
+        errorAggr.add(tx, error2)
         tx.end()
 
         expect(errorAggr.traceAggregator.errors.length).equals(1)
@@ -64,11 +61,9 @@ describe('Ignored Errors', function() {
 
         const error1 = new Error('ignored')
         const error2 = new ReferenceError('NOT ignored')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
 
-        tx.addException(exception1)
-        tx.addException(exception2)
+        errorAggr.add(tx, error1)
+        errorAggr.add(tx, error2)
         tx.end()
 
         expect(errorAggr.traceAggregator.errors.length).equals(1)
@@ -97,13 +92,10 @@ describe('Ignored Errors', function() {
         const error1 = new Error('ignored')
         const error2 = new Error('not ignored')
         const error3 = new ReferenceError('not ignored')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
-        const exception3 = new Exception({error: error3})
 
-        tx.addException(exception1)
-        tx.addException(exception2)
-        tx.addException(exception3)
+        errorAggr.add(tx, error1)
+        errorAggr.add(tx, error2)
+        errorAggr.add(tx, error3)
 
         tx.end()
 
@@ -134,13 +126,10 @@ describe('Ignored Errors', function() {
         const error1 = new Error('ignore')
         const error2 = new Error('not ignore')
         const error3 = new ReferenceError('not ignore')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
-        const exception3 = new Exception({error: error3})
 
-        tx.addException(exception1)
-        tx.addException(exception2)
-        tx.addException(exception3)
+        errorAggr.add(tx, error1)
+        errorAggr.add(tx, error2)
+        errorAggr.add(tx, error3)
 
         tx.end()
 
@@ -171,13 +160,10 @@ describe('Ignored Errors', function() {
         const error1 = new Error('ignore')
         const error2 = new Error('ignore me too')
         const error3 = new ReferenceError('i will also be ignored')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
-        const exception3 = new Exception({error: error3})
 
-        tx.addException(exception1)
-        tx.addException(exception2)
-        tx.addException(exception3)
+        errorAggr.add(tx, error1)
+        errorAggr.add(tx, error2)
+        errorAggr.add(tx, error3)
 
         tx.end()
 
@@ -209,13 +195,10 @@ describe('Ignored Errors', function() {
         const error1 = new Error('ignore')
         const error2 = new Error('also ignore')
         const error3 = new ReferenceError('i will also be ignored')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
-        const exception3 = new Exception({error: error3})
 
-        tx.addException(exception1)
-        tx.addException(exception2)
-        tx.addException(exception3)
+        errorAggr.add(tx, error1)
+        errorAggr.add(tx, error2)
+        errorAggr.add(tx, error3)
 
         tx.end()
 
