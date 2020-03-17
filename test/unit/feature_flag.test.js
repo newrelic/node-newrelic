@@ -21,7 +21,6 @@ var used = [
   'express_segments',
   'native_metrics',
   'promise_segments',
-  'span_error_attributes',
   'protocol_17',
   'serverless_mode',
   'released',

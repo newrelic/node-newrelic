@@ -8,7 +8,6 @@ tap.test('span error attributes', (t) => {
   t.test('core', (t) => {
     const config = {
       distributed_tracing: { enabled: true },
-      feature_flag: { span_error_attributes: true, }
     }
 
     const agent = helper.instrumentMockedAgent(config)
@@ -68,7 +67,6 @@ tap.test('span error attributes', (t) => {
   t.test("Span error attributes aren't added with LASP/HSM", (t) => {
     const config = {
       distributed_tracing: { enabled: true },
-      feature_flag: { span_error_attributes: true, },
       high_security: true
     }
 
@@ -103,7 +101,6 @@ tap.test('span error attributes', (t) => {
   t.test("Span error attributes aren't added with ignored errors", (t) => {
     const config = {
       distributed_tracing: { enabled: true },
-      feature_flag: { span_error_attributes: true, },
       error_collector: { ignore_classes: ['CustomError'] }
     }
 
