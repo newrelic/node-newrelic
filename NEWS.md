@@ -1,3 +1,22 @@
+### 6.5.0 (2020-03-18):
+
+* Added new error and custom attributes onto spans.
+  * Error attributes: `error.message`, `error.type`, `error.name`.
+  * Link the span in which an error occurred to the TransactionError event.
+  * Support high security mode and ignoring errors with span error attributes.
+  * `http.statusCode` and `http.statusText` attributes added to http outbound spans.
+  * Add new API methods `addCustomSpanAttribute` and `addCustomSpanAttributes`
+  * Enforce 64 custom attributes limit when adding attributes.
+
+* Fixed `child_process` instrumentation so that handlers can be effectively removed
+  when attached via `.once()` or manually removed via `removeListener()`.
+
+* Updated W3C Trace Context "Known Issues and Workaround" notes with latest accurate consideration.
+
+* Converted unit tests to run via `tap`. Removes `mocha` dependency.
+
+* Fixed route naming when hapi's `pre` route handlers share functions.
+
 ### 6.4.2 (2020-02-27):
 
 * Support new http[s] get/request function signature in Node v10+
