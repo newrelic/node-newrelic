@@ -25,40 +25,6 @@ describe('the New Relic agent API', function() {
     helper.unloadAgent(agent)
   })
 
-  describe('instrumentConglomerate', () => {
-    beforeEach(() => {
-      sinon.spy(shimmer, 'registerInstrumentation')
-    })
-
-    afterEach(() => {
-      shimmer.registerInstrumentation.restore()
-    })
-
-    it('should register the instrumentation with shimmer', () => {
-      const opts = {
-        moduleName: 'foobar',
-        onRequire: () => {}
-      }
-      api.instrumentConglomerate(opts)
-
-      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
-      const args = shimmer.registerInstrumentation.getCall(0).args
-      expect(args[0]).to.equal(opts)
-        .and.have.property('type', 'conglomerate')
-    })
-
-    it('should convert separate args into an options object', () => {
-      function onRequire() {}
-      function onError() {}
-      api.instrumentConglomerate('foobar', onRequire, onError)
-
-      const opts = shimmer.registerInstrumentation.getCall(0).args[0]
-      expect(opts).to.have.property('moduleName', 'foobar')
-      expect(opts).to.have.property('onRequire', onRequire)
-      expect(opts).to.have.property('onError', onError)
-    })
-  })
-
   describe('instrumentDatastore', function() {
     beforeEach(function() {
       sinon.spy(shimmer, 'registerInstrumentation')
