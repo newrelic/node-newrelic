@@ -29,58 +29,9 @@ describe('the New Relic agent API', function() {
     helper.unloadAgent(agent)
   })
 
-  it("exports a transaction ignoring function", function() {
-    should.exist(api.setIgnoreTransaction)
-    expect(api.setIgnoreTransaction).to.be.a('function')
-  })
-
   it("exports a function for adding custom instrumentation", function() {
     should.exist(api.instrument)
     expect(api.instrument).to.be.a('function')
-  })
-
-  describe("when (not) ignoring a transaction", function() {
-    it("should mark the transaction ignored", function(done) {
-      agent.on('transactionFinished', function(transaction) {
-        transaction.finalizeNameFromUri(URL, 200)
-
-        expect(transaction.ignore).equal(true)
-
-        done()
-      })
-
-      helper.runInTransaction(agent, function(transaction) {
-        agent.tracer.createSegment(NAME)
-        transaction.url  = URL
-        transaction.verb = 'GET'
-
-        api.setIgnoreTransaction(true)
-
-        transaction.end()
-      })
-    })
-
-    it("should force a transaction to not be ignored", function(done) {
-      api.addIgnoringRule('^/test/.*')
-
-      agent.on('transactionFinished', function(transaction) {
-        transaction.finalizeNameFromUri(URL, 200)
-
-        expect(transaction.ignore).equal(false)
-
-        done()
-      })
-
-      helper.runInTransaction(agent, function(transaction) {
-        agent.tracer.createSegment(NAME)
-        transaction.url = URL
-        transaction.verb = 'GET'
-
-        api.setIgnoreTransaction(false)
-
-        transaction.end()
-      })
-    })
   })
 
   describe('when recording custom metrics', function() {
