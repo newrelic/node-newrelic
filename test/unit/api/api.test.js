@@ -29,11 +29,6 @@ describe('the New Relic agent API', function() {
     helper.unloadAgent(agent)
   })
 
-  it("exports a transaction naming function", function() {
-    should.exist(api.setTransactionName)
-    expect(api.setTransactionName).to.be.a('function')
-  })
-
   it("exports a transaction ignoring function", function() {
     should.exist(api.setIgnoreTransaction)
     expect(api.setIgnoreTransaction).to.be.a('function')
@@ -42,75 +37,6 @@ describe('the New Relic agent API', function() {
   it("exports a function for adding custom instrumentation", function() {
     should.exist(api.instrument)
     expect(api.instrument).to.be.a('function')
-  })
-
-  describe("when explicitly naming transactions", function() {
-    describe("in the simplest case", function() {
-      var segment
-      var transaction
-
-      beforeEach(function(done) {
-        agent.on('transactionFinished', function(t) {
-          // grab transaction
-          transaction = t
-          transaction.finalizeNameFromUri(URL, 200)
-          segment.markAsWeb(URL)
-          done()
-        })
-
-        helper.runInTransaction(agent, function(tx) {
-          // grab segment
-          agent.tracer.addSegment(NAME, null, null, false, function() {
-            // HTTP instrumentation sets URL as soon as it knows it
-            segment = agent.tracer.getSegment()
-            tx.type = 'web'
-            tx.url = URL
-            tx.verb = 'POST'
-
-            // Name the transaction
-            api.setTransactionName('Test')
-
-            tx.end()
-          })
-        })
-      })
-
-      it("sets the transaction name to the custom name", function() {
-        expect(transaction.name).equal('WebTransaction/Custom/Test')
-      })
-
-      it("names the web trace segment after the custom name", function() {
-        expect(segment.name).equal('WebTransaction/Custom/Test')
-      })
-
-      it("leaves the request URL alone", function() {
-        expect(transaction.url).equal(URL)
-      })
-    })
-
-    it("uses the last name set when called multiple times", function(done) {
-      agent.on('transactionFinished', function(transaction) {
-        transaction.finalizeNameFromUri(URL, 200)
-
-        expect(transaction.name).equal('WebTransaction/Custom/List')
-
-        done()
-      })
-
-      helper.runInTransaction(agent, function(transaction) {
-        agent.tracer.createSegment(NAME)
-        transaction.url  = URL
-        transaction.verb = 'GET'
-
-        // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
-        api.setTransactionName('Index')
-        api.setTransactionName('Update')
-        api.setTransactionName('Delete')
-        api.setTransactionName('List')
-
-        transaction.end()
-      })
-    })
   })
 
   describe("when (not) ignoring a transaction", function() {
