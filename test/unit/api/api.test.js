@@ -9,8 +9,6 @@ var API = require('../../../api')
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
-var sinon = require('sinon')
-var shimmer = require('../../../lib/shimmer')
 
 describe('the New Relic agent API', function() {
   var agent
@@ -23,50 +21,6 @@ describe('the New Relic agent API', function() {
 
   afterEach(function() {
     helper.unloadAgent(agent)
-  })
-
-  describe('instrumentWebframework', function() {
-    beforeEach(function() {
-      sinon.spy(shimmer, 'registerInstrumentation')
-    })
-
-    afterEach(function() {
-      shimmer.registerInstrumentation.restore()
-    })
-
-    it('should register the instrumentation with shimmer', function() {
-      var opts = {
-        moduleName: 'foobar',
-        onRequire: function() {}
-      }
-      api.instrumentWebframework(opts)
-
-      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
-      var args = shimmer.registerInstrumentation.getCall(0).args
-      expect(args[0]).to.equal(opts)
-        .and.have.property('type', 'web-framework')
-    })
-
-    it('should convert separate args into an options object', function() {
-      function onRequire() {}
-      function onError() {}
-      api.instrumentWebframework('foobar', onRequire, onError)
-
-      var opts = shimmer.registerInstrumentation.getCall(0).args[0]
-      expect(opts).to.have.property('moduleName', 'foobar')
-      expect(opts).to.have.property('onRequire', onRequire)
-      expect(opts).to.have.property('onError', onError)
-    })
-  })
-
-  describe('setLambdaHandler', () => {
-    it('should report API supportability metric', () => {
-      api.setLambdaHandler(() => {})
-
-      const metric =
-        agent.metrics.getMetric('Supportability/API/setLambdaHandler')
-      expect(metric.callCount).to.equal(1)
-    })
   })
 
   describe('getLinkingMetadata', () => {
