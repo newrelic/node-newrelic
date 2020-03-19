@@ -27,6 +27,13 @@ tap.test('Agent API - addNamingRule', (t) => {
     done()
   })
 
+  t.test("exports a function for adding naming rules", (t) => {
+    t.ok(api.addNamingRule)
+    t.type(api.addNamingRule, 'function')
+
+    t.end()
+  })
+
   t.test("should add it to the agent's normalizer", (t) => {
     t.equal(agent.userNormalizer.rules.length, 1) // default ignore rule
     api.addNamingRule('^/simple.*', 'API')

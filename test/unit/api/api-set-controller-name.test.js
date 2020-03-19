@@ -27,6 +27,13 @@ tap.test('Agent API - setControllerName', (t) => {
     done()
   })
 
+  t.test("exports a controller naming function", (t) => {
+    t.ok(api.setControllerName)
+    t.type(api.setControllerName, 'function')
+
+    t.end()
+  })
+
   t.test("sets the controller in the transaction name", (t) => {
     goldenPathRenameControllerInTransaction((transaction) => {
       t.equal(transaction.name, 'WebTransaction/Controller/Test/POST')

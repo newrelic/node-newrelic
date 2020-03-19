@@ -27,6 +27,13 @@ tap.test('Agent API - addIgnoringRule', (t) => {
     done()
   })
 
+  t.test("exports a function for ignoring certain URLs", (t) => {
+    t.ok(api.addIgnoringRule)
+    t.type(api.addIgnoringRule, 'function')
+
+    t.end()
+  })
+
   t.test("should add it to the agent's normalizer", (t) => {
     t.equal(agent.userNormalizer.rules.length, 1) // default ignore rule
     api.addIgnoringRule('^/simple.*')

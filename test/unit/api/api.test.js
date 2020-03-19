@@ -34,24 +34,9 @@ describe('the New Relic agent API', function() {
     expect(api.setTransactionName).to.be.a('function')
   })
 
-  it("exports a controller naming function", function() {
-    should.exist(api.setControllerName)
-    expect(api.setControllerName).to.be.a('function')
-  })
-
   it("exports a transaction ignoring function", function() {
     should.exist(api.setIgnoreTransaction)
     expect(api.setIgnoreTransaction).to.be.a('function')
-  })
-
-  it("exports a function for adding naming rules", function() {
-    should.exist(api.addNamingRule)
-    expect(api.addNamingRule).to.be.a('function')
-  })
-
-  it("exports a function for ignoring certain URLs", function() {
-    should.exist(api.addIgnoringRule)
-    expect(api.addIgnoringRule).to.be.a('function')
   })
 
   it("exports a function for adding custom instrumentation", function() {
