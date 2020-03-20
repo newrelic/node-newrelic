@@ -90,7 +90,7 @@ tap.test('Agent API - addNamingRule', (t) => {
     api.addNamingRule('^/test/.*', 'Test')
 
     agent.on('transactionFinished', function(transaction) {
-      transaction.finalizeNameFromUri(URL, 200)
+      transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.name, 'WebTransaction/NormalizedUri/Test')
 

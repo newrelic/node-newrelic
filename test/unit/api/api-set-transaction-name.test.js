@@ -57,7 +57,7 @@ tap.test('Agent API - setTranasactionName', (t) => {
 
   t.test("uses the last name set when called multiple times", (t) => {
     agent.on('transactionFinished', function(transaction) {
-      transaction.finalizeNameFromUri(URL, 200)
+      transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.name, 'WebTransaction/Custom/List')
 

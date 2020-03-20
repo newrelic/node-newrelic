@@ -97,7 +97,7 @@ tap.test('Agent API - addIgnoringRule', (t) => {
     api.addIgnoringRule('^/test/.*')
 
     agent.on('transactionFinished', function(transaction) {
-      transaction.finalizeNameFromUri(URL, 200)
+      transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.ignore, true)
 

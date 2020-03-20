@@ -57,7 +57,7 @@ tap.test('Agent API - setControllerName', (t) => {
 
   t.test("uses the HTTP verb for the default action", (t) => {
     agent.on('transactionFinished', function(transaction) {
-      transaction.finalizeNameFromUri(URL, 200)
+      transaction.finalizeNameFromUri(TEST_URL, 200)
       t.equal(transaction.name, 'WebTransaction/Controller/Test/DELETE')
 
       t.end()
@@ -65,7 +65,7 @@ tap.test('Agent API - setControllerName', (t) => {
 
     helper.runInTransaction(agent, function(transaction) {
       agent.tracer.createSegment(NAME)
-      transaction.url = URL
+      transaction.url = TEST_URL
 
       // SET THE ACTION
       transaction.verb = 'DELETE'
@@ -79,7 +79,7 @@ tap.test('Agent API - setControllerName', (t) => {
 
   t.test("allows a custom action", (t) => {
     agent.on('transactionFinished', function(transaction) {
-      transaction.finalizeNameFromUri(URL, 200)
+      transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.name, 'WebTransaction/Controller/Test/index')
 
@@ -88,7 +88,7 @@ tap.test('Agent API - setControllerName', (t) => {
 
     helper.runInTransaction(agent, function(transaction) {
       agent.tracer.createSegment(NAME)
-      transaction.url = URL
+      transaction.url = TEST_URL
       transaction.verb = 'GET'
 
       // NAME THE CONTROLLER AND ACTION
@@ -100,7 +100,7 @@ tap.test('Agent API - setControllerName', (t) => {
 
   t.test("uses the last controller set when called multiple times", (t) => {
     agent.on('transactionFinished', function(transaction) {
-      transaction.finalizeNameFromUri(URL, 200)
+      transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.name, 'WebTransaction/Controller/Test/list')
 
@@ -109,7 +109,7 @@ tap.test('Agent API - setControllerName', (t) => {
 
     helper.runInTransaction(agent, function(transaction) {
       agent.tracer.createSegment(NAME)
-      transaction.url = URL
+      transaction.url = TEST_URL
       transaction.verb = 'GET'
 
       // NAME THE CONTROLLER AND ACTION, MULTIPLE TIMES
