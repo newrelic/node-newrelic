@@ -10,7 +10,7 @@ var urltils = require('../../../lib/util/urltils')
 // CONSTANTS
 var DB_INDEX = 2
 
-test('Redis instrumentation', {timeout : 5000}, function(t) {
+test('Redis instrumentation', {timeout : 10000}, function(t) {
   t.autoend()
 
   var METRIC_HOST_NAME = null
