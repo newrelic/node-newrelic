@@ -29,7 +29,7 @@ var used = [
   'synthetics',
   'dt_format_w3c',
   'unreleased',
-  'infinite_tracing'
+  'streaming_spans'
 ]
 
 describe('feature flags', function() {
