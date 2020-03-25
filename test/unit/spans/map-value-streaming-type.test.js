@@ -15,8 +15,30 @@ tap.test('should corectly convert strings', (t) => {
   t.end()
 })
 
-tap.test('should correctly convert bools', (t) => {
+tap.test('should not drop empty strings', (t) => {
+  const stringValue = ''
+  const expected = {
+    'string_value': stringValue
+  }
+
+  const result = mapValueToStreamingTypeValue(stringValue)
+  t.deepEqual(result, expected)
+  t.end()
+})
+
+tap.test('should correctly convert bools when true', (t) => {
   const boolValue = true
+  const expected = {
+    'bool_value': boolValue
+  }
+
+  const result = mapValueToStreamingTypeValue(boolValue)
+  t.deepEqual(result, expected)
+  t.end()
+})
+
+tap.test('should correctly convert bools when false', (t) => {
+  const boolValue = false
   const expected = {
     'bool_value': boolValue
   }
