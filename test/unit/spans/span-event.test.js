@@ -30,7 +30,9 @@ tap.test('#constructor() should construct an empty span event', (t) => {
     'timestamp',
     'duration'
   ]
-  emptyProps.forEach((prop) => expect(span.intrinsics).to.have.property(prop, null))
+  emptyProps.forEach((prop) => {
+    t.equal(span.intrinsics[prop], null)
+  })
 
   t.end()
 })
@@ -265,19 +267,19 @@ tap.test('fromSegment()', (t) => {
         const segment = agent.tracer.getSegment()
         const span = SpanEvent.fromSegment(segment, 'parent')
 
-        const payload = span.toJSON()
-        const [serializedSpan] = payload
+        const serializedSpan = span.toJSON()
+        const [intrinsics] = serializedSpan
 
-        t.equal(serializedSpan.type, 'Span')
-        t.equal(serializedSpan.traceId, transaction.traceId)
-        t.equal(serializedSpan.guid, segment.id)
-        t.equal(serializedSpan.parentId, 'parent')
-        t.equal(serializedSpan.transactionId, transaction.id)
-        t.equal(serializedSpan.priority, 42)
-        t.ok(serializedSpan.name)
-        t.equal(serializedSpan.category, 'generic')
-        t.ok(serializedSpan.timestamp)
-        t.ok(serializedSpan.duration)
+        t.equal(intrinsics.type, 'Span')
+        t.equal(intrinsics.traceId, transaction.traceId)
+        t.equal(intrinsics.guid, segment.id)
+        t.equal(intrinsics.parentId, 'parent')
+        t.equal(intrinsics.transactionId, transaction.id)
+        t.equal(intrinsics.priority, 42)
+        t.ok(intrinsics.name)
+        t.equal(intrinsics.category, 'generic')
+        t.ok(intrinsics.timestamp)
+        t.ok(intrinsics.duration)
 
         t.end()
       }, 10)
