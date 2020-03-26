@@ -1,18 +1,19 @@
 'use strict'
 
+const tap = require('tap')
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+tap.mochaGlobals()
 
-var chai = require('chai')
-var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var codec = require('../../lib/util/codec')
-var Segment = require('../../lib/transaction/trace/segment')
-var Trace = require('../../lib/transaction/trace')
-var Transaction = require('../../lib/transaction')
-
+const sinon = require('sinon')
+const chai = require('chai')
+const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
+const expect = chai.expect
+const helper = require('../lib/agent_helper')
+const codec = require('../../lib/util/codec')
+const Segment = require('../../lib/transaction/trace/segment')
+const Trace = require('../../lib/transaction/trace')
+const Transaction = require('../../lib/transaction')
 
 describe('Trace', function() {
   var agent = null
@@ -747,4 +748,80 @@ function makeTrace(agent, callback) {
       ]
     })
   })
+}
+
+
+tap.test('infinite tracing', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      },
+      span_events: {
+        enabled: true
+      },
+      infinite_tracing: {
+        trace_observer: 'something'
+      },
+      feature_flag: {
+        infinite_tracing: true
+      }
+    })
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  t.test('should generate spans if infinite configured, transaction not sampled', (t) => {
+    const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
+
+    const transaction = new Transaction(agent)
+    transaction.priority = 0
+    transaction.sampled = false
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+
+    t.equal(spy.callCount, 2)
+
+    t.end()
+  })
+
+  t.test('should not generate spans if infinite not configured, transaction not sampled', (t) => {
+    agent.config.infinite_tracing.trace_observer = ''
+
+    const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
+
+    const transaction = new Transaction(agent)
+    transaction.priority = 0
+    transaction.sampled = false
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+
+    t.equal(spy.callCount, 0)
+
+    t.end()
+  })
+})
+
+function addTwoSegments(transaction) {
+  const trace = transaction.trace
+  const child1 = transaction.baseSegment = trace.add('test')
+  child1.start()
+  const child2 = child1.add('nested')
+  child2.start()
+  child1.end()
+  child2.end()
+  trace.root.end()
 }
