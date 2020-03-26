@@ -2,7 +2,7 @@
 
 const tap = require('tap')
 
-const mapValueToStreamingTypeValue = require('../../../lib/spans/mapValueToStreamingTypeValue')
+const mapToStreamingType = require('../../../lib/spans/map-to-streaming-type')
 
 tap.test('should corectly convert strings', (t) => {
   const stringValue = 'myString'
@@ -10,7 +10,7 @@ tap.test('should corectly convert strings', (t) => {
     'string_value': stringValue
   }
 
-  const result = mapValueToStreamingTypeValue(stringValue)
+  const result = mapToStreamingType(stringValue)
   t.deepEqual(result, expected)
   t.end()
 })
@@ -21,7 +21,7 @@ tap.test('should not drop empty strings', (t) => {
     'string_value': stringValue
   }
 
-  const result = mapValueToStreamingTypeValue(stringValue)
+  const result = mapToStreamingType(stringValue)
   t.deepEqual(result, expected)
   t.end()
 })
@@ -32,7 +32,7 @@ tap.test('should correctly convert bools when true', (t) => {
     'bool_value': boolValue
   }
 
-  const result = mapValueToStreamingTypeValue(boolValue)
+  const result = mapToStreamingType(boolValue)
   t.deepEqual(result, expected)
   t.end()
 })
@@ -43,7 +43,7 @@ tap.test('should correctly convert bools when false', (t) => {
     'bool_value': boolValue
   }
 
-  const result = mapValueToStreamingTypeValue(boolValue)
+  const result = mapToStreamingType(boolValue)
   t.deepEqual(result, expected)
   t.end()
 })
@@ -54,7 +54,7 @@ tap.test('should correctly convert integers', (t) => {
     'int_value': intValue
   }
 
-  const result = mapValueToStreamingTypeValue(intValue)
+  const result = mapToStreamingType(intValue)
   t.deepEqual(result, expected)
   t.end()
 })
@@ -65,34 +65,34 @@ tap.test('should correctly convert doubles', (t) => {
     'double_value': doubleValue
   }
 
-  const result = mapValueToStreamingTypeValue(doubleValue)
+  const result = mapToStreamingType(doubleValue)
   t.deepEqual(result, expected)
   t.end()
 })
 
 tap.test('should drop nulls', (t) => {
-  const result = mapValueToStreamingTypeValue(null)
+  const result = mapToStreamingType(null)
 
   t.equal(result, undefined)
   t.end()
 })
 
 tap.test('should drop undefined', (t) => {
-  const result = mapValueToStreamingTypeValue()
+  const result = mapToStreamingType()
 
   t.equal(result, undefined)
   t.end()
 })
 
 tap.test('should drop objects', (t) => {
-  const result = mapValueToStreamingTypeValue({})
+  const result = mapToStreamingType({})
 
   t.equal(result, undefined)
   t.end()
 })
 
 tap.test('should drop functions', (t) => {
-  const result = mapValueToStreamingTypeValue(() => {})
+  const result = mapToStreamingType(() => {})
 
   t.equal(result, undefined)
   t.end()
