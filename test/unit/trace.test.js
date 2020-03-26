@@ -7,6 +7,7 @@ tap.mochaGlobals()
 
 const sinon = require('sinon')
 const chai = require('chai')
+const semver = require('semver')
 const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 const expect = chai.expect
 const helper = require('../lib/agent_helper')
@@ -750,9 +751,11 @@ function makeTrace(agent, callback) {
   })
 }
 
-
-tap.test('infinite tracing', (t) => {
+const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
+tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
   t.autoend()
+
+  const VALID_URL = 'https://infinite_tracing.test:443'
 
   let agent = null
 
@@ -765,7 +768,7 @@ tap.test('infinite tracing', (t) => {
         enabled: true
       },
       infinite_tracing: {
-        trace_observer: 'something'
+        trace_observer: VALID_URL
       },
       feature_flag: {
         infinite_tracing: true
