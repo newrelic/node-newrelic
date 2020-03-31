@@ -768,7 +768,7 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
         enabled: true
       },
       infinite_tracing: {
-        trace_observer: VALID_URL
+        trace_observer_url: VALID_URL
       },
       feature_flag: {
         infinite_tracing: true
@@ -800,7 +800,7 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
   })
 
   t.test('should not generate spans if infinite not configured, transaction not sampled', (t) => {
-    agent.config.infinite_tracing.trace_observer = ''
+    agent.config.infinite_tracing.trace_observer_url = ''
 
     const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
 

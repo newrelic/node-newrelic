@@ -1,8 +1,9 @@
 'use strict'
 
+const tap = require('tap')
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+tap.mochaGlobals()
 
 const path = require('path')
 const chai = require('chai')
@@ -791,10 +792,10 @@ describe('the agent configuration', function() {
           infinite_tracing: true
         },
         serverless_mode: { enabled: true },
-        infinite_tracing: { trace_observer: VALID_URL }
+        infinite_tracing: { trace_observer_url: VALID_URL }
       })
 
-      expect(config.infinite_tracing.trace_observer).to.equal('')
+      expect(config.infinite_tracing.trace_observer_url).to.equal('')
     })
 
     it('should pick up trusted_account_key', () => {
@@ -1942,5 +1943,16 @@ describe('the agent configuration', function() {
       expect(publicSettings['certificates.0']).to.equal('****')
       expect(publicSettings['certificates.1']).to.equal('****')
     })
+  })
+})
+
+tap.test('should pick up on infinite tracing env vars', (t) => {
+  const env = {
+    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_URL: VALID_URL
+  }
+
+  idempotentEnv(env, (config) => {
+    t.equal(config.infinite_tracing.trace_observer_url, VALID_URL)
+    t.end()
   })
 })
