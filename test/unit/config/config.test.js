@@ -4,14 +4,16 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var path = require('path')
-var chai = require('chai')
-var should = chai.should()
-var expect = chai.expect
-var fs = require('fs')
-var sinon = require('sinon')
-var Config = require('../../../lib/config')
-var securityPolicies = require('../../lib/fixtures').securityPolicies
+const path = require('path')
+const chai = require('chai')
+const should = chai.should()
+const expect = chai.expect
+const fs = require('fs')
+const sinon = require('sinon')
+const Config = require('../../../lib/config')
+const securityPolicies = require('../../lib/fixtures').securityPolicies
+
+const VALID_URL = 'https://infinite_tracing.test:443'
 
 function idempotentEnv(envConfig, initialConfig, callback) {
   let saved = {}
@@ -781,6 +783,18 @@ describe('the agent configuration', function() {
         }
       })
       expect(config.cross_application_tracer.enabled).to.be.false
+    })
+
+    it('should explicitly disable infinite tracing', () => {
+      const config = Config.initialize({
+        feature_flag: {
+          infinite_tracing: true
+        },
+        serverless_mode: { enabled: true },
+        infinite_tracing: { trace_observer: VALID_URL }
+      })
+
+      expect(config.infinite_tracing.trace_observer).to.equal('')
     })
 
     it('should pick up trusted_account_key', () => {
