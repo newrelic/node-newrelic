@@ -2,13 +2,33 @@
 const tap = require('tap')
 
 const GrpcConnection = require('../../../lib/grpc/connection')
+const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
+const MetricMapper = require('../../../lib/metrics/mapper')
+const MetricNormalizer = require('../../../lib/metrics/normalizer')
+
+const createMetricAggregatorForTests = () => {
+  const mapper = new MetricMapper()
+  const normalizer = new MetricNormalizer({}, 'metric name')
+
+  const metrics = new MetricAggregator(
+    {
+      // runId: RUN_ID,
+      apdexT: 0.5,
+      mapper: mapper,
+      normalizer: normalizer
+    },
+    {}
+  )
+  return metrics
+}
 
 tap.test((test) => {
   test.ok("hello")
+  const metrics = createMetricAggregatorForTests()
 
   // test backoff
   test.test('tests backoff logic', (t)=>{
-    const connection = new GrpcConnection([0, 15, 15, 30, 60, 120, 300],0)
+    const connection = new GrpcConnection(metrics, [0, 15, 15, 30, 60, 120, 300],0)
     t.equals(connection._getBackoffSeconds(), 0, 'first is 0 seconds')
     connection._incrementTries()
     t.equals(connection._getBackoffSeconds(), 15, 'second is 15 seconds')
@@ -35,7 +55,7 @@ tap.test((test) => {
   })
 
   test.test('tests url formatting', (t) => {
-    const connection = new GrpcConnection([0, 15, 15, 30, 60, 120, 300],0)
+    const connection = new GrpcConnection(metrics, [0, 15, 15, 30, 60, 120, 300],0)
     const fixtures = [
       {input:'http://foo.com:300/bar?science=hello',output:'foo.com:300/bar?science=hello'},
       {input:'http://foo.com:300/bar',output:'foo.com:300/bar'},
@@ -48,14 +68,8 @@ tap.test((test) => {
     ]
 
     for (const [,fixture] of fixtures.entries()) {
-      t.equals(fixture.output, connection._formatEndpoint(fixture.input))
+      t.equals(fixture.output, connection._formatTraceObserverUrl(fixture.input))
     }
-
-    // const raw = 'http://foo.com:300/bar'
-    // const formatted = connection._formatEndpoint(raw)
-    // t.equals(formatted,'foo.com:300/bar')
-    // t.ok('true')
-
 
     t.end()
   })
