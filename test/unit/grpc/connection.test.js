@@ -1,7 +1,16 @@
 'use strict'
 const tap = require('tap')
 
-const GrpcConnection = require('../../../lib/grpc/connection')
+const safeRequire = (id) => {
+  let tmp
+  try {
+    tmp = require(id)
+  } catch (error) {
+    tmp = error
+  }
+  return tmp
+}
+const GrpcConnection = safeRequire('../../../lib/grpc/connection')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
@@ -23,7 +32,10 @@ const createMetricAggregatorForTests = () => {
 }
 
 tap.test((test) => {
-  test.ok("hello")
+  if (GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0') {
+    test.end()
+    return
+  }
   const metrics = createMetricAggregatorForTests()
 
   // test backoff
