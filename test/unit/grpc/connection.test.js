@@ -74,5 +74,49 @@ tap.test((test) => {
     t.end()
   })
 
+  test.test('test metadata generation', (t) => {
+    const connection = new GrpcConnection(metrics)
+
+
+    // only sets the license and run id
+    const metadataFirst = connection._getMetadata(
+      'fake-license',
+      'fake-run-id',
+      {}
+    )
+    t.equals(metadataFirst.get('license_key').shift(), 'fake-license', 'license key set')
+    t.equals(metadataFirst.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
+    t.equals(metadataFirst.get('flaky').length, 0, 'flaky not set')
+    t.equals(metadataFirst.get('delay').length, 0, 'delay not set')
+
+    // tests that env based params get set
+    const metadataSecond = connection._getMetadata(
+      'fake-license',
+      'fake-run-id',
+      {
+        NEWRELIC_GRPCCONNECTION_METADATA_FLAKY:10,
+        NEWRELIC_GRPCCONNECTION_METADATA_DELAY:20,
+      }
+    )
+    t.equals(metadataSecond.get('license_key').shift(), 'fake-license', 'license key set')
+    t.equals(metadataSecond.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
+    t.equals(metadataSecond.get('flaky').shift(), 10, 'flaky set')
+    t.equals(metadataSecond.get('delay').shift(), 20, 'delay set')
+
+    // tests that env based params get set
+    const metadataThird = connection._getMetadata(
+      'fake-license',
+      'fake-run-id',
+      {
+        NEWRELIC_GRPCCONNECTION_METADATA_FLAKY:'sdfdsfsdfsdfds',
+        NEWRELIC_GRPCCONNECTION_METADATA_DELAY:{'foo':'bar'},
+      }
+    )
+    t.equals(metadataThird.get('license_key').shift(), 'fake-license', 'license key set')
+    t.equals(metadataThird.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
+    t.equals(metadataThird.get('flaky').length, 0, 'flaky not set')
+    t.equals(metadataThird.get('delay').length, 0, 'delay not set')
+    t.end()
+  })
   test.end()
 })
