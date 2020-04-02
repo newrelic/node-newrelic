@@ -51,7 +51,7 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer: INVALID_URL }
+      infinite_tracing: { trace_observer_url: INVALID_URL }
     })
 
     const aggregator = createSpanEventAggregator(config, null, stubbedMetrics)
@@ -71,11 +71,11 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer: INVALID_URL }
+      infinite_tracing: { trace_observer_url: INVALID_URL }
     })
 
     createSpanEventAggregator(config, null, stubbedMetrics)
-    t.equal(config.infinite_tracing.trace_observer, '')
+    t.equal(config.infinite_tracing.trace_observer_url, '')
 
     t.end()
   }
@@ -89,7 +89,7 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer: INVALID_URL }
+      infinite_tracing: { trace_observer_url: INVALID_URL }
     })
 
     const stubbedMetrics = createMetricAggregatorStub((incrementedMetricName) => {
@@ -111,7 +111,7 @@ tap.test(
         infinite_tracing: true
       },
       serverless_mode: { enabled: true },
-      infinite_tracing: { trace_observer: VALID_URL }
+      infinite_tracing: { trace_observer_url: VALID_URL }
     })
 
     const aggregator = createSpanEventAggregator(config)
@@ -128,7 +128,7 @@ tap.test('should return standard aggregator when node version < gprc minimum', (
     feature_flag: {
       infinite_tracing: true
     },
-    infinite_tracing: { trace_observer: VALID_URL }
+    infinite_tracing: { trace_observer_url: VALID_URL }
   })
 
   const aggregator = createSpanEventAggregator(config)
@@ -144,11 +144,11 @@ tap.test('should reset/disable trace observer when node version < gprc minimum',
     feature_flag: {
       infinite_tracing: true
     },
-    infinite_tracing: { trace_observer: VALID_URL }
+    infinite_tracing: { trace_observer_url: VALID_URL }
   })
 
   createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer, '')
+  t.equal(config.infinite_tracing.trace_observer_url, '')
 
   t.end()
 })
@@ -162,7 +162,7 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer: VALID_URL }
+      infinite_tracing: { trace_observer_url: VALID_URL }
     })
 
     const aggregator = createSpanEventAggregator(config)
