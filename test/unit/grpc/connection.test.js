@@ -11,6 +11,7 @@ const safeRequire = (id) => {
   return tmp
 }
 const GrpcConnection = safeRequire('../../../lib/grpc/connection')
+const connectionStates = require('../../../lib/grpc/connection/states')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
@@ -130,5 +131,16 @@ tap.test((test) => {
     t.equals(metadataThird.get('delay').length, 0, 'delay not set')
     t.end()
   })
+
+  test.test('ensure fake enum is consistent', (t) => {
+    for (const [key, value] of Object.entries(connectionStates)) {
+      /* eslint-disable-next-line eqeqeq */
+      t.ok(key == connectionStates[value], 'found paired value for ' + key)
+    }
+    // console.log(connectionStates)
+    // t.ok(connectionStates, 'loaded connection states')
+    t.end()
+  })
+
   test.end()
 })
