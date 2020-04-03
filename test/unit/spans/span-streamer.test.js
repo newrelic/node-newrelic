@@ -27,7 +27,7 @@ tap.test((t)=>{
   const spanStreamer = new SpanStreamer(
     'nr-internal.aws-us-east-2.tracing.staging-edge.nr-data.net:443',
     'abc123',
-    (new GrpcConnection(metrics))
+    new GrpcConnection(metrics)
   )
 
   t.ok(spanStreamer, "instantiated the object")
