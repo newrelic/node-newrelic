@@ -19,7 +19,7 @@ tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
   const opts = {
     span_streamer: MockedStream
   }
-  
+
   sinon.mock(streamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
