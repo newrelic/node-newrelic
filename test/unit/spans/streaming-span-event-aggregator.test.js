@@ -11,10 +11,10 @@ const streamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 sinon.stub(streamingSpanEvent, 'fromSegment').callsFake(() => {})
 
 tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
-  const MockedStream = require('stream').Writable
-
-  MockedStream.write = () => true
-  MockedStream.connect = () => {}
+  const MockedStream = {
+    write: () => true,
+    connect: () => {}
+  }
 
   const opts = {
     span_streamer: MockedStream
@@ -37,10 +37,10 @@ tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
 })
 
 tap.test('Should increment SEEN metric and not SEND metric if stream.write fails', (t) => {
-  const MockedStream = require('stream').Writable
-
-  MockedStream.write = () => false
-  MockedStream.connect = () => {}
+  const MockedStream = {
+    write: () => false,
+    connect: () => {}
+  }
 
   const opts = {
     span_streamer: MockedStream
