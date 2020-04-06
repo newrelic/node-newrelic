@@ -21,7 +21,7 @@ const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 
 const setupServer = () => {
-  var packageDefinition = protoLoader.loadSync(
+  const packageDefinition = protoLoader.loadSync(
     __dirname + '/../../../lib/grpc/endpoints/infinite-tracing/v1.proto',
     {keepCase: true,
       longs: String,
@@ -29,7 +29,7 @@ const setupServer = () => {
       defaults: true,
       oneofs: true
     })
-  var infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
+  const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
   /**
    * Implements the recordSpan RPC method, used below
@@ -44,7 +44,7 @@ const setupServer = () => {
     stream.end()
   }
 
-  var server = new grpc.Server()
+  const server = new grpc.Server()
   server.addService(
     infiniteTracingService.IngestService.service,
     {recordSpan: recordSpan}
@@ -118,7 +118,6 @@ tap.test((t) => {
   const args = ['https://google.com', null, null]
   connection.setConnectionDetails(...args).connectSpans()
   connection.on('connected', (callStream) => {
-    console.log('connected')
     t.equals(
       callStream.constructor.name,
       'ClientDuplexStreamImpl',
