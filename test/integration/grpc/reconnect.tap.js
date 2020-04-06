@@ -20,7 +20,7 @@ const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 
-const setupServer = () => {
+const setupServer = (t) => {
   const packageDefinition = protoLoader.loadSync(
     __dirname + '/../../../lib/grpc/endpoints/infinite-tracing/v1.proto',
     {keepCase: true,
@@ -58,12 +58,11 @@ const setupServer = () => {
       }
       server.start()
 
-      // setup a callback to disconnect the server
-      // in 3 seconds if there's no more activity.
-      setTimeout(()=>{
+      // shutdown server when tests finish
+      t.tearDown(()=>{
         server.tryShutdown(()=>{
         })
-      }, 3000)
+      })
     }
   )
 }
@@ -95,7 +94,7 @@ tap.test((t) => {
   t.plan(4)
 
   // starts the server
-  setupServer()
+  setupServer(t)
   const metrics = createMetricAggregatorForTests()
 
   // very short backoff to trigger the reconnect in 1 second
