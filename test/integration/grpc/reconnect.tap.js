@@ -5,8 +5,8 @@ const safeRequire = (id) => {
   let tmp
   try {
     tmp = require(id)
-  } catch (e) {
-    return tmp
+  } catch (error) {
+    tmp = error
   }
   return tmp
 }
@@ -84,61 +84,68 @@ const createMetricAggregatorForTests = () => {
   return metrics
 }
 
-tap.test((t) => {
-  if (GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0') {
-    t.end()
-    return
+const isUnsupportedNodeVersion =
+  GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
+
+tap.test(
+  'test that connection class reconnects',
+  {skip:isUnsupportedNodeVersion},
+  (t) => {
+    if (GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0') {
+      t.end()
+      return
+    }
+    // one assert for the initial connection
+    // a second assert for the disconnect
+    // a third assert for the reconnection
+    // a fourth assert for the disconnect
+    t.plan(4)
+
+    // starts the server
+    setupServer(t).then((port)=>{
+      const metrics = createMetricAggregatorForTests()
+
+      // very short backoff to trigger the reconnect in 1 second
+      const backoffs = [0, 1]
+      const connection = new GrpcConnection(metrics, backoffs)
+
+      let countDisconnects = 0
+
+      // do a little monkey patching to get our non SSL/HTTP
+      // credentials in there for this test.  This replaces
+      // the _generateCredentials method on the GrpcConnection
+      // object.  The .bind at the end isn't technically
+      // necessary, but it ensures if we ever _did_ use the
+      // this variable in out _generateCredentials that it
+      // would be bound correctly.
+      connection._generateCredentials = ((grpcApi) => {
+        return grpcApi.credentials.createInsecure()
+      }).bind(connection)
+
+      const args = ['http://127.0.0.1:'+port, null, null]
+      connection.setConnectionDetails(...args).connectSpans()
+      connection.on('connected', (callStream) => {
+        t.equals(
+          callStream.constructor.name,
+          'ClientDuplexStreamImpl',
+          'connected and received ClientDuplexStreamImpl'
+        )
+        callStream.end()
+      })
+
+      connection.on('disconnected', () => {
+        countDisconnects++
+        t.ok(true, 'disconnected')
+
+        // if we've disconnected twice, the test is done
+        // mark the state as permanantly closed in order to
+        // avoid further automatic reconnects (skipping
+        // _setState to avoid an additional disconnect event)
+        if (countDisconnects > 1) {
+          connection._state = 3 // replace with actual fake enum
+          return
+        }
+      })
+    })
   }
-  // one assert for the initial connection
-  // a second assert for the disconnect
-  // a third assert for the reconnection
-  // a fourth assert for the disconnect
-  t.plan(4)
-
-  // starts the server
-  setupServer(t).then((port)=>{
-    const metrics = createMetricAggregatorForTests()
-
-    // very short backoff to trigger the reconnect in 1 second
-    const backoffs = [0, 1]
-    const connection = new GrpcConnection(metrics, backoffs)
-
-    let countDisconnects = 0
-
-    // do a little monkey patching to get our non SSL/HTTP
-    // credentials in there for this test.  This replaces
-    // the _generateCredentials method on the GrpcConnection
-    // object.  The .bind at the end isn't technically
-    // necessary, but it ensures if we ever _did_ use the
-    // this variable in out _generateCredentials that it
-    // would be bound correctly.
-    connection._generateCredentials = ((grpcApi) => {
-      return grpcApi.credentials.createInsecure()
-    }).bind(connection)
-
-    const args = ['http://127.0.0.1:'+port, null, null]
-    connection.setConnectionDetails(...args).connectSpans()
-    connection.on('connected', (callStream) => {
-      t.equals(
-        callStream.constructor.name,
-        'ClientDuplexStreamImpl',
-        'connected and received ClientDuplexStreamImpl'
-      )
-      callStream.end()
-    })
-
-    connection.on('disconnected', () => {
-      countDisconnects++
-      t.ok(true, 'disconnected')
-
-      // if we've disconnected twice, the test is done
-      // mark the state as permanantly closed in order to
-      // avoid further automatic reconnects (skipping
-      // _setState to avoid an additional disconnect event)
-      if (countDisconnects > 1) {
-        connection._state = 3 // replace with actual fake enum
-        return
-      }
-    })
-  })
-})
+)
