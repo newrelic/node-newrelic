@@ -49,22 +49,24 @@ const setupServer = (t) => {
     infiniteTracingService.IngestService.service,
     {recordSpan: recordSpan}
   )
-  server.bindAsync(
-    '0.0.0.0:50051',
-    grpc.ServerCredentials.createInsecure(),
-    (err) => {
-      if (err) {
-        throw err
-      }
-      server.start()
-
-      // shutdown server when tests finish
-      t.tearDown(()=>{
-        server.tryShutdown(()=>{
+  return new Promise((resolve, reject)=>{
+    server.bindAsync(
+      'localhost:0',
+      grpc.ServerCredentials.createInsecure(),
+      (err, port) => {
+        if (err) {
+          reject(err)
+        }
+        server.start()
+        resolve(port)
+        // shutdown server when tests finish
+        t.tearDown(()=>{
+          server.tryShutdown(()=>{
+          })
         })
-      })
-    }
-  )
+      }
+    )
+  })
 }
 
 const createMetricAggregatorForTests = () => {
@@ -94,48 +96,49 @@ tap.test((t) => {
   t.plan(4)
 
   // starts the server
-  setupServer(t)
-  const metrics = createMetricAggregatorForTests()
+  setupServer(t).then((port)=>{
+    const metrics = createMetricAggregatorForTests()
 
-  // very short backoff to trigger the reconnect in 1 second
-  const backoffs = [0, 1]
-  const connection = new GrpcConnection(metrics, backoffs)
+    // very short backoff to trigger the reconnect in 1 second
+    const backoffs = [0, 1]
+    const connection = new GrpcConnection(metrics, backoffs)
 
-  let countDisconnects = 0
+    let countDisconnects = 0
 
-  // do a little monkey patching to get our non SSL/HTTP
-  // credentials in there for this test.  This replaces
-  // the _generateCredentials method on the GrpcConnection
-  // object.  The .bind at the end isn't technically
-  // necessary, but it ensures if we ever _did_ use the
-  // this variable in out _generateCredentials that it
-  // would be bound correctly.
-  connection._generateCredentials = ((grpcApi) => {
-    return grpcApi.credentials.createInsecure()
-  }).bind(connection)
+    // do a little monkey patching to get our non SSL/HTTP
+    // credentials in there for this test.  This replaces
+    // the _generateCredentials method on the GrpcConnection
+    // object.  The .bind at the end isn't technically
+    // necessary, but it ensures if we ever _did_ use the
+    // this variable in out _generateCredentials that it
+    // would be bound correctly.
+    connection._generateCredentials = ((grpcApi) => {
+      return grpcApi.credentials.createInsecure()
+    }).bind(connection)
 
-  const args = ['https://google.com', null, null]
-  connection.setConnectionDetails(...args).connectSpans()
-  connection.on('connected', (callStream) => {
-    t.equals(
-      callStream.constructor.name,
-      'ClientDuplexStreamImpl',
-      'connected and received ClientDuplexStreamImpl'
-    )
-    callStream.end()
-  })
+    const args = ['http://127.0.0.1:'+port, null, null]
+    connection.setConnectionDetails(...args).connectSpans()
+    connection.on('connected', (callStream) => {
+      t.equals(
+        callStream.constructor.name,
+        'ClientDuplexStreamImpl',
+        'connected and received ClientDuplexStreamImpl'
+      )
+      callStream.end()
+    })
 
-  connection.on('disconnected', () => {
-    countDisconnects++
-    t.ok(true, 'disconnected')
+    connection.on('disconnected', () => {
+      countDisconnects++
+      t.ok(true, 'disconnected')
 
-    // if we've disconnected twice, the test is done
-    // mark the state as permanantly closed in order to
-    // avoid further automatic reconnects (skipping
-    // _setState to avoid an additional disconnect event)
-    if (countDisconnects > 1) {
-      connection._state = 3 // replace with actual fake enum
-      return
-    }
+      // if we've disconnected twice, the test is done
+      // mark the state as permanantly closed in order to
+      // avoid further automatic reconnects (skipping
+      // _setState to avoid an additional disconnect event)
+      if (countDisconnects > 1) {
+        connection._state = 3 // replace with actual fake enum
+        return
+      }
+    })
   })
 })
