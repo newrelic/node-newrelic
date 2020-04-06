@@ -2,12 +2,60 @@
 const tap = require('tap')
 const SpanStreamer = require('../../../lib/spans/span-streamer')
 const GrpcConnection = require('../../../lib/grpc/connection')
+const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
+const MetricMapper = require('../../../lib/metrics/mapper')
+const MetricNormalizer = require('../../../lib/metrics/normalizer')
+const EventEmitter = require('events').EventEmitter
+
+/**
+ * A mocked connection object
+ *
+ * Exists to give tests an EventEmitter
+ * compatible object and mock out internal
+ * functions so they don't fail
+ */
+class MockConnection extends EventEmitter {
+  /**
+   * Called by span streamer's connect method
+   *
+   * Mocked here to ensure calls to connect don't crash
+   */
+  setConnectionDetails() {
+  }
+}
+
+/**
+ * Creates a fake/mocked connection
+ *
+ * This is the base fake connection class -- each test
+ * may add additional methods to the object as needed.
+ */
+const createFakeConnection = () => {
+  return new MockConnection
+}
+
+const createMetricAggregatorForTests = () => {
+  const mapper = new MetricMapper()
+  const normalizer = new MetricNormalizer({}, 'metric name')
+
+  const metrics = new MetricAggregator(
+    {
+      // runId: RUN_ID,
+      apdexT: 0.5,
+      mapper: mapper,
+      normalizer: normalizer
+    },
+    {}
+  )
+  return metrics
+}
 
 tap.test((t)=>{
+  const metrics = createMetricAggregatorForTests()
   const spanStreamer = new SpanStreamer(
     'nr-internal.aws-us-east-2.tracing.staging-edge.nr-data.net:443',
     'abc123',
-    (new GrpcConnection)
+    new GrpcConnection(metrics)
   )
 
   t.ok(spanStreamer, "instantiated the object")
@@ -15,7 +63,8 @@ tap.test((t)=>{
 })
 
 tap.test('write(span) should return false with no stream set', (t) => {
-  const spanStreamer = new SpanStreamer('nowhere.horse', 'abc123', {})
+  const fakeConnection = createFakeConnection()
+  const spanStreamer = new SpanStreamer('nowhere.horse', 'abc123', fakeConnection)
 
   t.notOk(spanStreamer.write({}))
 
@@ -23,9 +72,8 @@ tap.test('write(span) should return false with no stream set', (t) => {
 })
 
 tap.test('write(span) should return false when not writeable', (t) => {
-  const fakeConnection = {
-    connectSpans: () => {}
-  }
+  const fakeConnection = createFakeConnection()
+  fakeConnection.connectSpans = () => {}
 
   const spanStreamer = new SpanStreamer('nowhere.horse', 'abc123', fakeConnection)
   spanStreamer._writable = false
@@ -39,9 +87,12 @@ tap.test('write(span) should return true when able to write to stream', (t) => {
   const fakeStream = {
     write: () => true
   }
-  const fakeConnection = {
-    connectSpans: () => fakeStream
+
+  const fakeConnection = createFakeConnection()
+  fakeConnection.connectSpans = () => {
+    fakeConnection.emit('connected', fakeStream)
   }
+
   const fakeSpan = {
     toStreamingFormat: () => {}
   }
@@ -59,8 +110,9 @@ tap.test('write(span) should return true with backpressure', (t) => {
     write: () => false,
     once: () => {}
   }
-  const fakeConnection = {
-    connectSpans: () => fakeStream
+  const fakeConnection = createFakeConnection()
+  fakeConnection.connectSpans = () => {
+    fakeConnection.emit('connected', fakeStream)
   }
   const fakeSpan = {
     toStreamingFormat: () => {}
@@ -81,8 +133,9 @@ tap.test('write(span) should return false when stream.write throws error', (t) =
     },
     once: () => {}
   }
-  const fakeConnection = {
-    connectSpans: () => fakeStream
+  const fakeConnection = createFakeConnection()
+  fakeConnection.connectSpans = () => {
+    fakeConnection.emit('connected', fakeStream)
   }
   const fakeSpan = {
     toStreamingFormat: () => {}
