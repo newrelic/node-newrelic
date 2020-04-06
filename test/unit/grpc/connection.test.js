@@ -39,10 +39,6 @@ tap.test(
   'GrpcConnection logic tests',
   {skip:isUnsupportedNodeVersion},
   (test) => {
-    if (GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0') {
-      test.end()
-      return
-    }
     const metrics = createMetricAggregatorForTests()
 
     // test backoff
@@ -143,8 +139,6 @@ tap.test(
         /* eslint-disable-next-line eqeqeq */
         t.ok(key == connectionStates[value], 'found paired value for ' + key)
       }
-      // console.log(connectionStates)
-      // t.ok(connectionStates, 'loaded connection states')
       t.end()
     })
 
