@@ -91,10 +91,6 @@ tap.test(
   'test that connection class reconnects',
   {skip:isUnsupportedNodeVersion},
   (t) => {
-    if (GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0') {
-      t.end()
-      return
-    }
     // one assert for the initial connection
     // a second assert for the disconnect
     // a third assert for the reconnection
