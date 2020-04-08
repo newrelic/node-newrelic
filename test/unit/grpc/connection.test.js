@@ -43,34 +43,21 @@ tap.test(
 
     // test backoff
     test.test('tests backoff logic', (t)=>{
-      const connection = new GrpcConnection(metrics, [0, 15, 15, 30, 60, 120, 300],0)
-      t.equals(connection._getBackoffSeconds(), 0, 'first is 0 seconds')
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 15, 'second is 15 seconds')
+      const connection = new GrpcConnection(metrics)
+      t.equals(connection._streamBackoffSeconds, 0, 'initial stream backoff is 0 seconds')
+      connection._setStreamBackoffAfterInitialStreamSetup()
+      t.equals(connection._streamBackoffSeconds, 15, 'future stream backoff is 15 seconds')
 
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 15, 'third is 15 seconds')
-
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 30, 'fourth is 30 seconds')
-
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 60, 'fifth is 60 seconds')
-
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 120, 'sixth is 120 seconds')
-
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 300, 'seventh is 300 seconds')
-
-      connection._incrementTries()
-      t.equals(connection._getBackoffSeconds(), 300, 'eigth is also 300 seconds')
+      const connection2 = new GrpcConnection(metrics, {initialSeconds:1, seconds:2})
+      t.equals(connection2._streamBackoffSeconds, 1, 'injected initial value used')
+      connection2._setStreamBackoffAfterInitialStreamSetup()
+      t.equals(connection2._streamBackoffSeconds, 2, 'injected future value used')
 
       t.end()
     })
 
     test.test('tests url formatting', (t) => {
-      const connection = new GrpcConnection(metrics, [0, 15, 15, 30, 60, 120, 300],0)
+      const connection = new GrpcConnection(metrics, 15)
       const fixtures = [
         {input:'http://foo.com:300/bar?science=hello',output:'foo.com:300/bar?science=hello'},
         {input:'http://foo.com:300/bar',output:'foo.com:300/bar'},
@@ -91,7 +78,6 @@ tap.test(
 
     test.test('test metadata generation', (t) => {
       const connection = new GrpcConnection(metrics)
-
 
       // only sets the license and run id
       const metadataFirst = connection._getMetadata(
