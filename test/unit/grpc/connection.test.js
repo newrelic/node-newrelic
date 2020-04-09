@@ -57,7 +57,7 @@ tap.test(
     })
 
     test.test('tests url formatting', (t) => {
-      const connection = new GrpcConnection(metrics, 15)
+      const connection = new GrpcConnection(metrics)
       const fixtures = [
         {input:'http://foo.com:300/bar?science=hello',output:'foo.com:300/bar?science=hello'},
         {input:'http://foo.com:300/bar',output:'foo.com:300/bar'},
