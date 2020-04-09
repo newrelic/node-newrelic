@@ -157,7 +157,7 @@ tap.test(
 )
 
 tap.test('grpc connection error handling', (test) => {
-  test.test('Should catch error when loadPackageDefinition returns invalid service definition',
+  test.test('should catch error when loadPackageDefinition returns invalid service definition',
     (t) => {
       const metrics = createMetricAggregatorForTests()
 
@@ -173,7 +173,7 @@ tap.test('grpc connection error handling', (test) => {
       }, 0)
     })
 
-  test.test('Should catch error when proto loader fails', (t) => {
+  test.test('should catch error when proto loader fails', (t) => {
     const metrics = createMetricAggregatorForTests()
 
     const stub = sinon.stub(protoLoaderMock, 'loadSync').returns({})
