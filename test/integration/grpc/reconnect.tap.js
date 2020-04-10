@@ -102,7 +102,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       // very short backoff to trigger the reconnect in 1 second
-      const backoffs = [0, 1]
+      const backoffs = {initialSeconds: 0, seconds:1}
       const connection = new GrpcConnection(metrics, backoffs)
 
       let countDisconnects = 0
